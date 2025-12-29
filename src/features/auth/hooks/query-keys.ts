@@ -1,0 +1,17 @@
+/**
+ * Query Keys
+ *
+ * 📍 src/features/auth/hooks/query-keys.ts
+ *
+ * Centralized query keys for TanStack Query.
+ * Ensures consistent cache invalidation.
+ */
+
+export const authKeys = {
+  all: ["auth"] as const,
+  userInfo: () => [...authKeys.all, "userInfo"] as const,
+  userProfile: () => [...authKeys.all, "userProfile"] as const,
+  publicProfile: (muid: string) =>
+    [...authKeys.all, "publicProfile", muid] as const,
+  session: () => [...authKeys.all, "session"] as const,
+};
