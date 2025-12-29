@@ -1,0 +1,25 @@
+#!/bin/sh
+
+set -e
+
+echo "🎨 Formatting code with Biome..."
+bunx biome format --write .
+
+echo "🔍 Linting code with Biome (auto-fix)..."
+bunx biome lint --fix .
+
+# Re-stage files after auto-fix
+git add .
+
+echo "🧠 Running TypeScript type check..."
+bun run typecheck
+
+echo "🔐 Scanning for forbidden patterns..."
+# Check staged content (excluding .husky) for forbidden patterns
+if git diff --cached -- ':!.husky' | grep -qE 'localStorage\.setItem|sessionStorage\.setItem|console\.log|@ts-ignore|@ts-expect-error'; then
+  echo "❌ Forbidden pattern detected in staged changes:"
+  git diff --cached -- ':!.husky' | grep -nE 'localStorage\.setItem|sessionStorage\.setItem|console\.log|@ts-ignore|@ts-expect-error'
+  exit 1
+fi
+
+echo "✅ Pre-commit checks passed"
