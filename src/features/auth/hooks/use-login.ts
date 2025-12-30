@@ -32,24 +32,23 @@ export function useLoginWithPassword() {
 
   return useMutation({
     mutationFn: async ({ emailOrMuid, password }: LoginWithPasswordParams) => {
-      // 1. Login and get tokens
-      const loginResponse = await loginWithPassword(emailOrMuid, password);
+      // 1. Login and get tokens (API returns data directly, not wrapped)
+      const tokenData = await loginWithPassword(emailOrMuid, password);
 
       // 2. Save tokens to store (cookies)
-      const { accessToken, refreshToken } = loginResponse.response;
-      authStore.setTokens(accessToken, refreshToken);
+      authStore.setTokens(tokenData.accessToken, tokenData.refreshToken);
 
       // 3. Fetch user info immediately after login
-      // Now the client will automatically include the token
-      const userInfoResponse = await fetchUserInfo();
+      const userInfo = await fetchUserInfo();
 
       return {
-        tokens: loginResponse.response,
-        userInfo: userInfoResponse.response,
+        tokens: tokenData,
+        userInfo,
       };
     },
     onSuccess: (data) => {
-      // Update the user info cache
+      // Clear any stale queries and set fresh user info
+      queryClient.clear();
       queryClient.setQueryData(authKeys.userInfo(), data.userInfo);
     },
   });
@@ -63,23 +62,23 @@ export function useLoginWithOTP() {
 
   return useMutation({
     mutationFn: async ({ emailOrMuid, otp }: LoginWithOTPParams) => {
-      // 1. Login with OTP
-      const loginResponse = await loginWithOTP(emailOrMuid, otp);
+      // 1. Login with OTP (API returns data directly)
+      const tokenData = await loginWithOTP(emailOrMuid, otp);
 
       // 2. Save tokens
-      const { accessToken, refreshToken } = loginResponse.response;
-      authStore.setTokens(accessToken, refreshToken);
+      authStore.setTokens(tokenData.accessToken, tokenData.refreshToken);
 
       // 3. Fetch user info immediately after login
-      const userInfoResponse = await fetchUserInfo();
+      const userInfo = await fetchUserInfo();
 
       return {
-        tokens: loginResponse.response,
-        userInfo: userInfoResponse.response,
+        tokens: tokenData,
+        userInfo,
       };
     },
     onSuccess: (data) => {
-      // Update the user info cache
+      // Clear any stale queries and set fresh user info
+      queryClient.clear();
       queryClient.setQueryData(authKeys.userInfo(), data.userInfo);
     },
   });

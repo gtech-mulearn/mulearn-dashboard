@@ -23,10 +23,7 @@ import { authKeys } from "./query-keys";
 export function useUserInfo() {
   return useQuery({
     queryKey: authKeys.userInfo(),
-    queryFn: async () => {
-      const response = await fetchUserInfo();
-      return response.response;
-    },
+    queryFn: fetchUserInfo,
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 1,
   });
@@ -39,10 +36,7 @@ export function useUserInfo() {
 export function useUserProfile() {
   return useQuery({
     queryKey: authKeys.userProfile(),
-    queryFn: async () => {
-      const response = await fetchUserProfile();
-      return response.response;
-    },
+    queryFn: fetchUserProfile,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
@@ -53,10 +47,7 @@ export function useUserProfile() {
 export function usePublicUserProfile(muid: string) {
   return useQuery({
     queryKey: authKeys.publicProfile(muid),
-    queryFn: async () => {
-      const response = await fetchPublicUserProfile(muid);
-      return response.response;
-    },
+    queryFn: () => fetchPublicUserProfile(muid),
     enabled: !!muid,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });

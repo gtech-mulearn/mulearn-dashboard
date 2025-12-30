@@ -110,7 +110,7 @@ export function ResetPasswordClient({ token }: ResetPasswordClientProps) {
       onSubmit={handleSubmit}
       isLoading={resetPassword.isPending}
       isSuccess={isSuccess}
-      muid={verifyToken.data?.response.muid}
+      muid={verifyToken.data?.muid}
     />
   );
 }

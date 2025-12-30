@@ -108,10 +108,21 @@ export const endpoints = {
     preferences: "/api/v1/dashboard/user/preferences/",
     /** GET - User activity log */
     log: "/api/v1/dashboard/profile/user-log/",
+    /** GET - Public user activity log */
+    publicLog: (muid: string) => `/api/v1/dashboard/profile/user-log/${muid}/`,
     /** GET - User levels */
     levels: "/api/v1/dashboard/profile/get-user-levels/",
+    /** GET - Public user levels */
+    publicLevels: (muid: string) =>
+      `/api/v1/dashboard/profile/get-user-levels/${muid}/`,
     /** PUT - Toggle profile public/private */
     shareProfile: "/api/v1/dashboard/profile/share-user-profile/",
+    /** GET - User socials */
+    socials: "/api/v1/dashboard/profile/socials/",
+    /** PUT - Update user socials */
+    socialsEdit: "/api/v1/dashboard/profile/socials/edit/",
+    /** PATCH - Update user's interest groups */
+    interestGroups: "/api/v1/dashboard/profile/ig-edit/",
     /** POST - Update profile image */
     updateProfileImage: "/api/v1/dashboard/user/profile/update/",
     /** DELETE - Delete user account */

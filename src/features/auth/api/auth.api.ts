@@ -6,17 +6,22 @@
  * All auth-related API calls go through here.
  * NO direct fetch calls in components or hooks.
  * NO React dependencies - this is pure data layer.
+ *
+ * Pattern: Validate full response, extract and return inner data.
  */
 
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
   ForgotPasswordResponseSchema,
+  type LoginResponseData,
   LoginResponseSchema,
   RefreshTokenResponseSchema,
   RequestOTPResponseSchema,
   ResetPasswordResponseSchema,
+  type UserInfo,
   UserInfoResponseSchema,
+  type UserProfile,
   UserProfileResponseSchema,
   VerifyResetTokenResponseSchema,
 } from "../schemas";
@@ -28,30 +33,38 @@ import {
 /**
  * Login with email/muid and password
  */
-export function loginWithPassword(emailOrMuid: string, password: string) {
-  return apiClient.post(
+export async function loginWithPassword(
+  emailOrMuid: string,
+  password: string,
+): Promise<LoginResponseData> {
+  const response = await apiClient.post(
     endpoints.auth.login,
     { emailOrMuid, password },
     LoginResponseSchema,
   );
+  return response.response;
 }
 
 /**
  * Login with email/muid and OTP
  */
-export function loginWithOTP(emailOrMuid: string, otp: string) {
-  return apiClient.post(
+export async function loginWithOTP(
+  emailOrMuid: string,
+  otp: string,
+): Promise<LoginResponseData> {
+  const response = await apiClient.post(
     endpoints.auth.login,
     { emailOrMuid, otp },
     LoginResponseSchema,
   );
+  return response.response;
 }
 
 /**
  * Request OTP for login
  */
-export function requestLoginOTP(emailOrMuid: string) {
-  return apiClient.post(
+export async function requestLoginOTP(emailOrMuid: string): Promise<void> {
+  await apiClient.post(
     endpoints.auth.requestOTP,
     { emailOrMuid },
     RequestOTPResponseSchema,
@@ -65,12 +78,15 @@ export function requestLoginOTP(emailOrMuid: string) {
 /**
  * Refresh access token using refresh token
  */
-export function refreshAccessToken(refreshToken: string) {
-  return apiClient.post(
+export async function refreshAccessToken(
+  refreshToken: string,
+): Promise<{ accessToken: string }> {
+  const response = await apiClient.post(
     endpoints.auth.refreshToken,
     { refreshToken },
     RefreshTokenResponseSchema,
   );
+  return response.response;
 }
 
 // ============================================
@@ -80,8 +96,8 @@ export function refreshAccessToken(refreshToken: string) {
 /**
  * Request password reset email
  */
-export function requestPasswordReset(emailOrMuid: string) {
-  return apiClient.post(
+export async function requestPasswordReset(emailOrMuid: string): Promise<void> {
+  await apiClient.post(
     endpoints.password.forgot,
     { emailOrMuid },
     ForgotPasswordResponseSchema,
@@ -91,19 +107,25 @@ export function requestPasswordReset(emailOrMuid: string) {
 /**
  * Verify password reset token is valid
  */
-export function verifyResetToken(token: string) {
-  return apiClient.post(
+export async function verifyResetToken(
+  token: string,
+): Promise<{ muid: string }> {
+  const response = await apiClient.post(
     endpoints.password.verifyResetToken(token),
     {},
     VerifyResetTokenResponseSchema,
   );
+  return response.response;
 }
 
 /**
  * Reset password using token
  */
-export function resetPassword(token: string, password: string) {
-  return apiClient.post(
+export async function resetPassword(
+  token: string,
+  password: string,
+): Promise<void> {
+  await apiClient.post(
     endpoints.password.reset(token),
     { password },
     ResetPasswordResponseSchema,
@@ -117,23 +139,34 @@ export function resetPassword(token: string, password: string) {
 /**
  * Get current user info (lightweight)
  */
-export function fetchUserInfo() {
-  return apiClient.get(endpoints.user.info, UserInfoResponseSchema);
+export async function fetchUserInfo(): Promise<UserInfo> {
+  const response = await apiClient.get(
+    endpoints.user.info,
+    UserInfoResponseSchema,
+  );
+  return response.response;
 }
 
 /**
  * Get full user profile
  */
-export function fetchUserProfile() {
-  return apiClient.get(endpoints.user.profile, UserProfileResponseSchema);
+export async function fetchUserProfile(): Promise<UserProfile> {
+  const response = await apiClient.get(
+    endpoints.user.profile,
+    UserProfileResponseSchema,
+  );
+  return response.response;
 }
 
 /**
  * Get public user profile by muid
  */
-export function fetchPublicUserProfile(muid: string) {
-  return apiClient.get(
+export async function fetchPublicUserProfile(
+  muid: string,
+): Promise<UserProfile> {
+  const response = await apiClient.get(
     endpoints.user.publicProfile(muid),
     UserProfileResponseSchema,
   );
+  return response.response;
 }

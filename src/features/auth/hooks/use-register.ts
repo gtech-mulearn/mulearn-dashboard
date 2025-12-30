@@ -34,7 +34,7 @@ export function useRegister() {
 
       return {
         tokens: registerResponse.response,
-        userInfo: userInfoResponse.response,
+        userInfo: userInfoResponse,
       };
     },
     onSuccess: (data) => {
