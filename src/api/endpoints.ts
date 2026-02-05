@@ -162,6 +162,15 @@ export const endpoints = {
     /** GET - Interest group details */
     detail: (id: string) => `/api/v1/dashboard/ig/${id}/`,
   },
+
+  // ============================================
+  // Search Endpoints
+  // ============================================
+  search: {
+    students: "/api/v1/dashboard/search/",
+    campuses: "/api/v1/dashboard/campus/search/",
+    mentors: "/api/v1/dashboard/mentor/search/",
+  },
 } as const;
 
 // Type for type-safe endpoint access
