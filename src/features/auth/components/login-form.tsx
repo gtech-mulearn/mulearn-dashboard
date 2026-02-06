@@ -143,7 +143,7 @@ export function LoginForm({
           <div className="flex items-center justify-between text-sm">
             <Link
               href="/forgot-password"
-              className="text-[#0961F5] hover:underline"
+              className="text-primary hover:underline"
             >
               Forgot password?
             </Link>
@@ -151,7 +151,7 @@ export function LoginForm({
               <button
                 type="button"
                 onClick={onSwitchToOTP}
-                className="text-[#0961F5] hover:underline"
+                className="text-primary hover:underline"
               >
                 Login with OTP
               </button>
@@ -161,7 +161,7 @@ export function LoginForm({
           {/* Primary Action Button */}
           <Button
             type="submit"
-            variant="glossy"
+            variant="default"
             className="w-full mt-2"
             disabled={isLoading}
           >
@@ -177,7 +177,7 @@ export function LoginForm({
           <span className="w-full border-t border-gray-200" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-white dark:bg-slate-950 px-4 text-muted-foreground">
+          <span className="bg-primary-foreground px-4 text-muted-foreground">
             OR
           </span>
         </div>
@@ -235,7 +235,7 @@ export function LoginForm({
         Don&apos;t have an account?{" "}
         <Link
           href="/register"
-          className="font-medium text-[#0961F5] hover:underline"
+          className="font-medium text-primary hover:underline"
         >
           Sign up
         </Link>

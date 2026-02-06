@@ -80,7 +80,7 @@ export function ProfileSettings({ isPublic }: ProfileSettingsProps) {
             <div className="relative">
               {setting.isLoading && (
                 <div className="absolute -left-6 top-1/2 -translate-y-1/2">
-                  <Loader2 className="h-4 w-4 animate-spin text-[#0961F5]" />
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
                 </div>
               )}
               <Switch

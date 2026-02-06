@@ -199,7 +199,7 @@ export function Sidebar() {
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all",
                 isActive(item.href)
-                  ? "bg-[#0961F5] text-white shadow-md"
+                  ? "bg-primary text-white shadow-md"
                   : "text-gray-600 hover:bg-gray-100",
               )}
             >
@@ -221,7 +221,7 @@ export function Sidebar() {
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all",
                 isActive(item.href)
-                  ? "bg-[#0961F5] text-white shadow-md"
+                  ? "bg-primary text-white shadow-md"
                   : "text-gray-600 hover:bg-gray-100",
               )}
             >

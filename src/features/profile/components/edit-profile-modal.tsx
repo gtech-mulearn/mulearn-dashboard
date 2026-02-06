@@ -85,7 +85,7 @@ export function EditProfileModal({
               </div>
               <button
                 type="button"
-                className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-[#0961F5] text-white shadow-lg transition-colors hover:bg-[#0751d4]"
+                className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white shadow-lg transition-colors hover:bg-[#0751d4]"
                 title="Change photo"
               >
                 <Camera className="h-4 w-4" />

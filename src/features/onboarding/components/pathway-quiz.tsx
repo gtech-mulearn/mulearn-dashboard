@@ -132,7 +132,7 @@ export function PathwayQuiz({
                 {pathwayInfo[pathway].includes.slice(0, 3).map((skill) => (
                   <span
                     key={skill}
-                    className="text-xs bg-[#0961F5]/10 text-[#0961F5] rounded-full px-2 py-1"
+                    className="text-xs bg-primary/10 text-primary rounded-full px-2 py-1"
                   >
                     {skill}
                   </span>
@@ -145,7 +145,7 @@ export function PathwayQuiz({
         {/* Action button */}
         <div className="w-full pt-4">
           <Button
-            variant="glossy"
+            variant="default"
             className="w-full"
             onClick={handleConfirmPathways}
             disabled={isLoading}

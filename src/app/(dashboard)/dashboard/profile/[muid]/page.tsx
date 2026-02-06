@@ -63,7 +63,7 @@ export default function PublicProfilePage() {
   if (isLoadingProfile) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-[#0961F5]" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }

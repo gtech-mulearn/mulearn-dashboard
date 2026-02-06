@@ -220,7 +220,7 @@ export function RegisterForm({ onSubmit, isLoading }: RegisterFormProps) {
           {/* Primary Action Button */}
           <Button
             type="submit"
-            variant="glossy"
+            variant="default"
             className="w-full mt-6"
             disabled={isLoading}
           >
@@ -236,7 +236,7 @@ export function RegisterForm({ onSubmit, isLoading }: RegisterFormProps) {
           <span className="w-full border-t border-gray-200" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-white dark:bg-slate-950 px-4 text-muted-foreground">
+          <span className="bg-primary-foreground px-4 text-muted-foreground">
             OR
           </span>
         </div>
@@ -294,7 +294,7 @@ export function RegisterForm({ onSubmit, isLoading }: RegisterFormProps) {
         Already have an account?{" "}
         <Link
           href="/login"
-          className="font-medium text-[#0961F5] hover:underline"
+          className="font-medium text-primary hover:underline"
         >
           Sign in
         </Link>

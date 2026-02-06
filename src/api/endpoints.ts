@@ -151,6 +151,10 @@ export const endpoints = {
     college: "/api/v1/leaderboard/college/",
     /** GET - Monthly college leaderboard */
     collegeMonthly: "/api/v1/leaderboard/college-monthly/",
+    /** GET - Wadhwani college leaderboard */
+    wadhwaniCollege: "/api/v1/leaderboard/wadhwani-college/",
+    /** GET - Wadhwani zonal leaderboard */
+    wadhwaniZonal: "/api/v1/leaderboard/wadhwani-zonal/",
   },
 
   // ============================================

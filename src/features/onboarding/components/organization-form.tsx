@@ -225,7 +225,7 @@ export function OrganizationForm({
       <div className="flex justify-center py-8">
         {isLoading ? (
           <div className="w-14 h-14 flex items-center justify-center">
-            <Loader2 className="w-6 h-6 animate-spin text-[#0961F5]" />
+            <Loader2 className="w-6 h-6 animate-spin text-primary" />
           </div>
         ) : (
           <ProgressArrow

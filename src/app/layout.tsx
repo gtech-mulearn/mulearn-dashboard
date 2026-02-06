@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "sonner";
 import { Providers } from "./providers";
 import "./globals.css";
 
@@ -49,7 +49,7 @@ export default function RootLayout({
       >
         <Providers>
           {children}
-          <Toaster richColors position="top-right" />
+          <Toaster richColors position="top-right" theme="light" />
         </Providers>
       </body>
     </html>
