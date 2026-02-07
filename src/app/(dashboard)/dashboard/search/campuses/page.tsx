@@ -23,7 +23,6 @@ export default function CampusesSearchPage() {
     setSearchQuery,
     searchType,
     setSearchType,
-
     setPage,
     hasNextPage,
   } = useSearchCampuses();
@@ -35,23 +34,23 @@ export default function CampusesSearchPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
+    <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-5xl space-y-8 px-4 py-8">
         {/* Header Section */}
         <div className="text-center space-y-4">
-          <div className="inline-block rounded-full bg-green-100 px-4 py-1.5 text-sm font-medium text-green-600">
+          <div className="inline-block rounded-full bg-secondary px-4 py-1.5 text-sm font-medium text-secondary-foreground">
             Explore Campuses
           </div>
-          <h1 className="text-4xl font-bold text-gray-900">
+          <h1 className="text-4xl font-bold text-foreground">
             Let's Find Campuses
           </h1>
-          <p className="mx-auto max-w-2xl text-lg text-gray-600">
+          <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
             Discover campuses by name, code, zone, or location
           </p>
         </div>
 
         {/* Search Section */}
-        <div className="rounded-2xl bg-white/80 backdrop-blur-sm p-6 shadow-lg border border-gray-100">
+        <div className="rounded-2xl bg-card backdrop-blur-sm p-6 shadow-lg border border-border">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <SearchInput
@@ -69,7 +68,7 @@ export default function CampusesSearchPage() {
                 )
               }
             >
-              <SelectTrigger className="w-full sm:w-[180px] bg-white">
+              <SelectTrigger className="w-full sm:w-[180px] bg-card">
                 <SelectValue placeholder="Filter by..." />
               </SelectTrigger>
               <SelectContent>
@@ -85,25 +84,25 @@ export default function CampusesSearchPage() {
 
         {/* Results */}
         <div className="space-y-6">
-          {searchQuery.length < 2 && (
-            <div className="rounded-2xl bg-white/80 backdrop-blur-sm p-12 shadow-lg border border-gray-100 text-center">
-              <p className="text-gray-600">
-                Enter at least 2 characters to search
+          {searchQuery.length < 3 && (
+            <div className="rounded-2xl bg-card backdrop-blur-sm p-12 shadow-lg border border-border text-center">
+              <p className="text-muted-foreground">
+                Enter at least 3 characters to search
               </p>
             </div>
           )}
 
           {isError && (
-            <div className="rounded-2xl bg-red-50/80 backdrop-blur-sm p-12 shadow-lg border border-red-100 text-center">
-              <p className="text-red-600">
+            <div className="rounded-2xl bg-destructive/10 backdrop-blur-sm p-12 shadow-lg border border-destructive/20 text-center">
+              <p className="text-destructive">
                 Failed to load results. Please try again.
               </p>
             </div>
           )}
 
-          {data?.data.length === 0 && searchQuery.length >= 2 && !isLoading && (
-            <div className="rounded-2xl bg-white/80 backdrop-blur-sm p-12 shadow-lg border border-gray-100 text-center">
-              <p className="text-gray-600">No campuses found</p>
+          {data?.data.length === 0 && searchQuery.length >= 3 && !isLoading && (
+            <div className="rounded-2xl bg-card backdrop-blur-sm p-12 shadow-lg border border-border text-center">
+              <p className="text-muted-foreground">No campuses found</p>
             </div>
           )}
 
@@ -111,7 +110,7 @@ export default function CampusesSearchPage() {
             {data?.data.map((campus) => (
               <div
                 key={campus.id}
-                className="rounded-2xl bg-white/80 backdrop-blur-sm shadow-lg border border-gray-100 hover:shadow-xl transition-shadow"
+                className="rounded-2xl bg-card backdrop-blur-sm shadow-lg border border-border hover:shadow-xl transition-shadow"
               >
                 <CampusSearchCard campus={campus} />
               </div>
@@ -120,9 +119,9 @@ export default function CampusesSearchPage() {
 
           {hasNextPage && <div ref={loadMoreRef} className="h-10" />}
 
-          {isLoading && searchQuery.length >= 2 && (
+          {isLoading && searchQuery.length >= 3 && (
             <div className="flex justify-center py-8">
-              <div className="h-10 w-10 animate-spin rounded-full border-4 border-green-200 border-t-green-600" />
+              <div className="h-10 w-10 animate-spin rounded-full border-4 border-muted border-t-primary" />
             </div>
           )}
         </div>

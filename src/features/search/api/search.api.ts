@@ -5,6 +5,7 @@ import {
   campusSearchResponseSchema,
   type UserSearchData,
   type CampusSearchData,
+  type CampusSearchResult,
   type SearchType,
 } from "../schemas";
 
@@ -62,19 +63,58 @@ export async function searchCampuses(
     perPage: String(params.perPage ?? 30),
   });
 
-  // Determine endpoint based on searchType
-  let endpoint: string = endpoints.search.colleges; // Changed type to string
+  try {
+    // Always fetch both college and school results in parallel
+    const [collegeResponse, schoolResponse] = await Promise.allSettled([
+      apiClient.get(
+        `${endpoints.search.colleges}?${searchParams}`,
+        campusSearchResponseSchema,
+      ),
+      apiClient.get(
+        `${endpoints.search.schools}?${searchParams}`,
+        campusSearchResponseSchema,
+      ),
+    ]);
 
-  if (params.searchType === "school") {
-    endpoint = endpoints.search.schools;
-  } else if (params.searchType === "college") {
-    endpoint = endpoints.search.colleges;
+    // Extract data from both responses
+    const collegeData =
+      collegeResponse.status === "fulfilled"
+        ? collegeResponse.value.response.data
+        : [];
+    const schoolData =
+      schoolResponse.status === "fulfilled"
+        ? schoolResponse.value.response.data
+        : [];
+
+    // Merge results from both APIs
+    let mergedData: CampusSearchResult[] = [...collegeData, ...schoolData];
+
+    // Filter results based on searchType if specified
+    if (params.searchType === "school") {
+      mergedData = schoolData;
+    } else if (params.searchType === "college") {
+      mergedData = collegeData;
+    }
+    // For "name", "code", "zone", or undefined - show all results (already merged)
+
+    // Get pagination from the first successful response
+    const pagination =
+      collegeResponse.status === "fulfilled"
+        ? collegeResponse.value.response.pagination
+        : schoolResponse.status === "fulfilled"
+          ? schoolResponse.value.response.pagination
+          : { page: 1, perPage: 30, total: 0, totalPages: 1 };
+
+    return {
+      data: mergedData,
+      pagination: {
+        ...pagination,
+        total: mergedData.length,
+        totalPages: Math.ceil(mergedData.length / (pagination.perPage || 30)),
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching campus data:", error);
+    throw error;
   }
-
-  const response = await apiClient.get(
-    `${endpoint}?${searchParams}`,
-    campusSearchResponseSchema,
-  );
-
-  return response.response;
 }
