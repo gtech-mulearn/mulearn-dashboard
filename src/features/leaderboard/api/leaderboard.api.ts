@@ -57,11 +57,11 @@ export async function fetchCampusLeaderboard(
  * Fetch Wadhwani leaderboard (campus or zonal)
  */
 export async function fetchWadhwaniLeaderboard(
-  monthly: boolean = false,
+  campus: boolean = false,
 ): Promise<StudentLeaderboardEntry[]> {
-  const endpoint = monthly
-    ? endpoints.leaderboard.wadhwaniZonal
-    : endpoints.leaderboard.wadhwaniCollege;
+  const endpoint = campus
+    ? endpoints.leaderboard.wadhwaniCollege
+    : endpoints.leaderboard.wadhwaniZonal;
 
   const response = await apiClient.get(
     endpoint,
