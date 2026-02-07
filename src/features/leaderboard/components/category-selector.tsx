@@ -24,11 +24,11 @@ const categories: { value: Category; label: string; icon: ReactNode }[] = [
     label: "Campus",
     icon: <Building2 className="w-5 h-5" />,
   },
-  // {
-  //   value: "wadhwani",
-  //   label: "Wadhwani",
-  //   icon: <Award className="w-5 h-5" />,
-  // },
+  {
+    value: "wadhwani",
+    label: "Wadhwani",
+    icon: <Award className="w-5 h-5" />,
+  },
 ];
 
 export function CategorySelector({
@@ -56,8 +56,6 @@ export function CategorySelector({
           </SelectContent>
         </Select>
       </div>
-
-      {/* Desktop */}
       <div className="hidden md:flex flex-wrap gap-3 w-full md:w-auto">
         {categories.map((category) => {
           const isSelected = selected === category.value;

@@ -8,13 +8,6 @@
 
 import { z } from "zod";
 
-// ============================================
-// Common Response Wrapper
-// ============================================
-
-/**
- * Standard Django API response wrapper
- */
 export const ApiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
   z.object({
     hasError: z.boolean(),
@@ -22,10 +15,6 @@ export const ApiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
     message: z.record(z.string(), z.array(z.string())).optional(),
     response: dataSchema,
   });
-
-// ============================================
-// Leaderboard Schemas
-// ============================================
 
 export const StudentLeaderboardEntrySchema = z.object({
   full_name: z.string(),
@@ -44,8 +33,8 @@ export const CollegeLeaderboardEntrySchema = z.object({
 
 export const WadhwaniLeaderboardEntrySchema = z.object({
   code: z.string(),
-  title: z.string(),
-  zone_name: z.string(),
+  title: z.string().optional(),
+  zone_name: z.string().optional(),
   total_karma: z.number(),
   students: z.number().optional(),
   total_students: z.number().optional(),
@@ -62,10 +51,6 @@ export const StudentLeaderboardResponseSchema = ApiResponseSchema(
 export const CollegeLeaderboardResponseSchema = ApiResponseSchema(
   z.array(CollegeLeaderboardEntrySchema),
 );
-
-// ============================================
-// Derived Types
-// ============================================
 
 export type StudentLeaderboardEntry = z.infer<
   typeof StudentLeaderboardEntrySchema

@@ -17,6 +17,8 @@ import {
   CollegeLeaderboardResponseSchema,
   type StudentLeaderboardEntry,
   StudentLeaderboardResponseSchema,
+  type WadhwaniLeaderboardEntry,
+  WadhwaniLeaderboardResponseSchema,
 } from "../schemas";
 
 /**
@@ -58,14 +60,14 @@ export async function fetchCampusLeaderboard(
  */
 export async function fetchWadhwaniLeaderboard(
   campus: boolean = false,
-): Promise<StudentLeaderboardEntry[]> {
+): Promise<WadhwaniLeaderboardEntry[]> {
   const endpoint = campus
     ? endpoints.leaderboard.wadhwaniCollege
     : endpoints.leaderboard.wadhwaniZonal;
 
   const response = await apiClient.get(
     endpoint,
-    StudentLeaderboardResponseSchema,
+    WadhwaniLeaderboardResponseSchema,
   );
   return response.response;
 }
