@@ -4,7 +4,7 @@
  * 📍 src/lib/auth.ts
  *
  * Manages access and refresh tokens using cookies.
- * This allows middleware to access tokens for route protection.
+ * This allows proxy to access tokens for route protection.
  */
 
 import Cookies from "js-cookie";

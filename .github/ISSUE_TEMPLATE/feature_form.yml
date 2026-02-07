@@ -1,0 +1,121 @@
+name: Mulearn Feature Request
+description: Create a new Feature Request for MuLearn Dashboard
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please fill out the sections below to properly describe the new feature you are suggesting.
+
+  - type: textarea
+    id: description
+    validations:
+      required: true
+    attributes:
+      label: Description
+      placeholder: |
+        A button in the screen X that allows to do Y
+
+  - type: textarea
+    id: goals
+    validations:
+      required: true
+    attributes:
+      label: Goals
+      description: List the goals of the feature.
+      placeholder: |
+        - Goal 1
+        - Goal 2
+
+  - type: textarea
+    id: implementation-details
+    validations:
+      required: true
+    attributes:
+      label: Implementation Details
+      description: List any technical details about the proposed implementation, including any specific technologies that will be used.
+      placeholder: |
+        - Implementation Detail 1
+        - Implementation Detail 2
+        - also add images is possible
+
+  - type: dropdown
+    id: skills-required
+    attributes:
+      label: Tech Skills Needed
+      description: Select the technologies needed for this ticket (use Ctrl or Command to select multiple)
+      multiple: true
+      options:
+        - Biome
+        - CI/CD
+        - CORS
+        - Database
+        - Debugging
+        - Design
+        - Feature
+        - GraphQL
+        - JavaScript
+        - JWT
+        - Maintenance
+        - Mobile
+        - NextJS
+        - Node.js
+        - OAuth
+        - Performance Improvement
+        - Prettier
+        - React
+        - RESTful APIs
+        - Security
+        - SEO
+        - Swagger
+        - Tailwind CSS
+        - TypeScript
+        - UI/UX/Design
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: ticket-mentors
+    attributes:
+      label: Mentor(s)
+      description: Please tag relevant mentors for the ticket
+      placeholder: |
+        @awindsr
+    validations:
+      required: true
+
+  - type: dropdown
+    id: ticket-complexity
+    attributes: 
+      label: Complexity
+      description: Choose a complexity describing the complexity of your ticket
+      multiple: false
+      options:
+        - Low
+        - Medium
+        - High
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes: 
+      label: Category
+      description: Choose the categories that best describe your ticket
+      multiple: true
+      options:
+        - API
+        - Backend
+        - Database
+        - Documentation
+        - Deployment
+        - Frontend
+        - Testing
+        - UI
+        - UX
+        - Other
+    validations:
+      required: true
+
+  
