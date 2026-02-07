@@ -48,8 +48,6 @@ body:
       options:
         - Biome
         - CI/CD
-        - CORS
-        - Database
         - Debugging
         - Design
         - Feature
@@ -59,15 +57,11 @@ body:
         - Maintenance
         - Mobile
         - NextJS
-        - Node.js
         - OAuth
         - Performance Improvement
-        - Prettier
         - React
         - RESTful APIs
         - Security
-        - SEO
-        - Swagger
         - Tailwind CSS
         - TypeScript
         - UI/UX/Design
