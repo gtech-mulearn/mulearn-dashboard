@@ -1,6 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
-import type { PodiumProps } from "../types";
+import type { PodiumProps } from "@/features/leaderboard";
 
 export function Podium({ entries }: PodiumProps) {
   const top3 = entries.slice(0, 3);

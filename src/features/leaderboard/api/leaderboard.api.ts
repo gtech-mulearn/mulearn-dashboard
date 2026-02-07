@@ -19,7 +19,7 @@ import {
   StudentLeaderboardResponseSchema,
   type WadhwaniLeaderboardEntry,
   WadhwaniLeaderboardResponseSchema,
-} from "../schemas";
+} from "@/features/leaderboard";
 
 /**
  * Fetch student leaderboard (overall or monthly)

@@ -1,6 +1,6 @@
 import { Building2, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { WadhwaniToggleProps } from "../types";
+import type { WadhwaniToggleProps } from "@/features/leaderboard";
 
 export function WadhwaniTimeFrameToggle({
   selected,

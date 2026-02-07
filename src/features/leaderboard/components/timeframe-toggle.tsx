@@ -1,6 +1,6 @@
 import { Calendar, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { GeneralToggleProps, TimeFrame } from "../types";
+import type { GeneralToggleProps, TimeFrame } from "@/features/leaderboard";
 
 export function TimeFrameToggle({
   selected,

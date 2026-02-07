@@ -8,10 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type {
-  Category,
-  CategorySelectorProps,
-} from "../types/leaderboard.type";
+import type { Category, CategorySelectorProps } from "@/features/leaderboard";
 
 const categories: { value: Category; label: string; icon: ReactNode }[] = [
   {
