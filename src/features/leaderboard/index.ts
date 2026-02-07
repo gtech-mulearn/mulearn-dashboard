@@ -15,4 +15,4 @@ export * from "./components";
 export * from "./hooks";
 // Schemas and types
 export * from "./schemas";
-export * from "./types/leaderboard.type";
+export * from "./types";
