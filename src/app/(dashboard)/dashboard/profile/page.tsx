@@ -8,7 +8,6 @@
 
 "use client";
 
-import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import {
   AccountSettingsModal,
@@ -28,6 +27,7 @@ import {
   useUserLog,
   useUserProfile,
 } from "@/features/profile";
+import Loader from "@/app/loading";
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<ProfileTab>("basic-details");
@@ -84,11 +84,7 @@ export default function ProfilePage() {
 
   // Loading state
   if (isLoadingProfile) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <Loader />;
   }
 
   // Error state

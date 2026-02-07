@@ -9,7 +9,7 @@
 
 "use client";
 
-import { Check, Loader2, Pencil, X } from "lucide-react";
+import { Check, Pencil, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   FaFacebook,
@@ -25,6 +25,7 @@ import { useSocials } from "../hooks";
 import { updateSocials } from "../api";
 import { useQueryClient } from "@tanstack/react-query";
 import { profileKeys } from "../hooks/query-keys";
+import Loader from "@/app/loading";
 
 interface SocialsDisplayProps {
   isOwnProfile: boolean;
@@ -186,7 +187,7 @@ export function SocialsDisplay({ isOwnProfile }: SocialsDisplayProps) {
   if (isLoading) {
     return (
       <div className="flex h-16 items-center justify-center">
-        <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+        <Loader />
       </div>
     );
   }

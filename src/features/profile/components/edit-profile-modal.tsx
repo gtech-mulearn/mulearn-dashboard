@@ -8,7 +8,7 @@
 
 "use client";
 
-import { Camera, Loader2 } from "lucide-react";
+import { Camera } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -22,6 +22,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { UserProfile } from "../schemas";
+import { Spinner } from "@/components/ui/spinner";
 
 interface EditProfileModalProps {
   open: boolean;
@@ -130,7 +131,7 @@ export function EditProfileModal({
             Cancel
           </Button>
           <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isSaving && <Spinner className="mr-2 h-4 w-4" />}
             Save Changes
           </Button>
         </div>

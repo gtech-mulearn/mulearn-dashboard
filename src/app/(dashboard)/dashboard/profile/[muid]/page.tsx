@@ -8,7 +8,7 @@
 
 "use client";
 
-import { Loader2, ShieldX } from "lucide-react";
+import { ShieldX } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import {
@@ -24,6 +24,7 @@ import {
   usePublicUserLevels,
   usePublicUserLog,
 } from "@/features/profile";
+import Loader from "@/app/loading";
 
 export default function PublicProfilePage() {
   const params = useParams();
@@ -61,11 +62,7 @@ export default function PublicProfilePage() {
 
   // Loading state
   if (isLoadingProfile) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <Loader />;
   }
 
   // Error or private profile

@@ -73,6 +73,7 @@ export type StudentLeaderboardEntry = z.infer<
 export type CollegeLeaderboardEntry = z.infer<
   typeof CollegeLeaderboardEntrySchema
 >;
+
 export type WadhwaniLeaderboardEntry = z.infer<
   typeof WadhwaniLeaderboardEntrySchema
 >;
@@ -83,6 +84,7 @@ export type StudentLeaderboardResponse = z.infer<
 export type CollegeLeaderboardResponse = z.infer<
   typeof CollegeLeaderboardResponseSchema
 >;
+
 export type WadhwaniLeaderboardResponse = z.infer<
   typeof WadhwaniLeaderboardResponseSchema
 >;

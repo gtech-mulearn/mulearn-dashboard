@@ -1,13 +1,6 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
-import type { TimeFrame } from "../types/leaderboard.type";
+import type { TimeFrameToggleProps } from "../types/leaderboard.type";
 import { Calendar, Trophy } from "lucide-react";
-
-interface TimeFrameToggleProps {
-  selected: TimeFrame;
-  onChange: (timeframe: TimeFrame) => void;
-}
 
 export function TimeFrameToggle({ selected, onChange }: TimeFrameToggleProps) {
   return (

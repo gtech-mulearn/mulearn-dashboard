@@ -11,7 +11,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -34,6 +34,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
 
 const requestOTPSchema = z.object({
   emailOrMuid: z.string().min(1, "Email or MuID is required"),
@@ -131,9 +132,7 @@ export function OTPLoginForm({
                 )}
               />
               <Button type="submit" className="w-full" disabled={isVerifying}>
-                {isVerifying && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
+                {isVerifying && <Spinner className="mr-2 h-4 w-4" />}
                 Verify OTP
               </Button>
             </form>
@@ -188,9 +187,7 @@ export function OTPLoginForm({
             )}
 
             <Button type="submit" className="w-full" disabled={isRequestingOTP}>
-              {isRequestingOTP && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
+              {isRequestingOTP && <Spinner className="mr-2 h-4 w-4" />}
               Request OTP
             </Button>
           </form>

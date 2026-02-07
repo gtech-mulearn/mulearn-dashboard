@@ -1,9 +1,9 @@
 /**
- * Next.js Middleware
+ * Next.js Proxy
  *
- * 📍 src/middleware.ts
+ * 📍 src/proxy.ts
  *
- * Route protection and authentication middleware.
+ * Route protection and authentication proxy.
  * Uses HTTP-only cookies for session validation.
  */
 
@@ -98,7 +98,7 @@ function isAuthenticated(request: NextRequest): boolean {
 // Middleware
 // ============================================
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isLoggedIn = isAuthenticated(request);
 

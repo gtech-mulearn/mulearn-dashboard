@@ -6,7 +6,7 @@
 
 "use client";
 
-import { AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -24,6 +24,7 @@ import {
   useResetPassword,
   useVerifyResetToken,
 } from "@/features/auth";
+import { Spinner } from "@/components/ui/spinner";
 
 interface ResetPasswordClientProps {
   token?: string;
@@ -63,7 +64,7 @@ export function ResetPasswordClient({ token }: ResetPasswordClientProps) {
     return (
       <Card className="w-full max-w-md">
         <CardContent className="flex flex-col items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+          <Spinner className="h-8 w-8 text-primary mb-4" />
           <p className="text-muted-foreground">Verifying your reset link...</p>
         </CardContent>
       </Card>

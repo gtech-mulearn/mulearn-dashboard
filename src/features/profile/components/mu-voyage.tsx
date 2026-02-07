@@ -9,10 +9,11 @@
 
 "use client";
 
-import { Check, ChevronDown, Loader2, Target } from "lucide-react";
+import { Check, ChevronDown, Target } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import type { UserLevelsData, UserLevel } from "../schemas";
+import Loader from "@/app/loading";
 
 interface MuVoyageProps {
   userLevels?: UserLevelsData;
@@ -41,7 +42,7 @@ export function MuVoyage({
   if (isLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Loader />
       </div>
     );
   }

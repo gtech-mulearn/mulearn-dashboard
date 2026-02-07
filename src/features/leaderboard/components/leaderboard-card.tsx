@@ -1,12 +1,7 @@
-"use client";
-
 import { Card, CardContent } from "@/components/ui/card";
-import type { LeaderboardEntry } from "../types/leaderboard.type";
+import type { LeaderboardCardProps } from "../types/leaderboard.type";
 import { TrendingUp } from "lucide-react";
-
-interface LeaderboardCardProps {
-  entry: LeaderboardEntry;
-}
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function LeaderboardCard({ entry }: LeaderboardCardProps) {
   return (
@@ -21,9 +16,18 @@ export function LeaderboardCard({ entry }: LeaderboardCardProps) {
             </div>
           </div>
           <div className="shrink-0 w-10 h-10 md:w-14 md:h-14 rounded-full bg-primary flex items-center justify-center relative overflow-hidden">
-            <span className="text-lg md:text-xl font-semibold text-secondary relative z-10">
-              {entry.name.charAt(0)}
-            </span>
+            <Avatar>
+              <AvatarImage
+                src={entry.profile_pic}
+                alt={entry.name}
+                className="object-cover"
+              />
+              <AvatarFallback
+                className={`text-primary-foreground bg-primary text-2xl md:text-4xl`}
+              >
+                {entry.name?.charAt(0)?.toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
           </div>
           <div className="flex-1 min-w-0 space-y-1">
             <div className="flex items-center gap-1 md:gap-2">

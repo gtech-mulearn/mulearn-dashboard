@@ -9,12 +9,13 @@
 
 "use client";
 
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { OptionCard } from "@/components/ui/option-card";
 import { ProgressArrow } from "@/components/ui/progress-arrow";
 import { pathfinderQuestions, pathwayInfo } from "../data/questions";
+import { Spinner } from "@/components/ui/spinner";
 
 type PathwayCategory = "coder" | "maker" | "manager" | "creative";
 
@@ -150,7 +151,7 @@ export function PathwayQuiz({
             onClick={handleConfirmPathways}
             disabled={isLoading}
           >
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isLoading && <Spinner className="mr-2 h-4 w-4" />}
             Begin your journey
           </Button>
         </div>
