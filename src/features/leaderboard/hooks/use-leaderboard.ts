@@ -9,12 +9,8 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { fetchStudentLeaderboard, fetchCampusLeaderboard } from "../api";
-import type {
-  Category,
-  TimeFrame,
-  LeaderboardEntry,
-} from "../types/leaderboard.type";
+import { fetchCampusLeaderboard, fetchStudentLeaderboard } from "../api";
+import type { Category, LeaderboardEntry, TimeFrame } from "../types";
 
 export function useLeaderboard(category: Category, timeframe: TimeFrame) {
   const monthly = timeframe === "monthly";

@@ -20,8 +20,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { College, Company, Department } from "../schemas";
 import { Spinner } from "@/components/ui/spinner";
+import type { College, Company, Department } from "../schemas";
 
 interface OrganizationFormProps {
   colleges: College[];

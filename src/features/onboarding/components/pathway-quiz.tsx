@@ -14,8 +14,8 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { OptionCard } from "@/components/ui/option-card";
 import { ProgressArrow } from "@/components/ui/progress-arrow";
-import { pathfinderQuestions, pathwayInfo } from "../data/questions";
 import { Spinner } from "@/components/ui/spinner";
+import { pathfinderQuestions, pathwayInfo } from "../data/questions";
 
 type PathwayCategory = "coder" | "maker" | "manager" | "creative";
 

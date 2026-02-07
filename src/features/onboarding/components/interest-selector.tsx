@@ -13,8 +13,8 @@ import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { OptionCard } from "@/components/ui/option-card";
 import { ProgressArrow } from "@/components/ui/progress-arrow";
-import { endgoalOptions, pathwayInfo } from "../data/questions";
 import { Spinner } from "@/components/ui/spinner";
+import { endgoalOptions, pathwayInfo } from "../data/questions";
 
 type PathwayCategory = "coder" | "maker" | "manager" | "creative";
 

@@ -19,12 +19,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 import {
   ResetPasswordForm,
   useResetPassword,
   useVerifyResetToken,
 } from "@/features/auth";
-import { Spinner } from "@/components/ui/spinner";
 
 interface ResetPasswordClientProps {
   token?: string;

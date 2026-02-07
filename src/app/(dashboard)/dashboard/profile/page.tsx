@@ -9,6 +9,7 @@
 "use client";
 
 import { useState } from "react";
+import Loader from "@/app/loading";
 import {
   AccountSettingsModal,
   BasicDetails,
@@ -19,15 +20,14 @@ import {
   ProfileHeader,
   ProfileSidebar,
   ProfileStats,
-  ProfileTabs,
   type ProfileTab,
+  ProfileTabs,
   ShareProfileModal,
   updateInterestGroups,
   useUserLevels,
   useUserLog,
   useUserProfile,
 } from "@/features/profile";
-import Loader from "@/app/loading";
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<ProfileTab>("basic-details");

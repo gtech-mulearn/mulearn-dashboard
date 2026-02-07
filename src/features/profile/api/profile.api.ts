@@ -10,6 +10,7 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
+  EmptyResponseSchema,
   type InterestGroupsListData,
   InterestGroupsListResponseSchema,
   type Socials,
@@ -23,7 +24,6 @@ import {
   UserPreferencesResponseSchema,
   type UserProfile,
   UserProfileResponseSchema,
-  EmptyResponseSchema,
 } from "../schemas";
 
 // ============================================

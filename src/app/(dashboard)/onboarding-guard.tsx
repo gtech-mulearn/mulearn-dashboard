@@ -10,7 +10,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, type ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
 import { useUserInfo } from "@/features/auth";
 import Loader from "../loading";
 

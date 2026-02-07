@@ -8,13 +8,13 @@
 
 "use client";
 
+import Loader from "@/app/loading";
 import { Switch } from "@/components/ui/switch";
 import {
   useTogglePublicProfile,
   useUpdatePreferences,
   useUserPreferences,
 } from "../hooks";
-import Loader from "@/app/loading";
 
 interface ProfileSettingsProps {
   isPublic: boolean | null;

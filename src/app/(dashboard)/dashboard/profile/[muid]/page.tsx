@@ -11,6 +11,7 @@
 import { ShieldX } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useState } from "react";
+import Loader from "@/app/loading";
 import {
   BasicDetails,
   KarmaHistory,
@@ -18,13 +19,12 @@ import {
   ProfileHeader,
   ProfileSidebar,
   ProfileStats,
-  ProfileTabs,
   type ProfileTab,
+  ProfileTabs,
   usePublicProfile,
   usePublicUserLevels,
   usePublicUserLog,
 } from "@/features/profile";
-import Loader from "@/app/loading";
 
 export default function PublicProfilePage() {
   const params = useParams();

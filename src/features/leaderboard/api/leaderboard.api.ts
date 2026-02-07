@@ -13,10 +13,10 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
-  StudentLeaderboardResponseSchema,
+  type CollegeLeaderboardEntry,
   CollegeLeaderboardResponseSchema,
   type StudentLeaderboardEntry,
-  type CollegeLeaderboardEntry,
+  StudentLeaderboardResponseSchema,
 } from "../schemas";
 
 /**

@@ -1,7 +1,7 @@
-import { Card, CardContent } from "@/components/ui/card";
-import type { LeaderboardCardProps } from "../types/leaderboard.type";
 import { TrendingUp } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent } from "@/components/ui/card";
+import type { LeaderboardCardProps } from "../types/leaderboard.type";
 
 export function LeaderboardCard({ entry }: LeaderboardCardProps) {
   return (
@@ -40,7 +40,7 @@ export function LeaderboardCard({ entry }: LeaderboardCardProps) {
             </div>
           </div>
           <div className="shrink-0 text-right">
-            <div className="bg-primary text-secondary rounded-2xl px-2 md:px-4 py-1 md:py-2 relative">
+            <div className="bg-primary text-secondary rounded-2xl px-3 md:px-4 py-1 md:py-2 relative">
               <div className="font-black text-sm md:text-xl tabular-nums">
                 {entry.karma.toLocaleString()}
               </div>

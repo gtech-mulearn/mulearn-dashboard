@@ -1,4 +1,4 @@
-export * from "./leaderboard-card";
 export * from "./category-selector";
-export * from "./timeframe-toggle";
+export * from "./leaderboard-card";
 export * from "./podium";
+export * from "./timeframe-toggle";

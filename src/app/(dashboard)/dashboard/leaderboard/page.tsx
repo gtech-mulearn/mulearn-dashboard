@@ -1,16 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import Loader from "@/app/loading";
 import {
   type Category,
-  type TimeFrame,
-  Podium,
-  LeaderboardCard,
   CategorySelector,
+  LeaderboardCard,
+  Podium,
+  type TimeFrame,
   TimeFrameToggle,
   useLeaderboard,
 } from "@/features/leaderboard";
-import Loader from "@/app/loading";
 
 export default function LeaderboardPage() {
   const [category, setCategory] = useState<Category>("students");
@@ -33,7 +33,7 @@ export default function LeaderboardPage() {
   }
 
   return (
-    <div className="w-full mx-auto min-h-screen">
+    <div className="max-w-7xl mx-auto min-h-screen">
       <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-center justify-between mb-8 md:mb-16">
         <TimeFrameToggle selected={timeframe} onChange={setTimeframe} />
         <CategorySelector selected={category} onChange={setCategory} />

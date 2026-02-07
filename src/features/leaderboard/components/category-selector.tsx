@@ -1,3 +1,4 @@
+import { Award, Building2, Users } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -7,12 +8,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
 import type {
   Category,
   CategorySelectorProps,
 } from "../types/leaderboard.type";
-import { Users, Building2, Award } from "lucide-react";
 
 const categories: { value: Category; label: string; icon: ReactNode }[] = [
   {

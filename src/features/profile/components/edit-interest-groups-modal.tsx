@@ -20,9 +20,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { InterestGroup, InterestGroupListItem } from "../schemas";
-import { useInterestGroupsList } from "../hooks";
 import { Spinner } from "@/components/ui/spinner";
+import { useInterestGroupsList } from "../hooks";
+import type { InterestGroup, InterestGroupListItem } from "../schemas";
 
 interface EditInterestGroupsModalProps {
   open: boolean;

@@ -8,6 +8,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { authKeys } from "@/features/auth/hooks/query-keys";
 import {
   togglePublicProfile,
   updateProfileImage,
@@ -16,7 +17,6 @@ import {
 } from "../api";
 import type { Socials, UserPreferences } from "../schemas";
 import { profileKeys } from "./query-keys";
-import { authKeys } from "@/features/auth/hooks/query-keys";
 
 /**
  * Toggle profile public/private status.

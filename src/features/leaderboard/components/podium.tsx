@@ -1,6 +1,6 @@
-import { Card, CardContent } from "@/components/ui/card";
-import type { PodiumProps } from "../types/leaderboard.type";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent } from "@/components/ui/card";
+import type { PodiumProps } from "../types";
 
 export function Podium({ entries }: PodiumProps) {
   const top3 = entries.slice(0, 3);
@@ -37,7 +37,7 @@ export function Podium({ entries }: PodiumProps) {
 
   return (
     <div className="relative mb-8 md:mb-20 px-2 md:px-4">
-      <div className="flex items-end justify-center gap-9 md:gap-20">
+      <div className="flex items-end justify-center gap-6 md:gap-16">
         {podiumOrder.map((entry, idx) => {
           if (!entry) return null;
           const config = getRankConfig(entry.rank);

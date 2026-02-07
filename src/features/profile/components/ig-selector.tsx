@@ -13,8 +13,8 @@
 import { Check, Pencil, Plus, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import type { InterestGroup, InterestGroupListItem } from "../schemas";
 import { useInterestGroupsList } from "../hooks";
+import type { InterestGroup, InterestGroupListItem } from "../schemas";
 
 interface IGSelectorProps {
   userInterestGroups: InterestGroup[];

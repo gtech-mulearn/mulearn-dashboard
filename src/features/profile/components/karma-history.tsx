@@ -11,8 +11,8 @@
 
 import { Flame } from "lucide-react";
 import { useState } from "react";
-import type { UserLogData } from "../schemas";
 import Loader from "@/app/loading";
+import type { UserLogData } from "../schemas";
 
 interface KarmaHistoryProps {
   userLog?: UserLogData;
