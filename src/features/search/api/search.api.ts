@@ -3,8 +3,8 @@ import { endpoints } from "@/api/endpoints";
 import {
   userSearchResponseSchema,
   campusSearchResponseSchema,
-  type UserSearchResponse,
-  type CampusSearchResponse,
+  type UserSearchData,
+  type CampusSearchData,
   type SearchType,
 } from "../schemas";
 
@@ -20,7 +20,7 @@ interface CampusSearchParams extends SearchParams {
 
 export async function searchUsers(
   params: SearchParams,
-): Promise<UserSearchResponse> {
+): Promise<UserSearchData> {
   const searchParams = new URLSearchParams({
     search: params.search,
     pageIndex: String(params.pageIndex ?? 1),
@@ -28,44 +28,53 @@ export async function searchUsers(
   });
 
   const response = await apiClient.get(
-    `${endpoints.search.students}?${searchParams}`,
+    `/api/v1/dashboard/user/search/?${searchParams}`,
     userSearchResponseSchema,
   );
 
-  return response;
+  return response.response;
 }
 
 export async function searchMentors(
   params: SearchParams,
-): Promise<UserSearchResponse> {
+): Promise<UserSearchData> {
   const searchParams = new URLSearchParams({
     search: params.search,
+    role: "mentor",
     pageIndex: String(params.pageIndex ?? 1),
     perPage: String(params.perPage ?? 30),
   });
 
   const response = await apiClient.get(
-    `${endpoints.search.mentors}?${searchParams}`,
+    `/api/v1/dashboard/user/search/?${searchParams}`,
     userSearchResponseSchema,
   );
 
-  return response;
+  return response.response;
 }
 
 export async function searchCampuses(
   params: CampusSearchParams,
-): Promise<CampusSearchResponse> {
+): Promise<CampusSearchData> {
   const searchParams = new URLSearchParams({
     search: params.search,
     pageIndex: String(params.pageIndex ?? 1),
     perPage: String(params.perPage ?? 30),
-    ...(params.searchType && { searchType: params.searchType }),
   });
 
+  // Determine endpoint based on searchType
+  let endpoint: string = endpoints.search.colleges; // Changed type to string
+
+  if (params.searchType === "school") {
+    endpoint = endpoints.search.schools;
+  } else if (params.searchType === "college") {
+    endpoint = endpoints.search.colleges;
+  }
+
   const response = await apiClient.get(
-    `${endpoints.search.campuses}?${searchParams}`,
+    `${endpoint}?${searchParams}`,
     campusSearchResponseSchema,
   );
 
-  return response;
+  return response.response;
 }

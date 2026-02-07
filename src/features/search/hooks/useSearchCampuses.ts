@@ -46,6 +46,6 @@ export function useSearchCampuses(
     setSearchType,
     page,
     setPage,
-    hasNextPage: data ? page < data.pagination.totalPages : false,
+    hasNextPage: data ? page < (data.pagination.totalPages ?? 0) : false,
   };
 }
