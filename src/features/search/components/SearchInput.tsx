@@ -18,7 +18,7 @@ export function SearchInput({
 }: SearchInputProps) {
   return (
     <div className="relative">
-      <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+      <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
       <Input
         type="text"
         value={value}
@@ -31,7 +31,7 @@ export function SearchInput({
       {value && (
         <button
           onClick={() => onChange("")}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
           aria-label="Clear search"
           type="button"
         >
@@ -40,7 +40,7 @@ export function SearchInput({
       )}
       {isLoading && (
         <div className="absolute right-3 top-1/2 -translate-y-1/2">
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-[#0961F5]" />
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted border-t-primary" />
         </div>
       )}
     </div>

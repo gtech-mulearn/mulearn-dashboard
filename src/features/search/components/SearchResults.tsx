@@ -37,22 +37,22 @@ export function SearchResults({
   return (
     <div className="space-y-4">
       {/* Minimum query length message */}
-      {searchQuery.length < 2 && (
-        <p className="text-center text-gray-500">
-          Enter at least 2 characters to search
+      {searchQuery.length < 3 && (
+        <p className="text-center text-muted-foreground">
+          Enter at least 3 characters to search
         </p>
       )}
 
       {/* Error state */}
       {isError && (
-        <p className="text-center text-red-500">
+        <p className="text-center text-destructive">
           Failed to load results. Please try again.
         </p>
       )}
 
       {/* Empty state */}
-      {data?.length === 0 && searchQuery.length >= 2 && !isLoading && (
-        <p className="text-center text-gray-500">
+      {data?.length === 0 && searchQuery.length >= 3 && !isLoading && (
+        <p className="text-center text-muted-foreground">
           No {type === "user" ? "users" : "campuses"} found
         </p>
       )}
@@ -70,9 +70,9 @@ export function SearchResults({
       {hasNextPage && <div ref={loadMoreRef} className="h-10" />}
 
       {/* Loading indicator */}
-      {isLoading && searchQuery.length >= 2 && (
+      {isLoading && searchQuery.length >= 3 && (
         <div className="flex justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin text-[#0961F5]" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       )}
     </div>

@@ -22,11 +22,11 @@ export function UserSearchCard({ user }: UserSearchCardProps) {
   return (
     <Link
       href={`/dashboard/profile/${user.muid}`}
-      className="block rounded-2xl bg-white p-8 shadow-md hover:shadow-xl transition-all duration-300"
+      className="block rounded-2xl bg-card p-8 shadow-md hover:shadow-xl transition-all duration-300 border border-border"
     >
       <div className="flex flex-col items-center text-center">
         {/* Profile Picture */}
-        <div className="relative h-24 w-24 overflow-hidden rounded-full bg-gray-100 mb-4">
+        <div className="relative h-24 w-24 overflow-hidden rounded-full bg-muted mb-4">
           {user.profile_pic ? (
             <Image
               src={user.profile_pic}
@@ -36,23 +36,23 @@ export function UserSearchCard({ user }: UserSearchCardProps) {
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center">
-              <User className="h-12 w-12 text-gray-400" />
+              <User className="h-12 w-12 text-muted-foreground" />
             </div>
           )}
         </div>
 
         {/* User Name */}
-        <h3 className="text-lg font-bold text-gray-900 mb-2">
+        <h3 className="text-lg font-bold text-card-foreground mb-2">
           {user.full_name}
         </h3>
 
         {/* Email/MUID */}
-        <p className="text-sm text-gray-500 mb-2 truncate max-w-full px-2">
+        <p className="text-sm text-muted-foreground mb-2 truncate max-w-full px-2">
           {user.muid}
         </p>
 
         {/* Karma */}
-        <p className="text-base font-medium text-blue-600 mb-4">
+        <p className="text-base font-medium text-primary mb-4">
           Karma: {user.karma.toLocaleString()}
         </p>
 
