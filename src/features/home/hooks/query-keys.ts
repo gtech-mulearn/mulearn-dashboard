@@ -1,0 +1,6 @@
+export const homeKeys = {
+  all: ["home"] as const,
+
+  interestGroups: () => [...homeKeys.all, "interest-groups"] as const,
+  karmaFeed: () => [...homeKeys.all, "karma-feed"] as const,
+};
