@@ -1,13 +1,16 @@
 import Image from "next/image";
+import Link from "next/link";
 import { Sparkles, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
 type HeroCardProps = {
   name: string;
+  src: string;
+  alt: string;
 };
 
-export function HeroCard({ name }: HeroCardProps) {
+export function HeroCard({ name, src, alt }: HeroCardProps) {
   return (
     <Card className="relative overflow-hidden rounded-2xl border-none bg-card shadow-sm transition-all hover:shadow-md">
       {/* Creative Background Elements */}
@@ -37,19 +40,26 @@ export function HeroCard({ name }: HeroCardProps) {
             </div>
 
             <div className="flex flex-wrap gap-3 pt-2">
+              {/* Start Learning */}
               <Button
-                className="group h-11 gap-2 rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:scale-105 hover:bg-primary/90"
+                asChild
                 size="lg"
+                className="group h-11 gap-2 rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:scale-105 hover:bg-primary/90"
               >
-                <TrendingUp className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-                Start Learning
+                <Link href="/dashboard/mujourney">
+                  <TrendingUp className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                  Start Learning
+                </Link>
               </Button>
+
+              {/* Explore Groups */}
               <Button
-                className="h-11 gap-2 rounded-xl border-border bg-background text-foreground hover:bg-muted/50"
+                asChild
                 size="lg"
                 variant="outline"
+                className="h-11 gap-2 rounded-xl border-border bg-background text-foreground hover:bg-muted/50"
               >
-                Explore Groups
+                <Link href="/dashboard/learning-circle">Explore Groups</Link>
               </Button>
             </div>
           </div>
@@ -60,11 +70,11 @@ export function HeroCard({ name }: HeroCardProps) {
               <div className="h-48 w-48 rounded-full bg-gradient-to-tr from-primary/20 to-accent/20 blur-2xl" />
             </div>
             <Image
-              alt="Learner illustration"
-              className="relative z-10 h-56 w-auto object-contain drop-shadow-xl transition-transform hover:scale-105 duration-500"
-              height={224}
-              width={280}
-              src="/Group.png"
+              alt={alt}
+              className="relative z-10 object-contain drop-shadow-xl transition-transform hover:scale-105 duration-500"
+              height={280}
+              width={350}
+              src={src}
               priority
             />
           </div>

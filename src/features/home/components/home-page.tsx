@@ -14,6 +14,27 @@ export function HomePage() {
   const displayName = userInfo?.full_name?.split(" ")[0] ?? "Learner";
   const selectedDomain = userInfo?.user_domains?.[0]?.toLowerCase();
 
+  const imageMap: { [key: string]: { src: string; alt: string } } = {
+    coder: { src: "/images/dashboard/coder.webp", alt: "Coding illustration" },
+    maker: { src: "/images/dashboard/maker.webp", alt: "Maker illustration" },
+    creative: {
+      src: "/images/dashboard/creative.webp",
+      alt: "Creative illustration",
+    },
+    manager: {
+      src: "/images/dashboard/manager.webp",
+      alt: "Manager illustration",
+    },
+  };
+
+  const defaultImage = {
+    src: "/images/dashboard/dpm.webp",
+    alt: "General illustration",
+  };
+  const { src, alt } = selectedDomain
+    ? imageMap[selectedDomain] || defaultImage
+    : defaultImage;
+
   const currentIgsData: Record<string, string[]> = {
     creative: [
       "46fe1fb7-7b04-4ebe-837d-120bc16d0e0a",
@@ -45,7 +66,7 @@ export function HomePage() {
 
   return (
     <div className="space-y-8 p-1">
-      <HeroCard name={displayName} />
+      <HeroCard name={displayName} src={src} alt={alt} />
       <div className="grid gap-8 lg:grid-cols-[2fr_1fr]">
         <div className="flex flex-col gap-8">
           <LearningCirclesCard />

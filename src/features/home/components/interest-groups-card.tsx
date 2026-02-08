@@ -10,12 +10,35 @@ type InterestGroupsCardProps = {
   category: string;
 };
 
+const imageUrls = [
+  { title: "UI UX", image: "/images/ig/1.webp" },
+  { title: "Web Development", image: "/images/ig/2.webp" },
+  { title: "Cyber Security", image: "/images/ig/3.webp" },
+  { title: "Digital Marketing", image: "/images/ig/4.webp" },
+  { title: "Game Dev", image: "/images/ig/5.webp" },
+  { title: "Cloud And Devops", image: "/images/ig/6.webp" },
+  { title: "Product Management", image: "/images/ig/7.webp" },
+  {
+    title: "Internet Of Things (IOT) And Robotics",
+    image: "/images/ig/8.webp",
+  },
+  { title: "AR VR MR", image: "/images/ig/10.webp" },
+];
+
 export function InterestGroupsCard({
   groups,
   isLoading,
   category,
 }: InterestGroupsCardProps) {
   const visibleGroups = groups.slice(0, 5);
+
+  const getImageForGroup = (groupName: string) => {
+    const matchedImage = imageUrls.find(
+      (img) =>
+        img.title.toLowerCase().trim() === groupName.toLowerCase().trim(),
+    );
+    return matchedImage ? matchedImage.image : "/assets/IG/mobile_dev.jpg";
+  };
 
   return (
     <Card className="overflow-hidden rounded-2xl border-none bg-card shadow-sm">
@@ -76,10 +99,10 @@ export function InterestGroupsCard({
                 <div className="relative h-12 w-12 overflow-hidden rounded-xl bg-card shadow-sm ring-1 ring-foreground/5 transition-transform group-hover:scale-105">
                   <Image
                     alt={group.name}
-                    className="h-full w-full object-cover p-1"
+                    className="h-full w-full object-cover"
                     height={48}
                     width={48}
-                    src="/Group.png"
+                    src={getImageForGroup(group.name)}
                   />
                 </div>
                 <div className="space-y-0.5">
