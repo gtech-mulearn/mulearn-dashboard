@@ -1,4 +1,4 @@
-/**
+/*
  * Centralized API Endpoints
  *
  * 📍 src/api/endpoints.ts
@@ -137,6 +137,17 @@ export const endpoints = {
     karmaFeed: "/api/v1/dashboard/profile/karma-feed/",
     /** GET - Interest groups list */
     interestGroups: "/api/v1/dashboard/ig/list/",
+  },
+
+  // ============================================
+  // Campus Endpoints
+  // ============================================
+  campus: {
+    /** GET - Currrent campus info */
+    info: (campusId: string) => `/api/v1/dashboard/campus/${campusId}/`,
+    /** GET - Campus weekly karma */
+    weeklykarma: (campusId: string) =>
+      `/api/v1/campus/weekly-karma/${campusId}/`,
   },
 
   // ============================================
