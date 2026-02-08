@@ -13,8 +13,12 @@ import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 
 import {
+  type ChangeOrganizationResponse,
+  ChangeOrganizationResponseSchema,
   type ChangePasswordResponse,
   ChangePasswordResponseSchema,
+  CollegeResponseSchema,
+  DepartmentResponseSchema,
 } from "@/features/settings";
 
 export async function changePassword(payload: {
@@ -30,4 +34,30 @@ export async function changePassword(payload: {
   );
 
   return res;
+}
+
+export async function changeOrganization(payload: {
+  organization: string;
+  department: string;
+}): Promise<ChangeOrganizationResponse> {
+  const endpoint = endpoints.onboarding.selectOrganization;
+
+  const res = await apiClient.post(
+    endpoint,
+    payload,
+    ChangeOrganizationResponseSchema,
+  );
+
+  return res;
+}
+
+export function getColleges() {
+  return apiClient.get(endpoints.onboarding.colleges, CollegeResponseSchema);
+}
+
+export function getDepartments() {
+  return apiClient.get(
+    endpoints.onboarding.departments,
+    DepartmentResponseSchema,
+  );
 }

@@ -20,9 +20,67 @@ export const ChangePasswordResponseSchema = z.object({
   response: z.object({}).loose(),
 });
 
+export const CollegeSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+});
+
+export const CollegeResponseSchema = z.object({
+  hasError: z.boolean().optional(),
+  statusCode: z.number(),
+  message: z.object({
+    general: z.array(z.string()),
+  }),
+  response: z.object({
+    colleges: z.array(CollegeSchema),
+  }),
+});
+
+export type College = z.infer<typeof CollegeSchema>;
+
+export const DepartmentSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+});
+
+export const DepartmentResponseSchema = z.object({
+  hasError: z.boolean().optional(),
+  statusCode: z.number(),
+  message: z.object({
+    general: z.array(z.string()),
+  }),
+  response: z.object({
+    departments: z.array(DepartmentSchema),
+  }),
+});
+
+export type Department = z.infer<typeof DepartmentSchema>;
+
+export const ChangeOrganizationRequestSchema = z.object({
+  department: z.string().min(1, "Department is required"),
+  organization: z.string().min(1, "Organization is required"),
+});
+
+export const ChangeOrganizationResponseSchema = z.object({
+  hasError: z.boolean(),
+  statusCode: z.number(),
+  message: z.object({
+    general: z.array(z.string()),
+  }),
+  response: z.object({}).loose(),
+});
+
 export type ChangePasswordFormValues = z.infer<
   typeof ChangePasswordRequestSchema
 >;
+
 export type ChangePasswordResponse = z.infer<
   typeof ChangePasswordResponseSchema
+>;
+
+export type ChangeOrganizationFormValues = z.infer<
+  typeof ChangeOrganizationRequestSchema
+>;
+export type ChangeOrganizationResponse = z.infer<
+  typeof ChangeOrganizationResponseSchema
 >;

@@ -47,7 +47,7 @@ export function AccountSettingsModal({
 
   const handleChangePassword = () => {
     onOpenChange(false);
-    router.push("/dashboard/settings");
+    router.push("/dashboard/settings/account");
   };
 
   const settingsItems = [
