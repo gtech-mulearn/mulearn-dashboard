@@ -90,7 +90,7 @@ export default function ProfilePage() {
   // Error state
   if (isError || !profile) {
     return (
-      <div className="flex min-h-[50vh] flex-col items-center justify-center text-center">
+      <div className="flex min-h-[50vh] flex-col items-center justify-center px-4 text-center">
         <p className="text-lg font-medium text-gray-900">
           Failed to load profile
         </p>
@@ -103,25 +103,33 @@ export default function ProfilePage() {
   const currentLevel = getCurrentLevel(profile.level);
 
   return (
-    <div className="space-y-6">
-      {/* Profile Header */}
-      <ProfileHeader
-        profile={profile}
-        isOwnProfile={true}
-        onEdit={() => setShowEditProfile(true)}
-        onShare={() => setShowShareProfile(true)}
-      />
+    <div className="w-full max-w-full space-y-4 overflow-x-hidden px-4 sm:space-y-6 sm:px-6 lg:px-8">
+      <div className="w-full max-w-full overflow-hidden">
+        <ProfileHeader
+          profile={profile}
+          isOwnProfile={true}
+          onEdit={() => setShowEditProfile(true)}
+          onShare={() => setShowShareProfile(true)}
+        />
+      </div>
 
-      {/* Stats */}
-      <ProfileStats profile={profile} monthDifference={monthDifference} />
+      <div className="w-full max-w-full overflow-hidden">
+        <ProfileStats profile={profile} monthDifference={monthDifference} />
+      </div>
 
-      {/* Main Content */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Left: Tabs and Content */}
-        <div className="order-2 space-y-4 lg:order-1 lg:col-span-2">
+      <div className="grid w-full max-w-full gap-4 sm:gap-6 lg:grid-cols-3">
+        <div className="w-full max-w-full overflow-hidden lg:order-2 lg:col-span-1">
+          <ProfileSidebar
+            profile={profile}
+            isOwnProfile={true}
+            onAccountSettings={() => setShowAccountSettings(true)}
+          />
+        </div>
+
+        <div className="w-full max-w-full space-y-4 overflow-hidden lg:order-1 lg:col-span-2">
           <ProfileTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
-          <div className="min-h-[300px]">
+          <div className="w-full max-w-full overflow-hidden">
             {activeTab === "basic-details" && (
               <BasicDetails
                 profile={profile}
@@ -154,15 +162,6 @@ export default function ProfilePage() {
             )}
           </div>
         </div>
-
-        {/* Right: Sidebar - Shows first on mobile */}
-        <div className="order-1 lg:order-2 lg:col-span-1">
-          <ProfileSidebar
-            profile={profile}
-            isOwnProfile={true}
-            onAccountSettings={() => setShowAccountSettings(true)}
-          />
-        </div>
       </div>
 
       {/* Modals */}
@@ -172,21 +171,18 @@ export default function ProfilePage() {
         profile={profile}
         onSave={handleSaveProfile}
       />
-
       <ShareProfileModal
         open={showShareProfile}
         onOpenChange={setShowShareProfile}
         muid={profile.muid}
         isPublic={profile.is_public}
       />
-
       <EditInterestGroupsModal
         open={showEditInterestGroups}
         onOpenChange={setShowEditInterestGroups}
         currentGroups={profile.interest_groups}
         onSave={handleSaveInterestGroups}
       />
-
       <AccountSettingsModal
         open={showAccountSettings}
         onOpenChange={setShowAccountSettings}
