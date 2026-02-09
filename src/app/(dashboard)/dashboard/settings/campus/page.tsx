@@ -55,7 +55,7 @@ export default function ChangeOrganizationPage() {
     <section className="flex min-h-screen items-center justify-center px-4">
       <div className="bg-background border-muted w-full max-w-xl rounded-md border px-6 py-12 shadow-sm">
         <div className="mb-10 text-center">
-          <h1 className="text-3xl font-semibold">Change Organization</h1>
+          <h1 className="text-3xl font-semibold">Change Campus</h1>
           <p className="text-muted-foreground mt-2">
             Please select your college details
           </p>

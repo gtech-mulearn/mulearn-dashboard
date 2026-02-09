@@ -40,16 +40,16 @@ export default function SettingsPage() {
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Building2 className="text-muted-foreground h-4 w-4" />
-                <h2 className="text-base font-semibold">Organization</h2>
+                <h2 className="text-base font-semibold">Campus</h2>
               </div>
 
               <p className="text-muted-foreground text-sm">
-                Change your college, department and year of graduation.
+                Change your campus details.
               </p>
             </div>
 
             <Button asChild variant="default" className="w-full">
-              <Link href="/dashboard/settings/organization">
+              <Link href="/dashboard/settings/campus">
                 Open <ChevronRight className="h-4 w-4" />
               </Link>
             </Button>
