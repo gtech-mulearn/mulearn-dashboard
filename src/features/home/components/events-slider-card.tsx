@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, ArrowUpRight } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -87,18 +87,6 @@ export function EventsSliderCard({ events, isLoading }: EventsSliderCardProps) {
     }, 4000);
     return () => clearInterval(id);
   }, [canSlide, total, isPaused, direction]);
-
-  const goPrev = () => {
-    if (!canSlide) return;
-    setIndex((prev) => (prev - 1 + total) % total);
-    setDirection("backward");
-  };
-
-  const goNext = () => {
-    if (!canSlide) return;
-    setIndex((prev) => (prev + 1) % total);
-    setDirection("forward");
-  };
 
   return (
     <Card
