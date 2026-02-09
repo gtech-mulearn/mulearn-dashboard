@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function LearningCirclesCard() {
   return (
-    <Card className="overflow-hidden rounded-2xl border-none bg-card shadow-sm">
+    <Card className="h-full overflow-hidden rounded-2xl border-none bg-card shadow-sm">
       <CardHeader className="flex-row items-center justify-between border-b border-border/40 px-6 py-4">
         <div className="flex items-center gap-2">
           <Users2 className="h-5 w-5 text-primary" />

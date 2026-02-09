@@ -12,7 +12,7 @@ type HeroCardProps = {
 
 export function HeroCard({ name, src, alt }: HeroCardProps) {
   return (
-    <Card className="relative overflow-hidden rounded-2xl border-none bg-card shadow-sm transition-all hover:shadow-md">
+    <Card className="h-full relative overflow-hidden rounded-2xl border-none bg-card shadow-sm transition-all hover:shadow-md">
       {/* Creative Background Elements */}
       <div className="absolute -top-24 -right-10 h-64 w-64 rounded-full bg-primary/10 blur-3xl transition-all duration-1000 animate-pulse" />
       <div className="absolute top-1/2 -left-10 h-64 w-64 rounded-full bg-primary/5 blur-3xl" />

@@ -102,7 +102,7 @@ export function EventsSliderCard({ events, isLoading }: EventsSliderCardProps) {
 
   return (
     <Card
-      className="group relative h-[500px] w-full overflow-hidden rounded-[2rem] border-0 bg-muted/20 shadow-xl ring-1 ring-border/50 transition-all hover:shadow-2xl"
+      className="group relative h-full min-h-[400px] w-full overflow-hidden rounded-[2rem] border-0 bg-muted/20 shadow-xl ring-1 ring-border/50 transition-all hover:shadow-2xl"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
@@ -143,29 +143,6 @@ export function EventsSliderCard({ events, isLoading }: EventsSliderCardProps) {
           <span className="text-xs font-bold uppercase tracking-wider text-background drop-shadow-sm">
             Happening Now
           </span>
-        </div>
-
-        <div className="flex gap-2">
-          <Button
-            type="button"
-            size="icon"
-            className="h-10 w-10 rounded-full bg-background/10 text-background backdrop-blur-md ring-1 ring-background/10 transition-colors hover:bg-background hover:text-foreground"
-            onClick={goPrev}
-            disabled={!canSlide}
-            aria-label="Previous event"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            size="icon"
-            className="h-10 w-10 rounded-full bg-background/10 text-background backdrop-blur-md ring-1 ring-background/10 transition-colors hover:bg-background hover:text-foreground"
-            onClick={goNext}
-            disabled={!canSlide}
-            aria-label="Next event"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
         </div>
       </div>
 

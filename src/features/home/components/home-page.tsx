@@ -68,19 +68,25 @@ export function HomePage() {
 
   return (
     <div className="space-y-8 p-1">
-      <HeroCard name={displayName} src={src} alt={alt} />
-      <div className="grid gap-8 lg:grid-cols-[2fr_1fr]">
-        <div className="flex flex-col gap-8">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <div className="col-span-1 md:col-span-3">
+          <HeroCard name={displayName} src={src} alt={alt} />
+        </div>
+        <div className="col-span-1 md:col-span-2">
           <LearningCirclesCard />
+        </div>
+        <div className="col-span-1 md:col-span-1">
+          <KarmaEarnersCard data={karmaFeed} isLoading={loadingKarma} />
+        </div>
+        <div className="col-span-1 md:col-span-1">
           <InterestGroupsCard
             groups={filteredInterestGroups}
             isLoading={loadingGroups}
             category={selectedDomain ?? "member"}
           />
         </div>
-        <div className="flex flex-col gap-8">
+        <div className="col-span-1 md:col-span-2">
           <EventsSliderCard events={events} isLoading={loadingEvents} />
-          <KarmaEarnersCard data={karmaFeed} isLoading={loadingKarma} />
         </div>
       </div>
     </div>
