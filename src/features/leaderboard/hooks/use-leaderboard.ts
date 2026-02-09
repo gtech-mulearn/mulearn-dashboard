@@ -44,7 +44,7 @@ export function useLeaderboard(
         : category === "wadhwani"
           ? leaderboardKeys.wadhwani(campus)
           : leaderboardKeys.students(monthly),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 24 * 60 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     queryFn: async (): Promise<LeaderboardEntry[]> => {
       try {
