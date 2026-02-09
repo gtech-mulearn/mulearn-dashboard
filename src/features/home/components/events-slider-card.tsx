@@ -3,9 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import type { Event } from "../schemas";
 
 type EventsSliderCardProps = {
@@ -83,7 +84,7 @@ export function EventsSliderCard({ events, isLoading }: EventsSliderCardProps) {
         }
         return prev - 1;
       });
-    }, 2000);
+    }, 4000);
     return () => clearInterval(id);
   }, [canSlide, total, isPaused, direction]);
 
@@ -100,14 +101,55 @@ export function EventsSliderCard({ events, isLoading }: EventsSliderCardProps) {
   };
 
   return (
-    <Card className="overflow-hidden rounded-2xl border-none bg-card shadow-sm">
-      <CardHeader className="flex-row items-center justify-between border-b border-border/40 px-6 py-4">
-        <CardTitle className="text-lg font-bold">Happening Now</CardTitle>
-        <div className="flex items-center gap-2">
+    <Card
+      className="group relative h-[500px] w-full overflow-hidden rounded-[2rem] border-0 bg-muted/20 shadow-xl ring-1 ring-border/50 transition-all hover:shadow-2xl"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
+      {/* Background Slider */}
+      <div className="absolute inset-0 z-0">
+        <div
+          className="flex h-full transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]"
+          style={{ transform: `translateX(-${safeIndex * 100}%)` }}
+        >
+          {eventsData.map((event, slideIndex) => (
+            <div
+              key={`${event.name}-${slideIndex}`}
+              className="h-full min-w-full relative"
+            >
+              <Image
+                src={
+                  event.poster.startsWith("/")
+                    ? event.poster
+                    : placeholderEvents[slideIndex % placeholderEvents.length]
+                        .poster
+                }
+                alt={event.name}
+                fill
+                className="object-cover transition-transform duration-1000 group-hover:scale-105"
+                sizes="(max-width: 1024px) 100vw, 33vw"
+                priority={slideIndex === 0}
+              />
+              {/* Gradient Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-foreground via-foreground/40 to-transparent opacity-90 transition-opacity duration-300 group-hover:opacity-80" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Top Header & Controls */}
+      <div className="absolute left-0 top-0 z-10 flex w-full items-center justify-between p-6">
+        <div className="rounded-full bg-background/10 px-4 py-1.5 backdrop-blur-md ring-1 ring-background/20">
+          <span className="text-xs font-bold uppercase tracking-wider text-background drop-shadow-sm">
+            Happening Now
+          </span>
+        </div>
+
+        <div className="flex gap-2">
           <Button
             type="button"
-            size="icon-sm"
-            variant="outline"
+            size="icon"
+            className="h-10 w-10 rounded-full bg-background/10 text-background backdrop-blur-md ring-1 ring-background/10 transition-colors hover:bg-background hover:text-foreground"
             onClick={goPrev}
             disabled={!canSlide}
             aria-label="Previous event"
@@ -116,8 +158,8 @@ export function EventsSliderCard({ events, isLoading }: EventsSliderCardProps) {
           </Button>
           <Button
             type="button"
-            size="icon-sm"
-            variant="outline"
+            size="icon"
+            className="h-10 w-10 rounded-full bg-background/10 text-background backdrop-blur-md ring-1 ring-background/10 transition-colors hover:bg-background hover:text-foreground"
             onClick={goNext}
             disabled={!canSlide}
             aria-label="Next event"
@@ -125,84 +167,73 @@ export function EventsSliderCard({ events, isLoading }: EventsSliderCardProps) {
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
-      </CardHeader>
-      <CardContent className="p-6">
-        <section
-          className="relative overflow-hidden rounded-2xl border border-border/40 bg-muted/20"
-          aria-label="Events slider"
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
-        >
-          <div
-            className="flex transition-transform duration-500 ease-out"
-            style={{ transform: `translateX(-${safeIndex * 100}%)` }}
-          >
-            {eventsData.map((event, slideIndex) => (
-              <div key={`${event.name}-${slideIndex}`} className="min-w-full">
-                <div className="relative h-64 w-full">
-                  <Image
-                    src={
-                      event.poster.startsWith("/")
-                        ? event.poster
-                        : placeholderEvents[
-                            slideIndex % placeholderEvents.length
-                          ].poster
-                    }
-                    alt={event.name}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 1024px) 100vw, 33vw"
-                    priority={slideIndex === 0}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 space-y-2 p-4 text-white">
-                    <p className="text-xs uppercase tracking-wide text-white/80">
-                      {event.date}
-                    </p>
-                    <h3 className="text-lg font-semibold leading-tight">
-                      {event.name}
-                    </h3>
-                    <p className="line-clamp-2 text-sm text-white/90">
-                      {event.description}
-                    </p>
-                    <Button
-                      asChild
-                      size="sm"
-                      className="mt-2 h-8 rounded-full bg-white text-black hover:bg-white/90"
-                    >
-                      <Link href={event.link}>Know More</Link>
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+      </div>
 
-          <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-2">
-            {eventsData.map((event, dotIndex) => (
-              <button
-                key={`${event.name}-${dotIndex}-dot`}
-                type="button"
-                aria-label={`Go to event ${dotIndex + 1}`}
-                className={`h-2 w-2 rounded-full transition-all ${
-                  dotIndex === safeIndex ? "bg-white shadow-sm" : "bg-white/40"
-                }`}
-                onClick={() => setIndex(dotIndex)}
-              />
-            ))}
-          </div>
-        </section>
+      {/* Bottom Content */}
+      <div className="absolute bottom-0 left-0 z-10 w-full p-8 text-background">
+        <div className="flex flex-col gap-4 transition-transform duration-500 group-hover:-translate-y-2">
+          <div className="flex transition-opacity duration-500" key={safeIndex}>
+            <div className="space-y-3">
+              <span className="inline-flex items-center rounded-lg bg-primary/90 px-3 py-1 text-xs font-semibold text-primary-foreground shadow-sm backdrop-blur-sm">
+                {eventsData[safeIndex].date}
+              </span>
 
-        {isLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="flex gap-1">
-              <div className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground/40 [animation-delay:-0.3s]" />
-              <div className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground/40 [animation-delay:-0.15s]" />
-              <div className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground/40" />
+              <h2 className="text-3xl font-bold leading-none tracking-tight text-background drop-shadow-md md:text-4xl">
+                {eventsData[safeIndex].name}
+              </h2>
+
+              <p className="line-clamp-2 max-w-[90%] text-sm font-medium leading-relaxed text-background/80 drop-shadow-sm md:text-base">
+                {eventsData[safeIndex].description}
+              </p>
             </div>
           </div>
-        ) : null}
-      </CardContent>
+
+          <div className="flex items-center justify-between pt-2">
+            <Button
+              asChild
+              size="lg"
+              className="group/btn h-12 rounded-full bg-background px-6 text-base font-semibold text-foreground shadow-lg transition-all hover:bg-background/90 hover:shadow-xl hover:scale-105"
+            >
+              <Link
+                href={eventsData[safeIndex].link}
+                className="flex items-center gap-2"
+              >
+                Explore Event
+                <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5" />
+              </Link>
+            </Button>
+
+            {/* Pagination Dots */}
+            <div className="flex gap-1.5">
+              {eventsData.map((event, dotIndex) => (
+                <button
+                  key={`${event.name}-${event.date}-${event.link}`}
+                  type="button"
+                  onClick={() => setIndex(dotIndex)}
+                  className={cn(
+                    "h-1.5 rounded-full transition-all duration-300",
+                    dotIndex === safeIndex
+                      ? "w-8 bg-background shadow-[0_0_10px_color-mix(in_oklab,var(--background)_50%,transparent)]"
+                      : "w-1.5 bg-background/30 hover:bg-background/50",
+                  )}
+                  aria-label={`Go to slide ${dotIndex + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Loading State Overlay */}
+      {isLoading && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/50 backdrop-blur-sm">
+          <div className="flex gap-1">
+            <div className="h-2 w-2 animate-bounce rounded-full bg-foreground [animation-delay:-0.3s]" />
+            <div className="h-2 w-2 animate-bounce rounded-full bg-foreground [animation-delay:-0.15s]" />
+            <div className="h-2 w-2 animate-bounce rounded-full bg-foreground" />
+          </div>
+        </div>
+      )}
     </Card>
   );
 }
