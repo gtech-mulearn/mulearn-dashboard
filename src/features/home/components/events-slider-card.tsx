@@ -170,7 +170,7 @@ export function EventsSliderCard({ events, isLoading }: EventsSliderCardProps) {
                       size="sm"
                       className="mt-2 h-8 rounded-full bg-white text-black hover:bg-white/90"
                     >
-                      <Link href="/dashboard/courses">Know More</Link>
+                      <Link href={event.link}>Know More</Link>
                     </Button>
                   </div>
                 </div>
