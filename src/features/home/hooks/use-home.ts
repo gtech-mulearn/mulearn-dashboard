@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { homeKeys } from "./query-keys";
-import { getInterestGroupsList, getKarmaFeed } from "../api";
+import { getInterestGroupsList, getKarmaFeed, getEvents } from "../api";
 
 const HOME_STALE_TIME = 5 * 60 * 1000;
 
@@ -16,6 +16,14 @@ export function useKarmaFeed() {
   return useQuery({
     queryKey: homeKeys.karmaFeed(),
     queryFn: getKarmaFeed,
+    staleTime: HOME_STALE_TIME,
+  });
+}
+
+export function useEvents() {
+  return useQuery({
+    queryKey: homeKeys.events(),
+    queryFn: getEvents,
     staleTime: HOME_STALE_TIME,
   });
 }

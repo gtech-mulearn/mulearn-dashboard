@@ -1,16 +1,18 @@
 "use client";
 import { useUserInfo } from "@/features/auth/hooks/use-session";
-import { useInterestGroupsList, useKarmaFeed } from "../hooks";
+import { useEvents, useInterestGroupsList, useKarmaFeed } from "../hooks";
 import { HeroCard } from "./hero-card";
 import { InterestGroupsCard } from "./interest-groups-card";
 import { KarmaEarnersCard } from "./karma-earners-card";
 import { LearningCirclesCard } from "./learning-circles-card";
+import { EventsSliderCard } from "./events-slider-card";
 
 export function HomePage() {
   const { data: userInfo } = useUserInfo();
   const { data: interestGroups, isLoading: loadingGroups } =
     useInterestGroupsList();
   const { data: karmaFeed, isLoading: loadingKarma } = useKarmaFeed();
+  const { data: events, isLoading: loadingEvents } = useEvents();
   const displayName = userInfo?.full_name?.split(" ")[0] ?? "Learner";
   const selectedDomain = userInfo?.user_domains?.[0]?.toLowerCase();
 
@@ -77,6 +79,7 @@ export function HomePage() {
           />
         </div>
         <div className="flex flex-col gap-8">
+          <EventsSliderCard events={events} isLoading={loadingEvents} />
           <KarmaEarnersCard data={karmaFeed} isLoading={loadingKarma} />
         </div>
       </div>

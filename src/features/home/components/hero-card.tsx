@@ -72,8 +72,8 @@ export function HeroCard({ name, src, alt }: HeroCardProps) {
             <Image
               alt={alt}
               className="relative z-10 object-contain drop-shadow-xl transition-transform hover:scale-105 duration-500"
-              height={280}
-              width={350}
+              height={224}
+              width={280}
               src={src}
               priority
             />

@@ -61,3 +61,31 @@ export const KarmaFeedResponseSchema = ApiResponseSchema(
   }),
 );
 export type KarmaFeedResponse = z.infer<typeof KarmaFeedResponseSchema>;
+
+// ============================================
+// Events (OpenSheet / external feed)
+// ============================================
+
+export const EventRowSchema = z.object({
+  Name: z.string().optional(),
+  Description: z.string().optional(),
+  Poster: z.string().optional(),
+  Links: z.string().optional(),
+  Date: z.string().optional(),
+  Status: z.string().optional(),
+});
+export type EventRow = z.infer<typeof EventRowSchema>;
+
+export const EventSchema = z.object({
+  name: z.string(),
+  description: z.string(),
+  poster: z.string(),
+  link: z.string(),
+  date: z.string(),
+  status: z.string(),
+});
+export type Event = z.infer<typeof EventSchema>;
+
+// Array of mapped events
+export const EventsSchema = z.array(EventSchema);
+export type Events = z.infer<typeof EventsSchema>;

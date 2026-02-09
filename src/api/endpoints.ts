@@ -137,6 +137,9 @@ export const endpoints = {
     karmaFeed: "/api/v1/dashboard/profile/karma-feed/",
     /** GET - Interest groups list */
     interestGroups: "/api/v1/dashboard/ig/list/",
+    /** GET - Events (OpenSheet or dashboard events) */
+    events:
+      "https://opensheet.elk.sh/19Os47FI_fAgpMk7lnhFWz9aRwyd72cB-4PKz7W8rF9g/1",
   },
 
   // ============================================
