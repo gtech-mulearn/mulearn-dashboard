@@ -1,9 +1,16 @@
 "use client";
 
 import { SearchInput } from "./SearchInput";
+import { SearchTabsClient } from "./SearchTabsClient";
 import { UserSearchCard } from "./UserSearchCard";
 import { useSearchMentors } from "../hooks";
 import { useInfiniteScroll } from "../hooks";
+
+const searchTabs = [
+  { label: "Learners", href: "/dashboard/search/students" },
+  { label: "Mentors", href: "/dashboard/search/mentors" },
+  { label: "Campuses", href: "/dashboard/search/campuses" },
+];
 
 export function MentorsSearchClient() {
   const {
@@ -24,58 +31,55 @@ export function MentorsSearchClient() {
 
   return (
     <>
-      {/* Search Input */}
-      <div className="rounded-2xl bg-card backdrop-blur-sm p-6 shadow-lg border border-border">
-        <SearchInput
-          value={searchQuery}
-          onChange={setSearchQuery}
-          placeholder="Search mentors by name, expertise, or interest..."
-          isLoading={isLoading}
-        />
+      {/* Search Input and Tabs */}
+      <div className="mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <div className="flex-1 w-full sm:w-auto">
+          <SearchInput
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Search public profiles by name, skill, or role..."
+            isLoading={isLoading}
+          />
+        </div>
+        <div className="shrink-0">
+          <SearchTabsClient tabs={searchTabs} />
+        </div>
       </div>
 
       {/* Results */}
-      <div>
-        {searchQuery.length < 3 && (
-          <div className="rounded-2xl bg-card backdrop-blur-sm p-12 shadow-lg border border-border text-center">
-            <p className="text-muted-foreground">
-              Enter at least 3 characters to search
-            </p>
+      {searchQuery.length < 3 ? (
+        <div className="text-center py-16">
+          <p className="text-muted-foreground text-lg">
+            Enter at least 3 characters to search
+          </p>
+        </div>
+      ) : isError ? (
+        <div className="text-center py-16">
+          <p className="text-destructive text-lg">
+            Failed to load results. Please try again.
+          </p>
+        </div>
+      ) : data?.data.length === 0 && !isLoading ? (
+        <div className="text-center py-16">
+          <p className="text-muted-foreground text-lg">No mentors found</p>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {data?.data.map((mentor) => (
+              <UserSearchCard key={mentor.id || mentor.muid} user={mentor} />
+            ))}
           </div>
-        )}
 
-        {isError && (
-          <div className="rounded-2xl bg-destructive/10 backdrop-blur-sm p-12 shadow-lg border border-destructive/20 text-center">
-            <p className="text-destructive">
-              Failed to load results. Please try again.
-            </p>
-          </div>
-        )}
+          {hasNextPage && <div ref={loadMoreRef} className="h-10" />}
 
-        {data?.data.length === 0 && searchQuery.length >= 3 && !isLoading && (
-          <div className="rounded-2xl bg-card backdrop-blur-sm p-12 shadow-lg border border-border text-center">
-            <p className="text-muted-foreground">No mentors found</p>
-          </div>
-        )}
-
-        {searchQuery.length >= 3 && (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {data?.data.map((mentor) => (
-                <UserSearchCard key={mentor.id || mentor.muid} user={mentor} />
-              ))}
+          {isLoading && (
+            <div className="flex justify-center py-8">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
             </div>
-
-            {hasNextPage && <div ref={loadMoreRef} className="h-10" />}
-          </>
-        )}
-
-        {isLoading && searchQuery.length >= 3 && (
-          <div className="flex justify-center py-8">
-            <div className="h-10 w-10 animate-spin rounded-full border-4 border-muted border-t-accent" />
-          </div>
-        )}
-      </div>
+          )}
+        </>
+      )}
     </>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { SearchInput } from "./SearchInput";
+import { SearchTabsClient } from "./SearchTabsClient";
 import { CampusSearchCard } from "./CampusSearchCard";
 import { useSearchCampuses } from "../hooks";
 import { useInfiniteScroll } from "../hooks";
@@ -11,6 +12,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
+const searchTabs = [
+  { label: "Learners", href: "/dashboard/search/students" },
+  { label: "Mentors", href: "/dashboard/search/mentors" },
+  { label: "Campuses", href: "/dashboard/search/campuses" },
+];
 
 export function CampusesSearchClient() {
   const {
@@ -33,14 +40,14 @@ export function CampusesSearchClient() {
 
   return (
     <>
-      {/* Search Section */}
-      <div className="rounded-2xl bg-card backdrop-blur-sm p-6 shadow-lg border border-border">
-        <div className="flex flex-col sm:flex-row gap-4">
+      {/* Search Section with Tabs */}
+      <div className="mb-6 flex flex-col lg:flex-row gap-4 items-start lg:items-center">
+        <div className="flex flex-1 gap-4 w-full">
           <div className="flex-1">
             <SearchInput
               value={searchQuery}
               onChange={setSearchQuery}
-              placeholder="Search campuses..."
+              placeholder="Search public profiles by name, skill, or role..."
               isLoading={isLoading}
             />
           </div>
@@ -52,7 +59,7 @@ export function CampusesSearchClient() {
               )
             }
           >
-            <SelectTrigger className="w-full sm:w-[180px] bg-card">
+            <SelectTrigger className="w-full sm:w-45">
               <SelectValue placeholder="Filter by..." />
             </SelectTrigger>
             <SelectContent>
@@ -64,55 +71,45 @@ export function CampusesSearchClient() {
             </SelectContent>
           </Select>
         </div>
+        <div className="shrink-0">
+          <SearchTabsClient tabs={searchTabs} />
+        </div>
       </div>
 
       {/* Results */}
-      <div className="space-y-6">
-        {searchQuery.length < 3 && (
-          <div className="rounded-2xl bg-card backdrop-blur-sm p-12 shadow-lg border border-border text-center">
-            <p className="text-muted-foreground">
-              Enter at least 3 characters to search
-            </p>
+      {searchQuery.length < 3 ? (
+        <div className="text-center py-16">
+          <p className="text-muted-foreground text-lg">
+            Enter at least 3 characters to search
+          </p>
+        </div>
+      ) : isError ? (
+        <div className="text-center py-16">
+          <p className="text-destructive text-lg">
+            Failed to load results. Please try again.
+          </p>
+        </div>
+      ) : data?.data.length === 0 && !isLoading ? (
+        <div className="text-center py-16">
+          <p className="text-muted-foreground text-lg">No campuses found</p>
+        </div>
+      ) : (
+        <>
+          <div className="space-y-4">
+            {data?.data.map((campus) => (
+              <CampusSearchCard key={campus.id} campus={campus} />
+            ))}
           </div>
-        )}
 
-        {isError && (
-          <div className="rounded-2xl bg-destructive/10 backdrop-blur-sm p-12 shadow-lg border border-destructive/20 text-center">
-            <p className="text-destructive">
-              Failed to load results. Please try again.
-            </p>
-          </div>
-        )}
+          {hasNextPage && <div ref={loadMoreRef} className="h-10" />}
 
-        {data?.data.length === 0 && searchQuery.length >= 3 && !isLoading && (
-          <div className="rounded-2xl bg-card backdrop-blur-sm p-12 shadow-lg border border-border text-center">
-            <p className="text-muted-foreground">No campuses found</p>
-          </div>
-        )}
-
-        {searchQuery.length >= 3 && (
-          <>
-            <div className="space-y-4">
-              {data?.data.map((campus) => (
-                <div
-                  key={campus.id}
-                  className="rounded-2xl bg-card backdrop-blur-sm shadow-lg border border-border hover:shadow-xl transition-shadow"
-                >
-                  <CampusSearchCard campus={campus} />
-                </div>
-              ))}
+          {isLoading && (
+            <div className="flex justify-center py-8">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
             </div>
-
-            {hasNextPage && <div ref={loadMoreRef} className="h-10" />}
-          </>
-        )}
-
-        {isLoading && searchQuery.length >= 3 && (
-          <div className="flex justify-center py-8">
-            <div className="h-10 w-10 animate-spin rounded-full border-4 border-muted border-t-primary" />
-          </div>
-        )}
-      </div>
+          )}
+        </>
+      )}
     </>
   );
 }

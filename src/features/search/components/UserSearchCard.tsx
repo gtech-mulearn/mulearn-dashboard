@@ -2,76 +2,87 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { User } from "lucide-react";
+import { User, Star } from "lucide-react";
 import type { UserSearchResult } from "../schemas";
 
 interface UserSearchCardProps {
   user: UserSearchResult;
 }
 
-const badgeColors = [
-  "bg-pink-200 text-pink-700",
-  "bg-green-200 text-green-700",
-  "bg-blue-200 text-blue-700",
-  "bg-purple-200 text-purple-700",
-  "bg-yellow-200 text-yellow-700",
-  "bg-indigo-200 text-indigo-700",
-];
-
 export function UserSearchCard({ user }: UserSearchCardProps) {
   return (
-    <Link
-      href={`/dashboard/profile/${user.muid}`}
-      className="block rounded-2xl bg-card p-8 shadow-md hover:shadow-xl transition-all duration-300 border border-border"
-    >
-      <div className="flex flex-col items-center text-center">
-        {/* Profile Picture */}
-        <div className="relative h-24 w-24 overflow-hidden rounded-full bg-muted mb-4">
-          {user.profile_pic ? (
-            <Image
-              src={user.profile_pic}
-              alt={user.full_name}
-              fill
-              className="object-cover"
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center">
-              <User className="h-12 w-12 text-muted-foreground" />
-            </div>
-          )}
+    <div className="rounded-lg bg-card p-6 border border-border hover:shadow-md transition-shadow">
+      {/* Header with Profile and Karma */}
+      <div className="flex items-start justify-between mb-4">
+        {/* Profile Info */}
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          {/* Profile Picture */}
+          <div className="relative h-12 w-12 overflow-hidden rounded-full bg-muted shrink-0">
+            {user.profile_pic ? (
+              <Image
+                src={user.profile_pic}
+                alt={user.full_name}
+                fill
+                className="object-cover"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center">
+                <User className="h-6 w-6 text-muted-foreground" />
+              </div>
+            )}
+          </div>
+
+          {/* Name and Email */}
+          <div className="flex-1 min-w-0">
+            <h3 className="text-base font-semibold text-foreground truncate">
+              {user.full_name}
+            </h3>
+            <p className="text-sm text-muted-foreground truncate">
+              {user.muid}
+            </p>
+          </div>
         </div>
 
-        {/* User Name */}
-        <h3 className="text-lg font-bold text-card-foreground mb-2">
-          {user.full_name}
-        </h3>
-
-        {/* Email/MUID */}
-        <p className="text-sm text-muted-foreground mb-2 truncate max-w-full px-2">
-          {user.muid}
-        </p>
-
         {/* Karma */}
-        <p className="text-base font-medium text-primary mb-4">
-          Karma: {user.karma.toLocaleString()}
-        </p>
+        <div className="flex flex-col items-end shrink-0 ml-2">
+          <span className="text-xs text-muted-foreground uppercase tracking-wide">
+            KARMA
+          </span>
+          <div className="flex items-center gap-1">
+            <Star className="h-4 w-4 text-blue-500 fill-blue-500" />
+            <span className="text-lg font-bold text-blue-600">
+              {user.karma.toLocaleString()}
+            </span>
+          </div>
+        </div>
+      </div>
 
-        {/* Interest Groups */}
-        {user.interest_groups.length > 0 && (
-          <div className="flex flex-wrap justify-center gap-2">
-            {user.interest_groups.map((ig, index) => (
+      {/* Top Skills */}
+      {user.interest_groups.length > 0 && (
+        <div className="mb-4">
+          <span className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
+            TOP SKILLS
+          </span>
+          <div className="flex flex-wrap gap-2 mt-2">
+            {user.interest_groups.slice(0, 3).map((ig) => (
               <span
                 key={ig}
-                className={`rounded-full px-3 py-1.5 text-xs font-medium ${
-                  badgeColors[index % badgeColors.length]
-                }`}
+                className="rounded-md bg-muted px-3 py-1 text-xs font-medium text-foreground"
               >
                 {ig}
               </span>
             ))}
           </div>
-        )}
-      </div>
-    </Link>
+        </div>
+      )}
+
+      {/* View Profile Button */}
+      <Link
+        href={`/dashboard/profile/${user.muid}`}
+        className="block w-full text-center py-2 rounded-md border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors"
+      >
+        View Profile
+      </Link>
+    </div>
   );
 }

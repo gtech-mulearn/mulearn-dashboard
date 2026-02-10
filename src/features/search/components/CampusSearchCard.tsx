@@ -43,7 +43,7 @@ export function CampusSearchCard({ campus }: CampusSearchCardProps) {
 
         {/* Rank */}
         {campus.rank && (
-          <div className="flex-shrink-0 text-right">
+          <div className="shrink-0 text-right">
             <div className="flex items-center gap-1 text-lg font-bold text-[#0961F5]">
               <Trophy className="h-5 w-5" />#{campus.rank}
             </div>
