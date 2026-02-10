@@ -1,3 +1,5 @@
+"use client";
+
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { searchCampuses } from "../api";
@@ -31,7 +33,7 @@ export function useSearchCampuses(
         perPage: 30,
         searchType,
       }),
-    enabled: debouncedQuery.length >= 2,
+    enabled: debouncedQuery.length >= 3,
     staleTime: 5 * 60 * 1000,
   });
 
