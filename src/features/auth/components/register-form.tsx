@@ -237,7 +237,7 @@ export function RegisterForm({ onSubmit, isLoading }: RegisterFormProps) {
           <span className="w-full border-t border-gray-200" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-primary-foreground px-4 text-muted-foreground">
+          <span className="bg-secondary px-4 text-secondary-foreground">
             OR
           </span>
         </div>

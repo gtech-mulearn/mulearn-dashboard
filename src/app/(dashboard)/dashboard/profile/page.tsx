@@ -91,10 +91,10 @@ export default function ProfilePage() {
   if (isError || !profile) {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center px-4 text-center">
-        <p className="text-lg font-medium text-gray-900">
+        <p className="text-lg font-medium text-primary-foreground">
           Failed to load profile
         </p>
-        <p className="mt-1 text-gray-500">Please try again later.</p>
+        <p className="mt-1 text-muted-foreground">Please try again later.</p>
       </div>
     );
   }
@@ -103,7 +103,7 @@ export default function ProfilePage() {
   const currentLevel = getCurrentLevel(profile.level);
 
   return (
-    <div className="w-full max-w-full space-y-4 overflow-x-hidden px-4 sm:space-y-6 sm:px-6 lg:px-8">
+    <div className="w-full max-w-full space-y-6 overflow-x-hidden">
       <div className="w-full max-w-full overflow-hidden">
         <ProfileHeader
           profile={profile}
@@ -113,12 +113,12 @@ export default function ProfilePage() {
         />
       </div>
 
-      <div className="w-full max-w-full overflow-hidden">
+      <div className="w-full max-w-full">
         <ProfileStats profile={profile} monthDifference={monthDifference} />
       </div>
 
       <div className="grid w-full max-w-full gap-4 sm:gap-6 lg:grid-cols-3">
-        <div className="w-full max-w-full overflow-hidden lg:order-2 lg:col-span-1">
+        <div className="w-full max-w-full overflow-y-hidden lg:order-2 lg:col-span-1">
           <ProfileSidebar
             profile={profile}
             isOwnProfile={true}
@@ -126,10 +126,10 @@ export default function ProfilePage() {
           />
         </div>
 
-        <div className="w-full max-w-full space-y-4 overflow-hidden lg:order-1 lg:col-span-2">
+        <div className="w-full max-w-full space-y-4 overflowx-x-hidden lg:order-1 lg:col-span-2">
           <ProfileTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
-          <div className="w-full max-w-full overflow-hidden">
+          <div className="w-full max-w-full overflow-x-hidden">
             {activeTab === "basic-details" && (
               <BasicDetails
                 profile={profile}

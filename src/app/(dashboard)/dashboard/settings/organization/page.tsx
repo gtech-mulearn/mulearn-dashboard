@@ -75,9 +75,9 @@ export default function ChangeOrganizationPage() {
                     position="popper"
                     side="bottom"
                     sideOffset={8}
-                    align="start"
-                    avoidCollisions={false}
-                    className="max-h-72 overflow-y-auto"
+                    align="center"
+                    avoidCollisions
+                    className="max-h-72 max-w-[calc(100vw-80px)] overflow-y-auto"
                   >
                     {colleges.map((college) => (
                       <SelectItem
@@ -112,9 +112,9 @@ export default function ChangeOrganizationPage() {
                     position="popper"
                     side="bottom"
                     sideOffset={8}
-                    align="start"
-                    avoidCollisions={false}
-                    className="max-h-72 overflow-y-auto"
+                    align="center"
+                    avoidCollisions
+                    className="max-h-72 max-w-[calc(100vw-80px)] overflow-y-auto"
                   >
                     {departments.map((dept) => (
                       <SelectItem

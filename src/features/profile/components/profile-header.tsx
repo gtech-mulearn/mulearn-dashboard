@@ -85,11 +85,11 @@ export function ProfileHeader({
               {/* Name and Details */}
               <div className="min-w-0 flex-1 space-y-0.5">
                 <div className="flex min-w-0 items-center gap-2">
-                  <h1 className="truncate font-bold text-primary-foreground drop-shadow-md sm:text-xl md:text-2xl">
+                  <h1 className="truncate font-bold text-secondary drop-shadow-md sm:text-xl md:text-2xl">
                     {profile.full_name}
                   </h1>
                   {profile.college_code && (
-                    <span className="hidden shrink-0 rounded-full bg-background/20 px-2 py-0.5 text-xs font-medium text-primary-foreground backdrop-blur-sm sm:inline">
+                    <span className="hidden shrink-0 rounded-full bg-background/20 px-2 py-0.5 text-xs font-medium text-secondary backdrop-blur-sm sm:inline">
                       {profile.college_code}
                     </span>
                   )}
@@ -99,7 +99,7 @@ export function ProfileHeader({
                   onClick={handleCopyMuid}
                   className="group flex min-w-0 items-center gap-1.5 text-primary-foreground/90 transition-colors hover:text-primary-foreground"
                 >
-                  <span className="truncate font-mono text-xs sm:text-sm">
+                  <span className="truncate font-mono text-muted text-xs sm:text-sm">
                     {profile.muid}
                   </span>
                   <Copy className="h-3 w-3 shrink-0 opacity-0 transition-opacity group-hover:opacity-100 sm:h-3.5 sm:w-3.5" />
@@ -135,7 +135,7 @@ export function ProfileHeader({
                   variant="outline"
                   size="sm"
                   onClick={onShare}
-                  className="gap-1 rounded-full border-white/30 bg-white/10 px-3 text-xs text-white backdrop-blur-sm hover:bg-white/20 sm:gap-1.5 sm:text-sm"
+                  className="gap-1 rounded-full border-secondary/30 bg-secondary/10 px-3 text-xs text-secondary backdrop-blur-sm hover:bg-secondary/20 sm:gap-1.5 sm:text-sm"
                 >
                   <Share2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   <span className="hidden sm:inline">Share</span>
@@ -143,7 +143,7 @@ export function ProfileHeader({
                 <Button
                   size="sm"
                   onClick={onEdit}
-                  className="gap-1 rounded-full bg-white px-3 text-xs text-gray-900 hover:bg-white/90 sm:gap-1.5 sm:text-sm"
+                  className="gap-1 rounded-full bg-background px-3 text-xs text-primary-foreground hover:bg-background/90 sm:gap-1.5 sm:text-sm"
                 >
                   <Pencil className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   <span className="hidden sm:inline">Edit Profile</span>

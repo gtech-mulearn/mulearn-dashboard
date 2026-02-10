@@ -10,7 +10,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
   return (
     <div className="min-h-screen w-full flex bg-background">
       {/* Desktop Sidebar - Left Side */}
-      <div className="hidden lg:flex w-1/2 bg-primary flex-col justify-between p-16 text-primary-foreground relative overflow-hidden">
+      <div className="hidden lg:flex w-1/2 bg-primary flex-col justify-between p-16 text-secondary relative overflow-hidden">
         <div className="z-10">
           <Link href="/" className="inline-block">
             <Image
@@ -36,7 +36,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
         {/* Illustration */}
         <div className="z-10 flex justify-center -mb-8">
           <Image
-            src="/Group.png"
+            src="/layout/Group.png"
             alt="Community Illustration"
             width={400}
             height={300}

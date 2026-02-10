@@ -23,7 +23,7 @@ export function LeaderboardCard({ entry }: LeaderboardCardProps) {
                 className="object-cover"
               />
               <AvatarFallback
-                className={`text-primary-foreground bg-primary text-2xl md:text-4xl`}
+                className={`text-secondary bg-primary text-2xl md:text-4xl`}
               >
                 {entry.name?.charAt(0)?.toUpperCase()}
               </AvatarFallback>

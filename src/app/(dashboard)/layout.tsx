@@ -20,9 +20,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     <OnboardingGuard>
       <div className="min-h-screen bg-gray-50">
         <Sidebar />
-        {/* Main content with left margin for sidebar */}
         <main className="lg:ml-64 min-h-screen transition-all duration-300">
-          <div className="p-6 lg:p-8">{children}</div>
+          <div className="p-4">
+            <div className="bg-background rounded-2xl shadow-sm p-5">
+              {children}
+            </div>
+          </div>
         </main>
       </div>
     </OnboardingGuard>

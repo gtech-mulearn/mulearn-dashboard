@@ -49,7 +49,7 @@ export default function SettingsPage() {
             </div>
 
             <Button asChild variant="default" className="w-full">
-              <Link href="/dashboard/settings/campus">
+              <Link href="/dashboard/settings/organization">
                 Open <ChevronRight className="h-4 w-4" />
               </Link>
             </Button>
