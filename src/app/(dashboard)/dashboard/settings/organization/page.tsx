@@ -46,10 +46,7 @@ export default function ChangeOrganizationPage() {
   const colleges = collegesQuery.data ?? [];
   const departments = departmentsQuery.data ?? [];
 
-  const isLoading =
-    collegesQuery.isLoading ||
-    departmentsQuery.isLoading ||
-    changeOrganizationMutation.isPending;
+  const isLoading = changeOrganizationMutation.isPending;
 
   return (
     <section className="flex min-h-screen items-center justify-center px-4">

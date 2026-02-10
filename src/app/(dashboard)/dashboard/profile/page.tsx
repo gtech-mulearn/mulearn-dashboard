@@ -118,7 +118,7 @@ export default function ProfilePage() {
       </div>
 
       <div className="grid w-full max-w-full gap-4 sm:gap-6 lg:grid-cols-3">
-        <div className="w-full max-w-full overflow-y-hidden lg:order-2 lg:col-span-1">
+        <div className="w-full max-w-full overflow-x-hidden lg:order-2 lg:col-span-1">
           <ProfileSidebar
             profile={profile}
             isOwnProfile={true}
@@ -126,7 +126,7 @@ export default function ProfilePage() {
           />
         </div>
 
-        <div className="w-full max-w-full space-y-4 overflowx-x-hidden lg:order-1 lg:col-span-2">
+        <div className="w-full max-w-full space-y-4 overflow-x-hidden lg:order-1 lg:col-span-2">
           <ProfileTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
           <div className="w-full max-w-full overflow-x-hidden">
