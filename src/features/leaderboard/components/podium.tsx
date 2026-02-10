@@ -15,23 +15,17 @@ export function Podium({ entries }: PodiumProps) {
   const getRankConfig = (rank: number) => {
     if (rank === 1)
       return {
-        bg: "bg-yellow-400",
-        text: "text-gray-900",
-        accent: "bg-gray-900",
-        accentText: "text-yellow-400",
+        bg: "bg-chart-4",
+        text: "text-primary-foreground",
       };
     if (rank === 2)
       return {
-        bg: "bg-slate-300",
-        text: "text-gray-900",
-        accent: "bg-gray-900",
-        accentText: "text-slate-300",
+        bg: "bg-muted",
+        text: "text-primary-foreground",
       };
     return {
-      bg: "bg-orange-400",
-      text: "text-gray-900",
-      accent: "bg-gray-900",
-      accentText: "text-orange-400",
+      bg: "bg-chart-5",
+      text: "text-primary-foreground",
     };
   };
 
