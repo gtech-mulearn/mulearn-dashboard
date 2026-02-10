@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { User, Star } from "lucide-react";
+import { Star } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import type { UserSearchResult } from "../schemas";
 
 interface UserSearchCardProps {
@@ -10,6 +12,9 @@ interface UserSearchCardProps {
 }
 
 export function UserSearchCard({ user }: UserSearchCardProps) {
+  const [imageError, setImageError] = useState(false);
+  const firstLetter = user.full_name.charAt(0).toUpperCase();
+
   return (
     <div className="rounded-lg bg-card p-6 border border-border hover:shadow-md transition-shadow">
       {/* Header with Profile and Karma */}
@@ -18,16 +23,17 @@ export function UserSearchCard({ user }: UserSearchCardProps) {
         <div className="flex items-center gap-3 flex-1 min-w-0">
           {/* Profile Picture */}
           <div className="relative h-12 w-12 overflow-hidden rounded-full bg-muted shrink-0">
-            {user.profile_pic ? (
+            {user.profile_pic && !imageError ? (
               <Image
                 src={user.profile_pic}
                 alt={user.full_name}
                 fill
                 className="object-cover"
+                onError={() => setImageError(true)}
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center">
-                <User className="h-6 w-6 text-muted-foreground" />
+              <div className="flex h-full w-full items-center justify-center bg-primary text-primary-foreground text-lg font-semibold">
+                {firstLetter}
               </div>
             )}
           </div>
@@ -49,8 +55,8 @@ export function UserSearchCard({ user }: UserSearchCardProps) {
             KARMA
           </span>
           <div className="flex items-center gap-1">
-            <Star className="h-4 w-4 text-blue-500 fill-blue-500" />
-            <span className="text-lg font-bold text-blue-600">
+            <Star className="h-4 w-4 text-primary fill-primary" />
+            <span className="text-lg font-bold text-primary">
               {user.karma.toLocaleString()}
             </span>
           </div>
@@ -67,7 +73,7 @@ export function UserSearchCard({ user }: UserSearchCardProps) {
             {user.interest_groups.slice(0, 3).map((ig) => (
               <span
                 key={ig}
-                className="rounded-md bg-muted px-3 py-1 text-xs font-medium text-foreground"
+                className="rounded-full bg-gradient-to-r from-purple-50 to-indigo-50 px-3 py-1.5 text-sm font-medium text-purple-700 ring-1 ring-inset ring-purple-200"
               >
                 {ig}
               </span>
@@ -77,12 +83,9 @@ export function UserSearchCard({ user }: UserSearchCardProps) {
       )}
 
       {/* View Profile Button */}
-      <Link
-        href={`/dashboard/profile/${user.muid}`}
-        className="block w-full text-center py-2 rounded-md border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors"
-      >
-        View Profile
-      </Link>
+      <Button asChild className="w-full">
+        <Link href={`/dashboard/profile/${user.muid}`}>View Profile</Link>
+      </Button>
     </div>
   );
 }

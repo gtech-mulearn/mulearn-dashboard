@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface SearchTab {
@@ -21,18 +22,14 @@ export function SearchTabsClient({ tabs }: SearchTabsClientProps) {
       {tabs.map((tab) => {
         const isActive = pathname === tab.href;
         return (
-          <Link
+          <Button
             key={tab.href}
-            href={tab.href}
-            className={cn(
-              "px-6 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap",
-              isActive
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground hover:bg-muted/80",
-            )}
+            asChild
+            variant={isActive ? "default" : "secondary"}
+            className={cn("whitespace-nowrap")}
           >
-            {tab.label}
-          </Link>
+            <Link href={tab.href}>{tab.label}</Link>
+          </Button>
         );
       })}
     </div>
