@@ -11,10 +11,10 @@ import { endpoints } from "@/api/endpoints";
 import {
   type AttendeeReportRequest,
   AttendeeReportResponseSchema,
-  CircleDetailResponseSchema,
-  CircleListResponseSchema,
   type CircleMember,
   CircleMembersResponseSchema,
+  CircleDetailResponseSchema,
+  CircleListResponseSchema,
   type CollegeListItem,
   CollegeListResponseSchema,
   type CreateCircleRequest,

@@ -6,5 +6,5 @@
  * Public exports for auth UI components.
  */
 
-export { RoleExclude, RoleGate } from "./role-gate";
+export { RoleGate, RoleExclude } from "./role-gate";
 export { UnauthorizedHandler } from "./unauthorized-handler";

@@ -113,10 +113,7 @@ async function request<T>(
   if (options.schema) {
     const parsed = options.schema.safeParse(rawData);
     if (!parsed.success) {
-      console.error("❌ API schema mismatch", {
-        errors: parsed.error.format(),
-        rawData,
-      });
+      console.error("❌ API schema mismatch", parsed.error.format());
       throw new Error("Invalid API response");
     }
     return parsed.data;

@@ -11,34 +11,35 @@
  * Import server utilities directly: `import { requireRole } from "@/lib/auth/server"`
  */
 
-// Permissions
-export {
-  getRolesForPermission,
-  hasAnyRole,
-  hasPermission,
-  PERMISSIONS,
-  type Permission,
-} from "./permissions";
 // Roles
 export {
-  ADMIN_ROLES,
-  CAMPUS_MANAGEMENT_ROLES,
-  DISTRICT_ROLES,
+  ROLES,
+  type RoleValue,
+  type RoleKey,
   igCampusLeadRole,
   igLeadRole,
+  ADMIN_ROLES,
   MANAGEMENT_ROLES,
-  ROLES,
-  type RoleKey,
-  type RoleValue,
-  TECH_ROLES,
+  CAMPUS_MANAGEMENT_ROLES,
   ZONAL_ROLES,
+  DISTRICT_ROLES,
+  TECH_ROLES,
 } from "./roles";
+
+// Permissions
+export {
+  PERMISSIONS,
+  type Permission,
+  getRolesForPermission,
+  hasPermission,
+  hasAnyRole,
+} from "./permissions";
 
 // Route Access (used by middleware)
 export {
+  routeAccessMap,
   findRouteConfig,
   type RouteConfig,
-  routeAccessMap,
 } from "./route-access";
 
 // Token Store (migrated from src/lib/auth.ts)

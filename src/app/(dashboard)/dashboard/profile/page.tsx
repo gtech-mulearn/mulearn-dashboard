@@ -21,8 +21,8 @@ import {
   ProfileHeader,
   ProfileSidebar,
   ProfileStats,
-  type ProfileTab,
   ProfileTabs,
+  type ProfileTab,
   ShareProfileModal,
   updateInterestGroups,
   useUserLevels,
@@ -68,7 +68,7 @@ export default function ProfilePage() {
   };
 
   // Save profile handler
-  const handleSaveProfile = async (_data: {
+  const handleSaveProfile = async (data: {
     full_name?: string;
     profile_pic?: string;
   }) => {

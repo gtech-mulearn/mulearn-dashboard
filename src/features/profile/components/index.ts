@@ -20,7 +20,7 @@ export { ProfileHeader } from "./profile-header";
 export { ProfileSettings } from "./profile-settings";
 export { ProfileSidebar } from "./profile-sidebar";
 export { ProfileStats } from "./profile-stats";
-export { type ProfileTab, ProfileTabs } from "./profile-tabs";
+export { ProfileTabs, type ProfileTab } from "./profile-tabs";
 export { RolesDisplay } from "./roles-display";
 export { ShareProfileModal } from "./share-profile-modal";
 export { SocialsDisplay } from "./socials-display";

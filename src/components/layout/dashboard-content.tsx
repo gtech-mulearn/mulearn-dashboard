@@ -9,9 +9,9 @@
 
 "use client";
 
-import type { ReactNode } from "react";
-import { cn } from "@/lib/utils";
 import { useUIStore } from "@/stores/ui-store";
+import { cn } from "@/lib/utils";
+import type { ReactNode } from "react";
 
 interface DashboardContentProps {
   children: ReactNode;

@@ -4,5 +4,5 @@
  * 📍 src/features/profile/schemas/index.ts
  */
 
-export * from "./achievement.schema";
 export * from "./profile.schema";
+export * from "./achievement.schema";

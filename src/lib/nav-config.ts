@@ -15,26 +15,25 @@
 import type { LucideIcon } from "lucide-react";
 import {
   BookOpen,
-  Globe,
-  GraduationCap,
   Home,
-  LayoutDashboard,
   Map as MapIcon,
-  MapPin,
   Rocket,
   Search,
   Settings,
-  Shield,
   Trophy,
   User,
   Users,
+  LayoutDashboard,
+  Shield,
+  Globe,
+  MapPin,
 } from "lucide-react";
 import type { Permission } from "@/lib/auth/permissions";
 import {
   CAMPUS_MANAGEMENT_ROLES,
+  ZONAL_ROLES,
   DISTRICT_ROLES,
   MANAGEMENT_ROLES,
-  ZONAL_ROLES,
 } from "@/lib/auth/roles";
 
 // ─── Types ──────────────────────────────────────────────────
@@ -101,13 +100,6 @@ export const NAV_ITEMS: readonly NavItem[] = [
     title: "Learning Circle",
     href: "/dashboard/learning-circle",
     icon: BookOpen,
-    section: "main",
-  },
-  {
-    id: "courses",
-    title: "Courses",
-    href: "/dashboard/courses",
-    icon: GraduationCap,
     section: "main",
   },
   {

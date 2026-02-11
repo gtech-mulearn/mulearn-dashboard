@@ -16,6 +16,7 @@ import {
   Edit,
   Loader2,
   Plus,
+  Settings,
   Trophy,
   Users,
 } from "lucide-react";
@@ -26,8 +27,8 @@ import { Button } from "@/components/ui/button";
 import { useUserProfile } from "@/features/profile";
 import {
   useCircleDetail,
-  useCircleMeetings,
   useCircleMembers,
+  useCircleMeetings,
   useRsvpMeeting,
 } from "../hooks";
 import { CreateMeetingModal } from "./create-meeting-modal";
@@ -168,7 +169,6 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
           const Icon = tab.icon;
           return (
             <button
-              type="button"
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
@@ -205,7 +205,7 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
         {activeTab === "members" && (
           <div className="rounded-2xl bg-white p-6 shadow-sm">
             <div className="space-y-3">
-              {members?.map((member, _index) => (
+              {members?.map((member, index) => (
                 <div
                   key={member.id}
                   className="flex items-center justify-between rounded-xl bg-gray-50 p-4"

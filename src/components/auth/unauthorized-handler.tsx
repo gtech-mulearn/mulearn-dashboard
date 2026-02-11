@@ -10,8 +10,8 @@
 
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 /**
  * Watches for `?unauthorized=true` in the URL and shows a toast.

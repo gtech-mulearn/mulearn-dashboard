@@ -72,8 +72,6 @@ export function CircleCard({ circle }: CircleCardProps) {
             {/* Arrow indicator */}
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-gray-400 shadow-sm backdrop-blur-sm transition-all group-hover:bg-[#0961F5] group-hover:text-white">
               <svg
-                role="img"
-                aria-label="Arrow Icon"
                 className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
                 fill="none"
                 viewBox="0 0 24 24"

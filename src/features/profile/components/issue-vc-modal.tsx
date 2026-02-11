@@ -110,7 +110,7 @@ export function IssueVCModal({
         toast.success("Verifiable Credential issued successfully!");
         onSuccess?.();
       }
-    } catch (_error) {
+    } catch (error) {
       toast.error("Failed to issue Verifiable Credential");
     } finally {
       setIsIssuing(false);

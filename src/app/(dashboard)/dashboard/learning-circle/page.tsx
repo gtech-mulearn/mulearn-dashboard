@@ -8,9 +8,9 @@
 
 "use client";
 
-import { Loader2 } from "lucide-react";
 import { CircleList, CreateCircleModal } from "@/features/learning-circle";
 import { useInterestGroupsList, useUserProfile } from "@/features/profile";
+import { Loader2 } from "lucide-react";
 
 export default function LearningCirclePage() {
   // Fetch interest groups and user profile for the create form

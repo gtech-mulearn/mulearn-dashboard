@@ -9,7 +9,7 @@
 "use client";
 
 import { Loader2, Search, Users } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { useCircles } from "../hooks";
 import { CircleCard } from "./circle-card";
