@@ -5,3 +5,4 @@
  */
 
 export * from "./profile.schema";
+export * from "./achievement.schema";
