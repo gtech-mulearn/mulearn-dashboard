@@ -4,11 +4,13 @@
  * 📍 src/app/(dashboard)/layout.tsx
  *
  * Layout for dashboard and protected routes.
- * Includes sidebar navigation and onboarding guard.
+ * Includes sidebar navigation, onboarding guard, and RBAC unauthorized handler.
  */
 
-import type { ReactNode } from "react";
+import { type ReactNode, Suspense } from "react";
+import { UnauthorizedHandler } from "@/components/auth";
 import { Sidebar } from "@/components/dashboard/sidebar";
+import { DashboardContent } from "@/components/layout/dashboard-content";
 import { OnboardingGuard } from "./onboarding-guard";
 
 interface DashboardLayoutProps {
@@ -18,15 +20,13 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <OnboardingGuard>
-      <div className="min-h-screen bg-gray-50">
+      {/* Catches ?unauthorized=true from middleware RBAC redirects */}
+      <Suspense fallback={null}>
+        <UnauthorizedHandler />
+      </Suspense>
+      <div className="min-h-screen bg-gray-50 flex justify-between">
         <Sidebar />
-        <main className="lg:ml-64 min-h-screen transition-all duration-300">
-          <div className="p-4">
-            <div className="bg-background rounded-2xl shadow-sm p-5">
-              {children}
-            </div>
-          </div>
-        </main>
+        <DashboardContent>{children}</DashboardContent>
       </div>
     </OnboardingGuard>
   );

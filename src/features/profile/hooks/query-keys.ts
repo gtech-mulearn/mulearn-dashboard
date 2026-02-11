@@ -32,4 +32,10 @@ export const profileKeys = {
 
   // Interest Groups
   interestGroups: () => [...profileKeys.all, "interest-groups"] as const,
+
+  // Achievements
+  achievements: (muid: string) =>
+    [...profileKeys.all, "achievements", muid] as const,
+  connectedDIDs: (muid: string) =>
+    [...profileKeys.all, "connected-dids", muid] as const,
 };

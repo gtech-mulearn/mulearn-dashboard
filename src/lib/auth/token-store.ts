@@ -1,10 +1,13 @@
 /**
- * Auth Token Management
+ * Auth Token Store
  *
- * 📍 src/lib/auth.ts
+ * 📍 src/lib/auth/token-store.ts
  *
  * Manages access and refresh tokens using cookies.
- * This allows proxy to access tokens for route protection.
+ * This allows middleware to access tokens for route protection.
+ *
+ * Previously located at src/lib/auth.ts — moved here to colocate
+ * with the rest of the auth library.
  */
 
 import Cookies from "js-cookie";
