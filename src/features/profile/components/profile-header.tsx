@@ -40,9 +40,9 @@ export function ProfileHeader({
   const memberSince = profile.joined?.slice(0, 4) || "";
 
   return (
-    <div className="relative overflow-hidden rounded-2xl shadow-sm">
+    <div className="relative w-full max-w-full overflow-hidden rounded-2xl shadow-sm">
       {/* Full Banner Background */}
-      <div className="relative h-40 w-full sm:h-48">
+      <div className="relative h-48 w-full sm:h-52 md:h-56">
         <Image
           src="/images/profile-banner.png"
           alt=""
@@ -51,45 +51,45 @@ export function ProfileHeader({
           priority
         />
         {/* Gradient overlay for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-black/40" />
 
         {/* Profile Content - Overlaid on banner */}
-        <div className="absolute inset-0 flex items-end px-6 pb-4 sm:items-center sm:pb-0">
-          <div className="flex w-full flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="absolute inset-0 flex items-end p-4 sm:items-center sm:px-6">
+          <div className="flex w-full max-w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             {/* Left: Avatar and Info */}
-            <div className="flex items-center gap-4">
+            <div className="flex min-w-0 flex-1 items-start gap-3 sm:items-center sm:gap-4">
               {/* Avatar */}
-              <div className="relative">
-                <div className="h-20 w-20 overflow-hidden rounded-xl border-3 border-white/90 bg-white shadow-lg sm:h-24 sm:w-24 sm:rounded-2xl">
+              <div className="relative shrink-0">
+                <div className="h-16 w-16 overflow-hidden rounded-xl border-2 border-white/90 bg-white shadow-lg sm:h-20 sm:w-20 sm:rounded-2xl sm:border-3">
                   {profile.profile_pic && !imageError ? (
                     <Image
                       src={`${profile.profile_pic}?${Date.now()}`}
                       alt={profile.full_name}
-                      width={96}
-                      height={96}
+                      width={80}
+                      height={80}
                       className="h-full w-full object-cover"
                       onError={() => setImageError(true)}
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 text-2xl font-bold text-white sm:text-3xl">
+                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 text-xl font-bold text-white sm:text-2xl">
                       {profile.full_name?.charAt(0) || "?"}
                     </div>
                   )}
                 </div>
                 {/* Level Badge */}
-                <div className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600 text-xs font-bold text-white shadow-lg ring-2 ring-white">
+                <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600 text-[10px] font-bold text-white shadow-lg ring-2 ring-white sm:h-7 sm:w-7 sm:text-xs">
                   {level}
                 </div>
               </div>
 
               {/* Name and Details */}
-              <div className="space-y-0.5">
-                <div className="flex items-center gap-2">
-                  <h1 className="text-xl font-bold text-white drop-shadow-sm sm:text-2xl">
+              <div className="min-w-0 flex-1 space-y-0.5">
+                <div className="flex min-w-0 items-center gap-2">
+                  <h1 className="truncate font-bold text-secondary drop-shadow-md sm:text-xl md:text-2xl">
                     {profile.full_name}
                   </h1>
                   {profile.college_code && (
-                    <span className="hidden rounded-full bg-white/20 px-2 py-0.5 text-xs font-medium text-white backdrop-blur-sm sm:inline">
+                    <span className="hidden shrink-0 rounded-full bg-background/20 px-2 py-0.5 text-xs font-medium text-secondary backdrop-blur-sm sm:inline">
                       {profile.college_code}
                     </span>
                   )}
@@ -97,14 +97,16 @@ export function ProfileHeader({
                 <button
                   type="button"
                   onClick={handleCopyMuid}
-                  className="group flex items-center gap-1.5 text-white/80 transition-colors hover:text-white"
+                  className="group flex min-w-0 items-center gap-1.5 text-primary-foreground/90 transition-colors hover:text-primary-foreground"
                 >
-                  <span className="font-mono text-sm">{profile.muid}</span>
-                  <Copy className="h-3.5 w-3.5 opacity-0 transition-opacity group-hover:opacity-100" />
+                  <span className="truncate text-muted text-xs sm:text-sm">
+                    {profile.muid}
+                  </span>
+                  <Copy className="h-3 w-3 shrink-0 opacity-0 transition-opacity group-hover:opacity-100 sm:h-3.5 sm:w-3.5" />
                 </button>
-                <div className="flex items-center gap-2 pt-0.5">
+                <div className="flex min-w-0 flex-wrap items-center gap-1.5 pt-0.5 sm:gap-2">
                   <span
-                    className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium backdrop-blur-sm ${
+                    className={`flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium backdrop-blur-sm sm:text-xs ${
                       profile.is_public
                         ? "bg-emerald-500/20 text-emerald-100"
                         : "bg-amber-500/20 text-amber-100"
@@ -118,7 +120,7 @@ export function ProfileHeader({
                     {profile.is_public ? "Public" : "Private"}
                   </span>
                   {memberSince && (
-                    <span className="text-xs text-white/60">
+                    <span className="shrink-0 text-[10px] text-white/70 sm:text-xs">
                       Member since {memberSince}
                     </span>
                   )}
@@ -128,22 +130,22 @@ export function ProfileHeader({
 
             {/* Right: Action Buttons */}
             {isOwnProfile && (
-              <div className="flex gap-2">
+              <div className="flex shrink-0 gap-2 self-end sm:self-auto">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={onShare}
-                  className="gap-1.5 rounded-full border-white/30 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20"
+                  className="gap-1 rounded-full border-secondary/30 bg-secondary/10 px-3 text-xs text-secondary backdrop-blur-sm hover:bg-secondary/20 sm:gap-1.5 sm:text-sm"
                 >
-                  <Share2 className="h-4 w-4" />
+                  <Share2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   <span className="hidden sm:inline">Share</span>
                 </Button>
                 <Button
                   size="sm"
                   onClick={onEdit}
-                  className="gap-1.5 rounded-full bg-white text-gray-900 hover:bg-white/90"
+                  className="gap-1 rounded-full bg-background px-3 text-xs text-primary-foreground hover:bg-background/90 sm:gap-1.5 sm:text-sm"
                 >
-                  <Pencil className="h-4 w-4" />
+                  <Pencil className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   <span className="hidden sm:inline">Edit Profile</span>
                 </Button>
               </div>

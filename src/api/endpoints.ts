@@ -1,4 +1,4 @@
-/**
+/*
  * Centralized API Endpoints
  *
  * 📍 src/api/endpoints.ts
@@ -140,6 +140,17 @@ export const endpoints = {
   },
 
   // ============================================
+  // Campus Endpoints
+  // ============================================
+  campus: {
+    /** GET - Currrent campus info */
+    info: (campusId: string) => `/api/v1/dashboard/campus/${campusId}/`,
+    /** GET - Campus weekly karma */
+    weeklykarma: (campusId: string) =>
+      `/api/v1/campus/weekly-karma/${campusId}/`,
+  },
+
+  // ============================================
   // Leaderboard Endpoints
   // ============================================
   leaderboard: {
@@ -151,6 +162,10 @@ export const endpoints = {
     college: "/api/v1/leaderboard/college/",
     /** GET - Monthly college leaderboard */
     collegeMonthly: "/api/v1/leaderboard/college-monthly/",
+    /** GET - Wadhwani college leaderboard */
+    wadhwaniCollege: "/api/v1/leaderboard/wadhwani-college/",
+    /** GET - Wadhwani zonal leaderboard */
+    wadhwaniZonal: "/api/v1/leaderboard/wadhwani-zonal/",
   },
 
   // ============================================

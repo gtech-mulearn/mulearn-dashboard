@@ -9,10 +9,10 @@
 
 "use client";
 
-import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useEffect } from "react";
 import { useUserInfo } from "@/features/auth";
+import Loader from "../loading";
 
 interface OnboardingGuardProps {
   children: ReactNode;
@@ -40,11 +40,7 @@ export function OnboardingGuard({ children }: OnboardingGuardProps) {
 
   // Show loading while checking
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#0961F5]" />
-      </div>
-    );
+    return <Loader />;
   }
 
   // Show loading while redirecting
@@ -54,11 +50,7 @@ export function OnboardingGuard({ children }: OnboardingGuardProps) {
     !user.user_domains ||
     user.user_domains.length === 0
   ) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#0961F5]" />
-      </div>
-    );
+    return <Loader />;
   }
 
   // User has completed onboarding, render children

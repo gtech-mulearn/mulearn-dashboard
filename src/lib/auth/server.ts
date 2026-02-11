@@ -14,7 +14,6 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { Permission } from "./permissions";
 import { hasAnyRole, hasPermission } from "./permissions";
-
 // ─── Types ──────────────────────────────────────────────────
 
 export interface ServerUser {

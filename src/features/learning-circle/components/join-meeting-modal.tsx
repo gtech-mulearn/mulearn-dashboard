@@ -88,7 +88,7 @@ export function JoinMeetingModal({
               value={code}
               onChange={handleCodeChange}
               placeholder="ABC123"
-              className="text-center text-2xl font-mono tracking-widest uppercase"
+              className="text-center text-2xl tracking-widest uppercase"
               maxLength={6}
               autoFocus
             />
