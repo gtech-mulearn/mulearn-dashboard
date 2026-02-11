@@ -265,6 +265,28 @@ export const endpoints = {
     meetingReport: (id: string) =>
       `/api/v1/dashboard/learningcircle/meeting/report/${id}/`,
   },
+
+  // ============================================
+  // Integrations - Courses (Wadhwani + OpenGrad)
+  // ============================================
+  integrations: {
+    wadhwani: {
+      /** POST - Get client token */
+      token: "/api/v1/integrations/wadhwani/auth-token/",
+      /** POST - Get course list */
+      courses: "/api/v1/integrations/wadhwani/course-details/",
+      /** POST - Enroll/Login to course */
+      enroll: "/api/v1/integrations/wadhwani/user-login/",
+    },
+    openGrad: {
+      /** POST - Get client token */
+      token: "/api/v1/integrations/OpenGrad/auth-token/",
+      /** POST - Get course list */
+      courses: "/api/v1/integrations/OpenGrad/course-details/",
+      /** POST - Enroll/Login to course */
+      enroll: "/api/v1/integrations/OpenGrad/user-login/",
+    },
+  },
 } as const;
 
 // Type for type-safe endpoint access

@@ -3,7 +3,7 @@
  *
  * 📍 src/components/dashboard/sidebar.tsx
  *
- * Config-driven sidebar navigation with RBAC integration.
+ * Re * Config-driven sidebar navigation with RBAC integration.
  * Items are sourced from nav-config.ts and filtered by useFilteredNav().
  * Adding a nav item requires only editing nav-config.ts.
  */

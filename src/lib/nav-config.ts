@@ -16,6 +16,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   BookOpen,
   Globe,
+  GraduationCap,
   Home,
   LayoutDashboard,
   Map as MapIcon,
@@ -100,6 +101,13 @@ export const NAV_ITEMS: readonly NavItem[] = [
     title: "Learning Circle",
     href: "/dashboard/learning-circle",
     icon: BookOpen,
+    section: "main",
+  },
+  {
+    id: "courses",
+    title: "Courses",
+    href: "/dashboard/courses",
+    icon: GraduationCap,
     section: "main",
   },
   {

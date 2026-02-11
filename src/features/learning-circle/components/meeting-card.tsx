@@ -16,14 +16,7 @@ import {
   isWithinInterval,
   subHours,
 } from "date-fns";
-import {
-  Calendar,
-  Clock,
-  ExternalLink,
-  MapPin,
-  Users,
-  Video,
-} from "lucide-react";
+import { Calendar, Clock, MapPin, Users, Video } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import type { Meeting } from "../schemas";
@@ -45,7 +38,7 @@ function getMeetingStatus(meeting: Meeting) {
 
   // Check if within join window (2 hours before to duration + 2 hours after)
   const joinStart = subHours(meetTime, 2);
-  const joinEnd = addHours(meetTime, (meeting.attendees_count || 2) + 2);
+  const _joinEnd = addHours(meetTime, (meeting.attendees_count || 2) + 2);
 
   if (
     meeting.is_started ||

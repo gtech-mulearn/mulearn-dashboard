@@ -16,7 +16,6 @@ import {
   Edit,
   Loader2,
   Plus,
-  Settings,
   Trophy,
   Users,
 } from "lucide-react";
@@ -206,7 +205,7 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
         {activeTab === "members" && (
           <div className="rounded-2xl bg-white p-6 shadow-sm">
             <div className="space-y-3">
-              {members?.map((member, index) => (
+              {members?.map((member, _index) => (
                 <div
                   key={member.id}
                   className="flex items-center justify-between rounded-xl bg-gray-50 p-4"

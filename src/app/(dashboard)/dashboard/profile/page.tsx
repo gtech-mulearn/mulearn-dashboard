@@ -68,7 +68,7 @@ export default function ProfilePage() {
   };
 
   // Save profile handler
-  const handleSaveProfile = async (data: {
+  const handleSaveProfile = async (_data: {
     full_name?: string;
     profile_pic?: string;
   }) => {
