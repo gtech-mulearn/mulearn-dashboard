@@ -12,7 +12,7 @@
 import { Check, ChevronDown, Loader2, Target } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
-import type { UserLevelsData, UserLevel } from "../schemas";
+import type { UserLevel, UserLevelsData } from "../schemas";
 
 interface MuVoyageProps {
   userLevels?: UserLevelsData;

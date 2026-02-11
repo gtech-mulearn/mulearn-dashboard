@@ -11,7 +11,7 @@
 
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, type ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
 import { useUserInfo } from "@/features/auth";
 
 interface OnboardingGuardProps {

@@ -3,7 +3,7 @@
  *
  * 📍 src/components/dashboard/sidebar.tsx
  *
- * Config-driven sidebar navigation with RBAC integration.
+ * Re * Config-driven sidebar navigation with RBAC integration.
  * Items are sourced from nav-config.ts and filtered by useFilteredNav().
  * Adding a nav item requires only editing nav-config.ts.
  */
@@ -16,11 +16,11 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useFilteredNav } from "@/hooks/use-filtered-nav";
 import { authStore } from "@/lib/auth";
+import type { NavItem } from "@/lib/nav-config";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/stores/ui-store";
-import { useFilteredNav } from "@/hooks/use-filtered-nav";
-import type { NavItem } from "@/lib/nav-config";
 
 export function Sidebar() {
   const pathname = usePathname();

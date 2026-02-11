@@ -7,10 +7,10 @@
  * Includes sidebar navigation, onboarding guard, and RBAC unauthorized handler.
  */
 
-import { Suspense, type ReactNode } from "react";
+import { type ReactNode, Suspense } from "react";
+import { UnauthorizedHandler } from "@/components/auth";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { DashboardContent } from "@/components/layout/dashboard-content";
-import { UnauthorizedHandler } from "@/components/auth";
 import { OnboardingGuard } from "./onboarding-guard";
 
 interface DashboardLayoutProps {

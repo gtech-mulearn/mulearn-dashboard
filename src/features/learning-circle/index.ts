@@ -6,6 +6,27 @@
  * Public API for the learning circle feature.
  */
 
+// API Functions
+export {
+  createCircle,
+  createMeeting,
+  deleteCircle,
+  deleteMeeting,
+  editCircle,
+  editMeeting,
+  getCircleDetail,
+  getCircleMeetings,
+  getCircleMembers,
+  getCircles,
+  getMeetingDetail,
+  getPublicMeetings,
+  getUserMeetings,
+  joinMeeting,
+  leaveMeeting,
+  rsvpMeeting,
+  submitAttendeeReport,
+  submitMeetingReport,
+} from "./api";
 // Components
 export {
   CircleCard,
@@ -15,13 +36,12 @@ export {
   JoinMeetingModal,
   MeetingCard,
 } from "./components";
-
 // Hooks
 export {
   learningCircleKeys,
   useCircleDetail,
-  useCircleMembers,
   useCircleMeetings,
+  useCircleMembers,
   useCircles,
   useColleges,
   useCreateCircle,
@@ -37,28 +57,6 @@ export {
   useSubmitMeetingReport,
   useUserMeetings,
 } from "./hooks";
-
-// API Functions
-export {
-  createCircle,
-  createMeeting,
-  deleteCircle,
-  deleteMeeting,
-  editCircle,
-  editMeeting,
-  getCircleDetail,
-  getCircleMembers,
-  getCircleMeetings,
-  getCircles,
-  getMeetingDetail,
-  getPublicMeetings,
-  getUserMeetings,
-  joinMeeting,
-  leaveMeeting,
-  rsvpMeeting,
-  submitAttendeeReport,
-  submitMeetingReport,
-} from "./api";
 
 // Types
 export type {

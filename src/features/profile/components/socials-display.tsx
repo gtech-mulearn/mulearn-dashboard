@@ -9,6 +9,7 @@
 
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { Check, Loader2, Pencil, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
@@ -21,9 +22,8 @@ import {
 } from "react-icons/fa";
 import { FaBehance, FaDribbble, FaXTwitter } from "react-icons/fa6";
 import { toast } from "sonner";
-import { useSocials } from "../hooks";
 import { updateSocials } from "../api";
-import { useQueryClient } from "@tanstack/react-query";
+import { useSocials } from "../hooks";
 import { profileKeys } from "../hooks/query-keys";
 
 interface SocialsDisplayProps {
