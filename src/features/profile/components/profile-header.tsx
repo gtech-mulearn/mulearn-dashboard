@@ -99,7 +99,7 @@ export function ProfileHeader({
                   onClick={handleCopyMuid}
                   className="group flex min-w-0 items-center gap-1.5 text-primary-foreground/90 transition-colors hover:text-primary-foreground"
                 >
-                  <span className="truncate font-mono text-muted text-xs sm:text-sm">
+                  <span className="truncate text-muted text-xs sm:text-sm">
                     {profile.muid}
                   </span>
                   <Copy className="h-3 w-3 shrink-0 opacity-0 transition-opacity group-hover:opacity-100 sm:h-3.5 sm:w-3.5" />

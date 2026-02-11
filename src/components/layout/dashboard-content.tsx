@@ -23,12 +23,12 @@ export function DashboardContent({ children }: DashboardContentProps) {
   return (
     <main
       className={cn(
-        "min-h-screen transition-all duration-300 flex-1 pt-16 lg:pt-0",
+        "min-h-screen pt-16 lg:pt-0 w-full overflow-x-hidden",
         isSidebarExpanded ? "lg:ml-64" : "lg:ml-16",
       )}
     >
-      <div className="p-4">
-        <div className="bg-background rounded-2xl shadow-sm p-5">
+      <div className="p-2 lg:p-4">
+        <div className="bg-background rounded-2xl shadow-sm p-4 lg:p-6">
           {children}
         </div>
       </div>

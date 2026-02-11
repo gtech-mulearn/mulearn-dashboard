@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
+import { Bricolage_Grotesque, Geist } from "next/font/google";
 import { Toaster } from "sonner";
 import { Providers } from "./providers";
 import "./globals.css";
@@ -12,11 +12,6 @@ const bricolage = Bricolage_Grotesque({
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
   subsets: ["latin"],
 });
 
@@ -45,7 +40,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${bricolage.variable} ${geistSans.variable} ${geistMono.variable} antialiased font-sans`}
+        className={`${bricolage.variable} ${geistSans.variable} antialiased font-sans`}
       >
         <Providers>
           {children}
