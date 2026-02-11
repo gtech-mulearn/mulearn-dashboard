@@ -10,7 +10,7 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { Check, Loader2, Pencil, X } from "lucide-react";
+import { Check, Pencil, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   FaFacebook,

@@ -48,7 +48,6 @@ export function IssueVCModal({
   muid,
   userName,
   userEmail,
-  isOwnProfile,
   onSuccess,
 }: IssueVCModalProps) {
   const {
