@@ -7,8 +7,8 @@
  * Authenticated users are redirected to /dashboard by middleware.
  */
 
-import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 export default async function HomePage() {
   // Check if user is authenticated (server-side)

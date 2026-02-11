@@ -14,7 +14,7 @@
 
 import { useMemo } from "react";
 import { useUserInfo } from "@/features/auth";
-import { type Permission, hasPermission, hasAnyRole } from "@/lib/auth";
+import { hasAnyRole, hasPermission, type Permission } from "@/lib/auth";
 
 // ─── Return Type ────────────────────────────────────────────
 

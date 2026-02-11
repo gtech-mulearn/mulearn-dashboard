@@ -12,9 +12,8 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import type { RoleValue } from "./roles";
 import type { Permission } from "./permissions";
-import { hasPermission, hasAnyRole } from "./permissions";
+import { hasAnyRole, hasPermission } from "./permissions";
 
 // ─── Types ──────────────────────────────────────────────────
 

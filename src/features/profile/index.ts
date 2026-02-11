@@ -8,41 +8,38 @@
 
 // API
 export * from "./api";
-
-// Hooks
-export * from "./hooks";
-
-// Schemas (explicit exports to avoid conflicts)
-export {
-  InterestGroupSchema,
-  type InterestGroup,
-  KarmaDistributionSchema,
-  type KarmaDistribution as KarmaDistributionData,
-  UserProfileSchema,
-  type UserProfile,
-  UserLogEntrySchema,
-  type UserLogEntry,
-  UserLogDataSchema,
-  type UserLogData,
-  UserLogResponseSchema,
-  type UserLogResponse,
-  LevelTaskSchema,
-  type LevelTask,
-  UserLevelSchema,
-  type UserLevel,
-  UserLevelsDataSchema,
-  type UserLevelsData,
-  UserLevelsResponseSchema,
-  type UserLevelsResponse,
-  SocialsSchema,
-  type Socials,
-  UserPreferencesSchema,
-  type UserPreferences,
-  UpdateProfileRequestSchema,
-  type UpdateProfileRequest,
-  TogglePublicProfileRequestSchema,
-  type TogglePublicProfileRequest,
-} from "./schemas";
-
 // Components
 export * from "./components";
+// Hooks
+export * from "./hooks";
+// Schemas (explicit exports to avoid conflicts)
+export {
+  type InterestGroup,
+  InterestGroupSchema,
+  type KarmaDistribution as KarmaDistributionData,
+  KarmaDistributionSchema,
+  type LevelTask,
+  LevelTaskSchema,
+  type Socials,
+  SocialsSchema,
+  type TogglePublicProfileRequest,
+  TogglePublicProfileRequestSchema,
+  type UpdateProfileRequest,
+  UpdateProfileRequestSchema,
+  type UserLevel,
+  UserLevelSchema,
+  type UserLevelsData,
+  UserLevelsDataSchema,
+  type UserLevelsResponse,
+  UserLevelsResponseSchema,
+  type UserLogData,
+  UserLogDataSchema,
+  type UserLogEntry,
+  UserLogEntrySchema,
+  type UserLogResponse,
+  UserLogResponseSchema,
+  type UserPreferences,
+  UserPreferencesSchema,
+  type UserProfile,
+  UserProfileSchema,
+} from "./schemas";

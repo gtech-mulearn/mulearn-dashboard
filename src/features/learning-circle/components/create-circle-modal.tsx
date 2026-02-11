@@ -26,8 +26,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateCircle } from "../hooks";
 import {
-  CreateCircleRequestSchema,
   type CreateCircleRequest,
+  CreateCircleRequestSchema,
 } from "../schemas";
 
 interface CreateCircleModalProps {
