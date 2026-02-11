@@ -12,6 +12,7 @@ import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import {
   AccountSettingsModal,
+  Achievements,
   BasicDetails,
   EditInterestGroupsModal,
   EditProfileModal,
@@ -146,15 +147,11 @@ export default function ProfilePage() {
               />
             )}
             {activeTab === "achievements" && (
-              <div className="rounded-2xl bg-white p-6 text-center shadow-sm sm:p-8">
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
-                  <span className="text-2xl">🏆</span>
-                </div>
-                <p className="font-semibold text-gray-900">Coming Soon</p>
-                <p className="mt-1 text-sm text-gray-500">
-                  Achievements will be available in a future update.
-                </p>
-              </div>
+              <Achievements
+                muid={profile.muid}
+                userName={profile.full_name}
+                isOwnProfile={true}
+              />
             )}
           </div>
         </div>

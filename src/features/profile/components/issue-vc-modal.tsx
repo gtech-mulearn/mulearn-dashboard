@@ -1,0 +1,385 @@
+/**
+ * Issue VC Modal Component
+ *
+ * 📍 src/features/profile/components/issue-vc-modal.tsx
+ *
+ * Modal for issuing or viewing Verifiable Credentials.
+ * Handles DID selection, VC issuance, and displaying issued VCs.
+ */
+
+"use client";
+
+import { Check, ExternalLink, Loader2, RefreshCw } from "lucide-react";
+import Image from "next/image";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { issueVC, updateVCURL } from "../api";
+import { useConnectedDIDs } from "../hooks";
+import type {
+  IssuedVC,
+  UserAchievement,
+  VCCredentialInfo,
+  VCSubjectInfo,
+} from "../schemas";
+
+interface IssueVCModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  achievement: UserAchievement;
+  muid: string;
+  userName: string;
+  userEmail?: string;
+  isOwnProfile: boolean;
+  onSuccess?: () => void;
+}
+
+export function IssueVCModal({
+  open,
+  onOpenChange,
+  achievement,
+  muid,
+  userName,
+  userEmail,
+  isOwnProfile,
+  onSuccess,
+}: IssueVCModalProps) {
+  const {
+    data: didsData,
+    isLoading: isLoadingDIDs,
+    refetch: refetchDIDs,
+  } = useConnectedDIDs(muid);
+
+  const [selectedDID, setSelectedDID] = useState<string>("");
+  const [isIssuing, setIsIssuing] = useState(false);
+  const [issuedCredential, setIssuedCredential] = useState<IssuedVC | null>(
+    null,
+  );
+
+  const { achievement: achievementData, is_issued, vc_url } = achievement;
+  const availableDIDs = didsData?.dids || [];
+
+  // Reset state when modal opens
+  useEffect(() => {
+    if (open) {
+      setSelectedDID(availableDIDs[0] || "");
+      setIssuedCredential(null);
+    }
+  }, [open, availableDIDs]);
+
+  const handleIssueVC = useCallback(async () => {
+    if (!selectedDID) {
+      toast.error("Please select a DID");
+      return;
+    }
+
+    setIsIssuing(true);
+    try {
+      const subjectInfo: VCSubjectInfo = {
+        type: "Badge",
+        did: selectedDID,
+        name: userName,
+        email: userEmail,
+      };
+
+      const credentialInfo: VCCredentialInfo = {
+        course_name: achievementData.achievement_name,
+        name: achievementData.achievement_name,
+        tags: achievementData.tags,
+        description: achievementData.description || "",
+      };
+
+      const templateId = achievementData.template_id || "";
+
+      const result = await issueVC(subjectInfo, credentialInfo, templateId);
+
+      if (result && result.length > 0) {
+        const vcUrl = result[0].subject_info.s3_url;
+
+        // Update the VC URL in the backend
+        await updateVCURL(achievement.id, vcUrl);
+
+        setIssuedCredential(result[0]);
+        toast.success("Verifiable Credential issued successfully!");
+        onSuccess?.();
+      }
+    } catch (error) {
+      toast.error("Failed to issue Verifiable Credential");
+    } finally {
+      setIsIssuing(false);
+    }
+  }, [
+    selectedDID,
+    userName,
+    userEmail,
+    achievementData,
+    achievement.id,
+    onSuccess,
+  ]);
+
+  const renderContent = () => {
+    // Viewing already issued VC
+    if (is_issued && vc_url && !issuedCredential) {
+      return (
+        <div className="space-y-4">
+          <div className="rounded-lg bg-emerald-50 p-4 text-center">
+            <div className="mb-2 flex items-center justify-center gap-2 text-emerald-700">
+              <Check className="h-5 w-5" />
+              <span className="font-medium">Credential Issued</span>
+            </div>
+            <p className="text-sm text-emerald-600">
+              Scan the QR code to add it to your wallet.
+            </p>
+          </div>
+
+          <div className="flex justify-center">
+            <Image
+              src={vc_url}
+              alt="Verifiable Credential QR"
+              width={250}
+              height={250}
+              className="rounded-lg border"
+            />
+          </div>
+
+          <div className="flex flex-wrap justify-center gap-2">
+            <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
+              {achievementData.achievement_name}
+            </span>
+            {achievementData.tags.slice(0, 2).map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    // Newly issued credential
+    if (issuedCredential) {
+      return (
+        <div className="space-y-4">
+          <div className="rounded-lg bg-emerald-50 p-4 text-center">
+            <div className="mb-2 flex items-center justify-center gap-2 text-emerald-700">
+              <Check className="h-5 w-5" />
+              <span className="font-medium">
+                Credential Issued Successfully!
+              </span>
+            </div>
+            <p className="text-sm text-emerald-600">
+              Scan the QR code to add it to your wallet.
+            </p>
+          </div>
+
+          <div className="flex justify-center">
+            <Image
+              src={issuedCredential.message}
+              alt="Verifiable Credential QR"
+              width={250}
+              height={250}
+              className="rounded-lg border"
+            />
+          </div>
+
+          <div className="flex flex-wrap justify-center gap-2">
+            <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
+              {issuedCredential.subject_info.course_name}
+            </span>
+            <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">
+              {issuedCredential.subject_info.type}
+            </span>
+          </div>
+        </div>
+      );
+    }
+
+    // Loading DIDs
+    if (isLoadingDIDs) {
+      return (
+        <div className="flex flex-col items-center justify-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin text-[#0961F5]" />
+          <p className="mt-2 text-sm text-gray-500">Loading your DIDs...</p>
+        </div>
+      );
+    }
+
+    // No DIDs linked
+    if (availableDIDs.length === 0) {
+      return (
+        <div className="space-y-4">
+          <div className="rounded-lg bg-amber-50 p-4">
+            <p className="mb-2 font-medium text-amber-800">No DID Linked Yet</p>
+            <p className="text-sm text-amber-700">
+              To issue a Verifiable Credential, you need to link your DID first.
+            </p>
+          </div>
+
+          <div className="rounded-lg bg-gray-50 p-4">
+            <p className="mb-2 text-sm font-medium text-gray-700">
+              How to link your DID:
+            </p>
+            <ol className="list-inside list-decimal space-y-1 text-sm text-gray-600">
+              <li>Download the QSeverse app from App Store or Play Store</li>
+              <li>Log in with your MuLearn account</li>
+              <li>Your DID will be automatically linked</li>
+            </ol>
+          </div>
+
+          <div className="flex flex-wrap justify-center gap-2">
+            <Button variant="outline" size="sm" asChild>
+              <a
+                href="https://apps.apple.com/us/app/qs-passport/id6477819506"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="gap-1"
+              >
+                <ExternalLink className="h-3 w-3" />
+                App Store
+              </a>
+            </Button>
+            <Button variant="outline" size="sm" asChild>
+              <a
+                href="https://play.google.com/store/apps/details?id=com.qseverse.passport"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="gap-1"
+              >
+                <ExternalLink className="h-3 w-3" />
+                Play Store
+              </a>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => refetchDIDs()}
+              className="gap-1"
+            >
+              <RefreshCw className="h-3 w-3" />
+              Refresh
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
+    // DID selection and issue form
+    return (
+      <div className="space-y-4">
+        <div className="rounded-lg bg-blue-50 p-4">
+          <p className="text-sm text-blue-800">
+            <strong>{achievementData.achievement_name}</strong>
+          </p>
+          {achievementData.description && (
+            <p className="mt-1 text-xs text-blue-600">
+              {achievementData.description}
+            </p>
+          )}
+        </div>
+
+        {availableDIDs.length > 1 ? (
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">
+              Select DID to issue credential to:
+            </Label>
+            <div className="space-y-2">
+              {availableDIDs.map((did, index) => (
+                <label
+                  key={did}
+                  className="flex cursor-pointer items-center gap-2 rounded-lg border p-2 hover:bg-gray-50"
+                >
+                  <input
+                    type="radio"
+                    name="did-selection"
+                    value={did}
+                    checked={selectedDID === did}
+                    onChange={(e) => setSelectedDID(e.target.value)}
+                    className="h-4 w-4 text-[#0961F5] focus:ring-[#0961F5]"
+                  />
+                  <span className="text-xs break-all">
+                    DID {index + 1}: {did.slice(0, 30)}...
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-lg bg-gray-50 p-3">
+            <p className="text-xs font-medium text-gray-600">Your DID:</p>
+            <p className="mt-1 text-xs text-gray-500 break-all">
+              {availableDIDs[0]}
+            </p>
+          </div>
+        )}
+
+        <p className="text-xs text-gray-500">
+          Your name ({userName}) and DID will be included in the credential.
+        </p>
+      </div>
+    );
+  };
+
+  const renderFooter = () => {
+    // Already issued or just issued - show close button
+    if (is_issued || issuedCredential) {
+      return <Button onClick={() => onOpenChange(false)}>Close</Button>;
+    }
+
+    // No DIDs - show only close
+    if (availableDIDs.length === 0) {
+      return (
+        <Button variant="outline" onClick={() => onOpenChange(false)}>
+          Cancel
+        </Button>
+      );
+    }
+
+    // Issue form
+    return (
+      <>
+        <Button variant="outline" onClick={() => onOpenChange(false)}>
+          Cancel
+        </Button>
+        <Button
+          onClick={handleIssueVC}
+          disabled={isIssuing || !selectedDID}
+          className="bg-[#0961F5] hover:bg-[#0751d4]"
+        >
+          {isIssuing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Issue VC
+        </Button>
+      </>
+    );
+  };
+
+  const getTitle = () => {
+    if (is_issued && !issuedCredential) return "View Credential";
+    if (issuedCredential) return "Credential Issued";
+    if (availableDIDs.length === 0) return "Link Your DID";
+    return "Issue Verifiable Credential";
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{getTitle()}</DialogTitle>
+        </DialogHeader>
+
+        <div className="py-4">{renderContent()}</div>
+
+        <div className="flex justify-end gap-2">{renderFooter()}</div>
+      </DialogContent>
+    </Dialog>
+  );
+}

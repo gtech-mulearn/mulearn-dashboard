@@ -162,6 +162,94 @@ export const endpoints = {
     /** GET - Interest group details */
     detail: (id: string) => `/api/v1/dashboard/ig/${id}/`,
   },
+
+  // ============================================
+  // College Endpoints
+  // ============================================
+  college: {
+    /** GET - List all colleges (paginated) */
+    list: "/api/v1/dashboard/college/",
+  },
+
+  // ============================================
+  // Achievements Endpoints
+  // ============================================
+  achievements: {
+    /** GET - List user achievements */
+    userAchievements: (muid: string) =>
+      `/api/v1/dashboard/achievement/list/user/${muid}/`,
+    /** POST - Issue VC and save URL */
+    issueVC: "/api/v1/dashboard/achievement/issue-vc/",
+  },
+
+  // ============================================
+  // QSeverse Integration Endpoints
+  // ============================================
+  qseverse: {
+    /** POST - Issue Verifiable Credential */
+    issueVC: "/api/v1/integrations/qseverse/issue-vc/",
+    /** GET - Get connected DIDs for user */
+    connectedUsers: "/api/v1/integrations/qseverse/connected-users/search",
+  },
+
+  // ============================================
+  // Learning Circle Endpoints
+  // ============================================
+  learningCircle: {
+    // Circle Management
+    /** GET - List all learning circles */
+    list: "/api/v1/dashboard/learningcircle/list/",
+    /** GET - Get circle details */
+    info: (id: string) => `/api/v1/dashboard/learningcircle/info/${id}/`,
+    /** POST - Create learning circle */
+    create: "/api/v1/dashboard/learningcircle/create/",
+    /** PUT - Edit learning circle */
+    edit: (id: string) => `/api/v1/dashboard/learningcircle/edit/${id}/`,
+    /** DELETE - Delete learning circle */
+    delete: (id: string) => `/api/v1/dashboard/learningcircle/delete/${id}/`,
+    /** GET - Get circle members */
+    members: (id: string) => `/api/v1/dashboard/learningcircle/members/${id}/`,
+
+    // Meeting Management
+    /** POST - Create meeting for circle */
+    meetingCreate: (circleId: string) =>
+      `/api/v1/dashboard/learningcircle/meeting/create/${circleId}/`,
+    /** GET - List meetings for circle */
+    meetingList: (circleId: string) =>
+      `/api/v1/dashboard/learningcircle/meeting/list/${circleId}/`,
+    /** GET - List all public meetings */
+    meetingListPublic: "/api/v1/dashboard/learningcircle/meeting/list-public/",
+    /** GET - List user's meetings */
+    meetingListUser: "/api/v1/dashboard/learningcircle/meeting/list/",
+    /** GET - Get meeting details */
+    meetingInfo: (id: string) =>
+      `/api/v1/dashboard/learningcircle/meeting/info/${id}/`,
+    /** PUT - Edit meeting */
+    meetingEdit: (id: string) =>
+      `/api/v1/dashboard/learningcircle/meeting/edit/${id}/`,
+    /** DELETE - Delete meeting */
+    meetingDelete: (id: string) =>
+      `/api/v1/dashboard/learningcircle/meeting/delete/${id}/`,
+
+    // Meeting Participation
+    /** POST - RSVP to meeting */
+    meetingRsvp: (id: string) =>
+      `/api/v1/dashboard/learningcircle/meeting/rsvp/${id}/`,
+    /** POST - Join meeting with code */
+    meetingJoin: (id: string) =>
+      `/api/v1/dashboard/learningcircle/meeting/join/${id}/`,
+    /** DELETE - Leave meeting */
+    meetingLeave: (id: string) =>
+      `/api/v1/dashboard/learningcircle/meeting/leave/${id}/`,
+
+    // Meeting Reports
+    /** POST/GET/DELETE - Attendee report */
+    attendeeReport: (id: string) =>
+      `/api/v1/dashboard/learningcircle/meeting/attendee-report/${id}/`,
+    /** POST/GET/DELETE - Meeting report (organizer) */
+    meetingReport: (id: string) =>
+      `/api/v1/dashboard/learningcircle/meeting/report/${id}/`,
+  },
 } as const;
 
 // Type for type-safe endpoint access
