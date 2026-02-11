@@ -45,6 +45,7 @@ export function Sidebar() {
   /** Shared nav link renderer */
   const renderNavItem = (item: NavItem) => {
     const Icon = item.icon;
+
     return (
       <Link
         key={item.id}
@@ -55,16 +56,22 @@ export function Sidebar() {
           isActive(item.href)
             ? "bg-[#0961F5] text-white shadow-md"
             : "text-gray-600 hover:bg-gray-100",
-          isCollapsed ? "justify-center px-0" : "justify-start gap-3 px-3",
+          // Base (Mobile/Expanded)
+          "justify-start gap-3 px-3",
+          // Desktop Collapsed override
+          isCollapsed && "lg:justify-center lg:px-0",
         )}
         title={isCollapsed ? item.title : undefined}
       >
         <Icon className="w-5 h-5 shrink-0" />
-        {!isCollapsed && (
-          <span className="text-sm font-medium whitespace-nowrap">
-            {item.title}
-          </span>
-        )}
+        <span
+          className={cn(
+            "text-sm font-medium whitespace-nowrap",
+            isCollapsed && "lg:hidden",
+          )}
+        >
+          {item.title}
+        </span>
       </Link>
     );
   };
@@ -205,17 +212,23 @@ export function Sidebar() {
             onClick={handleLogout}
             className={cn(
               "w-full flex items-center rounded-xl text-red-500 hover:bg-red-50 transition-all py-2.5",
-              isCollapsed ? "justify-center px-0" : "justify-start gap-3 px-3",
+              // Base (Mobile/Expanded)
+              "justify-start gap-3 px-3",
+              // Desktop Collapsed override
+              isCollapsed && "lg:justify-center lg:px-0",
             )}
             type="button"
             title={isCollapsed ? "Logout" : undefined}
           >
             <LogOut className="w-5 h-5 shrink-0" />
-            {!isCollapsed && (
-              <span className="text-sm font-medium whitespace-nowrap">
-                Logout
-              </span>
-            )}
+            <span
+              className={cn(
+                "text-sm font-medium whitespace-nowrap",
+                isCollapsed && "lg:hidden",
+              )}
+            >
+              Logout
+            </span>
           </button>
         </div>
       </aside>
