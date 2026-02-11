@@ -5,7 +5,7 @@
  */
 
 export * from "./query-keys";
-export * from "./useStartLearning";
 export * from "./useBecomeExpert";
+export * from "./useStartLearning";
 export * from "./useUserJourney";
 export * from "./useUserLevelFeed";

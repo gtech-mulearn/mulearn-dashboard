@@ -8,10 +8,10 @@
 
 "use client";
 
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRef } from "react";
 import type { Task } from "../schemas";
 import { TaskCard } from "./TaskCard";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface TaskListProps {
   tasks: Task[];

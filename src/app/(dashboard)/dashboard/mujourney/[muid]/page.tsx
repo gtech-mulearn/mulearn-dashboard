@@ -8,12 +8,12 @@
 
 "use client";
 
-import { use } from "react";
-import { useUserJourney } from "@/features/mujourney/hooks";
-import { JourneyHeader, LevelCard } from "@/features/mujourney";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { use } from "react";
+import { Button } from "@/components/ui/button";
+import { JourneyHeader, LevelCard } from "@/features/mujourney";
+import { useUserJourney } from "@/features/mujourney/hooks";
 
 export default function PublicUserJourneyPage({
   params,

@@ -9,9 +9,9 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { fetchUserLevels, fetchPublicLevels } from "../api";
-import { mujourneyKeys } from "./query-keys";
 import { authStore } from "@/lib/auth";
+import { fetchPublicLevels, fetchUserLevels } from "../api";
+import { mujourneyKeys } from "./query-keys";
 
 /**
  * Hook for logged-in users - shows unlocked levels first

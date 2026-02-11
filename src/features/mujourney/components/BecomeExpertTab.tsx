@@ -9,9 +9,10 @@
 
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { useStartLearning } from "../hooks";
-import { TaskList } from "./TaskList";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
+import { apiClient } from "@/api/client";
+import { endpoints } from "@/api/endpoints";
 import {
   Select,
   SelectContent,
@@ -20,11 +21,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { authStore } from "@/lib/auth";
-import { useQuery } from "@tanstack/react-query";
-import { apiClient } from "@/api/client";
-import { endpoints } from "@/api/endpoints";
-import { InterestGroupsResponseSchema } from "../schemas/mujourney.schemas";
+import { useStartLearning } from "../hooks";
 import type { Task } from "../schemas/mujourney.schemas";
+import { InterestGroupsResponseSchema } from "../schemas/mujourney.schemas";
+import { TaskList } from "./TaskList";
 
 interface BecomeExpertTabProps {
   filter?: string;

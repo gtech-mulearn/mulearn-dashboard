@@ -8,9 +8,9 @@
 
 "use client";
 
+import { authStore } from "@/lib/auth";
 import { useStartLearning } from "../hooks";
 import { LevelCard } from "./LevelCard";
-import { authStore } from "@/lib/auth";
 
 interface StartLearningTabProps {
   filter?: string;

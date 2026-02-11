@@ -10,11 +10,11 @@
 
 import { useState } from "react";
 import {
+  BecomeExpertTab,
+  EventsTab,
   JourneyHeader,
   JourneyTabs,
   StartLearningTab,
-  BecomeExpertTab,
-  EventsTab,
 } from "@/features/mujourney";
 import { useUserLevels } from "@/features/mujourney/hooks";
 import { authStore } from "@/lib/auth";

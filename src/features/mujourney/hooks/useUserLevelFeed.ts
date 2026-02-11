@@ -9,9 +9,9 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { authStore } from "@/lib/auth";
 import { fetchUserLevelFeed } from "../api";
 import { mujourneyKeys } from "./query-keys";
-import { authStore } from "@/lib/auth";
 
 /**
  * Hook for fetching user's level feed/history

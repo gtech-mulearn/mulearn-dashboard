@@ -8,9 +8,9 @@
 
 "use client";
 
-import { TaskList } from "./TaskList";
-import type { Level, UserLevelData } from "../schemas";
 import { cn } from "@/lib/utils";
+import type { Level, UserLevelData } from "../schemas";
+import { TaskList } from "./TaskList";
 
 interface LevelCardProps {
   level: Level | UserLevelData;
@@ -32,7 +32,7 @@ export function LevelCard({ level, isLocked = false }: LevelCardProps) {
   ];
 
   const levelName =
-    levelNames[parseInt(levelNumber) - 1] || `Level ${levelNumber}`;
+    levelNames[parseInt(levelNumber, 10) - 1] || `Level ${levelNumber}`;
 
   return (
     <div className={cn("space-y-6", isLocked && "opacity-60")}>
