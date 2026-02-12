@@ -9,11 +9,13 @@
 
 import { useQuery } from "@tanstack/react-query";
 import {
+  getConnectedDIDs,
   getInterestGroupsList,
   getPublicUserLevels,
   getPublicUserLog,
   getPublicUserProfile,
   getSocials,
+  getUserAchievements,
   getUserLevels,
   getUserLog,
   getUserPreferences,
@@ -135,5 +137,29 @@ export function useInterestGroupsList() {
     queryKey: profileKeys.interestGroups(),
     queryFn: getInterestGroupsList,
     staleTime: 10 * 60 * 1000, // 10 minutes - rarely changes
+  });
+}
+
+// ============================================
+// Achievements Hooks
+// ============================================
+
+/** Fetch user achievements by muid */
+export function useUserAchievements(muid: string) {
+  return useQuery({
+    queryKey: profileKeys.achievements(muid),
+    queryFn: () => getUserAchievements(muid),
+    enabled: !!muid,
+    staleTime: PROFILE_STALE_TIME,
+  });
+}
+
+/** Fetch connected DIDs for user */
+export function useConnectedDIDs(muid: string) {
+  return useQuery({
+    queryKey: profileKeys.connectedDIDs(muid),
+    queryFn: () => getConnectedDIDs(muid),
+    enabled: !!muid,
+    staleTime: PROFILE_STALE_TIME,
   });
 }

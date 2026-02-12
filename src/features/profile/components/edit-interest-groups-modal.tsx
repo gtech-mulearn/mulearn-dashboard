@@ -9,7 +9,7 @@
 
 "use client";
 
-import { Check, Info, Loader2 } from "lucide-react";
+import { Check, Info } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -20,8 +20,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { InterestGroup, InterestGroupListItem } from "../schemas";
+import { Spinner } from "@/components/ui/spinner";
 import { useInterestGroupsList } from "../hooks";
+import type { InterestGroup, InterestGroupListItem } from "../schemas";
 
 interface EditInterestGroupsModalProps {
   open: boolean;
@@ -171,7 +172,7 @@ export function EditInterestGroupsModal({
 
           {isLoadingGroups ? (
             <div className="flex h-48 items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+              <Spinner className="h-8 w-8 text-gray-400" />
             </div>
           ) : (
             <div className="space-y-4">
@@ -187,10 +188,10 @@ export function EditInterestGroupsModal({
                     <button
                       type="button"
                       key={category.id}
-                      className={`relative flex cursor-pointer flex-col items-center rounded-xl border-2 bg-white p-4 shadow-sm transition-all hover:shadow-md ${
+                      className={`relative flex cursor-pointer flex-col items-center rounded-xl border-2 bg-card p-4 shadow-sm transition-all hover:shadow-md ${
                         selectedCount > 0
-                          ? "border-[#456ff6]"
-                          : "border-gray-200 hover:border-gray-300"
+                          ? "border-primary"
+                          : "border-border hover:border-primary/50"
                       }`}
                       onClick={() =>
                         setExpandedCategory(isExpanded ? null : category.id)
@@ -198,7 +199,7 @@ export function EditInterestGroupsModal({
                     >
                       {/* Selected count badge */}
                       {selectedCount > 0 && (
-                        <div className="absolute -left-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-[#456ff6] text-xs font-bold text-white shadow">
+                        <div className="absolute -left-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground shadow">
                           {selectedCount}
                         </div>
                       )}
@@ -207,8 +208,8 @@ export function EditInterestGroupsModal({
                       <span
                         className={`absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full transition-colors ${
                           isExpanded
-                            ? "bg-[#456ff6] text-white"
-                            : "bg-gray-100 text-[#456ff6]"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted text-primary"
                         }`}
                       >
                         <Info className="h-3.5 w-3.5" />
@@ -247,7 +248,7 @@ export function EditInterestGroupsModal({
 
               {/* Expanded category - show interest groups */}
               {expandedCategory && (
-                <div className="animate-in slide-in-from-top-2 rounded-xl border border-gray-200 bg-gray-50 p-4">
+                <div className="animate-in slide-in-from-top-2 rounded-xl border border-border bg-muted/50 p-4">
                   <h4 className="mb-3 text-sm font-semibold text-gray-700">
                     Select from{" "}
                     {CATEGORIES.find((c) => c.id === expandedCategory)?.title}:
@@ -262,8 +263,8 @@ export function EditInterestGroupsModal({
                           onClick={() => toggleGroup(ig.id)}
                           className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm transition-all ${
                             isSelected
-                              ? "border-[#456ff6] bg-[#456ff6] text-white"
-                              : "border-gray-200 bg-white text-gray-700 hover:border-[#456ff6] hover:bg-blue-50"
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-border bg-card text-foreground hover:border-primary hover:bg-primary/5"
                           }`}
                         >
                           {isSelected && <Check className="h-3.5 w-3.5" />}
@@ -325,11 +326,11 @@ export function EditInterestGroupsModal({
             Cancel
           </Button>
           <Button
+            variant="default"
             onClick={handleSave}
             disabled={isSaving || isLoadingGroups}
-            className="bg-[#456ff6] hover:bg-[#3d5fd8]"
           >
-            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isSaving && <Spinner className="mr-2 h-4 w-4" />}
             Save Changes
           </Button>
         </div>

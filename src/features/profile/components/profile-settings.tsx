@@ -8,7 +8,7 @@
 
 "use client";
 
-import { Loader2 } from "lucide-react";
+import Loader from "@/app/loading";
 import { Switch } from "@/components/ui/switch";
 import {
   useTogglePublicProfile,
@@ -55,16 +55,12 @@ export function ProfileSettings({ isPublic }: ProfileSettingsProps) {
   ];
 
   if (isLoadingPrefs) {
-    return (
-      <div className="flex h-24 items-center justify-center">
-        <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
-      </div>
-    );
+    return <Loader />;
   }
 
   return (
     <div className="space-y-4">
-      <h3 className="font-semibold text-gray-900">Profile Settings</h3>
+      <h3 className="font-semibold text-foreground">Profile Settings</h3>
       <div className="space-y-3">
         {settings.map((setting) => (
           <div
@@ -72,7 +68,7 @@ export function ProfileSettings({ isPublic }: ProfileSettingsProps) {
             className="flex items-center justify-between rounded-lg bg-gray-50 p-3"
           >
             <div>
-              <p className="text-sm font-medium text-gray-900">
+              <p className="text-sm font-medium text-foreground">
                 {setting.label}
               </p>
               <p className="text-xs text-gray-500">{setting.description}</p>
@@ -80,7 +76,7 @@ export function ProfileSettings({ isPublic }: ProfileSettingsProps) {
             <div className="relative">
               {setting.isLoading && (
                 <div className="absolute -left-6 top-1/2 -translate-y-1/2">
-                  <Loader2 className="h-4 w-4 animate-spin text-[#0961F5]" />
+                  <Loader />
                 </div>
               )}
               <Switch

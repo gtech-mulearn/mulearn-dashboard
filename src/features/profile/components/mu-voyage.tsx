@@ -9,10 +9,11 @@
 
 "use client";
 
-import { Check, ChevronDown, Loader2, Target } from "lucide-react";
+import { Check, ChevronDown, Target } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
-import type { UserLevelsData, UserLevel } from "../schemas";
+import Loader from "@/app/loading";
+import type { UserLevel, UserLevelsData } from "../schemas";
 
 interface MuVoyageProps {
   userLevels?: UserLevelsData;
@@ -41,7 +42,7 @@ export function MuVoyage({
   if (isLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-[#0961F5]" />
+        <Loader />
       </div>
     );
   }
@@ -89,7 +90,7 @@ export function MuVoyage({
   };
 
   return (
-    <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
+    <div className="rounded-2xl bg-card p-6 shadow-sm sm:p-8">
       {/* Current Level Header */}
       {currentLevelData && (
         <div className="mb-6 space-y-4">
@@ -107,7 +108,7 @@ export function MuVoyage({
               />
             </div>
             <div>
-              <h3 className="text-xl font-semibold text-gray-900">
+              <h3 className="text-xl font-semibold text-foreground">
                 {currentLevelData.name}
               </h3>
             </div>
@@ -150,7 +151,7 @@ export function MuVoyage({
           return (
             <div
               key={level.name}
-              className="overflow-hidden rounded-xl border-2 border-gray-200"
+              className="overflow-hidden rounded-xl border-2 border-border"
             >
               {/* Level Header - Clickable */}
               <button
@@ -159,7 +160,7 @@ export function MuVoyage({
                 className="flex w-full items-center justify-between p-4 text-left hover:bg-gray-50"
               >
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-900">
+                  <span className="font-medium text-foreground">
                     {level.name}
                   </span>
                   <span className="text-xs text-gray-400">
@@ -245,7 +246,7 @@ export function MuVoyage({
                             {task.task_name}
                           </span>
                           {task.hashtag && (
-                            <span className="flex items-center gap-1 rounded bg-blue-50 px-2 py-0.5 text-xs text-[#2E85FE]">
+                            <span className="flex items-center gap-1 rounded bg-primary/10 px-2 py-0.5 text-xs text-primary">
                               {task.hashtag}
                               {task.discord_link && (
                                 <a

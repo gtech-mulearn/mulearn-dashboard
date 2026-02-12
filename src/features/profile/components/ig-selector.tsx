@@ -13,8 +13,8 @@
 import { Check, Pencil, Plus, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import type { InterestGroup, InterestGroupListItem } from "../schemas";
 import { useInterestGroupsList } from "../hooks";
+import type { InterestGroup, InterestGroupListItem } from "../schemas";
 
 interface IGSelectorProps {
   userInterestGroups: InterestGroup[];
@@ -108,7 +108,7 @@ export function IGSelector({
             <button
               type="button"
               onClick={() => setEditMode(true)}
-              className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-50 text-[#456ff6] transition-colors hover:bg-blue-100"
+              className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors hover:bg-primary/20"
               title="Edit"
             >
               <Pencil className="h-3.5 w-3.5" />
@@ -145,7 +145,7 @@ export function IGSelector({
           sortedIgs.map((ig) => (
             <div
               key={ig.id || ig.name}
-              className={`relative flex items-center gap-2 rounded-xl border-2 border-[#456ff6] px-3 py-2 text-sm font-medium transition-all ${
+              className={`relative flex items-center gap-2 rounded-xl border-2 border-primary px-3 py-2 text-sm font-medium transition-all ${
                 editMode ? "scale-95" : ""
               }`}
             >
@@ -159,7 +159,7 @@ export function IGSelector({
                 </button>
               )}
               <span className="text-gray-800">{ig.name}</span>
-              <span className="rounded-lg bg-[#456ff6] px-2 py-0.5 text-xs text-white">
+              <span className="rounded-lg bg-primary px-2 py-0.5 text-xs text-white">
                 {formatKarma(ig.karma)}
               </span>
             </div>
@@ -189,7 +189,7 @@ export function IGSelector({
                 key={ig.id}
                 type="button"
                 onClick={() => handleAddIg(ig)}
-                className="flex items-center gap-2 rounded-xl bg-blue-50 px-3 py-2 text-sm font-medium text-[#456ff6] transition-colors hover:bg-blue-100"
+                className="flex items-center gap-2 rounded-xl bg-primary/10 px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/20"
               >
                 <Plus className="h-3.5 w-3.5" />
                 {ig.name}
