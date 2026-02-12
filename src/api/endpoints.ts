@@ -287,6 +287,16 @@ export const endpoints = {
       enroll: "/api/v1/integrations/OpenGrad/user-login/",
     },
   },
+
+  // ============================================
+  // Search Endpoints
+  // ============================================
+  search: {
+    students: "/api/v1/dashboard/user/search/",
+    mentors: "/api/v1/dashboard/user/search/",
+    colleges: "/api/v1/dashboard/organisation/institutes/college/",
+    schools: "/api/v1/dashboard/organisation/institutes/school/",
+  },
 } as const;
 
 // Type for type-safe endpoint access
