@@ -60,7 +60,7 @@ export function ProfileSettings({ isPublic }: ProfileSettingsProps) {
 
   return (
     <div className="space-y-4">
-      <h3 className="font-semibold text-gray-900">Profile Settings</h3>
+      <h3 className="font-semibold text-foreground">Profile Settings</h3>
       <div className="space-y-3">
         {settings.map((setting) => (
           <div
@@ -68,7 +68,7 @@ export function ProfileSettings({ isPublic }: ProfileSettingsProps) {
             className="flex items-center justify-between rounded-lg bg-gray-50 p-3"
           >
             <div>
-              <p className="text-sm font-medium text-gray-900">
+              <p className="text-sm font-medium text-foreground">
                 {setting.label}
               </p>
               <p className="text-xs text-gray-500">{setting.description}</p>

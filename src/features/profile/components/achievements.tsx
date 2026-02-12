@@ -36,9 +36,9 @@ export function Achievements({
 
   if (isLoading) {
     return (
-      <div className="rounded-2xl bg-white p-8 shadow-sm">
+      <div className="rounded-2xl bg-card p-8 shadow-sm">
         <div className="flex min-h-[200px] items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-[#0961F5]" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </div>
     );
@@ -50,7 +50,7 @@ export function Achievements({
         <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gray-100">
           <Trophy className="h-10 w-10 text-gray-400" />
         </div>
-        <h3 className="text-lg font-semibold text-gray-900">
+        <h3 className="text-lg font-semibold text-foreground">
           No Achievements Yet
         </h3>
         <p className="mt-1 text-sm text-gray-500">
@@ -65,7 +65,7 @@ export function Achievements({
   return (
     <div className="rounded-2xl bg-white p-6 shadow-sm">
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900">
+        <h3 className="text-lg font-semibold text-foreground">
           Achievements ({achievements.length})
         </h3>
       </div>

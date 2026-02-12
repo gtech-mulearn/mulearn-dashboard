@@ -54,8 +54,8 @@ export function Sidebar() {
         className={cn(
           "flex items-center rounded-xl transition-all py-2.5",
           isActive(item.href)
-            ? "bg-[#0961F5] text-white shadow-md"
-            : "text-gray-600 hover:bg-gray-100",
+            ? "bg-primary text-primary-foreground shadow-md"
+            : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
           // Base (Mobile/Expanded)
           "justify-start gap-3 px-3",
           // Desktop Collapsed override
@@ -79,14 +79,14 @@ export function Sidebar() {
   return (
     <>
       {/* Mobile Top Bar */}
-      <div className="lg:hidden fixed top-0 left-0 w-full h-16 bg-white border-b border-gray-200 z-40 flex items-center px-4 justify-between">
+      <div className="lg:hidden fixed top-0 left-0 w-full h-16 bg-background border-b border-border z-40 flex items-center px-4 justify-between">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsMobileOpen(true)}
-            className="p-2 -ml-2 rounded-lg hover:bg-gray-100"
+            className="p-2 -ml-2 rounded-lg hover:bg-accent hover:text-accent-foreground"
             type="button"
           >
-            <Menu className="w-6 h-6 text-gray-600" />
+            <Menu className="w-6 h-6 text-muted-foreground" />
           </button>
           <Link href="/dashboard">
             <Image
@@ -106,7 +106,7 @@ export function Sidebar() {
         <button
           type="button"
           aria-label="Close sidebar"
-          className="lg:hidden fixed inset-0 bg-black/50 z-50 cursor-default"
+          className="lg:hidden fixed inset-0 bg-background/80 backdrop-blur-sm z-50 cursor-default"
           onClick={() => setIsMobileOpen(false)}
           onKeyDown={(e) => e.key === "Escape" && setIsMobileOpen(false)}
         />
@@ -115,7 +115,7 @@ export function Sidebar() {
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed left-0 top-0 h-full bg-white border-r border-gray-200 z-50 flex flex-col transition-all duration-300 overflow-hidden",
+          "fixed left-0 top-0 h-full bg-background border-r border-border z-50 flex flex-col transition-all duration-300 overflow-hidden",
           isCollapsed ? "lg:w-16" : "lg:w-64",
           isMobileOpen
             ? "w-64 translate-x-0"
@@ -123,7 +123,7 @@ export function Sidebar() {
         )}
       >
         {/* Desktop Header */}
-        <div className="hidden lg:flex items-center justify-between p-4 border-b border-gray-100 h-16">
+        <div className="hidden lg:flex items-center justify-between p-4 border-b border-border h-16">
           {!isCollapsed && (
             <Link href="/dashboard" className="flex items-center gap-2">
               <Image
@@ -138,21 +138,21 @@ export function Sidebar() {
           <button
             onClick={toggleSidebar}
             className={cn(
-              "p-1.5 rounded-lg hover:bg-gray-100 transition-colors",
+              "p-1.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors",
               isCollapsed && "mx-auto",
             )}
             type="button"
           >
             {isCollapsed ? (
-              <ChevronRight className="w-4 h-4 text-gray-500" />
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
             ) : (
-              <ChevronLeft className="w-4 h-4 text-gray-500" />
+              <ChevronLeft className="w-4 h-4 text-muted-foreground" />
             )}
           </button>
         </div>
 
         {/* Mobile Sidebar Header */}
-        <div className="lg:hidden flex items-center justify-between p-4 border-b border-gray-100 h-16">
+        <div className="lg:hidden flex items-center justify-between p-4 border-b border-border h-16">
           <Link href="/dashboard">
             <Image
               src="/logo.webp"
@@ -164,10 +164,10 @@ export function Sidebar() {
           </Link>
           <button
             onClick={() => setIsMobileOpen(false)}
-            className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors"
             type="button"
           >
-            <X className="w-5 h-5 text-gray-500" />
+            <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
 
@@ -185,13 +185,11 @@ export function Sidebar() {
             <>
               <div className="pt-4 pb-1">
                 {!isCollapsed && (
-                  <span className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  <span className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Management
                   </span>
                 )}
-                {isCollapsed && (
-                  <div className="border-t border-gray-200 mx-2" />
-                )}
+                {isCollapsed && <div className="border-t border-border mx-2" />}
               </div>
               {managementItems.map(renderNavItem)}
             </>
@@ -201,7 +199,7 @@ export function Sidebar() {
         {/* Bottom Section */}
         <div
           className={cn(
-            "border-t border-gray-100 space-y-1",
+            "border-t border-border space-y-1",
             isCollapsed ? "p-2" : "p-4",
           )}
         >
@@ -211,7 +209,7 @@ export function Sidebar() {
           <button
             onClick={handleLogout}
             className={cn(
-              "w-full flex items-center rounded-xl text-red-500 hover:bg-red-50 transition-all py-2.5",
+              "w-full flex items-center rounded-xl text-destructive hover:bg-destructive/10 transition-all py-2.5",
               // Base (Mobile/Expanded)
               "justify-start gap-3 px-3",
               // Desktop Collapsed override

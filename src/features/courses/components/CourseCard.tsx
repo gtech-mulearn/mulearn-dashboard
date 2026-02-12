@@ -31,8 +31,8 @@ export function CourseCard({ course, onEnroll, isEnrolling }: CourseCardProps) {
   };
 
   return (
-    <Card className="h-full flex flex-col overflow-hidden group hover:shadow-lg transition-all duration-300 border-gray-200 rounded-2xl hover:border-[#0961F5]/30 bg-white">
-      <div className="relative aspect-video w-full overflow-hidden bg-gray-50">
+    <Card className="h-full flex flex-col overflow-hidden group hover:shadow-lg transition-all duration-300 border-border rounded-2xl hover:border-primary/30 bg-card">
+      <div className="relative aspect-video w-full overflow-hidden bg-muted">
         {course.imageUrl ? (
           <Image
             src={course.imageUrl}
@@ -42,7 +42,7 @@ export function CourseCard({ course, onEnroll, isEnrolling }: CourseCardProps) {
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         ) : (
-          <div className="flex items-center justify-center h-full bg-gradient-to-br from-blue-50 to-indigo-50 text-blue-200">
+          <div className="flex items-center justify-center h-full bg-linear-to-br from-primary/5 to-primary/10 text-primary/30">
             <svg
               role="img"
               aria-label="description"
@@ -64,7 +64,7 @@ export function CourseCard({ course, onEnroll, isEnrolling }: CourseCardProps) {
           {typeof course.karma === "number" && course.karma > 0 && (
             <Badge
               variant="secondary"
-              className="bg-white/90 backdrop-blur-sm shadow-sm text-yellow-600 gap-1 border-0 rounded-full px-3 py-1"
+              className="bg-background/90 backdrop-blur-sm shadow-sm text-yellow-600 gap-1 border-0 rounded-full px-3 py-1"
             >
               <Trophy className="w-3 h-3" />
               {course.karma} Karma
@@ -77,11 +77,11 @@ export function CourseCard({ course, onEnroll, isEnrolling }: CourseCardProps) {
         <div className="flex justify-between items-start gap-2">
           <Badge
             variant="outline"
-            className="text-xs font-normal text-gray-500 border-gray-200 rounded-lg"
+            className="text-xs font-normal text-muted-foreground border-border rounded-lg"
           >
             {course.source === "wadhwani" ? "Wadhwani" : "OpenGrad"}
           </Badge>
-          <div className="flex gap-2 text-xs text-gray-500">
+          <div className="flex gap-2 text-xs text-muted-foreground">
             {course.lessonCount !== undefined && (
               <span className="flex items-center gap-1">
                 <BookOpen className="w-3 h-3" />
@@ -96,13 +96,13 @@ export function CourseCard({ course, onEnroll, isEnrolling }: CourseCardProps) {
             )}
           </div>
         </div>
-        <CardTitle className="line-clamp-2 text-lg font-bold text-gray-900 group-hover:text-[#0961F5] transition-colors">
+        <CardTitle className="line-clamp-2 text-lg font-bold text-foreground group-hover:text-primary transition-colors">
           {course.title}
         </CardTitle>
       </CardHeader>
 
       <CardContent className="flex-grow space-y-4">
-        <CardDescription className="line-clamp-3 text-sm leading-relaxed text-gray-600">
+        <CardDescription className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">
           {course.description || "No description available for this course."}
         </CardDescription>
 
@@ -122,7 +122,7 @@ export function CourseCard({ course, onEnroll, isEnrolling }: CourseCardProps) {
 
       <CardFooter className="pt-2 pb-6 grid grid-cols-2 gap-3">
         <Button
-          className="w-full bg-[#0961F5] hover:bg-[#0054E8] text-white shadow-md transition-all hover:shadow-lg rounded-xl h-11 col-span-2"
+          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-md transition-all hover:shadow-lg rounded-xl h-11 col-span-2"
           onClick={handleEnroll}
           disabled={isEnrolling}
         >
@@ -136,7 +136,7 @@ export function CourseCard({ course, onEnroll, isEnrolling }: CourseCardProps) {
         {course.source === "wadhwani" && (
           <Button
             variant="outline"
-            className="w-full border-gray-200 hover:bg-gray-50 text-gray-700 rounded-xl h-11 col-span-2 mt-[-6px]"
+            className="w-full border-border hover:bg-muted text-muted-foreground rounded-xl h-11 col-span-2 mt-[-6px]"
             onClick={handleSubmit}
           >
             <ExternalLink className="w-4 h-4 mr-2" />

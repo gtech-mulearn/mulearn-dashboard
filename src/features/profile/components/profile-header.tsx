@@ -51,7 +51,7 @@ export function ProfileHeader({
           priority
         />
         {/* Gradient overlay for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-black/40" />
+        <div className="absolute inset-0 bg-linear-to-r from-black/50 to-black/40" />
 
         {/* Profile Content - Overlaid on banner */}
         <div className="absolute inset-0 flex items-end p-4 sm:items-center sm:px-6">
@@ -60,7 +60,7 @@ export function ProfileHeader({
             <div className="flex min-w-0 flex-1 items-start gap-3 sm:items-center sm:gap-4">
               {/* Avatar */}
               <div className="relative shrink-0">
-                <div className="h-16 w-16 overflow-hidden rounded-xl border-2 border-white/90 bg-white shadow-lg sm:h-20 sm:w-20 sm:rounded-2xl sm:border-3">
+                <div className="h-16 w-16 overflow-hidden rounded-xl border-2 border-background/90 bg-card shadow-lg sm:h-20 sm:w-20 sm:rounded-2xl sm:border-3">
                   {profile.profile_pic && !imageError ? (
                     <Image
                       src={`${profile.profile_pic}?${Date.now()}`}
@@ -71,13 +71,13 @@ export function ProfileHeader({
                       onError={() => setImageError(true)}
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 text-xl font-bold text-white sm:text-2xl">
+                    <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-indigo-500 to-purple-600 text-xl font-bold text-white sm:text-2xl">
                       {profile.full_name?.charAt(0) || "?"}
                     </div>
                   )}
                 </div>
                 {/* Level Badge */}
-                <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600 text-[10px] font-bold text-white shadow-lg ring-2 ring-white sm:h-7 sm:w-7 sm:text-xs">
+                <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-linear-to-br from-violet-500 to-purple-600 text-[10px] font-bold text-white shadow-lg ring-2 ring-white sm:h-7 sm:w-7 sm:text-xs">
                   {level}
                 </div>
               </div>

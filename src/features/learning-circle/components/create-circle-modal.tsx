@@ -81,7 +81,7 @@ export function CreateCircleModal({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button className="gap-2 bg-[#0961F5] hover:bg-[#0751d4]">
+          <Button className="gap-2 bg-primary hover:bg-primary/90">
             <Plus className="h-4 w-4" />
             Create Circle
           </Button>
@@ -91,7 +91,7 @@ export function CreateCircleModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-50">
-              <Users className="h-5 w-5 text-[#0961F5]" />
+              <Users className="h-5 w-5 text-primary" />
             </div>
             Create Learning Circle
           </DialogTitle>
@@ -108,7 +108,7 @@ export function CreateCircleModal({
             <select
               id="ig"
               {...register("ig")}
-              className="block w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm focus:border-[#0961F5] focus:ring-[#0961F5]"
+              className="block w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:border-ring focus:ring-ring"
             >
               <option value="">Select an interest group</option>
               {interestGroups.map((ig) => (
@@ -128,7 +128,7 @@ export function CreateCircleModal({
             <select
               id="org"
               {...register("org")}
-              className="block w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm focus:border-[#0961F5] focus:ring-[#0961F5]"
+              className="block w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:border-ring focus:ring-ring"
             >
               <option value="">Select an organization</option>
               {organizations.map((org) => (
@@ -185,7 +185,7 @@ export function CreateCircleModal({
             <Button
               type="submit"
               disabled={isPending}
-              className="bg-[#0961F5] hover:bg-[#0751d4]"
+              className="bg-primary hover:bg-primary/90"
             >
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Create Circle

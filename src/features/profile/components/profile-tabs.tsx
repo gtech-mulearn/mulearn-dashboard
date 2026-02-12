@@ -40,8 +40,8 @@ export function ProfileTabs({ activeTab, onTabChange }: ProfileTabsProps) {
             className={cn(
               "relative whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-all",
               activeTab === tab.id
-                ? "bg-white text-primary shadow-sm"
-                : "text-gray-600 hover:bg-white/50 hover:text-gray-900",
+                ? "bg-card text-primary shadow-sm"
+                : "text-muted-foreground hover:bg-card/50 hover:text-foreground",
             )}
           >
             {tab.label}

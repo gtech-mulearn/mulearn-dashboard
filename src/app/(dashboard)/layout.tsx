@@ -24,7 +24,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <Suspense fallback={null}>
         <UnauthorizedHandler />
       </Suspense>
-      <div className="min-h-screen bg-gray-50 flex justify-between">
+      <div className="min-h-screen bg-muted/40 flex justify-between">
         <Sidebar />
         <DashboardContent>{children}</DashboardContent>
       </div>

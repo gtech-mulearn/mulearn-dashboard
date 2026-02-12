@@ -33,7 +33,7 @@ function getMeetingStatus(meeting: Meeting) {
   const now = new Date();
 
   if (meeting.is_ended) {
-    return { label: "Ended", color: "bg-gray-100 text-gray-600" };
+    return { label: "Ended", color: "bg-muted text-muted-foreground" };
   }
 
   // Check if within join window (2 hours before to duration + 2 hours after)
@@ -70,7 +70,7 @@ export function MeetingCard({
     isFuture(meetTime);
 
   return (
-    <div className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md">
+    <div className="group relative overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-sm transition-all duration-300 hover:shadow-md">
       {/* Status Badge */}
       <div className="mb-4 flex items-center justify-between">
         <span
@@ -94,28 +94,28 @@ export function MeetingCard({
 
       {/* Title */}
       <Link href={`/dashboard/learning-circle/meetings/${meeting.id}`}>
-        <h3 className="mb-2 text-lg font-semibold text-gray-900 group-hover:text-[#0961F5] transition-colors line-clamp-2">
+        <h3 className="mb-2 text-lg font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2">
           {meeting.title}
         </h3>
       </Link>
 
       {/* Description */}
-      <p className="mb-4 text-sm text-gray-500 line-clamp-2">
+      <p className="mb-4 text-sm text-muted-foreground line-clamp-2">
         {meeting.description}
       </p>
 
       {/* Meta Info */}
       <div className="mb-4 space-y-2">
         {/* Date & Time */}
-        <div className="flex items-center gap-2 text-sm text-gray-600">
-          <Calendar className="h-4 w-4 text-gray-400" />
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Calendar className="h-4 w-4 text-muted-foreground" />
           <span>{format(meetTime, "MMM d, yyyy")}</span>
-          <Clock className="ml-2 h-4 w-4 text-gray-400" />
+          <Clock className="ml-2 h-4 w-4 text-muted-foreground" />
           <span>{format(meetTime, "h:mm a")}</span>
         </div>
 
         {/* Location/Mode */}
-        <div className="flex items-center gap-2 text-sm text-gray-600">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
           {isOnline ? (
             <>
               <Video className="h-4 w-4 text-blue-500" />
@@ -131,10 +131,10 @@ export function MeetingCard({
 
         {/* Interest Group */}
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+          <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
             {meeting.ig_name}
           </span>
-          <span className="flex items-center gap-1 text-xs text-gray-500">
+          <span className="flex items-center gap-1 text-xs text-muted-foreground">
             <Users className="h-3 w-3" />
             {meeting.attendees_count}
           </span>
@@ -142,8 +142,10 @@ export function MeetingCard({
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-between border-t border-gray-100 pt-4">
-        <span className="text-xs text-gray-400">by {meeting.created_by}</span>
+      <div className="flex items-center justify-between border-t border-border pt-4">
+        <span className="text-xs text-muted-foreground">
+          by {meeting.created_by}
+        </span>
 
         <div className="flex gap-2">
           {canRsvp && onRsvp && (
@@ -161,7 +163,7 @@ export function MeetingCard({
           <Link href={`/dashboard/learning-circle/meetings/${meeting.id}`}>
             <Button
               size="sm"
-              className="bg-[#0961F5] hover:bg-[#0751d4] text-xs"
+              className="bg-primary hover:bg-primary/90 text-xs"
             >
               View Details
             </Button>

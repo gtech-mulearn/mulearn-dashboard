@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function CourseSkeleton() {
   return (
-    <Card className="h-full flex flex-col overflow-hidden rounded-2xl border-gray-100 shadow-sm">
+    <Card className="h-full flex flex-col overflow-hidden rounded-2xl border-border shadow-sm">
       {/* Thumbnail Skeleton */}
       <div className="relative aspect-video w-full">
         <Skeleton className="h-full w-full rounded-none" />

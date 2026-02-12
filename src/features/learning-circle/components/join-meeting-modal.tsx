@@ -98,7 +98,7 @@ export function JoinMeetingModal({
           </div>
 
           {/* Info Box */}
-          <div className="rounded-lg bg-blue-50 p-3">
+          <div className="rounded-lg bg-primary/10 p-3">
             <p className="text-sm text-blue-700">
               💡 Get the meeting code from the organizer or scan the QR code
               they share.
