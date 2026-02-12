@@ -39,7 +39,7 @@ export function CircleCard({ circle }: CircleCardProps) {
   return (
     <Link href={`/dashboard/learning-circle/${circle.id}`}>
       <div
-        className={`group relative overflow-hidden rounded-2xl border border-gray-100 bg-gradient-to-br ${gradient} p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1`}
+        className={`group relative overflow-hidden rounded-2xl border border-gray-100 bg-linear-to-br ${gradient} p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1`}
       >
         {/* Decorative circles */}
         <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-white/30 blur-2xl" />
@@ -53,7 +53,7 @@ export function CircleCard({ circle }: CircleCardProps) {
           </div>
 
           {/* Title */}
-          <h3 className="mb-2 text-lg font-semibold text-gray-900 group-hover:text-[#0961F5] transition-colors line-clamp-2">
+          <h3 className="mb-2 text-lg font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2">
             {circle.title}
           </h3>
 
@@ -70,7 +70,7 @@ export function CircleCard({ circle }: CircleCardProps) {
             </div>
 
             {/* Arrow indicator */}
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-gray-400 shadow-sm backdrop-blur-sm transition-all group-hover:bg-[#0961F5] group-hover:text-white">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-background/80 text-muted-foreground shadow-sm backdrop-blur-sm transition-all group-hover:bg-primary group-hover:text-primary-foreground">
               <svg
                 role="img"
                 aria-label="Arrow Icon"

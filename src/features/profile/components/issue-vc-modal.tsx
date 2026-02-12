@@ -207,7 +207,7 @@ export function IssueVCModal({
     if (isLoadingDIDs) {
       return (
         <div className="flex flex-col items-center justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin text-[#0961F5]" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <p className="mt-2 text-sm text-gray-500">Loading your DIDs...</p>
         </div>
       );
@@ -303,7 +303,7 @@ export function IssueVCModal({
                     value={did}
                     checked={selectedDID === did}
                     onChange={(e) => setSelectedDID(e.target.value)}
-                    className="h-4 w-4 text-[#0961F5] focus:ring-[#0961F5]"
+                    className="h-4 w-4 text-primary focus:ring-ring"
                   />
                   <span className="text-xs break-all">
                     DID {index + 1}: {did.slice(0, 30)}...
@@ -352,7 +352,7 @@ export function IssueVCModal({
         <Button
           onClick={handleIssueVC}
           disabled={isIssuing || !selectedDID}
-          className="bg-[#0961F5] hover:bg-[#0751d4]"
+          className="bg-primary hover:bg-primary/90"
         >
           {isIssuing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Issue VC

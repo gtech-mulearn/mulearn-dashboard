@@ -64,7 +64,7 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
   if (isLoading || !circle) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-[#0961F5]" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -93,7 +93,7 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
       </Link>
 
       {/* Header Card */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 p-6 text-white shadow-lg">
+      <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-blue-500 to-indigo-600 p-6 text-white shadow-lg">
         {/* Decorative elements */}
         <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
         <div className="absolute -bottom-10 -left-10 h-32 w-32 rounded-full bg-white/10 blur-xl" />
@@ -173,7 +173,7 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
                 activeTab === tab.id
-                  ? "border-[#0961F5] text-[#0961F5]"
+                  ? "border-primary text-primary"
                   : "border-transparent text-gray-500 hover:text-gray-700"
               }`}
             >
@@ -256,7 +256,7 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
               <div className="flex justify-end">
                 <Button
                   onClick={() => setShowCreateMeetingModal(true)}
-                  className="bg-[#0961F5] hover:bg-[#0961F5]/90"
+                  className="bg-primary hover:bg-primary/90"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Schedule Meeting

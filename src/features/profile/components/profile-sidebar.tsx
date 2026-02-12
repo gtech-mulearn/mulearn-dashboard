@@ -29,7 +29,7 @@ export function ProfileSidebar({
     <div className="space-y-4">
       {/* Quick Actions - Only for own profile */}
       {isOwnProfile && (
-        <div className="rounded-2xl bg-white shadow-sm">
+        <div className="rounded-2xl bg-card p-4 shadow-sm">
           <div className="p-4">
             <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">
               Quick Actions
@@ -38,11 +38,11 @@ export function ProfileSidebar({
               <button
                 type="button"
                 onClick={onAccountSettings}
-                className="flex w-full items-center justify-between rounded-xl p-3 text-left transition-colors hover:bg-gray-50"
+                className="flex w-full items-center justify-between rounded-xl p-3 text-left transition-colors hover:bg-muted"
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50">
-                    <Settings className="h-4 w-4 text-blue-600" />
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+                    <Settings className="h-4 w-4 text-primary" />
                   </div>
                   <span className="text-sm font-medium text-gray-700">
                     Account Settings

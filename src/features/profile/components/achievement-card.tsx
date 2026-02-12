@@ -77,12 +77,12 @@ export function AchievementCard({
 
   return (
     <>
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all hover:shadow-md">
+      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-all hover:shadow-md">
         {/* Card Header with Icon */}
         <div
-          className={`flex h-32 items-center justify-center bg-gradient-to-br ${bgColor} p-4`}
+          className={`flex h-32 items-center justify-center bg-linear-to-br ${bgColor} p-4`}
         >
-          <div className="relative h-20 w-20 overflow-hidden rounded-full bg-white/80 p-2 shadow-lg">
+          <div className="relative h-20 w-20 overflow-hidden rounded-full bg-card/80 p-2 shadow-lg">
             {isLevelBased ? (
               <Image
                 src={levelImage}
@@ -103,7 +103,7 @@ export function AchievementCard({
 
         {/* Card Body */}
         <div className="p-4">
-          <h4 className="mb-1 text-center text-sm font-semibold text-gray-900 line-clamp-2">
+          <h4 className="mb-1 text-center text-sm font-semibold text-foreground line-clamp-2">
             {achievementData.achievement_name}
           </h4>
           {achievementData.description && (
@@ -135,7 +135,7 @@ export function AchievementCard({
                 className={
                   is_issued
                     ? "bg-emerald-500 hover:bg-emerald-600"
-                    : "bg-[#0961F5] hover:bg-[#0751d4]"
+                    : "bg-primary hover:bg-primary/90"
                 }
               >
                 {is_issued ? "View VC" : "Issue VC"}

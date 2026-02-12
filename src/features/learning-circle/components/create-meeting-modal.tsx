@@ -213,7 +213,7 @@ export function CreateMeetingModal({
             <Button
               type="submit"
               disabled={isSubmitting || createMeeting.isPending}
-              className="bg-[#0961F5] hover:bg-[#0961F5]/90"
+              className="bg-primary hover:bg-primary/90"
             >
               {createMeeting.isPending ? "Creating..." : "Schedule Meeting"}
             </Button>

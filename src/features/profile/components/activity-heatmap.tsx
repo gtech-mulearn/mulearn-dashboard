@@ -19,7 +19,7 @@ interface ActivityHeatmapProps {
 
 // Color intensity levels
 const COLORS = {
-  empty: "bg-gray-100",
+  empty: "bg-muted",
   level1: "bg-emerald-200",
   level2: "bg-emerald-300",
   level3: "bg-emerald-400",
@@ -117,27 +117,27 @@ export function ActivityHeatmap({ userLog, isLoading }: ActivityHeatmapProps) {
 
   if (isLoading) {
     return (
-      <div className="rounded-2xl bg-white p-6 shadow-sm">
-        <div className="mb-4 h-6 w-48 animate-pulse rounded bg-gray-200" />
-        <div className="h-[140px] animate-pulse rounded bg-gray-100" />
+      <div className="rounded-2xl bg-card p-6 shadow-sm">
+        <div className="mb-4 h-6 w-48 animate-pulse rounded bg-muted" />
+        <div className="h-[140px] animate-pulse rounded bg-muted/50" />
       </div>
     );
   }
 
   return (
-    <div className="rounded-2xl bg-white p-6 shadow-sm">
+    <div className="rounded-2xl bg-card p-6 shadow-sm">
       {/* Header */}
       <div className="mb-4 flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 className="text-lg font-semibold text-foreground">
             Activity Overview
           </h3>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             {totalKarma.toLocaleString()} karma earned this year
           </p>
         </div>
         {/* Legend */}
-        <div className="flex items-center gap-2 text-xs text-gray-500">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>Less</span>
           <div className={`h-3 w-3 rounded-sm ${COLORS.empty}`} />
           <div className={`h-3 w-3 rounded-sm ${COLORS.level1}`} />
@@ -155,7 +155,7 @@ export function ActivityHeatmap({ userLog, isLoading }: ActivityHeatmapProps) {
           {monthLabels.map(({ month, weekIndex }) => (
             <div
               key={`${month}-${weekIndex}`}
-              className="text-xs text-gray-400"
+              className="text-xs text-muted-foreground"
               style={{
                 marginLeft: `${weekIndex * 15}px`,
               }}
@@ -171,7 +171,7 @@ export function ActivityHeatmap({ userLog, isLoading }: ActivityHeatmapProps) {
             {DAYS.map((day, i) => (
               <div
                 key={day}
-                className="flex h-[12px] items-center text-[10px] text-gray-400"
+                className="flex h-[12px] items-center text-[10px] text-muted-foreground"
               >
                 {i % 2 === 1 ? day : ""}
               </div>

@@ -108,7 +108,7 @@ export function IGSelector({
             <button
               type="button"
               onClick={() => setEditMode(true)}
-              className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-50 text-[#456ff6] transition-colors hover:bg-blue-100"
+              className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors hover:bg-primary/20"
               title="Edit"
             >
               <Pencil className="h-3.5 w-3.5" />
@@ -145,7 +145,7 @@ export function IGSelector({
           sortedIgs.map((ig) => (
             <div
               key={ig.id || ig.name}
-              className={`relative flex items-center gap-2 rounded-xl border-2 border-[#456ff6] px-3 py-2 text-sm font-medium transition-all ${
+              className={`relative flex items-center gap-2 rounded-xl border-2 border-primary px-3 py-2 text-sm font-medium transition-all ${
                 editMode ? "scale-95" : ""
               }`}
             >
@@ -189,7 +189,7 @@ export function IGSelector({
                 key={ig.id}
                 type="button"
                 onClick={() => handleAddIg(ig)}
-                className="flex items-center gap-2 rounded-xl bg-blue-50 px-3 py-2 text-sm font-medium text-[#456ff6] transition-colors hover:bg-blue-100"
+                className="flex items-center gap-2 rounded-xl bg-primary/10 px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/20"
               >
                 <Plus className="h-3.5 w-3.5" />
                 {ig.name}

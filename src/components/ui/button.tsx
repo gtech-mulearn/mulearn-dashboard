@@ -10,19 +10,19 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-primary text-secondary border border-[#0054E8] shadow-[inset_0px_6px_11px_0px_rgba(255,255,255,0.33),inset_0px_-6px_17px_0px_rgba(0,0,0,0.18),0px_4px_7px_0px_rgba(0,0,0,0.18)] hover:opacity-95 rounded-full font-sans",
+          "bg-primary text-primary-foreground border border-primary/20 shadow-sm hover:opacity-90 rounded-full font-sans",
         destructive:
-          "bg-destructive text-secondary hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40",
         outline:
-          "border-2 border-primary text-primary hover:bg-primary/10 font-bold cursor-pointer   transition-all duration-300",
+          "border-2 border-primary text-primary hover:bg-primary/10 font-bold cursor-pointer transition-all duration-300",
         secondary:
-          "bg-secondary text-[#1a1a1a] hover:bg-[#a3a3a3] border border-secondary transition-all duration-300 font-bold cursor-pointer ",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-secondary transition-all duration-300 font-bold cursor-pointer",
         ghost:
-          "text-transparent bg-linear-to-r from-[#6366f1] to-[#2E85FE] bg-clip-text hover:bg-[#6366f1]/10 transition-all font-bold cursor-pointer duration-300",
+          "text-primary hover:bg-primary/10 transition-all font-bold cursor-pointer duration-300",
         link: "text-primary underline-offset-4 hover:underline",
-        blue: "bg-primary text-secondary rounded-full text-base hover:bg-mulearn-duke-purple active:bg-primary transition-all duration-300 font-bold cursor-pointer  rounded-full cursor-pointer",
+        blue: "bg-primary text-primary-foreground rounded-full text-base hover:opacity-90 active:scale-95 transition-all duration-300 font-bold cursor-pointer",
         inverted:
-          "bg-secondary text-primary hover:bg-secondary/90 rounded-full font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 font-bold cursor-pointer ",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-full font-semibold shadow-md hover:shadow-lg transition-all duration-300 font-bold cursor-pointer",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

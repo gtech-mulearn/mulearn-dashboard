@@ -35,7 +35,7 @@ export function CircleList() {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-8 w-8 animate-spin text-[#0961F5]" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <p className="text-sm text-gray-500">Loading circles...</p>
         </div>
       </div>

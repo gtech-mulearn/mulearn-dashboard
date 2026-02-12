@@ -303,6 +303,13 @@ export const endpoints = {
       `/api/v1/dashboard/profile/get-user-levels/${muid}/`,
     /** GET - Get user level feed/history */
     userLevelFeed: "/api/v1/dashboard/profile/user-level-feed/",
+  // Search Endpoints
+  // ============================================
+  search: {
+    students: "/api/v1/dashboard/user/search/",
+    mentors: "/api/v1/dashboard/user/search/",
+    colleges: "/api/v1/dashboard/organisation/institutes/college/",
+    schools: "/api/v1/dashboard/organisation/institutes/school/",
   },
 } as const;
 

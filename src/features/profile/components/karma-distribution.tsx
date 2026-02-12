@@ -93,7 +93,7 @@ export function KarmaDistribution({ profile }: KarmaDistributionProps) {
       {/* Total */}
       <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-3">
         <span className="text-sm font-medium text-gray-500">Total Karma</span>
-        <span className="text-lg font-bold text-gray-900">
+        <span className="text-lg font-bold text-foreground">
           {total.toLocaleString()}
         </span>
       </div>

@@ -46,7 +46,7 @@ export function BasicDetails({
   return (
     <div className="space-y-6">
       {/* Interest Groups Selector */}
-      <div className="rounded-2xl bg-white p-6 shadow-sm">
+      <div className="rounded-2xl bg-card p-6 shadow-sm">
         <IGSelector
           userInterestGroups={profile.interest_groups}
           userLevel={userLevel}
@@ -59,7 +59,7 @@ export function BasicDetails({
       <ActivityHeatmap userLog={userLog} isLoading={isLoading} />
 
       {/* Karma Distribution */}
-      <div className="rounded-2xl bg-white p-6 shadow-sm">
+      <div className="rounded-2xl bg-card p-6 shadow-sm">
         <KarmaDistribution profile={profile} />
       </div>
     </div>

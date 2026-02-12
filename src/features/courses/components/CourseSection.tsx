@@ -28,28 +28,28 @@ export function CourseSection({
   return (
     <section className="space-y-6 py-4">
       <div className="flex flex-col gap-1.5">
-        <h2 className="text-2xl font-bold tracking-tight text-gray-900">
+        <h2 className="text-2xl font-bold tracking-tight text-foreground">
           {title}
         </h2>
         {description && (
-          <p className="text-gray-500 text-base">{description}</p>
+          <p className="text-muted-foreground text-base">{description}</p>
         )}
       </div>
 
       {isError ? (
-        <div className="rounded-2xl border border-red-100 bg-red-50/50 p-8 flex flex-col items-center justify-center gap-4 text-red-800">
-          <div className="flex items-center gap-2 font-semibold text-red-700">
+        <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-8 flex flex-col items-center justify-center gap-4 text-destructive">
+          <div className="flex items-center gap-2 font-semibold">
             <AlertCircle className="w-5 h-5" />
             <span>Failed to load courses</span>
           </div>
-          <p className="text-sm text-red-600/80 text-center max-w-md">
+          <p className="text-sm text-destructive/80 text-center max-w-md">
             We couldn't fetch the course list at this time. Please check your
             connection or try again.
           </p>
           <Button
             variant="outline"
             onClick={refetch}
-            className="border-red-200 hover:bg-red-50 text-red-700 bg-white rounded-xl"
+            className="border-destructive/20 hover:bg-destructive/10 text-destructive bg-background rounded-xl"
           >
             <RefreshCcw className="w-4 h-4 mr-2" />
             Retry
@@ -63,8 +63,8 @@ export function CourseSection({
           ))}
         </div>
       ) : courses.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 p-12 text-center">
-          <p className="text-gray-500 font-medium">
+        <div className="rounded-2xl border border-dashed border-border bg-muted/50 p-12 text-center">
+          <p className="text-muted-foreground font-medium">
             No courses available at the moment.
           </p>
         </div>
