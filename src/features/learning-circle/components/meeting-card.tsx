@@ -64,7 +64,6 @@ function getMeetingStatus(meeting: Meeting) {
 
 export function MeetingCard({
   meeting,
-  showCircleLink = false,
   onRsvp,
   isRsvpLoading,
 }: MeetingCardProps) {

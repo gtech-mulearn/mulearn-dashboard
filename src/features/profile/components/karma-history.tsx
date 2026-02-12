@@ -9,8 +9,9 @@
 
 "use client";
 
-import { Flame, Loader2 } from "lucide-react";
+import { Flame } from "lucide-react";
 import { useState } from "react";
+import Loader from "@/app/loading";
 import type { UserLogData } from "../schemas";
 
 interface KarmaHistoryProps {
@@ -42,7 +43,7 @@ export function KarmaHistory({ userLog, isLoading }: KarmaHistoryProps) {
   if (isLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-[#0961F5]" />
+        <Loader />
       </div>
     );
   }
@@ -50,7 +51,7 @@ export function KarmaHistory({ userLog, isLoading }: KarmaHistoryProps) {
   if (!userLog || userLog.length === 0) {
     return (
       <div className="rounded-2xl bg-white p-8 text-center shadow-sm">
-        <p className="italic text-[#456ff6]">
+        <p className="italic text-primary">
           Hey there! We know you&apos;re new here, so grab some Karma and
           we&apos;ll keep score of it here!
         </p>

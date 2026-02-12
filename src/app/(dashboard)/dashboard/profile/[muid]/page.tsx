@@ -8,9 +8,10 @@
 
 "use client";
 
-import { Loader2, ShieldX } from "lucide-react";
+import { ShieldX } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useState } from "react";
+import Loader from "@/app/loading";
 import {
   BasicDetails,
   KarmaHistory,
@@ -61,11 +62,7 @@ export default function PublicProfilePage() {
 
   // Loading state
   if (isLoadingProfile) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-[#0961F5]" />
-      </div>
-    );
+    return <Loader />;
   }
 
   // Error or private profile

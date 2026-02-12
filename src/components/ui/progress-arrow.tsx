@@ -41,10 +41,10 @@ export function ProgressArrow({
       className={cn(
         "relative inline-flex items-center justify-center",
         "w-14 h-14 rounded-full",
-        "bg-[#0961F5] text-white",
+        "bg-primary text-white",
         "shadow-[inset_0_6px_11px_0_rgba(255,255,255,0.33),inset_0_-6px_17px_0_rgba(0,0,0,0.18)]",
         "border border-[#0054E8]",
-        "hover:bg-[#0961F5]/90 active:scale-95 transition-all",
+        "hover:bg-primary/90 active:scale-95 transition-all",
         "disabled:opacity-50 disabled:cursor-not-allowed",
         className,
       )}

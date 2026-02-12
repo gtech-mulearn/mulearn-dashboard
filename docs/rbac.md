@@ -6,22 +6,42 @@
 
 ## Table of Contents
 
-- [Architecture Overview](#architecture-overview)
-- [Layer 1 — Middleware (Edge)](#layer-1--middleware-edge)
-- [Layer 2 — Server Components](#layer-2--server-components)
-- [Layer 3 — Client Components](#layer-3--client-components)
-- [Layer 4 — Backend (Django)](#layer-4--backend-django)
-- [File Reference](#file-reference)
-- [Roles](#roles)
-- [Permissions](#permissions)
-- [How-To Guides](#how-to-guides)
-- [Adding a New Role](#adding-a-new-role)
-- [Adding a New Permission](#adding-a-new-permission)
-- [Protecting a New Route](#protecting-a-new-route)
-- [Protecting a Server Component Page](#protecting-a-server-component-page)
-- [Hiding a UI Element Based on Role](#hiding-a-ui-element-based-on-role)
-- [Checking Permissions in Client Logic](#checking-permissions-in-client-logic)
-- [Scalability & Future Direction](#scalability--future-direction)
+- [Role-Based Access Control (RBAC)](#role-based-access-control-rbac)
+  - [Table of Contents](#table-of-contents)
+  - [Architecture Overview](#architecture-overview)
+  - [Layer 1 — Middleware (Edge)](#layer-1--middleware-edge)
+    - [How route matching works](#how-route-matching-works)
+    - [Why we decode but don't verify the JWT](#why-we-decode-but-dont-verify-the-jwt)
+  - [Layer 2 — Server Components](#layer-2--server-components)
+    - [`requireAuth()`](#requireauth)
+    - [`requireRole(roles)`](#requireroleroles)
+    - [`requirePermission(permission)`](#requirepermissionpermission)
+    - [`getServerUser()`](#getserveruser)
+  - [Layer 3 — Client Components](#layer-3--client-components)
+    - [`<RoleGate>` component](#rolegate-component)
+      - [Permission-based (recommended)](#permission-based-recommended)
+      - [Role-based](#role-based)
+      - [With fallback](#with-fallback)
+    - [`<RoleExclude>` component](#roleexclude-component)
+    - [`usePermissions()` hook](#usepermissions-hook)
+  - [Layer 4 — Backend (Django)](#layer-4--backend-django)
+  - [File Reference](#file-reference)
+    - [Import paths](#import-paths)
+  - [Roles](#roles)
+    - [Dynamic IG Roles](#dynamic-ig-roles)
+    - [Role Group Presets](#role-group-presets)
+  - [Permissions](#permissions)
+  - [How-To Guides](#how-to-guides)
+    - [Adding a New Role](#adding-a-new-role)
+    - [Adding a New Permission](#adding-a-new-permission)
+    - [Protecting a New Route](#protecting-a-new-route)
+    - [Protecting a Server Component Page](#protecting-a-server-component-page)
+    - [Hiding a UI Element Based on Role](#hiding-a-ui-element-based-on-role)
+    - [Checking Permissions in Client Logic](#checking-permissions-in-client-logic)
+  - [Scalability \& Future Direction](#scalability--future-direction)
+    - [Current approach: Hardcoded roles](#current-approach-hardcoded-roles)
+    - [When to upgrade to backend-driven permissions](#when-to-upgrade-to-backend-driven-permissions)
+    - [What stays the same regardless](#what-stays-the-same-regardless)
 
 ---
 
@@ -47,7 +67,7 @@ Request Flow:
 
 ## Layer 1 — Middleware (Edge)
 
-**File**: `src/middleware.ts`
+**File**: `src/proxy.ts`
 
 The middleware runs on every navigation request before any page component executes. It:
 

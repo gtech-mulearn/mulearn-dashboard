@@ -9,7 +9,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -25,6 +25,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
 
 const registerFormSchema = z
   .object({
@@ -220,11 +221,11 @@ export function RegisterForm({ onSubmit, isLoading }: RegisterFormProps) {
           {/* Primary Action Button */}
           <Button
             type="submit"
-            variant="glossy"
+            variant="default"
             className="w-full mt-6"
             disabled={isLoading}
           >
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isLoading && <Spinner className="mr-2 h-4 w-4" />}
             Create account
           </Button>
         </form>
@@ -236,7 +237,7 @@ export function RegisterForm({ onSubmit, isLoading }: RegisterFormProps) {
           <span className="w-full border-t border-gray-200" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-white dark:bg-slate-950 px-4 text-muted-foreground">
+          <span className="bg-secondary px-4 text-secondary-foreground">
             OR
           </span>
         </div>
@@ -294,7 +295,7 @@ export function RegisterForm({ onSubmit, isLoading }: RegisterFormProps) {
         Already have an account?{" "}
         <Link
           href="/login"
-          className="font-medium text-[#0961F5] hover:underline"
+          className="font-medium text-primary hover:underline"
         >
           Sign in
         </Link>

@@ -1,7 +1,7 @@
 /**
- * Next.js Middleware
+ * Next.js Proxy
  *
- * 📍 src/middleware.ts
+ * 📍 src/proxy.ts
  *
  * Route protection with 2-tier authentication and authorization:
  *   Tier 1: Cookie existence check (is user logged in?)
@@ -196,7 +196,7 @@ function findRouteConfig(pathname: string): RouteConfig | null {
 
 // ─── Middleware ─────────────────────────────────────────────
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isLoggedIn = isAuthenticated(request);
 
