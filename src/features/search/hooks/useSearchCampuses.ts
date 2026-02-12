@@ -33,7 +33,6 @@ export function useSearchCampuses(
         perPage: 30,
         searchType,
       }),
-    enabled: debouncedQuery.length >= 3,
     staleTime: 5 * 60 * 1000,
   });
 

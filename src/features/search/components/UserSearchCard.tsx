@@ -73,7 +73,7 @@ export function UserSearchCard({ user }: UserSearchCardProps) {
             {user.interest_groups.slice(0, 3).map((ig) => (
               <span
                 key={ig}
-                className="rounded-full bg-gradient-to-r from-purple-50 to-indigo-50 px-3 py-1.5 text-sm font-medium text-purple-700 ring-1 ring-inset ring-purple-200"
+                className="rounded-full  from-primary-50 to-primary/10 px-3 py-1.5 text-sm font-medium text-primary"
               >
                 {ig}
               </span>
@@ -83,7 +83,10 @@ export function UserSearchCard({ user }: UserSearchCardProps) {
       )}
 
       {/* View Profile Button */}
-      <Button asChild className="w-full">
+      <Button
+        asChild
+        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+      >
         <Link href={`/dashboard/profile/${user.muid}`}>View Profile</Link>
       </Button>
     </div>

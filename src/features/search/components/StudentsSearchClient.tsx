@@ -47,13 +47,7 @@ export function StudentsSearchClient() {
       </div>
 
       {/* Results */}
-      {searchQuery.length < 3 ? (
-        <div className="text-center py-16">
-          <p className="text-muted-foreground text-lg">
-            Enter at least 3 characters to search
-          </p>
-        </div>
-      ) : isError ? (
+      {isError ? (
         <div className="text-center py-16">
           <p className="text-destructive text-lg">
             Failed to load results. Please try again.
@@ -66,8 +60,11 @@ export function StudentsSearchClient() {
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {data?.data.map((user) => (
-              <UserSearchCard key={user.id || user.muid} user={user} />
+            {data?.data.map((user, index) => (
+              <UserSearchCard
+                key={user.muid || user.id || `user-${index}`}
+                user={user}
+              />
             ))}
           </div>
 

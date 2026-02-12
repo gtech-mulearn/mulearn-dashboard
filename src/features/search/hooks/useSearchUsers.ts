@@ -27,7 +27,6 @@ export function useSearchUsers(initialQuery = "") {
         pageIndex: page,
         perPage: 30,
       }),
-    enabled: debouncedQuery.length >= 3,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 

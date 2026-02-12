@@ -47,13 +47,7 @@ export function MentorsSearchClient() {
       </div>
 
       {/* Results */}
-      {searchQuery.length < 3 ? (
-        <div className="text-center py-16">
-          <p className="text-muted-foreground text-lg">
-            Enter at least 3 characters to search
-          </p>
-        </div>
-      ) : isError ? (
+      {isError ? (
         <div className="text-center py-16">
           <p className="text-destructive text-lg">
             Failed to load results. Please try again.
@@ -66,8 +60,11 @@ export function MentorsSearchClient() {
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {data?.data.map((mentor) => (
-              <UserSearchCard key={mentor.id || mentor.muid} user={mentor} />
+            {data?.data.map((mentor, index) => (
+              <UserSearchCard
+                key={mentor.muid || mentor.id || `mentor-${index}`}
+                user={mentor}
+              />
             ))}
           </div>
 

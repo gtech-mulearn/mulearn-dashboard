@@ -77,13 +77,7 @@ export function CampusesSearchClient() {
       </div>
 
       {/* Results */}
-      {searchQuery.length < 3 ? (
-        <div className="text-center py-16">
-          <p className="text-muted-foreground text-lg">
-            Enter at least 3 characters to search
-          </p>
-        </div>
-      ) : isError ? (
+      {isError ? (
         <div className="text-center py-16">
           <p className="text-destructive text-lg">
             Failed to load results. Please try again.
@@ -96,8 +90,11 @@ export function CampusesSearchClient() {
       ) : (
         <>
           <div className="space-y-4">
-            {data?.data.map((campus) => (
-              <CampusSearchCard key={campus.id} campus={campus} />
+            {data?.data.map((campus, index) => (
+              <CampusSearchCard
+                key={campus.id || campus.code || `campus-${index}`}
+                campus={campus}
+              />
             ))}
           </div>
 

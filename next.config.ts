@@ -8,6 +8,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "mulearn.org",
       },
+      {
+        protocol: "https",
+        hostname: "dev.mulearn.org",
+      },
     ],
   },
 };
