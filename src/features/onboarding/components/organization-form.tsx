@@ -9,7 +9,7 @@
 
 "use client";
 
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { OptionCard } from "@/components/ui/option-card";
 import { ProgressArrow } from "@/components/ui/progress-arrow";
@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
 import type { College, Company, Department } from "../schemas";
 
 interface OrganizationFormProps {
@@ -225,7 +226,7 @@ export function OrganizationForm({
       <div className="flex justify-center py-8">
         {isLoading ? (
           <div className="w-14 h-14 flex items-center justify-center">
-            <Loader2 className="w-6 h-6 animate-spin text-[#0961F5]" />
+            <Spinner className="w-6 h-6 text-primary" />
           </div>
         ) : (
           <ProgressArrow

@@ -8,9 +8,9 @@
 
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { KeyRound, LogOut, Shield, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,7 +47,7 @@ export function AccountSettingsModal({
 
   const handleChangePassword = () => {
     onOpenChange(false);
-    router.push("/forgot-password");
+    router.push("/dashboard/settings/account");
   };
 
   const settingsItems = [

@@ -13,8 +13,8 @@
 import { Check, Pencil, Plus, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import type { InterestGroup, InterestGroupListItem } from "../schemas";
 import { useInterestGroupsList } from "../hooks";
+import type { InterestGroup, InterestGroupListItem } from "../schemas";
 
 interface IGSelectorProps {
   userInterestGroups: InterestGroup[];
@@ -159,7 +159,7 @@ export function IGSelector({
                 </button>
               )}
               <span className="text-gray-800">{ig.name}</span>
-              <span className="rounded-lg bg-[#456ff6] px-2 py-0.5 text-xs text-white">
+              <span className="rounded-lg bg-primary px-2 py-0.5 text-xs text-white">
                 {formatKarma(ig.karma)}
               </span>
             </div>

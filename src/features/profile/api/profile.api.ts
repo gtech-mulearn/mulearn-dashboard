@@ -10,11 +10,18 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
+  type ConnectedDIDsData,
+  ConnectedDIDsResponseSchema,
+  EmptyResponseSchema,
   type InterestGroupsListData,
   InterestGroupsListResponseSchema,
+  type IssuedVC,
+  IssuedVCResponseSchema,
   type Socials,
   SocialsResponseSchema,
   type TogglePublicProfileRequest,
+  type UserAchievementsData,
+  UserAchievementsResponseSchema,
   type UserLevelsData,
   UserLevelsResponseSchema,
   type UserLogData,
@@ -23,7 +30,8 @@ import {
   UserPreferencesResponseSchema,
   type UserProfile,
   UserProfileResponseSchema,
-  EmptyResponseSchema,
+  type VCCredentialInfo,
+  type VCSubjectInfo,
 } from "../schemas";
 
 // ============================================
@@ -174,6 +182,66 @@ export async function updateInterestGroups(groupIds: string[]): Promise<void> {
   await apiClient.patch(
     endpoints.user.interestGroups,
     { interest_group: groupIds },
+    EmptyResponseSchema,
+  );
+}
+
+// ============================================
+// Achievements
+// ============================================
+
+/** Get user achievements by muid */
+export async function getUserAchievements(
+  muid: string,
+): Promise<UserAchievementsData> {
+  const response = await apiClient.get(
+    endpoints.achievements.userAchievements(muid),
+    UserAchievementsResponseSchema,
+  );
+  return response.response;
+}
+
+/** Get connected DIDs for user */
+export async function getConnectedDIDs(
+  muid: string,
+): Promise<ConnectedDIDsData> {
+  const response = await apiClient.get(
+    `${endpoints.qseverse.connectedUsers}?key=muid&value=${muid}`,
+    ConnectedDIDsResponseSchema,
+  );
+  return response.response;
+}
+
+/** Issue Verifiable Credential */
+export async function issueVC(
+  subjectInfo: VCSubjectInfo,
+  credentialInfo: VCCredentialInfo,
+  templateId: string,
+): Promise<IssuedVC[]> {
+  const response = await apiClient.post(
+    endpoints.qseverse.issueVC,
+    {
+      subject_info: subjectInfo,
+      credential_info: credentialInfo,
+      template_id: templateId,
+      send_email: true,
+    },
+    IssuedVCResponseSchema,
+  );
+  return response.response;
+}
+
+/** Update VC URL after issuance */
+export async function updateVCURL(
+  achievementId: string,
+  vcUrl: string,
+): Promise<void> {
+  await apiClient.post(
+    endpoints.achievements.issueVC,
+    {
+      achievement_id: achievementId,
+      vc_url: vcUrl,
+    },
     EmptyResponseSchema,
   );
 }
