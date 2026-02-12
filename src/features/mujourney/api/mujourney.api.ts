@@ -32,7 +32,6 @@ export async function fetchUserLevels() {
     );
   } catch (error) {
     console.error("Error fetching user levels:", error);
-    // Return empty data structure instead of throwing
     return {
       hasError: false,
       statusCode: 200,

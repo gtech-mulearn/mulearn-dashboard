@@ -37,7 +37,7 @@ export function TaskList({
   const handleClosePanel = () => {
     setIsPanelOpen(false);
     // Delay clearing the task to allow animation to complete
-    setTimeout(() => setSelectedTask(null), 300);
+    setTimeout(() => setSelectedTask(null), 500);
   };
 
   const getTaskStatus = (task: Task) => {
@@ -65,7 +65,7 @@ export function TaskList({
       <button
         type="button"
         onClick={() => scroll("left")}
-        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-card hover:bg-muted rounded-full p-3 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
+        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-card hover:bg-muted rounded-full p-3 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring"
         aria-label="Scroll left"
       >
         <ChevronLeft className="w-6 h-6 text-card-foreground" />
@@ -100,7 +100,7 @@ export function TaskList({
       <button
         type="button"
         onClick={() => scroll("right")}
-        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-card hover:bg-muted rounded-full p-3 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
+        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-card hover:bg-muted rounded-full p-3 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring"
         aria-label="Scroll right"
       >
         <ChevronRight className="w-6 h-6 text-card-foreground" />

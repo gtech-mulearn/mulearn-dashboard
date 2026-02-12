@@ -1,10 +1,10 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
+  EventRowSchema,
+  EventsSchema,
   InterestGroupsListResponseSchema,
   KarmaFeedResponseSchema,
-  EventsSchema,
-  EventRowSchema,
 } from "../schemas";
 
 // ============================================

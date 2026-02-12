@@ -7,6 +7,7 @@
  */
 
 import ReactMarkdown from "react-markdown";
+import rehypeSanitize from "rehype-sanitize";
 import remarkGfm from "remark-gfm";
 
 interface MarkdownRendererProps {
@@ -18,7 +19,7 @@ interface MarkdownRendererProps {
  * Decode Unicode escape sequences like \u03bc to actual characters
  * Also handles HTML entities and other escape sequences
  */
-function decodeUnicodeEscapes(text: string): string {
+export function decodeUnicodeEscapes(text: string): string {
   try {
     let decoded = text;
 
@@ -80,6 +81,7 @@ export function MarkdownRenderer({
     <div className={className}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
+        rehypePlugins={[rehypeSanitize]}
         components={{
           // Paragraphs
           p: ({ children }) => <p className="mb-3 last:mb-0">{children}</p>,

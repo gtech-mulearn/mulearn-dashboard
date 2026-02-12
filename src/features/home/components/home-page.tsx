@@ -1,11 +1,11 @@
 "use client";
 import { useUserInfo } from "@/features/auth/hooks/use-session";
 import { useEvents, useInterestGroupsList, useKarmaFeed } from "../hooks";
+import { EventsSliderCard } from "./events-slider-card";
 import { HeroCard } from "./hero-card";
 import { InterestGroupsCard } from "./interest-groups-card";
 import { KarmaEarnersCard } from "./karma-earners-card";
 import { LearningCirclesCard } from "./learning-circles-card";
-import { EventsSliderCard } from "./events-slider-card";
 
 export function HomePage() {
   const { data: userInfo } = useUserInfo();

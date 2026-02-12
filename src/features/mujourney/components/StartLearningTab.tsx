@@ -8,15 +8,24 @@
 
 "use client";
 
-import { useStartLearning } from "../hooks";
+import type { GetUserLevelsResponse, Task, UserLevelData } from "../schemas";
 import { LevelCard } from "./LevelCard";
 
 interface StartLearningTabProps {
   filter?: string;
+  levelsData?: GetUserLevelsResponse | null;
+  isLoading?: boolean;
+  error?: Error | null;
 }
 
-export function StartLearningTab({ filter = "all" }: StartLearningTabProps) {
-  const { data, isLoading, error } = useStartLearning();
+export function StartLearningTab({
+  filter = "all",
+  levelsData,
+  isLoading,
+  error,
+}: StartLearningTabProps) {
+  // Data comes from parent
+  const data = levelsData;
 
   if (isLoading) {
     return (
@@ -56,9 +65,9 @@ export function StartLearningTab({ filter = "all" }: StartLearningTabProps) {
   // Filter out tasks with #cl- hashtags (expert/Interest Group tasks)
   // Start Learning Tab: EXCLUDE tasks containing #cl- in their hashtag
   const foundationLevels = levels
-    .map((level) => ({
+    .map((level: UserLevelData) => ({
       ...level,
-      tasks: (level.tasks || []).filter((task) => {
+      tasks: (level.tasks || []).filter((task: Task) => {
         const hashtag = task.hashtag || "";
         const isFoundationTask = !hashtag.includes("#cl-");
 
@@ -71,7 +80,7 @@ export function StartLearningTab({ filter = "all" }: StartLearningTabProps) {
         return isFoundationTask;
       }),
     }))
-    .filter((level) => (level.tasks || []).length > 0); // Remove empty levels
+    .filter((level: UserLevelData) => (level.tasks || []).length > 0); // Remove empty levels
 
   return (
     <div className="space-y-10">

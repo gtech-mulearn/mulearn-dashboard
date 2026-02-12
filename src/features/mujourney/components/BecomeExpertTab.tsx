@@ -9,10 +9,7 @@
 
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { apiClient } from "@/api/client";
-import { endpoints } from "@/api/endpoints";
 import {
   Select,
   SelectContent,
@@ -20,36 +17,37 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { authStore } from "@/lib/auth";
-import { useStartLearning } from "../hooks";
-import { InterestGroupsResponseSchema } from "../schemas/mujourney.schemas";
+import type {
+  GetUserLevelsResponse,
+  InterestGroup,
+  InterestGroupsResponse,
+  Task,
+  UserLevelData,
+} from "../schemas/mujourney.schemas";
 import { LevelCard } from "./LevelCard";
 
 interface BecomeExpertTabProps {
   filter?: string;
+  levelsData?: GetUserLevelsResponse | null;
+  igData?: InterestGroupsResponse | null;
+  isLoading?: boolean;
+  error?: Error | null;
+  isAuthenticated?: boolean;
 }
 
-export function BecomeExpertTab({ filter = "all" }: BecomeExpertTabProps) {
-  const isAuthenticated = !!authStore.getAccessToken();
+export function BecomeExpertTab({
+  filter = "all",
+  levelsData,
+  igData,
+  isLoading,
+  error,
+  isAuthenticated,
+}: BecomeExpertTabProps) {
   const [selectedIG, setSelectedIG] = useState<string>("");
 
-  // Fetch interest groups
-  const { data: igData, isLoading: igLoading } = useQuery({
-    queryKey: ["interest-groups"],
-    queryFn: () =>
-      apiClient.get(
-        endpoints.onboarding.areasOfInterest,
-        InterestGroupsResponseSchema,
-      ),
-    staleTime: 10 * 60 * 1000, // 10 minutes
-  });
-
-  // Use the SAME endpoint as Start Learning Tab
-  const {
-    data: levelsData,
-    isLoading: tasksLoading,
-    error,
-  } = useStartLearning();
+  // Data comes from parent (MuJourneyDashboard)
+  // const { data: igData, ... } = useQuery(...) -> REMOVED
+  // const { data: levelsData, ... } = useStartLearning() -> REMOVED
 
   // Auto-select first IG if authenticated
   useEffect(() => {
@@ -72,9 +70,10 @@ export function BecomeExpertTab({ filter = "all" }: BecomeExpertTabProps) {
     const levels = levelsData.response;
 
     // Filter tasks within each level for #cl- hashtags and selected IG
+    // Filter tasks within each level for #cl- hashtags and selected IG
     const filteredLevels = levels
-      .map((level) => {
-        const filteredTasks = (level.tasks || []).filter((task) => {
+      .map((level: UserLevelData) => {
+        const filteredTasks = (level.tasks || []).filter((task: Task) => {
           const hashtag = task.hashtag || "";
           const isExpertTask = hashtag.includes("#cl-");
 
@@ -94,7 +93,9 @@ export function BecomeExpertTab({ filter = "all" }: BecomeExpertTabProps) {
 
         // Deduplicate tasks by hashtag within each level
         const uniqueTasks = Array.from(
-          new Map(filteredTasks.map((task) => [task.hashtag, task])).values(),
+          new Map(
+            filteredTasks.map((task: Task) => [task.hashtag, task]),
+          ).values(),
         );
 
         return {
@@ -102,7 +103,7 @@ export function BecomeExpertTab({ filter = "all" }: BecomeExpertTabProps) {
           tasks: uniqueTasks,
         };
       })
-      .filter((level) => (level.tasks || []).length > 0); // Remove empty levels
+      .filter((level: UserLevelData) => (level.tasks || []).length > 0); // Remove empty levels
 
     return filteredLevels;
   }, [levelsData, selectedIG, filter]);
@@ -118,13 +119,13 @@ export function BecomeExpertTab({ filter = "all" }: BecomeExpertTabProps) {
           </p>
         </div>
 
-        {!igLoading && interestGroups.length > 0 && (
+        {!isLoading && interestGroups.length > 0 && (
           <Select value={selectedIG} onValueChange={setSelectedIG}>
             <SelectTrigger className="w-[250px]">
               <SelectValue placeholder="Select Interest Group" />
             </SelectTrigger>
             <SelectContent>
-              {interestGroups.map((ig) => (
+              {interestGroups.map((ig: InterestGroup) => (
                 <SelectItem key={ig.id} value={ig.id}>
                   {ig.name}
                 </SelectItem>
@@ -135,7 +136,7 @@ export function BecomeExpertTab({ filter = "all" }: BecomeExpertTabProps) {
       </div>
 
       {/* Loading State */}
-      {(igLoading || tasksLoading) && (
+      {isLoading && (
         <div className="flex items-center justify-center py-12">
           <div className="text-center space-y-4">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto" />
@@ -157,12 +158,11 @@ export function BecomeExpertTab({ filter = "all" }: BecomeExpertTabProps) {
       )}
 
       {/* Levels Display */}
-      {!igLoading &&
-        !tasksLoading &&
+      {!isLoading &&
         !error &&
         (expertLevels.length > 0 ? (
           <div className="space-y-10">
-            {expertLevels.map((level, index) => {
+            {expertLevels.map((level: UserLevelData, index: number) => {
               const uniqueKey = `${level.name}-${index}`;
               return (
                 <LevelCard key={uniqueKey} level={level} isLocked={false} />
@@ -180,7 +180,7 @@ export function BecomeExpertTab({ filter = "all" }: BecomeExpertTabProps) {
         ))}
 
       {/* No IGs Available */}
-      {!igLoading && interestGroups.length === 0 && (
+      {!isLoading && interestGroups.length === 0 && (
         <div className="text-center py-12">
           <p className="text-muted-foreground">
             {isAuthenticated

@@ -1,6 +1,6 @@
+import { ArrowRight, Plus, Users2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Plus, Users2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 

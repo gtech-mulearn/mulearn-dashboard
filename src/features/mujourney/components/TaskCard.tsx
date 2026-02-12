@@ -27,11 +27,9 @@ export function TaskCard({
 }: TaskCardProps) {
   // Status badge colors matching the reference image
   const statusBadges = {
-    completed:
-      "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-    pending:
-      "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
-    locked: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
+    completed: "bg-green-100 text-green-700 ",
+    pending: "bg-yellow-100 text-yellow-700  ",
+    locked: "bg-gray-100 text-gray-600 ",
   };
 
   // Hover effect with shadow only for pending tasks - enhanced shadow for more elevation
@@ -44,7 +42,7 @@ export function TaskCard({
   return (
     <Card
       className={cn(
-        "relative transition-all duration-300 bg-card border border-border rounded-xl overflow-hidden shadow-md h-full flex flex-col",
+        "relative transition-all duration-300 bg-card border border-border rounded-xl overflow-hidden shadow-md h-full flex flex-col focus:outline-none focus:ring-2 focus:ring-ring",
         cardHoverClass,
         completedFadeClass,
         onClick && status !== "locked" && "cursor-pointer",
@@ -55,8 +53,20 @@ export function TaskCard({
           onClick();
         }
       }}
+      role={onClick && status !== "locked" ? "button" : undefined}
+      tabIndex={onClick && status !== "locked" ? 0 : undefined}
+      onKeyDown={(e) => {
+        if (
+          onClick &&
+          status !== "locked" &&
+          (e.key === "Enter" || e.key === " ")
+        ) {
+          e.preventDefault();
+          onClick();
+        }
+      }}
     >
-      <CardContent className="p-7 space-y-5 flex flex-col flex-grow">
+      <CardContent className="p-7 space-y-5 flex flex-col grow">
         {/* Status Badge */}
         <div>
           <span
@@ -75,14 +85,14 @@ export function TaskCard({
         </div>
 
         {/* Description - Rendered with Markdown */}
-        {task.task_description && (
+        {/* {task.task_description && (
           <div className="text-base text-muted-foreground line-clamp-2 leading-relaxed font-open-sans">
             <MarkdownRenderer
               content={task.task_description}
               className="[&>*]:mb-0"
             />
           </div>
-        )}
+        )} */}
 
         {/* Metadata - Open Sans */}
         <div className="space-y-3 text-base font-open-sans flex-grow">
