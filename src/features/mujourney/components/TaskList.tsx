@@ -9,17 +9,36 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import type { Task } from "../schemas";
 import { TaskCard } from "./TaskCard";
+import { TaskDetailPanel } from "./TaskDetailPanel";
 
 interface TaskListProps {
   tasks: Task[];
   isLocked?: boolean;
+  keyPrefix?: string;
 }
 
-export function TaskList({ tasks, isLocked = false }: TaskListProps) {
+export function TaskList({
+  tasks,
+  isLocked = false,
+  keyPrefix = "",
+}: TaskListProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
+
+  const handleTaskClick = (task: Task) => {
+    setSelectedTask(task);
+    setIsPanelOpen(true);
+  };
+
+  const handleClosePanel = () => {
+    setIsPanelOpen(false);
+    // Delay clearing the task to allow animation to complete
+    setTimeout(() => setSelectedTask(null), 300);
+  };
 
   const getTaskStatus = (task: Task) => {
     if (isLocked) return "locked";
@@ -59,14 +78,19 @@ export function TaskList({ tasks, isLocked = false }: TaskListProps) {
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         {tasks.map((task, index) => {
-          // Use hashtag (without #) or fallback to index for unique key
-          const uniqueKey = task.hashtag
+          // Use hashtag (without #) with prefix or fallback to index for unique key
+          const baseKey = task.hashtag
             ? task.hashtag.replace("#", "")
             : `task-${index}`;
+          const uniqueKey = keyPrefix ? `${keyPrefix}-${baseKey}` : baseKey;
 
           return (
             <div key={uniqueKey} className="flex-shrink-0 w-[350px] snap-start">
-              <TaskCard task={task} status={getTaskStatus(task)} />
+              <TaskCard
+                task={task}
+                status={getTaskStatus(task)}
+                onClick={() => handleTaskClick(task)}
+              />
             </div>
           );
         })}
@@ -81,6 +105,13 @@ export function TaskList({ tasks, isLocked = false }: TaskListProps) {
       >
         <ChevronRight className="w-6 h-6 text-card-foreground" />
       </button>
+
+      {/* Task Detail Panel */}
+      <TaskDetailPanel
+        task={selectedTask}
+        isOpen={isPanelOpen}
+        onClose={handleClosePanel}
+      />
     </div>
   );
 }

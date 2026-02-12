@@ -22,9 +22,8 @@ import {
 } from "@/components/ui/select";
 import { authStore } from "@/lib/auth";
 import { useStartLearning } from "../hooks";
-import type { Task } from "../schemas/mujourney.schemas";
 import { InterestGroupsResponseSchema } from "../schemas/mujourney.schemas";
-import { TaskList } from "./TaskList";
+import { LevelCard } from "./LevelCard";
 
 interface BecomeExpertTabProps {
   filter?: string;
@@ -65,48 +64,47 @@ export function BecomeExpertTab({ filter = "all" }: BecomeExpertTabProps) {
 
   const interestGroups = igData?.response?.interestGroup || [];
 
-  // Extract all tasks from all levels and filter for #cl- hashtags
-  const expertTasks = useMemo(() => {
+  // Filter levels to show only #cl- tasks (Interest Group specific tasks)
+  // organized by level, similar to Start Learning Tab
+  const expertLevels = useMemo(() => {
     if (!levelsData?.response) return [];
 
     const levels = levelsData.response;
-    const allTasks: Task[] = [];
 
-    // Collect all tasks from all levels
-    levels.forEach((level) => {
-      if (level.tasks && Array.isArray(level.tasks)) {
-        allTasks.push(...level.tasks);
-      }
-    });
+    // Filter tasks within each level for #cl- hashtags and selected IG
+    const filteredLevels = levels
+      .map((level) => {
+        const filteredTasks = (level.tasks || []).filter((task) => {
+          const hashtag = task.hashtag || "";
+          const isExpertTask = hashtag.includes("#cl-");
 
-    // Filter ONLY #cl- tasks (Interest Group specific tasks)
-    // Become Expert Tab: INCLUDE only tasks containing #cl- in their hashtag
-    const filtered = allTasks.filter((task) => {
-      const hashtag = task.hashtag || "";
-      const isExpertTask = hashtag.includes("#cl-");
+          // Filter by interest group if selected
+          const matchesIG = selectedIG
+            ? task.interest_group?.id === selectedIG
+            : true;
 
-      // Apply completion filter
-      if (filter === "completed") {
-        return isExpertTask && task.completed;
-      } else if (filter === "incomplete") {
-        return isExpertTask && !task.completed;
-      }
-      return isExpertTask;
-    });
+          // Apply completion filter
+          if (filter === "completed") {
+            return isExpertTask && matchesIG && task.completed;
+          } else if (filter === "incomplete") {
+            return isExpertTask && matchesIG && !task.completed;
+          }
+          return isExpertTask && matchesIG;
+        });
 
-    // Deduplicate tasks by hashtag (same task can appear in multiple levels)
-    const uniqueTasks = Array.from(
-      new Map(filtered.map((task) => [task.hashtag, task])).values(),
-    );
+        // Deduplicate tasks by hashtag within each level
+        const uniqueTasks = Array.from(
+          new Map(filteredTasks.map((task) => [task.hashtag, task])).values(),
+        );
 
-    // If an IG is selected, further filter by interest group
-    if (selectedIG && uniqueTasks.length > 0) {
-      return uniqueTasks.filter(
-        (task) => task.interest_group?.id === selectedIG,
-      );
-    }
+        return {
+          ...level,
+          tasks: uniqueTasks,
+        };
+      })
+      .filter((level) => (level.tasks || []).length > 0); // Remove empty levels
 
-    return uniqueTasks;
+    return filteredLevels;
   }, [levelsData, selectedIG, filter]);
 
   return (
@@ -158,12 +156,19 @@ export function BecomeExpertTab({ filter = "all" }: BecomeExpertTabProps) {
         </div>
       )}
 
-      {/* Tasks Display */}
+      {/* Levels Display */}
       {!igLoading &&
         !tasksLoading &&
         !error &&
-        (expertTasks.length > 0 ? (
-          <TaskList tasks={expertTasks} />
+        (expertLevels.length > 0 ? (
+          <div className="space-y-10">
+            {expertLevels.map((level, index) => {
+              const uniqueKey = `${level.name}-${index}`;
+              return (
+                <LevelCard key={uniqueKey} level={level} isLocked={false} />
+              );
+            })}
+          </div>
         ) : (
           <div className="text-center py-12">
             <p className="text-muted-foreground">

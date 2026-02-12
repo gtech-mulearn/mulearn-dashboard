@@ -6,8 +6,6 @@
  * Displays a level with its tasks
  */
 
-"use client";
-
 import { cn } from "@/lib/utils";
 import type { Level, UserLevelData } from "../schemas";
 import { TaskList } from "./TaskList";
@@ -20,6 +18,8 @@ interface LevelCardProps {
 export function LevelCard({ level, isLocked = false }: LevelCardProps) {
   // Extract level number from name (e.g., "lvl1" -> 1)
   const levelNumber = level.name.match(/\d+/)?.[0] || "1";
+  // Use level name or id as unique prefix for task keys
+  const keyPrefix = level.name || `level-${levelNumber}`;
 
   const levelNames = [
     "Foundation",
@@ -48,7 +48,7 @@ export function LevelCard({ level, isLocked = false }: LevelCardProps) {
       </div>
 
       {/* Tasks Grid */}
-      <TaskList tasks={level.tasks} isLocked={isLocked} />
+      <TaskList tasks={level.tasks} isLocked={isLocked} keyPrefix={keyPrefix} />
     </div>
   );
 }

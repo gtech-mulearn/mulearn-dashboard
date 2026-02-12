@@ -6,8 +6,6 @@
  * Header with title and metadata
  */
 
-"use client";
-
 import { LevelProgress } from "./LevelProgress";
 
 interface JourneyHeaderProps {

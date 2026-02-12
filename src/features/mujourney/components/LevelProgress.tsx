@@ -6,8 +6,6 @@
  * Overall level progress bar
  */
 
-"use client";
-
 interface LevelProgressProps {
   currentLevel: number;
   totalKarma: number;

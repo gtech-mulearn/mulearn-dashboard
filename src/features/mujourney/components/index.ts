@@ -12,4 +12,5 @@ export * from "./LevelCard";
 export * from "./LevelProgress";
 export * from "./StartLearningTab";
 export * from "./TaskCard";
+export * from "./TaskDetailPanel";
 export * from "./TaskList";

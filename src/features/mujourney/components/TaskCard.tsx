@@ -3,27 +3,27 @@
  *
  * 📍 src/features/mujourney/components/TaskCard.tsx
  *
- * Individual task display with all metadata
+ * Individual task display with all metadata, now with markdown support
  */
 
-"use client";
-
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { Task } from "../schemas";
+import { MarkdownRenderer } from "../utils/markdown";
 
 interface TaskCardProps {
   task: Task;
   status?: "completed" | "pending" | "locked";
   className?: string;
+  onClick?: () => void;
 }
 
 export function TaskCard({
   task,
   status = "pending",
   className,
+  onClick,
 }: TaskCardProps) {
   // Status badge colors matching the reference image
   const statusBadges = {
@@ -47,8 +47,14 @@ export function TaskCard({
         "relative transition-all duration-300 bg-card border border-border rounded-xl overflow-hidden shadow-md h-full flex flex-col",
         cardHoverClass,
         completedFadeClass,
+        onClick && status !== "locked" && "cursor-pointer",
         className,
       )}
+      onClick={() => {
+        if (onClick && status !== "locked") {
+          onClick();
+        }
+      }}
     >
       <CardContent className="p-7 space-y-5 flex flex-col flex-grow">
         {/* Status Badge */}
@@ -63,16 +69,19 @@ export function TaskCard({
           </span>
         </div>
 
-        {/* Task Title - Montserrat */}
-        <h3 className="text-xl font-semibold text-card-foreground leading-tight font-montserrat">
-          {task.task_name}
-        </h3>
+        {/* Task Title - Rendered with Markdown */}
+        <div className="text-xl font-semibold text-card-foreground leading-tight font-montserrat">
+          <MarkdownRenderer content={task.task_name} className="[&>*]:mb-0" />
+        </div>
 
-        {/* Description - Open Sans */}
+        {/* Description - Rendered with Markdown */}
         {task.task_description && (
-          <p className="text-base text-muted-foreground line-clamp-2 leading-relaxed font-open-sans">
-            {task.task_description}
-          </p>
+          <div className="text-base text-muted-foreground line-clamp-2 leading-relaxed font-open-sans">
+            <MarkdownRenderer
+              content={task.task_description}
+              className="[&>*]:mb-0"
+            />
+          </div>
         )}
 
         {/* Metadata - Open Sans */}
@@ -115,21 +124,14 @@ export function TaskCard({
               status === "locked" && "bg-gray-400 cursor-not-allowed",
             )}
             disabled={status === "locked"}
-            asChild={status !== "locked" && !!task.discord_link}
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent card click when button is clicked
+              if (onClick && status !== "locked") {
+                onClick();
+              }
+            }}
           >
-            {status === "locked" ? (
-              <span>🔒 Locked</span>
-            ) : task.discord_link ? (
-              <Link
-                href={task.discord_link}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                View
-              </Link>
-            ) : (
-              <span>View</span>
-            )}
+            {status === "locked" ? <span>🔒 Locked</span> : <span>View</span>}
           </Button>
         </div>
       </CardContent>

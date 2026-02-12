@@ -6,8 +6,6 @@
  * Shows event-based tasks (placeholder for future implementation)
  */
 
-"use client";
-
 export function EventsTab() {
   return (
     <div className="flex items-center justify-center py-24">
