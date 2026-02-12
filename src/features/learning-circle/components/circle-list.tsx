@@ -8,9 +8,10 @@
 
 "use client";
 
-import { Loader2, Search, Users } from "lucide-react";
+import { Search, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
 import { useCircles } from "../hooks";
 import { CircleCard } from "./circle-card";
 
@@ -35,7 +36,7 @@ export function CircleList() {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Spinner className="h-8 w-8" />
           <p className="text-sm text-gray-500">Loading circles...</p>
         </div>
       </div>

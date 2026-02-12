@@ -12,6 +12,7 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/stores/ui-store";
+import { ConnectAccountsBanner } from "../dashboard/connect-banner";
 
 interface DashboardContentProps {
   children: ReactNode;
@@ -30,6 +31,7 @@ export function DashboardContent({ children }: DashboardContentProps) {
       <div className="p-2 lg:p-4">
         <div className="bg-background rounded-2xl shadow-sm p-4 lg:p-6">
           {children}
+          <ConnectAccountsBanner />
         </div>
       </div>
     </main>

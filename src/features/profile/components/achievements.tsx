@@ -9,8 +9,9 @@
 
 "use client";
 
-import { Loader2, Trophy } from "lucide-react";
+import { Trophy } from "lucide-react";
 import { useCallback } from "react";
+import { Spinner } from "@/components/ui/spinner";
 import { useUserAchievements } from "../hooks";
 import { AchievementCard } from "./achievement-card";
 
@@ -38,7 +39,7 @@ export function Achievements({
     return (
       <div className="rounded-2xl bg-card p-8 shadow-sm">
         <div className="flex min-h-[200px] items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Spinner className="h-8 w-8" />
         </div>
       </div>
     );

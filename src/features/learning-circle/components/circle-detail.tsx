@@ -14,7 +14,6 @@ import {
   ChevronLeft,
   Crown,
   Edit,
-  Loader2,
   Plus,
   Trophy,
   Users,
@@ -23,6 +22,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { useUserProfile } from "@/features/profile";
 import {
   useCircleDetail,
@@ -64,7 +64,7 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
   if (isLoading || !circle) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Spinner className="h-8 w-8" />
       </div>
     );
   }

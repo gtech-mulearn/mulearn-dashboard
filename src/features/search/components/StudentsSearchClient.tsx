@@ -1,5 +1,6 @@
 "use client";
 
+import { Spinner } from "@/components/ui/spinner";
 import { useInfiniteScroll, useSearchUsers } from "../hooks";
 import { SearchInput } from "./SearchInput";
 import { SearchTabsClient } from "./SearchTabsClient";
@@ -37,7 +38,6 @@ export function StudentsSearchClient() {
             value={searchQuery}
             onChange={setSearchQuery}
             placeholder="Search public profiles by name, skill, or role..."
-            isLoading={isLoading}
           />
         </div>
         <div className="shrink-0">
@@ -71,7 +71,7 @@ export function StudentsSearchClient() {
 
           {isLoading && (
             <div className="flex justify-center py-8">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
+              <Spinner className="h-8 w-8" />
             </div>
           )}
         </>

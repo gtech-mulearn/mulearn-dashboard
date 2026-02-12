@@ -7,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
 import { useInfiniteScroll, useSearchCampuses } from "../hooks";
 import { CampusSearchCard } from "./CampusSearchCard";
 import { SearchInput } from "./SearchInput";
@@ -47,7 +48,6 @@ export function CampusesSearchClient() {
               value={searchQuery}
               onChange={setSearchQuery}
               placeholder="Search public profiles by name, skill, or role..."
-              isLoading={isLoading}
             />
           </div>
           <Select
@@ -101,7 +101,7 @@ export function CampusesSearchClient() {
 
           {isLoading && (
             <div className="flex justify-center py-8">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
+              <Spinner className="h-8 w-8" />
             </div>
           )}
         </>
