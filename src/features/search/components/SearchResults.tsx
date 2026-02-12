@@ -1,6 +1,5 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import type { CampusSearchResult, UserSearchResult } from "../schemas";
 import { CampusSearchCard } from "./CampusSearchCard";
