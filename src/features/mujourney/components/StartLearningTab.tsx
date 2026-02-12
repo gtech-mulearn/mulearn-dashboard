@@ -8,7 +8,6 @@
 
 "use client";
 
-import { authStore } from "@/lib/auth";
 import { useStartLearning } from "../hooks";
 import { LevelCard } from "./LevelCard";
 
