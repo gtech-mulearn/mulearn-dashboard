@@ -16,7 +16,7 @@ export function UserSearchCard({ user }: UserSearchCardProps) {
   const firstLetter = user.full_name.charAt(0).toUpperCase();
 
   return (
-    <div className="rounded-lg bg-card p-6 border border-border hover:shadow-md transition-shadow">
+    <div className="rounded-lg bg-card p-6 border border-border hover:border-primary/50 hover:shadow-lg hover:shadow-primary/20 hover:bg-card/80 transition-all duration-300 flex flex-col h-full cursor-pointer group">
       {/* Header with Profile and Karma */}
       <div className="flex items-start justify-between mb-4">
         {/* Profile Info */}
@@ -63,31 +63,41 @@ export function UserSearchCard({ user }: UserSearchCardProps) {
         </div>
       </div>
 
-      {/* Top Skills */}
-      {user.interest_groups.length > 0 && (
-        <div className="mb-4">
-          <span className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
-            TOP SKILLS
-          </span>
-          <div className="flex flex-wrap gap-2 mt-2">
-            {user.interest_groups.slice(0, 3).map((ig) => (
-              <span
-                key={ig}
-                className="rounded-full  from-primary-50 to-primary/10 px-3 py-1.5 text-sm font-medium text-primary"
-              >
-                {ig}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Top Skills - Fixed height container */}
+      <div className="mb-4 min-h-[80px]">
+        {user.interest_groups.length > 0 && (
+          <>
+            <span className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
+              TOP SKILLS
+            </span>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {user.interest_groups.slice(0, 3).map((ig) => (
+                <span
+                  key={ig}
+                  className="rounded-full from-primary-50 to-primary/10 px-3 py-1.5 text-sm font-medium text-primary"
+                >
+                  {ig}
+                </span>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Spacer to push button to bottom */}
+      <div className="flex-grow"></div>
 
       {/* View Profile Button */}
       <Button
         asChild
-        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+        className="w-full bg-primary/90 hover:bg-primary/90 text-background transition-all duration-300 shadow-[0_0_15px_rgba(9,97,245,0.3)] hover:shadow-[0_0_25px_rgba(9,97,245,0.5)] hover:scale-105 border border-primary/20"
       >
-        <Link href={`/dashboard/profile/${user.muid}`}>View Profile</Link>
+        <Link
+          href={`/dashboard/profile/${user.muid}`}
+          className="flex items-center justify-center gap-2 uppercase tracking-widest text-xs font-bold"
+        >
+          <span>View Profile</span>
+        </Link>
       </Button>
     </div>
   );
