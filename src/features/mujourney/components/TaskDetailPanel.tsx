@@ -113,6 +113,13 @@ export function TaskDetailPanel({
             <MarkdownRenderer content={task.task_name} className="[&>*]:mb-0" />
           </div>
 
+          {/* Task Description/Steps - with Markdown */}
+          {task.task_description && (
+            <div className="text-base text-muted-foreground font-open-sans prose prose-sm dark:prose-invert max-w-none">
+              <MarkdownRenderer content={task.task_description} />
+            </div>
+          )}
+
           {/* Metadata Sections */}
           <div className="space-y-6 pt-4">
             {/* Interest Group */}
