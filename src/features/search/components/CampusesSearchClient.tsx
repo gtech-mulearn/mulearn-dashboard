@@ -1,10 +1,5 @@
 "use client";
 
-import { SearchInput } from "./SearchInput";
-import { SearchTabsClient } from "./SearchTabsClient";
-import { CampusSearchCard } from "./CampusSearchCard";
-import { useSearchCampuses } from "../hooks";
-import { useInfiniteScroll } from "../hooks";
 import {
   Select,
   SelectContent,
@@ -12,6 +7,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useInfiniteScroll, useSearchCampuses } from "../hooks";
+import { CampusSearchCard } from "./CampusSearchCard";
+import { SearchInput } from "./SearchInput";
+import { SearchTabsClient } from "./SearchTabsClient";
 
 const searchTabs = [
   { label: "Learners", href: "/dashboard/search/students" },

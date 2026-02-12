@@ -1,12 +1,12 @@
 import { apiClient } from "@/api";
 import { endpoints } from "@/api/endpoints";
 import {
-  userSearchResponseSchema,
-  campusSearchResponseSchema,
-  type UserSearchData,
   type CampusSearchData,
   type CampusSearchResult,
+  campusSearchResponseSchema,
   type SearchType,
+  type UserSearchData,
+  userSearchResponseSchema,
 } from "../schemas";
 
 interface SearchParams {

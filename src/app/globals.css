@@ -146,24 +146,24 @@ h5 {
   }
 
   h1 {
-    @apply text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-primary-foreground leading-tight;
+    @apply text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-tight;
   }
 
   h2 {
-    @apply text-2xl sm:text-3xl md:text-4xl font-bold text-primary-foreground leading-snug;
+    @apply text-2xl sm:text-3xl md:text-4xl font-bold leading-snug;
   }
 
   h3 {
-    @apply text-xl md:text-2xl font-semibold text-primary-foreground;
+    @apply text-xl md:text-2xl font-semibold;
   }
 
   h4 {
-    @apply text-lg font-semibold text-primary-foreground;
+    @apply text-lg font-semibold;
   }
 
   h5,
   h6 {
-    @apply text-base font-medium text-primary-foreground;
+    @apply text-base font-medium;
   }
 
   p {
