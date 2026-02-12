@@ -5,22 +5,24 @@ import type * as React from "react";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+  "inline-flex items-center cursor-pointer justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        default:
+          "bg-primary text-secondary border border-[#0054E8] shadow-[inset_0px_6px_11px_0px_rgba(255,255,255,0.33),inset_0px_-6px_17px_0px_rgba(0,0,0,0.18),0px_4px_7px_0px_rgba(0,0,0,0.18)] hover:opacity-95 rounded-full font-sans",
         destructive:
-          "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
+          "bg-destructive text-secondary hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:
-          "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
+          "border-2 border-primary text-primary hover:bg-primary/10 font-bold cursor-pointer   transition-all duration-300",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+          "bg-secondary text-[#1a1a1a] hover:bg-[#a3a3a3] border border-secondary transition-all duration-300 font-bold cursor-pointer ",
         ghost:
-          "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
-        glossy:
-          "bg-[#0961F5] text-white border border-[#0054E8] rounded-[24px] shadow-[inset_0_6px_11px_0_rgba(255,255,255,0.33),inset_0_-6px_17px_0_rgba(0,0,0,0.18)] hover:bg-[#0961F5]/90 active:scale-95 transition-all text-base font-semibold px-8 py-4 h-auto",
+          "text-transparent bg-linear-to-r from-[#6366f1] to-[#2E85FE] bg-clip-text hover:bg-[#6366f1]/10 transition-all font-bold cursor-pointer duration-300",
         link: "text-primary underline-offset-4 hover:underline",
+        blue: "bg-primary text-secondary rounded-full text-base hover:bg-mulearn-duke-purple active:bg-primary transition-all duration-300 font-bold cursor-pointer  rounded-full cursor-pointer",
+        inverted:
+          "bg-secondary text-primary hover:bg-secondary/90 rounded-full font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 font-bold cursor-pointer ",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

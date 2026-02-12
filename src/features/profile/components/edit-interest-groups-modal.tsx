@@ -9,7 +9,7 @@
 
 "use client";
 
-import { Check, Info, Loader2 } from "lucide-react";
+import { Check, Info } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -20,6 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Spinner } from "@/components/ui/spinner";
 import { useInterestGroupsList } from "../hooks";
 import type { InterestGroup, InterestGroupListItem } from "../schemas";
 
@@ -171,7 +172,7 @@ export function EditInterestGroupsModal({
 
           {isLoadingGroups ? (
             <div className="flex h-48 items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+              <Spinner className="h-8 w-8 text-gray-400" />
             </div>
           ) : (
             <div className="space-y-4">
@@ -325,11 +326,11 @@ export function EditInterestGroupsModal({
             Cancel
           </Button>
           <Button
+            variant="default"
             onClick={handleSave}
             disabled={isSaving || isLoadingGroups}
-            className="bg-[#456ff6] hover:bg-[#3d5fd8]"
           >
-            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isSaving && <Spinner className="mr-2 h-4 w-4" />}
             Save Changes
           </Button>
         </div>

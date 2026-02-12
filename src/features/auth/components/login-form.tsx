@@ -10,7 +10,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -26,6 +26,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
 
 const loginFormSchema = z.object({
   emailOrMuid: z.string().min(1, "Email or MuID is required"),
@@ -143,7 +144,7 @@ export function LoginForm({
           <div className="flex items-center justify-between text-sm">
             <Link
               href="/forgot-password"
-              className="text-[#0961F5] hover:underline"
+              className="text-primary hover:underline"
             >
               Forgot password?
             </Link>
@@ -151,7 +152,7 @@ export function LoginForm({
               <button
                 type="button"
                 onClick={onSwitchToOTP}
-                className="text-[#0961F5] hover:underline"
+                className="text-primary hover:underline"
               >
                 Login with OTP
               </button>
@@ -161,11 +162,11 @@ export function LoginForm({
           {/* Primary Action Button */}
           <Button
             type="submit"
-            variant="glossy"
+            variant="default"
             className="w-full mt-2"
             disabled={isLoading}
           >
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isLoading && <Spinner className="mr-2 h-4 w-4" />}
             Sign in
           </Button>
         </form>
@@ -177,7 +178,7 @@ export function LoginForm({
           <span className="w-full border-t border-gray-200" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-white dark:bg-slate-950 px-4 text-muted-foreground">
+          <span className="bg-secondary px-4 text-secondary-foreground">
             OR
           </span>
         </div>
@@ -235,7 +236,7 @@ export function LoginForm({
         Don&apos;t have an account?{" "}
         <Link
           href="/register"
-          className="font-medium text-[#0961F5] hover:underline"
+          className="font-medium text-primary hover:underline"
         >
           Sign up
         </Link>

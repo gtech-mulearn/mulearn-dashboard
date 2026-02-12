@@ -9,11 +9,12 @@
 
 "use client";
 
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { OptionCard } from "@/components/ui/option-card";
 import { ProgressArrow } from "@/components/ui/progress-arrow";
+import { Spinner } from "@/components/ui/spinner";
 import { pathfinderQuestions, pathwayInfo } from "../data/questions";
 
 type PathwayCategory = "coder" | "maker" | "manager" | "creative";
@@ -132,7 +133,7 @@ export function PathwayQuiz({
                 {pathwayInfo[pathway].includes.slice(0, 3).map((skill) => (
                   <span
                     key={skill}
-                    className="text-xs bg-[#0961F5]/10 text-[#0961F5] rounded-full px-2 py-1"
+                    className="text-xs bg-primary/10 text-primary rounded-full px-2 py-1"
                   >
                     {skill}
                   </span>
@@ -145,12 +146,12 @@ export function PathwayQuiz({
         {/* Action button */}
         <div className="w-full pt-4">
           <Button
-            variant="glossy"
+            variant="default"
             className="w-full"
             onClick={handleConfirmPathways}
             disabled={isLoading}
           >
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isLoading && <Spinner className="mr-2 h-4 w-4" />}
             Begin your journey
           </Button>
         </div>
