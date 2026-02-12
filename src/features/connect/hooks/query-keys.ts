@@ -1,5 +1,5 @@
 export const connectKeys = {
   all: ["connect"] as const,
-  discord: () => [...connectKeys.all, "discord"] as const,
+  user: () => [...connectKeys.all, "user"] as const,
   qsverse: () => [...connectKeys.all, "qsverse"] as const,
 };

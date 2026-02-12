@@ -5,21 +5,21 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useDiscordInfo, useQsverseInfo } from "@/features/connect";
+import { useQsverseInfo, useUserInfo } from "@/features/connect";
 import { Spinner } from "../ui/spinner";
 
 export function ConnectAccountsBanner() {
   const pathname = usePathname();
   const [dismissed, setDismissed] = useState(false);
-  const discord = useDiscordInfo();
+  const user = useUserInfo();
   const qsverse = useQsverseInfo();
   const ALLOWED_ROUTES = ["/dashboard/profile", "/dashboard/mujourney"];
   const isAllowedRoute = ALLOWED_ROUTES.includes(pathname);
   if (!isAllowedRoute) return null;
   if (dismissed) return null;
-  if (discord.isLoading || qsverse.isLoading)
+  if (user.isLoading || qsverse.isLoading)
     return <Spinner className="h-8 w-8" />;
-  const discordConnected = discord.data?.exist_in_guild === true;
+  const discordConnected = user.data?.exist_in_guild === true;
   const qsverseConnected = (qsverse.data?.dids?.length ?? 0) > 0;
   const shouldShow = !discordConnected || !qsverseConnected;
   if (!shouldShow) return null;
@@ -40,7 +40,7 @@ export function ConnectAccountsBanner() {
               variant="default"
               className="h-9 flex-1 text-xs md:flex-none md:text-sm"
             >
-              <Link href="/settings/integrations/discord">Connect Discord</Link>
+              <Link href="/settings/integrations">Connect Discord</Link>
             </Button>
           )}
           {!qsverseConnected && (
@@ -49,7 +49,7 @@ export function ConnectAccountsBanner() {
               variant="inverted"
               className="h-9 flex-1 text-xs md:flex-none md:text-sm"
             >
-              <Link href="/settings/integrations/qsverse">Connect Qsverse</Link>
+              <Link href="/settings/integrations">Connect Qsverse</Link>
             </Button>
           )}
           <Button

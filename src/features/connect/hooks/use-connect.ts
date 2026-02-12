@@ -1,12 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchDiscordInfo, fetchQsverseInfo } from "../api/connect.api";
-import type { DiscordUserInfo, QsverseInfo } from "../schemas/connect.schema";
+import { fetchQsverseInfo, fetchUserInfo } from "../api/connect.api";
+import type { QsverseInfo, UserInfo } from "../schemas/connect.schema";
 import { connectKeys } from "./query-keys";
 
-export function useDiscordInfo() {
-  return useQuery<DiscordUserInfo>({
-    queryKey: connectKeys.discord(),
-    queryFn: fetchDiscordInfo,
+export function useUserInfo() {
+  return useQuery<UserInfo>({
+    queryKey: connectKeys.user(),
+    queryFn: fetchUserInfo,
   });
 }
 

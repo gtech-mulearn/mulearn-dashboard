@@ -26,7 +26,7 @@ export const UserInfoSchema = z.object({
   interested_in_gig_work: z.boolean(),
 });
 
-export const DiscordInfoResponseSchema = ApiResponseSchema(UserInfoSchema);
+export const UserInfoResponseSchema = ApiResponseSchema(UserInfoSchema);
 
 export const QsverseInfoSchema = z.object({
   dids: z.array(z.string()),
@@ -34,8 +34,8 @@ export const QsverseInfoSchema = z.object({
 
 export const QsverseInfoResponseSchema = ApiResponseSchema(QsverseInfoSchema);
 
-export type DiscordUserInfo = z.infer<typeof UserInfoSchema>;
-export type DiscordInfoResponse = z.infer<typeof DiscordInfoResponseSchema>;
+export type UserInfo = z.infer<typeof UserInfoSchema>;
+export type UserInfoResponse = z.infer<typeof UserInfoResponseSchema>;
 
 export type QsverseInfo = z.infer<typeof QsverseInfoSchema>;
 export type QsverseInfoResponse = z.infer<typeof QsverseInfoResponseSchema>;
