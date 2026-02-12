@@ -159,21 +159,20 @@ export function BecomeExpertTab({ filter = "all" }: BecomeExpertTabProps) {
       )}
 
       {/* Tasks Display */}
-      {!igLoading && !tasksLoading && !error && (
-        <>
-          {expertTasks.length > 0 ? (
-            <TaskList tasks={expertTasks} />
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">
-                {selectedIG
-                  ? "No expert tasks available for this interest group"
-                  : "Select an interest group to view tasks"}
-              </p>
-            </div>
-          )}
-        </>
-      )}
+      {!igLoading &&
+        !tasksLoading &&
+        !error &&
+        (expertTasks.length > 0 ? (
+          <TaskList tasks={expertTasks} />
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">
+              {selectedIG
+                ? "No expert tasks available for this interest group"
+                : "Select an interest group to view tasks"}
+            </p>
+          </div>
+        ))}
 
       {/* No IGs Available */}
       {!igLoading && interestGroups.length === 0 && (

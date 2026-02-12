@@ -220,14 +220,14 @@ export type UserLevelFeedResponse = z.infer<typeof UserLevelFeedResponseSchema>;
 // ============================================
 
 // Nested schemas for interest group
-const BlogSchema = z
+const _BlogSchema = z
   .object({
     title: z.string(),
     url: z.string(),
   })
   .passthrough();
 
-const PersonToFollowSchema = z
+const _PersonToFollowSchema = z
   .object({
     name: z.string(),
     twitter: z.string().optional(),
@@ -235,14 +235,14 @@ const PersonToFollowSchema = z
   })
   .passthrough();
 
-const LeadSchema = z
+const _LeadSchema = z
   .object({
     name: z.string(),
     email: z.string().optional(),
   })
   .passthrough();
 
-const MentorSchema = z
+const _MentorSchema = z
   .object({
     name: z.string(),
     expertise: z.string().optional(),

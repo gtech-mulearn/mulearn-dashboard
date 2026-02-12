@@ -20,7 +20,7 @@ import { mujourneyKeys } from "./query-keys";
 export function useIGTasks(igId: string, perPage = 20) {
   return useQuery({
     queryKey: mujourneyKeys.igTasks(igId || ""),
-    queryFn: () => fetchIGTasks(igId!, perPage),
+    queryFn: () => fetchIGTasks(igId || "", perPage),
     staleTime: 5 * 60 * 1000, // 5 minutes
     enabled: igId !== "", // Only fetch if igId is provided
   });

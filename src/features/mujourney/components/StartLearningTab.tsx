@@ -18,7 +18,6 @@ interface StartLearningTabProps {
 
 export function StartLearningTab({ filter = "all" }: StartLearningTabProps) {
   const { data, isLoading, error } = useStartLearning();
-  const isAuthenticated = !!authStore.getAccessToken();
 
   if (isLoading) {
     return (
