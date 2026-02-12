@@ -35,12 +35,8 @@ export const userSearchResultSchema = z.object({
     .array(
       z.union([
         z.string(), // If it's already a string
-        z
-          .object({ name: z.string() })
-          .transform((obj) => obj.name), // If it's an object with name
-        z
-          .any()
-          .transform((val) => String(val)), // Fallback
+        z.object({ name: z.string() }).transform((obj) => obj.name), // If it's an object with name
+        z.any().transform((val) => String(val)), // Fallback
       ]),
     )
     .default([]),
