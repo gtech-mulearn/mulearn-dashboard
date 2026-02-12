@@ -1,7 +1,7 @@
 "use client";
 
+import { MapPin, Trophy, Users } from "lucide-react";
 import Link from "next/link";
-import { MapPin, Users, Trophy } from "lucide-react";
 import type { CampusSearchResult } from "../schemas";
 
 interface CampusSearchCardProps {

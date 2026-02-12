@@ -1,10 +1,9 @@
 "use client";
 
+import { useInfiniteScroll, useSearchUsers } from "../hooks";
 import { SearchInput } from "./SearchInput";
 import { SearchTabsClient } from "./SearchTabsClient";
 import { UserSearchCard } from "./UserSearchCard";
-import { useSearchUsers } from "../hooks";
-import { useInfiniteScroll } from "../hooks";
 
 const searchTabs = [
   { label: "Learners", href: "/dashboard/search/students" },

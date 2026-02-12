@@ -16,16 +16,13 @@ export function Podium({ entries }: PodiumProps) {
     if (rank === 1)
       return {
         bg: "bg-chart-4",
-        text: "text-primary-foreground",
       };
     if (rank === 2)
       return {
         bg: "bg-muted",
-        text: "text-primary-foreground",
       };
     return {
       bg: "bg-chart-5",
-      text: "text-primary-foreground",
     };
   };
 
@@ -52,7 +49,7 @@ export function Podium({ entries }: PodiumProps) {
                     className="object-cover"
                   />
                   <AvatarFallback
-                    className={`font-black ${config.text} ${config.bg} text-2xl md:text-4xl`}
+                    className={`font-black ${config.bg} text-2xl md:text-4xl`}
                   >
                     {entry.name?.charAt(0)?.toUpperCase()}
                   </AvatarFallback>
@@ -64,10 +61,8 @@ export function Podium({ entries }: PodiumProps) {
                 </p>
                 <div className="space-y-0.5 md:space-y-1">
                   <div className="flex items-center justify-between text-[8px] md:text-xs font-black">
-                    <span className="text-accent">KARMA</span>
-                    <span className={config.text}>
-                      {entry.karma.toLocaleString()}
-                    </span>
+                    <span>KARMA</span>
+                    <span>{entry.karma.toLocaleString()}</span>
                   </div>
                 </div>
               </div>
@@ -76,7 +71,7 @@ export function Podium({ entries }: PodiumProps) {
               >
                 <CardContent className="h-full flex flex-col items-center justify-center p-2 md:p-4 relative">
                   <div
-                    className={`text-4xl md:text-7xl font-black ${config.text} leading-none mb-1 md:mb-2`}
+                    className={`text-4xl md:text-7xl font-black leading-none mb-1 md:mb-2`}
                   >
                     {entry.rank}
                   </div>

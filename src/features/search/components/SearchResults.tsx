@@ -1,9 +1,9 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
-import { UserSearchCard } from "./UserSearchCard";
+import type { CampusSearchResult, UserSearchResult } from "../schemas";
 import { CampusSearchCard } from "./CampusSearchCard";
-import type { UserSearchResult, CampusSearchResult } from "../schemas";
+import { UserSearchCard } from "./UserSearchCard";
 
 interface BaseSearchResultsProps {
   searchQuery: string;
