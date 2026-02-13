@@ -1,16 +1,22 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
+import axios from "axios";
 import {
   EnrollmentResponseSchema,
   type IntegrationTokenResponse,
   IntegrationTokenSchema,
   OpenGradCoursesResponseSchema,
   WadhwaniCoursesResponseSchema,
+  WadhwaniSheetResponseSchema,
+  type WadhwaniSheetCourse,
 } from "../schemas/courses.schemas";
 
 // ==========================================
 // Wadhwani API
 // ==========================================
+
+const WADHWANI_SHEET_URL =
+  "https://opensheet.elk.sh/1LEvZozIVVquXjSvtptQcjiU0_WFaxVuEYBCYyCdsCtY/sheet";
 
 export const fetchWadhwaniToken =
   async (): Promise<IntegrationTokenResponse> => {
@@ -38,6 +44,13 @@ export const enrollWadhwaniUser = async (
     { token, course_root_id: courseRootId },
     EnrollmentResponseSchema,
   );
+};
+
+export const fetchWadhwaniSheetData = async (): Promise<
+  WadhwaniSheetCourse[]
+> => {
+  const response = await axios.get(WADHWANI_SHEET_URL);
+  return WadhwaniSheetResponseSchema.parse(response.data);
 };
 
 // ==========================================
