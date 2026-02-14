@@ -8,8 +8,9 @@
 
 "use client";
 
-import { Search, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { useState } from "react";
+import { SearchInput } from "@/features/search/components/SearchInput";
 import { InterestGroupCard } from "./interest-group-card";
 import type { InterestGroup } from "../schemas/interest-groups.schema";
 
@@ -18,16 +19,16 @@ type InterestGroupsGridProps = {
   isLoading?: boolean;
 };
 
-// Beautiful gradient combinations for different interest groups
+// Beautiful gradient combinations using global CSS variables
 const gradients = [
-  "bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-700",
-  "bg-gradient-to-br from-violet-600 via-purple-700 to-fuchsia-700",
-  "bg-gradient-to-br from-teal-500 via-cyan-600 to-blue-600",
-  "bg-gradient-to-br from-rose-500 via-pink-600 to-purple-600",
-  "bg-gradient-to-br from-amber-500 via-orange-600 to-red-600",
-  "bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-600",
-  "bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700",
-  "bg-gradient-to-br from-fuchsia-600 via-pink-600 to-rose-600",
+  "bg-gradient-to-br from-primary via-primary/80 to-primary/60",
+  "bg-gradient-to-br from-[var(--chart-1)] via-[var(--chart-2)] to-[var(--chart-3)]",
+  "bg-gradient-to-br from-[var(--chart-2)] via-[var(--chart-3)] to-[var(--chart-4)]",
+  "bg-gradient-to-br from-[var(--chart-3)] via-[var(--chart-4)] to-[var(--chart-5)]",
+  "bg-gradient-to-br from-[var(--chart-5)] via-[var(--chart-1)] to-[var(--chart-2)]",
+  "bg-gradient-to-br from-[var(--chart-4)] via-[var(--chart-5)] to-[var(--chart-1)]",
+  "bg-gradient-to-br from-primary/90 via-accent to-primary/70",
+  "bg-gradient-to-br from-[var(--chart-1)] via-primary to-[var(--chart-5)]",
 ];
 
 export function InterestGroupsGrid({
@@ -44,25 +45,12 @@ export function InterestGroupsGrid({
   return (
     <div className="space-y-8">
       {/* Search Bar */}
-      <div className="relative">
-        <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-        <input
-          type="text"
-          placeholder="Search interest groups..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full rounded-2xl border border-border bg-card px-12 py-4 text-base font-medium text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-        />
-        {searchQuery && (
-          <button
-            type="button"
-            onClick={() => setSearchQuery("")}
-            className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground hover:bg-muted/80 transition-colors"
-          >
-            Clear
-          </button>
-        )}
-      </div>
+      <SearchInput
+        value={searchQuery}
+        onChange={setSearchQuery}
+        placeholder="Search interest groups..."
+        isLoading={isLoading}
+      />
 
       {/* Loading State */}
       {isLoading && (
