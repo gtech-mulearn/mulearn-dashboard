@@ -15,9 +15,6 @@ import {
 // Wadhwani API
 // ==========================================
 
-const WADHWANI_SHEET_URL =
-  "https://opensheet.elk.sh/1LEvZozIVVquXjSvtptQcjiU0_WFaxVuEYBCYyCdsCtY/sheet";
-
 export const fetchWadhwaniToken =
   async (): Promise<IntegrationTokenResponse> => {
     return apiClient.post(
@@ -49,7 +46,7 @@ export const enrollWadhwaniUser = async (
 export const fetchWadhwaniSheetData = async (): Promise<
   WadhwaniSheetCourse[]
 > => {
-  const response = await axios.get(WADHWANI_SHEET_URL);
+  const response = await axios.get(endpoints.integrations.wadhwani.sheet);
   return WadhwaniSheetResponseSchema.parse(response.data);
 };
 

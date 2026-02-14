@@ -280,6 +280,9 @@ export const endpoints = {
       courses: "/api/v1/integrations/wadhwani/course-details/",
       /** POST - Enroll/Login to course */
       enroll: "/api/v1/integrations/wadhwani/user-login/",
+      /** GET - Wadhwani Sheet URL */
+      sheet:
+        "https://opensheet.elk.sh/1LEvZozIVVquXjSvtptQcjiU0_WFaxVuEYBCYyCdsCtY/sheet",
     },
     openGrad: {
       /** POST - Get client token */
