@@ -16,6 +16,11 @@ export const manageUsersKeys = {
   communities: () => [...manageUsersKeys.all, "communities"] as const,
   roles: () => [...manageUsersKeys.all, "roles"] as const,
   areasOfInterest: () => [...manageUsersKeys.all, "areas-of-interest"] as const,
+  countries: () => [...manageUsersKeys.all, "countries"] as const,
+  states: (country: string) =>
+    [...manageUsersKeys.all, "states", country] as const,
+  districts: (state: string) =>
+    [...manageUsersKeys.all, "districts", state] as const,
 
   collegesByDistrict: (district: string) =>
     [...manageUsersKeys.all, "colleges-by-district", district] as const,

@@ -324,8 +324,6 @@ export const endpoints = {
   manageUsers: {
     /** GET - List users (query: perPage, pageIndex, search, sortBy) */
     list: "/api/v1/dashboard/user/",
-    /** POST - Create user */
-    create: "/api/v1/dashboard/user/",
     /** GET - Export users CSV */
     csv: "/api/v1/dashboard/user/csv/",
 

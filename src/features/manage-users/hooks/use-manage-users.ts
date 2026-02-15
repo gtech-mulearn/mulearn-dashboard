@@ -2,16 +2,18 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  createManageUser,
   deleteManageUser,
   getAreasOfInterest,
   getCollegesByDistrict,
   getCommunities,
+  getCountries,
+  getDistricts,
   getManageUserById,
   getManageUsers,
   getManageUsersCsv,
   getRoles,
   getSchoolsByDistrict,
+  getStates,
   searchLocations,
   updateManageUser,
 } from "../api";
@@ -75,6 +77,32 @@ export function useAreasOfInterest() {
   });
 }
 
+export function useCountries() {
+  return useQuery({
+    queryKey: manageUsersKeys.countries(),
+    queryFn: getCountries,
+    staleTime: 10 * 60 * 1000,
+  });
+}
+
+export function useStates(country: string, enabled = true) {
+  return useQuery({
+    queryKey: manageUsersKeys.states(country),
+    queryFn: () => getStates(country),
+    enabled: enabled && !!country,
+    staleTime: STALE_TIME,
+  });
+}
+
+export function useDistricts(state: string, enabled = true) {
+  return useQuery({
+    queryKey: manageUsersKeys.districts(state),
+    queryFn: () => getDistricts(state),
+    enabled: enabled && !!state,
+    staleTime: STALE_TIME,
+  });
+}
+
 export function useCollegesByDistrict(district: string, enabled = true) {
   return useQuery({
     queryKey: manageUsersKeys.collegesByDistrict(district),
@@ -99,18 +127,6 @@ export function useLocationSearch(param: string, enabled = true) {
     queryFn: () => searchLocations(param),
     enabled: enabled && !!param,
     staleTime: 60 * 1000,
-  });
-}
-
-// Mutations
-export function useCreateManageUser() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: createManageUser,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: manageUsersKeys.all });
-    },
   });
 }
 

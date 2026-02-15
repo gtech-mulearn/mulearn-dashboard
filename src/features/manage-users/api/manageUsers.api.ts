@@ -8,12 +8,15 @@ import {
   AreasOfInterestResponseSchema,
   CollegeListResponseSchema,
   CommunitiesResponseSchema,
+  CountriesResponseSchema,
+  DistrictsResponseSchema,
   LocationSearchResponseSchema,
   ManageUserDetailResponseSchema,
   ManageUserMutationResponseSchema,
   ManageUsersListResponseSchema,
   RolesResponseSchema,
   SchoolListResponseSchema,
+  StatesResponseSchema,
 } from "../schemas";
 
 function withQuery(
@@ -26,6 +29,49 @@ function withQuery(
     if (v !== undefined && v !== "") qs.set(k, String(v));
   });
   return qs.toString() ? `${endpoint}?${qs.toString()}` : endpoint;
+}
+
+function isMessageParserError(error: unknown) {
+  return (
+    error instanceof Error &&
+    error.message.includes("toLowerCase is not a function")
+  );
+}
+
+async function directUpdateManageUser(
+  id: string,
+  payload: Record<string, unknown>,
+) {
+  const token = authStore.getAccessToken();
+  const res = await fetch(
+    `${env.NEXT_PUBLIC_DJANGO_API_URL}${endpoints.manageUsers.update(id)}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(payload),
+    },
+  );
+
+  const rawData = await res.json().catch(() => null);
+  if (!res.ok) {
+    const message =
+      rawData &&
+      typeof rawData === "object" &&
+      "message" in rawData &&
+      rawData.message
+        ? JSON.stringify(rawData.message)
+        : "Failed to update user";
+    throw new Error(message);
+  }
+
+  const parsed = ManageUserMutationResponseSchema.safeParse(rawData);
+  if (!parsed.success) {
+    throw new Error("Invalid API response");
+  }
+  return parsed.data.response;
 }
 
 // ============================================
@@ -53,27 +99,24 @@ export async function getManageUserById(id: string) {
   return response.response;
 }
 
-/** POST - Create user */
-export async function createManageUser(payload: Record<string, unknown>) {
-  const response = await apiClient.post(
-    endpoints.manageUsers.create,
-    payload,
-    ManageUserMutationResponseSchema,
-  );
-  return response.response;
-}
-
 /** PATCH - Update user */
 export async function updateManageUser(
   id: string,
   payload: Record<string, unknown>,
 ) {
-  const response = await apiClient.patch(
-    endpoints.manageUsers.update(id),
-    payload,
-    ManageUserMutationResponseSchema,
-  );
-  return response.response;
+  try {
+    const response = await apiClient.patch(
+      endpoints.manageUsers.update(id),
+      payload,
+      ManageUserMutationResponseSchema,
+    );
+    return response.response;
+  } catch (error) {
+    if (isMessageParserError(error)) {
+      return directUpdateManageUser(id, payload);
+    }
+    throw error;
+  }
 }
 
 /** DELETE - Delete user */
@@ -158,4 +201,33 @@ export async function searchLocations(param: string) {
     LocationSearchResponseSchema,
   );
   return response.response;
+}
+
+/** GET - Countries */
+export async function getCountries() {
+  const response = await apiClient.get(
+    endpoints.location.countries,
+    CountriesResponseSchema,
+  );
+  return response.response.countries;
+}
+
+/** POST - States by country id */
+export async function getStates(country: string) {
+  const response = await apiClient.post(
+    endpoints.location.states,
+    { country },
+    StatesResponseSchema,
+  );
+  return response.response.states;
+}
+
+/** POST - Districts by state id */
+export async function getDistricts(state: string) {
+  const response = await apiClient.post(
+    endpoints.location.districts,
+    { state },
+    DistrictsResponseSchema,
+  );
+  return response.response.districts;
 }
