@@ -150,7 +150,7 @@ export const endpoints = {
     info: (campusId: string) => `/api/v1/dashboard/campus/${campusId}/`,
     /** GET - Campus weekly karma */
     weeklykarma: (campusId: string) =>
-      `/api/v1/campus/weekly-karma/${campusId}/`,
+      `/api/v1/dashboard/campus/weekly-karma/${campusId}/`,
   },
 
   // ============================================
