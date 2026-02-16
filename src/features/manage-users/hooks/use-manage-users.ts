@@ -1,132 +1,109 @@
-// src/features/manage-users/hooks/use-manage-users.ts
+"use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
 import {
   deleteManageUser,
-  getAreasOfInterest,
-  getCollegesByDistrict,
-  getCommunities,
-  getCountries,
-  getDistricts,
-  getManageUserById,
-  getManageUsers,
-  getManageUsersCsv,
-  getRoles,
-  getSchoolsByDistrict,
-  getStates,
+  fetchCollegesAndDepartments,
+  fetchCommunities,
+  fetchCountries,
+  fetchDistricts,
+  fetchInterests,
+  fetchManageUserDetail,
+  fetchManageUsers,
+  fetchRoles,
+  fetchStates,
   searchLocations,
   updateManageUser,
 } from "../api";
 import { manageUsersKeys } from "./query-keys";
 
-const STALE_TIME = 5 * 60 * 1000;
+interface UseManageUsersListParams {
+  pageIndex: number;
+  perPage: number;
+  search: string;
+  sortBy: string;
+}
 
-// Queries
-export function useManageUsers(params?: {
-  perPage?: number;
-  pageIndex?: number;
-  search?: string;
-  sortBy?: string;
-}) {
+export function useManageUsersList(params: UseManageUsersListParams) {
   return useQuery({
     queryKey: manageUsersKeys.list(params),
-    queryFn: () => getManageUsers(params),
-    staleTime: STALE_TIME,
+    queryFn: () => fetchManageUsers(params),
+    placeholderData: keepPreviousData,
+    staleTime: 30 * 1000,
   });
 }
 
-export function useManageUser(id: string, enabled = true) {
+export function useManageUserDetail(userId: string | null, enabled = true) {
   return useQuery({
-    queryKey: manageUsersKeys.detail(id),
-    queryFn: () => getManageUserById(id),
-    enabled: enabled && !!id,
-    staleTime: STALE_TIME,
+    queryKey: manageUsersKeys.detail(userId ?? ""),
+    queryFn: () => fetchManageUserDetail(userId as string),
+    enabled: Boolean(userId) && enabled,
   });
 }
 
-export function useManageUsersCsv(enabled = false) {
+export function useManageUsersMeta() {
   return useQuery({
-    queryKey: manageUsersKeys.csv(),
-    queryFn: getManageUsersCsv,
-    enabled,
-    staleTime: 0,
+    queryKey: manageUsersKeys.meta(),
+    queryFn: async () => {
+      const [communities, roles, interests, countries] = await Promise.all([
+        fetchCommunities(),
+        fetchRoles(),
+        fetchInterests(),
+        fetchCountries(),
+      ]);
+
+      return {
+        communities,
+        roles,
+        interests,
+        countries,
+      };
+    },
+    staleTime: 5 * 60 * 1000,
   });
 }
 
-export function useCommunities() {
+export function useLocationSearch(query: string) {
   return useQuery({
-    queryKey: manageUsersKeys.communities(),
-    queryFn: getCommunities,
-    staleTime: 10 * 60 * 1000,
+    queryKey: manageUsersKeys.locations(query),
+    queryFn: () => searchLocations(query),
+    enabled: query.length > 0,
+    staleTime: 2 * 60 * 1000,
   });
 }
 
-export function useRoles() {
+export function useStates(countryId: string) {
   return useQuery({
-    queryKey: manageUsersKeys.roles(),
-    queryFn: getRoles,
-    staleTime: 10 * 60 * 1000,
+    queryKey: manageUsersKeys.states(countryId),
+    queryFn: () => fetchStates(countryId),
+    enabled: Boolean(countryId),
+    staleTime: 5 * 60 * 1000,
   });
 }
 
-export function useAreasOfInterest() {
+export function useDistricts(stateId: string) {
   return useQuery({
-    queryKey: manageUsersKeys.areasOfInterest(),
-    queryFn: getAreasOfInterest,
-    staleTime: 10 * 60 * 1000,
+    queryKey: manageUsersKeys.districts(stateId),
+    queryFn: () => fetchDistricts(stateId),
+    enabled: Boolean(stateId),
+    staleTime: 5 * 60 * 1000,
   });
 }
 
-export function useCountries() {
+export function useCollegeData(params: {
+  countryId: string;
+  stateId: string;
+  districtId: string;
+}) {
   return useQuery({
-    queryKey: manageUsersKeys.countries(),
-    queryFn: getCountries,
-    staleTime: 10 * 60 * 1000,
-  });
-}
-
-export function useStates(country: string, enabled = true) {
-  return useQuery({
-    queryKey: manageUsersKeys.states(country),
-    queryFn: () => getStates(country),
-    enabled: enabled && !!country,
-    staleTime: STALE_TIME,
-  });
-}
-
-export function useDistricts(state: string, enabled = true) {
-  return useQuery({
-    queryKey: manageUsersKeys.districts(state),
-    queryFn: () => getDistricts(state),
-    enabled: enabled && !!state,
-    staleTime: STALE_TIME,
-  });
-}
-
-export function useCollegesByDistrict(district: string, enabled = true) {
-  return useQuery({
-    queryKey: manageUsersKeys.collegesByDistrict(district),
-    queryFn: () => getCollegesByDistrict(district),
-    enabled: enabled && !!district,
-    staleTime: STALE_TIME,
-  });
-}
-
-export function useSchoolsByDistrict(district: string, enabled = true) {
-  return useQuery({
-    queryKey: manageUsersKeys.schoolsByDistrict(district),
-    queryFn: () => getSchoolsByDistrict(district),
-    enabled: enabled && !!district,
-    staleTime: STALE_TIME,
-  });
-}
-
-export function useLocationSearch(param: string, enabled = true) {
-  return useQuery({
-    queryKey: manageUsersKeys.locationSearch(param),
-    queryFn: () => searchLocations(param),
-    enabled: enabled && !!param,
-    staleTime: 60 * 1000,
+    queryKey: manageUsersKeys.collegeData(params),
+    queryFn: () => fetchCollegesAndDepartments(params.districtId),
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -139,10 +116,10 @@ export function useUpdateManageUser() {
       payload,
     }: {
       id: string;
-      payload: Record<string, unknown>;
+      payload: Parameters<typeof updateManageUser>[1];
     }) => updateManageUser(id, payload),
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: manageUsersKeys.all });
+      queryClient.invalidateQueries({ queryKey: manageUsersKeys.lists() });
       queryClient.invalidateQueries({
         queryKey: manageUsersKeys.detail(variables.id),
       });
@@ -156,7 +133,7 @@ export function useDeleteManageUser() {
   return useMutation({
     mutationFn: (id: string) => deleteManageUser(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: manageUsersKeys.all });
+      queryClient.invalidateQueries({ queryKey: manageUsersKeys.lists() });
     },
   });
 }

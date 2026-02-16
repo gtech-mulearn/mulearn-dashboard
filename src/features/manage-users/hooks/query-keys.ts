@@ -1,33 +1,23 @@
-// src/features/manage-users/hooks/query-keys.ts
-
 export const manageUsersKeys = {
   all: ["manage-users"] as const,
-
-  list: (params?: {
-    perPage?: number;
-    pageIndex?: number;
-    search?: string;
-    sortBy?: string;
-  }) => [...manageUsersKeys.all, "list", params ?? {}] as const,
-
+  lists: () => [...manageUsersKeys.all, "list"] as const,
+  list: (params: {
+    pageIndex: number;
+    perPage: number;
+    search: string;
+    sortBy: string;
+  }) => [...manageUsersKeys.lists(), params] as const,
   detail: (id: string) => [...manageUsersKeys.all, "detail", id] as const,
-  csv: () => [...manageUsersKeys.all, "csv"] as const,
-
-  communities: () => [...manageUsersKeys.all, "communities"] as const,
-  roles: () => [...manageUsersKeys.all, "roles"] as const,
-  areasOfInterest: () => [...manageUsersKeys.all, "areas-of-interest"] as const,
-  countries: () => [...manageUsersKeys.all, "countries"] as const,
-  states: (country: string) =>
-    [...manageUsersKeys.all, "states", country] as const,
-  districts: (state: string) =>
-    [...manageUsersKeys.all, "districts", state] as const,
-
-  collegesByDistrict: (district: string) =>
-    [...manageUsersKeys.all, "colleges-by-district", district] as const,
-
-  schoolsByDistrict: (district: string) =>
-    [...manageUsersKeys.all, "schools-by-district", district] as const,
-
-  locationSearch: (param: string) =>
-    [...manageUsersKeys.all, "location-search", param] as const,
+  meta: () => [...manageUsersKeys.all, "meta"] as const,
+  locations: (query: string) =>
+    [...manageUsersKeys.all, "locations", query] as const,
+  states: (countryId: string) =>
+    [...manageUsersKeys.all, "states", countryId] as const,
+  districts: (stateId: string) =>
+    [...manageUsersKeys.all, "districts", stateId] as const,
+  collegeData: (params: {
+    countryId: string;
+    stateId: string;
+    districtId: string;
+  }) => [...manageUsersKeys.all, "college-data", params] as const,
 };
