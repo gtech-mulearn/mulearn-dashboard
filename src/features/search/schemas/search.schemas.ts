@@ -72,13 +72,13 @@ export const campusSearchResultSchema = z.object({
     .union([z.number(), z.string(), z.null(), z.undefined()])
     .transform((val) => {
       if (val === null || val === undefined) return 0;
-      return typeof val === "string" ? parseInt(val) || 0 : val;
+      return typeof val === "string" ? parseInt(val, 10) || 0 : val;
     }),
   rank: z
     .union([z.number(), z.string(), z.null(), z.undefined()])
     .transform((val) => {
       if (val === null || val === undefined) return null;
-      return typeof val === "string" ? parseInt(val) || null : val;
+      return typeof val === "string" ? parseInt(val, 10) || null : val;
     })
     .nullable(),
 });

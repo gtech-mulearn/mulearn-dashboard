@@ -301,6 +301,21 @@ export const endpoints = {
     colleges: "/api/v1/dashboard/organisation/institutes/college/",
     schools: "/api/v1/dashboard/organisation/institutes/school/",
   },
+  // ============================================
+  // URL Shortener Endpoints
+  // ============================================
+  urlShortener: {
+    /** GET - List all short URLs */
+    list: "/api/v1/url-shortener/list/",
+    /** POST - Create new short URL */
+    create: "/api/v1/url-shortener/create/",
+    /** PUT - Edit short URL */
+    edit: (id: string) => `/api/v1/url-shortener/edit/${id}/`,
+    /** DELETE - Delete short URL */
+    delete: (id: string) => `/api/v1/url-shortener/delete/${id}/`,
+    /** GET - Get analytics for short URL */
+    analytics: (id: string) => `/api/v1/url-shortener/get-analytics/${id}/`,
+  },
 } as const;
 
 // Type for type-safe endpoint access

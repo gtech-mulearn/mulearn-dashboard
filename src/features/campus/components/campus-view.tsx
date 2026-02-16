@@ -2,8 +2,8 @@
 
 import { GraduationCap, MapPin, Zap } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { CampusDashboardProps } from "../types";
 import { useCampusInfo, useWeeklyKarma } from "../hooks";
+import type { CampusDashboardProps } from "../types";
 import { StatsCards, WeeklyKarmaCard } from ".";
 
 export const CampusView = ({ id }: CampusDashboardProps) => {
