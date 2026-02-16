@@ -1,12 +1,10 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, ChevronDown } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -42,94 +40,14 @@ import {
   useStates,
   useUpdateManageUser,
 } from "../hooks";
-import {
-  ManageUserFormSchema,
-  type ManageUserFormValues,
-  type UiOption,
-} from "../schemas";
+import { ManageUserFormSchema, type ManageUserFormValues } from "../schemas";
+import { LocationSearchDropdown } from "./location-search-dropdown";
+import { MultiSelectDropdown } from "./multi-select-dropdown";
 
 interface EditUserDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   userId: string | null;
-}
-
-function ToggleList({
-  label,
-  options,
-  selectedValues,
-  onToggle,
-}: {
-  label: string;
-  options: UiOption[];
-  selectedValues: string[];
-  onToggle: (value: string, checked: boolean) => void;
-}) {
-  const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const handleOutsideClick = (event: MouseEvent) => {
-      if (!containerRef.current) return;
-      if (!containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleOutsideClick);
-    return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, []);
-
-  return (
-    <div className="space-y-2" ref={containerRef}>
-      <p className="text-sm font-medium text-foreground">{label}</p>
-      <button
-        type="button"
-        className="flex w-full items-center justify-between rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground"
-        onClick={() => setIsOpen((prev) => !prev)}
-      >
-        <span>
-          {selectedValues.length > 0
-            ? `${selectedValues.length} selected`
-            : `Select ${label.toLowerCase()}`}
-        </span>
-        <ChevronDown className="size-4 text-muted-foreground" />
-      </button>
-      {isOpen && (
-        <div className="max-h-48 overflow-y-auto rounded-md border border-border bg-popover p-2 shadow-sm">
-          {options.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No options</p>
-          ) : (
-            <div className="space-y-2">
-              {options.map((option) => {
-                const checked = selectedValues.includes(option.value);
-
-                return (
-                  <div
-                    key={option.value}
-                    className="flex items-center gap-2 rounded px-2 py-1 hover:bg-muted"
-                  >
-                    <Checkbox
-                      checked={checked}
-                      onCheckedChange={(state) =>
-                        onToggle(option.value, Boolean(state))
-                      }
-                    />
-                    <button
-                      type="button"
-                      className="text-left text-sm text-foreground"
-                      onClick={() => onToggle(option.value, !checked)}
-                    >
-                      {option.label}
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
 }
 
 function normalizePayload(values: ManageUserFormValues) {
@@ -186,7 +104,6 @@ export function EditUserDialog({
 
   const [locationSearch, setLocationSearch] = useState("india");
   const [isLocationMenuOpen, setIsLocationMenuOpen] = useState(false);
-  const locationMenuRef = useRef<HTMLDivElement | null>(null);
 
   const form = useForm<ManageUserFormValues>({
     resolver: zodResolver(ManageUserFormSchema),
@@ -265,17 +182,6 @@ export function EditUserDialog({
 
     setLocationSearch("india");
   }, [detail, open, form]);
-
-  useEffect(() => {
-    const handleOutsideClick = (event: MouseEvent) => {
-      if (!locationMenuRef.current) return;
-      if (!locationMenuRef.current.contains(event.target as Node)) {
-        setIsLocationMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleOutsideClick);
-    return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, []);
 
   const selectedCommunities = form.watch("communities");
   const selectedRoles = form.watch("roles");
@@ -406,91 +312,22 @@ export function EditUserDialog({
                 <h3 className="text-sm font-semibold text-foreground">
                   Location
                 </h3>
-                <div className="space-y-2" ref={locationMenuRef}>
-                  <FormField
-                    control={form.control}
-                    name="location_id"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Search & Select Location</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Input
-                              value={locationSearch}
-                              onFocus={() => setIsLocationMenuOpen(true)}
-                              onChange={(event) => {
-                                setLocationSearch(event.target.value);
-                                setIsLocationMenuOpen(true);
-                              }}
-                              placeholder="Type location and select from dropdown"
-                              disabled={isBusy}
-                            />
-                            {isLocationMenuOpen && (
-                              <div className="absolute z-20 mt-1 max-h-56 w-full overflow-y-auto rounded-md border border-border bg-popover p-1 shadow-md">
-                                <button
-                                  type="button"
-                                  className="flex w-full items-center justify-between rounded px-2 py-2 text-left text-sm hover:bg-muted"
-                                  onClick={() => {
-                                    field.onChange("");
-                                    setIsLocationMenuOpen(false);
-                                  }}
-                                >
-                                  <span>None</span>
-                                  {!field.value && (
-                                    <Check className="size-4 text-muted-foreground" />
-                                  )}
-                                </button>
-                                {isLocationFetching && (
-                                  <div className="px-2 py-2 text-sm text-muted-foreground">
-                                    Searching...
-                                  </div>
-                                )}
-                                {!isLocationFetching &&
-                                  locationOptions.length === 0 && (
-                                    <div className="px-2 py-2 text-sm text-muted-foreground">
-                                      No location found
-                                    </div>
-                                  )}
-                                {!isLocationFetching &&
-                                  locationOptions.map((option) => {
-                                    const selected =
-                                      field.value === option.value;
-                                    return (
-                                      <button
-                                        key={option.value}
-                                        type="button"
-                                        className="flex w-full items-center justify-between rounded px-2 py-2 text-left text-sm hover:bg-muted"
-                                        onClick={() => {
-                                          field.onChange(option.value);
-                                          setLocationSearch(option.label);
-                                          setIsLocationMenuOpen(false);
-                                        }}
-                                      >
-                                        <span>{option.label}</span>
-                                        {selected && (
-                                          <Check className="size-4 text-muted-foreground" />
-                                        )}
-                                      </button>
-                                    );
-                                  })}
-                              </div>
-                            )}
-                          </div>
-                        </FormControl>
-                        <p className="text-xs text-muted-foreground">
-                          Selected location id: {field.value || "None"}
-                        </p>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                <LocationSearchDropdown
+                  control={form.control}
+                  isBusy={isBusy}
+                  locationSearch={locationSearch}
+                  isLocationMenuOpen={isLocationMenuOpen}
+                  isLocationFetching={isLocationFetching}
+                  locationOptions={locationOptions}
+                  onLocationSearchChange={setLocationSearch}
+                  onLocationMenuOpenChange={setIsLocationMenuOpen}
+                />
               </div>
 
               <Separator />
 
               <div className="grid gap-4 md:grid-cols-3">
-                <ToggleList
+                <MultiSelectDropdown
                   label="Communities"
                   options={meta?.communities ?? []}
                   selectedValues={selectedCommunities}
@@ -498,7 +335,7 @@ export function EditUserDialog({
                     toggleArrayField("communities", value, checked)
                   }
                 />
-                <ToggleList
+                <MultiSelectDropdown
                   label="Roles"
                   options={meta?.roles ?? []}
                   selectedValues={selectedRoles}
@@ -506,7 +343,7 @@ export function EditUserDialog({
                     toggleArrayField("roles", value, checked)
                   }
                 />
-                <ToggleList
+                <MultiSelectDropdown
                   label="Interest Groups"
                   options={meta?.interests ?? []}
                   selectedValues={selectedInterests}
