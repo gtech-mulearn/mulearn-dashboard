@@ -207,7 +207,8 @@ export const endpoints = {
     /** POST - Issue Verifiable Credential */
     issueVC: "/api/v1/integrations/qseverse/issue-vc/",
     /** GET - Get connected DIDs for user */
-    connectedUsers: "/api/v1/integrations/qseverse/connected-users/search",
+    connectedUsers: (muid: string) =>
+      `/api/v1/integrations/qseverse/connected-users/search?key=muid&value=${muid}`,
   },
 
   // ============================================

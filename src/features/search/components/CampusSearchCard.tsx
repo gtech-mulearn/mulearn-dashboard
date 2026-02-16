@@ -11,7 +11,7 @@ interface CampusSearchCardProps {
 export function CampusSearchCard({ campus }: CampusSearchCardProps) {
   return (
     <Link
-      href={`/dashboard/campuses/${campus.id}`}
+      href={`/dashboard/campus/${campus.id}`}
       className="block rounded-lg border border-border bg-card p-4 transition-all hover:border-primary hover:shadow-md"
     >
       <div className="flex items-start justify-between gap-4">

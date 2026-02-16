@@ -17,7 +17,7 @@ export const fetchUserInfo = async (): Promise<UserInfo> => {
 
 export const fetchQsverseInfo = async (): Promise<QsverseInfo> => {
   const res = await apiClient.get(
-    endpoints.qseverse.connectedUsers,
+    endpoints.qseverse.connectedUsers((await fetchUserInfo()).muid),
     QsverseInfoResponseSchema,
   );
   if (res.hasError || !res.response) {
