@@ -187,28 +187,26 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
       {/* Tab Content */}
       <div className="min-h-[300px]">
         {activeTab === "overview" && (
-          <div className="rounded-2xl bg-white p-6 shadow-sm">
-            <h3 className="mb-4 font-semibold text-gray-900">
-              About this Circle
-            </h3>
+          <div className="rounded-2xl p-6 shadow-sm">
+            <h3 className="mb-4 font-semibold">About this Circle</h3>
             <p className="text-gray-600">{circle.description}</p>
 
             <div className="mt-6">
               <h4 className="mb-3 text-sm font-medium text-gray-500">
                 Organization
               </h4>
-              <p className="text-gray-900">{circle.org || "No organization"}</p>
+              <p>{circle.org || "No organization"}</p>
             </div>
           </div>
         )}
 
         {activeTab === "members" && (
-          <div className="rounded-2xl bg-white p-6 shadow-sm">
+          <div className="rounded-2xl p-6 shadow-sm">
             <div className="space-y-3">
               {members?.map((member, _index) => (
                 <div
                   key={member.id}
-                  className="flex items-center justify-between rounded-xl bg-gray-50 p-4"
+                  className="flex items-center justify-between rounded-xl p-4"
                 >
                   <div className="flex items-center gap-3">
                     <div className="relative h-10 w-10 overflow-hidden rounded-full bg-gray-200">
@@ -227,9 +225,7 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <p className="font-medium text-gray-900">
-                          {member.full_name}
-                        </p>
+                        <p className="font-medium">{member.full_name}</p>
                         {member.is_leader && (
                           <Crown className="h-4 w-4 text-amber-500" />
                         )}
@@ -238,7 +234,7 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-medium">
                       {member.ig_karma.toLocaleString()}
                     </p>
                     <p className="text-xs text-gray-500">karma</p>
@@ -276,7 +272,7 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center rounded-2xl bg-white p-12 shadow-sm">
+              <div className="flex flex-col items-center justify-center rounded-2xl p-12 shadow-sm">
                 <Calendar className="mb-4 h-12 w-12 text-gray-300" />
                 <p className="text-gray-500">No meetings scheduled yet</p>
                 {isOwner && (

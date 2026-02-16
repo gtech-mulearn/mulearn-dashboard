@@ -14,9 +14,7 @@ export default function CoursesClient() {
   return (
     <div className="container mx-auto px-4 py-8 space-y-10 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-          Learning Hub
-        </h1>
+        <h1 className="text-3xl font-bold tracking-tight">Learning Hub</h1>
         <p className="text-muted-foreground text-lg">
           Explore curated courses from our partners to enhance your skills and
           career readiness.

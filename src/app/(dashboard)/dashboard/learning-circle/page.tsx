@@ -39,7 +39,7 @@ export default function LearningCirclePage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Learning Circles</h1>
+          <h1 className="text-2xl font-bold">Learning Circles</h1>
           <p className="mt-1 text-sm text-gray-500">
             Join or create learning circles to collaborate with others
           </p>

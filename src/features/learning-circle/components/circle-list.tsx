@@ -63,7 +63,7 @@ export function CircleList() {
           <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-sm">
             <Users className="h-8 w-8 text-gray-400" />
           </div>
-          <h3 className="mb-2 text-lg font-semibold text-gray-900">
+          <h3 className="mb-2 text-lg font-semibold">
             {searchQuery ? "No circles found" : "No Learning Circles Yet"}
           </h3>
           <p className="text-center text-sm text-gray-500 max-w-sm">
