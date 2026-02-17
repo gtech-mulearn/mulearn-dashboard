@@ -34,7 +34,7 @@ export const WeeklyKarmaCard = ({ data = [] }: WeeklyKarmaCardProps) => {
                 >
                   <div className="flex-1 w-full flex flex-col items-center justify-end gap-2">
                     <span
-                      className={`text-[10px] font-bold transition-opacity ${day.value > 0 ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
+                      className={`text-[12px] font-bold transition-opacity ${day.value > 0 ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
                     >
                       {day.value}
                     </span>
