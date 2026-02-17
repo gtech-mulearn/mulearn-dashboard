@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, Search } from "lucide-react";
+import { Download, Search, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 
 interface ManageUsersToolbarProps {
   searchInput: string;
@@ -27,41 +28,56 @@ export function ManageUsersToolbar({
   onDownloadCsv,
 }: ManageUsersToolbarProps) {
   return (
-    <div className="flex w-full flex-col gap-3 lg:w-auto lg:flex-row lg:items-center">
-      <div className="relative w-full lg:min-w-[340px]">
-        <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground/80" />
+    <div className="flex flex-col gap-4 rounded-2xl border border-border/50 bg-card p-2 shadow-sm lg:flex-row lg:items-center lg:p-1.5">
+      {/* Search Section */}
+      <div className="relative flex-1">
+        <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50">
+          <Search className="size-4" />
+        </div>
         <Input
           value={searchInput}
           onChange={(event) => onSearchChange(event.target.value)}
-          placeholder="Search by name, email, Mu ID"
-          className="h-12 rounded-2xl border-border/60 bg-card pl-11 text-base shadow-[0_6px_20px_-16px_rgba(0,0,0,0.45)] transition-all placeholder:text-muted-foreground/90 focus-visible:border-primary/35 focus-visible:ring-primary/25"
+          placeholder="Search by name, email, Mu ID..."
+          className="h-10 w-full border-none bg-transparent pl-9 text-base shadow-none hover:bg-muted/30 focus-visible:ring-0 lg:text-sm"
         />
       </div>
 
-      <div className="grid w-full grid-cols-2 gap-3 sm:flex sm:w-auto sm:items-center">
-        <Select
-          value={String(perPage)}
-          onValueChange={(value) => onPerPageChange(Number(value))}
-        >
-          <SelectTrigger className="h-12 w-full rounded-2xl border-border/60 bg-card text-base shadow-[0_6px_20px_-16px_rgba(0,0,0,0.45)] sm:w-[150px]">
-            <SelectValue placeholder="Rows" />
-          </SelectTrigger>
-          <SelectContent>
-            {[5, 10, 20, 50, 100].map((option) => (
-              <SelectItem key={option} value={String(option)}>
-                {option} / page
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <Separator orientation="vertical" className="hidden h-8 lg:block" />
+      <Separator orientation="horizontal" className="lg:hidden" />
 
+      {/* Actions Section */}
+      <div className="grid grid-cols-[1fr_auto] gap-2 lg:flex lg:items-center">
+        {/* Row Count Select */}
+        <div className="flex items-center gap-2">
+          <span className="hidden text-xs font-medium text-muted-foreground lg:inline-block whitespace-nowrap">
+            Rows per page
+          </span>
+          <Select
+            value={String(perPage)}
+            onValueChange={(value) => onPerPageChange(Number(value))}
+          >
+            <SelectTrigger className="h-10 w-full rounded-xl border-border/60 bg-muted/30 text-sm font-medium shadow-sm transition-colors hover:bg-muted/50 focus:ring-primary/20 lg:w-[80px]">
+              <SelectValue placeholder="Rows" />
+            </SelectTrigger>
+            <SelectContent>
+              {[5, 10, 20, 50, 100].map((option) => (
+                <SelectItem key={option} value={String(option)}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Export Button */}
         <Button
-          variant="default"
+          variant="outline"
           onClick={onDownloadCsv}
-          className="h-12 gap-2 rounded-2xl bg-primary px-5 text-base font-semibold text-primary-foreground shadow-[0_12px_26px_-14px_hsl(var(--primary))] transition-all hover:-translate-y-0.5 hover:bg-primary/90"
+          className="h-10 gap-2 rounded-xl border-border/60 bg-muted/30 font-medium text-foreground hover:bg-muted/50 hover:text-primary lg:px-4"
         >
           <Download className="size-4" />
-          <span>Export CSV</span>
+          <span className="hidden sm:inline">Export CSV</span>
+          <span className="sm:hidden">Export</span>
         </Button>
       </div>
     </div>
