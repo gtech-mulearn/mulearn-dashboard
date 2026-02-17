@@ -29,7 +29,7 @@ export const StatsCards = ({ info }: { info: CampusInfo }) => {
       <StatCard
         title="Total Karma"
         value={info.total_karma.toLocaleString()}
-        description="Accumulated over time"
+        description="accumulated over time"
         icon={<Zap className="h-4 w-4 text-chart-4 fill-chart-4/20" />}
       />
       <StatCard
@@ -41,13 +41,13 @@ export const StatsCards = ({ info }: { info: CampusInfo }) => {
       <StatCard
         title="Total Members"
         value={info.total_members}
-        description="Registered on µLearn"
+        description="registered on µLearn"
         icon={<Users className="h-4 w-4 text-chart-2 fill-chart-2/20" />}
       />
       <StatCard
         title="Active Members"
         value={info.active_members}
-        description="Active in last 30 days"
+        description="active in last 30 days"
         icon={<Activity className="h-4 w-4 text-destructive" />}
       />
     </div>
