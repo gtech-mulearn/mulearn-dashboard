@@ -25,8 +25,8 @@ export function ManageUsersPagination({
   const canGoNext = pageIndex < totalPages;
 
   return (
-    <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-      <div className="text-sm text-muted-foreground">
+    <div className="flex flex-col items-start justify-between gap-4 border-t border-border/40 pt-4 sm:flex-row sm:items-center">
+      <div className="text-sm sm:text-base text-muted-foreground">
         {startItem > 0 && endItem > 0 ? (
           <>
             Showing{" "}
@@ -39,27 +39,25 @@ export function ManageUsersPagination({
         )}
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-normal">
         <Button
           variant="outline"
-          size="sm"
           onClick={onPrevious}
           disabled={!canGoPrevious || isFetching}
-          className="h-9 rounded-xl px-3"
+          className="h-10 rounded-xl border-primary/30 px-4 text-sm font-semibold text-primary transition-all hover:bg-primary/10 disabled:border-border"
         >
           Previous
         </Button>
 
-        <div className="flex h-9 items-center rounded-xl border border-border bg-muted/30 px-3 text-sm font-medium">
+        <div className="flex h-10 items-center rounded-xl border border-primary/20 bg-primary/[0.06] px-4 text-sm font-semibold text-foreground">
           Page {pageIndex} of {totalPages || 1}
         </div>
 
         <Button
-          variant="outline"
-          size="sm"
+          variant="default"
           onClick={onNext}
           disabled={!canGoNext || isFetching}
-          className="h-9 rounded-xl px-3"
+          className="h-10 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-md shadow-primary/25 transition-all hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:shadow-none"
         >
           Next
         </Button>

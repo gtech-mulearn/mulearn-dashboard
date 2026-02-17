@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { endpoints } from "@/api/endpoints";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -154,13 +155,19 @@ export function ManageUsersPage() {
   };
 
   return (
-    <div className="space-y-6 p-1 sm:p-6">
-      <Card className="overflow-hidden rounded-2xl border-none bg-card shadow-sm">
-        <CardHeader className="border-b border-border/40 px-6 py-5">
+    <div className="space-y-6 p-2 sm:p-6">
+      <Card className="overflow-hidden rounded-3xl border border-border/60 bg-card shadow-[0_10px_30px_-18px_rgba(0,0,0,0.35)]">
+        <CardHeader className="border-b border-border/50 bg-background px-4 py-5 sm:px-6 sm:py-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <CardTitle className="text-2xl font-bold text-foreground">
-              Manage Users
-            </CardTitle>
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/[0.06] px-3 py-1 text-xs font-semibold text-primary">
+                <ShieldCheck className="size-3.5" />
+                User Management
+              </div>
+              <CardTitle className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                Manage Users
+              </CardTitle>
+            </div>
             <ManageUsersToolbar
               searchInput={searchInput}
               perPage={perPage}
@@ -174,7 +181,7 @@ export function ManageUsersPage() {
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-6 p-6">
+        <CardContent className="space-y-6 bg-background p-3 sm:p-6">
           <ManageUsersTable
             users={users}
             isLoading={isLoading}
