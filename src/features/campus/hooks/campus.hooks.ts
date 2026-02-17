@@ -13,35 +13,21 @@ export const useCampusInfo = (id: string) => {
 export const useWeeklyKarma = (id: string) => {
   return useQuery({
     queryKey: ["campus", "weekly-karma", id],
-    queryFn: () => campusService.getWeeklyKarma(id),
     enabled: !!id,
+    queryFn: () => campusService.getWeeklyKarma(id),
     select: (data) => {
       if (!data || typeof data !== "object") return [];
-
-      let source: Record<string, unknown> = data;
-      if (source.response && typeof source.response === "object") {
-        source = source.response as Record<string, unknown>;
-      }
-
+      const source =
+        "response" in data && data.response && typeof data.response === "object"
+          ? (data.response as Record<string, unknown>)
+          : (data as Record<string, unknown>);
       return Object.entries(source)
-        .filter(([key]) => {
-          return (
-            /^\d{4}-\d{2}-\d{2}$/.test(key) ||
-            (key !== "college_name" &&
-              key !== "campus_code" &&
-              key !== "campus_zone" &&
-              key !== "campus_level" &&
-              !Number.isNaN(new Date(key).getTime()))
-          );
-        })
+        .filter(([key]) => /^\d{4}-\d{2}-\d{2}$/.test(key))
         .map(([date, value]) => ({
           date,
-          value: typeof value === "number" ? value : value ? Number(value) : 0,
+          value: Number(value) || 0,
         }))
-        .filter((item) => {
-          const d = parseISO(item.date);
-          return isValid(d);
-        })
+        .filter(({ date }) => isValid(parseISO(date)))
         .sort(
           (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
         );
