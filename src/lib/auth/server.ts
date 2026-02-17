@@ -14,6 +14,17 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { Permission } from "./permissions";
 import { hasAnyRole, hasPermission } from "./permissions";
+
+/**
+ * Check if the user is authenticated (has an access token).
+ * Useful for lightweight checks in Server Components/Layouts.
+ *
+ * @returns true if authenticated, false otherwise.
+ */
+export async function isAuthenticated(): Promise<boolean> {
+  const cookieStore = await cookies();
+  return !!cookieStore.get("accessToken")?.value;
+}
 // ─── Types ──────────────────────────────────────────────────
 
 export interface ServerUser {

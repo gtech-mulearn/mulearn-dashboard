@@ -293,6 +293,23 @@ export const endpoints = {
   },
 
   // ============================================
+  // MuJourney Endpoints
+  // ============================================
+  mujourney: {
+    /** GET - Get user levels with tasks and progress (logged-in) */
+    getUserLevels: "/api/v1/dashboard/profile/get-user-levels/",
+    /** GET - Get public levels list (no auth required) */
+    publicListLevels: "/api/v1/public/list/levels/",
+    /** GET - Get interest group tasks (params: ig_id, perPage) */
+    taskList: "/api/v1/register/area-of-interest/list/",
+    /** GET - Get public user journey by MUID */
+    getPublicUserLevels: (muid: string) =>
+      `/api/v1/dashboard/profile/get-user-levels/${muid}/`,
+    /** GET - Get user level feed/history */
+    userLevelFeed: "/api/v1/dashboard/profile/user-level-feed/",
+  },
+
+  // ============================================
   // Search Endpoints
   // ============================================
   search: {
