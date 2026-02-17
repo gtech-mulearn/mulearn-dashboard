@@ -6,7 +6,14 @@ export const manageUsersKeys = {
     perPage: number;
     search: string;
     sortBy: string;
-  }) => [...manageUsersKeys.lists(), params] as const,
+  }) =>
+    [
+      ...manageUsersKeys.lists(),
+      params.pageIndex,
+      params.perPage,
+      params.search,
+      params.sortBy,
+    ] as const,
   detail: (id: string) => [...manageUsersKeys.all, "detail", id] as const,
   meta: () => [...manageUsersKeys.all, "meta"] as const,
   locations: (query: string) =>
@@ -15,9 +22,6 @@ export const manageUsersKeys = {
     [...manageUsersKeys.all, "states", countryId] as const,
   districts: (stateId: string) =>
     [...manageUsersKeys.all, "districts", stateId] as const,
-  collegeData: (params: {
-    countryId: string;
-    stateId: string;
-    districtId: string;
-  }) => [...manageUsersKeys.all, "college-data", params] as const,
+  collegeData: (districtId: string) =>
+    [...manageUsersKeys.all, "college-data", districtId] as const,
 };

@@ -34,10 +34,12 @@ export function MultiSelectDropdown({
 
   return (
     <div className="space-y-2" ref={containerRef}>
-      <p className="text-sm font-medium text-foreground">{label}</p>
+      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        {label}
+      </p>
       <button
         type="button"
-        className="flex w-full items-center justify-between rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground"
+        className="flex h-10 w-full items-center justify-between rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground transition-colors hover:bg-muted/30"
         onClick={() => setIsOpen((prev) => !prev)}
       >
         <span>
@@ -48,18 +50,20 @@ export function MultiSelectDropdown({
         <ChevronDown className="size-4 text-muted-foreground" />
       </button>
       {isOpen && (
-        <div className="max-h-48 overflow-y-auto rounded-md border border-border bg-popover p-2 shadow-sm">
+        <div className="max-h-48 overflow-y-auto rounded-xl border border-border/50 bg-popover p-2 shadow-sm">
           {options.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No options</p>
+            <p className="px-2 py-3 text-sm text-muted-foreground">
+              No options
+            </p>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-1">
               {options.map((option) => {
                 const checked = selectedValues.includes(option.value);
 
                 return (
                   <div
                     key={option.value}
-                    className="flex items-center gap-2 rounded px-2 py-1 hover:bg-muted"
+                    className="flex items-center gap-2 rounded-lg px-2 py-2 transition-colors hover:bg-muted/50"
                   >
                     <Checkbox
                       checked={checked}
@@ -69,7 +73,7 @@ export function MultiSelectDropdown({
                     />
                     <button
                       type="button"
-                      className="text-left text-sm text-foreground"
+                      className="flex-1 text-left text-sm text-foreground"
                       onClick={() => onToggle(option.value, !checked)}
                     >
                       {option.label}

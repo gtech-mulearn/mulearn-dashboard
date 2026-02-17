@@ -99,10 +99,10 @@ export function EditUserDialog({
     userId,
     open,
   );
-  const { data: meta, isLoading: isMetaLoading } = useManageUsersMeta();
+  const { data: meta, isLoading: isMetaLoading } = useManageUsersMeta(open);
   const updateUserMutation = useUpdateManageUser();
 
-  const [locationSearch, setLocationSearch] = useState("india");
+  const [locationSearch, setLocationSearch] = useState("");
   const [isLocationMenuOpen, setIsLocationMenuOpen] = useState(false);
 
   const form = useForm<ManageUserFormValues>({
@@ -133,11 +133,7 @@ export function EditUserDialog({
     useLocationSearch(locationSearch);
   const { data: states = [] } = useStates(countryId);
   const { data: districts = [] } = useDistricts(stateId);
-  const { data: collegeData } = useCollegeData({
-    countryId,
-    stateId,
-    districtId,
-  });
+  const { data: collegeData } = useCollegeData(districtId);
 
   const colleges = collegeData?.colleges ?? [];
   const departments = collegeData?.departments ?? [];
@@ -180,7 +176,7 @@ export function EditUserDialog({
         : "",
     });
 
-    setLocationSearch("india");
+    setLocationSearch("");
   }, [detail, open, form]);
 
   const selectedCommunities = form.watch("communities");
@@ -228,10 +224,10 @@ export function EditUserDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
+      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-2xl sm:max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Edit User</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-2xl font-bold">Edit User</DialogTitle>
+          <DialogDescription className="text-muted-foreground">
             Update user details and affiliations.
           </DialogDescription>
         </DialogHeader>
@@ -246,11 +242,11 @@ export function EditUserDialog({
               onSubmit={form.handleSubmit(handleSubmit, handleInvalidSubmit)}
               className="space-y-6"
             >
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-foreground">
+              <div className="space-y-4">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Basic Info
                 </h3>
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-4 sm:grid-cols-2">
                   <FormField
                     control={form.control}
                     name="full_name"
@@ -308,8 +304,8 @@ export function EditUserDialog({
 
               <Separator />
 
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-foreground">
+              <div className="space-y-4">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Location
                 </h3>
                 <LocationSearchDropdown
@@ -355,11 +351,11 @@ export function EditUserDialog({
 
               <Separator />
 
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-foreground">
+              <div className="space-y-4">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   College / School
                 </h3>
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-4 sm:grid-cols-2">
                   <FormField
                     control={form.control}
                     name="country_id"
@@ -589,16 +585,17 @@ export function EditUserDialog({
                 </div>
               </div>
 
-              <DialogFooter>
+              <DialogFooter className="gap-2 sm:gap-0">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => onOpenChange(false)}
                   disabled={isBusy}
+                  className="rounded-xl"
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isBusy}>
+                <Button type="submit" disabled={isBusy} className="rounded-xl">
                   {updateUserMutation.isPending && <Spinner className="mr-2" />}
                   Save Changes
                 </Button>

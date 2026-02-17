@@ -29,25 +29,44 @@ interface UseManageUsersListParams {
   sortBy: string;
 }
 
-export function useManageUsersList(params: UseManageUsersListParams) {
-  return useQuery({
+export function getManageUsersListQueryOptions(
+  params: UseManageUsersListParams,
+) {
+  return {
     queryKey: manageUsersKeys.list(params),
     queryFn: () => fetchManageUsers(params),
     placeholderData: keepPreviousData,
-    staleTime: 30 * 1000,
-  });
+    staleTime: 2 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  } as const;
+}
+
+export function useManageUsersList(params: UseManageUsersListParams) {
+  return useQuery(getManageUsersListQueryOptions(params));
+}
+
+export function getManageUserDetailQueryOptions(userId: string) {
+  return {
+    queryKey: manageUsersKeys.detail(userId),
+    queryFn: () => fetchManageUserDetail(userId),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 20 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  } as const;
 }
 
 export function useManageUserDetail(userId: string | null, enabled = true) {
+  const detailId = userId ?? "";
+
   return useQuery({
-    queryKey: manageUsersKeys.detail(userId ?? ""),
-    queryFn: () => fetchManageUserDetail(userId as string),
-    enabled: Boolean(userId) && enabled,
+    ...getManageUserDetailQueryOptions(detailId),
+    enabled: Boolean(detailId) && enabled,
   });
 }
 
-export function useManageUsersMeta() {
-  return useQuery({
+export function getManageUsersMetaQueryOptions() {
+  return {
     queryKey: manageUsersKeys.meta(),
     queryFn: async () => {
       const [communities, roles, interests, countries] = await Promise.all([
@@ -64,7 +83,16 @@ export function useManageUsersMeta() {
         countries,
       };
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 15 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  } as const;
+}
+
+export function useManageUsersMeta(enabled = true) {
+  return useQuery({
+    ...getManageUsersMetaQueryOptions(),
+    enabled,
   });
 }
 
@@ -72,8 +100,11 @@ export function useLocationSearch(query: string) {
   return useQuery({
     queryKey: manageUsersKeys.locations(query),
     queryFn: () => searchLocations(query),
-    enabled: query.length > 0,
+    enabled: query.length > 1,
+    placeholderData: keepPreviousData,
     staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -83,6 +114,8 @@ export function useStates(countryId: string) {
     queryFn: () => fetchStates(countryId),
     enabled: Boolean(countryId),
     staleTime: 5 * 60 * 1000,
+    gcTime: 20 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -92,18 +125,18 @@ export function useDistricts(stateId: string) {
     queryFn: () => fetchDistricts(stateId),
     enabled: Boolean(stateId),
     staleTime: 5 * 60 * 1000,
+    gcTime: 20 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }
 
-export function useCollegeData(params: {
-  countryId: string;
-  stateId: string;
-  districtId: string;
-}) {
+export function useCollegeData(districtId: string) {
   return useQuery({
-    queryKey: manageUsersKeys.collegeData(params),
-    queryFn: () => fetchCollegesAndDepartments(params.districtId),
+    queryKey: manageUsersKeys.collegeData(districtId),
+    queryFn: () => fetchCollegesAndDepartments(districtId),
     staleTime: 5 * 60 * 1000,
+    gcTime: 20 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }
 

@@ -1,11 +1,18 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { endpoints } from "@/api/endpoints";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { authStore } from "@/lib/auth";
-import { useDeleteManageUser, useManageUsersList } from "../hooks";
+import {
+  getManageUserDetailQueryOptions,
+  getManageUsersListQueryOptions,
+  getManageUsersMetaQueryOptions,
+  useDeleteManageUser,
+  useManageUsersList,
+} from "../hooks";
 import { DeleteUserDialog } from "./delete-user-dialog";
 import { EditUserDialog } from "./edit-user-dialog";
 import { ManageUsersPagination } from "./manage-users-pagination";
@@ -19,6 +26,7 @@ function getCsvUrl() {
 }
 
 export function ManageUsersPage() {
+  const queryClient = useQueryClient();
   const [pageIndex, setPageIndex] = useState(1);
   const [perPage, setPerPage] = useState(20);
   const [sortBy, setSortBy] = useState("");
@@ -62,7 +70,13 @@ export function ManageUsersPage() {
     return startItem + users.length - 1;
   }, [startItem, users.length]);
 
+  const prefetchEditData = (id: string) => {
+    void queryClient.prefetchQuery(getManageUserDetailQueryOptions(id));
+    void queryClient.prefetchQuery(getManageUsersMetaQueryOptions());
+  };
+
   const openEdit = (id: string) => {
+    prefetchEditData(id);
     setEditingUserId(id);
     setIsEditOpen(true);
   };
@@ -91,6 +105,19 @@ export function ManageUsersPage() {
       currentSort === column ? `-${column}` : column,
     );
   };
+
+  useEffect(() => {
+    if (!data || pageIndex >= totalPages) return;
+
+    const nextParams = {
+      pageIndex: pageIndex + 1,
+      perPage,
+      search,
+      sortBy,
+    };
+
+    void queryClient.prefetchQuery(getManageUsersListQueryOptions(nextParams));
+  }, [data, pageIndex, totalPages, perPage, search, sortBy, queryClient]);
 
   const handleDownloadCsv = async () => {
     const token = authStore.getAccessToken();
@@ -127,25 +154,27 @@ export function ManageUsersPage() {
   };
 
   return (
-    <div className="p-1">
-      <Card>
-        <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <CardTitle className="text-xl text-foreground">
-            Manage Users
-          </CardTitle>
-          <ManageUsersToolbar
-            searchInput={searchInput}
-            perPage={perPage}
-            onSearchChange={setSearchInput}
-            onPerPageChange={(value) => {
-              setPageIndex(1);
-              setPerPage(value);
-            }}
-            onDownloadCsv={handleDownloadCsv}
-          />
+    <div className="space-y-6 p-1 sm:p-6">
+      <Card className="overflow-hidden rounded-2xl border-none bg-card shadow-sm">
+        <CardHeader className="border-b border-border/40 px-6 py-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <CardTitle className="text-2xl font-bold text-foreground">
+              Manage Users
+            </CardTitle>
+            <ManageUsersToolbar
+              searchInput={searchInput}
+              perPage={perPage}
+              onSearchChange={setSearchInput}
+              onPerPageChange={(value) => {
+                setPageIndex(1);
+                setPerPage(value);
+              }}
+              onDownloadCsv={handleDownloadCsv}
+            />
+          </div>
         </CardHeader>
 
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6 p-6">
           <ManageUsersTable
             users={users}
             isLoading={isLoading}
@@ -153,6 +182,7 @@ export function ManageUsersPage() {
             perPage={perPage}
             onSort={toggleSort}
             onEdit={openEdit}
+            onEditHover={prefetchEditData}
             onDelete={openDelete}
           />
 

@@ -27,14 +27,14 @@ export function ManageUsersToolbar({
   onDownloadCsv,
 }: ManageUsersToolbarProps) {
   return (
-    <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+    <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
       <div className="relative min-w-[260px]">
         <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           value={searchInput}
           onChange={(event) => onSearchChange(event.target.value)}
           placeholder="Search users"
-          className="pl-9"
+          className="h-10 rounded-xl pl-9"
         />
       </div>
 
@@ -42,7 +42,7 @@ export function ManageUsersToolbar({
         value={String(perPage)}
         onValueChange={(value) => onPerPageChange(Number(value))}
       >
-        <SelectTrigger className="w-full sm:w-[120px]">
+        <SelectTrigger className="h-10 w-full rounded-xl sm:w-[140px]">
           <SelectValue placeholder="Rows" />
         </SelectTrigger>
         <SelectContent>
@@ -54,9 +54,14 @@ export function ManageUsersToolbar({
         </SelectContent>
       </Select>
 
-      <Button variant="outline" onClick={onDownloadCsv}>
+      <Button
+        variant="outline"
+        onClick={onDownloadCsv}
+        className="h-10 gap-2 rounded-xl border-border bg-background text-foreground hover:bg-muted/50"
+      >
         <Download className="size-4" />
-        CSV
+        <span className="hidden sm:inline">Export CSV</span>
+        <span className="sm:hidden">CSV</span>
       </Button>
     </div>
   );

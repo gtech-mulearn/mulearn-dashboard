@@ -66,12 +66,13 @@ export function LocationSearchDropdown({
                   }}
                   placeholder="Type location and select from dropdown"
                   disabled={isBusy}
+                  className="rounded-xl"
                 />
                 {isLocationMenuOpen && (
-                  <div className="absolute z-20 mt-1 max-h-56 w-full overflow-y-auto rounded-md border border-border bg-popover p-1 shadow-md">
+                  <div className="absolute z-20 mt-1 max-h-56 w-full overflow-y-auto rounded-xl border border-border/50 bg-popover p-1 shadow-md">
                     <button
                       type="button"
-                      className="flex w-full items-center justify-between rounded px-2 py-2 text-left text-sm hover:bg-muted"
+                      className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-muted/50"
                       onClick={() => {
                         field.onChange("");
                         onLocationMenuOpenChange(false);
@@ -79,16 +80,16 @@ export function LocationSearchDropdown({
                     >
                       <span>None</span>
                       {!field.value && (
-                        <Check className="size-4 text-muted-foreground" />
+                        <Check className="size-4 text-primary" />
                       )}
                     </button>
                     {isLocationFetching && (
-                      <div className="px-2 py-2 text-sm text-muted-foreground">
+                      <div className="px-3 py-2 text-sm text-muted-foreground">
                         Searching...
                       </div>
                     )}
                     {!isLocationFetching && locationOptions.length === 0 && (
-                      <div className="px-2 py-2 text-sm text-muted-foreground">
+                      <div className="px-3 py-2 text-sm text-muted-foreground">
                         No location found
                       </div>
                     )}
@@ -99,7 +100,7 @@ export function LocationSearchDropdown({
                           <button
                             key={option.value}
                             type="button"
-                            className="flex w-full items-center justify-between rounded px-2 py-2 text-left text-sm hover:bg-muted"
+                            className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-muted/50"
                             onClick={() => {
                               field.onChange(option.value);
                               onLocationSearchChange(option.label);
@@ -108,7 +109,7 @@ export function LocationSearchDropdown({
                           >
                             <span>{option.label}</span>
                             {selected && (
-                              <Check className="size-4 text-muted-foreground" />
+                              <Check className="size-4 text-primary" />
                             )}
                           </button>
                         );

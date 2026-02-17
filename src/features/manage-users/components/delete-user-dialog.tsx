@@ -26,19 +26,21 @@ export function DeleteUserDialog({
 }: DeleteUserDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="rounded-2xl sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Delete User</DialogTitle>
-          <DialogDescription>
-            Are you sure you want to delete this user?
+          <DialogTitle className="text-xl font-bold">Delete User</DialogTitle>
+          <DialogDescription className="text-muted-foreground">
+            Are you sure you want to delete this user? This action cannot be
+            undone.
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter>
+        <DialogFooter className="gap-2 sm:gap-0">
           <Button
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={isDeleting}
+            className="rounded-xl"
           >
             Cancel
           </Button>
@@ -47,6 +49,7 @@ export function DeleteUserDialog({
             variant="destructive"
             onClick={onConfirm}
             disabled={isDeleting}
+            className="rounded-xl"
           >
             {isDeleting && <Spinner className="mr-2" />}
             Delete
