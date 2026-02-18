@@ -8,7 +8,7 @@
 
 "use client";
 
-import { Loader2 } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { CircleList, CreateCircleModal } from "@/features/learning-circle";
 import { useInterestGroupsList, useUserProfile } from "@/features/profile";
 
@@ -39,14 +39,14 @@ export default function LearningCirclePage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Learning Circles</h1>
+          <h1 className="text-2xl font-bold">Learning Circles</h1>
           <p className="mt-1 text-sm text-gray-500">
             Join or create learning circles to collaborate with others
           </p>
         </div>
         {isFormDataLoading ? (
           <div className="flex items-center gap-2 text-gray-500">
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Spinner className="h-4 w-4" />
             <span className="text-sm">Loading form data...</span>
           </div>
         ) : !hasUserOrg ? (

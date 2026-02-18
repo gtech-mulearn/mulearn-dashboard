@@ -7,14 +7,12 @@ interface SearchInputProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
-  isLoading?: boolean;
 }
 
 export function SearchInput({
   value,
   onChange,
   placeholder = "Search...",
-  isLoading = false,
 }: SearchInputProps) {
   return (
     <div className="relative">
@@ -37,11 +35,6 @@ export function SearchInput({
         >
           <X className="h-5 w-5" />
         </button>
-      )}
-      {isLoading && (
-        <div className="absolute right-3 top-1/2 -translate-y-1/2">
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted border-t-primary" />
-        </div>
       )}
     </div>
   );

@@ -9,7 +9,7 @@
 
 "use client";
 
-import { Check, ExternalLink, Loader2, RefreshCw } from "lucide-react";
+import { Check, ExternalLink, RefreshCw } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -21,6 +21,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
 import { issueVC, updateVCURL } from "../api";
 import { useConnectedDIDs } from "../hooks";
 import type {
@@ -207,7 +208,7 @@ export function IssueVCModal({
     if (isLoadingDIDs) {
       return (
         <div className="flex flex-col items-center justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Spinner className="h-8 w-8" />
           <p className="mt-2 text-sm text-gray-500">Loading your DIDs...</p>
         </div>
       );
@@ -354,7 +355,7 @@ export function IssueVCModal({
           disabled={isIssuing || !selectedDID}
           className="bg-primary hover:bg-primary/90"
         >
-          {isIssuing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {isIssuing && <Spinner className="mr-2 h-4 w-4" />}
           Issue VC
         </Button>
       </>

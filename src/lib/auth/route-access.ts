@@ -1,7 +1,7 @@
 /**
  * Route Access Map
  *
- * 📍 src/lib/auth/route-access.ts
+ * src/lib/auth/route-access.ts
  *
  * Maps URL paths to the roles required to access them.
  * Used by Next.js middleware for edge-level route protection.
@@ -30,7 +30,7 @@ export const routeAccessMap: Record<string, RouteConfig> = {
   "/dashboard/profile": { roles: [] },
   "/dashboard/leaderboard": { roles: [] },
   "/dashboard/learning-circles": { roles: [] },
-  "/dashboard/interest-groups": { roles: [] },
+  "/dashboard/ig": { roles: [] },
   "/dashboard/campus": { roles: [] },
   "/dashboard/search": { roles: [] },
   "/dashboard/settings": { roles: [] },

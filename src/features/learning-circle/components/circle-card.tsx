@@ -13,20 +13,20 @@ import Link from "next/link";
 import type { LearningCircle } from "../schemas";
 
 // Gradient colors for visual variety
-const GRADIENT_COLORS = [
-  "from-blue-50 to-indigo-50",
-  "from-violet-50 to-purple-50",
-  "from-emerald-50 to-teal-50",
-  "from-amber-50 to-orange-50",
-  "from-rose-50 to-pink-50",
-  "from-cyan-50 to-sky-50",
+const GRADIENT_CLASSES = [
+  "gradient-1",
+  "gradient-2",
+  "gradient-3",
+  "gradient-4",
+  "gradient-5",
+  "gradient-6",
 ];
 
-function getGradient(id: string): string {
+function getGradientClass(id: string): string {
   const index =
     id.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0) %
-    GRADIENT_COLORS.length;
-  return GRADIENT_COLORS[index];
+    GRADIENT_CLASSES.length;
+  return GRADIENT_CLASSES[index];
 }
 
 interface CircleCardProps {
@@ -34,12 +34,12 @@ interface CircleCardProps {
 }
 
 export function CircleCard({ circle }: CircleCardProps) {
-  const gradient = getGradient(circle.id);
+  const gradientClass = getGradientClass(circle.id);
 
   return (
     <Link href={`/dashboard/learning-circle/${circle.id}`}>
       <div
-        className={`group relative overflow-hidden rounded-2xl border border-gray-100 bg-linear-to-br ${gradient} p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1`}
+        className={`group relative overflow-hidden rounded-2xl border border-gray-100 ${gradientClass} p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1`}
       >
         {/* Decorative circles */}
         <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-white/30 blur-2xl" />

@@ -143,7 +143,7 @@ export function ProfileHeader({
                 <Button
                   size="sm"
                   onClick={onEdit}
-                  className="gap-1 rounded-full bg-background px-3 text-xs text-primary-foreground hover:bg-background/90 sm:gap-1.5 sm:text-sm"
+                  className="gap-1 rounded-full bg-background px-3 text-xs text-foreground hover:bg-background/90 sm:gap-1.5 sm:text-sm"
                 >
                   <Pencil className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   <span className="hidden sm:inline">Edit Profile</span>

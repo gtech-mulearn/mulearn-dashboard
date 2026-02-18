@@ -19,7 +19,7 @@ export function UserSearchCard({ user }: UserSearchCardProps) {
       {/* Header with Karma */}
       <div className="flex items-start justify-between mb-4">
         {/* Profile Picture */}
-        <div className="relative h-16 w-16 overflow-hidden rounded-full bg-muted shrink-0">
+        <div className="relative h-16 w-16 overflow-hidden rounded-full bg-primary shrink-0">
           {user.profile_pic && !imageError ? (
             <Image
               src={user.profile_pic}
@@ -29,7 +29,7 @@ export function UserSearchCard({ user }: UserSearchCardProps) {
               onError={() => setImageError(true)}
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-muted text-background text-xl font-semibold">
+            <div className="flex h-full w-full items-center justify-center bg-primary text-background text-xl font-semibold">
               {firstLetter}
             </div>
           )}
@@ -41,8 +41,8 @@ export function UserSearchCard({ user }: UserSearchCardProps) {
             KARMA
           </span>
           <div className="flex items-center gap-1">
-            <Star className="h-4 w-4 text-blue-600 fill-blue-600" />
-            <span className="text-xl font-bold text-blue-600">
+            <Star className="h-4 w-4 text-primary fill-primary" />
+            <span className="text-xl font-bold text-primary">
               {user.karma.toLocaleString()}
             </span>
           </div>
