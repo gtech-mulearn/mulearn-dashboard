@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -29,7 +30,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 import {
   useCollegeData,
@@ -140,6 +140,10 @@ export function EditUserDialog({
 
   const isBusy =
     isDetailLoading || isMetaLoading || updateUserMutation.isPending;
+  const fieldClassName =
+    "h-12 rounded-xl border-border bg-muted/40 px-3.5 text-base focus-visible:ring-primary/20";
+  const selectTriggerClassName =
+    "h-12 w-full rounded-xl border-border bg-muted/40 px-3.5 text-base";
 
   useEffect(() => {
     if (!detail || !open) return;
@@ -224,11 +228,18 @@ export function EditUserDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-2xl sm:max-w-3xl">
+      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-2xl border border-border bg-card sm:max-w-4xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">Edit User</DialogTitle>
-          <DialogDescription className="text-muted-foreground">
-            Update user details and affiliations.
+          <div className="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15">
+              <CheckCircle2 className="size-5 text-primary" />
+            </div>
+          </div>
+          <DialogTitle className="text-center text-4xl font-bold">
+            Edit User
+          </DialogTitle>
+          <DialogDescription className="text-center text-base text-muted-foreground">
+            Enter the details of the user.
           </DialogDescription>
         </DialogHeader>
 
@@ -243,8 +254,8 @@ export function EditUserDialog({
               className="space-y-6"
             >
               <div className="space-y-4">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Basic Info
+                <h3 className="text-center text-3xl font-medium text-primary/90">
+                  BASIC INFO
                 </h3>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <FormField
@@ -254,7 +265,11 @@ export function EditUserDialog({
                       <FormItem>
                         <FormLabel>Full Name</FormLabel>
                         <FormControl>
-                          <Input {...field} disabled={isBusy} />
+                          <Input
+                            {...field}
+                            disabled={isBusy}
+                            className={fieldClassName}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -267,7 +282,12 @@ export function EditUserDialog({
                       <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                          <Input type="email" {...field} disabled={isBusy} />
+                          <Input
+                            type="email"
+                            {...field}
+                            disabled={isBusy}
+                            className={fieldClassName}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -280,7 +300,12 @@ export function EditUserDialog({
                       <FormItem>
                         <FormLabel>Mobile</FormLabel>
                         <FormControl>
-                          <Input maxLength={10} {...field} disabled={isBusy} />
+                          <Input
+                            maxLength={10}
+                            {...field}
+                            disabled={isBusy}
+                            className={fieldClassName}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -293,67 +318,60 @@ export function EditUserDialog({
                       <FormItem>
                         <FormLabel>Discord ID</FormLabel>
                         <FormControl>
-                          <Input {...field} disabled={isBusy} />
+                          <Input
+                            {...field}
+                            disabled={isBusy}
+                            className={fieldClassName}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <LocationSearchDropdown
+                    control={form.control}
+                    isBusy={isBusy}
+                    locationSearch={locationSearch}
+                    isLocationMenuOpen={isLocationMenuOpen}
+                    isLocationFetching={isLocationFetching}
+                    locationOptions={locationOptions}
+                    onLocationSearchChange={setLocationSearch}
+                    onLocationMenuOpenChange={setIsLocationMenuOpen}
+                  />
+                  <MultiSelectDropdown
+                    label="Communities"
+                    options={meta?.communities ?? []}
+                    selectedValues={selectedCommunities}
+                    onToggle={(value, checked) =>
+                      toggleArrayField("communities", value, checked)
+                    }
+                  />
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <MultiSelectDropdown
+                    label="Roles"
+                    options={meta?.roles ?? []}
+                    selectedValues={selectedRoles}
+                    onToggle={(value, checked) =>
+                      toggleArrayField("roles", value, checked)
+                    }
+                  />
+                  <MultiSelectDropdown
+                    label="Interest Groups"
+                    options={meta?.interests ?? []}
+                    selectedValues={selectedInterests}
+                    onToggle={(value, checked) =>
+                      toggleArrayField("interest_groups", value, checked)
+                    }
+                  />
+                </div>
               </div>
-
-              <Separator />
 
               <div className="space-y-4">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Location
-                </h3>
-                <LocationSearchDropdown
-                  control={form.control}
-                  isBusy={isBusy}
-                  locationSearch={locationSearch}
-                  isLocationMenuOpen={isLocationMenuOpen}
-                  isLocationFetching={isLocationFetching}
-                  locationOptions={locationOptions}
-                  onLocationSearchChange={setLocationSearch}
-                  onLocationMenuOpenChange={setIsLocationMenuOpen}
-                />
-              </div>
-
-              <Separator />
-
-              <div className="grid gap-4 md:grid-cols-3">
-                <MultiSelectDropdown
-                  label="Communities"
-                  options={meta?.communities ?? []}
-                  selectedValues={selectedCommunities}
-                  onToggle={(value, checked) =>
-                    toggleArrayField("communities", value, checked)
-                  }
-                />
-                <MultiSelectDropdown
-                  label="Roles"
-                  options={meta?.roles ?? []}
-                  selectedValues={selectedRoles}
-                  onToggle={(value, checked) =>
-                    toggleArrayField("roles", value, checked)
-                  }
-                />
-                <MultiSelectDropdown
-                  label="Interest Groups"
-                  options={meta?.interests ?? []}
-                  selectedValues={selectedInterests}
-                  onToggle={(value, checked) =>
-                    toggleArrayField("interest_groups", value, checked)
-                  }
-                />
-              </div>
-
-              <Separator />
-
-              <div className="space-y-4">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  College / School
+                <h3 className="text-center text-3xl font-medium text-primary/90">
+                  COLLEGE / SCHOOL
                 </h3>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <FormField
@@ -383,7 +401,7 @@ export function EditUserDialog({
                           disabled={isBusy}
                         >
                           <FormControl>
-                            <SelectTrigger className="w-full">
+                            <SelectTrigger className={selectTriggerClassName}>
                               <SelectValue placeholder="Select country" />
                             </SelectTrigger>
                           </FormControl>
@@ -428,7 +446,7 @@ export function EditUserDialog({
                           disabled={isBusy || !countryId}
                         >
                           <FormControl>
-                            <SelectTrigger className="w-full">
+                            <SelectTrigger className={selectTriggerClassName}>
                               <SelectValue placeholder="Select state" />
                             </SelectTrigger>
                           </FormControl>
@@ -467,7 +485,7 @@ export function EditUserDialog({
                           disabled={isBusy || !stateId}
                         >
                           <FormControl>
-                            <SelectTrigger className="w-full">
+                            <SelectTrigger className={selectTriggerClassName}>
                               <SelectValue placeholder="Select district" />
                             </SelectTrigger>
                           </FormControl>
@@ -502,7 +520,7 @@ export function EditUserDialog({
                           disabled={isBusy}
                         >
                           <FormControl>
-                            <SelectTrigger className="w-full">
+                            <SelectTrigger className={selectTriggerClassName}>
                               <SelectValue placeholder="Select college / school" />
                             </SelectTrigger>
                           </FormControl>
@@ -537,7 +555,7 @@ export function EditUserDialog({
                           disabled={isBusy}
                         >
                           <FormControl>
-                            <SelectTrigger className="w-full">
+                            <SelectTrigger className={selectTriggerClassName}>
                               <SelectValue placeholder="Select department" />
                             </SelectTrigger>
                           </FormControl>
@@ -576,6 +594,7 @@ export function EditUserDialog({
                               field.onChange(value);
                             }}
                             disabled={isBusy}
+                            className={fieldClassName}
                           />
                         </FormControl>
                         <FormMessage />
@@ -585,19 +604,23 @@ export function EditUserDialog({
                 </div>
               </div>
 
-              <DialogFooter className="gap-2 sm:gap-0">
+              <DialogFooter className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => onOpenChange(false)}
                   disabled={isBusy}
-                  className="rounded-xl"
+                  className="h-12 rounded-xl bg-muted/60 text-xl font-medium text-primary hover:bg-muted"
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isBusy} className="rounded-xl">
+                <Button
+                  type="submit"
+                  disabled={isBusy}
+                  className="h-12 rounded-xl text-xl font-medium"
+                >
                   {updateUserMutation.isPending && <Spinner className="mr-2" />}
-                  Save Changes
+                  Done
                 </Button>
               </DialogFooter>
             </form>
