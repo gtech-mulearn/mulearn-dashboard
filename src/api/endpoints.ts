@@ -178,7 +178,7 @@ export const endpoints = {
     /** GET - List all interest groups */
     list: "/api/v1/dashboard/ig/",
     /** GET - Interest group details */
-    detail: (id: string) => `/api/v1/dashboard/ig/${id}/`,
+    detail: (id: string) => `/api/v1/dashboard/ig/get/${id}/`,
   },
 
   // ============================================
