@@ -150,7 +150,7 @@ export const endpoints = {
     info: (campusId: string) => `/api/v1/dashboard/campus/${campusId}/`,
     /** GET - Campus weekly karma */
     weeklykarma: (campusId: string) =>
-      `/api/v1/campus/weekly-karma/${campusId}/`,
+      `/api/v1/dashboard/campus/weekly-karma/${campusId}/`,
   },
 
   // ============================================
@@ -178,7 +178,7 @@ export const endpoints = {
     /** GET - List all interest groups */
     list: "/api/v1/dashboard/ig/",
     /** GET - Interest group details */
-    detail: (id: string) => `/api/v1/dashboard/ig/${id}/`,
+    detail: (id: string) => `/api/v1/dashboard/ig/get/${id}/`,
   },
 
   // ============================================
@@ -207,7 +207,8 @@ export const endpoints = {
     /** POST - Issue Verifiable Credential */
     issueVC: "/api/v1/integrations/qseverse/issue-vc/",
     /** GET - Get connected DIDs for user */
-    connectedUsers: "/api/v1/integrations/qseverse/connected-users/search",
+    connectedUsers: (muid: string) =>
+      `/api/v1/integrations/qseverse/connected-users/search?key=muid&value=${muid}`,
   },
 
   // ============================================
@@ -316,6 +317,21 @@ export const endpoints = {
     mentors: "/api/v1/dashboard/user/search/",
     colleges: "/api/v1/dashboard/organisation/institutes/college/",
     schools: "/api/v1/dashboard/organisation/institutes/school/",
+  },
+  // ============================================
+  // URL Shortener Endpoints
+  // ============================================
+  urlShortener: {
+    /** GET - List all short URLs */
+    list: "/api/v1/url-shortener/list/",
+    /** POST - Create new short URL */
+    create: "/api/v1/url-shortener/create/",
+    /** PUT - Edit short URL */
+    edit: (id: string) => `/api/v1/url-shortener/edit/${id}/`,
+    /** DELETE - Delete short URL */
+    delete: (id: string) => `/api/v1/url-shortener/delete/${id}/`,
+    /** GET - Get analytics for short URL */
+    analytics: (id: string) => `/api/v1/url-shortener/get-analytics/${id}/`,
   },
 
   // ============================================

@@ -95,6 +95,7 @@ export function Sidebar() {
               width={100}
               height={32}
               priority
+              style={{ height: "auto" }}
               className="h-8 w-auto"
             />
           </Link>
@@ -160,6 +161,7 @@ export function Sidebar() {
               width={100}
               height={32}
               priority
+              style={{ height: "auto" }}
             />
           </Link>
           <button

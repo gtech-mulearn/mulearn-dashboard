@@ -71,7 +71,11 @@ export function igLeadRole(igCode: string): string {
 export const ADMIN_ROLES = [ROLES.ADMIN] as const;
 
 /** Roles that can perform management tasks (admin-level + fellows) */
-export const MANAGEMENT_ROLES = [ROLES.ADMIN, ROLES.FELLOW] as const;
+export const MANAGEMENT_ROLES = [
+  ROLES.ADMIN,
+  ROLES.ASSOCIATE,
+  ROLES.FELLOW,
+] as const;
 
 /** Roles that can manage campus-level operations */
 export const CAMPUS_MANAGEMENT_ROLES = [
