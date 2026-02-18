@@ -43,6 +43,8 @@ export function MultiSelectDropdown({
       <div className="relative">
         <button
           type="button"
+          aria-haspopup="listbox"
+          aria-expanded={isOpen}
           className="flex min-h-11 w-full items-center justify-between gap-2 rounded-xl border border-border bg-muted/40 px-3 py-2 text-sm text-foreground transition-colors hover:bg-muted/50"
           onClick={() => setIsOpen((prev) => !prev)}
         >
@@ -54,36 +56,14 @@ export function MultiSelectDropdown({
                     className="inline-flex items-center gap-1 rounded-md bg-background px-2 py-1 text-sm text-foreground"
                   >
                     <span className="truncate">{option.label}</span>
-                    <button
-                      type="button"
-                      aria-label={`Remove ${option.label}`}
-                      className="shrink-0 text-foreground/70 hover:text-foreground"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        onToggle(option.value, false);
-                      }}
-                    >
-                      x
-                    </button>
+                    <span className="shrink-0 text-foreground/70">x</span>
                   </span>
                 ))
               : `Select ${label.toLowerCase()}`}
           </span>
           <span className="flex shrink-0 items-center gap-1">
             {selectedOptions.length > 0 && (
-              <button
-                type="button"
-                aria-label={`Clear ${label}`}
-                className="rounded p-1 text-muted-foreground hover:text-foreground"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  for (const value of selectedValues) {
-                    onToggle(value, false);
-                  }
-                }}
-              >
-                x
-              </button>
+              <span className="rounded p-1 text-muted-foreground">x</span>
             )}
             <ChevronDown className="size-4 text-muted-foreground" />
           </span>
