@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { ShieldCheck } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { endpoints } from "@/api/endpoints";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,6 +39,19 @@ export function ManageUsersPage() {
 
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+
+  useEffect(() => {
+    const previousHtmlOverflowX = document.documentElement.style.overflowX;
+    const previousBodyOverflowX = document.body.style.overflowX;
+
+    document.documentElement.style.overflowX = "hidden";
+    document.body.style.overflowX = "hidden";
+
+    return () => {
+      document.documentElement.style.overflowX = previousHtmlOverflowX;
+      document.body.style.overflowX = previousBodyOverflowX;
+    };
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -155,7 +168,7 @@ export function ManageUsersPage() {
   };
 
   return (
-    <div className="space-y-6 p-2 sm:p-6">
+    <div className="mx-auto w-full space-y-6 overflow-hidden p-3 sm:p-6">
       <Card className="overflow-hidden rounded-3xl border border-border/60 bg-card shadow-[0_10px_30px_-18px_rgba(0,0,0,0.35)]">
         <CardHeader className="border-b border-border/50 bg-background px-4 py-5 sm:px-6 sm:py-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

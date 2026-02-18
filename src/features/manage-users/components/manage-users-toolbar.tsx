@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, Search, SlidersHorizontal } from "lucide-react";
+import { Download, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -11,6 +11,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+
+const PAGE_SIZE_OPTIONS = [5, 10, 20, 50, 100] as const;
 
 interface ManageUsersToolbarProps {
   searchInput: string;
@@ -29,7 +31,6 @@ export function ManageUsersToolbar({
 }: ManageUsersToolbarProps) {
   return (
     <div className="flex flex-col gap-4 rounded-2xl border border-border/50 bg-card p-2 shadow-sm lg:flex-row lg:items-center lg:p-1.5">
-      {/* Search Section */}
       <div className="relative flex-1">
         <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50">
           <Search className="size-4" />
@@ -45,9 +46,7 @@ export function ManageUsersToolbar({
       <Separator orientation="vertical" className="hidden h-8 lg:block" />
       <Separator orientation="horizontal" className="lg:hidden" />
 
-      {/* Actions Section */}
       <div className="grid grid-cols-[1fr_auto] gap-2 lg:flex lg:items-center">
-        {/* Row Count Select */}
         <div className="flex items-center gap-2">
           <span className="hidden text-xs font-medium text-muted-foreground lg:inline-block whitespace-nowrap">
             Rows per page
@@ -60,7 +59,7 @@ export function ManageUsersToolbar({
               <SelectValue placeholder="Rows" />
             </SelectTrigger>
             <SelectContent>
-              {[5, 10, 20, 50, 100].map((option) => (
+              {PAGE_SIZE_OPTIONS.map((option) => (
                 <SelectItem key={option} value={String(option)}>
                   {option}
                 </SelectItem>
@@ -69,7 +68,6 @@ export function ManageUsersToolbar({
           </Select>
         </div>
 
-        {/* Export Button */}
         <Button
           variant="outline"
           onClick={onDownloadCsv}
