@@ -70,9 +70,7 @@ export default function PublicProfilePage() {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center text-center">
         <ShieldX className="h-16 w-16 text-gray-300" />
-        <p className="mt-4 text-lg font-medium text-gray-900">
-          This profile is private
-        </p>
+        <p className="mt-4 text-lg font-medium">This profile is private</p>
         <p className="mt-1 text-gray-500">
           The user has chosen to keep their profile hidden.
         </p>

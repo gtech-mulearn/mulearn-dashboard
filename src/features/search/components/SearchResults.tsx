@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import type { CampusSearchResult, UserSearchResult } from "../schemas";
 import { CampusSearchCard } from "./CampusSearchCard";
 import { UserSearchCard } from "./UserSearchCard";
@@ -72,7 +72,7 @@ export function SearchResults({
       {/* Loading indicator */}
       {isLoading && searchQuery.length >= 3 && (
         <div className="flex justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Spinner className="h-8 w-8" />
         </div>
       )}
     </div>

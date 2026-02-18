@@ -8,7 +8,7 @@
 
 "use client";
 
-import { Loader2, LogIn } from "lucide-react";
+import { LogIn } from "lucide-react";
 import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
 import { useJoinMeeting } from "../hooks";
 
 interface JoinMeetingModalProps {
@@ -119,7 +120,7 @@ export function JoinMeetingModal({
               disabled={isPending || code.length !== 6}
               className="bg-emerald-600 hover:bg-emerald-700"
             >
-              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isPending && <Spinner className="mr-2 h-4 w-4 animate-spin" />}
               Join Meeting
             </Button>
           </div>

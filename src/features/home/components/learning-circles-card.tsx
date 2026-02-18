@@ -63,7 +63,7 @@ export function LearningCirclesCard() {
             className="relative z-10 h-48 w-auto object-contain drop-shadow-lg transition-transform hover:scale-105 duration-500"
             height={200}
             width={240}
-            src="/Group.png"
+            src="/layout/Group.png"
           />
         </div>
       </CardContent>
