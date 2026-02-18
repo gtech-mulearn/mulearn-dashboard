@@ -16,6 +16,9 @@ interface UIState {
   setSidebarExpanded: (expanded: boolean) => void;
   expandSidebar: () => void;
   collapseSidebar: () => void;
+  isConnectBannerDismissed: boolean;
+  dismissConnectBanner: () => void;
+  resetUI: () => void;
 }
 
 export const useUIStore = create<UIState>()(
@@ -27,6 +30,13 @@ export const useUIStore = create<UIState>()(
       setSidebarExpanded: (expanded) => set({ isSidebarExpanded: expanded }),
       expandSidebar: () => set({ isSidebarExpanded: true }),
       collapseSidebar: () => set({ isSidebarExpanded: false }),
+      isConnectBannerDismissed: false,
+      dismissConnectBanner: () => set({ isConnectBannerDismissed: true }),
+      resetUI: () =>
+        set({
+          isSidebarExpanded: true,
+          isConnectBannerDismissed: false,
+        }),
     }),
     {
       name: "ui-storage", // content of the store (isSidebarExpanded) will be stored in localStorage

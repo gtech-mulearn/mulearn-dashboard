@@ -1,22 +1,25 @@
-"use client";
-
 import { X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useQsverseInfo, useUserInfo } from "@/features/connect";
+import { useUIStore } from "@/stores/ui-store";
 import { Spinner } from "../ui/spinner";
 
 export function ConnectAccountsBanner() {
   const pathname = usePathname();
-  const [dismissed, setDismissed] = useState(false);
+  const isConnectBannerDismissed = useUIStore(
+    (state) => state.isConnectBannerDismissed,
+  );
+  const dismissConnectBanner = useUIStore(
+    (state) => state.dismissConnectBanner,
+  );
   const user = useUserInfo();
   const qsverse = useQsverseInfo();
   const ALLOWED_ROUTES = ["/dashboard/profile", "/dashboard/mujourney"];
   const isAllowedRoute = ALLOWED_ROUTES.includes(pathname);
   if (!isAllowedRoute) return null;
-  if (dismissed) return null;
+  if (isConnectBannerDismissed) return null;
   if (user.isLoading || qsverse.isLoading)
     return <Spinner className="h-8 w-8" />;
   const discordConnected = user.data?.exist_in_guild === true;
@@ -55,7 +58,7 @@ export function ConnectAccountsBanner() {
           <Button
             variant="blue"
             size="icon"
-            onClick={() => setDismissed(true)}
+            onClick={() => dismissConnectBanner()}
             className="absolute right-3 top-3 h-8 w-8 md:static md:ml-1"
             aria-label="Dismiss"
           >
