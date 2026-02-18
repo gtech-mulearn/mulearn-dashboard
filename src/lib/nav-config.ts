@@ -93,7 +93,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   {
     id: "interest-groups",
     title: "Interest Groups",
-    href: "/dashboard/interest-groups",
+    href: "/dashboard/ig",
     icon: Users,
     section: "main",
   },
