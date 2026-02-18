@@ -12,12 +12,12 @@ import { endpoints } from "@/api/endpoints";
 import type {
   InterestGroup,
   InterestGroupDetail,
-  InterestGroupsListResponse,
   InterestGroupDetailResponse,
+  InterestGroupsListResponse,
 } from "../schemas/interest-groups.schema";
 import {
-  InterestGroupsListResponseSchema,
   InterestGroupDetailResponseSchema,
+  InterestGroupsListResponseSchema,
 } from "../schemas/interest-groups.schema";
 
 // ============================================
