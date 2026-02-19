@@ -20,6 +20,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { authStore } from "@/lib/auth";
+import { useUIStore } from "@/stores/ui-store";
 
 interface AccountSettingsModalProps {
   open: boolean;
@@ -36,6 +37,9 @@ export function AccountSettingsModal({
   const handleLogout = () => {
     // Clear all tokens
     authStore.clearTokens();
+
+    // Reset UI state
+    useUIStore.getState().resetUI();
 
     // Clear all cached query data
     queryClient.clear();

@@ -1,5 +1,4 @@
 import { BookOpen, Clock, ExternalLink, Trophy } from "lucide-react";
-import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,40 +11,73 @@ import {
 } from "@/components/ui/card";
 import type { UnifiedCourse } from "../schemas/courses.schemas";
 
+const DISCORD_SUBMIT_LINK =
+  "https://discord.com/channels/771670169691881483/1455593272633458818";
+
 interface CourseCardProps {
   course: UnifiedCourse;
   onEnroll: (id: string) => void;
+  onReadMore: () => void;
   isEnrolling?: boolean;
 }
 
-export function CourseCard({ course, onEnroll, isEnrolling }: CourseCardProps) {
+function truncateDescription(text: string, maxLen = 120): string {
+  if (text.length <= maxLen) return text;
+  return `${text.slice(0, maxLen)}...`;
+}
+
+function isDirectImageUrl(url: string): boolean {
+  try {
+    const u = new URL(url);
+    const pageHosts = [
+      "www.shutterstock.com",
+      "shutterstock.com",
+      "www.freepik.com",
+      "freepik.com",
+    ];
+    if (pageHosts.some((h) => u.hostname === h)) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function CourseCard({
+  course,
+  onEnroll,
+  onReadMore,
+  isEnrolling,
+}: CourseCardProps) {
   const handleEnroll = () => {
-    if (course.enrollmentId) {
-      onEnroll(course.enrollmentId);
-    }
+    onEnroll(course.enrollmentId || course.id);
   };
 
   const handleSubmit = () => {
-    // TODO: Move this link to constants or API config if it varies
-    window.open("https://discord.com/channels/YOUR_DISCORD_ID", "_blank");
+    window.open(DISCORD_SUBMIT_LINK, "_blank");
   };
+
+  const description = course.description || "";
+  const isLongDesc = description.length > 120;
+  const showImage = course.imageUrl && isDirectImageUrl(course.imageUrl);
 
   return (
     <Card className="h-full flex flex-col overflow-hidden group hover:shadow-lg transition-all duration-300 border-border rounded-2xl hover:border-primary/30 bg-card">
-      <div className="relative aspect-video w-full overflow-hidden bg-muted">
-        {course.imageUrl ? (
-          <Image
-            src={course.imageUrl}
-            alt={course.title}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
+      {/* Image / Placeholder */}
+      <div className="relative aspect-video w-full overflow-hidden bg-muted shrink-0">
+        {showImage ? (
+          <>
+            {/* biome-ignore lint/performance/noImgElement: Dynamic images from sheet need <img> */}
+            <img
+              src={course.imageUrl}
+              alt={course.title}
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          </>
         ) : (
-          <div className="flex items-center justify-center h-full bg-linear-to-br from-primary/5 to-primary/10 text-primary/30">
+          <div className="flex items-center justify-center h-full bg-gradient-to-br from-primary/5 to-primary/10 text-primary/30">
             <svg
               role="img"
-              aria-label="description"
+              aria-label="Course"
               className="w-16 h-16"
               fill="none"
               viewBox="0 0 24 24"
@@ -91,7 +123,7 @@ export function CourseCard({ course, onEnroll, isEnrolling }: CourseCardProps) {
             {course.duration && (
               <span className="flex items-center gap-1">
                 <Clock className="w-3 h-3" />
-                {course.duration}
+                {course.duration} hours
               </span>
             )}
           </div>
@@ -102,8 +134,17 @@ export function CourseCard({ course, onEnroll, isEnrolling }: CourseCardProps) {
       </CardHeader>
 
       <CardContent className="flex-grow space-y-4">
-        <CardDescription className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">
-          {course.description || "No description available for this course."}
+        <CardDescription className="text-sm leading-relaxed text-muted-foreground">
+          {truncateDescription(description)}
+          {isLongDesc && (
+            <button
+              type="button"
+              className="ml-1 text-primary hover:underline cursor-pointer text-sm font-medium"
+              onClick={onReadMore}
+            >
+              Read More
+            </button>
+          )}
         </CardDescription>
 
         {course.hashtags && course.hashtags.length > 0 && (
@@ -111,7 +152,7 @@ export function CourseCard({ course, onEnroll, isEnrolling }: CourseCardProps) {
             {course.hashtags.map((tag) => (
               <span
                 key={tag}
-                className="text-[10px] px-2.5 py-1 bg-gray-50 text-gray-500 rounded-full border border-gray-100 font-medium"
+                className="text-[10px] px-2.5 py-1 bg-muted text-muted-foreground rounded-full border border-border font-medium"
               >
                 {tag}
               </span>
@@ -120,7 +161,7 @@ export function CourseCard({ course, onEnroll, isEnrolling }: CourseCardProps) {
         )}
       </CardContent>
 
-      <CardFooter className="pt-2 pb-6 grid grid-cols-2 gap-3">
+      <CardFooter className="pt-2 pb-6 grid grid-cols-2 gap-3 shrink-0">
         <Button
           className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-md transition-all hover:shadow-lg rounded-xl h-11 col-span-2"
           onClick={handleEnroll}

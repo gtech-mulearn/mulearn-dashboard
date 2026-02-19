@@ -4,5 +4,5 @@
  *  src/features/interest-groups/hooks/index.ts
  */
 
-export * from "./useInterestGroupsList";
 export * from "./useInterestGroupDetail";
+export * from "./useInterestGroupsList";

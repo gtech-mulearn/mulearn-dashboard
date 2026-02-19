@@ -21,21 +21,22 @@ const searchTabs = [
 
 export function CampusesSearchClient() {
   const {
-    data,
+    campuses,
     isLoading,
     isError,
     searchQuery,
     setSearchQuery,
     searchType,
     setSearchType,
-    setPage,
     hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
   } = useSearchCampuses();
 
   const loadMoreRef = useInfiniteScroll({
-    onLoadMore: () => setPage((p) => p + 1),
-    hasMore: hasNextPage,
-    isLoading,
+    onLoadMore: fetchNextPage,
+    hasMore: !!hasNextPage,
+    isLoading: isFetchingNextPage,
   });
 
   return (
@@ -76,22 +77,27 @@ export function CampusesSearchClient() {
       </div>
 
       {/* Results */}
+      {isLoading && (
+        <div className="flex justify-center py-8">
+          <Spinner className="h-8 w-8" />
+        </div>
+      )}
       {isError ? (
         <div className="text-center py-16">
           <p className="text-destructive text-lg">
             Failed to load results. Please try again.
           </p>
         </div>
-      ) : data?.data.length === 0 && !isLoading ? (
+      ) : campuses.length === 0 && !isLoading ? (
         <div className="text-center py-16">
           <p className="text-muted-foreground text-lg">No campuses found</p>
         </div>
       ) : (
         <>
           <div className="space-y-4">
-            {data?.data.map((campus, index) => (
+            {campuses.map((campus) => (
               <CampusSearchCard
-                key={campus.id || campus.code || `campus-${index}`}
+                key={campus.id || campus.code}
                 campus={campus}
               />
             ))}
@@ -99,7 +105,7 @@ export function CampusesSearchClient() {
 
           {hasNextPage && <div ref={loadMoreRef} className="h-10" />}
 
-          {isLoading && (
+          {isFetchingNextPage && (
             <div className="flex justify-center py-8">
               <Spinner className="h-8 w-8" />
             </div>

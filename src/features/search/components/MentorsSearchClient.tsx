@@ -14,24 +14,24 @@ const searchTabs = [
 
 export function MentorsSearchClient() {
   const {
-    data,
+    mentors,
     isLoading,
     isError,
     searchQuery,
     setSearchQuery,
-    setPage,
     hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
   } = useSearchMentors();
 
   const loadMoreRef = useInfiniteScroll({
-    onLoadMore: () => setPage((p) => p + 1),
-    hasMore: hasNextPage,
-    isLoading,
+    onLoadMore: fetchNextPage,
+    hasMore: !!hasNextPage,
+    isLoading: isFetchingNextPage,
   });
 
   return (
     <>
-      {/* Search Input and Tabs */}
       <div className="mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="flex-1 w-full sm:w-auto">
           <SearchInput
@@ -45,31 +45,32 @@ export function MentorsSearchClient() {
         </div>
       </div>
 
-      {/* Results */}
+      {isLoading && (
+        <div className="flex justify-center py-8">
+          <Spinner className="h-8 w-8" />
+        </div>
+      )}
       {isError ? (
         <div className="text-center py-16">
           <p className="text-destructive text-lg">
             Failed to load results. Please try again.
           </p>
         </div>
-      ) : data?.data.length === 0 && !isLoading ? (
+      ) : mentors.length === 0 && !isLoading ? (
         <div className="text-center py-16">
           <p className="text-muted-foreground text-lg">No mentors found</p>
         </div>
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {data?.data.map((mentor, index) => (
-              <UserSearchCard
-                key={mentor.muid || mentor.id || `mentor-${index}`}
-                user={mentor}
-              />
+            {mentors.map((mentor) => (
+              <UserSearchCard key={mentor.muid || mentor.id} user={mentor} />
             ))}
           </div>
 
           {hasNextPage && <div ref={loadMoreRef} className="h-10" />}
 
-          {isLoading && (
+          {isFetchingNextPage && (
             <div className="flex justify-center py-8">
               <Spinner className="h-8 w-8" />
             </div>

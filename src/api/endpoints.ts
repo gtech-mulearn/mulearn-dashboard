@@ -178,7 +178,7 @@ export const endpoints = {
     /** GET - List all interest groups */
     list: "/api/v1/dashboard/ig/",
     /** GET - Interest group details */
-    detail: (id: string) => `/api/v1/dashboard/ig/${id}/`,
+    detail: (id: string) => `/api/v1/dashboard/ig/get/${id}/`,
   },
 
   // ============================================
@@ -281,6 +281,9 @@ export const endpoints = {
       courses: "/api/v1/integrations/wadhwani/course-details/",
       /** POST - Enroll/Login to course */
       enroll: "/api/v1/integrations/wadhwani/user-login/",
+      /** GET - Wadhwani Sheet URL */
+      sheet:
+        "https://opensheet.elk.sh/1LEvZozIVVquXjSvtptQcjiU0_WFaxVuEYBCYyCdsCtY/sheet",
     },
     openGrad: {
       /** POST - Get client token */

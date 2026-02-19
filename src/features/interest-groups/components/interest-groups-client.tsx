@@ -9,8 +9,8 @@
 "use client";
 
 import { Sparkles } from "lucide-react";
-import { InterestGroupsGrid } from "./interest-groups-grid";
 import { useInterestGroupsList } from "../hooks";
+import { InterestGroupsGrid } from "./interest-groups-grid";
 
 export function InterestGroupsClient() {
   const { data, isLoading, error } = useInterestGroupsList();
