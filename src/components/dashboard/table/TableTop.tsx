@@ -8,8 +8,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useManageUsersCsvDownload } from "@/features/manage-users/hooks";
 import { cn } from "@/lib/utils";
-import { useManageUsersCsvDownload } from "../hooks";
 import { SearchBar } from "./SearchBar";
 
 type Props = {
@@ -79,17 +79,24 @@ const TableTop = ({
           searchPosition === "right" && "md:ml-auto",
           searchPosition === "left" && "md:mr-auto",
           searchWrapperClassName,
+          !CSV && "md:w-fit md:max-w-none",
         )}
       >
         <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
-          <div className={cn("relative flex-1", searchFieldWrapperClassName)}>
+          <div
+            className={cn(
+              "relative flex-1",
+              searchFieldWrapperClassName,
+              !CSV && "lg:flex-none",
+            )}
+          >
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground/60" />
             <SearchBar
               onSearch={handleData}
               placeholder={searchPlaceholder}
               size={searchSize}
               showButton={false}
-              className={cn("w-full", searchBarClassName)}
+              className={cn(CSV ? "w-full" : "w-fit", searchBarClassName)}
               inputClassName={cn(
                 "border-border bg-background pl-9 pr-3",
                 searchInputClassName,
@@ -115,15 +122,17 @@ const TableTop = ({
                 ))}
               </SelectContent>
             </Select>
-            <Button
-              variant="outline"
-              onClick={handleClick}
-              disabled={isDownloading || !CSV}
-              className="h-10 rounded-xl border-border bg-background px-4 font-semibold text-foreground hover:bg-muted"
-            >
-              <Download className="mr-2 size-4" />
-              Export CSV
-            </Button>
+            {CSV && (
+              <Button
+                variant="outline"
+                onClick={handleClick}
+                disabled={isDownloading}
+                className="h-10 rounded-xl border-border bg-background px-4 font-semibold text-foreground hover:bg-muted"
+              >
+                <Download className="mr-2 size-4" />
+                Export CSV
+              </Button>
+            )}
           </div>
         </div>
       </div>

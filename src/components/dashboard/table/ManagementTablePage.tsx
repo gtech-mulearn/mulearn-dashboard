@@ -14,14 +14,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useDeleteManageUser } from "../hooks";
-import type { ManageUserListItem } from "../schemas";
+import { useDeleteManageUser } from "@/features/manage-users/hooks";
+import type { ManageUserListItem } from "@/features/manage-users/schemas";
+import UserForm from "@/features/manage-users/components/useForm";
 import { Blank } from "./Blank";
 import Pagination from "./pagination";
 import Table from "./Table";
 import TableTop from "./TableTop";
 import THead from "./Thead";
-import UserForm from "./useForm";
 
 export type TableColumnConfig = {
   isSortable: boolean;
@@ -48,7 +48,7 @@ type ManagementTablePageProps = {
   enableEdit?: boolean;
   enableDelete?: boolean;
 };
-function ManagementTablePage({
+export default function ManagementTablePage({
   badgeText,
   titleText,
   columnOrder,
@@ -92,9 +92,9 @@ function ManagementTablePage({
   };
 
   return (
-    <div className="mx-auto w-full space-y-6 overflow-hidden p-3 sm:p-6">
-      <Card className="overflow-hidden rounded-3xl border border-border/60 bg-card shadow-xl">
-        <CardHeader className="border-b border-border/50 bg-background px-4 py-5 sm:px-6 sm:py-6">
+    <>
+      <Card className="overflow-visible border-0 bg-transparent shadow-none rounded-none">
+        <CardHeader className="px-0 py-0 sm:px-0 sm:py-0">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/[0.06] px-3 py-1 text-xs font-semibold text-primary">
               <ShieldCheck className="size-3.5" />
@@ -106,7 +106,7 @@ function ManagementTablePage({
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-6 bg-background p-3 sm:p-6">
+        <CardContent className="space-y-6 bg-transparent p-0">
           <TableTop
             onSearchText={onSearch}
             onPerPageNumber={onPerPageNumber}
@@ -189,9 +189,6 @@ function ManagementTablePage({
           </DialogContent>
         </Dialog>
       )}
-    </div>
+    </>
   );
 }
-
-export default ManagementTablePage;
-export const ManageUsersPage = ManagementTablePage;
