@@ -33,6 +33,7 @@ export function Sidebar() {
 
   const handleLogout = () => {
     authStore.clearTokens();
+    useUIStore.getState().resetUI();
     toast.success("Logged out successfully");
     router.replace("/login");
   };

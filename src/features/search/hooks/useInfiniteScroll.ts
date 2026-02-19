@@ -13,32 +13,43 @@ export function useInfiniteScroll({
   hasMore,
   isLoading,
 }: UseInfiniteScrollProps) {
-  const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const hasTriggeredRef = useRef(false);
 
   useEffect(() => {
-    if (isLoading || !hasMore) return;
+    if (!hasMore) return;
 
-    observerRef.current = new IntersectionObserver(
+    const el = loadMoreRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0]?.isIntersecting) {
-          onLoadMore();
-        }
+        const entry = entries[0];
+        if (!entry?.isIntersecting) return;
+
+        // prevent spam while loading
+        if (isLoading) return;
+
+        // prevent repeated triggers while still visible
+        if (hasTriggeredRef.current) return;
+
+        hasTriggeredRef.current = true;
+        onLoadMore();
       },
       { threshold: 0.1 },
     );
 
-    const currentElement = loadMoreRef.current;
-    if (currentElement) {
-      observerRef.current.observe(currentElement);
-    }
+    observer.observe(el);
 
-    return () => {
-      if (observerRef.current && currentElement) {
-        observerRef.current.unobserve(currentElement);
-      }
-    };
+    return () => observer.disconnect();
   }, [onLoadMore, hasMore, isLoading]);
+
+  // reset trigger when loading finishes (so it can load next page)
+  useEffect(() => {
+    if (!isLoading) {
+      hasTriggeredRef.current = false;
+    }
+  }, [isLoading]);
 
   return loadMoreRef;
 }
