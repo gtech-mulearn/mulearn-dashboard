@@ -72,6 +72,8 @@ export default function Page() {
       onPreviousClick={handlePreviousClick}
       onSortChange={handleSortChange}
       onAfterDelete={() => setCurrentPage(1)}
+      enableEdit={true}
+      enableDelete={true}
     />
   );
 }

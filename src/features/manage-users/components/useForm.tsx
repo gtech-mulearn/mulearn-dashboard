@@ -5,6 +5,7 @@ import { CheckCircle2 } from "lucide-react";
 import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import Loader from "@/app/loading";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -22,7 +23,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Spinner } from "@/components/ui/spinner";
 import {
   useCollegeData,
   useDistricts,
@@ -151,9 +151,9 @@ const UserForm = forwardRef<{ handleSubmitExternally: () => void }, Props>(
       isDetailLoading || isMetaLoading || updateUserMutation.isPending;
 
     const fieldClassName =
-      "h-12 rounded-2xl border border-[#d5dbe6] bg-[#eef2f7] px-4 text-base focus-visible:ring-1 focus-visible:ring-[#1f66e5]/20";
+      "h-12 rounded-2xl border border-border bg-muted px-4 text-base focus-visible:ring-1 focus-visible:ring-primary/20";
     const selectTriggerClassName =
-      "h-12 w-full rounded-2xl border border-[#d5dbe6] bg-[#eef2f7] px-3.5 text-base";
+      "h-12 w-full rounded-2xl border border-border bg-muted px-3.5 text-base";
 
     useEffect(() => {
       if (!detail) return;
@@ -300,7 +300,7 @@ const UserForm = forwardRef<{ handleSubmitExternally: () => void }, Props>(
     if (isDetailLoading) {
       return (
         <div className="flex items-center justify-center py-10">
-          <Spinner className="size-6 text-primary" />
+          <Loader />
         </div>
       );
     }
@@ -313,9 +313,9 @@ const UserForm = forwardRef<{ handleSubmitExternally: () => void }, Props>(
           className="space-y-6"
         >
           <div className="space-y-2 text-center">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#dce9fb]">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#c8ddf9]">
-                <CheckCircle2 className="size-5 text-[#1f66e5]" />
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/15">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/25">
+                <CheckCircle2 className="size-5 text-primary" />
               </div>
             </div>
             <h2 className="text-4xl font-bold text-foreground sm:text-5xl">
@@ -327,7 +327,7 @@ const UserForm = forwardRef<{ handleSubmitExternally: () => void }, Props>(
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-center text-2xl font-semibold uppercase tracking-wide text-[#1f66e5]">
+            <h3 className="text-center text-2xl font-semibold uppercase tracking-wide text-primary">
               Basic Info
             </h3>
             <div className="grid gap-4 sm:grid-cols-2">
@@ -445,7 +445,7 @@ const UserForm = forwardRef<{ handleSubmitExternally: () => void }, Props>(
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-center text-2xl font-semibold uppercase tracking-wide text-[#1f66e5]">
+            <h3 className="text-center text-2xl font-semibold uppercase tracking-wide text-primary">
               College / School
             </h3>
             <div className="grid gap-4 sm:grid-cols-2">

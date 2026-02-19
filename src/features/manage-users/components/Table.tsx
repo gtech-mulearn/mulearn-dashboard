@@ -9,7 +9,7 @@ import {
 } from "react";
 import { AiOutlineDelete } from "react-icons/ai";
 import { HiOutlinePencil } from "react-icons/hi";
-import { Spinner } from "@/components/ui/spinner";
+import Loader from "@/app/loading";
 import Modal from "./Modal";
 
 export interface Data {
@@ -112,14 +112,14 @@ const Table: FC<TableProps> = (props) => {
     <>
       {props.isloading && (
         <div className="rounded-xl border border-border bg-card px-3 py-10 text-center md:hidden">
-          <Spinner className="mx-auto size-7 text-primary" />
+          <Loader />
         </div>
       )}
 
       <div
         ref={tableContainerRef}
         onScroll={updateScrollIndicator}
-        className="hidden overflow-x-auto overflow-y-hidden rounded-xl border border-[#d5dbe6] bg-card md:block"
+        className="hidden overflow-x-auto overflow-y-hidden rounded-xl border border-border bg-card md:block"
       >
         <table className="w-full border-collapse whitespace-nowrap">
           {props.children?.[0]}
@@ -130,7 +130,7 @@ const Table: FC<TableProps> = (props) => {
                   colSpan={props.columnOrder.length + 2}
                   className="px-3 py-10 text-center"
                 >
-                  <Spinner className="mx-auto size-7 text-primary" />
+                  <Loader />
                 </td>
               </tr>
             </tbody>
@@ -139,7 +139,7 @@ const Table: FC<TableProps> = (props) => {
               {props.rows.map((rowData, index) => (
                 <tr
                   key={`${rowData.id ?? index}`}
-                  className="odd:bg-[#eef2f7] even:bg-transparent"
+                  className="odd:bg-muted/70 even:bg-transparent"
                 >
                   <td className="border-b border-border px-3.5 py-3">
                     {startIndex + index + 1}
@@ -197,9 +197,9 @@ const Table: FC<TableProps> = (props) => {
       </div>
       {hasOverflow && (
         <div className="mt-3 hidden md:block">
-          <div className="relative h-2 rounded-full bg-[#dde3ec]">
+          <div className="relative h-2 rounded-full bg-border">
             <div
-              className="absolute top-0 h-2 rounded-full bg-[#c6cfdd]"
+              className="absolute top-0 h-2 rounded-full bg-muted-foreground/40"
               style={{
                 width: `${thumbWidth}px`,
                 transform: `translateX(${thumbLeft}px)`,

@@ -45,6 +45,8 @@ type ManagementTablePageProps = {
   onPreviousClick: () => void;
   onSortChange: (column: string) => void;
   onAfterDelete?: () => void;
+  enableEdit?: boolean;
+  enableDelete?: boolean;
 };
 function ManagementTablePage({
   badgeText,
@@ -63,6 +65,8 @@ function ManagementTablePage({
   onPreviousClick,
   onSortChange,
   onAfterDelete,
+  enableEdit = false,
+  enableDelete = false,
 }: ManagementTablePageProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [id, setId] = useState("");
@@ -70,11 +74,13 @@ function ManagementTablePage({
   const deleteMutation = useDeleteManageUser();
 
   const handleEdit = (value: string | number | boolean) => {
+    if (!enableEdit) return;
     setId(String(value));
     setIsModalOpen(true);
   };
 
   const handleDelete = async (value: string | undefined) => {
+    if (!enableDelete) return;
     if (!value) return;
     try {
       await deleteMutation.mutateAsync(value);
@@ -87,7 +93,7 @@ function ManagementTablePage({
 
   return (
     <div className="mx-auto w-full space-y-6 overflow-hidden p-3 sm:p-6">
-      <Card className="overflow-hidden rounded-3xl border border-border/60 bg-card shadow-[0_10px_30px_-18px_rgba(0,0,0,0.35)]">
+      <Card className="overflow-hidden rounded-3xl border border-border/60 bg-card shadow-xl">
         <CardHeader className="border-b border-border/50 bg-background px-4 py-5 sm:px-6 sm:py-6">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/[0.06] px-3 py-1 text-xs font-semibold text-primary">
@@ -121,8 +127,8 @@ function ManagementTablePage({
             perPage={perPage}
             columnOrder={columnOrder}
             id={rowIdColumns}
-            onEditClick={handleEdit}
-            onDeleteClick={handleDelete}
+            onEditClick={enableEdit ? handleEdit : undefined}
+            onDeleteClick={enableDelete ? handleDelete : undefined}
             modalDeleteHeading="Delete"
             modalTypeContent="error"
             modalDeleteContent="Are you sure you want to delete this user?"
@@ -130,7 +136,7 @@ function ManagementTablePage({
             <THead
               columnOrder={columnOrder}
               onIconClick={onSortChange}
-              action
+              action={enableEdit || enableDelete}
             />
             <div>
               {!isLoading && (
@@ -149,38 +155,40 @@ function ManagementTablePage({
         </CardContent>
       </Card>
 
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-h-[92vh] overflow-y-auto rounded-3xl border border-[#dde3ec] bg-[#f5f7fb] sm:max-w-5xl">
-          <DialogHeader className="sr-only">
-            <DialogTitle>Edit User</DialogTitle>
-            <DialogDescription>
-              Enter the details of the user.
-            </DialogDescription>
-          </DialogHeader>
-          <UserForm
-            id={id}
-            closeModal={() => setIsModalOpen(false)}
-            formId="manage-users-edit-form"
-          />
-          <DialogFooter className="grid grid-cols-1 gap-3 pt-1 sm:grid-cols-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsModalOpen(false)}
-              className="h-12 rounded-2xl border-[#1f66e5] text-2xl sm:text-base font-medium text-[#1f66e5] hover:bg-[#eaf1ff]"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              form="manage-users-edit-form"
-              className="h-12 rounded-2xl bg-[#1f66e5] text-2xl sm:text-base font-medium text-white hover:bg-[#1857c7]"
-            >
-              Done
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {enableEdit && (
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogContent className="max-h-[92vh] overflow-y-auto rounded-3xl border border-border bg-card sm:max-w-5xl">
+            <DialogHeader className="sr-only">
+              <DialogTitle>Edit User</DialogTitle>
+              <DialogDescription>
+                Enter the details of the user.
+              </DialogDescription>
+            </DialogHeader>
+            <UserForm
+              id={id}
+              closeModal={() => setIsModalOpen(false)}
+              formId="manage-users-edit-form"
+            />
+            <DialogFooter className="grid grid-cols-1 gap-3 pt-1 sm:grid-cols-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsModalOpen(false)}
+                className="h-12 rounded-2xl border-primary text-2xl sm:text-base font-medium text-primary hover:bg-primary/10"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                form="manage-users-edit-form"
+                className="h-12 rounded-2xl bg-primary text-2xl sm:text-base font-medium text-primary-foreground hover:bg-primary/90"
+              >
+                Done
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

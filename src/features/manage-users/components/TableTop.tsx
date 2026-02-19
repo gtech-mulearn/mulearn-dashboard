@@ -74,7 +74,7 @@ const TableTop = ({
       )}
       <div
         className={cn(
-          "w-full rounded-2xl border border-[#e3e7ef] bg-[#f8f9fc] p-1.5 md:max-w-[720px]",
+          "w-full rounded-2xl border border-border bg-muted/40 p-1.5 md:max-w-[720px]",
           searchPosition === "center" && "mx-auto",
           searchPosition === "right" && "md:ml-auto",
           searchPosition === "left" && "md:mr-auto",
@@ -91,7 +91,7 @@ const TableTop = ({
               showButton={false}
               className={cn("w-full", searchBarClassName)}
               inputClassName={cn(
-                "border-[#d5dbe6] bg-white pl-9 pr-3",
+                "border-border bg-background pl-9 pr-3",
                 searchInputClassName,
               )}
             />
@@ -104,7 +104,7 @@ const TableTop = ({
               value={String(perPage)}
               onValueChange={(value) => onPerPageNumber(Number(value))}
             >
-              <SelectTrigger className="h-10 w-[88px] rounded-xl border-[#d5dbe6] bg-white">
+              <SelectTrigger className="h-10 w-[88px] rounded-xl border-border bg-background">
                 <SelectValue placeholder="Rows" />
               </SelectTrigger>
               <SelectContent>
@@ -119,7 +119,7 @@ const TableTop = ({
               variant="outline"
               onClick={handleClick}
               disabled={isDownloading || !CSV}
-              className="h-10 rounded-xl border-[#cdd5e3] bg-white px-4 font-semibold text-foreground hover:bg-[#f2f5fa]"
+              className="h-10 rounded-xl border-border bg-background px-4 font-semibold text-foreground hover:bg-muted"
             >
               <Download className="mr-2 size-4" />
               Export CSV
