@@ -1,7 +1,7 @@
 "use client";
 
 import { ShieldCheck } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { endpoints } from "@/api/endpoints";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useDeleteManageUser, useManageUsersList } from "../hooks";
+import { useDeleteManageUser } from "../hooks";
 import type { ManageUserListItem } from "../schemas";
 import { Blank } from "./Blank";
 import Pagination from "./pagination";
@@ -23,58 +23,51 @@ import TableTop from "./TableTop";
 import THead from "./Thead";
 import UserForm from "./useForm";
 
-type ColOrderType = { isSortable: boolean; column: string; Label: string };
-
-const columnOrder: ColOrderType[] = [
-  { column: "full_name", Label: "Full Name", isSortable: true },
-  { column: "karma", Label: "Total Karma", isSortable: true },
-  { column: "muid", Label: "Mu ID", isSortable: true },
-  { column: "email", Label: "Email", isSortable: true },
-  { column: "mobile", Label: "Mobile", isSortable: true },
-  { column: "discord_id", Label: "Discord ID", isSortable: true },
-  { column: "level", Label: "Level", isSortable: true },
-  { column: "created_at", Label: "Created On", isSortable: true },
-];
-
-function ManageUsers() {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
-  const [perPage, setPerPage] = useState(20);
-  const [sort, setSort] = useState("");
-  const [search, setSearch] = useState("");
-
+export type TableColumnConfig = {
+  isSortable: boolean;
+  column: string;
+  Label: string;
+};
+type ManagementTablePageProps = {
+  badgeText: string;
+  titleText: string;
+  columnOrder: TableColumnConfig[];
+  rowIdColumns: string[];
+  rows: ManageUserListItem[];
+  isLoading: boolean;
+  totalPages: number;
+  totalCount?: number;
+  currentPage: number;
+  perPage: number;
+  onSearch: (value: string) => void;
+  onPerPageNumber: (value: number) => void;
+  onNextClick: () => void;
+  onPreviousClick: () => void;
+  onSortChange: (column: string) => void;
+  onAfterDelete?: () => void;
+};
+function ManagementTablePage({
+  badgeText,
+  titleText,
+  columnOrder,
+  rowIdColumns,
+  rows,
+  isLoading,
+  totalPages,
+  totalCount,
+  currentPage,
+  perPage,
+  onSearch,
+  onPerPageNumber,
+  onNextClick,
+  onPreviousClick,
+  onSortChange,
+  onAfterDelete,
+}: ManagementTablePageProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [id, setId] = useState("");
-  const userFormRef = useRef<{ handleSubmitExternally: () => void } | null>(
-    null,
-  );
-
-  const { data, isLoading } = useManageUsersList({
-    pageIndex: currentPage,
-    perPage,
-    search,
-    sortBy: sort,
-  });
 
   const deleteMutation = useDeleteManageUser();
-  const rows = (data?.data ?? []) as ManageUserListItem[];
-
-  useEffect(() => {
-    setTotalPages(data?.pagination.totalPages ?? 0);
-  }, [data?.pagination.totalPages]);
-
-  const handleNextClick = () => {
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages || 1));
-  };
-
-  const handlePreviousClick = () => {
-    setCurrentPage((prev) => Math.max(prev - 1, 1));
-  };
-
-  const handleSearch = (value: string) => {
-    setCurrentPage(1);
-    setSearch(value);
-  };
 
   const handleEdit = (value: string | number | boolean) => {
     setId(String(value));
@@ -86,20 +79,10 @@ function ManageUsers() {
     try {
       await deleteMutation.mutateAsync(value);
       toast.success("User deleted");
-      setCurrentPage(1);
+      onAfterDelete?.();
     } catch {
       toast.error("Failed to delete user");
     }
-  };
-
-  const handlePerPageNumber = (selectedValue: number) => {
-    setCurrentPage(1);
-    setPerPage(selectedValue);
-  };
-
-  const handleIconClick = (column: string) => {
-    setCurrentPage(1);
-    setSort((prev) => (prev === column ? `-${column}` : column));
   };
 
   return (
@@ -109,19 +92,27 @@ function ManageUsers() {
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/[0.06] px-3 py-1 text-xs font-semibold text-primary">
               <ShieldCheck className="size-3.5" />
-              User Management
+              {badgeText}
             </div>
             <CardTitle className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-              Manage Users
+              {titleText}
             </CardTitle>
           </div>
         </CardHeader>
 
         <CardContent className="space-y-6 bg-background p-3 sm:p-6">
           <TableTop
-            onSearchText={handleSearch}
-            onPerPageNumber={handlePerPageNumber}
+            onSearchText={onSearch}
+            onPerPageNumber={onPerPageNumber}
+            perPage={perPage}
+            perPageOptions={[5, 10, 20, 50, 100]}
             CSV={endpoints.manageUsers.csv}
+            searchPlaceholder="Search by name, email, Mu ID..."
+            searchSize="md"
+            searchPosition="right"
+            searchWrapperClassName="md:max-w-[780px]"
+            searchFieldWrapperClassName="lg:max-w-[460px]"
+            searchInputClassName="h-10 text-sm"
           />
           <Table
             rows={rows}
@@ -129,7 +120,7 @@ function ManageUsers() {
             page={currentPage}
             perPage={perPage}
             columnOrder={columnOrder}
-            id={["id"]}
+            id={rowIdColumns}
             onEditClick={handleEdit}
             onDeleteClick={handleDelete}
             modalDeleteHeading="Delete"
@@ -138,7 +129,7 @@ function ManageUsers() {
           >
             <THead
               columnOrder={columnOrder}
-              onIconClick={handleIconClick}
+              onIconClick={onSortChange}
               action
             />
             <div>
@@ -146,12 +137,10 @@ function ManageUsers() {
                 <Pagination
                   currentPage={currentPage}
                   totalPages={totalPages}
-                  handleNextClick={handleNextClick}
-                  handlePreviousClick={handlePreviousClick}
-                  onPerPageNumber={handlePerPageNumber}
+                  handleNextClick={onNextClick}
+                  handlePreviousClick={onPreviousClick}
                   perPage={perPage}
-                  setPerPage={setPerPage}
-                  totalCount={data?.pagination.total}
+                  totalCount={totalCount}
                 />
               )}
             </div>
@@ -169,7 +158,6 @@ function ManageUsers() {
             </DialogDescription>
           </DialogHeader>
           <UserForm
-            ref={userFormRef}
             id={id}
             closeModal={() => setIsModalOpen(false)}
             formId="manage-users-edit-form"
@@ -197,5 +185,5 @@ function ManageUsers() {
   );
 }
 
-export default ManageUsers;
-export const ManageUsersPage = ManageUsers;
+export default ManagementTablePage;
+export const ManageUsersPage = ManagementTablePage;

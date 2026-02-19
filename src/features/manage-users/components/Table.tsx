@@ -1,5 +1,12 @@
 import type { FC, ReactElement, ReactNode } from "react";
-import { useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { AiOutlineDelete } from "react-icons/ai";
 import { HiOutlinePencil } from "react-icons/hi";
 import { Spinner } from "@/components/ui/spinner";
@@ -48,10 +55,58 @@ function convertToTableData(dateString: unknown): string {
 
 const Table: FC<TableProps> = (props) => {
   const [deleteRowId, setDeleteRowId] = useState<string | null>(null);
+  const tableContainerRef = useRef<HTMLDivElement | null>(null);
+  const [hasOverflow, setHasOverflow] = useState(false);
+  const [thumbWidth, setThumbWidth] = useState(0);
+  const [thumbLeft, setThumbLeft] = useState(0);
   const startIndex = (props.page - 1) * props.perPage;
   const actionIdColumn = props.id?.[0];
+  const rowIdsKey = props.rows.map((row) => String(row.id ?? "")).join("|");
+  const scrollResetKey = `${props.page}-${props.perPage}-${rowIdsKey}`;
 
   const hasData = useMemo(() => props.rows.length > 0, [props.rows.length]);
+
+  const updateScrollIndicator = useCallback(() => {
+    const el = tableContainerRef.current;
+    if (!el) return;
+
+    const { scrollWidth, clientWidth, scrollLeft } = el;
+    const overflow = scrollWidth > clientWidth + 1;
+    setHasOverflow(overflow);
+
+    if (!overflow) {
+      setThumbWidth(0);
+      setThumbLeft(0);
+      return;
+    }
+
+    const nextThumbWidth = Math.max(
+      (clientWidth / scrollWidth) * clientWidth,
+      56,
+    );
+    const maxThumbLeft = clientWidth - nextThumbWidth;
+    const maxScrollLeft = scrollWidth - clientWidth;
+    const nextThumbLeft =
+      maxScrollLeft <= 0 ? 0 : (scrollLeft / maxScrollLeft) * maxThumbLeft;
+
+    setThumbWidth(nextThumbWidth);
+    setThumbLeft(nextThumbLeft);
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!scrollResetKey) return;
+    const el = tableContainerRef.current;
+    if (!el) return;
+    el.scrollLeft = 0;
+    updateScrollIndicator();
+  }, [scrollResetKey, updateScrollIndicator]);
+
+  useEffect(() => {
+    updateScrollIndicator();
+    const onResize = () => updateScrollIndicator();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [updateScrollIndicator]);
 
   return (
     <>
@@ -61,7 +116,11 @@ const Table: FC<TableProps> = (props) => {
         </div>
       )}
 
-      <div className="hidden overflow-x-auto rounded-xl border border-border bg-card md:block">
+      <div
+        ref={tableContainerRef}
+        onScroll={updateScrollIndicator}
+        className="hidden overflow-x-auto overflow-y-hidden rounded-xl border border-[#d5dbe6] bg-card md:block"
+      >
         <table className="w-full border-collapse whitespace-nowrap">
           {props.children?.[0]}
           {props.isloading ? (
@@ -80,7 +139,7 @@ const Table: FC<TableProps> = (props) => {
               {props.rows.map((rowData, index) => (
                 <tr
                   key={`${rowData.id ?? index}`}
-                  className="odd:bg-muted even:bg-transparent"
+                  className="odd:bg-[#eef2f7] even:bg-transparent"
                 >
                   <td className="border-b border-border px-3.5 py-3">
                     {startIndex + index + 1}
@@ -136,6 +195,19 @@ const Table: FC<TableProps> = (props) => {
           )}
         </table>
       </div>
+      {hasOverflow && (
+        <div className="mt-3 hidden md:block">
+          <div className="relative h-2 rounded-full bg-[#dde3ec]">
+            <div
+              className="absolute top-0 h-2 rounded-full bg-[#c6cfdd]"
+              style={{
+                width: `${thumbWidth}px`,
+                transform: `translateX(${thumbLeft}px)`,
+              }}
+            />
+          </div>
+        </div>
+      )}
 
       {!props.isloading && hasData && (
         <div className="space-y-3 md:hidden">

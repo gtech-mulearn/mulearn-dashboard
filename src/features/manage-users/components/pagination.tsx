@@ -1,16 +1,11 @@
-import type { Dispatch, SetStateAction } from "react";
-import { SlArrowLeft, SlArrowRight } from "react-icons/sl";
-import ShowPerPage from "./showperpage";
+import { Button } from "@/components/ui/button";
 
 type Props = {
   handlePreviousClick?: () => void;
   handleNextClick?: () => void;
   currentPage: number;
   totalPages: number;
-  options?: number[];
-  onPerPageNumber?: (data: number) => void;
   perPage: number;
-  setPerPage: Dispatch<SetStateAction<number>>;
   totalCount?: number;
 };
 
@@ -19,17 +14,9 @@ const Pagination = ({
   handleNextClick,
   currentPage,
   totalPages,
-  options,
-  onPerPageNumber,
   perPage,
-  setPerPage,
   totalCount,
 }: Props) => {
-  const handleOptionChange = (value: number) => {
-    setPerPage(value);
-    onPerPageNumber?.(value);
-  };
-
   const start = (currentPage - 1) * perPage + 1;
   const end = totalCount
     ? Math.min(currentPage * perPage, totalCount)
@@ -38,38 +25,33 @@ const Pagination = ({
   return (
     <>
       {totalPages > 0 && (
-        <div className="flex flex-col gap-3 border-t border-border/40 pt-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col items-start justify-between gap-4 border-t border-border/40 pt-4 sm:flex-row sm:items-center">
           <div className="text-sm text-muted-foreground">
-            <strong className="text-foreground">{start}</strong> -{" "}
-            <strong className="text-foreground">{end}</strong>
+            Showing <strong className="text-foreground">{start}</strong> to{" "}
+            <strong className="text-foreground">{end}</strong> entries
           </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={currentPage > 1 ? handlePreviousClick : undefined}
-                className="rounded-md border border-border p-2 disabled:opacity-50"
-                disabled={currentPage <= 1}
-              >
-                <SlArrowLeft />
-              </button>
-              <p className="text-sm">
-                <strong>{currentPage}</strong> / {totalPages}
-              </p>
-              <button
-                type="button"
-                onClick={currentPage < totalPages ? handleNextClick : undefined}
-                className="rounded-md border border-border p-2 disabled:opacity-50"
-                disabled={currentPage >= totalPages}
-              >
-                <SlArrowRight />
-              </button>
+          <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-normal">
+            <Button
+              variant="outline"
+              onClick={handlePreviousClick}
+              disabled={currentPage <= 1}
+              className="h-10 rounded-xl border-primary/30 px-4 text-sm font-semibold text-primary transition-all hover:bg-primary/10 disabled:border-border"
+            >
+              Previous
+            </Button>
+
+            <div className="flex h-10 items-center rounded-xl border border-primary/20 bg-primary/[0.06] px-4 text-sm font-semibold text-foreground">
+              Page {currentPage} of {totalPages || 1}
             </div>
-            <ShowPerPage
-              options={options ?? [5, 10, 20, 50, 100]}
-              selectedOption={perPage}
-              onOptionChange={handleOptionChange}
-            />
+
+            <Button
+              variant="default"
+              onClick={handleNextClick}
+              disabled={currentPage >= totalPages}
+              className="h-10 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-md shadow-primary/25 transition-all hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:shadow-none"
+            >
+              Next
+            </Button>
           </div>
         </div>
       )}

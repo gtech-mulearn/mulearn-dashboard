@@ -1,21 +1,50 @@
-import { Download } from "lucide-react";
+import { Download, Search } from "lucide-react";
 import { toast } from "sonner";
-import { endpoints } from "@/api/endpoints";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 import { useManageUsersCsvDownload } from "../hooks";
 import { SearchBar } from "./SearchBar";
 
 type Props = {
-  onSearchText?: (data: string) => void;
-  onPerPageNumber?: (data: number) => void;
-  CSV?: string;
+  onSearchText: (data: string) => void;
+  onPerPageNumber: (data: number) => void;
+  CSV: string;
+  perPage: number;
+  perPageOptions: number[];
+  searchPlaceholder: string;
+  searchSize: "sm" | "md" | "lg";
+  searchPosition: "left" | "center" | "right";
+  searchWrapperClassName?: string;
+  searchFieldWrapperClassName?: string;
+  searchBarClassName?: string;
+  searchInputClassName?: string;
 };
 
-const TableTop = ({ onSearchText, CSV = endpoints.manageUsers.csv }: Props) => {
+const TableTop = ({
+  onSearchText,
+  onPerPageNumber,
+  CSV,
+  perPage,
+  perPageOptions,
+  searchPlaceholder,
+  searchSize,
+  searchPosition,
+  searchWrapperClassName,
+  searchFieldWrapperClassName,
+  searchBarClassName,
+  searchInputClassName,
+}: Props) => {
   const { downloadCsv, isDownloading } = useManageUsersCsvDownload(CSV);
 
   const handleData = (search: string) => {
-    onSearchText?.(search);
+    onSearchText(search);
   };
 
   const handleClick = async () => {
@@ -29,17 +58,75 @@ const TableTop = ({ onSearchText, CSV = endpoints.manageUsers.csv }: Props) => {
   };
 
   return (
-    <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-border/50 bg-card p-3 md:flex-row md:items-center md:justify-between">
-      <SearchBar onSearch={handleData} />
-      <Button
-        variant="outline"
-        onClick={handleClick}
-        disabled={isDownloading || !CSV}
-        className="h-10 rounded-xl"
+    <div
+      className={cn(
+        "mb-4 flex flex-col gap-3 rounded-2xl border border-border/50 bg-card p-3 md:flex-row md:items-center",
+        searchPosition === "left" && "md:justify-start",
+        searchPosition === "center" && "md:justify-center",
+        searchPosition === "right" && "md:justify-between",
+      )}
+    >
+      {searchPosition !== "left" && (
+        <div
+          aria-hidden
+          className="hidden text-2xl font-bold text-foreground md:block md:w-[240px]"
+        ></div>
+      )}
+      <div
+        className={cn(
+          "w-full rounded-2xl border border-[#e3e7ef] bg-[#f8f9fc] p-1.5 md:max-w-[720px]",
+          searchPosition === "center" && "mx-auto",
+          searchPosition === "right" && "md:ml-auto",
+          searchPosition === "left" && "md:mr-auto",
+          searchWrapperClassName,
+        )}
       >
-        <Download className="mr-2 size-4" />
-        CSV
-      </Button>
+        <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
+          <div className={cn("relative flex-1", searchFieldWrapperClassName)}>
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground/60" />
+            <SearchBar
+              onSearch={handleData}
+              placeholder={searchPlaceholder}
+              size={searchSize}
+              showButton={false}
+              className={cn("w-full", searchBarClassName)}
+              inputClassName={cn(
+                "border-[#d5dbe6] bg-white pl-9 pr-3",
+                searchInputClassName,
+              )}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="whitespace-nowrap text-xs font-medium text-muted-foreground">
+              Rows per page
+            </span>
+            <Select
+              value={String(perPage)}
+              onValueChange={(value) => onPerPageNumber(Number(value))}
+            >
+              <SelectTrigger className="h-10 w-[88px] rounded-xl border-[#d5dbe6] bg-white">
+                <SelectValue placeholder="Rows" />
+              </SelectTrigger>
+              <SelectContent>
+                {perPageOptions.map((option) => (
+                  <SelectItem key={option} value={String(option)}>
+                    {option}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              variant="outline"
+              onClick={handleClick}
+              disabled={isDownloading || !CSV}
+              className="h-10 rounded-xl border-[#cdd5e3] bg-white px-4 font-semibold text-foreground hover:bg-[#f2f5fa]"
+            >
+              <Download className="mr-2 size-4" />
+              Export CSV
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

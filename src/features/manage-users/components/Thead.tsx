@@ -9,19 +9,15 @@ type Column = {
 interface TableHeadProps {
   columnOrder: Column[];
   onIconClick: (column: string) => void;
-  action?: boolean;
+  action: boolean;
 }
 
-const THead = ({
-  columnOrder,
-  onIconClick,
-  action = false,
-}: TableHeadProps) => {
+const THead = ({ columnOrder, onIconClick, action }: TableHeadProps) => {
   return (
     <thead>
       <tr>
         <th className="border-b border-border px-3.5 py-3 text-left text-sm font-bold uppercase tracking-wider">
-          Sl.no
+          S/N
         </th>
         {columnOrder.map((column) => (
           <th
