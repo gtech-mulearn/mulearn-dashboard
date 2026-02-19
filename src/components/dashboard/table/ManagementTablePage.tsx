@@ -45,8 +45,6 @@ type ManagementTablePageProps = {
   onPreviousClick: () => void;
   onSortChange: (column: string) => void;
   onAfterDelete?: () => void;
-  enableEdit?: boolean;
-  enableDelete?: boolean;
 };
 export default function ManagementTablePage({
   badgeText,
@@ -65,8 +63,6 @@ export default function ManagementTablePage({
   onPreviousClick,
   onSortChange,
   onAfterDelete,
-  enableEdit = false,
-  enableDelete = false,
 }: ManagementTablePageProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [id, setId] = useState("");
@@ -74,13 +70,11 @@ export default function ManagementTablePage({
   const deleteMutation = useDeleteManageUser();
 
   const handleEdit = (value: string | number | boolean) => {
-    if (!enableEdit) return;
     setId(String(value));
     setIsModalOpen(true);
   };
 
   const handleDelete = async (value: string | undefined) => {
-    if (!enableDelete) return;
     if (!value) return;
     try {
       await deleteMutation.mutateAsync(value);
@@ -127,8 +121,8 @@ export default function ManagementTablePage({
             perPage={perPage}
             columnOrder={columnOrder}
             id={rowIdColumns}
-            onEditClick={enableEdit ? handleEdit : undefined}
-            onDeleteClick={enableDelete ? handleDelete : undefined}
+            onEditClick={handleEdit}
+            onDeleteClick={handleDelete}
             modalDeleteHeading="Delete"
             modalTypeContent="error"
             modalDeleteContent="Are you sure you want to delete this user?"
@@ -136,7 +130,7 @@ export default function ManagementTablePage({
             <THead
               columnOrder={columnOrder}
               onIconClick={onSortChange}
-              action={enableEdit || enableDelete}
+              action
             />
             <div>
               {!isLoading && (
@@ -155,40 +149,38 @@ export default function ManagementTablePage({
         </CardContent>
       </Card>
 
-      {enableEdit && (
-        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogContent className="max-h-[92vh] overflow-y-auto rounded-3xl border border-border bg-card sm:max-w-5xl">
-            <DialogHeader className="sr-only">
-              <DialogTitle>Edit User</DialogTitle>
-              <DialogDescription>
-                Enter the details of the user.
-              </DialogDescription>
-            </DialogHeader>
-            <UserForm
-              id={id}
-              closeModal={() => setIsModalOpen(false)}
-              formId="manage-users-edit-form"
-            />
-            <DialogFooter className="grid grid-cols-1 gap-3 pt-1 sm:grid-cols-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsModalOpen(false)}
-                className="h-12 rounded-2xl border-primary text-2xl sm:text-base font-medium text-primary hover:bg-primary/10"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                form="manage-users-edit-form"
-                className="h-12 rounded-2xl bg-primary text-2xl sm:text-base font-medium text-primary-foreground hover:bg-primary/90"
-              >
-                Done
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-h-[92vh] overflow-y-auto rounded-3xl border border-border bg-card sm:max-w-5xl">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Edit User</DialogTitle>
+            <DialogDescription>
+              Enter the details of the user.
+            </DialogDescription>
+          </DialogHeader>
+          <UserForm
+            id={id}
+            closeModal={() => setIsModalOpen(false)}
+            formId="manage-users-edit-form"
+          />
+          <DialogFooter className="grid grid-cols-1 gap-3 pt-1 sm:grid-cols-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsModalOpen(false)}
+              className="h-12 rounded-2xl border-primary text-2xl sm:text-base font-medium text-primary hover:bg-primary/10"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              form="manage-users-edit-form"
+              className="h-12 rounded-2xl bg-primary text-2xl sm:text-base font-medium text-primary-foreground hover:bg-primary/90"
+            >
+              Done
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

@@ -10,9 +10,15 @@ interface TableHeadProps {
   columnOrder: Column[];
   onIconClick: (column: string) => void;
   action: boolean;
+  verify?: boolean;
 }
 
-const THead = ({ columnOrder, onIconClick, action }: TableHeadProps) => {
+const THead = ({
+  columnOrder,
+  onIconClick,
+  action,
+  verify = false,
+}: TableHeadProps) => {
   return (
     <thead>
       <tr>
@@ -38,6 +44,11 @@ const THead = ({ columnOrder, onIconClick, action }: TableHeadProps) => {
             </div>
           </th>
         ))}
+        {verify && (
+          <th className="border-b border-border px-3.5 py-3 text-left text-sm font-bold tracking-wider">
+            Verify
+          </th>
+        )}
         {action && (
           <th className="border-b border-border px-3.5 py-3 text-left text-sm font-bold tracking-wider">
             Action

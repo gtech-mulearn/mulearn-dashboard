@@ -72,8 +72,6 @@ export default function ManageUsers() {
       onPreviousClick={handlePreviousClick}
       onSortChange={handleSortChange}
       onAfterDelete={() => setCurrentPage(1)}
-      enableEdit={true}
-      enableDelete={true}
     />
   );
 }
