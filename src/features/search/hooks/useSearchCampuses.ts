@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { searchCampuses } from "../api";
 import type { SearchType } from "../schemas";
@@ -14,7 +14,6 @@ export function useSearchCampuses(
   const [searchType, setSearchType] = useState<SearchType | undefined>(
     initialSearchType,
   );
-  const [page, setPage] = useState(1);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -24,29 +23,35 @@ export function useSearchCampuses(
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["search-campuses", debouncedQuery, searchType, page],
-    queryFn: () =>
+  const query = useInfiniteQuery({
+    queryKey: ["search-campuses", debouncedQuery, searchType],
+    queryFn: ({ pageParam = 1 }) =>
       searchCampuses({
         search: debouncedQuery,
-        pageIndex: page,
+        pageIndex: pageParam,
         perPage: 30,
         searchType,
       }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      const total = lastPage.pagination.totalPages ?? 1;
+      const nextPage = allPages.length + 1;
+      return nextPage <= total ? nextPage : undefined;
+    },
     staleTime: 5 * 60 * 1000,
   });
 
+  const campusesRaw = query.data?.pages?.flatMap((p) => p.data) ?? [];
+  const campuses = Array.from(
+    new Map(campusesRaw.map((c) => [c.id, c])).values(),
+  );
+
   return {
-    data,
-    isLoading: isLoading || searchQuery !== debouncedQuery,
-    isError,
-    error,
+    ...query,
     searchQuery,
     setSearchQuery,
     searchType,
     setSearchType,
-    page,
-    setPage,
-    hasNextPage: data ? page < (data.pagination.totalPages ?? 0) : false,
+    campuses,
   };
 }

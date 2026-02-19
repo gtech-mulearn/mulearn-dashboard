@@ -52,6 +52,11 @@ export function IGSelector({
   // Check if user can edit (level >= 4)
   const canEdit = isOwnProfile && userLevel >= 4;
 
+  // Format level to display as "Level X"
+  const formatLevel = (level: { unit: string; count: number }) => {
+    return `${level.unit.charAt(0).toUpperCase() + level.unit.slice(1)} ${level.count}`;
+  };
+
   const handleRemoveIg = (igId: string) => {
     if (localIgs.length <= 1) {
       toast.error("You must have at least one interest group");
@@ -65,7 +70,15 @@ export function IGSelector({
       toast.error("Maximum 3 interest groups allowed");
       return;
     }
-    setLocalIgs([...localIgs, { id: ig.id, name: ig.name, karma: 0 }]);
+    setLocalIgs([
+      ...localIgs,
+      {
+        id: ig.id,
+        name: ig.name,
+        karma: 0,
+        level: { unit: "level", count: 1 },
+      },
+    ]);
   };
 
   const handleSave = async () => {
@@ -100,7 +113,7 @@ export function IGSelector({
     <div className="rounded-xl bg-slate-50 p-4">
       {/* Header */}
       <div className="mb-3 flex items-center justify-between">
-        <span className="text-sm font-semibold text-gray-700">
+        <span className="text-sm font-semibold text-foreground">
           Your Interest Groups
         </span>
         <div className="flex gap-2">
@@ -158,8 +171,11 @@ export function IGSelector({
                   <X className="h-3 w-3" />
                 </button>
               )}
-              <span className="text-gray-800">{ig.name}</span>
-              <span className="rounded-lg bg-primary px-2 py-0.5 text-xs text-white">
+              <span className="text-foreground">{ig.name}</span>
+              <span className="gap-1 rounded-full border border-primary/60 bg-secondary/70 px-3 text-xs text-foreground backdrop-blur-sm sm:gap-1.5 sm:text-sm">
+                {formatLevel(ig.level)}
+              </span>
+              <span className="rounded-lg bg-primary px-2 py-0.5 text-secondary">
                 {formatKarma(ig.karma)}
               </span>
             </div>

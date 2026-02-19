@@ -31,7 +31,7 @@ export function StartLearningTab({
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto" />
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
           <p className="text-muted-foreground">Loading your journey...</p>
         </div>
       </div>
@@ -42,9 +42,7 @@ export function StartLearningTab({
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center space-y-4">
-          <p className="text-red-600 dark:text-red-400">
-            Failed to load levels
-          </p>
+          <p className="text-destructive">Failed to load levels</p>
           <p className="text-sm text-muted-foreground">{error.message}</p>
         </div>
       </div>

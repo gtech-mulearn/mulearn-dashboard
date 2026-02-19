@@ -61,6 +61,25 @@ export const WadhwaniCoursesResponseSchema = z.union([
 ]);
 
 // ==========================================
+// Wadhwani Sheet Schemas (Google Sheet)
+// ==========================================
+
+export const WadhwaniSheetCourseSchema = z.object({
+  courseId: z.string().optional(),
+  courseRootId: z.string().optional(),
+  courseName: z.string(),
+  thumbnail: z.string().optional(),
+  description: z.string().optional(),
+  CourseDuration: z.string().optional(),
+  Karma: z.string().optional(),
+  Hashtags: z.string().optional(),
+});
+
+export type WadhwaniSheetCourse = z.infer<typeof WadhwaniSheetCourseSchema>;
+
+export const WadhwaniSheetResponseSchema = z.array(WadhwaniSheetCourseSchema);
+
+// ==========================================
 // OpenGrad Schemas
 // ==========================================
 

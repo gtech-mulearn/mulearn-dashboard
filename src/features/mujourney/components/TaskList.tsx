@@ -74,7 +74,7 @@ export function TaskList({
       {/* Horizontal scrollable container */}
       <div
         ref={scrollContainerRef}
-        className="flex gap-6 overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+        className="flex gap-6 min-h-[500px] overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         {tasks.map((task, index) => {
@@ -85,7 +85,10 @@ export function TaskList({
           const uniqueKey = keyPrefix ? `${keyPrefix}-${baseKey}` : baseKey;
 
           return (
-            <div key={uniqueKey} className="flex-shrink-0 w-[350px] snap-start">
+            <div
+              key={uniqueKey}
+              className="flex-shrink-0 w-[350px] snap-start h-full"
+            >
               <TaskCard
                 task={task}
                 status={getTaskStatus(task)}

@@ -17,6 +17,7 @@ export const env = createEnv({
    */
   client: {
     NEXT_PUBLIC_DJANGO_API_URL: z.string().url(),
+    NEXT_PUBLIC_DISCORD_AUTH_URL: z.string().url(),
   },
 
   /*
@@ -25,6 +26,7 @@ export const env = createEnv({
    */
   runtimeEnv: {
     NEXT_PUBLIC_DJANGO_API_URL: process.env.NEXT_PUBLIC_DJANGO_API_URL,
+    NEXT_PUBLIC_DISCORD_AUTH_URL: process.env.NEXT_PUBLIC_DISCORD_AUTH_URL,
   },
 
   /*
