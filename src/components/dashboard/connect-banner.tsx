@@ -1,9 +1,9 @@
 import { X } from "lucide-react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
+  DiscordConnectDialog,
   QsverseConnectDialog,
   useQsverseInfo,
   useUserInfo,
@@ -22,6 +22,7 @@ export function ConnectAccountsBanner() {
   const user = useUserInfo();
   const qsverse = useQsverseInfo();
   const [isQsverseDialogOpen, setIsQsverseDialogOpen] = useState(false);
+  const [isDiscordDialogOpen, setIsDiscordDialogOpen] = useState(false);
   const ALLOWED_ROUTES = ["/dashboard/profile", "/dashboard/mujourney"];
   const isAllowedRoute = ALLOWED_ROUTES.includes(pathname);
   if (!isAllowedRoute) return null;
@@ -47,11 +48,11 @@ export function ConnectAccountsBanner() {
           <div className="flex w-full items-center gap-2 lg:w-auto">
             {!discordConnected && (
               <Button
-                asChild
                 variant="default"
                 className="h-9 flex-1 text-xs md:flex-none md:text-sm"
+                onClick={() => setIsDiscordDialogOpen(true)}
               >
-                <Link href="/settings/integrations">Connect Discord</Link>
+                Connect Discord
               </Button>
             )}
             {!qsverseConnected && (
@@ -78,6 +79,10 @@ export function ConnectAccountsBanner() {
       <QsverseConnectDialog
         open={isQsverseDialogOpen}
         onOpenChange={setIsQsverseDialogOpen}
+      />
+      <DiscordConnectDialog
+        open={isDiscordDialogOpen}
+        onOpenChange={setIsDiscordDialogOpen}
       />
     </>
   );

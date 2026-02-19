@@ -1,3 +1,4 @@
+import { env } from "config/env";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -10,30 +11,30 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
-import { useQsverseInfo } from "@/features/connect";
+import { useUserInfo } from "@/features/connect";
 
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
 
-export function QsverseConnectDialog({ open, onOpenChange }: Props) {
-  const qsverse = useQsverseInfo();
-  const isRefreshing = qsverse.isFetching;
+export function DiscordConnectDialog({ open, onOpenChange }: Props) {
+  const userInfo = useUserInfo();
+  const isRefreshing = userInfo.isFetching;
   const handleRefreshConnection = async () => {
     try {
-      const response = await qsverse.refetch();
-      const dids = response?.data?.dids;
-      if (Array.isArray(dids) && dids.length > 0) {
-        toast.success("Wallet connected successfully!");
+      const response = await userInfo.refetch();
+      const existInGuild = response?.data?.exist_in_guild;
+      if (existInGuild === true) {
+        toast.success("Discord connected successfully!");
         onOpenChange(false);
         return;
       }
       toast.error(
-        "No connected wallet found. Please link your wallet in the QSeverse app first.",
+        "Discord is not connected. Please connect your Discord and try again.",
       );
     } catch {
-      toast.error("Failed to check connection status.");
+      toast.error("Failed to check Discord connection status.");
     }
   };
 
@@ -41,40 +42,33 @@ export function QsverseConnectDialog({ open, onOpenChange }: Props) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Connect your QSeverse Wallet</DialogTitle>
+          <DialogTitle>Connect your Discord</DialogTitle>
           <DialogDescription>
-            To claim verifiable credentials for your achievements, you need to
-            link your QSeverse wallet.
+            To proceed with task submissions, you need to connect your Discord
+            account.
           </DialogDescription>
         </DialogHeader>
+
         <div className="space-y-4 text-sm">
           <p className="font-medium">Steps to connect:</p>
           <ol className="list-decimal space-y-2 pl-5 text-muted-foreground">
-            <li>Download the QSeverse app from your app store and sign up</li>
-            <li>Connect your µLearn account</li>
-            <li>Your wallet will be automatically linked</li>
-            <li>Click “Refresh Status” below to verify</li>
+            <li>Join the µLearn Discord server</li>
+            <li>Verify your account (if required)</li>
+            <li>Come back here and click “Refresh Status”</li>
           </ol>
         </div>
+
         <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:justify-end">
           <Button asChild variant="outline">
             <Link
-              href="https://apps.apple.com/us/app/qs-passport/id6477819506"
+              href={env.NEXT_PUBLIC_DISCORD_AUTH_URL}
               target="_blank"
               rel="noreferrer"
             >
-              App Store
+              Connect Discord
             </Link>
           </Button>
-          <Button asChild variant="outline">
-            <Link
-              href="https://play.google.com/store/apps/details?id=com.qseverse.passport"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Play Store
-            </Link>
-          </Button>
+
           <Button
             variant="default"
             onClick={handleRefreshConnection}

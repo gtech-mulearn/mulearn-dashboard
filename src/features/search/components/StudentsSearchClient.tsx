@@ -14,19 +14,20 @@ const searchTabs = [
 
 export function StudentsSearchClient() {
   const {
-    data,
+    users,
     isLoading,
     isError,
     searchQuery,
     setSearchQuery,
-    setPage,
     hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
   } = useSearchUsers();
 
   const loadMoreRef = useInfiniteScroll({
-    onLoadMore: () => setPage((p) => p + 1),
-    hasMore: hasNextPage,
-    isLoading,
+    onLoadMore: fetchNextPage,
+    hasMore: !!hasNextPage,
+    isLoading: isFetchingNextPage,
   });
 
   return (
@@ -46,20 +47,25 @@ export function StudentsSearchClient() {
       </div>
 
       {/* Results */}
+      {isLoading && (
+        <div className="flex justify-center py-8">
+          <Spinner className="h-8 w-8" />
+        </div>
+      )}
       {isError ? (
         <div className="text-center py-16">
           <p className="text-destructive text-lg">
             Failed to load results. Please try again.
           </p>
         </div>
-      ) : data?.data.length === 0 && !isLoading ? (
+      ) : users.length === 0 && !isLoading ? (
         <div className="text-center py-16">
           <p className="text-muted-foreground text-lg">No learners found</p>
         </div>
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {data?.data.map((user, index) => (
+            {users.map((user, index) => (
               <UserSearchCard
                 key={user.muid || user.id || `user-${index}`}
                 user={user}
@@ -69,7 +75,7 @@ export function StudentsSearchClient() {
 
           {hasNextPage && <div ref={loadMoreRef} className="h-10" />}
 
-          {isLoading && (
+          {isFetchingNextPage && (
             <div className="flex justify-center py-8">
               <Spinner className="h-8 w-8" />
             </div>
