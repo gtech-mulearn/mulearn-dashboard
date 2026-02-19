@@ -8,7 +8,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useManageUsersCsvDownload } from "@/features/manage-users/hooks";
 import { cn } from "@/lib/utils";
 import { SearchBar } from "./SearchBar";
 
@@ -25,6 +24,8 @@ type Props = {
   searchFieldWrapperClassName?: string;
   searchBarClassName?: string;
   searchInputClassName?: string;
+  onCsvDownload?: () => Promise<void> | void;
+  isCsvDownloading?: boolean;
 };
 
 const TableTop = ({
@@ -40,16 +41,17 @@ const TableTop = ({
   searchFieldWrapperClassName,
   searchBarClassName,
   searchInputClassName,
+  onCsvDownload,
+  isCsvDownloading = false,
 }: Props) => {
-  const { downloadCsv, isDownloading } = useManageUsersCsvDownload(CSV);
-
   const handleData = (search: string) => {
     onSearchText(search);
   };
 
   const handleClick = async () => {
+    if (!onCsvDownload) return;
     try {
-      await downloadCsv();
+      await onCsvDownload();
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to download CSV",
@@ -126,7 +128,7 @@ const TableTop = ({
               <Button
                 variant="outline"
                 onClick={handleClick}
-                disabled={isDownloading}
+                disabled={isCsvDownloading}
                 className="h-10 rounded-xl border-border bg-background px-4 font-semibold text-foreground hover:bg-muted"
               >
                 <Download className="mr-2 size-4" />
