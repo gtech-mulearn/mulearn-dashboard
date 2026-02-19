@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { UiOption } from "../schemas";
@@ -46,7 +46,27 @@ export function MultiSelectDropdown({
           aria-haspopup="listbox"
           aria-expanded={isOpen}
           className="flex min-h-11 w-full items-center justify-between gap-2 rounded-xl border border-border bg-muted/40 px-3 py-2 text-sm text-foreground transition-colors hover:bg-muted/50"
-          onClick={() => setIsOpen((prev) => !prev)}
+          onClick={(event) => {
+            const target = event.target as HTMLElement;
+
+            const removeValue = target
+              .closest("[data-remove-value]")
+              ?.getAttribute("data-remove-value");
+            if (removeValue) {
+              onToggle(removeValue, false);
+              return;
+            }
+
+            const clearAll = target.closest("[data-clear-all]");
+            if (clearAll) {
+              for (const value of selectedValues) {
+                onToggle(value, false);
+              }
+              return;
+            }
+
+            setIsOpen((prev) => !prev);
+          }}
         >
           <span className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 text-left">
             {selectedOptions.length > 0
@@ -56,14 +76,24 @@ export function MultiSelectDropdown({
                     className="inline-flex items-center gap-1 rounded-md bg-background px-2 py-1 text-sm text-foreground"
                   >
                     <span className="truncate">{option.label}</span>
-                    <span className="shrink-0 text-foreground/70">x</span>
+                    <span
+                      data-remove-value={option.value}
+                      className="shrink-0 text-foreground/70"
+                    >
+                      <X className="size-3.5" />
+                    </span>
                   </span>
                 ))
               : `Select ${label.toLowerCase()}`}
           </span>
           <span className="flex shrink-0 items-center gap-1">
             {selectedOptions.length > 0 && (
-              <span className="rounded p-1 text-muted-foreground">x</span>
+              <span
+                data-clear-all
+                className="rounded p-1 text-muted-foreground"
+              >
+                <X className="size-3.5" />
+              </span>
             )}
             <ChevronDown className="size-4 text-muted-foreground" />
           </span>
