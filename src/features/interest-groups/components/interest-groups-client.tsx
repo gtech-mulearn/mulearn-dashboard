@@ -15,7 +15,7 @@ import { InterestGroupsGrid } from "./interest-groups-grid";
 export function InterestGroupsClient() {
   const { data, isLoading, error } = useInterestGroupsList();
 
-  const groups = data?.response?.data || [];
+  const groups = data?.response?.interestGroup || [];
 
   return (
     <div className="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">

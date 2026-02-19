@@ -175,9 +175,12 @@ export const endpoints = {
   // Interest Groups Endpoints
   // ============================================
   interestGroups: {
-    /** GET - List all interest groups */
-    list: "/api/v1/dashboard/ig/",
-    /** GET - Interest group details */
+    /** GET - List all interest groups (optional: order_by field name) */
+    list: (orderBy?: string) =>
+      orderBy
+        ? `/api/v1/dashboard/ig/list/?order_by=${encodeURIComponent(orderBy)}`
+        : "/api/v1/dashboard/ig/list/",
+    /** GET - Interest group details by ID */
     detail: (id: string) => `/api/v1/dashboard/ig/get/${id}/`,
   },
 

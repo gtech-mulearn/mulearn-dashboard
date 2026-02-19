@@ -86,6 +86,7 @@ export function RegisterForm({ onSubmit, isLoading }: RegisterFormProps) {
             width={100}
             height={32}
             priority
+            style={{ width: "auto", height: "auto" }}
           />
         </Link>
       </div>

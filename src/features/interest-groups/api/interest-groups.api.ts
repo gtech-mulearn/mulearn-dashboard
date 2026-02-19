@@ -26,11 +26,14 @@ import {
 
 /**
  * Fetch all interest groups
+ * @param orderBy - Optional field name to order results by (e.g. "name", "-member_count")
  * @returns Promise with list of interest groups
  */
-export async function getInterestGroupsList(): Promise<InterestGroupsListResponse> {
+export async function getInterestGroupsList(
+  orderBy?: string,
+): Promise<InterestGroupsListResponse> {
   return apiClient.get(
-    endpoints.interestGroups.list,
+    endpoints.interestGroups.list(orderBy),
     InterestGroupsListResponseSchema,
   );
 }
@@ -43,7 +46,7 @@ export async function getInterestGroupsList(): Promise<InterestGroupsListRespons
 export function extractInterestGroups(
   response: InterestGroupsListResponse,
 ): InterestGroup[] {
-  return response.response?.data || [];
+  return response.response?.interestGroup || [];
 }
 
 // ============================================
@@ -72,7 +75,7 @@ export async function getInterestGroupDetail(
 export function extractInterestGroupDetail(
   response: InterestGroupDetailResponse,
 ): InterestGroupDetail | null {
-  return response.response || null;
+  return response.response?.interestGroup || null;
 }
 
 // ============================================
