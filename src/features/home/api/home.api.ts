@@ -38,23 +38,39 @@ export async function getKarmaFeed() {
 // ============================================
 
 export async function getEvents() {
-  const res = await fetch(endpoints.dashboard.events);
-  const raw = await res.json();
+  try {
+    const res = await fetch(endpoints.dashboard.events);
 
-  // Validate raw rows
-  const rows = EventRowSchema.array().parse(raw);
+    if (!res.ok) {
+      throw new Error(`Failed to fetch events: ${res.statusText}`);
+    }
 
-  // Map to UI shape and validate
-  const mapped = rows
-    .map((event) => ({
-      name: event.Name || "No Name",
-      description: event.Description || "No Description",
-      poster: event.Poster || "",
-      link: event.Links || "#",
-      date: event.Date || "No Date",
-      status: event.Status || "",
-    }))
-    .filter((event) => event.status !== "Expired");
+    const raw = await res.json();
 
-  return EventsSchema.parse(mapped);
+    // Validate raw rows
+    const rows = EventRowSchema.array().safeParse(raw);
+
+    if (!rows.success) {
+      console.error("Invalid events data structure", rows.error);
+      return [];
+    }
+
+    // Map to UI shape and validate
+    const mapped = rows.data
+      .map((event) => ({
+        name: event.Name || "No Name",
+        description: event.Description || "No Description",
+        poster: event.Poster || "",
+        link: event.Links || "#",
+        date: event.Date || "No Date",
+        status: event.Status || "",
+      }))
+      .filter((event) => event.status !== "Expired");
+
+    return EventsSchema.parse(mapped);
+  } catch (error) {
+    console.error("Error fetching events:", error);
+    // Return empty array as fallback instead of Crashing
+    return [];
+  }
 }

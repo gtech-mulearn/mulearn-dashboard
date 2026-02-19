@@ -336,6 +336,37 @@ export const endpoints = {
     /** GET - Get analytics for short URL */
     analytics: (id: string) => `/api/v1/url-shortener/get-analytics/${id}/`,
   },
+
+  // ============================================
+  // Manage Users Endpoints
+  // ============================================
+  manageUsers: {
+    /** GET - List users (query: perPage, pageIndex, search, sortBy) */
+    list: "/api/v1/dashboard/user/",
+    /** GET - Export users CSV */
+    csv: "/api/v1/dashboard/user/csv/",
+
+    /** GET - Get user details by ID */
+    detail: (id: string) => `/api/v1/dashboard/user/${id}/`,
+    /** PATCH - Update user by ID */
+    update: (id: string) => `/api/v1/dashboard/user/${id}/`,
+    /** DELETE - Delete user by ID */
+    delete: (id: string) => `/api/v1/dashboard/user/${id}/`,
+
+    /** GET - List communities */
+    communities: "/api/v1/register/community/list/",
+    /** GET - List roles */
+    roles: "/api/v1/register/role/list/",
+    /** GET - List area of interest / interest groups */
+    areasOfInterest: "/api/v1/register/area-of-interest/list/",
+    /** POST - List colleges by district */
+    collegesByDistrict: "/api/v1/register/college/list/",
+    /** POST - List schools by district */
+    schoolsByDistrict: "/api/v1/register/schools/list/",
+    /** GET - Search locations */
+    locationSearch: (param: string) =>
+      `/api/v1/register/location/?q=${param || "india"}`,
+  },
 } as const;
 
 // Type for type-safe endpoint access
