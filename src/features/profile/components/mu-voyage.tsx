@@ -38,6 +38,7 @@ export function MuVoyage({
   isLoading,
 }: MuVoyageProps) {
   const [expandedLevels, setExpandedLevels] = useState<string[]>([]);
+  const [imageError, setImageError] = useState(false);
 
   if (isLoading) {
     return (
@@ -97,15 +98,15 @@ export function MuVoyage({
           <div className="flex items-center gap-4">
             {/* Level Image */}
             <div className="relative h-16 w-16 shrink-0">
-              <Image
-                src={LEVEL_IMAGES[currentLevel - 1] || LEVEL_IMAGES[0]}
-                alt={`Level ${currentLevel}`}
-                fill
-                className="object-contain"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = "none";
-                }}
-              />
+              {!imageError && (
+                <Image
+                  src={LEVEL_IMAGES[currentLevel - 1] || LEVEL_IMAGES[0]}
+                  alt={`Level ${currentLevel}`}
+                  fill
+                  className="object-contain"
+                  onError={() => setImageError(true)}
+                />
+              )}
             </div>
             <div>
               <h3 className="text-xl font-semibold text-foreground">

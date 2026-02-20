@@ -53,8 +53,8 @@ const BASE_HEADERS: Record<string, string> = {
 
 function getAuthHeaders(): Record<string, string> {
   const headers: Record<string, string> = { ...BASE_HEADERS };
-
   const token = authStore.getAccessToken();
+
   if (token) {
     headers.Authorization = `Bearer ${token}`;
   }
@@ -145,6 +145,21 @@ async function request<T>(
         rawData,
       );
     }
+  }
+
+  // Check for hasError even if res.ok is true (business error)
+  if (
+    rawData &&
+    typeof rawData === "object" &&
+    "hasError" in rawData &&
+    rawData.hasError === true
+  ) {
+    const backendMsg = extractDjangoMessage(rawData);
+    throw new ApiError(
+      res.status,
+      backendMsg || `Request failed: ${endpoint}`,
+      rawData,
+    );
   }
 
   if (!res.ok) {

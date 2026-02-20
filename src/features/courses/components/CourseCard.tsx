@@ -96,7 +96,7 @@ export function CourseCard({
           {typeof course.karma === "number" && course.karma > 0 && (
             <Badge
               variant="secondary"
-              className="bg-background/90 backdrop-blur-sm shadow-sm text-yellow-600 gap-1 border-0 rounded-full px-3 py-1"
+              className="bg-background/90 backdrop-blur-sm shadow-sm text-amber-500 gap-1 border-0 rounded-full px-3 py-1"
             >
               <Trophy className="w-3 h-3" />
               {course.karma} Karma

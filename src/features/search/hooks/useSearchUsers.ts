@@ -1,24 +1,19 @@
 "use client";
 
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useDebounce } from "@/hooks/use-debounce";
 import { searchUsers } from "../api";
+import { searchKeys } from "./query-keys";
+import type { UserSearchData } from "../schemas";
 
 export function useSearchUsers(initialQuery = "") {
-  const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
   const [searchQuery, setSearchQuery] = useState(initialQuery);
 
-  // Debounce search input (800ms)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedQuery(searchQuery);
-    }, 800);
-
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+  const debouncedQuery = useDebounce(searchQuery, 800);
 
   const query = useInfiniteQuery({
-    queryKey: ["search-users", debouncedQuery],
+    queryKey: searchKeys.users(debouncedQuery),
     queryFn: ({ pageParam = 1 }) =>
       searchUsers({
         search: debouncedQuery,
@@ -26,7 +21,10 @@ export function useSearchUsers(initialQuery = "") {
         perPage: 30,
       }),
     initialPageParam: 1,
-    getNextPageParam: (lastPage, allPages) => {
+    getNextPageParam: (
+      lastPage: UserSearchData,
+      allPages: UserSearchData[],
+    ) => {
       const total = lastPage.pagination.totalPages ?? 1;
       const nextPage = allPages.length + 1;
       return nextPage <= total ? nextPage : undefined;

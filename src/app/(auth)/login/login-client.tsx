@@ -12,6 +12,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { ApiError } from "@/api";
 import {
   LoginForm,
   OTPLoginForm,
@@ -47,8 +48,12 @@ export function LoginClient({ redirectUri }: LoginClientProps) {
       await loginWithPassword.mutateAsync(values);
       toast.success("Welcome back!");
       router.push(getRedirectPath());
-    } catch (_error) {
-      toast.error("Login failed. Please check your credentials.");
+    } catch (error) {
+      const message =
+        error instanceof ApiError
+          ? error.message
+          : "Login failed. Please check your credentials.";
+      toast.error(message);
     }
   };
 
@@ -57,7 +62,11 @@ export function LoginClient({ redirectUri }: LoginClientProps) {
       await requestOTP.mutateAsync(emailOrMuid);
       toast.success("OTP sent to your email!");
     } catch (error) {
-      toast.error("Failed to send OTP. Please try again.");
+      const message =
+        error instanceof ApiError
+          ? error.message
+          : "Failed to send OTP. Please try again.";
+      toast.error(message);
       throw error; // Re-throw to prevent form from advancing
     }
   };
@@ -67,8 +76,12 @@ export function LoginClient({ redirectUri }: LoginClientProps) {
       await loginWithOTP.mutateAsync({ emailOrMuid, otp });
       toast.success("Welcome back!");
       router.push(getRedirectPath());
-    } catch (_error) {
-      toast.error("Invalid OTP. Please try again.");
+    } catch (error) {
+      const message =
+        error instanceof ApiError
+          ? error.message
+          : "Invalid OTP. Please try again.";
+      toast.error(message);
     }
   };
 
