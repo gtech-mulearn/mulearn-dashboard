@@ -7,8 +7,9 @@ export const env = createEnv({
    * ❗ These are NOT exposed to the browser
    */
   server: {
-    // Example (add later if needed)
-    // DATABASE_URL: z.string().url(),
+    // Optional internal backend URL for server→backend calls (e.g. http://backend:8000).
+    // Falls back to NEXT_PUBLIC_DJANGO_API_URL when not set.
+    BACKEND_URL: z.string().url().optional(),
   },
 
   /*
@@ -25,6 +26,7 @@ export const env = createEnv({
    * Required for Next.js App Router
    */
   runtimeEnv: {
+    BACKEND_URL: process.env.BACKEND_URL,
     NEXT_PUBLIC_DJANGO_API_URL: process.env.NEXT_PUBLIC_DJANGO_API_URL,
     NEXT_PUBLIC_DISCORD_AUTH_URL: process.env.NEXT_PUBLIC_DISCORD_AUTH_URL,
   },

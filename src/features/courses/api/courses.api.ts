@@ -46,8 +46,9 @@ export const enrollWadhwaniUser = async (
 export const fetchWadhwaniSheetData = async (): Promise<
   WadhwaniSheetCourse[]
 > => {
-  const response = await axios.get(endpoints.integrations.wadhwani.sheet);
-  return WadhwaniSheetResponseSchema.parse(response.data);
+  const response = await fetch(endpoints.integrations.wadhwani.sheet);
+  const data = await response.json();
+  return WadhwaniSheetResponseSchema.parse(data);
 };
 
 // ==========================================
