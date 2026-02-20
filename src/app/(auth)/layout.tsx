@@ -20,7 +20,6 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
               height={40}
               className="brightness-0 invert"
               priority
-              style={{ width: "auto", height: "auto" }}
             />
           </Link>
           <div className="mt-16 space-y-4">
