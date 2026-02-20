@@ -10,8 +10,11 @@
 "use client";
 
 import { useState } from "react";
+import { Blank } from "@/components/dashboard/table/Blank";
+import Pagination from "@/components/dashboard/table/pagination";
 import Table from "@/components/dashboard/table/Table";
 import TableTop from "@/components/dashboard/table/TableTop";
+import THead from "@/components/dashboard/table/Thead";
 import { useDeleteDynamicRole, useDynamicRoles } from "../hooks";
 import type { DynamicRoleItem } from "../types";
 import { DynamicTypeFormDialog } from "./dynamic-type-form-dialog";
@@ -23,7 +26,7 @@ import { DynamicTypeFormDialog } from "./dynamic-type-form-dialog";
 const COLUMN_ORDER = [
   { column: "type", Label: "Type", isSortable: false },
   { column: "role", Label: "Role", isSortable: false },
-] as const;
+];
 
 // ============================================
 // Main Table
@@ -48,6 +51,7 @@ export function DynamicRoleTable() {
   );
 
   // Paginate after filtering
+  const totalPages = Math.ceil(filtered.length / perPage);
   const pageSlice = filtered.slice((page - 1) * perPage, page * perPage);
 
   // CSV download (filtered data)
@@ -77,12 +81,12 @@ export function DynamicRoleTable() {
   // When the reusable Table fires onEditClick it passes the row's `id` value.
   // We look that up in `rows` so we have the full item to pre-fill the form.
   const handleEdit = (id: string | number | boolean) => {
-    const target = rows.find((r) => r.id === String(id));
+    const target = rows.find((r: DynamicRoleItem) => r.id === String(id));
     if (target) setEditTarget(target);
   };
 
   // When the reusable Table fires onDeleteClick it passes the row's `id` value.
-  // The Table already showed a confirm Modal; this runs after the user confirms.
+  // The Table already shows a confirm Modal; this runs after the user confirms.
   const handleDelete = (id: string | undefined) => {
     if (id) deleteRole(id);
   };
@@ -108,19 +112,36 @@ export function DynamicRoleTable() {
         onCsvDownload={downloadCSV}
       />
 
-      {/* Reusable Table */}
+      {/* Reusable Table — children[0]=THead, children[1]=Pagination, children[2]=Blank */}
       <Table
         rows={pageSlice}
         isloading={isLoading}
         page={page}
         perPage={perPage}
-        columnOrder={[...COLUMN_ORDER]}
+        columnOrder={COLUMN_ORDER}
         id={["id"]}
         onEditClick={handleEdit}
         onDeleteClick={handleDelete}
         modalDeleteHeading="Delete Role Mapping"
         modalDeleteContent="Are you sure you want to delete this role mapping? This action cannot be undone."
-      />
+      >
+        <THead columnOrder={COLUMN_ORDER} onIconClick={() => {}} action />
+        <div>
+          {!isLoading && (
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              handleNextClick={() =>
+                setPage((p) => Math.min(p + 1, totalPages || 1))
+              }
+              handlePreviousClick={() => setPage((p) => Math.max(p - 1, 1))}
+              perPage={perPage}
+              totalCount={filtered.length}
+            />
+          )}
+        </div>
+        <Blank />
+      </Table>
 
       {/* Edit dialog — opened from handleEdit */}
       {editTarget && (

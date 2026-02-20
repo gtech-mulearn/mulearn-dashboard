@@ -10,8 +10,11 @@
 "use client";
 
 import { useState } from "react";
+import { Blank } from "@/components/dashboard/table/Blank";
+import Pagination from "@/components/dashboard/table/pagination";
 import Table from "@/components/dashboard/table/Table";
 import TableTop from "@/components/dashboard/table/TableTop";
+import THead from "@/components/dashboard/table/Thead";
 import { useDeleteDynamicUser, useDynamicUsers } from "../hooks";
 import type { DynamicUserItem } from "../types";
 import { DynamicTypeFormDialog } from "./dynamic-type-form-dialog";
@@ -25,7 +28,7 @@ const COLUMN_ORDER = [
   { column: "type", Label: "Type", isSortable: false },
   { column: "email", Label: "Email", isSortable: false },
   { column: "muid", Label: "MUID", isSortable: false },
-] as const;
+];
 
 // ============================================
 // Main Table
@@ -52,6 +55,7 @@ export function DynamicUserTable() {
   );
 
   // Paginate after filtering
+  const totalPages = Math.ceil(filtered.length / perPage);
   const pageSlice = filtered.slice((page - 1) * perPage, page * perPage);
 
   // CSV download (filtered data)
@@ -88,7 +92,7 @@ export function DynamicUserTable() {
   };
 
   // When the reusable Table fires onDeleteClick it passes the row's `id` value.
-  // The Table already showed a confirm Modal; this runs after the user confirms.
+  // The Table already shows a confirm Modal; this runs after the user confirms.
   const handleDelete = (id: string | undefined) => {
     if (id) deleteUser(id);
   };
@@ -114,19 +118,36 @@ export function DynamicUserTable() {
         onCsvDownload={downloadCSV}
       />
 
-      {/* Reusable Table */}
+      {/* Reusable Table — children[0]=THead, children[1]=Pagination, children[2]=Blank */}
       <Table
         rows={pageSlice}
         isloading={isLoading}
         page={page}
         perPage={perPage}
-        columnOrder={[...COLUMN_ORDER]}
+        columnOrder={COLUMN_ORDER}
         id={["id"]}
         onEditClick={handleEdit}
         onDeleteClick={handleDelete}
         modalDeleteHeading="Remove User Mapping"
         modalDeleteContent="Are you sure you want to remove this user from their type? This action cannot be undone."
-      />
+      >
+        <THead columnOrder={COLUMN_ORDER} onIconClick={() => {}} action />
+        <div>
+          {!isLoading && (
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              handleNextClick={() =>
+                setPage((p) => Math.min(p + 1, totalPages || 1))
+              }
+              handlePreviousClick={() => setPage((p) => Math.max(p - 1, 1))}
+              perPage={perPage}
+              totalCount={filtered.length}
+            />
+          )}
+        </div>
+        <Blank />
+      </Table>
 
       {/* Edit dialog — opened from handleEdit */}
       {editTarget && (
