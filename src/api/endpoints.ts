@@ -198,6 +198,37 @@ export const endpoints = {
       `/api/v1/dashboard/achievement/list/user/${muid}/`,
     /** POST - Issue VC and save URL */
     issueVC: "/api/v1/dashboard/achievement/issue-vc/",
+
+    /** GET - List all achievements */
+    list: "/api/v1/dashboard/achievement/list/",
+    /** POST - Create new achievement */
+    create: "/api/v1/dashboard/achievement/create/",
+    /** PUT - Update achievement */
+    update: (id: string) => `/api/v1/dashboard/achievement/update/${id}/`,
+    /** DELETE - Delete achievement */
+    delete: (id: string) => `/api/v1/dashboard/achievement/delete/${id}/`,
+
+    /** GET - Rules Engine */
+    rules: "/api/v1/dashboard/achievement/rules/",
+    createRule: "/api/v1/dashboard/achievement/rules/create/",
+    deactivateRule: (ruleId: string) =>
+      `/api/v1/dashboard/achievement/rules/${ruleId}/deactivate/`,
+
+    /** Simulation */
+    simulate: (muid: string) =>
+      `/api/v1/dashboard/achievement/simulate/${muid}/`,
+    debug: (muid: string, achievementId: string) =>
+      `/api/v1/dashboard/achievement/debug/${muid}/${achievementId}/`,
+
+    /** Manual Issue / Revoke */
+    manualIssue: "/api/v1/dashboard/achievement/manual-issue/",
+    revoke: "/api/v1/dashboard/achievement/revoke/",
+
+    /** Audit & Logs */
+    auditLogs: (muid: string) => `/api/v1/dashboard/achievement/audit/${muid}/`,
+    bulkIssue: "/api/v1/dashboard/achievement/bulk-issue/",
+    bulkIssueTemplate: "/api/v1/dashboard/achievement/bulk-issue/template/",
+    issuedLog: "/api/v1/dashboard/achievement/issued-log/",
   },
 
   // ============================================
