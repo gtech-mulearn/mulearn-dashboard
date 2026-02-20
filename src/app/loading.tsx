@@ -9,6 +9,8 @@ export default function Loader() {
         height={400}
         width={400}
         unoptimized
+        priority
+        style={{ width: "auto", height: "auto" }}
       />
     </div>
   );
