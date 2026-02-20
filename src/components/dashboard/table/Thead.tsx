@@ -23,7 +23,7 @@ const THead = ({
     <thead>
       <tr>
         <th className="border-b border-border px-3.5 py-3 text-left text-sm font-bold uppercase tracking-wider">
-          S/N
+          Sl.no
         </th>
         {columnOrder.map((column) => (
           <th
