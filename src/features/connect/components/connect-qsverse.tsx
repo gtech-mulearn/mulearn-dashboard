@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
+import { useUserInfo } from "@/features/auth";
 import { useQsverseInfo } from "@/features/connect";
 
 type Props = {
@@ -18,7 +19,8 @@ type Props = {
 };
 
 export function QsverseConnectDialog({ open, onOpenChange }: Props) {
-  const qsverse = useQsverseInfo();
+  const { data: user } = useUserInfo();
+  const qsverse = useQsverseInfo(user?.muid);
   const isRefreshing = qsverse.isFetching;
   const handleRefreshConnection = async () => {
     try {
