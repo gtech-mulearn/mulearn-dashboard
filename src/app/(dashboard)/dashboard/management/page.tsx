@@ -41,14 +41,14 @@ const MANAGEMENT_ITEMS: ManagementItem[] = [
     icon: User,
     title: "Manage Users",
     description: "Add, edit, and delete user accounts.",
-    path: "/dashboard/management/user-management/manage-users",
+    path: "/dashboard/management/manage-users",
     color: "bg-chart-1/10 text-chart-1",
   },
   {
     icon: ShieldCheck,
     title: "Role Verification",
     description: "Verify and assign roles to users.",
-    path: "/dashboard/management/user-management/user-role-verification",
+    path: "/dashboard/management/role-verification",
     color: "bg-chart-2/10 text-chart-2",
   },
   {
