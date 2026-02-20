@@ -33,8 +33,7 @@ export function TaskCard({
   };
 
   // Hover effect with shadow only for pending tasks - enhanced shadow for more elevation
-  const cardHoverClass =
-    status === "pending" ? "hover:shadow-2xl hover:-translate-y-1" : "";
+  const cardHoverClass = status === "pending" ? "hover:shadow-2xl" : "";
 
   // Fade effect for completed tasks
   const completedFadeClass = status === "completed" ? "opacity-60" : "";
@@ -71,7 +70,7 @@ export function TaskCard({
         <div>
           <span
             className={cn(
-              "inline-block px-5 py-2 rounded-full text-sm font-semibold font-open-sans",
+              "inline-block px-5 py-2 rounded-full text-sm font-semibold",
               statusBadges[status],
             )}
           >

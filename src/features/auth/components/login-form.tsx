@@ -67,6 +67,7 @@ export function LoginForm({
             width={100}
             height={32}
             priority
+            style={{ width: "auto", height: "auto" }}
           />
         </Link>
       </div>

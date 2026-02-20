@@ -28,7 +28,12 @@ export function Achievements({
   userEmail,
   isOwnProfile,
 }: AchievementsProps) {
-  const { data: achievements, isLoading, refetch } = useUserAchievements(muid);
+  const {
+    data: achievements,
+    isLoading,
+    isError,
+    refetch,
+  } = useUserAchievements(muid);
 
   // Memoized callback to prevent unnecessary re-renders
   const handleAchievementUpdate = useCallback(() => {
@@ -41,6 +46,29 @@ export function Achievements({
         <div className="flex min-h-[200px] items-center justify-center">
           <Spinner className="h-8 w-8" />
         </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="rounded-2xl bg-destructive/5 p-8 text-center shadow-sm border border-destructive/20">
+        <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-destructive/10">
+          <Trophy className="h-10 w-10 text-destructive" />
+        </div>
+        <h3 className="text-lg font-semibold text-destructive">
+          Failed to load achievements
+        </h3>
+        <p className="mt-1 text-sm text-foreground/60 mb-4">
+          We couldn't fetch your achievements.
+        </p>
+        <button
+          type="button"
+          onClick={() => refetch()}
+          className="text-sm font-medium text-primary hover:underline"
+        >
+          Try Again
+        </button>
       </div>
     );
   }

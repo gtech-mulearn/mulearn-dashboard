@@ -33,6 +33,7 @@ export function Sidebar() {
 
   const handleLogout = () => {
     authStore.clearTokens();
+    useUIStore.getState().resetUI();
     toast.success("Logged out successfully");
     router.replace("/login");
   };
@@ -95,7 +96,7 @@ export function Sidebar() {
               width={100}
               height={32}
               priority
-              style={{ height: "auto" }}
+              style={{ width: "auto", height: "auto" }}
               className="h-8 w-auto"
             />
           </Link>
@@ -133,6 +134,7 @@ export function Sidebar() {
                 width={100}
                 height={32}
                 priority
+                style={{ width: "auto", height: "auto" }}
               />
             </Link>
           )}
@@ -161,7 +163,7 @@ export function Sidebar() {
               width={100}
               height={32}
               priority
-              style={{ height: "auto" }}
+              style={{ width: "auto", height: "auto" }}
             />
           </Link>
           <button

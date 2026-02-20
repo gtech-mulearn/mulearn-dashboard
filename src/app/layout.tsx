@@ -61,7 +61,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" data-scroll-behavior="smooth">
       <body
         className={`${bricolage.variable} ${geistSans.variable} ${geistMono.variable} ${montserrat.variable} ${openSans.variable} antialiased font-sans`}
       >

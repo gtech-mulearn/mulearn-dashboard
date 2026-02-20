@@ -175,9 +175,12 @@ export const endpoints = {
   // Interest Groups Endpoints
   // ============================================
   interestGroups: {
-    /** GET - List all interest groups */
-    list: "/api/v1/dashboard/ig/",
-    /** GET - Interest group details */
+    /** GET - List all interest groups (optional: order_by field name) */
+    list: (orderBy?: string) =>
+      orderBy
+        ? `/api/v1/dashboard/ig/list/?order_by=${encodeURIComponent(orderBy)}`
+        : "/api/v1/dashboard/ig/list/",
+    /** GET - Interest group details by ID */
     detail: (id: string) => `/api/v1/dashboard/ig/get/${id}/`,
   },
 
@@ -281,6 +284,9 @@ export const endpoints = {
       courses: "/api/v1/integrations/wadhwani/course-details/",
       /** POST - Enroll/Login to course */
       enroll: "/api/v1/integrations/wadhwani/user-login/",
+      /** GET - Wadhwani Sheet URL */
+      sheet:
+        "https://opensheet.elk.sh/1LEvZozIVVquXjSvtptQcjiU0_WFaxVuEYBCYyCdsCtY/sheet",
     },
     openGrad: {
       /** POST - Get client token */
@@ -370,6 +376,37 @@ export const endpoints = {
       deleteDynamicUser: (id: string) =>
         `/api/v1/dashboard/dynamic-management/dynamic-user/delete/${id}/`,
     },
+  },
+
+  // ============================================
+  // Manage Users Endpoints
+  // ============================================
+  manageUsers: {
+    /** GET - List users (query: perPage, pageIndex, search, sortBy) */
+    list: "/api/v1/dashboard/user/",
+    /** GET - Export users CSV */
+    csv: "/api/v1/dashboard/user/csv/",
+
+    /** GET - Get user details by ID */
+    detail: (id: string) => `/api/v1/dashboard/user/${id}/`,
+    /** PATCH - Update user by ID */
+    update: (id: string) => `/api/v1/dashboard/user/${id}/`,
+    /** DELETE - Delete user by ID */
+    delete: (id: string) => `/api/v1/dashboard/user/${id}/`,
+
+    /** GET - List communities */
+    communities: "/api/v1/register/community/list/",
+    /** GET - List roles */
+    roles: "/api/v1/register/role/list/",
+    /** GET - List area of interest / interest groups */
+    areasOfInterest: "/api/v1/register/area-of-interest/list/",
+    /** POST - List colleges by district */
+    collegesByDistrict: "/api/v1/register/college/list/",
+    /** POST - List schools by district */
+    schoolsByDistrict: "/api/v1/register/schools/list/",
+    /** GET - Search locations */
+    locationSearch: (param: string) =>
+      `/api/v1/register/location/?q=${param || "india"}`,
   },
 } as const;
 
