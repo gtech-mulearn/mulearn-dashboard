@@ -22,6 +22,20 @@ export class ApiError extends Error {
   }
 }
 
+function extractDjangoMessage(data: unknown): string | null {
+  if (!data || typeof data !== "object") return null;
+  const d = data as Record<string, unknown>;
+  const msg = d.message;
+  if (msg && typeof msg === "object") {
+    const general = (msg as Record<string, unknown>).general;
+    if (Array.isArray(general) && typeof general[0] === "string") {
+      return general[0];
+    }
+  }
+  if (typeof d.detail === "string") return d.detail;
+  return null;
+}
+
 // ─── URL + Headers ──────────────────────────────────────────────────────────
 
 function getBaseUrl(): string {
@@ -78,7 +92,12 @@ async function request<T>(
   const rawData = await res.json().catch(() => null);
 
   if (!res.ok) {
-    throw new ApiError(res.status, `Request failed: ${endpoint}`, rawData);
+    const backendMsg = extractDjangoMessage(rawData);
+    throw new ApiError(
+      res.status,
+      backendMsg || `Request failed: ${endpoint}`,
+      rawData,
+    );
   }
 
   if (options.schema) {
