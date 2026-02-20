@@ -8,16 +8,6 @@
 
 import { InterestGroupDetailClient } from "@/features/interest-groups";
 
-type InterestGroupDetailPageProps = {
-  params: Promise<{
-    id: string;
-  }>;
-};
-
-export default async function InterestGroupDetailPage({
-  params,
-}: InterestGroupDetailPageProps) {
-  const { id } = await params;
-
-  return <InterestGroupDetailClient id={id} />;
+export default async function InterestGroupDetailPage() {
+  return <InterestGroupDetailClient />;
 }
