@@ -1,3 +1,4 @@
+"use client";
 import { useState } from "react";
 import { HiOutlineX } from "react-icons/hi";
 import { Button } from "@/components/ui/button";

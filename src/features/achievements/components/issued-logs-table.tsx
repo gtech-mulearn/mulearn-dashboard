@@ -10,6 +10,7 @@ import {
   ISSUED_LOGS_PAGE_SIZE,
 } from "../constants/constants";
 import { useIssuedLogs } from "../hooks/use-achievement-logs";
+import type { IssuedLog } from "../schemas";
 import { BulkIssueDialog } from "./bulk-issue-dialog";
 
 export function IssuedLogsTable() {
@@ -63,7 +64,7 @@ export function IssuedLogsTable() {
         <table className="w-full caption-bottom text-sm">
           <thead className="[&_tr]:border-b">
             <tr>
-              {ISSUED_LOGS_HEADERS.map((h) => (
+              {ISSUED_LOGS_HEADERS.map((h: string) => (
                 <th
                   key={h}
                   className="h-12 px-4 text-left align-middle font-medium text-muted-foreground"
@@ -75,10 +76,10 @@ export function IssuedLogsTable() {
           </thead>
           <tbody className="[&_tr:last-child]:border-0">
             {isLoading ? (
-              Array.from({ length: 5 }).map((_, i) => (
+              Array.from({ length: 5 }).map((_: any, i: number) => (
                 // biome-ignore lint/suspicious/noArrayIndexKey: Skeletons are static
                 <tr key={i} className="border-b">
-                  {ISSUED_LOGS_HEADERS.map((h) => (
+                  {ISSUED_LOGS_HEADERS.map((h: string) => (
                     <td key={h} className="p-4">
                       <Skeleton className="h-4 w-full" />
                     </td>
@@ -86,7 +87,7 @@ export function IssuedLogsTable() {
                 </tr>
               ))
             ) : rows.length > 0 ? (
-              rows.map((row, i) => (
+              rows.map((row: IssuedLog, i: number) => (
                 <tr
                   key={row.id ?? i}
                   className="border-b transition-colors hover:bg-muted/50"

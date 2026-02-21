@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useAuditLogs } from "../hooks/use-achievement-logs";
+import type { AuditLog } from "../schemas";
 
 export function AuditLogsTable() {
   const [muid, setMuid] = React.useState("");
@@ -94,7 +95,7 @@ export function AuditLogsTable() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  logs.map((log, index) => {
+                  logs.map((log: AuditLog, index: number) => {
                     const meta = log.metadata ?? {};
                     const keys = Object.keys(meta);
 
@@ -118,7 +119,7 @@ export function AuditLogsTable() {
                             </span>
                           ) : (
                             <div className="max-w-xs truncate text-xs text-muted-foreground">
-                              {keys.slice(0, 3).map((k) => (
+                              {keys.slice(0, 3).map((k: string) => (
                                 <span key={k} className="mr-2">
                                   <span className="font-medium">{k}:</span>{" "}
                                   {String(meta[k]).slice(0, 30)}

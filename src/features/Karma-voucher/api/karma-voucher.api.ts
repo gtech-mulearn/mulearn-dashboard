@@ -1,78 +1,100 @@
-//import { z } from "zod";
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
+import { authStore } from "@/lib/auth";
+import { env } from "../../../../config/env";
+import type {} from "../schemas";
 import {
   BulkImportResponseSchema,
-  KarmaVoucherSchema,
-  PaginatedResponseSchema,
-} from "../schema";
+  KarmaVoucherListResponseSchema,
+} from "../schemas";
+import type { BulkImportResponse, KarmaVoucherListData } from "../types";
 
-// ==========================================
-// Fetch Karma Vouchers
-// ==========================================
+// ─── Types ──────────────────────────────────────────────────────────────────
 
-export const fetchKarmaVouchers = async (
-  token: string,
-  page: number,
-  perPage: number,
-  search?: string,
-  sortBy?: string,
-) => {
-  return apiClient.post(
-    endpoints.admin.karmaVoucher.list,
-    {
-      token,
-      page,
-      page_size: perPage,
-      search,
-      ordering: sortBy,
-    },
-    PaginatedResponseSchema(KarmaVoucherSchema),
+export interface KarmaVoucherListParams {
+  page: number;
+  perPage: number;
+  search?: string;
+  sortBy?: string;
+}
+
+// ─── Fetch Karma Vouchers ───────────────────────────────────────────────────
+
+export async function fetchKarmaVouchers(
+  params: KarmaVoucherListParams,
+): Promise<KarmaVoucherListData> {
+  const query = new URLSearchParams({
+    pageIndex: String(params.page),
+    perPage: String(params.perPage),
+  });
+
+  if (params.search?.trim()) {
+    query.set("search", params.search.trim());
+  }
+  if (params.sortBy?.trim()) {
+    query.set("sortBy", params.sortBy.trim());
+  }
+
+  const response = await apiClient.get(
+    `${endpoints.admin.karmaVoucher.list}?${query.toString()}`,
+    KarmaVoucherListResponseSchema,
   );
-};
 
-// ==========================================
-// Delete Voucher
-// ==========================================
+  return (
+    response.response ||
+    response.data || {
+      data: [],
+      pagination: { count: 0, totalPages: 1, isNext: false, isPrev: false },
+    }
+  );
+}
 
-export const deleteKarmaVoucher = async (id: string) => {
-  return apiClient.delete(endpoints.admin.karmaVoucher.delete(id));
-};
+// ─── Delete Voucher ─────────────────────────────────────────────────────────
 
-// ==========================================
-// Import Vouchers
-// ==========================================
+export async function deleteKarmaVoucher(id: string): Promise<void> {
+  await apiClient.delete(endpoints.admin.karmaVoucher.delete(id));
+}
 
-export const importVouchers = async (file: File) => {
+// ─── Bulk Import Vouchers (XLSX) ────────────────────────────────────────────
+
+export async function importVouchers(file: File): Promise<BulkImportResponse> {
+  const token = authStore.getAccessToken();
+  const base = env.NEXT_PUBLIC_DJANGO_API_URL;
+
   const formData = new FormData();
   formData.append("file", file);
 
-  return apiClient.post(
-    endpoints.admin.karmaVoucher.import,
-    formData,
-    BulkImportResponseSchema,
-  );
-};
-
-// ==========================================
-// Export CSV
-// ==========================================
-
-/*export const exportVoucherCsv = async (token: string): Promise<Blob> => {
-  return publicApiClient.get(
-    endpoints.admin.karmaVoucher.exportCSV,
-    {
-      token,
+  const res = await fetch(`${base}${endpoints.admin.karmaVoucher.import}`, {
+    method: "POST",
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
-    BulkImportResponseSchema,
-  );
-};
+    body: formData,
+  });
 
-
-const blob = await publicApiClient.get<Blob>(
-  endpoints.admin.karmaVoucher.template,
-  {
-    responseType: "blob",
-    
+  if (!res.ok) {
+    throw new Error(`Import failed (${res.status})`);
   }
-);*/
+
+  const json = await res.json();
+  const data = json?.response ?? json;
+  return BulkImportResponseSchema.parse(data);
+}
+
+// ─── Export CSV (blob download) ─────────────────────────────────────────────
+
+export async function exportVouchersCsv(): Promise<Blob> {
+  return apiClient.get<Blob>(
+    endpoints.admin.karmaVoucher.exportCSV,
+    undefined,
+    { responseType: "blob" },
+  );
+}
+
+// ─── Download Import Template (blob download) ──────────────────────────────
+
+export async function downloadTemplate(): Promise<Blob> {
+  return apiClient.get<Blob>(endpoints.admin.karmaVoucher.template, undefined, {
+    responseType: "blob",
+  });
+}

@@ -122,7 +122,7 @@ export function SimulationPanel() {
               — {results.length} achievement{results.length !== 1 ? "s" : ""}
             </p>
             {isLoading ? (
-              Array.from({ length: 4 }).map((_, i) => (
+              Array.from({ length: 4 }).map((_: any, i: number) => (
                 // biome-ignore lint/suspicious/noArrayIndexKey: Skeletons are static
                 <Skeleton key={i} className="h-20 w-full rounded-lg" />
               ))
@@ -131,7 +131,7 @@ export function SimulationPanel() {
                 No simulation results found.
               </p>
             ) : (
-              results.map((result) => (
+              results.map((result: SimulationResult) => (
                 <SimulationResultRow
                   key={result.achievement_id}
                   result={result}
