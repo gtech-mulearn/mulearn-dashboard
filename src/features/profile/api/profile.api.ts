@@ -7,19 +7,33 @@
  * Returns the inner response data (not the wrapper).
  */
 
-import { apiClient } from "@/api/client";
+import { ApiError, apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
+import { authStore } from "@/lib/auth";
 import {
+  type ChangeCollegeRequest,
+  CollegesByDistrictResponseSchema,
+  CommunitiesResponseSchema,
   type ConnectedDIDsData,
   ConnectedDIDsResponseSchema,
+  CountriesResponseSchema,
+  DistrictsResponseSchema,
+  type EditableProfile,
+  EditableProfileResponseSchema,
   EmptyResponseSchema,
   type InterestGroupsListData,
   InterestGroupsListResponseSchema,
   type IssuedVC,
   IssuedVCResponseSchema,
+  type LocationOption,
+  type Option,
+  SchoolsByDistrictResponseSchema,
   type Socials,
   SocialsResponseSchema,
+  StatesResponseSchema,
   type TogglePublicProfileRequest,
+  UpdateProfileImageResponseSchema,
+  type UpdateProfileRequest,
   type UserAchievementsData,
   UserAchievementsResponseSchema,
   type UserLevelsData,
@@ -43,6 +57,15 @@ export async function getUserProfile(): Promise<UserProfile> {
   const response = await apiClient.get(
     endpoints.user.profile,
     UserProfileResponseSchema,
+  );
+  return response.response;
+}
+
+/** Get editable profile payload for pre-filling edit form */
+export async function getEditableUserProfile(): Promise<EditableProfile> {
+  const response = await apiClient.get(
+    endpoints.user.updateProfile,
+    EditableProfileResponseSchema,
   );
   return response.response;
 }
@@ -156,12 +179,174 @@ export async function updateUserPreferences(
 // ============================================
 
 /** Update profile image */
-export async function updateProfileImage(imageUrl: string): Promise<void> {
-  await apiClient.post(
-    endpoints.user.updateProfileImage,
-    { profile_pic: imageUrl },
+export async function updateProfile(data: UpdateProfileRequest): Promise<void> {
+  await apiClient.patch(
+    endpoints.user.updateProfile,
+    data,
     EmptyResponseSchema,
   );
+}
+
+/** Update profile image (multipart/form-data) */
+export async function updateProfileImage(
+  profilePic: File,
+  userId: string,
+): Promise<void> {
+  const token = authStore.getAccessToken();
+  const formData = new FormData();
+  formData.append("profile", profilePic);
+  formData.append("user_id", userId);
+
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_DJANGO_API_URL}${endpoints.user.updateProfileImage}`,
+    {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    },
+  );
+
+  const rawData = await response.json().catch(() => null);
+
+  if (!response.ok || rawData?.hasError) {
+    const message =
+      rawData?.message?.general?.[0] ?? "Failed to update profile image";
+    throw new ApiError(response.status, message, rawData);
+  }
+
+  const parsed = UpdateProfileImageResponseSchema.safeParse(rawData);
+  if (!parsed.success) {
+    throw new Error("Invalid API response");
+  }
+}
+
+/** Sync discord profile image */
+export async function syncDiscordProfileImage(): Promise<void> {
+  await apiClient.patch(
+    endpoints.user.updateProfileImage,
+    {},
+    EmptyResponseSchema,
+  );
+}
+
+/** Update college/school and optional department */
+export async function changeCollege(data: ChangeCollegeRequest): Promise<void> {
+  await apiClient.patch(
+    endpoints.user.changeCollege,
+    data,
+    EmptyResponseSchema,
+  );
+}
+
+function toOption(item: Option): LocationOption {
+  return {
+    value: item.id,
+    label: item.title ?? item.name ?? item.location ?? item.id,
+  };
+}
+
+function sortOptions(options: LocationOption[]): LocationOption[] {
+  return [...options].sort((a, b) => a.label.localeCompare(b.label));
+}
+
+/** List communities */
+export async function getCommunities(): Promise<LocationOption[]> {
+  const response = await apiClient.get(
+    endpoints.onboarding.communities,
+    CommunitiesResponseSchema,
+  );
+  return sortOptions(response.response.communities.map(toOption));
+}
+
+/** List countries */
+export async function getCountries(): Promise<LocationOption[]> {
+  const response = await apiClient.get(
+    endpoints.location.countries,
+    CountriesResponseSchema,
+  );
+  return sortOptions(
+    response.response.countries.map((country) => ({
+      value: country.id,
+      label: country.name,
+    })),
+  );
+}
+
+/** List states for country */
+export async function getStates(countryId: string): Promise<LocationOption[]> {
+  if (!countryId) return [];
+  const response = await apiClient.post(
+    endpoints.location.states,
+    { country: countryId },
+    StatesResponseSchema,
+  );
+  return sortOptions(
+    response.response.states.map((state) => ({
+      value: state.id,
+      label: state.name,
+    })),
+  );
+}
+
+/** List districts for state */
+export async function getDistricts(stateId: string): Promise<LocationOption[]> {
+  if (!stateId) return [];
+  const response = await apiClient.post(
+    endpoints.location.districts,
+    { state: stateId },
+    DistrictsResponseSchema,
+  );
+  return sortOptions(
+    response.response.districts.map((district) => ({
+      value: district.id,
+      label: district.name,
+    })),
+  );
+}
+
+/** List colleges/schools + departments for district */
+export async function getOrganizationsAndDepartments(
+  districtId: string,
+): Promise<{ organizations: LocationOption[]; departments: LocationOption[] }> {
+  if (!districtId) {
+    return { organizations: [], departments: [] };
+  }
+
+  const [collegesRes, schoolsRes] = await Promise.all([
+    apiClient.post(
+      endpoints.manageUsers.collegesByDistrict,
+      { district: districtId },
+      CollegesByDistrictResponseSchema,
+    ),
+    apiClient.post(
+      endpoints.manageUsers.schoolsByDistrict,
+      { district: districtId },
+      SchoolsByDistrictResponseSchema,
+    ),
+  ]);
+
+  const organizations = sortOptions([
+    ...collegesRes.response.colleges.map((college) => ({
+      value: college.id,
+      label: college.title,
+    })),
+    ...schoolsRes.response.schools.map((school) => ({
+      value: school.id,
+      label: school.title,
+    })),
+  ]);
+
+  const departments = sortOptions(
+    collegesRes.response.departments.map((department) => ({
+      value: department.id,
+      label: department.title,
+    })),
+  );
+
+  return {
+    organizations,
+    departments,
+  };
 }
 
 // ============================================

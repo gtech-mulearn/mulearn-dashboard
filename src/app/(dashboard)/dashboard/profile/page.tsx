@@ -15,6 +15,7 @@ import {
   Achievements,
   BasicDetails,
   EditInterestGroupsModal,
+  type EditProfileFormValues,
   EditProfileModal,
   KarmaHistory,
   MuVoyage,
@@ -24,7 +25,12 @@ import {
   type ProfileTab,
   ProfileTabs,
   ShareProfileModal,
+  type UpdateProfileRequest,
   updateInterestGroups,
+  useChangeCollege,
+  useEditableProfile,
+  useUpdateProfile,
+  useUpdateProfileImage,
   useUserLevels,
   useUserLog,
   useUserProfile,
@@ -45,6 +51,10 @@ export default function ProfilePage() {
     isError,
     refetch: refetchProfile,
   } = useUserProfile();
+  const updateProfileMutation = useUpdateProfile();
+  const { data: editableProfile } = useEditableProfile();
+  const changeCollegeMutation = useChangeCollege();
+  const updateProfileImageMutation = useUpdateProfileImage();
   const { data: userLog, isLoading: isLoadingLog } = useUserLog();
   const { data: userLevels, isLoading: isLoadingLevels } = useUserLevels();
 
@@ -68,12 +78,83 @@ export default function ProfilePage() {
   };
 
   // Save profile handler
-  const handleSaveProfile = async (_data: {
-    full_name?: string;
-    profile_pic?: string;
-  }) => {
-    // TODO: Implement API call to update profile
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+  const handleSaveProfile = async (
+    data: EditProfileFormValues,
+    dirtyFields: Partial<Record<keyof EditProfileFormValues, boolean>>,
+  ) => {
+    if (!profile) return;
+
+    const hasProfileUpdates = Boolean(
+      dirtyFields.full_name ||
+        dirtyFields.first_name ||
+        dirtyFields.last_name ||
+        dirtyFields.email ||
+        dirtyFields.mobile ||
+        dirtyFields.gender ||
+        dirtyFields.dob ||
+        dirtyFields.community,
+    );
+
+    if (hasProfileUpdates) {
+      const existingFullName =
+        profile.full_name || editableProfile?.full_name || "";
+      const submittedFullName = data.full_name?.trim() || existingFullName;
+      const [submittedFirstName, ...submittedLastNameParts] = submittedFullName
+        .split(" ")
+        .filter(Boolean);
+      const firstName = submittedFirstName || "";
+      const lastName = submittedLastNameParts.join(" ").trim();
+      const fallbackCommunity = editableProfile?.communities?.[0];
+
+      const profilePayload: UpdateProfileRequest = {
+        first_name: firstName,
+        last_name: lastName,
+        full_name: submittedFullName,
+        email:
+          data.email?.trim() || editableProfile?.email || profile.email || "",
+        mobile:
+          data.mobile?.trim() ||
+          editableProfile?.mobile ||
+          profile.mobile ||
+          "",
+        gender:
+          data.gender?.trim() ||
+          editableProfile?.gender ||
+          profile.gender ||
+          "",
+        dob: data.dob?.trim() || editableProfile?.dob || profile.dob || "",
+        communities: data.community?.trim()
+          ? [data.community.trim()]
+          : fallbackCommunity
+            ? [fallbackCommunity]
+            : [],
+      };
+
+      await updateProfileMutation.mutateAsync(profilePayload);
+    }
+
+    const shouldUpdateCollege = Boolean(
+      dirtyFields.org_id ||
+        dirtyFields.department_id ||
+        dirtyFields.country_id ||
+        dirtyFields.state_id ||
+        dirtyFields.district_id,
+    );
+
+    if (shouldUpdateCollege && data.org_id?.trim()) {
+      await changeCollegeMutation.mutateAsync({
+        org_id: data.org_id.trim(),
+        department_id: data.department_id?.trim() || undefined,
+      });
+    }
+
+    if (dirtyFields.profile_pic && data.profile_pic) {
+      await updateProfileImageMutation.mutateAsync({
+        profilePic: data.profile_pic,
+        userId: profile.id,
+      });
+    }
+
     refetchProfile();
   };
 

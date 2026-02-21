@@ -10,12 +10,19 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { authKeys } from "@/features/auth/hooks/query-keys";
 import {
+  changeCollege,
   togglePublicProfile,
+  updateProfile,
   updateProfileImage,
   updateSocials,
   updateUserPreferences,
 } from "../api";
-import type { Socials, UserPreferences } from "../schemas";
+import type {
+  ChangeCollegeRequest,
+  Socials,
+  UpdateProfileRequest,
+  UserPreferences,
+} from "../schemas";
 import { profileKeys } from "./query-keys";
 
 /**
@@ -86,15 +93,64 @@ export function useUpdateProfileImage() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (imageUrl: string) => updateProfileImage(imageUrl),
+    mutationFn: ({
+      profilePic,
+      userId,
+    }: {
+      profilePic: File;
+      userId: string;
+    }) => updateProfileImage(profilePic, userId),
     onSuccess: () => {
       // Invalidate both profile and user info caches
       queryClient.invalidateQueries({ queryKey: profileKeys.profile() });
+      queryClient.invalidateQueries({
+        queryKey: profileKeys.editableProfile(),
+      });
       queryClient.invalidateQueries({ queryKey: authKeys.userInfo() });
       toast.success("Profile image updated");
     },
     onError: () => {
       toast.error("Failed to update profile image");
+    },
+  });
+}
+
+/** Update profile fields */
+export function useUpdateProfile() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (profileData: UpdateProfileRequest) =>
+      updateProfile(profileData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: profileKeys.profile() });
+      queryClient.invalidateQueries({
+        queryKey: profileKeys.editableProfile(),
+      });
+      queryClient.invalidateQueries({ queryKey: authKeys.userInfo() });
+      toast.success("Profile updated");
+    },
+    onError: () => {
+      toast.error("Failed to update profile");
+    },
+  });
+}
+
+/** Update college/school and optional department */
+export function useChangeCollege() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: ChangeCollegeRequest) => changeCollege(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: profileKeys.profile() });
+      queryClient.invalidateQueries({
+        queryKey: profileKeys.editableProfile(),
+      });
+      toast.success("College details updated");
+    },
+    onError: () => {
+      toast.error("Failed to update college details");
     },
   });
 }

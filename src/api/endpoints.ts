@@ -123,8 +123,12 @@ export const endpoints = {
     socialsEdit: "/api/v1/dashboard/profile/socials/edit/",
     /** PATCH - Update user's interest groups */
     interestGroups: "/api/v1/dashboard/profile/ig-edit/",
+    /** PATCH - Update user's profile fields */
+    updateProfile: "/api/v1/dashboard/profile/",
     /** POST - Update profile image */
     updateProfileImage: "/api/v1/dashboard/user/profile/update/",
+    /** PATCH - Update user's college/school and department */
+    changeCollege: "/api/v1/dashboard/college/change-college/",
     /** DELETE - Delete user account */
     delete: "/api/v1/dashboard/user/",
   },

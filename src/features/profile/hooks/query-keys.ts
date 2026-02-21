@@ -11,6 +11,7 @@ export const profileKeys = {
 
   // User profile
   profile: () => [...profileKeys.all, "user-profile"] as const,
+  editableProfile: () => [...profileKeys.all, "editable-profile"] as const,
   publicProfile: (muid: string) =>
     [...profileKeys.all, "public-profile", muid] as const,
 
@@ -32,6 +33,14 @@ export const profileKeys = {
 
   // Interest Groups
   interestGroups: () => [...profileKeys.all, "interest-groups"] as const,
+  communities: () => [...profileKeys.all, "communities"] as const,
+  countries: () => [...profileKeys.all, "countries"] as const,
+  states: (countryId: string) =>
+    [...profileKeys.all, "states", countryId] as const,
+  districts: (stateId: string) =>
+    [...profileKeys.all, "districts", stateId] as const,
+  organizationData: (districtId: string) =>
+    [...profileKeys.all, "organization-data", districtId] as const,
 
   // Achievements
   achievements: (muid: string) =>
