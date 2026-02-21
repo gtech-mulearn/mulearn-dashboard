@@ -82,7 +82,7 @@ export function AuditLogsTable() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Action</TableHead>
-                  <TableHead>User ID</TableHead>
+                  <TableHead>Achievement</TableHead>
                   <TableHead>Timestamp</TableHead>
                   <TableHead>Details</TableHead>
                 </TableRow>
@@ -106,10 +106,12 @@ export function AuditLogsTable() {
                         </TableCell>
                         <TableCell>
                           <span className="font-mono text-xs">
-                            {log.user_id}
+                            {log.achievement_name ??
+                              log.achievement_id ??
+                              "Unknown"}
                           </span>
                         </TableCell>
-                        <TableCell>{renderTimestamp(log.timestamp)}</TableCell>
+                        <TableCell>{renderTimestamp(log.created_at)}</TableCell>
                         <TableCell>
                           {keys.length === 0 ? (
                             <span className="text-muted-foreground text-xs">

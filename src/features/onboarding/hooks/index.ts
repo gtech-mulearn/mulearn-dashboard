@@ -10,6 +10,7 @@ export { useCompanies } from "./use-companies";
 export { useDepartments } from "./use-departments";
 export { useSelectDomains, useSelectEndgoals } from "./use-select-interests";
 export {
+  useCreateCompany,
   useCreateOrganization,
   useSelectOrganization,
 } from "./use-select-organization";
