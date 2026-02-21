@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 import type { UnifiedCourse } from "../schemas/courses.schemas";
 
 const DISCORD_SUBMIT_LINK =
@@ -167,11 +168,15 @@ export function CourseCard({
           onClick={handleEnroll}
           disabled={isEnrolling}
         >
-          {isEnrolling
-            ? "Enrolling..."
-            : course.source === "wadhwani"
-              ? "Enroll Now"
-              : "View Course"}
+          {isEnrolling ? (
+            <>
+              <Spinner className="h-4 w-4" /> Enrolling...
+            </>
+          ) : course.source === "wadhwani" ? (
+            "Enroll Now"
+          ) : (
+            "View Course"
+          )}
         </Button>
 
         {course.source === "wadhwani" && (

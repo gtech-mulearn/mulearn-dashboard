@@ -215,7 +215,7 @@ export function InterestGroupDetailClient() {
                 </h2>
               </div>
               <ul className="grid gap-3 sm:grid-cols-2">
-                {group.prerequisites.map((item, i) => (
+                {group.prerequisites.map((item) => (
                   <li
                     key={item}
                     className="flex items-start gap-3 p-3 rounded-xl bg-muted/30 border border-transparent hover:border-border transition-colors"
@@ -243,7 +243,7 @@ export function InterestGroupDetailClient() {
                   </h2>
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  {group.career_opportunities.map((opp, i) => (
+                  {group.career_opportunities.map((opp) => (
                     <span
                       key={opp}
                       className="inline-flex items-center rounded-full bg-background border border-border px-4 py-2 text-sm font-medium text-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:text-primary hover:shadow-md"
@@ -267,7 +267,7 @@ export function InterestGroupDetailClient() {
                 </h2>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
-                {group.top_blogs.map((blog, i) => (
+                {group.top_blogs.map((blog) => (
                   <a
                     key={blog.url}
                     href={blog.url}
@@ -300,7 +300,7 @@ export function InterestGroupDetailClient() {
                 </h2>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
-                {group.people_to_follow.map((person, i) => (
+                {group.people_to_follow.map((person) => (
                   <div
                     key={person.name}
                     className="flex items-start gap-4 rounded-2xl border border-border/60 bg-muted/20 p-5 transition-all hover:border-border hover:bg-card hover:shadow-sm"
@@ -345,7 +345,7 @@ export function InterestGroupDetailClient() {
                 <h2 className="text-2xl font-bold text-foreground">Mentors</h2>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
-                {group.mentors.map((mentor, i) => (
+                {group.mentors.map((mentor) => (
                   <div
                     key={mentor.name}
                     className="flex items-start gap-4 rounded-2xl border border-border/60 bg-muted/20 p-5 transition-all hover:border-border hover:bg-card hover:shadow-sm"
@@ -469,7 +469,7 @@ export function InterestGroupDetailClient() {
                 </div>
                 <div className="p-6">
                   <div className="space-y-4">
-                    {group.leads.map((lead, i) => (
+                    {group.leads.map((lead) => (
                       <div
                         key={lead.email || lead.name}
                         className="flex items-center gap-3 rounded-xl border border-transparent hover:border-border hover:bg-muted/40 p-2 transition-all -mx-2"
