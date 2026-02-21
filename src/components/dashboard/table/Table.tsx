@@ -28,6 +28,7 @@ type TableProps = {
     column: string;
     Label: string;
     isSortable: boolean;
+    width?: string;
     wrap?: (data: string | ReactElement, id: string, row: Data) => ReactElement;
   }[];
   id?: string[];
@@ -144,7 +145,7 @@ const Table: FC<TableProps> = (props) => {
         onScroll={updateScrollIndicator}
         className="hidden overflow-x-auto overflow-y-hidden rounded-xl border border-border bg-card md:block"
       >
-        <table className="w-full border-collapse whitespace-nowrap">
+        <table className="w-full border-collapse table-fixed">
           {props.children?.[0]}
           {props.isloading ? (
             <tbody>
@@ -164,12 +165,12 @@ const Table: FC<TableProps> = (props) => {
                   key={`${rowData.id ?? index}`}
                   className="odd:bg-muted/70 even:bg-transparent"
                 >
-                  <td className="border-b border-border px-3.5 py-3">
+                  <td className="border-b border-border px-3.5 py-3 w-16">
                     {startIndex + index + 1}
                   </td>
                   {props.columnOrder.map((column) => (
                     <td
-                      className="border-b border-border px-3.5 py-3"
+                      className={`border-b border-border px-3.5 py-3 break-words ${column.width || ""}`}
                       key={column.column}
                     >
                       {(() => {
@@ -190,7 +191,7 @@ const Table: FC<TableProps> = (props) => {
                   ))}
                   {props.id?.map((column) => (
                     <td
-                      className="border-b border-border px-3.5 py-3"
+                      className="border-b border-border px-3.5 py-3 w-32"
                       key={column}
                     >
                       <div className="flex items-center justify-end gap-1">

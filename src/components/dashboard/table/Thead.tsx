@@ -4,6 +4,7 @@ type Column = {
   column: string;
   Label: string;
   isSortable: boolean;
+  width?: string;
 };
 
 interface TableHeadProps {
@@ -22,12 +23,12 @@ const THead = ({
   return (
     <thead>
       <tr>
-        <th className="border-b border-border px-3.5 py-3 text-left text-sm font-bold uppercase tracking-wider">
+        <th className="border-b border-border px-3.5 py-3 text-left text-sm font-bold uppercase tracking-wider w-16">
           Sl.no
         </th>
         {columnOrder.map((column) => (
           <th
-            className="border-b border-border px-3.5 py-3 text-left text-sm font-bold tracking-wider"
+            className={`border-b border-border px-3.5 py-3 text-left text-sm font-bold tracking-wider ${column.width || ""}`}
             key={column.column}
           >
             <div className="flex items-center gap-2">
@@ -50,7 +51,7 @@ const THead = ({
           </th>
         )}
         {action && (
-          <th className="border-b border-border px-3.5 py-3 text-left text-sm font-bold tracking-wider">
+          <th className="border-b border-border px-3.5 py-3 text-left text-sm font-bold tracking-wider w-32">
             Action
           </th>
         )}

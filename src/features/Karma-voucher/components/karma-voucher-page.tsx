@@ -91,9 +91,8 @@ function KarmaVoucherContent() {
             searchSize="md"
             searchPosition="right"
           />
-          {/* biome-ignore lint/suspicious/noExplicitAny: Table expects Data[] which has index signature, KarmaVoucher doesn't */}
           <Table
-            rows={rows as any[]}
+            rows={rows as unknown as Data[]}
             isloading={isLoading}
             page={currentPage}
             perPage={perPage}

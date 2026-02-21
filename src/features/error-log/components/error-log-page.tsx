@@ -46,12 +46,17 @@ const LOG_TYPES: { type: LogType; label: string }[] = [
 ];
 
 const COLUMN_ORDER = [
-  { column: "type", Label: "Type", isSortable: false },
-  { column: "message", Label: "Message", isSortable: false },
-  { column: "method", Label: "Method", isSortable: false },
-  { column: "path", Label: "Path", isSortable: false },
-  { column: "timestamp", Label: "Timestamp", isSortable: false },
-  { column: "muid", Label: "MUID", isSortable: false },
+  { column: "type", Label: "Type", isSortable: false, width: "w-32" },
+  {
+    column: "message",
+    Label: "Message",
+    isSortable: false,
+    width: "w-[500px]",
+  },
+  { column: "method", Label: "Method", isSortable: false, width: "w-24" },
+  { column: "path", Label: "Path", isSortable: false, width: "w-80" },
+  { column: "timestamp", Label: "Timestamp", isSortable: false, width: "w-48" },
+  { column: "muid", Label: "MUID", isSortable: false, width: "w-64" },
 ];
 
 // ============================================
