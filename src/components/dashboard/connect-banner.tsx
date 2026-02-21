@@ -6,8 +6,8 @@ import {
   DiscordConnectDialog,
   QsverseConnectDialog,
   useQsverseInfo,
-  useUserInfo,
 } from "@/features/connect";
+import { useUserInfo } from "@/features/auth";
 import { useUIStore } from "@/stores/ui-store";
 import { Spinner } from "../ui/spinner";
 
@@ -20,7 +20,7 @@ export function ConnectAccountsBanner() {
     (state) => state.dismissConnectBanner,
   );
   const user = useUserInfo();
-  const qsverse = useQsverseInfo();
+  const qsverse = useQsverseInfo(user.data?.muid);
   const [isQsverseDialogOpen, setIsQsverseDialogOpen] = useState(false);
   const [isDiscordDialogOpen, setIsDiscordDialogOpen] = useState(false);
   const ALLOWED_ROUTES = ["/dashboard/profile", "/dashboard/mujourney"];

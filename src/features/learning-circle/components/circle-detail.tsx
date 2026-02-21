@@ -93,7 +93,7 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
       </Link>
 
       {/* Header Card */}
-      <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-blue-500 to-indigo-600 p-6 text-white shadow-lg">
+      <div className="relative overflow-hidden rounded-2xl bg-primary p-6 text-white shadow-lg">
         {/* Decorative elements */}
         <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
         <div className="absolute -bottom-10 -left-10 h-32 w-32 rounded-full bg-white/10 blur-xl" />

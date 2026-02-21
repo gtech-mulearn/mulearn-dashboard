@@ -8,6 +8,7 @@
 
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { ApiError } from "@/api";
 import { RegisterForm, useRegister } from "@/features/auth";
 
 interface RegisterClientProps {
@@ -44,8 +45,12 @@ export function RegisterClient({
         ? `/onboarding/organization?ruri=${redirectUri}`
         : "/onboarding/organization";
       router.push(redirectPath);
-    } catch (_error) {
-      toast.error("Registration failed. Please try again.");
+    } catch (error) {
+      const message =
+        error instanceof ApiError
+          ? error.message
+          : "Registration failed. Please try again.";
+      toast.error(message);
     }
   };
 

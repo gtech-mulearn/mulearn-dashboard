@@ -1,6 +1,4 @@
 "use client";
-import type React from "react";
-import { useState, useEffect } from "react";
 import {
   AlertCircle,
   ChevronLeft,
@@ -11,6 +9,8 @@ import {
   Trophy,
   X,
 } from "lucide-react";
+import type React from "react";
+import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { UnifiedCourse } from "../schemas/courses.schemas";

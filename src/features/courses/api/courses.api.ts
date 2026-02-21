@@ -1,14 +1,13 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
-import axios from "axios";
 import {
   EnrollmentResponseSchema,
   type IntegrationTokenResponse,
   IntegrationTokenSchema,
   OpenGradCoursesResponseSchema,
   WadhwaniCoursesResponseSchema,
-  WadhwaniSheetResponseSchema,
   type WadhwaniSheetCourse,
+  WadhwaniSheetResponseSchema,
 } from "../schemas/courses.schemas";
 
 // ==========================================
@@ -27,7 +26,7 @@ export const fetchWadhwaniToken =
 export const fetchWadhwaniCourses = async (token: string) => {
   return apiClient.post(
     endpoints.integrations.wadhwani.courses,
-    { token },
+    { "Client-Auth-Token": token },
     WadhwaniCoursesResponseSchema,
   );
 };
@@ -38,7 +37,7 @@ export const enrollWadhwaniUser = async (
 ) => {
   return apiClient.post(
     endpoints.integrations.wadhwani.enroll,
-    { token, course_root_id: courseRootId },
+    { "Client-Auth-Token": token, course_root_id: courseRootId },
     EnrollmentResponseSchema,
   );
 };
@@ -46,8 +45,9 @@ export const enrollWadhwaniUser = async (
 export const fetchWadhwaniSheetData = async (): Promise<
   WadhwaniSheetCourse[]
 > => {
-  const response = await axios.get(endpoints.integrations.wadhwani.sheet);
-  return WadhwaniSheetResponseSchema.parse(response.data);
+  const response = await fetch(endpoints.integrations.wadhwani.sheet);
+  const data = await response.json();
+  return WadhwaniSheetResponseSchema.parse(data);
 };
 
 // ==========================================

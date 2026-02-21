@@ -6,16 +6,17 @@ import {
   fetchOpenGradToken,
 } from "../api/courses.api";
 import type { UnifiedCourse } from "../schemas/courses.schemas";
+import { courseKeys } from "./query-keys";
 
 export const useOpenGradCourses = () => {
   const tokenQuery = useQuery({
-    queryKey: ["opengrad", "token"],
+    queryKey: courseKeys.opengrad.token(),
     queryFn: fetchOpenGradToken,
     staleTime: 1000 * 60 * 5,
   });
 
   const coursesQuery = useQuery({
-    queryKey: ["opengrad", "courses", tokenQuery.data?.access_token],
+    queryKey: courseKeys.opengrad.list(tokenQuery.data?.access_token),
     queryFn: () =>
       fetchOpenGradCourses(tokenQuery.data?.access_token as string),
     enabled: !!tokenQuery.data?.access_token,
