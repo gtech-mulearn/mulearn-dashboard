@@ -7,8 +7,9 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { createOrganization, selectOrganization } from "../api";
+import { createCompany, createOrganization, selectOrganization } from "../api";
 import type {
+  CreateCompanyRequest,
   CreateOrganizationRequest,
   SelectOrganizationRequest,
 } from "../schemas";
@@ -22,6 +23,14 @@ export function useSelectOrganization() {
       const response = await selectOrganization(data);
       return response;
     },
+    onError: (error) => {
+      console.error("[useSelectOrganization] Error:", error);
+      console.error("[useSelectOrganization] Error details:", {
+        message: error instanceof Error ? error.message : "Unknown error",
+        stack: error instanceof Error ? error.stack : undefined,
+        fullError: error,
+      });
+    },
   });
 }
 
@@ -33,6 +42,34 @@ export function useCreateOrganization() {
     mutationFn: async (data: CreateOrganizationRequest) => {
       const response = await createOrganization(data);
       return response;
+    },
+    onError: (error) => {
+      console.error("[useCreateOrganization] Error:", error);
+      console.error("[useCreateOrganization] Error details:", {
+        message: error instanceof Error ? error.message : "Unknown error",
+        stack: error instanceof Error ? error.stack : undefined,
+        fullError: error,
+      });
+    },
+  });
+}
+
+/**
+ * Hook for creating a new company
+ */
+export function useCreateCompany() {
+  return useMutation({
+    mutationFn: async (data: CreateCompanyRequest) => {
+      const response = await createCompany(data);
+      return response;
+    },
+    onError: (error) => {
+      console.error("[useCreateCompany] Error:", error);
+      console.error("[useCreateCompany] Error details:", {
+        message: error instanceof Error ? error.message : "Unknown error",
+        stack: error instanceof Error ? error.stack : undefined,
+        fullError: error,
+      });
     },
   });
 }

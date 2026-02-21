@@ -40,9 +40,9 @@ function triggerBlobDownload(blob: Blob, filename: string): void {
 }
 
 export function useDownloadLogFile() {
-  return useMutation({
-    mutationFn: (type: LogType) => downloadLogFile(type),
-    onSuccess: (blob: Blob, type: LogType) => {
+  return useMutation<Blob, Error, LogType>({
+    mutationFn: downloadLogFile,
+    onSuccess: (blob, type) => {
       triggerBlobDownload(blob, `${type}-log.log`);
       toast.success(`Downloaded ${type} log file`);
     },
@@ -61,7 +61,7 @@ export function useClearLog() {
 
   return useMutation({
     mutationFn: (type: LogType) => clearLog(type),
-    onSuccess: (_data: void, type: LogType) => {
+    onSuccess: (_data, type: LogType) => {
       queryClient.invalidateQueries({ queryKey: errorLogKeys.list() });
       toast.success(`${capitalize(type)} logs cleared`);
     },

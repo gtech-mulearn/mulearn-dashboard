@@ -15,9 +15,9 @@
  * - No DOM manipulation for blob download
  */
 
+import type { z } from "zod";
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
-import type { z } from "zod";
 import {
   EmptyResponseSchema,
   ErrorLogListResponseSchema,
@@ -48,12 +48,22 @@ function extractAndValidate<T>(raw: unknown, innerSchema: z.ZodType<T>): T {
       const fromResponse = innerSchema.safeParse(obj.response);
       if (fromResponse.success) return fromResponse.data;
     }
+
+    // 4. Empty object {} → treat as empty array (when schema expects array)
+    const isEmpty = Object.keys(obj).length === 0;
+    if (isEmpty) {
+      const emptyArray = innerSchema.safeParse([]);
+      if (emptyArray.success) return emptyArray.data;
+    }
   }
 
-  console.error("❌ Error-log inner schema mismatch", {
-    received: raw,
-    directError: direct.error?.format(),
-  });
+  // Only log error in development
+  if (process.env.NODE_ENV === "development") {
+    console.error("❌ Error-log inner schema mismatch", {
+      received: raw,
+      directError: direct.error?.format(),
+    });
+  }
   throw new Error("Unexpected API response shape from error-log endpoint");
 }
 

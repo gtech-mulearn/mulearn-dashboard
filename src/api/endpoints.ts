@@ -71,6 +71,8 @@ export const endpoints = {
     selectOrganization: "/api/v1/dashboard/user/organization/",
     /** POST - Create new organization if not in list */
     createOrganization: "/api/v1/register/organization/create/",
+    /** POST - Create new company */
+    createCompany: "/api/v1/register/company/create/",
     /** POST - Select learning domains/pathways */
     selectDomains: "/api/v1/register/select-domains/",
     /** POST - Select end goals */
@@ -205,6 +207,37 @@ export const endpoints = {
       `/api/v1/dashboard/achievement/list/user/${muid}/`,
     /** POST - Issue VC and save URL */
     issueVC: "/api/v1/dashboard/achievement/issue-vc/",
+
+    /** GET - List all achievements */
+    list: "/api/v1/dashboard/achievement/list/",
+    /** POST - Create new achievement */
+    create: "/api/v1/dashboard/achievement/create/",
+    /** PUT - Update achievement */
+    update: (id: string) => `/api/v1/dashboard/achievement/update/${id}/`,
+    /** DELETE - Delete achievement */
+    delete: (id: string) => `/api/v1/dashboard/achievement/delete/${id}/`,
+
+    /** GET - Rules Engine */
+    rules: "/api/v1/dashboard/achievement/rules/",
+    createRule: "/api/v1/dashboard/achievement/rules/create/",
+    deactivateRule: (ruleId: string) =>
+      `/api/v1/dashboard/achievement/rules/${ruleId}/deactivate/`,
+
+    /** Simulation */
+    simulate: (muid: string) =>
+      `/api/v1/dashboard/achievement/simulate/${muid}/`,
+    debug: (muid: string, achievementId: string) =>
+      `/api/v1/dashboard/achievement/debug/${muid}/${achievementId}/`,
+
+    /** Manual Issue / Revoke */
+    manualIssue: "/api/v1/dashboard/achievement/manual-issue/",
+    revoke: "/api/v1/dashboard/achievement/revoke/",
+
+    /** Audit & Logs */
+    auditLogs: (muid: string) => `/api/v1/dashboard/achievement/audit/${muid}/`,
+    bulkIssue: "/api/v1/dashboard/achievement/bulk-issue/",
+    bulkIssueTemplate: "/api/v1/dashboard/achievement/bulk-issue/template/",
+    issuedLog: "/api/v1/dashboard/achievement/issued-log/",
   },
 
   // ============================================
@@ -390,6 +423,18 @@ export const endpoints = {
       deleteDynamicUser: (id: string) =>
         `/api/v1/dashboard/dynamic-management/dynamic-user/delete/${id}/`,
     },
+    karmaVoucher: {
+      /** GET - List karma vouchers (paginated, sortable, searchable) */
+      list: "/api/v1/dashboard/karma-voucher/",
+      /** DELETE - Delete a karma voucher */
+      delete: (id: string) => `/api/v1/dashboard/karma-voucher/delete/${id}/`,
+      /** GET - Export voucher log as CSV */
+      exportCSV: "/api/v1/dashboard/karma-voucher/export/",
+      /** POST - Bulk import vouchers via XLSX */
+      import: "/api/v1/dashboard/karma-voucher/import/",
+      /** GET - Download XLSX import template */
+      template: "/api/v1/dashboard/karma-voucher/base-template/",
+    },
   },
 
   // ============================================
@@ -421,21 +466,6 @@ export const endpoints = {
     /** GET - Search locations */
     locationSearch: (param: string) =>
       `/api/v1/register/location/?q=${param || "india"}`,
-  },
-
-  admin: {
-    karmaVoucher: {
-      /** GET - List karma vouchers (paginated, sortable, searchable) */
-      list: "/api/v1/dashboard/karma-voucher/",
-      /** DELETE - Delete a karma voucher */
-      delete: (id: string) => `/api/v1/dashboard/karma-voucher/delete/${id}/`,
-      /** GET - Export voucher log as CSV */
-      exportCSV: "/api/v1/dashboard/karma-voucher/export/",
-      /** POST - Bulk import vouchers via XLSX */
-      import: "/api/v1/dashboard/karma-voucher/import/",
-      /** GET - Download XLSX import template */
-      template: "/api/v1/dashboard/karma-voucher/base-template/",
-    },
   },
 } as const;
 

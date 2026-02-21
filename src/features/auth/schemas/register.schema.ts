@@ -64,6 +64,10 @@ export const RegisterRequestSchema = z.object({
   dob: z.string().optional(),
   communities: z.array(z.string()).optional(),
   integration: IntegrationDataSchema.optional(),
+  role: z.string().optional(),
+  organization: z.string().optional(),
+  department: z.string().optional(),
+  graduation_year: z.number().optional(),
 });
 
 /**

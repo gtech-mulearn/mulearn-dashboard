@@ -1,16 +1,21 @@
-import { useQuery } from "@tanstack/react-query";
-import { fetchKarmaVouchers } from "../api/karma-voucher.api";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import {
+  fetchKarmaVouchers,
+  type KarmaVoucherListParams,
+} from "../api/karma-voucher.api";
+import { karmaVoucherKeys } from "./query-keys";
 
-export function useKarmaVouchers(
-  token: string,
-  page: number,
-  perPage: number,
-  search?: string,
-  sortBy?: string,
-) {
-  return useQuery({
-    queryKey: ["karma-vouchers", { page, perPage, search, sortBy }],
-    queryFn: () => fetchKarmaVouchers(token, page, perPage, search, sortBy),
-    placeholderData: (previousData) => previousData,
-  });
+export function getKarmaVouchersQueryOptions(params: KarmaVoucherListParams) {
+  return {
+    queryKey: karmaVoucherKeys.list(params),
+    queryFn: () => fetchKarmaVouchers(params),
+    placeholderData: keepPreviousData,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  } as const;
+}
+
+export function useKarmaVouchers(params: KarmaVoucherListParams) {
+  return useQuery(getKarmaVouchersQueryOptions(params));
 }

@@ -9,9 +9,9 @@
  * This makes us immune to variations in the Django outer wrapper structure.
  */
 
+import { z } from "zod";
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
-import { z } from "zod";
 import type {
   DynamicRolesGroup,
   DynamicUsersGroup,
