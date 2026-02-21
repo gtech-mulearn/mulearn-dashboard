@@ -48,7 +48,7 @@ function extractDjangoMessage(data: unknown): string | null {
 // ─── Headers ────────────────────────────────────────────────────────────────
 
 const BASE_HEADERS: Record<string, string> = {
-  "Content-Type": "application/json;",
+  "Content-Type": "application/json",
 };
 
 function getAuthHeaders(): Record<string, string> {
@@ -191,12 +191,12 @@ async function request<T>(
   if (options.schema) {
     const parsed = options.schema.safeParse(rawData);
     if (!parsed.success) {
+      const errorDetails = JSON.stringify(parsed.error.flatten());
       console.error("❌ API schema mismatch", {
-        endpoint,
-        errors: parsed.error.format(),
+        errors: parsed.error.flatten(),
         rawData,
       });
-      throw new Error("Invalid API response");
+      throw new Error(`API schema mismatch ${errorDetails}`);
     }
     return parsed.data;
   }

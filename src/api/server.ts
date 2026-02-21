@@ -43,7 +43,7 @@ function getBaseUrl(): string {
 }
 
 const BASE_HEADERS: Record<string, string> = {
-  "Content-Type": "application/json; charset=utf-8",
+  "Content-Type": "application/json",
 };
 
 async function getAuthHeaders(): Promise<Record<string, string>> {

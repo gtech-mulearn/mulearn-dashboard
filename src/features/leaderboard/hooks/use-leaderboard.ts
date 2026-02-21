@@ -43,6 +43,7 @@ export function useLeaderboard(
         return await fetchWadhwaniLeaderboard(campus);
       return await fetchStudentLeaderboard(monthly);
     },
+    // biome-ignore lint/suspicious/noExplicitAny: Raw API response needs generic access
     select: (data: any[]): LeaderboardEntry[] => {
       if (category === "campus") {
         return data.map((item, index) => ({
