@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { SimulationResult } from "../schemas";
-import { useSimulation } from "../hooks/use-achievements";
 import { debugAchievement } from "../api";
+import { useSimulation } from "../hooks/use-achievements";
+import type { SimulationResult } from "../schemas";
 
 function ProgressBar({ value }: { value: number }) {
   return (

@@ -5,11 +5,6 @@ import * as React from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
-  AchievementFormSchema,
-  type AchievementFormValues,
-  type Achievement,
-} from "../schemas";
-import {
   Dialog,
   DialogContent,
   DialogFooter,
@@ -35,11 +30,16 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { LEVEL_OPTIONS } from "../constants/constants";
 import {
   useCreateAchievement,
   useUpdateAchievement,
 } from "../hooks/use-achievement-mutations";
-import { LEVEL_OPTIONS } from "../constants/constants";
+import {
+  type Achievement,
+  AchievementFormSchema,
+  type AchievementFormValues,
+} from "../schemas";
 
 interface AchievementFormDialogProps {
   open: boolean;

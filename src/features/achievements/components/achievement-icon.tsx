@@ -1,6 +1,6 @@
 "use client";
-import Image from "next/image";
 import { Trophy } from "lucide-react";
+import Image from "next/image";
 
 interface AchievementIconProps {
   imageUrl?: string | null;

@@ -1,18 +1,19 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
+import {
+  type ColumnFiltersState,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
 import { PowerOff } from "lucide-react";
 import * as React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import {
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  useReactTable,
-  type ColumnFiltersState,
-} from "@tanstack/react-table";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -21,16 +22,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type { AchievementRule } from "../schemas";
 import { useDeactivateRule } from "../hooks/use-achievement-mutations";
 import { useRules } from "../hooks/use-achievement-rules";
+import type { AchievementRule } from "../schemas";
 
 export function RulesTable() {
   const { data: rules = [], isLoading } = useRules();

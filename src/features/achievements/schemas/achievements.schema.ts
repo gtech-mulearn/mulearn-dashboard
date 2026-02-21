@@ -126,10 +126,13 @@ export type RevokeRequest = z.infer<typeof RevokeRequestSchema>;
 
 export const AuditLogSchema = z.object({
   id: z.string().optional(),
-  user_id: z.string(),
-  action: z.string(),
+  achievement_id: z.string().optional(),
+  achievement_name: z.string().optional(),
+  action: z.string().optional(),
+  rule_version: z.number().optional(),
   metadata: z.record(z.string(), z.unknown()).optional(),
-  timestamp: z.string().optional(),
+  performed_by: z.string().nullable().optional(),
+  created_at: z.string().optional(),
 });
 
 export type AuditLog = z.infer<typeof AuditLogSchema>;

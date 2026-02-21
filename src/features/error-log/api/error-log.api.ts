@@ -15,9 +15,9 @@
  * - No DOM manipulation for blob download
  */
 
+import type { z } from "zod";
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
-import type { z } from "zod";
 import {
   EmptyResponseSchema,
   ErrorLogListResponseSchema,

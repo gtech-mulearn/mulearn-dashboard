@@ -2,12 +2,12 @@ import { X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useUserInfo } from "@/features/auth";
 import {
   DiscordConnectDialog,
   QsverseConnectDialog,
   useQsverseInfo,
 } from "@/features/connect";
-import { useUserInfo } from "@/features/auth";
 import { useUIStore } from "@/stores/ui-store";
 import { Spinner } from "../ui/spinner";
 

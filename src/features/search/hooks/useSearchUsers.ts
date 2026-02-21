@@ -4,8 +4,8 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { searchUsers } from "../api";
-import { searchKeys } from "./query-keys";
 import type { UserSearchData } from "../schemas";
+import { searchKeys } from "./query-keys";
 
 export function useSearchUsers(initialQuery = "") {
   const [searchQuery, setSearchQuery] = useState(initialQuery);

@@ -4,8 +4,8 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { searchMentors } from "../api";
-import { searchKeys } from "./query-keys";
 import type { UserSearchData } from "../schemas";
+import { searchKeys } from "./query-keys";
 
 export function useSearchMentors(initialQuery = "") {
   const [searchQuery, setSearchQuery] = useState(initialQuery);

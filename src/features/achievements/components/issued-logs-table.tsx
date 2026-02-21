@@ -5,12 +5,12 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useIssuedLogs } from "../hooks/use-achievement-logs";
-import { BulkIssueDialog } from "./bulk-issue-dialog";
 import {
   ISSUED_LOGS_HEADERS,
   ISSUED_LOGS_PAGE_SIZE,
 } from "../constants/constants";
+import { useIssuedLogs } from "../hooks/use-achievement-logs";
+import { BulkIssueDialog } from "./bulk-issue-dialog";
 
 export function IssuedLogsTable() {
   const [page, setPage] = React.useState(1);
