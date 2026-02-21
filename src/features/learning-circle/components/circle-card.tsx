@@ -3,90 +3,296 @@
  *
  * 📍 src/features/learning-circle/components/circle-card.tsx
  *
- * Individual learning circle card with hover effects.
+ * Bold widget-style cards with distinct category backgrounds,
+ * decorative shapes, and strong visual hierarchy.
  */
 
 "use client";
 
-import { Users } from "lucide-react";
+import {
+  BarChart3,
+  Blocks,
+  Cloud,
+  Code2,
+  Cpu,
+  Database,
+  Globe,
+  Loader2,
+  Palette,
+  Plus,
+  Shield,
+  Smartphone,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
+import { useJoinCircle } from "../hooks";
 import type { LearningCircle } from "../schemas";
 
-// Gradient colors for visual variety
-const GRADIENT_CLASSES = [
-  "gradient-1",
-  "gradient-2",
-  "gradient-3",
-  "gradient-4",
-  "gradient-5",
-  "gradient-6",
+/* ─── Category theme system — bold, visible backgrounds ─── */
+
+interface CategoryTheme {
+  cardBg: string; // gradient for entire card
+  pillBg: string; // pill background
+  pillText: string;
+  accent: string; // raw hex for decorative shapes
+  titleHover: string; // hover color for title
+  icon: typeof Cloud;
+}
+
+const CATEGORY_THEMES: Record<string, CategoryTheme> = {
+  cloud: {
+    cardBg: "from-[#EEF4FF] via-[#F5F8FF] to-[#FAFCFF]",
+    pillBg: "bg-white/80 backdrop-blur-sm",
+    pillText: "text-[#3B82F6]",
+    accent: "#3B82F6",
+    titleHover: "group-hover:text-[#2563EB]",
+    icon: Cloud,
+  },
+  devops: {
+    cardBg: "from-[#EEF2FF] via-[#F5F3FF] to-[#FAF9FF]",
+    pillBg: "bg-white/80 backdrop-blur-sm",
+    pillText: "text-[#6366F1]",
+    accent: "#6366F1",
+    titleHover: "group-hover:text-[#4F46E5]",
+    icon: Cloud,
+  },
+  web: {
+    cardBg: "from-[#ECFDF5] via-[#F0FFF6] to-[#F9FFFC]",
+    pillBg: "bg-white/80 backdrop-blur-sm",
+    pillText: "text-[#059669]",
+    accent: "#059669",
+    titleHover: "group-hover:text-[#047857]",
+    icon: Code2,
+  },
+  product: {
+    cardBg: "from-[#F3EEFF] via-[#F8F5FF] to-[#FDFCFF]",
+    pillBg: "bg-white/80 backdrop-blur-sm",
+    pillText: "text-[#7C3AED]",
+    accent: "#7C3AED",
+    titleHover: "group-hover:text-[#6D28D9]",
+    icon: BarChart3,
+  },
+  design: {
+    cardBg: "from-[#FFF1E6] via-[#FFF8F2] to-[#FFFCF9]",
+    pillBg: "bg-white/80 backdrop-blur-sm",
+    pillText: "text-[#EA580C]",
+    accent: "#EA580C",
+    titleHover: "group-hover:text-[#C2410C]",
+    icon: Palette,
+  },
+  mobile: {
+    cardBg: "from-[#E6F7FF] via-[#F0FAFF] to-[#F9FDFF]",
+    pillBg: "bg-white/80 backdrop-blur-sm",
+    pillText: "text-[#0284C7]",
+    accent: "#0284C7",
+    titleHover: "group-hover:text-[#0369A1]",
+    icon: Smartphone,
+  },
+  ai: {
+    cardBg: "from-[#FDF2F8] via-[#FFF5FA] to-[#FFFAFC]",
+    pillBg: "bg-white/80 backdrop-blur-sm",
+    pillText: "text-[#DB2777]",
+    accent: "#DB2777",
+    titleHover: "group-hover:text-[#BE185D]",
+    icon: Cpu,
+  },
+  cyber: {
+    cardBg: "from-[#FEF2F2] via-[#FFF5F5] to-[#FFFAFA]",
+    pillBg: "bg-white/80 backdrop-blur-sm",
+    pillText: "text-[#DC2626]",
+    accent: "#DC2626",
+    titleHover: "group-hover:text-[#B91C1C]",
+    icon: Shield,
+  },
+  data: {
+    cardBg: "from-[#FEF9C3] via-[#FFFBEB] to-[#FFFEF5]",
+    pillBg: "bg-white/80 backdrop-blur-sm",
+    pillText: "text-[#CA8A04]",
+    accent: "#D97706",
+    titleHover: "group-hover:text-[#B45309]",
+    icon: Database,
+  },
+  iot: {
+    cardBg: "from-[#E6FFFA] via-[#F0FFFE] to-[#F9FFFE]",
+    pillBg: "bg-white/80 backdrop-blur-sm",
+    pillText: "text-[#0D9488]",
+    accent: "#0D9488",
+    titleHover: "group-hover:text-[#0F766E]",
+    icon: Blocks,
+  },
+};
+
+const DEFAULT_THEME: CategoryTheme = {
+  cardBg: "from-[#F3F4F6] via-[#F9FAFB] to-[#FEFEFE]",
+  pillBg: "bg-white/80 backdrop-blur-sm",
+  pillText: "text-[#374151]",
+  accent: "#6B7280",
+  titleHover: "group-hover:text-[#4F46E5]",
+  icon: Globe,
+};
+
+function getTheme(ig: string): CategoryTheme {
+  const lower = ig.toLowerCase();
+  for (const [key, theme] of Object.entries(CATEGORY_THEMES)) {
+    if (lower.includes(key)) return theme;
+  }
+  const themes = Object.values(CATEGORY_THEMES);
+  const hash = ig.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return themes[hash % themes.length] ?? DEFAULT_THEME;
+}
+
+/* ─── Stacked avatar placeholders ─── */
+
+const AVATAR_COLORS = [
+  "bg-[#C7D2FE]",
+  "bg-[#FDE68A]",
+  "bg-[#A7F3D0]",
+  "bg-[#FBCFE8]",
+  "bg-[#BAE6FD]",
 ];
 
-function getGradientClass(id: string): string {
-  const index =
-    id.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0) %
-    GRADIENT_CLASSES.length;
-  return GRADIENT_CLASSES[index];
+function StackedAvatars({ count }: { count: number }) {
+  if (count === 0) {
+    return (
+      <span className="flex items-center gap-1.5 text-[12px] font-medium text-[#9CA3AF]">
+        <Users className="h-3.5 w-3.5" />
+        No members
+      </span>
+    );
+  }
+
+  const shown = Math.min(count, 4);
+  const overflow = count - shown;
+
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex items-center">
+        {Array.from({ length: shown }).map((_, i) => (
+          <div
+            key={`avatar-placeholder-${String.fromCharCode(65 + i)}`}
+            className={`relative flex h-7 w-7 items-center justify-center rounded-full border-[2px] border-white text-[10px] font-bold text-[#374151] shadow-sm ${AVATAR_COLORS[i % AVATAR_COLORS.length]}`}
+            style={{ marginLeft: i > 0 ? "-6px" : "0", zIndex: shown - i }}
+          >
+            {String.fromCharCode(65 + i)}
+          </div>
+        ))}
+        {overflow > 0 && (
+          <div
+            className="relative flex h-7 w-7 items-center justify-center rounded-full border-[2px] border-white bg-[#1F2937] text-[10px] font-bold text-white shadow-sm"
+            style={{ marginLeft: "-6px", zIndex: 0 }}
+          >
+            +{overflow}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
+
+/* ─── Component ─── */
 
 interface CircleCardProps {
   circle: LearningCircle;
 }
 
 export function CircleCard({ circle }: CircleCardProps) {
-  const gradientClass = getGradientClass(circle.id);
+  const theme = getTheme(circle.ig);
+  const CategoryIcon = theme.icon;
+  const joinCircle = useJoinCircle();
+  const memberCount = circle.total_members || circle.attendees?.length || 0;
+
+  const handleJoin = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    joinCircle.mutate(circle.id);
+  };
 
   return (
     <Link href={`/dashboard/learning-circle/${circle.id}`}>
       <div
-        className={`group relative overflow-hidden rounded-2xl border border-gray-100 ${gradientClass} p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1`}
+        className={`group relative overflow-hidden rounded-[22px] bg-gradient-to-br ${theme.cardBg}
+          shadow-[0_2px_8px_rgba(0,0,0,0.06),0_0_1px_rgba(0,0,0,0.04)]
+          transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
+          hover:-translate-y-1.5 hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)]`}
+        style={{
+          fontFamily: "var(--font-inter), ui-sans-serif, system-ui, sans-serif",
+          fontFeatureSettings: "'cv02', 'cv03', 'cv04'",
+        }}
       >
-        {/* Decorative circles */}
-        <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-white/30 blur-2xl" />
-        <div className="absolute -bottom-4 -left-4 h-20 w-20 rounded-full bg-white/20 blur-xl" />
+        {/* Decorative background shapes */}
+        <div
+          className="pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full opacity-[0.07] blur-xl"
+          style={{ backgroundColor: theme.accent }}
+        />
+        <div
+          className="pointer-events-none absolute -bottom-4 -left-4 h-20 w-20 rounded-full opacity-[0.05] blur-lg"
+          style={{ backgroundColor: theme.accent }}
+        />
+        {/* Large watermark icon */}
+        <div className="pointer-events-none absolute bottom-3 right-3 opacity-[0.04]">
+          <CategoryIcon
+            className="h-20 w-20"
+            style={{ color: theme.accent }}
+            strokeWidth={1}
+          />
+        </div>
 
-        {/* Content */}
-        <div className="relative">
-          {/* IG Badge */}
-          <div className="mb-4 inline-flex items-center rounded-full bg-white/80 px-3 py-1 text-xs font-medium text-gray-700 shadow-sm backdrop-blur-sm">
-            {circle.ig}
+        <div className="relative p-5 pb-5">
+          {/* Header: Category pill + Join button */}
+          <div className="flex items-center justify-between">
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold tracking-wide uppercase shadow-sm ${theme.pillBg} ${theme.pillText}`}
+            >
+              <CategoryIcon className="h-3 w-3" />
+              {circle.ig}
+            </span>
+
+            <button
+              type="button"
+              onClick={handleJoin}
+              disabled={joinCircle.isPending}
+              className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full
+                bg-white/90 backdrop-blur-sm text-[#6B7280] shadow-sm
+                transition-all duration-200
+                hover:shadow-md hover:scale-110
+                active:scale-95 disabled:opacity-40"
+              title="Join circle"
+            >
+              {joinCircle.isPending ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Plus className="h-4 w-4" strokeWidth={2.5} />
+              )}
+            </button>
           </div>
 
-          {/* Title */}
-          <h3 className="mb-2 text-lg font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2">
+          {/* Circle name — large, bold */}
+          <h4
+            className={`mt-5 text-[18px] font-extrabold leading-snug tracking-[-0.02em] text-[#111827] line-clamp-2 transition-colors duration-200 ${theme.titleHover}`}
+          >
             {circle.title}
-          </h3>
+          </h4>
 
-          {/* Organization */}
-          <p className="mb-4 text-sm text-gray-600 line-clamp-1">
-            {circle.org || "No organization"}
-          </p>
+          {/* Separator — thin colored bar */}
+          <div
+            className="mt-3 h-[3px] w-10 rounded-full"
+            style={{ backgroundColor: theme.accent, opacity: 0.3 }}
+          />
 
-          {/* Footer */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-sm text-gray-500">
-              <Users className="h-4 w-4" />
-              <span>{circle.attendees?.length || 0} members</span>
-            </div>
-
-            {/* Arrow indicator */}
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-background/80 text-muted-foreground shadow-sm backdrop-blur-sm transition-all group-hover:bg-primary group-hover:text-primary-foreground">
-              <svg
-                role="img"
-                aria-label="Arrow Icon"
-                className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+          {/* Footer: Organization + member count + Stacked avatars */}
+          <div className="mt-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center rounded-lg bg-white/60 px-2 py-0.5 text-[11px] font-semibold text-[#6B7280] shadow-sm backdrop-blur-sm">
+                {circle.org || "Open"}
+              </span>
+              <span
+                className="text-[12px] font-bold"
+                style={{ color: theme.accent }}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
+                {memberCount} {memberCount === 1 ? "member" : "members"}
+              </span>
             </div>
+            <StackedAvatars count={memberCount} />
           </div>
         </div>
       </div>

@@ -264,6 +264,28 @@ export const endpoints = {
     delete: (id: string) => `/api/v1/dashboard/learningcircle/delete/${id}/`,
     /** GET - Get circle members */
     members: (id: string) => `/api/v1/dashboard/learningcircle/members/${id}/`,
+    /** POST - Accept/reject pending member */
+    membersAdd: (id: string) =>
+      `/api/v1/dashboard/learningcircle/members/add/${id}/`,
+    /** POST - Transfer lead role to a member */
+    transferLead: (id: string) =>
+      `/api/v1/dashboard/learningcircle/transfer-lead/${id}/`,
+    /** POST - Request to join a circle */
+    join: (id: string) => `/api/v1/dashboard/learningcircle/join/${id}/`,
+    /** GET - User's own circles */
+    userCircles: "/api/v1/dashboard/learningcircle/user-circles/",
+
+    // Invite Management
+    /** POST - Send an invite to a circle */
+    invite: (id: string) => `/api/v1/dashboard/learningcircle/invite/${id}/`,
+    /** GET - List sent invites for a circle */
+    inviteSent: (id: string) =>
+      `/api/v1/dashboard/learningcircle/invite/sent/${id}/`,
+    /** GET/POST - Current user's pending invites */
+    inviteStatus: "/api/v1/dashboard/learningcircle/invite/status/",
+    /** GET/POST - Invite by link_id */
+    inviteStatusByLink: (linkId: string) =>
+      `/api/v1/dashboard/learningcircle/invite/status/${linkId}/`,
 
     // Meeting Management
     /** POST - Create meeting for circle */
