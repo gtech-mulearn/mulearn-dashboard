@@ -28,14 +28,14 @@ export const UserInfoSchema = z.object({
 
 export const UserInfoResponseSchema = ApiResponseSchema(UserInfoSchema);
 
-export const QsverseInfoSchema = z.object({
+export const QseverseInfoSchema = z.object({
   dids: z.array(z.string()),
 });
 
-export const QsverseInfoResponseSchema = ApiResponseSchema(QsverseInfoSchema);
+export const QseverseInfoResponseSchema = ApiResponseSchema(QseverseInfoSchema);
 
 export type UserInfo = z.infer<typeof UserInfoSchema>;
 export type UserInfoResponse = z.infer<typeof UserInfoResponseSchema>;
 
-export type QsverseInfo = z.infer<typeof QsverseInfoSchema>;
-export type QsverseInfoResponse = z.infer<typeof QsverseInfoResponseSchema>;
+export type QseverseInfo = z.infer<typeof QseverseInfoSchema>;
+export type QseverseInfoResponse = z.infer<typeof QseverseInfoResponseSchema>;
