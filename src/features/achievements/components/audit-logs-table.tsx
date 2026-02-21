@@ -1,70 +1,19 @@
 "use client";
 
-import type { ColumnDef, Row } from "@tanstack/react-table";
 import { format } from "date-fns";
 import * as React from "react";
 import { Badge } from "@/components/ui/badge";
-import { DataTable } from "@/components/ui/data-table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { AuditLog } from "../schemas";
 import { useAuditLogs } from "../hooks/use-achievement-logs";
-
-const columns: ColumnDef<AuditLog>[] = [
-  {
-    accessorKey: "action",
-    header: "Action",
-    cell: ({ row }: { row: Row<AuditLog> }) => (
-      <Badge variant="secondary">{row.original.action}</Badge>
-    ),
-  },
-  {
-    accessorKey: "user_id",
-    header: "User ID",
-    cell: ({ row }: { row: Row<AuditLog> }) => (
-      <span className="font-mono text-xs">{row.original.user_id}</span>
-    ),
-  },
-  {
-    accessorKey: "timestamp",
-    header: "Timestamp",
-    cell: ({ row }: { row: Row<AuditLog> }) => {
-      const ts = row.original.timestamp;
-      if (!ts) return <span className="text-sm text-muted-foreground">—</span>;
-      try {
-        return (
-          <span className="text-sm text-muted-foreground">
-            {format(new Date(ts), "dd MMM yyyy, HH:mm:ss")}
-          </span>
-        );
-      } catch {
-        return <span className="text-sm text-muted-foreground">—</span>;
-      }
-    },
-  },
-  {
-    id: "metadata",
-    header: "Details",
-    cell: ({ row }: { row: Row<AuditLog> }) => {
-      const meta = row.original.metadata ?? {};
-      const keys = Object.keys(meta);
-      if (keys.length === 0)
-        return <span className="text-muted-foreground text-xs">—</span>;
-      return (
-        <div className="max-w-xs truncate text-xs text-muted-foreground">
-          {keys.slice(0, 3).map((k) => (
-            <span key={k} className="mr-2">
-              <span className="font-medium">{k}:</span>{" "}
-              {String(meta[k]).slice(0, 30)}
-            </span>
-          ))}
-          {keys.length > 3 && <span>+{keys.length - 3} more</span>}
-        </div>
-      );
-    },
-    enableSorting: false,
-  },
-];
 
 export function AuditLogsTable() {
   const [muid, setMuid] = React.useState("");
@@ -74,6 +23,19 @@ export function AuditLogsTable() {
 
   const handleSearch = () => {
     if (muid.trim()) setActiveMuid(muid.trim());
+  };
+
+  const renderTimestamp = (ts: string | undefined) => {
+    if (!ts) return <span className="text-sm text-muted-foreground">—</span>;
+    try {
+      return (
+        <span className="text-sm text-muted-foreground">
+          {format(new Date(ts), "dd MMM yyyy, HH:mm:ss")}
+        </span>
+      );
+    } catch {
+      return <span className="text-sm text-muted-foreground">—</span>;
+    }
   };
 
   return (
@@ -114,13 +76,65 @@ export function AuditLogsTable() {
             ))}
           </div>
         ) : (
-          <DataTable
-            columns={columns}
-            data={logs}
-            searchKey="action"
-            searchPlaceholder="Filter by action..."
-            isLoading={false}
-          />
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Action</TableHead>
+                  <TableHead>User ID</TableHead>
+                  <TableHead>Timestamp</TableHead>
+                  <TableHead>Details</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {logs.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="h-24 text-center">
+                      No results.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  logs.map((log, index) => {
+                    const meta = log.metadata ?? {};
+                    const keys = Object.keys(meta);
+
+                    return (
+                      <TableRow key={log.id ?? index}>
+                        <TableCell>
+                          <Badge variant="secondary">{log.action}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <span className="font-mono text-xs">
+                            {log.user_id}
+                          </span>
+                        </TableCell>
+                        <TableCell>{renderTimestamp(log.timestamp)}</TableCell>
+                        <TableCell>
+                          {keys.length === 0 ? (
+                            <span className="text-muted-foreground text-xs">
+                              —
+                            </span>
+                          ) : (
+                            <div className="max-w-xs truncate text-xs text-muted-foreground">
+                              {keys.slice(0, 3).map((k) => (
+                                <span key={k} className="mr-2">
+                                  <span className="font-medium">{k}:</span>{" "}
+                                  {String(meta[k]).slice(0, 30)}
+                                </span>
+                              ))}
+                              {keys.length > 3 && (
+                                <span>+{keys.length - 3} more</span>
+                              )}
+                            </div>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
         ))}
     </div>
   );

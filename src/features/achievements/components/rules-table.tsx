@@ -6,7 +6,22 @@ import * as React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { DataTable } from "@/components/ui/data-table";
+import {
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  useReactTable,
+  type ColumnFiltersState,
+} from "@tanstack/react-table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
 import {
   Tooltip,
   TooltipContent,
@@ -21,6 +36,9 @@ export function RulesTable() {
   const { data: rules = [], isLoading } = useRules();
   const deactivateMutation = useDeactivateRule();
   const [target, setTarget] = React.useState<AchievementRule | null>(null);
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    [],
+  );
 
   const handleDeactivate = () => {
     if (!target) return;
@@ -96,6 +114,17 @@ export function RulesTable() {
     },
   ];
 
+  const table = useReactTable({
+    data: rules,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    onColumnFiltersChange: setColumnFilters,
+    state: {
+      columnFilters,
+    },
+  });
+
   return (
     <div className="space-y-4" data-testid="rules-table">
       <div>
@@ -105,13 +134,78 @@ export function RulesTable() {
         </p>
       </div>
 
-      <DataTable
-        columns={columns}
-        data={rules}
-        searchKey="rule_type"
-        searchPlaceholder="Search rules..."
-        isLoading={isLoading}
-      />
+      <div className="flex items-center py-4">
+        <Input
+          placeholder="Search rules..."
+          value={
+            (table.getColumn("rule_type")?.getFilterValue() as string) ?? ""
+          }
+          onChange={(event) =>
+            table.getColumn("rule_type")?.setFilterValue(event.target.value)
+          }
+          className="max-w-sm"
+        />
+      </div>
+
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                    </TableHead>
+                  );
+                })}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  Loading rules...
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  No results.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
       <ConfirmDialog
         open={Boolean(target)}
