@@ -6,7 +6,10 @@ import { connectKeys } from "./query-keys";
 export function useQsverseInfo(muid?: string) {
   return useQuery<QsverseInfo>({
     queryKey: connectKeys.qsverse(muid),
-    queryFn: () => fetchQsverseInfo(muid!),
+    queryFn: () => {
+      if (!muid) throw new Error("muid is required");
+      return fetchQsverseInfo(muid);
+    },
     enabled: !!muid,
   });
 }

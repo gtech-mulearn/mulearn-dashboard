@@ -344,6 +344,16 @@ export const endpoints = {
   // Admin Endpoints
   // ============================================
   admin: {
+    errorLog: {
+      /** GET - List all error log entries */
+      list: "/api/v1/dashboard/error-log/",
+      /** GET - Download log file by type (error, root, request), returns Blob */
+      download: (type: string) => `/api/v1/dashboard/error-log/${type}/`,
+      /** POST - Clear all logs of a given type */
+      clear: (type: string) => `/api/v1/dashboard/error-log/clear/${type}/`,
+      /** PATCH - Dismiss / delete a single log entry */
+      dismiss: (id: string) => `/api/v1/dashboard/error-log/patch/${id}`,
+    },
     dynamicType: {
       /** GET - List available roles for select dropdown */
       roles: "/api/v1/dashboard/dynamic-management/roles/",
