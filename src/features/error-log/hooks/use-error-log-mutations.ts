@@ -61,7 +61,7 @@ export function useClearLog() {
 
   return useMutation({
     mutationFn: (type: LogType) => clearLog(type),
-    onSuccess: (_data: void, type: LogType) => {
+    onSuccess: (_data, type: LogType) => {
       queryClient.invalidateQueries({ queryKey: errorLogKeys.list() });
       toast.success(`${capitalize(type)} logs cleared`);
     },

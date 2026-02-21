@@ -386,6 +386,18 @@ export const endpoints = {
       deleteDynamicUser: (id: string) =>
         `/api/v1/dashboard/dynamic-management/dynamic-user/delete/${id}/`,
     },
+    karmaVoucher: {
+      /** GET - List karma vouchers (paginated, sortable, searchable) */
+      list: "/api/v1/dashboard/karma-voucher/",
+      /** DELETE - Delete a karma voucher */
+      delete: (id: string) => `/api/v1/dashboard/karma-voucher/delete/${id}/`,
+      /** GET - Export voucher log as CSV */
+      exportCSV: "/api/v1/dashboard/karma-voucher/export/",
+      /** POST - Bulk import vouchers via XLSX */
+      import: "/api/v1/dashboard/karma-voucher/import/",
+      /** GET - Download XLSX import template */
+      template: "/api/v1/dashboard/karma-voucher/base-template/",
+    },
   },
 
   // ============================================
@@ -417,21 +429,6 @@ export const endpoints = {
     /** GET - Search locations */
     locationSearch: (param: string) =>
       `/api/v1/register/location/?q=${param || "india"}`,
-  },
-
-  admin: {
-    karmaVoucher: {
-      /** GET - List karma vouchers (paginated, sortable, searchable) */
-      list: "/api/v1/dashboard/karma-voucher/",
-      /** DELETE - Delete a karma voucher */
-      delete: (id: string) => `/api/v1/dashboard/karma-voucher/delete/${id}/`,
-      /** GET - Export voucher log as CSV */
-      exportCSV: "/api/v1/dashboard/karma-voucher/export/",
-      /** POST - Bulk import vouchers via XLSX */
-      import: "/api/v1/dashboard/karma-voucher/import/",
-      /** GET - Download XLSX import template */
-      template: "/api/v1/dashboard/karma-voucher/base-template/",
-    },
   },
 } as const;
 

@@ -6,8 +6,10 @@
  * Zod schemas for the System Error Log feature.
  *
  * The raw API response has:
- *   - timestamp: number[]  (UTC parts: [year, month, day, hour, min, sec, ...])
- *   - auth: { muid: string }[]
+ *   - timestamp: string[] (array of ISO datetime strings for multiple occurrences)
+ *   - auth: { muid: string }[] (optional)
+ *   - type, message, method, path: string[] (single-element arrays)
+ *   - body, traceback: unknown[] (optional additional data)
  *
  * Flattening happens in useQuery `select`, NOT in the API layer.
  */
@@ -41,14 +43,25 @@ export type LogType = z.infer<typeof LogTypeSchema>;
 
 export const ErrorLogRawEntrySchema = z.object({
   id: z.string(),
-  type: z.string(),
-  message: z.string(),
-  method: z.string(),
-  path: z.string(),
-  /** UTC component array: [year, month, day, hour, minute, second, nanosecond] */
-  timestamp: z.array(z.number()),
+  /** Backend returns as single-element array ["error"] */
+  type: z.union([z.string(), z.array(z.string())]),
+  /** Backend returns as single-element array ["message text"] */
+  message: z.union([z.string(), z.array(z.string())]),
+  /** Backend returns as single-element array ["GET"] */
+  method: z.union([z.string(), z.array(z.string())]),
+  /** Backend returns as single-element array ["/api/path"] */
+  path: z.union([z.string(), z.array(z.string())]),
+  /** Array of ISO datetime strings (multiple occurrences) */
+  timestamp: z.array(z.string()),
   /** Authenticated users associated with the request */
-  auth: z.array(z.object({ muid: z.string() })),
+  auth: z
+    .array(z.object({ muid: z.string() }))
+    .optional()
+    .default([]),
+  /** Request body data (optional) */
+  body: z.unknown().optional(),
+  /** Stack trace data (optional) */
+  traceback: z.unknown().optional(),
 });
 export type ErrorLogRawEntry = z.infer<typeof ErrorLogRawEntrySchema>;
 
@@ -77,23 +90,36 @@ export type ErrorLogEntry = z.infer<typeof ErrorLogEntrySchema>;
 // ============================================
 
 /**
- * Convert raw timestamp number array to a human-readable string.
- * Array format: [year, month (1-based), day, hour, minute, second, nanosecond?]
+ * Convert ISO timestamp array to a human-readable string.
+ * Takes the first (most recent) timestamp from the array.
+ * Array format: ["2026-02-21T10:20:22.010000", ...]
  */
-export function formatTimestamp(ts: number[]): string {
-  if (!ts || ts.length < 6) return "—";
-  const [year, month, day, hour, minute, second] = ts;
-  // month is 1-based in the Django response
-  const date = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
-  return date.toLocaleString("en-IN", {
-    year: "numeric",
-    month: "short",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false,
-  });
+export function formatTimestamp(timestamps: string[]): string {
+  if (!timestamps || timestamps.length === 0) return "—";
+
+  try {
+    const isoString = timestamps[0];
+    const date = new Date(isoString);
+
+    return date.toLocaleString("en-IN", {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    });
+  } catch {
+    return "—";
+  }
+}
+
+/**
+ * Helper: extract string from string or single-element array
+ */
+function extractString(value: string | string[]): string {
+  return Array.isArray(value) ? value[0] || "—" : value;
 }
 
 /**
@@ -103,11 +129,11 @@ export function formatTimestamp(ts: number[]): string {
 export function transformErrorLogEntry(raw: ErrorLogRawEntry): ErrorLogEntry {
   return {
     id: raw.id,
-    type: raw.type,
-    message: raw.message,
-    method: raw.method,
-    path: raw.path,
+    type: extractString(raw.type),
+    message: extractString(raw.message),
+    method: extractString(raw.method),
+    path: extractString(raw.path),
     timestamp: formatTimestamp(raw.timestamp),
-    muid: raw.auth.map((a) => a.muid).join(", ") || "—",
+    muid: raw.auth?.map((a) => a.muid).join(", ") || "—",
   };
 }
