@@ -11,7 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
-import { useUserInfo } from "@/features/connect";
+import { useUserInfo } from "@/features/auth";
 
 type Props = {
   open: boolean;

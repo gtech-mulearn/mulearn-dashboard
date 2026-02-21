@@ -1,23 +1,19 @@
 "use client";
 
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { useDebounce } from "@/hooks/use-debounce";
 import { searchMentors } from "../api";
+import { searchKeys } from "./query-keys";
+import type { UserSearchData } from "../schemas";
 
 export function useSearchMentors(initialQuery = "") {
-  const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
   const [searchQuery, setSearchQuery] = useState(initialQuery);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedQuery(searchQuery);
-    }, 800);
-
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+  const debouncedQuery = useDebounce(searchQuery, 800);
 
   const query = useInfiniteQuery({
-    queryKey: ["search-mentors", debouncedQuery],
+    queryKey: searchKeys.mentors(debouncedQuery),
     queryFn: ({ pageParam = 1 }) =>
       searchMentors({
         search: debouncedQuery,
@@ -25,7 +21,10 @@ export function useSearchMentors(initialQuery = "") {
         perPage: 30,
       }),
     initialPageParam: 1,
-    getNextPageParam: (lastPage, allPages) => {
+    getNextPageParam: (
+      lastPage: UserSearchData,
+      allPages: UserSearchData[],
+    ) => {
       const total = lastPage.pagination.totalPages ?? 1;
       const nextPage = allPages.length + 1;
       return nextPage <= total ? nextPage : undefined;

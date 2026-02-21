@@ -52,7 +52,7 @@ export function useColleges(params?: {
   search?: string;
 }) {
   return useQuery({
-    queryKey: ["colleges", params],
+    queryKey: learningCircleKeys.colleges(params),
     queryFn: () => getColleges(params),
     staleTime: STALE_TIME,
   });

@@ -11,17 +11,14 @@ export function useChangePassword() {
 
   return useMutation({
     mutationFn: changePassword,
-    onSuccess: (res) => {
-      const msg = res.message?.general?.[0];
-      if (res.hasError) {
-        toast.error(msg);
-        return;
-      }
+    onSuccess: (res: any) => {
+      const msg = res.message?.general?.[0] || "Password changed successfully";
       toast.success(msg);
       router.push("/dashboard/profile");
     },
-    onError: () => {
-      toast.error("Something went wrong. Please try again.");
+    onError: (error: any) => {
+      const msg = error.message || "Something went wrong. Please try again.";
+      toast.error(msg);
     },
   });
 }

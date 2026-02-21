@@ -26,7 +26,6 @@ export default function OnboardingLayout({ children }: OnboardingLayoutProps) {
             width={100}
             height={32}
             priority
-            style={{ width: "auto", height: "auto" }}
           />
         </Link>
       </header>

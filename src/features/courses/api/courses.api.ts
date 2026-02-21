@@ -1,6 +1,5 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
-
 import {
   EnrollmentResponseSchema,
   type IntegrationTokenResponse,
@@ -27,7 +26,7 @@ export const fetchWadhwaniToken =
 export const fetchWadhwaniCourses = async (token: string) => {
   return apiClient.post(
     endpoints.integrations.wadhwani.courses,
-    { token },
+    { "Client-Auth-Token": token },
     WadhwaniCoursesResponseSchema,
   );
 };
@@ -38,7 +37,7 @@ export const enrollWadhwaniUser = async (
 ) => {
   return apiClient.post(
     endpoints.integrations.wadhwani.enroll,
-    { token, course_root_id: courseRootId },
+    { "Client-Auth-Token": token, course_root_id: courseRootId },
     EnrollmentResponseSchema,
   );
 };

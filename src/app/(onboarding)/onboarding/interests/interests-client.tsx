@@ -12,6 +12,7 @@ import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { ApiError } from "@/api";
 import { OptionCard } from "@/components/ui/option-card";
 import { useUserInfo } from "@/features/auth";
 import {
@@ -57,8 +58,12 @@ export function InterestsClient({ redirectUri, mode }: InterestsClientProps) {
       // Small delay to allow cache to invalidate and refresh
       await new Promise((resolve) => setTimeout(resolve, 500));
       router.replace(getRedirectPath());
-    } catch (_error) {
-      toast.error("Failed to save pathways. Please try again.");
+    } catch (error) {
+      const message =
+        error instanceof ApiError
+          ? error.message
+          : "Failed to save pathways. Please try again.";
+      toast.error(message);
     }
   };
 
@@ -73,8 +78,12 @@ export function InterestsClient({ redirectUri, mode }: InterestsClientProps) {
       // Small delay to allow cache to invalidate and refresh
       await new Promise((resolve) => setTimeout(resolve, 500));
       router.replace(getRedirectPath());
-    } catch (_error) {
-      toast.error("Failed to save interests. Please try again.");
+    } catch (error) {
+      const message =
+        error instanceof ApiError
+          ? error.message
+          : "Failed to save interests. Please try again.";
+      toast.error(message);
     }
   };
 

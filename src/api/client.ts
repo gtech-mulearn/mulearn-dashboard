@@ -21,6 +21,30 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Extract a human-readable error message from Django's standard error envelope.
+ *
+ * Handles:
+ *  - `{ message: { general: ["..."] } }`  (most common)
+ *  - `{ detail: "..." }`                  (DRF style)
+ */
+function extractDjangoMessage(data: unknown): string | null {
+  if (!data || typeof data !== "object") return null;
+  const d = data as Record<string, unknown>;
+  const msg = d.message;
+  if (msg && typeof msg === "object") {
+    const general = (msg as Record<string, unknown>).general;
+    if (Array.isArray(general) && typeof general[0] === "string") {
+      return general[0];
+    }
+  }
+
+  // DRF fallback → detail
+  if (typeof d.detail === "string") return d.detail;
+
+  return null;
+}
+
 // ─── Headers ────────────────────────────────────────────────────────────────
 
 const BASE_HEADERS: Record<string, string> = {
@@ -29,8 +53,8 @@ const BASE_HEADERS: Record<string, string> = {
 
 function getAuthHeaders(): Record<string, string> {
   const headers: Record<string, string> = { ...BASE_HEADERS };
-
   const token = authStore.getAccessToken();
+
   if (token) {
     headers.Authorization = `Bearer ${token}`;
   }
@@ -123,8 +147,28 @@ async function request<T>(
     }
   }
 
+  // Check for hasError even if res.ok is true (business error)
+  if (
+    rawData &&
+    typeof rawData === "object" &&
+    "hasError" in rawData &&
+    rawData.hasError === true
+  ) {
+    const backendMsg = extractDjangoMessage(rawData);
+    throw new ApiError(
+      res.status,
+      backendMsg || `Request failed: ${endpoint}`,
+      rawData,
+    );
+  }
+
   if (!res.ok) {
-    throw new ApiError(res.status, `Request failed: ${endpoint}`, rawData);
+    const backendMsg = extractDjangoMessage(rawData);
+    throw new ApiError(
+      res.status,
+      backendMsg || `Request failed: ${endpoint}`,
+      rawData,
+    );
   }
 
   if (options.schema) {
