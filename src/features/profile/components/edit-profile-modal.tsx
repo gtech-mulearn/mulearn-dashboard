@@ -31,6 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
+import { MultiSelectDropdown } from "@/features/manage-users/components";
 import {
   useCommunities,
   useCountries,
@@ -72,16 +73,6 @@ function resolveOptionValue(
   return byLabel?.value ?? "";
 }
 
-function splitFullName(fullName: string) {
-  const parts = fullName.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return { firstName: "", lastName: "" };
-  if (parts.length === 1) return { firstName: parts[0], lastName: "" };
-  return {
-    firstName: parts.slice(0, -1).join(" "),
-    lastName: parts.at(-1) ?? "",
-  };
-}
-
 function normalizeGenderValue(value: string | null | undefined) {
   const raw = (value ?? "").trim().toLowerCase().replace(/\s+/g, "_");
   if (!raw) return "";
@@ -111,18 +102,15 @@ export function EditProfileModal({
   profile,
   onSave,
 }: EditProfileModalProps) {
-  const initialName = splitFullName(profile.full_name ?? "");
   const form = useForm<EditProfileFormValues>({
     resolver: zodResolver(EditProfileFormSchema),
     defaultValues: {
-      first_name: initialName.firstName,
-      last_name: initialName.lastName,
       full_name: profile.full_name ?? "",
       email: profile.email ?? "",
       mobile: profile.mobile ?? "",
       gender: normalizeGenderValue(profile.gender) ?? "",
       dob: profile.dob ? profile.dob.slice(0, 10) : "",
-      community: "",
+      communities: [],
       country_id: "",
       state_id: "",
       district_id: "",
@@ -169,10 +157,7 @@ export function EditProfileModal({
     if (!open) return;
     const sourceFullName =
       profile.full_name || editableProfile?.full_name || "";
-    const nameParts = splitFullName(sourceFullName);
     form.reset({
-      first_name: nameParts.firstName,
-      last_name: nameParts.lastName,
       full_name: sourceFullName,
       email: profile.email || editableProfile?.email || "",
       mobile: profile.mobile || editableProfile?.mobile || "",
@@ -184,7 +169,7 @@ export function EditProfileModal({
         : editableProfile?.dob
           ? editableProfile.dob.slice(0, 10)
           : "",
-      community: editableProfile?.communities?.[0] || "",
+      communities: editableProfile?.communities ?? [],
       country_id: "",
       state_id: "",
       district_id: "",
@@ -195,14 +180,14 @@ export function EditProfileModal({
 
   useEffect(() => {
     if (!open) return;
-    const communityRaw = editableProfile?.communities?.[0];
-    if (!communityRaw) return;
-    const resolvedCommunity = resolveOptionValue(communityRaw, communities);
-    if (
-      resolvedCommunity &&
-      form.getValues("community") !== resolvedCommunity
-    ) {
-      form.setValue("community", resolvedCommunity, { shouldDirty: false });
+    const communityRaw = editableProfile?.communities ?? [];
+    if (communityRaw.length === 0) return;
+    const resolvedCommunities = communityRaw
+      .map((value) => resolveOptionValue(value, communities))
+      .filter((value) => Boolean(value));
+    const current = form.getValues("communities") ?? [];
+    if (resolvedCommunities.join("|") !== current.join("|")) {
+      form.setValue("communities", resolvedCommunities, { shouldDirty: false });
     }
   }, [communities, editableProfile, form, open]);
 
@@ -238,38 +223,14 @@ export function EditProfileModal({
     const dirtyFields = form.formState.dirtyFields as Partial<
       Record<keyof EditProfileFormValues, boolean>
     >;
-    const fullNameFromParts = values.full_name?.trim() || "";
-    const [firstNamePart, ...restNameParts] = fullNameFromParts.split(" ");
-    const lastNamePart = restNameParts.join(" ").trim();
+    const fullName = values.full_name?.trim() || "";
     const normalizedValues: EditProfileFormValues = {
       ...values,
-      first_name: firstNamePart || "",
-      last_name: lastNamePart || "",
-      full_name: fullNameFromParts || "",
-    };
-
-    const normalizedDirtyFields = {
-      ...dirtyFields,
-      full_name: Boolean(
-        dirtyFields.full_name ||
-          dirtyFields.first_name ||
-          dirtyFields.last_name,
-      ),
-      first_name: Boolean(
-        dirtyFields.full_name ||
-          dirtyFields.first_name ||
-          dirtyFields.last_name,
-      ),
-      last_name: Boolean(
-        dirtyFields.full_name ||
-          dirtyFields.first_name ||
-          dirtyFields.last_name,
-      ),
+      full_name: fullName,
     };
 
     try {
-      await onSave(normalizedValues, normalizedDirtyFields);
-      toast.success("Profile updated successfully");
+      await onSave(normalizedValues, dirtyFields);
       onOpenChange(false);
     } catch {
       toast.error("Failed to update profile");
@@ -436,33 +397,29 @@ export function EditProfileModal({
                 />
                 <FormField
                   control={form.control}
-                  name="community"
+                  name="communities"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Community</FormLabel>
-                      <Select
-                        value={field.value || "__none__"}
-                        onValueChange={(value) =>
-                          field.onChange(value === "__none__" ? "" : value)
-                        }
-                      >
-                        <FormControl>
-                          <SelectTrigger className={selectTriggerClassName}>
-                            <SelectValue placeholder="Select community" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="__none__">None</SelectItem>
-                          {communities.map((community) => (
-                            <SelectItem
-                              key={community.value}
-                              value={community.value}
-                            >
-                              {community.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <MultiSelectDropdown
+                        label="Community"
+                        options={communities}
+                        selectedValues={field.value ?? []}
+                        onToggle={(value, checked) => {
+                          const current = field.value ?? [];
+                          if (checked) {
+                            if (!current.includes(value)) {
+                              field.onChange([...current, value]);
+                            }
+                            return;
+                          }
+                          field.onChange(
+                            current.filter(
+                              (selectedValue) => selectedValue !== value,
+                            ),
+                          );
+                        }}
+                      />
                       <FormMessage />
                     </FormItem>
                   )}

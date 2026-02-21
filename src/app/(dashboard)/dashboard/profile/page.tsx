@@ -86,48 +86,38 @@ export default function ProfilePage() {
 
     const hasProfileUpdates = Boolean(
       dirtyFields.full_name ||
-        dirtyFields.first_name ||
-        dirtyFields.last_name ||
         dirtyFields.email ||
         dirtyFields.mobile ||
         dirtyFields.gender ||
         dirtyFields.dob ||
-        dirtyFields.community,
+        dirtyFields.communities,
     );
 
     if (hasProfileUpdates) {
-      const existingFullName =
-        profile.full_name || editableProfile?.full_name || "";
-      const submittedFullName = data.full_name?.trim() || existingFullName;
-      const [submittedFirstName, ...submittedLastNameParts] = submittedFullName
-        .split(" ")
-        .filter(Boolean);
-      const firstName = submittedFirstName || "";
-      const lastName = submittedLastNameParts.join(" ").trim();
-      const fallbackCommunity = editableProfile?.communities?.[0];
+      const baseFullName =
+        editableProfile?.full_name?.trim() || profile.full_name?.trim() || "";
+      const finalFullName = data.full_name?.trim() || baseFullName;
+      const [firstName, ...lastNameParts] = finalFullName.split(" ");
+
+      const baseEmail = editableProfile?.email?.trim() || profile.email || "";
+      const baseMobile =
+        editableProfile?.mobile?.trim() || profile.mobile || "";
+      const baseGender =
+        editableProfile?.gender?.trim() || profile.gender || "";
+      const baseDob = editableProfile?.dob?.trim() || profile.dob || "";
+      const baseCommunities = editableProfile?.communities ?? [];
 
       const profilePayload: UpdateProfileRequest = {
-        first_name: firstName,
-        last_name: lastName,
-        full_name: submittedFullName,
-        email:
-          data.email?.trim() || editableProfile?.email || profile.email || "",
-        mobile:
-          data.mobile?.trim() ||
-          editableProfile?.mobile ||
-          profile.mobile ||
-          "",
-        gender:
-          data.gender?.trim() ||
-          editableProfile?.gender ||
-          profile.gender ||
-          "",
-        dob: data.dob?.trim() || editableProfile?.dob || profile.dob || "",
-        communities: data.community?.trim()
-          ? [data.community.trim()]
-          : fallbackCommunity
-            ? [fallbackCommunity]
-            : [],
+        first_name: firstName?.trim() || "",
+        last_name: lastNameParts.join(" ").trim(),
+        full_name: finalFullName,
+        email: data.email?.trim() || baseEmail,
+        mobile: data.mobile?.trim() || baseMobile,
+        gender: data.gender?.trim() || baseGender,
+        dob: data.dob?.trim() || baseDob,
+        communities: dirtyFields.communities
+          ? (data.communities ?? [])
+          : baseCommunities,
       };
 
       await updateProfileMutation.mutateAsync(profilePayload);

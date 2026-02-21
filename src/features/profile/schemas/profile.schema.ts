@@ -25,31 +25,6 @@ const StringIdSchema = z
   .union([z.string(), z.number()])
   .transform((v) => String(v));
 
-const StringArrayFromUnknownSchema = z
-  .array(
-    z.union([
-      StringIdSchema,
-      z
-        .object({
-          id: StringIdSchema.optional(),
-          name: z.string().optional(),
-          title: z.string().optional(),
-        })
-        .passthrough(),
-    ]),
-  )
-  .transform((items) =>
-    items
-      .map((item) => {
-        if (typeof item === "string") return item;
-        if (typeof item === "object" && item) {
-          return item.id ?? item.name ?? item.title ?? "";
-        }
-        return "";
-      })
-      .filter((value) => value.length > 0),
-  );
-
 // ============================================
 // User Profile Schemas
 // ============================================
@@ -303,8 +278,6 @@ export const UpdateProfileImageResponseSchema = ApiResponseSchema(
 );
 
 export const EditProfileFormSchema = z.object({
-  first_name: z.string().trim().optional(),
-  last_name: z.string().trim().optional(),
   full_name: z.string().trim().optional(),
   email: z
     .string()
@@ -327,7 +300,7 @@ export const EditProfileFormSchema = z.object({
     ),
   gender: z.string().trim().optional(),
   dob: z.string().trim().optional(),
-  community: z.string().trim().optional(),
+  communities: z.array(z.string()).optional(),
   country_id: z.string().trim().optional(),
   state_id: z.string().trim().optional(),
   district_id: z.string().trim().optional(),
