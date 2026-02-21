@@ -215,3 +215,14 @@ export const PaginatedIssuedLogSchema = z.object({
 });
 
 export type PaginatedIssuedLog = z.infer<typeof PaginatedIssuedLogSchema>;
+
+export const AchievementFormSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  description: z.string().optional(),
+  level_based: z.boolean(),
+  level_id: z.string().nullable().optional(),
+  has_vc: z.boolean(),
+  is_active: z.boolean().optional(),
+});
+
+export type AchievementFormValues = z.infer<typeof AchievementFormSchema>;

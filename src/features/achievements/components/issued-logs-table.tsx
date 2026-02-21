@@ -7,17 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIssuedLogs } from "../hooks/use-achievement-logs";
 import { BulkIssueDialog } from "./bulk-issue-dialog";
-
-const PAGE_SIZE = 20;
-
-/** Column headers for the manual HTML table */
-const HEADERS = [
-  "MUID",
-  "User",
-  "Achievement",
-  "Issued By",
-  "Issued On",
-] as const;
+import {
+  ISSUED_LOGS_HEADERS,
+  ISSUED_LOGS_PAGE_SIZE,
+} from "../constants/constants";
 
 export function IssuedLogsTable() {
   const [page, setPage] = React.useState(1);
@@ -35,7 +28,7 @@ export function IssuedLogsTable() {
 
   const { data, isLoading, isFetching } = useIssuedLogs(
     page,
-    PAGE_SIZE,
+    ISSUED_LOGS_PAGE_SIZE,
     debouncedSearch,
   );
 
@@ -70,7 +63,7 @@ export function IssuedLogsTable() {
         <table className="w-full caption-bottom text-sm">
           <thead className="[&_tr]:border-b">
             <tr>
-              {HEADERS.map((h) => (
+              {ISSUED_LOGS_HEADERS.map((h) => (
                 <th
                   key={h}
                   className="h-12 px-4 text-left align-middle font-medium text-muted-foreground"
@@ -85,7 +78,7 @@ export function IssuedLogsTable() {
               Array.from({ length: 5 }).map((_, i) => (
                 // biome-ignore lint/suspicious/noArrayIndexKey: Skeletons are static
                 <tr key={i} className="border-b">
-                  {HEADERS.map((h) => (
+                  {ISSUED_LOGS_HEADERS.map((h) => (
                     <td key={h} className="p-4">
                       <Skeleton className="h-4 w-full" />
                     </td>
@@ -131,7 +124,7 @@ export function IssuedLogsTable() {
             ) : (
               <tr>
                 <td
-                  colSpan={HEADERS.length}
+                  colSpan={ISSUED_LOGS_HEADERS.length}
                   className="h-24 text-center text-muted-foreground"
                 >
                   No issued logs found.

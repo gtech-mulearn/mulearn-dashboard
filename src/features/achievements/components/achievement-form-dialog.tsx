@@ -3,8 +3,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as React from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import {
+  AchievementFormSchema,
+  type AchievementFormValues,
+  type Achievement,
+} from "../schemas";
 import {
   Dialog,
   DialogContent,
@@ -31,35 +35,11 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import type { Achievement } from "../schemas";
 import {
   useCreateAchievement,
   useUpdateAchievement,
 } from "../hooks/use-achievement-mutations";
-
-// -----------------------------------------------------------------------
-// Local form schema (no .refine() — avoids react-hook-form resolver issues)
-// Refinement is done manually in onSubmit when needed.
-// -----------------------------------------------------------------------
-const AchievementFormSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  description: z.string().optional(),
-  level_based: z.boolean(),
-  level_id: z.string().nullable().optional(),
-  has_vc: z.boolean(),
-  is_active: z.boolean().optional(),
-});
-
-type AchievementFormValues = z.infer<typeof AchievementFormSchema>;
-
-// Static level options — extend or fetch dynamically as needed
-const LEVEL_OPTIONS = [
-  { value: "1", label: "Level 1" },
-  { value: "2", label: "Level 2" },
-  { value: "3", label: "Level 3" },
-  { value: "4", label: "Level 4" },
-  { value: "5", label: "Level 5" },
-];
+import { LEVEL_OPTIONS } from "../constants/constants";
 
 interface AchievementFormDialogProps {
   open: boolean;
