@@ -24,24 +24,48 @@ export const IntegrationTokenSchema = z.union([
 
 export type IntegrationTokenResponse = z.infer<typeof IntegrationTokenSchema>;
 
-export const EnrollmentResponseSchema = z.object({
-  status: z.string().optional(),
-  redirect_url: z.string().url().optional(),
-  message: z.string().optional(),
-});
+const EnrollmentDataSchema = z
+  .object({
+    status: z.string().optional(),
+    data: z.string().optional(),
+    redirect_url: z.string().url().optional(),
+    message: z.string().optional(),
+  })
+  .transform((val) => ({
+    ...val,
+    redirect_url: val.data || val.redirect_url,
+  }));
+
+export const EnrollmentResponseSchema = z.union([
+  EnrollmentDataSchema,
+  z.object({ response: EnrollmentDataSchema }).transform((val) => val.response),
+]);
 
 // ==========================================
 // Wadhwani Schemas
 // ==========================================
 
-export const WadhwaniCourseSchema = z.object({
-  id: z.string().or(z.number()),
-  title: z.string(),
-  description: z.string().optional(),
-  course_root_id: z.string().optional(),
-  thumbnail: z.string().url().optional().or(z.literal("")).or(z.null()),
-  language: z.string().optional(),
-});
+export const WadhwaniCourseSchema = z
+  .object({
+    courseId: z.string().or(z.number()),
+    courseName: z.string(),
+    description: z.string().optional(),
+    courseRootId: z.string().optional(),
+    thumbnail: z.string().url().optional().or(z.literal("")).or(z.null()),
+    language: z.string().optional(),
+    duration: z.number().optional(),
+    enrollStatus: z.boolean().optional(),
+  })
+  .transform((data) => ({
+    id: data.courseId,
+    title: data.courseName,
+    description: data.description,
+    course_root_id: data.courseRootId,
+    thumbnail: data.thumbnail,
+    language: data.language,
+    duration: data.duration,
+    enrollStatus: data.enrollStatus,
+  }));
 
 // Base shape for Wadhwani list
 const WadhwaniListShape = z.object({

@@ -1,30 +1,24 @@
 "use client";
-
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useDebounce } from "@/hooks/use-debounce";
 import { searchCampuses } from "../api";
-import type { SearchType } from "../schemas";
+import type { CampusSearchData, SearchType } from "../schemas";
+import { searchKeys } from "./query-keys";
 
 export function useSearchCampuses(
   initialQuery = "",
   initialSearchType?: SearchType,
 ) {
-  const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [searchType, setSearchType] = useState<SearchType | undefined>(
     initialSearchType,
   );
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedQuery(searchQuery);
-    }, 800);
-
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+  const debouncedQuery = useDebounce(searchQuery, 800);
 
   const query = useInfiniteQuery({
-    queryKey: ["search-campuses", debouncedQuery, searchType],
+    queryKey: searchKeys.campuses(debouncedQuery, searchType),
     queryFn: ({ pageParam = 1 }) =>
       searchCampuses({
         search: debouncedQuery,
@@ -33,7 +27,10 @@ export function useSearchCampuses(
         searchType,
       }),
     initialPageParam: 1,
-    getNextPageParam: (lastPage, allPages) => {
+    getNextPageParam: (
+      lastPage: CampusSearchData,
+      allPages: CampusSearchData[],
+    ) => {
       const total = lastPage.pagination.totalPages ?? 1;
       const nextPage = allPages.length + 1;
       return nextPage <= total ? nextPage : undefined;

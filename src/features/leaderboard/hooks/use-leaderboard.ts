@@ -19,6 +19,7 @@ import type {
   TimeFrame,
   WadhwaniTimeFrame,
 } from "../types";
+import { leaderboardKeys } from "./query-keys";
 
 export function useLeaderboard(
   category: Category,
@@ -26,16 +27,6 @@ export function useLeaderboard(
 ) {
   const monthly = timeframe === "monthly";
   const campus = timeframe === "campus";
-
-  const leaderboardKeys = {
-    all: ["leaderboard"] as const,
-    students: (monthly: boolean) =>
-      [...leaderboardKeys.all, "students", { monthly }] as const,
-    college: (monthly: boolean) =>
-      [...leaderboardKeys.all, "college", { monthly }] as const,
-    wadhwani: (campus: boolean) =>
-      [...leaderboardKeys.all, "wadhwani", { campus }] as const,
-  };
 
   return useQuery({
     queryKey:
@@ -46,38 +37,37 @@ export function useLeaderboard(
           : leaderboardKeys.students(monthly),
     staleTime: 24 * 60 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
-    queryFn: async (): Promise<LeaderboardEntry[]> => {
-      try {
-        if (category === "campus") {
-          const data = await fetchCampusLeaderboard(monthly);
-          return data.map((item, index) => ({
-            id: item.code,
-            rank: index + 1,
-            name: item.title || item.code,
-            karma: item.total_karma,
-          }));
-        }
-        if (category === "wadhwani") {
-          const data = await fetchWadhwaniLeaderboard(campus);
-          return data.map((item, index) => ({
-            id: item.code,
-            rank: index + 1,
-            zone_name: item.zone_name,
-            name: item.title || item.code,
-            karma: item.total_karma,
-          }));
-        }
-        const data = await fetchStudentLeaderboard(monthly);
+    queryFn: async () => {
+      if (category === "campus") return await fetchCampusLeaderboard(monthly);
+      if (category === "wadhwani")
+        return await fetchWadhwaniLeaderboard(campus);
+      return await fetchStudentLeaderboard(monthly);
+    },
+    select: (data: any[]): LeaderboardEntry[] => {
+      if (category === "campus") {
         return data.map((item, index) => ({
-          id: item.full_name,
+          id: item.code,
           rank: index + 1,
-          name: item.full_name,
+          name: item.title || item.code,
           karma: item.total_karma,
-          avatar: item.profile_pic,
         }));
-      } catch {
-        return [];
       }
+      if (category === "wadhwani") {
+        return data.map((item, index) => ({
+          id: item.code,
+          rank: index + 1,
+          zone_name: item.zone_name,
+          name: item.title || item.code,
+          karma: item.total_karma,
+        }));
+      }
+      return data.map((item, index) => ({
+        id: item.full_name,
+        rank: index + 1,
+        name: item.full_name,
+        karma: item.total_karma,
+        avatar: item.profile_pic,
+      }));
     },
     retry: 2,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),

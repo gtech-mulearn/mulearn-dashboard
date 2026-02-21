@@ -47,7 +47,7 @@ export function useLoginWithPassword() {
       };
     },
     onSuccess: (data) => {
-      // Clear any stale queries and set fresh user info
+      // Clear stale queries — clear() removes without refetching (safe post-login)
       queryClient.clear();
       queryClient.setQueryData(authKeys.userInfo(), data.userInfo);
     },
@@ -77,7 +77,7 @@ export function useLoginWithOTP() {
       };
     },
     onSuccess: (data) => {
-      // Clear any stale queries and set fresh user info
+      // Clear stale queries — clear() removes without refetching (safe post-login)
       queryClient.clear();
       queryClient.setQueryData(authKeys.userInfo(), data.userInfo);
     },

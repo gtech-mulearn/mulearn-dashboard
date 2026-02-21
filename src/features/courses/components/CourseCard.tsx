@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 import type { UnifiedCourse } from "../schemas/courses.schemas";
 
 const DISCORD_SUBMIT_LINK =
@@ -96,7 +97,7 @@ export function CourseCard({
           {typeof course.karma === "number" && course.karma > 0 && (
             <Badge
               variant="secondary"
-              className="bg-background/90 backdrop-blur-sm shadow-sm text-yellow-600 gap-1 border-0 rounded-full px-3 py-1"
+              className="bg-background/90 backdrop-blur-sm shadow-sm text-amber-500 gap-1 border-0 rounded-full px-3 py-1"
             >
               <Trophy className="w-3 h-3" />
               {course.karma} Karma
@@ -167,11 +168,15 @@ export function CourseCard({
           onClick={handleEnroll}
           disabled={isEnrolling}
         >
-          {isEnrolling
-            ? "Enrolling..."
-            : course.source === "wadhwani"
-              ? "Enroll Now"
-              : "View Course"}
+          {isEnrolling ? (
+            <>
+              <Spinner className="h-4 w-4" /> Enrolling...
+            </>
+          ) : course.source === "wadhwani" ? (
+            "Enroll Now"
+          ) : (
+            "View Course"
+          )}
         </Button>
 
         {course.source === "wadhwani" && (

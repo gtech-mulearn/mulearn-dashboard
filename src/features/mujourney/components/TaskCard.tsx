@@ -27,9 +27,9 @@ export function TaskCard({
 }: TaskCardProps) {
   // Status badge colors matching the reference image
   const statusBadges = {
-    completed: "bg-green-100 text-green-700 ",
-    pending: "bg-yellow-100 text-yellow-700  ",
-    locked: "bg-gray-100 text-gray-600 ",
+    completed: "bg-green-50 text-green-600 border border-green-200",
+    pending: "bg-yellow-50 text-yellow-600 border border-yellow-200",
+    locked: "bg-muted text-muted-foreground border border-border",
   };
 
   // Hover effect with shadow only for pending tasks - enhanced shadow for more elevation
@@ -80,7 +80,7 @@ export function TaskCard({
 
         {/* Task Title - Rendered with Markdown */}
         <div className="text-xl font-semibold text-card-foreground leading-tight font-montserrat">
-          <MarkdownRenderer content={task.task_name} className="[&>*]:mb-0" />
+          <MarkdownRenderer content={task.task_name} className="*:mb-0" />
         </div>
 
         {/* Description - Rendered with Markdown */}
@@ -94,7 +94,7 @@ export function TaskCard({
         )} */}
 
         {/* Metadata - Open Sans */}
-        <div className="space-y-3 text-base font-open-sans flex-grow">
+        <div className="space-y-3 text-base font-open-sans grow">
           <div className="flex items-start gap-1.5">
             <span className="font-bold text-card-foreground">
               Interest Group:
@@ -125,12 +125,14 @@ export function TaskCard({
             className={cn(
               "w-full rounded-lg font-semibold text-white transition-all duration-200 h-11 text-base font-montserrat cursor-pointer",
               // Blue background for all tasks
-              status === "pending" && "bg-blue-600 hover:bg-blue-700",
-              // Lighter blue for completed tasks (dimmed)
+              // Primary background for active tasks
+              status === "pending" && "bg-primary hover:bg-primary/90",
+              // Dimmed primary for completed tasks
               status === "completed" &&
-                "bg-blue-400 hover:bg-blue-500 opacity-70",
-              // Gray for locked tasks
-              status === "locked" && "bg-gray-400 cursor-not-allowed",
+                "bg-primary/60 hover:bg-primary/70 opacity-80",
+              // Muted for locked tasks
+              status === "locked" &&
+                "bg-muted text-muted-foreground cursor-not-allowed",
             )}
             disabled={status === "locked"}
             onClick={(e) => {
