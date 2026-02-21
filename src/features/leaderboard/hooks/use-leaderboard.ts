@@ -14,6 +14,15 @@ import {
   fetchWadhwaniLeaderboard,
 } from "../api";
 import type {
+  CollegeLeaderboardEntry,
+  StudentLeaderboardEntry,
+  WadhwaniLeaderboardEntry,
+} from "@/features/leaderboard";
+type LeaderboardApiData =
+  | CollegeLeaderboardEntry[]
+  | StudentLeaderboardEntry[]
+  | WadhwaniLeaderboardEntry[];
+import type {
   Category,
   LeaderboardEntry,
   TimeFrame,
@@ -28,7 +37,7 @@ export function useLeaderboard(
   const monthly = timeframe === "monthly";
   const campus = timeframe === "campus";
 
-  return useQuery({
+  return useQuery<LeaderboardApiData, Error, LeaderboardEntry[]>({
     queryKey:
       category === "campus"
         ? leaderboardKeys.college(monthly)
@@ -43,18 +52,22 @@ export function useLeaderboard(
         return await fetchWadhwaniLeaderboard(campus);
       return await fetchStudentLeaderboard(monthly);
     },
-    // biome-ignore lint/suspicious/noExplicitAny: Raw API response needs generic access
-    select: (data: any[]): LeaderboardEntry[] => {
+    select: (data): LeaderboardEntry[] => {
       if (category === "campus") {
-        return data.map((item, index) => ({
+        const campusData = data as CollegeLeaderboardEntry[];
+
+        return campusData.map((item, index) => ({
           id: item.code,
           rank: index + 1,
           name: item.title || item.code,
           karma: item.total_karma,
         }));
       }
+
       if (category === "wadhwani") {
-        return data.map((item, index) => ({
+        const wadhwaniData = data as WadhwaniLeaderboardEntry[];
+
+        return wadhwaniData.map((item, index) => ({
           id: item.code,
           rank: index + 1,
           zone_name: item.zone_name,
@@ -62,7 +75,10 @@ export function useLeaderboard(
           karma: item.total_karma,
         }));
       }
-      return data.map((item, index) => ({
+
+      const studentData = data as StudentLeaderboardEntry[];
+
+      return studentData.map((item, index) => ({
         id: item.full_name,
         rank: index + 1,
         name: item.full_name,
