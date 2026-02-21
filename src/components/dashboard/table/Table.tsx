@@ -1,3 +1,4 @@
+"use client";
 import { Copy, TrendingUp } from "lucide-react";
 import type { FC, ReactElement, ReactNode } from "react";
 import {

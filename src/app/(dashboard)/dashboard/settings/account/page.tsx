@@ -38,11 +38,15 @@ export default function ChangePasswordPage() {
   });
 
   async function onSubmit(values: ChangePasswordFormValues) {
-    const res = await changePasswordMutation.mutateAsync({
-      current_password: values.current_password,
-      password: values.password,
-    });
-    if (!res.hasError) reset();
+    try {
+      await changePasswordMutation.mutateAsync({
+        current_password: values.current_password,
+        password: values.password,
+      });
+      reset();
+    } catch {
+      // Error handled by mutation onError
+    }
   }
 
   return (
