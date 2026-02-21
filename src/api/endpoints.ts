@@ -345,6 +345,54 @@ export const endpoints = {
   },
 
   // ============================================
+  // Admin Endpoints
+  // ============================================
+  admin: {
+    errorLog: {
+      /** GET - List all error log entries */
+      list: "/api/v1/dashboard/error-log/",
+      /** GET - Download log file by type (error, root, request), returns Blob */
+      download: (type: string) => `/api/v1/dashboard/error-log/${type}/`,
+      /** POST - Clear all logs of a given type */
+      clear: (type: string) => `/api/v1/dashboard/error-log/clear/${type}/`,
+      /** PATCH - Dismiss / delete a single log entry */
+      dismiss: (id: string) => `/api/v1/dashboard/error-log/patch/${id}`,
+    },
+    dynamicType: {
+      /** GET - List available roles for select dropdown */
+      roles: "/api/v1/dashboard/dynamic-management/roles/",
+      /** GET - List available types for select dropdown */
+      types: "/api/v1/dashboard/dynamic-management/types/",
+
+      // Dynamic Role-Type CRUD
+      /** GET - List dynamic role-type mappings */
+      dynamicRoles: "/api/v1/dashboard/dynamic-management/dynamic-role/",
+      /** POST - Create a role-type mapping */
+      createDynamicRole:
+        "/api/v1/dashboard/dynamic-management/dynamic-role/create/",
+      /** PATCH - Update a role-type mapping */
+      updateDynamicRole: (id: string) =>
+        `/api/v1/dashboard/dynamic-management/dynamic-role/update/${id}/`,
+      /** DELETE - Delete a role-type mapping */
+      deleteDynamicRole: (id: string) =>
+        `/api/v1/dashboard/dynamic-management/dynamic-role/delete/${id}/`,
+
+      // Dynamic User-Type CRUD
+      /** GET - List dynamic user-type mappings */
+      dynamicUsers: "/api/v1/dashboard/dynamic-management/dynamic-user/",
+      /** POST - Create a user-type mapping */
+      createDynamicUser:
+        "/api/v1/dashboard/dynamic-management/dynamic-user/create/",
+      /** PATCH - Update a user-type mapping */
+      updateDynamicUser: (id: string) =>
+        `/api/v1/dashboard/dynamic-management/dynamic-user/update/${id}/`,
+      /** DELETE - Delete a user-type mapping */
+      deleteDynamicUser: (id: string) =>
+        `/api/v1/dashboard/dynamic-management/dynamic-user/delete/${id}/`,
+    },
+  },
+
+  // ============================================
   // Manage Users Endpoints
   // ============================================
   manageUsers: {
@@ -373,6 +421,21 @@ export const endpoints = {
     /** GET - Search locations */
     locationSearch: (param: string) =>
       `/api/v1/register/location/?q=${param || "india"}`,
+  },
+
+  admin: {
+    karmaVoucher: {
+      /** GET - List karma vouchers (paginated, sortable, searchable) */
+      list: "/api/v1/dashboard/karma-voucher/",
+      /** DELETE - Delete a karma voucher */
+      delete: (id: string) => `/api/v1/dashboard/karma-voucher/delete/${id}/`,
+      /** GET - Export voucher log as CSV */
+      exportCSV: "/api/v1/dashboard/karma-voucher/export/",
+      /** POST - Bulk import vouchers via XLSX */
+      import: "/api/v1/dashboard/karma-voucher/import/",
+      /** GET - Download XLSX import template */
+      template: "/api/v1/dashboard/karma-voucher/base-template/",
+    },
   },
 } as const;
 
