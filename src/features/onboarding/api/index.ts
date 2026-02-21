@@ -5,6 +5,7 @@
  */
 
 export {
+  createCompany,
   createOrganization,
   fetchColleges,
   fetchCompanies,
