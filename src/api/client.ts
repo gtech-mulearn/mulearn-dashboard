@@ -155,20 +155,37 @@ async function request<T>(
     rawData.hasError === true
   ) {
     const backendMsg = extractDjangoMessage(rawData);
-    throw new ApiError(
+    const error = new ApiError(
       res.status,
       backendMsg || `Request failed: ${endpoint}`,
       rawData,
     );
+    console.error("[API Client] Business error:", {
+      endpoint,
+      status: res.status,
+      message: backendMsg,
+      rawData,
+      error,
+    });
+    throw error;
   }
 
   if (!res.ok) {
     const backendMsg = extractDjangoMessage(rawData);
-    throw new ApiError(
+    const error = new ApiError(
       res.status,
       backendMsg || `Request failed: ${endpoint}`,
       rawData,
     );
+    console.error("[API Client] HTTP error:", {
+      endpoint,
+      status: res.status,
+      statusText: res.statusText,
+      message: backendMsg,
+      rawData,
+      error,
+    });
+    throw error;
   }
 
   if (options.schema) {

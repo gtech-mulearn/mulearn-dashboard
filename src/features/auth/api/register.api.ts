@@ -22,9 +22,24 @@ import {
  * Register a new user account
  */
 export function registerUser(data: RegisterRequest) {
+  // Flatten user data to top level as backend expects it
+  const payload = {
+    ...data.user,
+    ...(data.referral && { referral: data.referral }),
+    ...(data.interests && { interests: data.interests }),
+    ...(data.gender && { gender: data.gender }),
+    ...(data.dob && { dob: data.dob }),
+    ...(data.communities && { communities: data.communities }),
+    ...(data.integration && { integration: data.integration }),
+    ...(data.role && { role: data.role }),
+    ...(data.organization && { organization: data.organization }),
+    ...(data.department && { department: data.department }),
+    ...(data.graduation_year && { graduation_year: data.graduation_year }),
+  };
+
   return apiClient.post(
     endpoints.register.create,
-    data,
+    payload,
     RegisterResponseSchema,
   );
 }

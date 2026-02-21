@@ -3,7 +3,7 @@
  *
  * 📍 src/features/auth/components/register-form.tsx
  *
- * Account creation form matching the mobile UI design.
+ * Step 1: Basic user information (name, email, password)
  */
 
 "use client";
@@ -54,17 +54,25 @@ interface RegisterFormProps {
     password: string;
   }) => void;
   isLoading?: boolean;
+  defaultValues?: {
+    fullName?: string;
+    email?: string;
+  };
 }
 
-export function RegisterForm({ onSubmit, isLoading }: RegisterFormProps) {
+export function RegisterForm({
+  onSubmit,
+  isLoading,
+  defaultValues,
+}: RegisterFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerFormSchema),
     defaultValues: {
-      fullName: "",
-      email: "",
+      fullName: defaultValues?.fullName || "",
+      email: defaultValues?.email || "",
       password: "",
       confirmPassword: "",
     },
@@ -226,7 +234,7 @@ export function RegisterForm({ onSubmit, isLoading }: RegisterFormProps) {
             disabled={isLoading}
           >
             {isLoading && <Spinner className="mr-2 h-4 w-4" />}
-            Create account
+            Continue
           </Button>
         </form>
       </Form>

@@ -71,6 +71,8 @@ export const endpoints = {
     selectOrganization: "/api/v1/dashboard/user/organization/",
     /** POST - Create new organization if not in list */
     createOrganization: "/api/v1/register/organization/create/",
+    /** POST - Create new company */
+    createCompany: "/api/v1/register/company/create/",
     /** POST - Select learning domains/pathways */
     selectDomains: "/api/v1/register/select-domains/",
     /** POST - Select end goals */

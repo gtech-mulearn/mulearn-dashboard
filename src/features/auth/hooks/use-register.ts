@@ -41,5 +41,14 @@ export function useRegister() {
       // Update the user info cache
       queryClient.setQueryData(authKeys.userInfo(), data.userInfo);
     },
+    onError: (error) => {
+      console.error("[useRegister] Error occurred:", error);
+      console.error("[useRegister] Error details:", {
+        message: error instanceof Error ? error.message : "Unknown error",
+        name: error instanceof Error ? error.name : undefined,
+        stack: error instanceof Error ? error.stack : undefined,
+        fullError: error,
+      });
+    },
   });
 }

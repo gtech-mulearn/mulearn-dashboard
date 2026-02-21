@@ -9,6 +9,17 @@
 import { z } from "zod";
 
 // ============================================
+// Organization Type Constants
+// ============================================
+
+export const ORG_TYPES = [
+  { label: "College", value: "College" },
+  { label: "Company", value: "Company" },
+] as const;
+
+export const ORG_TYPE_VALUES = ["College", "Company"] as const;
+
+// ============================================
 // Common Response Wrapper (flexible)
 // ============================================
 
@@ -87,16 +98,52 @@ export const SelectOrganizationResponseSchema = ApiResponseSchema(z.object({}));
 
 export const CreateOrganizationRequestSchema = z.object({
   title: z.string().min(3, "Organization name must be at least 3 characters"),
-  org_type: z.string().nullable().optional(),
-  department: z.string().nullable().optional(),
-  graduation_year: z.number().nullable().optional(),
+  org_type: z.enum(ORG_TYPE_VALUES).optional(),
+  department: z.string().optional(),
+  graduation_year: z
+    .union([z.string(), z.number()])
+    .transform((val) => (typeof val === "number" ? val.toString() : val))
+    .optional(),
 });
 
-export const CreateOrganizationResponseSchema = ApiResponseSchema(z.object({}));
+export const CreateOrganizationResponseSchema = ApiResponseSchema(
+  z
+    .object({
+      id: z.string().optional(),
+    })
+    .passthrough(),
+);
+
+// ============================================
+// Create Company Request
+// ============================================
+
+export const CreateCompanyRequestSchema = z.object({
+  name: z.string().min(3, "Company name must be at least 3 characters"),
+  description: z.string().min(10, "Description must be at least 10 characters"),
+  industry_sector: z.string().min(1, "Industry sector is required"),
+  website_link: z
+    .string()
+    .url("Please enter a valid URL")
+    .optional()
+    .or(z.literal("")),
+  email: z.string().email("Please enter a valid email"),
+  location: z.string().min(3, "Location must be at least 3 characters"),
+});
+
+export const CreateCompanyResponseSchema = ApiResponseSchema(
+  z
+    .object({
+      id: z.string().optional(),
+    })
+    .passthrough(),
+);
 
 // ============================================
 // Derived Types
 // ============================================
+
+export type OrganizationType = (typeof ORG_TYPE_VALUES)[number];
 
 export type College = z.infer<typeof CollegeSchema>;
 export type CollegesResponse = z.infer<typeof CollegesResponseSchema>;
@@ -116,3 +163,5 @@ export type SelectOrganizationRequest = z.infer<
 export type CreateOrganizationRequest = z.infer<
   typeof CreateOrganizationRequestSchema
 >;
+
+export type CreateCompanyRequest = z.infer<typeof CreateCompanyRequestSchema>;

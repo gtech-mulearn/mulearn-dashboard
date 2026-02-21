@@ -11,6 +11,8 @@ import { endpoints } from "@/api/endpoints";
 import {
   CollegesResponseSchema,
   CompaniesResponseSchema,
+  type CreateCompanyRequest,
+  CreateCompanyResponseSchema,
   type CreateOrganizationRequest,
   CreateOrganizationResponseSchema,
   DepartmentsResponseSchema,
@@ -75,10 +77,33 @@ export function selectOrganization(data: SelectOrganizationRequest) {
  * Create a new organization if not in list
  */
 export function createOrganization(data: CreateOrganizationRequest) {
+  // Remove undefined fields to avoid sending them to the API
+  const cleanedData = Object.fromEntries(
+    Object.entries(data).filter(([_, value]) => value !== undefined),
+  ) as CreateOrganizationRequest;
+
   return apiClient.post(
     endpoints.onboarding.createOrganization,
-    data,
+    cleanedData,
     CreateOrganizationResponseSchema,
+  );
+}
+
+/**
+ * Create a new company
+ */
+export function createCompany(data: CreateCompanyRequest) {
+  // Remove empty string fields
+  const cleanedData = Object.fromEntries(
+    Object.entries(data).filter(
+      ([_, value]) => value !== undefined && value !== "",
+    ),
+  ) as CreateCompanyRequest;
+
+  return apiClient.post(
+    endpoints.onboarding.createCompany,
+    cleanedData,
+    CreateCompanyResponseSchema,
   );
 }
 
