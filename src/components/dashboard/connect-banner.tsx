@@ -1,3 +1,5 @@
+"use client";
+
 import { X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useState } from "react";

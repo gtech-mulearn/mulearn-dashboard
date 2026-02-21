@@ -61,9 +61,8 @@ export function ShareProfileModal({
         });
       } catch (error) {
         // User cancelled or error
-        if ((error as Error).name !== "AbortError") {
-          toast.error("Failed to share");
-        }
+        if (error instanceof Error && error.name === "AbortError") return;
+        toast.error("Failed to share");
       }
     } else {
       handleCopy();

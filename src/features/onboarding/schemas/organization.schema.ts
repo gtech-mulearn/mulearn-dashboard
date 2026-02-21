@@ -7,18 +7,9 @@
  */
 
 import { z } from "zod";
+import { ApiResponseSchema } from "@/lib/schemas/api-response";
 
-// ============================================
-// Common Response Wrapper (flexible)
-// ============================================
-
-export const ApiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
-  z.object({
-    hasError: z.boolean(),
-    statusCode: z.number(),
-    message: z.any().optional(),
-    response: dataSchema,
-  });
+export { ApiResponseSchema };
 
 // ============================================
 // College/Organization Schemas (flexible field names)

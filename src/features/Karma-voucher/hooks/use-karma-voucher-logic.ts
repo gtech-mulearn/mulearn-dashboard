@@ -101,8 +101,8 @@ export function useKarmaVoucherLogic() {
     async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       const formData = new FormData(e.currentTarget);
-      const file = formData.get("file") as File;
-      if (!file) return;
+      const file = formData.get("file");
+      if (!(file instanceof File)) return;
 
       try {
         await uploadVouchers(file);

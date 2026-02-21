@@ -42,7 +42,7 @@ export function KarmaEarnersCard({ data, isLoading }: KarmaEarnersCardProps) {
                 {formatKarma(student?.karma ?? 0)}
               </div>
             </div>
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 shadow-inner">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-linear-to-br from-primary/10 to-primary/5 shadow-inner">
               <User className="h-6 w-6 text-primary" />
             </div>
           </div>
@@ -68,7 +68,7 @@ export function KarmaEarnersCard({ data, isLoading }: KarmaEarnersCardProps) {
                 {formatKarma(college?.karma ?? 0)}
               </div>
             </div>
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 shadow-inner">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-linear-to-br from-primary/10 to-primary/5 shadow-inner">
               <Building2 className="h-6 w-6 text-primary" />
             </div>
           </div>

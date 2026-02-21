@@ -9,13 +9,26 @@ interface LeaderboardPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
+const validCategories: Category[] = ["students", "campus", "wadhwani"];
+const validTimeframes: TimeFrame[] = ["monthly", "overall"];
+const validWadhwaniTimeframes: WadhwaniTimeFrame[] = ["campus", "zonal"];
+
 export default async function LeaderboardPage(props: LeaderboardPageProps) {
   const searchParams = await props.searchParams;
 
-  const category = (searchParams.category as Category) || "students";
-  const timeframe = (searchParams.timeframe as TimeFrame) || "monthly";
-  const wadhwaniTimeframe =
-    (searchParams.wadhwaniTimeframe as WadhwaniTimeFrame) || "campus";
+  const category = validCategories.includes(searchParams.category as Category)
+    ? (searchParams.category as Category)
+    : "students";
+  const timeframe = validTimeframes.includes(
+    searchParams.timeframe as TimeFrame,
+  )
+    ? (searchParams.timeframe as TimeFrame)
+    : "monthly";
+  const wadhwaniTimeframe = validWadhwaniTimeframes.includes(
+    searchParams.wadhwaniTimeframe as WadhwaniTimeFrame,
+  )
+    ? (searchParams.wadhwaniTimeframe as WadhwaniTimeFrame)
+    : "campus";
 
   return (
     <LeaderboardView

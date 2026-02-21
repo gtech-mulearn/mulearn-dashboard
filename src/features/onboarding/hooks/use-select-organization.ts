@@ -6,7 +6,8 @@
 
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { authKeys } from "@/features/auth/hooks/query-keys";
 import { createOrganization, selectOrganization } from "../api";
 import type {
   CreateOrganizationRequest,
@@ -17,10 +18,15 @@ import type {
  * Hook for selecting an existing organization
  */
 export function useSelectOrganization() {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (data: SelectOrganizationRequest) => {
       const response = await selectOrganization(data);
       return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: authKeys.userInfo() });
     },
   });
 }
@@ -29,10 +35,15 @@ export function useSelectOrganization() {
  * Hook for creating a new organization
  */
 export function useCreateOrganization() {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (data: CreateOrganizationRequest) => {
       const response = await createOrganization(data);
       return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: authKeys.userInfo() });
     },
   });
 }

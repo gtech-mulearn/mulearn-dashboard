@@ -10,6 +10,7 @@
 
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { resetPassword, verifyResetToken } from "../api";
+import { authKeys } from "./query-keys";
 
 /**
  * Hook for verifying reset token is valid
@@ -17,7 +18,7 @@ import { resetPassword, verifyResetToken } from "../api";
  */
 export function useVerifyResetToken(token: string) {
   return useQuery({
-    queryKey: ["resetToken", token],
+    queryKey: authKeys.resetToken(token),
     queryFn: () => verifyResetToken(token),
     enabled: !!token,
     retry: false, // Don't retry on invalid tokens

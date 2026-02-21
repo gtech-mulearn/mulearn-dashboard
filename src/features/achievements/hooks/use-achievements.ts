@@ -15,6 +15,7 @@ export const ACHIEVEMENT_KEYS = {
     [...ACHIEVEMENT_KEYS.all, "simulation", muid] as const,
   auditLogs: (muid: string) =>
     [...ACHIEVEMENT_KEYS.all, "audit", muid] as const,
+  issuedLogsAll: () => [...ACHIEVEMENT_KEYS.all, "issued-logs"] as const,
   issuedLogs: (page: number, perPage: number, search?: string) =>
     [
       ...ACHIEVEMENT_KEYS.all,

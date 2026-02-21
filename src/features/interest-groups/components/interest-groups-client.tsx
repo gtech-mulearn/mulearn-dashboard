@@ -22,7 +22,7 @@ export function InterestGroupsClient() {
       {/* Header Section */}
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <div className="rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 p-3">
+          <div className="rounded-2xl bg-linear-to-br from-primary/20 to-primary/10 p-3">
             <Sparkles className="h-6 w-6 text-primary" />
           </div>
           <div>

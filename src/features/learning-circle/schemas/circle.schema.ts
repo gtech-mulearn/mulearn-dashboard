@@ -38,6 +38,7 @@ export const LearningCircleSchema = z.object({
   ig: z.string(),
   title: z.string(),
   org: z.string().nullable(),
+  total_members: z.number().default(0),
   attendees: z.array(z.unknown()).default([]),
 });
 
@@ -117,8 +118,24 @@ export const ApiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
     response: dataSchema,
   });
 
+/**
+ * Pagination shape returned by Django
+ */
+export const PaginationSchema = z.object({
+  count: z.number(),
+  totalPages: z.number(),
+  isNext: z.boolean(),
+  isPrev: z.boolean(),
+  nextPage: z.number().nullable(),
+});
+
+export type Pagination = z.infer<typeof PaginationSchema>;
+
 export const CircleListResponseSchema = ApiResponseSchema(
-  z.array(LearningCircleSchema),
+  z.object({
+    data: z.array(LearningCircleSchema),
+    pagination: PaginationSchema,
+  }),
 );
 
 export const CircleDetailResponseSchema = ApiResponseSchema(
@@ -175,12 +192,6 @@ export const CollegeListResponseSchema = z.object({
     .optional(),
   response: z.object({
     data: z.array(CollegeListItemSchema),
-    pagination: z.object({
-      count: z.number(),
-      totalPages: z.number(),
-      isNext: z.boolean(),
-      isPrev: z.boolean(),
-      nextPage: z.number().nullable(),
-    }),
+    pagination: PaginationSchema,
   }),
 });

@@ -126,8 +126,6 @@ h5 {
 }
 
 * {
-  box-sizing: border-box;
-  outline: none;
   -ms-overflow-style: none;
   scroll-behavior: smooth;
   scrollbar-width: none;

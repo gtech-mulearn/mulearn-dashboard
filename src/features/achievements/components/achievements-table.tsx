@@ -73,7 +73,7 @@ export function AchievementsTable() {
     {
       id: "icon",
       header: "",
-      cell: ({ row }: { row: any }) => (
+      cell: ({ row }) => (
         <AchievementIcon
           imageUrl={row.original.image_url}
           name={row.original.name}
@@ -85,14 +85,14 @@ export function AchievementsTable() {
     {
       accessorKey: "name",
       header: "Name",
-      cell: ({ row }: { row: any }) => (
+      cell: ({ row }) => (
         <span className="font-medium">{row.original.name}</span>
       ),
     },
     {
       accessorKey: "level_based",
       header: "Level Based",
-      cell: ({ row }: { row: any }) =>
+      cell: ({ row }) =>
         row.original.level_based ? (
           <Badge variant="secondary">Yes</Badge>
         ) : (
@@ -102,7 +102,7 @@ export function AchievementsTable() {
     {
       accessorKey: "has_vc",
       header: "Has VC",
-      cell: ({ row }: { row: any }) =>
+      cell: ({ row }) =>
         row.original.has_vc ? (
           <Badge variant="secondary">Yes</Badge>
         ) : (
@@ -112,7 +112,7 @@ export function AchievementsTable() {
     {
       accessorKey: "is_active",
       header: "Status",
-      cell: ({ row }: { row: any }) =>
+      cell: ({ row }) =>
         row.original.is_active ? (
           <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
             Active
@@ -126,7 +126,7 @@ export function AchievementsTable() {
     {
       accessorKey: "created_at",
       header: "Created",
-      cell: ({ row }: { row: any }) => {
+      cell: ({ row }) => {
         const createdAt = row.original.created_at;
         if (!createdAt)
           return <span className="text-sm text-muted-foreground">—</span>;
@@ -144,7 +144,7 @@ export function AchievementsTable() {
     {
       id: "actions",
       header: "",
-      cell: ({ row }: { row: any }) => (
+      cell: ({ row }) => (
         <TooltipProvider>
           <div className="flex items-center gap-1">
             <Tooltip>
@@ -229,7 +229,7 @@ export function AchievementsTable() {
               .map((headerGroup: HeaderGroup<Achievement>) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map(
-                    (header: Header<Achievement, any>) => {
+                    (header: Header<Achievement, unknown>) => {
                       return (
                         <TableHead key={header.id}>
                           {header.isPlaceholder
@@ -261,14 +261,16 @@ export function AchievementsTable() {
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                 >
-                  {row.getVisibleCells().map((cell: Cell<Achievement, any>) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
-                  ))}
+                  {row
+                    .getVisibleCells()
+                    .map((cell: Cell<Achievement, unknown>) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    ))}
                 </TableRow>
               ))
             ) : (

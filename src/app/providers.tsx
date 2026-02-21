@@ -12,6 +12,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import type { ReactNode } from "react";
+import { toast } from "sonner";
 
 function makeQueryClient() {
   return new QueryClient({
@@ -30,6 +31,15 @@ function makeQueryClient() {
             return false;
           }
           return failureCount < 3;
+        },
+      },
+      mutations: {
+        onError: (error) => {
+          // Global fallback for mutations without their own onError handler.
+          // Individual mutations can override this by providing their own onError.
+          const message =
+            error instanceof Error ? error.message : "Something went wrong";
+          toast.error(message);
         },
       },
     },

@@ -96,7 +96,7 @@ export function IssueRevokePanel() {
               <SelectValue placeholder="Select an achievement" />
             </SelectTrigger>
             <SelectContent>
-              {achievements.map((a: any) => (
+              {achievements.map((a) => (
                 <SelectItem key={a.id} value={a.id}>
                   <div className="flex items-center gap-2">
                     <span>{a.name}</span>

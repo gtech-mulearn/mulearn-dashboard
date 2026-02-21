@@ -8,18 +8,9 @@
  */
 
 import { z } from "zod";
+import { ApiResponseSchema } from "@/lib/schemas/api-response";
 
-// ============================================
-// Django Response Wrapper (reusable)
-// ============================================
-
-export const ApiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
-  z.object({
-    hasError: z.boolean(),
-    statusCode: z.number(),
-    message: z.record(z.string(), z.array(z.string())).optional(),
-    response: dataSchema,
-  });
+export { ApiResponseSchema };
 
 // ============================================
 // User Profile Schemas

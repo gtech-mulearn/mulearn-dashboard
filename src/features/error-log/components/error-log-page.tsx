@@ -20,7 +20,7 @@
 "use client";
 
 import { AlertTriangle, Download, FileText, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Blank } from "@/components/dashboard/table/Blank";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table from "@/components/dashboard/table/Table";
@@ -75,13 +75,17 @@ export function ErrorLogPage() {
   const [perPage, setPerPage] = useState(25);
 
   // Client-side search — no server-side pagination (API returns all)
-  const filtered = rows.filter(
-    (r: ErrorLogEntry) =>
-      r.type.toLowerCase().includes(search.toLowerCase()) ||
-      r.message.toLowerCase().includes(search.toLowerCase()) ||
-      r.method.toLowerCase().includes(search.toLowerCase()) ||
-      r.path.toLowerCase().includes(search.toLowerCase()) ||
-      r.muid.toLowerCase().includes(search.toLowerCase()),
+  const filtered = useMemo(
+    () =>
+      rows.filter(
+        (r: ErrorLogEntry) =>
+          r.type.toLowerCase().includes(search.toLowerCase()) ||
+          r.message.toLowerCase().includes(search.toLowerCase()) ||
+          r.method.toLowerCase().includes(search.toLowerCase()) ||
+          r.path.toLowerCase().includes(search.toLowerCase()) ||
+          r.muid.toLowerCase().includes(search.toLowerCase()),
+      ),
+    [rows, search],
   );
 
   const totalPages = Math.ceil(filtered.length / perPage);

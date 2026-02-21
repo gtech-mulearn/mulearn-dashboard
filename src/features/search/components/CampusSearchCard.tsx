@@ -1,5 +1,3 @@
-"use client";
-
 import { MapPin, Trophy, Users } from "lucide-react";
 import Link from "next/link";
 import type { CampusSearchResult } from "../schemas";

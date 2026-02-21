@@ -79,7 +79,7 @@ export function EditProfileModal({
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 text-3xl font-bold text-white">
+                  <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-indigo-500 to-purple-600 text-3xl font-bold text-white">
                     {profile.full_name?.charAt(0) || "?"}
                   </div>
                 )}

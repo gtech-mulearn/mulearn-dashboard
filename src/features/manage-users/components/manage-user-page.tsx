@@ -25,7 +25,7 @@ import {
   useManageUsersList,
 } from "@/features/manage-users/hooks";
 import type { ManageUserListItem } from "@/features/manage-users/schemas";
-import UserForm from "./useForm";
+import { UserForm } from "./useForm";
 
 export default function ManageUsers() {
   const [currentPage, setCurrentPage] = useState(1);

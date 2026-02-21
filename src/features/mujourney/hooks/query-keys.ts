@@ -20,6 +20,9 @@ export const mujourneyKeys = {
   publicUserJourney: (muid: string) =>
     [...mujourneyKeys.all, "public-journey", muid] as const,
 
+  // Interest groups
+  interestGroups: () => [...mujourneyKeys.all, "interest-groups"] as const,
+
   // User feed
   userLevelFeed: () => [...mujourneyKeys.all, "user-level-feed"] as const,
 } as const;

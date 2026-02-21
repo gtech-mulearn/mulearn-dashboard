@@ -1,8 +1,5 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
-import { authStore } from "@/lib/auth";
-import { env } from "../../../../config/env";
-import type {} from "../schemas";
 import {
   BulkImportResponseSchema,
   KarmaVoucherListResponseSchema,
@@ -58,27 +55,17 @@ export async function deleteKarmaVoucher(id: string): Promise<void> {
 // ─── Bulk Import Vouchers (XLSX) ────────────────────────────────────────────
 
 export async function importVouchers(file: File): Promise<BulkImportResponse> {
-  const token = authStore.getAccessToken();
-  const base = env.NEXT_PUBLIC_DJANGO_API_URL;
-
   const formData = new FormData();
   formData.append("file", file);
 
-  const res = await fetch(`${base}${endpoints.admin.karmaVoucher.import}`, {
-    method: "POST",
-    headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: formData,
-  });
+  const response = await apiClient.post(
+    endpoints.admin.karmaVoucher.import,
+    formData,
+    BulkImportResponseSchema,
+    { isFormData: true },
+  );
 
-  if (!res.ok) {
-    throw new Error(`Import failed (${res.status})`);
-  }
-
-  const json = await res.json();
-  const data = json?.response ?? json;
-  return BulkImportResponseSchema.parse(data);
+  return response;
 }
 
 // ─── Export CSV (blob download) ─────────────────────────────────────────────

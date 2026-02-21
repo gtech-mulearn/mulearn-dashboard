@@ -65,7 +65,9 @@ export const AreaOfInterestSchema = z.object({
 });
 
 export const AreasOfInterestResponseSchema = ApiResponseSchema(
-  z.array(AreaOfInterestSchema),
+  z.object({
+    aois: z.array(AreaOfInterestSchema),
+  }),
 );
 
 // ============================================

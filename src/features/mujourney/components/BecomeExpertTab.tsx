@@ -9,7 +9,7 @@
 
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Select,
   SelectContent,
@@ -43,24 +43,12 @@ export function BecomeExpertTab({
   error,
   isAuthenticated,
 }: BecomeExpertTabProps) {
-  const [selectedIG, setSelectedIG] = useState<string>("");
+  const [selectedIG, setSelectedIG] = useState<string | null>(null);
 
-  // Data comes from parent (MuJourneyDashboard)
-  // const { data: igData, ... } = useQuery(...) -> REMOVED
-  // const { data: levelsData, ... } = useStartLearning() -> REMOVED
+  const interestGroups = igData?.response?.aois || [];
 
-  // Auto-select first IG if authenticated
-  useEffect(() => {
-    if (
-      igData?.response?.interestGroup &&
-      igData.response.interestGroup.length > 0 &&
-      selectedIG === ""
-    ) {
-      setSelectedIG(igData.response.interestGroup[0].id);
-    }
-  }, [igData, selectedIG]);
-
-  const interestGroups = igData?.response?.interestGroup || [];
+  // Derive effective IG: user selection falls back to first available
+  const effectiveIG = selectedIG ?? interestGroups[0]?.id ?? "";
 
   // Filter levels to show only #cl- tasks (Interest Group specific tasks)
   // organized by level, similar to Start Learning Tab
@@ -78,8 +66,8 @@ export function BecomeExpertTab({
           const isExpertTask = hashtag.includes("#cl-");
 
           // Filter by interest group if selected
-          const matchesIG = selectedIG
-            ? task.interest_group?.id === selectedIG
+          const matchesIG = effectiveIG
+            ? task.interest_group?.id === effectiveIG
             : true;
 
           // Apply completion filter
@@ -106,7 +94,7 @@ export function BecomeExpertTab({
       .filter((level: UserLevelData) => (level.tasks || []).length > 0); // Remove empty levels
 
     return filteredLevels;
-  }, [levelsData, selectedIG, filter]);
+  }, [levelsData, effectiveIG, filter]);
 
   return (
     <div className="space-y-6">
@@ -120,7 +108,7 @@ export function BecomeExpertTab({
         </div>
 
         {!isLoading && interestGroups.length > 0 && (
-          <Select value={selectedIG} onValueChange={setSelectedIG}>
+          <Select value={effectiveIG} onValueChange={setSelectedIG}>
             <SelectTrigger className="w-[250px]">
               <SelectValue placeholder="Select Interest Group" />
             </SelectTrigger>
@@ -170,7 +158,7 @@ export function BecomeExpertTab({
         ) : (
           <div className="text-center py-12">
             <p className="text-muted-foreground">
-              {selectedIG
+              {effectiveIG
                 ? "No expert tasks available for this interest group"
                 : "Select an interest group to view tasks"}
             </p>

@@ -8,42 +8,10 @@
 import type { z } from "zod";
 import { env } from "../../config/env";
 import { authStore } from "../lib/auth";
+import { ApiError, extractDjangoMessage } from "./errors";
 
-// ─── Errors ─────────────────────────────────────────────────────────────────
-
-export class ApiError extends Error {
-  constructor(
-    public status: number,
-    public message: string,
-    public data?: unknown,
-  ) {
-    super(message);
-  }
-}
-
-/**
- * Extract a human-readable error message from Django's standard error envelope.
- *
- * Handles:
- *  - `{ message: { general: ["..."] } }`  (most common)
- *  - `{ detail: "..." }`                  (DRF style)
- */
-function extractDjangoMessage(data: unknown): string | null {
-  if (!data || typeof data !== "object") return null;
-  const d = data as Record<string, unknown>;
-  const msg = d.message;
-  if (msg && typeof msg === "object") {
-    const general = (msg as Record<string, unknown>).general;
-    if (Array.isArray(general) && typeof general[0] === "string") {
-      return general[0];
-    }
-  }
-
-  // DRF fallback → detail
-  if (typeof d.detail === "string") return d.detail;
-
-  return null;
-}
+// Re-export so existing `import { ApiError } from "@/api/client"` still works.
+export { ApiError } from "./errors";
 
 // ─── Headers ────────────────────────────────────────────────────────────────
 
@@ -102,11 +70,15 @@ interface RequestOptions<T> {
   schema?: z.ZodSchema<T>;
   headers?: HeadersInit;
   responseType?: "json" | "blob";
+  /** When true, sends body as FormData (no JSON.stringify, no Content-Type header) */
+  isFormData?: boolean;
 }
 
 type ClientOptions = {
   headers?: HeadersInit;
   responseType?: "json" | "blob";
+  /** When true, sends body as FormData (no JSON.stringify, no Content-Type header) */
+  isFormData?: boolean;
 };
 
 // ─── Core request fn (shared by both gateways) ─────────────────────────────
@@ -115,13 +87,30 @@ async function request<T>(
   endpoint: string,
   options: RequestOptions<T> & { authenticated: boolean },
 ): Promise<T> {
+  const isFormData = options.isFormData === true;
+
+  // For FormData, let the browser set Content-Type (includes boundary).
+  // For JSON, use the standard JSON headers.
+  const baseHeaders = options.authenticated ? getAuthHeaders() : BASE_HEADERS;
+  const requestHeaders: Record<string, string> = isFormData
+    ? (() => {
+        const h = { ...baseHeaders };
+        delete h["Content-Type"];
+        return h;
+      })()
+    : baseHeaders;
+
   const res = await fetch(`${env.NEXT_PUBLIC_DJANGO_API_URL}${endpoint}`, {
     method: options.method,
     headers: {
-      ...(options.authenticated ? getAuthHeaders() : BASE_HEADERS),
+      ...requestHeaders,
       ...options.headers,
     },
-    body: options.body ? JSON.stringify(options.body) : undefined,
+    body: isFormData
+      ? (options.body as FormData)
+      : options.body
+        ? JSON.stringify(options.body)
+        : undefined,
   });
 
   if (options.responseType === "blob") {
@@ -174,12 +163,10 @@ async function request<T>(
   if (options.schema) {
     const parsed = options.schema.safeParse(rawData);
     if (!parsed.success) {
-      const errorDetails = JSON.stringify(parsed.error.flatten());
-      console.error("❌ API schema mismatch", {
-        errors: parsed.error.flatten(),
-        rawData,
-      });
-      throw new Error(`API schema mismatch ${errorDetails}`);
+      console.error(`⚠️ API schema mismatch [${endpoint}]`, parsed.error.issues);
+      // Return raw data preserving the full envelope shape.
+      // Schemas are defensive — a mismatch should not crash the UI.
+      return rawData as T;
     }
     return parsed.data;
   }

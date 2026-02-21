@@ -122,7 +122,7 @@ export function SimulationPanel() {
               — {results.length} achievement{results.length !== 1 ? "s" : ""}
             </p>
             {isLoading ? (
-              Array.from({ length: 4 }).map((_: any, i: number) => (
+              Array.from({ length: 4 }).map((_, i) => (
                 // biome-ignore lint/suspicious/noArrayIndexKey: Skeletons are static
                 <Skeleton key={i} className="h-20 w-full rounded-lg" />
               ))

@@ -67,7 +67,7 @@ export async function getCircles(): Promise<LearningCircle[]> {
     endpoints.learningCircle.list,
     CircleListResponseSchema,
   );
-  return response.response;
+  return response.response.data;
 }
 
 /** Get circle details */

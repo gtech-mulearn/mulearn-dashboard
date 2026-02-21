@@ -11,7 +11,7 @@
 "use client";
 
 import { Check, Pencil, Plus, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useInterestGroupsList } from "../hooks";
 import type { InterestGroup, InterestGroupListItem } from "../schemas";
@@ -42,11 +42,18 @@ export function IGSelector({
   }, [userInterestGroups]);
 
   // Sort IGs alphabetically
-  const sortedIgs = [...localIgs].sort((a, b) => a.name.localeCompare(b.name));
+  const sortedIgs = useMemo(
+    () => [...localIgs].sort((a, b) => a.name.localeCompare(b.name)),
+    [localIgs],
+  );
 
   // Get all available IGs that are not already selected
-  const availableIgs = (allIgData?.interestGroup || []).filter(
-    (ig) => !localIgs.some((selected) => selected.id === ig.id),
+  const availableIgs = useMemo(
+    () =>
+      (allIgData?.interestGroup || []).filter(
+        (ig) => !localIgs.some((selected) => selected.id === ig.id),
+      ),
+    [allIgData, localIgs],
   );
 
   // Check if user can edit (level >= 4)

@@ -9,7 +9,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Blank } from "@/components/dashboard/table/Blank";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table from "@/components/dashboard/table/Table";
@@ -44,15 +44,25 @@ export function DynamicRoleTable() {
   const [editTarget, setEditTarget] = useState<DynamicRoleItem | null>(null);
 
   // Client-side search filter
-  const filtered = rows.filter(
-    (r: DynamicRoleItem) =>
-      r.type.toLowerCase().includes(search.toLowerCase()) ||
-      r.role.toLowerCase().includes(search.toLowerCase()),
+  const filtered = useMemo(
+    () =>
+      rows.filter(
+        (r: DynamicRoleItem) =>
+          r.type.toLowerCase().includes(search.toLowerCase()) ||
+          r.role.toLowerCase().includes(search.toLowerCase()),
+      ),
+    [rows, search],
   );
 
   // Paginate after filtering
-  const totalPages = Math.ceil(filtered.length / perPage);
-  const pageSlice = filtered.slice((page - 1) * perPage, page * perPage);
+  const totalPages = useMemo(
+    () => Math.ceil(filtered.length / perPage),
+    [filtered, perPage],
+  );
+  const pageSlice = useMemo(
+    () => filtered.slice((page - 1) * perPage, page * perPage),
+    [filtered, page, perPage],
+  );
 
   // CSV download (filtered data)
   const downloadCSV = () => {

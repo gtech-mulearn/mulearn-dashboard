@@ -8,7 +8,12 @@
 
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   createCircle,
@@ -54,6 +59,7 @@ export function useColleges(params?: {
   return useQuery({
     queryKey: learningCircleKeys.colleges(params),
     queryFn: () => getColleges(params),
+    placeholderData: keepPreviousData,
     staleTime: STALE_TIME,
   });
 }
@@ -110,6 +116,7 @@ export function usePublicMeetings(params?: {
   return useQuery({
     queryKey: learningCircleKeys.meetingsPublic(params),
     queryFn: () => getPublicMeetings(params),
+    placeholderData: keepPreviousData,
     staleTime: STALE_TIME,
   });
 }
@@ -270,6 +277,9 @@ export function useJoinMeeting() {
       queryClient.invalidateQueries({
         queryKey: learningCircleKeys.meetingDetail(meetingId),
       });
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.meetingsUser(),
+      });
       toast.success("Successfully joined the meeting!");
     },
     onError: () => {
@@ -286,6 +296,9 @@ export function useLeaveMeeting() {
     onSuccess: (_, meetingId) => {
       queryClient.invalidateQueries({
         queryKey: learningCircleKeys.meetingDetail(meetingId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.meetingsUser(),
       });
       toast.success("Left the meeting");
     },

@@ -67,7 +67,7 @@ export function HeroCard({ name, src, alt }: HeroCardProps) {
           <div className="relative hidden h-60 w-full items-center justify-center lg:flex">
             {/* Abstract Shapes behind image */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="h-48 w-48 rounded-full bg-gradient-to-tr from-primary/20 to-accent/20 blur-2xl" />
+              <div className="h-48 w-48 rounded-full bg-linear-to-tr from-primary/20 to-accent/20 blur-2xl" />
             </div>
             <Image
               alt={alt}

@@ -32,7 +32,7 @@ export function InterestGroupCard({ group, gradient }: InterestGroupCardProps) {
       />
 
       {/* Animated Glow Effect */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+      <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
       {/* Content */}
       <div className="relative flex h-full flex-col justify-between p-6">
@@ -70,7 +70,7 @@ export function InterestGroupCard({ group, gradient }: InterestGroupCardProps) {
       </div>
 
       {/* Hover Shimmer Effect */}
-      <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-all duration-700 group-hover:translate-x-full group-hover:opacity-100" />
+      <div className="absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/20 to-transparent opacity-0 transition-all duration-700 group-hover:translate-x-full group-hover:opacity-100" />
     </button>
   );
 }

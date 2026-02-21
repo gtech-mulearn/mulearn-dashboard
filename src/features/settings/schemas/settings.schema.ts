@@ -14,9 +14,11 @@ export const ChangePasswordRequestSchema = z
 export const ChangePasswordResponseSchema = z.object({
   hasError: z.boolean(),
   statusCode: z.number(),
-  message: z.object({
-    general: z.array(z.string()),
-  }),
+  message: z
+    .object({
+      general: z.array(z.string()).optional(),
+    })
+    .optional(),
   response: z.object({}).loose(),
 });
 
@@ -28,9 +30,11 @@ export const CollegeSchema = z.object({
 export const CollegeResponseSchema = z.object({
   hasError: z.boolean().optional(),
   statusCode: z.number(),
-  message: z.object({
-    general: z.array(z.string()),
-  }),
+  message: z
+    .object({
+      general: z.array(z.string()).optional(),
+    })
+    .optional(),
   response: z.object({
     colleges: z.array(CollegeSchema),
   }),
@@ -46,9 +50,11 @@ export const DepartmentSchema = z.object({
 export const DepartmentResponseSchema = z.object({
   hasError: z.boolean().optional(),
   statusCode: z.number(),
-  message: z.object({
-    general: z.array(z.string()),
-  }),
+  message: z
+    .object({
+      general: z.array(z.string()).optional(),
+    })
+    .optional(),
   response: z.object({
     departments: z.array(DepartmentSchema),
   }),
@@ -64,9 +70,11 @@ export const ChangeOrganizationRequestSchema = z.object({
 export const ChangeOrganizationResponseSchema = z.object({
   hasError: z.boolean(),
   statusCode: z.number(),
-  message: z.object({
-    general: z.array(z.string()),
-  }),
+  message: z
+    .object({
+      general: z.array(z.string()).optional(),
+    })
+    .optional(),
   response: z.object({}).loose(),
 });
 

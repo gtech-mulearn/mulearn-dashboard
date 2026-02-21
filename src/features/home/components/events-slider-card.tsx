@@ -119,7 +119,7 @@ export function EventsSliderCard({ events, isLoading }: EventsSliderCardProps) {
                 priority={slideIndex === 0}
               />
               {/* Gradient Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-foreground via-foreground/40 to-transparent opacity-90 transition-opacity duration-300 group-hover:opacity-80" />
+              <div className="absolute inset-0 bg-linear-to-t from-foreground via-foreground/40 to-transparent opacity-90 transition-opacity duration-300 group-hover:opacity-80" />
             </div>
           ))}
         </div>
