@@ -8,6 +8,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { ApiError } from "@/api";
 import { ForgotPasswordForm, useForgotPassword } from "@/features/auth";
 
 export function ForgotPasswordClient() {
@@ -19,8 +20,12 @@ export function ForgotPasswordClient() {
       await forgotPassword.mutateAsync(emailOrMuid);
       setIsSuccess(true);
       toast.success("Reset link sent to your email!");
-    } catch (_error) {
-      toast.error("Failed to send reset link. Please check your email/MuID.");
+    } catch (error) {
+      const message =
+        error instanceof ApiError
+          ? error.message
+          : "Failed to send reset link. Please check your email/MuID.";
+      toast.error(message);
     }
   };
 

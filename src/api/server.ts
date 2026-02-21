@@ -1,13 +1,14 @@
-// src/api/client.ts
-// Client-side API gateways — mirrors the old repo's publicGateway / privateGateway pattern.
+// src/api/server.ts
+// Server-side API gateways — mirrors client.ts pattern for Server Components / Route Handlers.
 // ─────────────────────────────────────────────────────────────────────────────
-// publicApiClient  → no auth, for unauthenticated endpoints
-// apiClient        → attaches Bearer token, handles token expiry / redirect
+// publicServerClient  → no auth, for unauthenticated endpoints
+// serverApiClient     → attaches Bearer token from cookies
 // ─────────────────────────────────────────────────────────────────────────────
+// ⚠️  This file must only be imported from Server Components / Route Handlers.
 
+import { cookies } from "next/headers";
 import type { z } from "zod";
 import { env } from "../../config/env";
-import { authStore } from "../lib/auth";
 
 // ─── Errors ─────────────────────────────────────────────────────────────────
 
@@ -21,13 +22,6 @@ export class ApiError extends Error {
   }
 }
 
-/**
- * Extract a human-readable error message from Django's standard error envelope.
- *
- * Handles:
- *  - `{ message: { general: ["..."] } }`  (most common)
- *  - `{ detail: "..." }`                  (DRF style)
- */
 function extractDjangoMessage(data: unknown): string | null {
   if (!data || typeof data !== "object") return null;
   const d = data as Record<string, unknown>;
@@ -38,60 +32,30 @@ function extractDjangoMessage(data: unknown): string | null {
       return general[0];
     }
   }
-
-  // DRF fallback → detail
   if (typeof d.detail === "string") return d.detail;
-
   return null;
 }
 
-// ─── Headers ────────────────────────────────────────────────────────────────
+// ─── URL + Headers ──────────────────────────────────────────────────────────
+
+function getBaseUrl(): string {
+  return env.BACKEND_URL ?? env.NEXT_PUBLIC_DJANGO_API_URL;
+}
 
 const BASE_HEADERS: Record<string, string> = {
   "Content-Type": "application/json; charset=utf-8",
 };
 
-function getAuthHeaders(): Record<string, string> {
+async function getAuthHeaders(): Promise<Record<string, string>> {
   const headers: Record<string, string> = { ...BASE_HEADERS };
-  const token = authStore.getAccessToken();
 
+  const cookieStore = await cookies();
+  const token = cookieStore.get("accessToken")?.value;
   if (token) {
     headers.Authorization = `Bearer ${token}`;
   }
 
   return headers;
-}
-
-// ─── Token expiry detection ─────────────────────────────────────────────────
-
-function handleTokenExpiry(rawData: unknown): void {
-  if (typeof window === "undefined") return;
-
-  if (
-    rawData &&
-    typeof rawData === "object" &&
-    "hasError" in rawData &&
-    "statusCode" in rawData
-  ) {
-    const data = rawData as {
-      hasError: boolean;
-      statusCode: number;
-      message?: { general?: string[] };
-    };
-
-    if (
-      data.statusCode === 1000 ||
-      data.message?.general?.some(
-        (msg) =>
-          msg.toLowerCase().includes("token expired") ||
-          msg.toLowerCase().includes("token invalid") ||
-          msg.toLowerCase().includes("invalid token"),
-      )
-    ) {
-      authStore.clearTokens();
-      window.location.href = "/login";
-    }
-  }
 }
 
 // ─── Request options ────────────────────────────────────────────────────────
@@ -101,66 +65,31 @@ interface RequestOptions<T> {
   body?: unknown;
   schema?: z.ZodSchema<T>;
   headers?: HeadersInit;
-  responseType?: "json" | "blob";
+  next?: NextFetchRequestConfig;
 }
 
-type ClientOptions = {
+type ServerOptions = {
   headers?: HeadersInit;
-  responseType?: "json" | "blob";
+  next?: NextFetchRequestConfig;
 };
 
-// ─── Core request fn (shared by both gateways) ─────────────────────────────
+// ─── Core request fn ────────────────────────────────────────────────────────
 
 async function request<T>(
   endpoint: string,
   options: RequestOptions<T> & { authenticated: boolean },
 ): Promise<T> {
-  const res = await fetch(`${env.NEXT_PUBLIC_DJANGO_API_URL}${endpoint}`, {
+  const res = await fetch(`${getBaseUrl()}${endpoint}`, {
     method: options.method,
     headers: {
-      ...(options.authenticated ? getAuthHeaders() : BASE_HEADERS),
+      ...(options.authenticated ? await getAuthHeaders() : BASE_HEADERS),
       ...options.headers,
     },
     body: options.body ? JSON.stringify(options.body) : undefined,
+    next: options.next,
   });
 
-  if (options.responseType === "blob") {
-    return (await res.blob()) as T;
-  }
-
   const rawData = await res.json().catch(() => null);
-
-  // Token expiry handling only for authenticated calls
-  if (options.authenticated) {
-    handleTokenExpiry(rawData);
-
-    if (res.status === 401 || res.status === 403) {
-      authStore.clearTokens();
-      if (typeof window !== "undefined") {
-        window.location.href = "/login";
-      }
-      throw new ApiError(
-        res.status,
-        "Unauthorized - redirecting to login",
-        rawData,
-      );
-    }
-  }
-
-  // Check for hasError even if res.ok is true (business error)
-  if (
-    rawData &&
-    typeof rawData === "object" &&
-    "hasError" in rawData &&
-    rawData.hasError === true
-  ) {
-    const backendMsg = extractDjangoMessage(rawData);
-    throw new ApiError(
-      res.status,
-      backendMsg || `Request failed: ${endpoint}`,
-      rawData,
-    );
-  }
 
   if (!res.ok) {
     const backendMsg = extractDjangoMessage(rawData);
@@ -174,7 +103,7 @@ async function request<T>(
   if (options.schema) {
     const parsed = options.schema.safeParse(rawData);
     if (!parsed.success) {
-      console.error("❌ API schema mismatch", {
+      console.error("❌ API schema mismatch (server)", {
         errors: parsed.error.format(),
         rawData,
       });
@@ -194,12 +123,12 @@ async function request<T>(
 
 // ─── Gateway factory ────────────────────────────────────────────────────────
 
-function createGateway(authenticated: boolean) {
+function createServerGateway(authenticated: boolean) {
   return {
     get: <T>(
       endpoint: string,
       schema?: z.ZodSchema<T>,
-      options?: ClientOptions,
+      options?: ServerOptions,
     ) =>
       request<T>(endpoint, {
         method: "GET",
@@ -212,7 +141,7 @@ function createGateway(authenticated: boolean) {
       endpoint: string,
       body: unknown,
       schema?: z.ZodSchema<T>,
-      options?: ClientOptions,
+      options?: ServerOptions,
     ) =>
       request<T>(endpoint, {
         method: "POST",
@@ -226,7 +155,7 @@ function createGateway(authenticated: boolean) {
       endpoint: string,
       body: unknown,
       schema?: z.ZodSchema<T>,
-      options?: ClientOptions,
+      options?: ServerOptions,
     ) =>
       request<T>(endpoint, {
         method: "PUT",
@@ -240,7 +169,7 @@ function createGateway(authenticated: boolean) {
       endpoint: string,
       body: unknown,
       schema?: z.ZodSchema<T>,
-      options?: ClientOptions,
+      options?: ServerOptions,
     ) =>
       request<T>(endpoint, {
         method: "PATCH",
@@ -253,7 +182,7 @@ function createGateway(authenticated: boolean) {
     delete: <T>(
       endpoint: string,
       schema?: z.ZodSchema<T>,
-      options?: ClientOptions,
+      options?: ServerOptions,
     ) =>
       request<T>(endpoint, {
         method: "DELETE",
@@ -266,8 +195,8 @@ function createGateway(authenticated: boolean) {
 
 // ─── Exports ────────────────────────────────────────────────────────────────
 
-/** Public gateway — no auth header, no token expiry handling */
-export const publicApiClient = createGateway(false);
+/** Public gateway — no auth, for unauthenticated server-side calls */
+export const publicServerClient = createServerGateway(false);
 
-/** Private gateway — attaches Bearer token, handles token expiry + redirect */
-export const apiClient = createGateway(true);
+/** Private gateway — attaches Bearer token from cookies */
+export const serverApiClient = createServerGateway(true);

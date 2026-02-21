@@ -12,6 +12,7 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { serverApiClient } from "../../api/server";
 import type { Permission } from "./permissions";
 import { hasAnyRole, hasPermission } from "./permissions";
 
@@ -64,32 +65,13 @@ export async function getServerUser(): Promise<ServerUser | null> {
   if (!accessToken) return null;
 
   try {
-    const backendUrl =
-      process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL;
-    if (!backendUrl) {
-      console.error("[auth/server] BACKEND_URL env var is not set");
-      return null;
-    }
-
-    const res = await fetch(`${backendUrl}/api/v1/dashboard/user/info/`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-      next: { revalidate: 60, tags: ["user-info"] },
-    });
-
-    if (!res.ok) {
-      // Token expired or invalid — don't throw, just return null
-      return null;
-    }
-
-    const data = await res.json();
-
-    if (data.hasError) return null;
-
-    return data.response as ServerUser;
+    return await serverApiClient.get<ServerUser>(
+      "/api/v1/dashboard/user/info/",
+      undefined,
+      { next: { revalidate: 60, tags: ["user-info"] } },
+    );
   } catch (error) {
+    // Token expired, invalid, or network error — don't throw, just return null
     console.error("[auth/server] Failed to fetch user info:", error);
     return null;
   }
