@@ -1,6 +1,12 @@
 "use client";
-import { useUserInfo } from "@/features/auth/hooks/use-session";
-import { useEvents, useInterestGroupsList, useKarmaFeed } from "../hooks";
+import { useUserInfo, useUserProfile } from "@/features/auth/hooks/use-session";
+import {
+  useCalendarEvents,
+  useEvents,
+  useInterestGroupsList,
+  useKarmaFeed,
+} from "../hooks";
+import { EventCalendarCard } from "./event-calendar-card";
 import { EventsSliderCard } from "./events-slider-card";
 import { HeroCard } from "./hero-card";
 import { InterestGroupsCard } from "./interest-groups-card";
@@ -9,10 +15,13 @@ import { LearningCirclesCard } from "./learning-circles-card";
 
 export function HomePage() {
   const { data: userInfo } = useUserInfo();
+  const { data: userProfile } = useUserProfile();
   const { data: interestGroups, isLoading: loadingGroups } =
     useInterestGroupsList();
   const { data: karmaFeed, isLoading: loadingKarma } = useKarmaFeed();
   const { data: events, isLoading: loadingEvents } = useEvents();
+  const { data: calendarEvents, isLoading: loadingCalendar } =
+    useCalendarEvents();
   const displayName = userInfo?.full_name?.split(" ")[0] ?? "Learner";
   const selectedDomain = userInfo?.user_domains?.[0]?.toLowerCase();
 
@@ -68,15 +77,20 @@ export function HomePage() {
 
   return (
     <div className="space-y-8 p-1">
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
         <div className="col-span-1 md:col-span-3">
           <HeroCard name={displayName} src={src} alt={alt} />
         </div>
-        <div className="col-span-1 md:col-span-2">
-          <LearningCirclesCard />
-        </div>
         <div className="col-span-1 md:col-span-1">
-          <KarmaEarnersCard data={karmaFeed} isLoading={loadingKarma} />
+          <EventCalendarCard
+            events={calendarEvents}
+            isLoading={loadingCalendar}
+          />
+        </div>
+        <div className="col-span-1 md:col-span-2">
+          <LearningCirclesCard
+            userInterestGroups={userProfile?.interest_groups}
+          />
         </div>
         <div className="col-span-1 md:col-span-1">
           <InterestGroupsCard
@@ -85,7 +99,10 @@ export function HomePage() {
             category={selectedDomain ?? "member"}
           />
         </div>
-        <div className="col-span-1 md:col-span-2">
+        <div className="col-span-1 md:col-span-1">
+          <KarmaEarnersCard data={karmaFeed} isLoading={loadingKarma} />
+        </div>
+        <div className="col-span-1 md:col-span-4">
           <EventsSliderCard events={events} isLoading={loadingEvents} />
         </div>
       </div>

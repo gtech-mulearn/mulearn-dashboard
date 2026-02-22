@@ -1,6 +1,7 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
+  CalendarEventsResponseSchema,
   EventRowSchema,
   EventsSchema,
   InterestGroupsListResponseSchema,
@@ -73,4 +74,17 @@ export async function getEvents() {
     // Return empty array as fallback instead of Crashing
     return [];
   }
+}
+
+// ============================================
+// Calendar Events
+// ============================================
+
+/** Get calendar events for dashboard */
+export async function getCalendarEvents() {
+  const response = await apiClient.get(
+    endpoints.dashboard.calendarEvents,
+    CalendarEventsResponseSchema,
+  );
+  return response.response.events;
 }
