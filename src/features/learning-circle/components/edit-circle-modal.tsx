@@ -9,6 +9,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Edit } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -77,69 +78,100 @@ export function EditCircleModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[520px]">
         <DialogHeader>
-          <DialogTitle>Edit Learning Circle</DialogTitle>
+          <DialogTitle className="flex items-center gap-3 text-lg">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 shadow-sm">
+              <Edit className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <span className="block">Edit Learning Circle</span>
+              <span className="block text-xs font-normal text-muted-foreground">
+                Update circle details
+              </span>
+            </div>
+          </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="mt-5 space-y-5">
           {/* Title */}
           <div className="space-y-2">
-            <Label htmlFor="title">Circle Name</Label>
+            <Label
+              htmlFor="title"
+              className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+            >
+              Circle Name
+            </Label>
             <Input
               id="title"
               placeholder="e.g., Web Dev Enthusiasts"
               {...register("title")}
+              className="rounded-xl border-border/40 shadow-sm"
             />
             {errors.title && (
-              <p className="text-sm text-red-500">{errors.title.message}</p>
+              <p className="text-xs font-medium text-red-500">
+                {errors.title.message}
+              </p>
             )}
           </div>
 
           {/* Description */}
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label
+              htmlFor="description"
+              className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+            >
+              Description
+            </Label>
             <Textarea
               id="description"
               placeholder="What is this circle about..."
               rows={4}
               {...register("description")}
+              className="resize-none rounded-xl border-border/40 shadow-sm"
             />
             {errors.description && (
-              <p className="text-sm text-red-500">
+              <p className="text-xs font-medium text-red-500">
                 {errors.description.message}
               </p>
             )}
           </div>
 
           {/* Read-only fields */}
-          <div className="space-y-2">
-            <Label className="text-gray-500">Interest Group</Label>
-            <p className="text-sm text-gray-600 bg-gray-50 rounded-md p-2">
-              {circle.ig}
-            </p>
-          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/60">
+                Interest Group
+              </Label>
+              <p className="rounded-xl bg-muted/30 px-4 py-2.5 text-sm font-medium text-foreground">
+                {circle.ig}
+              </p>
+            </div>
 
-          <div className="space-y-2">
-            <Label className="text-gray-500">Organization</Label>
-            <p className="text-sm text-gray-600 bg-gray-50 rounded-md p-2">
-              {circle.org || "No organization"}
-            </p>
+            <div className="space-y-2">
+              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/60">
+                Organization
+              </Label>
+              <p className="rounded-xl bg-muted/30 px-4 py-2.5 text-sm font-medium text-foreground">
+                {circle.org || "No organization"}
+              </p>
+            </div>
           </div>
 
           {/* Submit */}
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex justify-end gap-3 border-t border-border/30 pt-5">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
+              className="rounded-xl border-border/40 px-5 text-sm font-semibold"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={isSubmitting || editCircle.isPending}
-              className="bg-primary hover:bg-primary/90"
+              className="rounded-xl px-5 text-sm font-semibold shadow-sm hover:shadow"
             >
               {editCircle.isPending ? "Saving..." : "Save Changes"}
             </Button>

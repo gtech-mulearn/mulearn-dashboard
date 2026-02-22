@@ -5,4 +5,5 @@
  */
 
 export * from "./query-keys";
+export * from "./use-circle-permissions";
 export * from "./use-learning-circle";

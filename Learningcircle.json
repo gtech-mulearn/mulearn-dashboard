@@ -1,0 +1,3324 @@
+{
+  "v": 11,
+  "id": "cmlwj7wkd012b11pi376xpuo4",
+  "name": "Learningcircle",
+  "folders": [],
+  "requests": [
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_create_retrieve",
+      "method": "GET",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/create/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_create_retrieve",
+            "method": "GET",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/create/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": []
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_create_create",
+      "method": "POST",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/create/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_create_create",
+            "method": "POST",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/create/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": []
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_create_update",
+      "method": "PUT",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/create/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_create_update",
+            "method": "PUT",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/create/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": []
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_create_destroy",
+      "method": "DELETE",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/create/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_create_destroy",
+            "method": "DELETE",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/create/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": []
+          },
+          "status": "No Content",
+          "code": 204,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_delete_retrieve",
+      "method": "GET",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/delete/<<circle_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "circle_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_delete_retrieve",
+            "method": "GET",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/delete/<<circle_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "circle_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_delete_create",
+      "method": "POST",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/delete/<<circle_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "circle_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_delete_create",
+            "method": "POST",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/delete/<<circle_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "circle_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_delete_update",
+      "method": "PUT",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/delete/<<circle_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "circle_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_delete_update",
+            "method": "PUT",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/delete/<<circle_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "circle_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_delete_destroy",
+      "method": "DELETE",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/delete/<<circle_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "circle_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_delete_destroy",
+            "method": "DELETE",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/delete/<<circle_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "circle_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "No Content",
+          "code": 204,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_edit_retrieve",
+      "method": "GET",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/edit/<<circle_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "circle_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_edit_retrieve",
+            "method": "GET",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/edit/<<circle_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "circle_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_edit_create",
+      "method": "POST",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/edit/<<circle_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "circle_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_edit_create",
+            "method": "POST",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/edit/<<circle_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "circle_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_edit_update",
+      "method": "PUT",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/edit/<<circle_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "circle_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_edit_update",
+            "method": "PUT",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/edit/<<circle_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "circle_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_edit_destroy",
+      "method": "DELETE",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/edit/<<circle_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "circle_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_edit_destroy",
+            "method": "DELETE",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/edit/<<circle_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "circle_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "No Content",
+          "code": 204,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_info_retrieve",
+      "method": "GET",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/info/<<circle_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "circle_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_info_retrieve",
+            "method": "GET",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/info/<<circle_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "circle_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_info_create",
+      "method": "POST",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/info/<<circle_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "circle_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_info_create",
+            "method": "POST",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/info/<<circle_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "circle_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_info_update",
+      "method": "PUT",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/info/<<circle_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "circle_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_info_update",
+            "method": "PUT",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/info/<<circle_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "circle_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_info_destroy",
+      "method": "DELETE",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/info/<<circle_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "circle_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_info_destroy",
+            "method": "DELETE",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/info/<<circle_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "circle_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "No Content",
+          "code": 204,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_invite_create",
+      "method": "POST",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/invite/<<circle_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "circle_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_invite_create",
+            "method": "POST",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/invite/<<circle_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "circle_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_invite_sent_retrieve",
+      "method": "GET",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/invite/sent/<<circle_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "circle_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_invite_sent_retrieve",
+            "method": "GET",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/invite/sent/<<circle_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "circle_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_invite_status_retrieve",
+      "method": "GET",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/invite/status/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_invite_status_retrieve",
+            "method": "GET",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/invite/status/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": []
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": "List all pending invitations for the current user."
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_invite_status_create",
+      "method": "POST",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/invite/status/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_invite_status_create",
+            "method": "POST",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/invite/status/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": []
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": "Accept or reject an invitation by its link_id."
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_invite_status_retrieve_2",
+      "method": "GET",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/invite/status/<<link_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "link_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_invite_status_retrieve_2",
+            "method": "GET",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/invite/status/<<link_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "link_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": "List all pending invitations for the current user."
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_invite_status_create_2",
+      "method": "POST",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/invite/status/<<link_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "link_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_invite_status_create_2",
+            "method": "POST",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/invite/status/<<link_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "link_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": "Accept or reject an invitation by its link_id."
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_join_create",
+      "method": "POST",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/join/<<circle_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "circle_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_join_create",
+            "method": "POST",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/join/<<circle_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "circle_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_list_retrieve",
+      "method": "GET",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/list/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_list_retrieve",
+            "method": "GET",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/list/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": []
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_list_create",
+      "method": "POST",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/list/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_list_create",
+            "method": "POST",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/list/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": []
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_list_update",
+      "method": "PUT",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/list/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_list_update",
+            "method": "PUT",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/list/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": []
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_list_destroy",
+      "method": "DELETE",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/list/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_list_destroy",
+            "method": "DELETE",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/list/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": []
+          },
+          "status": "No Content",
+          "code": 204,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_meeting_attendee_report_retrieve",
+      "method": "GET",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/attendee-report/<<meet_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "meet_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_meeting_attendee_report_retrieve",
+            "method": "GET",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/attendee-report/<<meet_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "meet_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_meeting_attendee_report_create",
+      "method": "POST",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/attendee-report/<<meet_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "meet_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_meeting_attendee_report_create",
+            "method": "POST",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/attendee-report/<<meet_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "meet_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_meeting_attendee_report_destroy",
+      "method": "DELETE",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/attendee-report/<<meet_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "meet_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_meeting_attendee_report_destroy",
+            "method": "DELETE",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/attendee-report/<<meet_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "meet_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "No Content",
+          "code": 204,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_meeting_create_create",
+      "method": "POST",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/create/<<circle_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "circle_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_meeting_create_create",
+            "method": "POST",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/create/<<circle_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "circle_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_meeting_create_update",
+      "method": "PUT",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/create/<<circle_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "circle_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_meeting_create_update",
+            "method": "PUT",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/create/<<circle_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "circle_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_meeting_create_destroy",
+      "method": "DELETE",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/create/<<circle_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "circle_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_meeting_create_destroy",
+            "method": "DELETE",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/create/<<circle_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "circle_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "No Content",
+          "code": 204,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_meeting_delete_create",
+      "method": "POST",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/delete/<<meet_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "meet_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_meeting_delete_create",
+            "method": "POST",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/delete/<<meet_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "meet_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_meeting_delete_update",
+      "method": "PUT",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/delete/<<meet_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "meet_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_meeting_delete_update",
+            "method": "PUT",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/delete/<<meet_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "meet_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_meeting_delete_destroy",
+      "method": "DELETE",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/delete/<<meet_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "meet_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_meeting_delete_destroy",
+            "method": "DELETE",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/delete/<<meet_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "meet_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "No Content",
+          "code": 204,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_meeting_edit_create",
+      "method": "POST",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/edit/<<meet_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "meet_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_meeting_edit_create",
+            "method": "POST",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/edit/<<meet_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "meet_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_meeting_edit_update",
+      "method": "PUT",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/edit/<<meet_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "meet_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_meeting_edit_update",
+            "method": "PUT",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/edit/<<meet_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "meet_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_meeting_edit_destroy",
+      "method": "DELETE",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/edit/<<meet_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "meet_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_meeting_edit_destroy",
+            "method": "DELETE",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/edit/<<meet_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "meet_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "No Content",
+          "code": 204,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_meeting_info_retrieve",
+      "method": "GET",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/info/<<meet_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "meet_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_meeting_info_retrieve",
+            "method": "GET",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/info/<<meet_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "meet_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_meeting_join_create",
+      "method": "POST",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/join/<<meet_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "meet_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_meeting_join_create",
+            "method": "POST",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/join/<<meet_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "meet_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_meeting_join_destroy",
+      "method": "DELETE",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/join/<<meet_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "meet_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_meeting_join_destroy",
+            "method": "DELETE",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/join/<<meet_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "meet_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "No Content",
+          "code": 204,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_meeting_leave_create",
+      "method": "POST",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/leave/<<meet_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "meet_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_meeting_leave_create",
+            "method": "POST",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/leave/<<meet_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "meet_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_meeting_leave_destroy",
+      "method": "DELETE",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/leave/<<meet_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "meet_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_meeting_leave_destroy",
+            "method": "DELETE",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/leave/<<meet_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "meet_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "No Content",
+          "code": 204,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_meeting_list_retrieve",
+      "method": "GET",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/list/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_meeting_list_retrieve",
+            "method": "GET",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/list/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": []
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_meeting_list_public_retrieve",
+      "method": "GET",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/list-public/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_meeting_list_public_retrieve",
+            "method": "GET",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/list-public/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": []
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_meeting_list_retrieve_2",
+      "method": "GET",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/list/<<circle_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "circle_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_meeting_list_retrieve_2",
+            "method": "GET",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/list/<<circle_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "circle_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_meeting_report_retrieve",
+      "method": "GET",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/report/<<meet_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "meet_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_meeting_report_retrieve",
+            "method": "GET",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/report/<<meet_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "meet_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_meeting_report_create",
+      "method": "POST",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/report/<<meet_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "meet_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_meeting_report_create",
+            "method": "POST",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/report/<<meet_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "meet_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_meeting_report_destroy",
+      "method": "DELETE",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/report/<<meet_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "meet_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_meeting_report_destroy",
+            "method": "DELETE",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/report/<<meet_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "meet_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "No Content",
+          "code": 204,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_meeting_rsvp_create",
+      "method": "POST",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/rsvp/<<meet_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "meet_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_meeting_rsvp_create",
+            "method": "POST",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/meeting/rsvp/<<meet_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "meet_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_members_retrieve",
+      "method": "GET",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/members/<<circle_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "circle_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_members_retrieve",
+            "method": "GET",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/members/<<circle_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "circle_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_members_add_create",
+      "method": "POST",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/members/add/<<circle_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "circle_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_members_add_create",
+            "method": "POST",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/members/add/<<circle_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "circle_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_transfer_lead_create",
+      "method": "POST",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/transfer-lead/<<circle_id>>/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [
+        {
+          "key": "circle_id",
+          "value": "",
+          "active": true
+        }
+      ],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_transfer_lead_create",
+            "method": "POST",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/transfer-lead/<<circle_id>>/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": [
+              {
+                "key": "circle_id",
+                "value": "",
+                "active": true
+              }
+            ]
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "dashboard_learningcircle_user_circles_retrieve",
+      "method": "GET",
+      "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/user-circles/",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "none",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [],
+      "responses": {
+        "No response body": {
+          "name": "No response body",
+          "originalRequest": {
+            "v": "6",
+            "name": "dashboard_learningcircle_user_circles_retrieve",
+            "method": "GET",
+            "endpoint": "<<baseUrl>>/api/v1/dashboard/learningcircle/user-circles/",
+            "headers": [],
+            "params": [],
+            "body": {
+              "contentType": null,
+              "body": null
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": []
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      },
+      "description": null
+    }
+  ],
+  "auth": {
+    "authType": "inherit",
+    "authActive": true
+  },
+  "headers": [],
+  "variables": [],
+  "description": null
+}

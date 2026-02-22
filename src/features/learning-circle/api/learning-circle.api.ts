@@ -9,6 +9,7 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
+  type ApproveMemberRequest,
   type AttendeeReportRequest,
   AttendeeReportResponseSchema,
   CircleDetailResponseSchema,
@@ -22,6 +23,10 @@ import {
   type CreateMeetingRequest,
   type EditCircleRequest,
   EmptyResponseSchema,
+  type Invite,
+  InviteByLinkResponseSchema,
+  InviteListResponseSchema,
+  type InviteResponseRequest,
   type JoinMeetingRequest,
   type LearningCircle,
   type LearningCircleDetail,
@@ -33,6 +38,8 @@ import {
   MeetingReportResponseSchema,
   type PublicMeetingListResponse,
   PublicMeetingListResponseSchema,
+  type SendInviteRequest,
+  type TransferLeadRequest,
 } from "../schemas";
 
 // ============================================
@@ -118,6 +125,109 @@ export async function editCircle(
 export async function deleteCircle(circleId: string): Promise<void> {
   await apiClient.delete(
     endpoints.learningCircle.delete(circleId),
+    EmptyResponseSchema,
+  );
+}
+
+// ============================================
+// Member Management
+// ============================================
+
+/** Accept or reject a pending member */
+export async function approveMember(
+  circleId: string,
+  data: ApproveMemberRequest,
+): Promise<void> {
+  await apiClient.post(
+    endpoints.learningCircle.membersAdd(circleId),
+    data,
+    EmptyResponseSchema,
+  );
+}
+
+/** Transfer lead role to another member */
+export async function transferLead(
+  circleId: string,
+  data: TransferLeadRequest,
+): Promise<void> {
+  await apiClient.post(
+    endpoints.learningCircle.transferLead(circleId),
+    data,
+    EmptyResponseSchema,
+  );
+}
+
+// ============================================
+// Join & Invite
+// ============================================
+
+/** Request to join a circle */
+export async function joinCircle(circleId: string): Promise<void> {
+  await apiClient.post(
+    endpoints.learningCircle.join(circleId),
+    {},
+    EmptyResponseSchema,
+  );
+}
+
+/** Send an invite to a user for a circle */
+export async function sendInvite(
+  circleId: string,
+  data: SendInviteRequest,
+): Promise<void> {
+  await apiClient.post(
+    endpoints.learningCircle.invite(circleId),
+    data,
+    EmptyResponseSchema,
+  );
+}
+
+/** Get sent invites for a circle */
+export async function getSentInvites(circleId: string): Promise<Invite[]> {
+  const response = await apiClient.get(
+    endpoints.learningCircle.inviteSent(circleId),
+    InviteListResponseSchema,
+  );
+  return response.response;
+}
+
+/** Get current user's pending invites */
+export async function getMyPendingInvites(): Promise<Invite[]> {
+  const response = await apiClient.get(
+    endpoints.learningCircle.inviteStatus,
+    InviteListResponseSchema,
+  );
+  return response.response;
+}
+
+/** Accept or reject an invite (no link_id) */
+export async function respondToInvite(
+  data: InviteResponseRequest & { id: string },
+): Promise<void> {
+  await apiClient.post(
+    endpoints.learningCircle.inviteStatus,
+    data,
+    EmptyResponseSchema,
+  );
+}
+
+/** Look up an invite by link_id */
+export async function getInviteByLink(linkId: string): Promise<Invite> {
+  const response = await apiClient.get(
+    endpoints.learningCircle.inviteStatusByLink(linkId),
+    InviteByLinkResponseSchema,
+  );
+  return response.response;
+}
+
+/** Accept or reject an invite by link_id */
+export async function respondToInviteByLink(
+  linkId: string,
+  data: InviteResponseRequest,
+): Promise<void> {
+  await apiClient.post(
+    endpoints.learningCircle.inviteStatusByLink(linkId),
+    data,
     EmptyResponseSchema,
   );
 }

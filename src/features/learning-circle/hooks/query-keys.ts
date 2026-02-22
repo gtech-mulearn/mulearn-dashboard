@@ -11,6 +11,7 @@ export const learningCircleKeys = {
   all: ["learning-circles"] as const,
   circles: () => [...learningCircleKeys.all, "circles"] as const,
   meetings: () => [...learningCircleKeys.all, "meetings"] as const,
+  invites: () => [...learningCircleKeys.all, "invites"] as const,
   colleges: (params?: Record<string, unknown>) =>
     [...learningCircleKeys.all, "colleges", params] as const,
 
@@ -20,6 +21,13 @@ export const learningCircleKeys = {
     [...learningCircleKeys.circles(), "detail", id] as const,
   circleMembers: (id: string) =>
     [...learningCircleKeys.circles(), "members", id] as const,
+
+  // Invite queries
+  sentInvites: (circleId: string) =>
+    [...learningCircleKeys.invites(), "sent", circleId] as const,
+  myPendingInvites: () => [...learningCircleKeys.invites(), "pending"] as const,
+  inviteByLink: (linkId: string) =>
+    [...learningCircleKeys.invites(), "byLink", linkId] as const,
 
   // Meeting queries
   meetingsByCircle: (circleId: string) =>
