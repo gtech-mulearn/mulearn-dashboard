@@ -14,7 +14,7 @@ export { DeleteCircleButton } from "./delete-circle-button";
 export { EditCircleModal } from "./edit-circle-modal";
 export { EditMeetingModal } from "./edit-meeting-modal";
 export { InviteLinkView } from "./invite-link-view";
-export { InviteSection } from "./invite-section";
+export { InviteMemberForm, SentInvitesCard } from "./invite-section";
 export { JoinMeetingModal } from "./join-meeting-modal";
 export { MeetingCard } from "./meeting-card";
 export { MeetingDetailView } from "./meeting-detail-view";

@@ -26,6 +26,7 @@ interface JoinMeetingModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
+  defaultCode?: string;
 }
 
 export function JoinMeetingModal({
@@ -33,8 +34,9 @@ export function JoinMeetingModal({
   open,
   onOpenChange,
   onSuccess,
+  defaultCode = "",
 }: JoinMeetingModalProps) {
-  const [code, setCode] = useState("");
+  const [code, setCode] = useState(defaultCode);
   const { mutate: joinMeeting, isPending } = useJoinMeeting();
 
   const handleSubmit = useCallback(
@@ -68,7 +70,7 @@ export function JoinMeetingModal({
       <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3 text-lg">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[#D1FAE5] to-[#A7F3D0] shadow-sm">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-linear-to-br from-[#D1FAE5] to-[#A7F3D0] shadow-sm">
               <LogIn className="h-5 w-5 text-[#059669]" />
             </div>
             <div>
@@ -128,7 +130,7 @@ export function JoinMeetingModal({
             <button
               type="submit"
               disabled={isPending || code.length !== 6}
-              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#059669] to-[#10B981] px-5 py-2.5 text-[13px] font-bold text-white shadow-[0_4px_12px_rgba(16,185,129,0.3)] transition-all hover:shadow-[0_6px_20px_rgba(16,185,129,0.4)] disabled:opacity-50"
+              className="flex items-center gap-2 rounded-xl bg-linear-to-r from-[#059669] to-[#10B981] px-5 py-2.5 text-[13px] font-bold text-white shadow-[0_4px_12px_rgba(16,185,129,0.3)] transition-all hover:shadow-[0_6px_20px_rgba(16,185,129,0.4)] disabled:opacity-50"
             >
               {isPending && <Spinner className="h-4 w-4" />}
               Join Meeting
