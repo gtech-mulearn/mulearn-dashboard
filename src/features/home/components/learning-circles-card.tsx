@@ -4,9 +4,9 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
 import { useCircles } from "@/features/learning-circle";
 import type { LearningCircle } from "@/features/learning-circle/schemas/circle.schema";
+import { cn } from "@/lib/utils";
 
 /**
  * Accent palette purely from globals.css CSS variables (chart-1 → chart-4)

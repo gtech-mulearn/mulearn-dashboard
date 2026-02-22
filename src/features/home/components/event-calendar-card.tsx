@@ -1,6 +1,5 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
 import {
   addMonths,
   eachDayOfInterval,
@@ -14,6 +13,7 @@ import {
   subMonths,
 } from "date-fns";
 import { ChevronLeft, ChevronRight, ExternalLink, MapPin } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import type { CalendarEvent } from "../schemas";
 
