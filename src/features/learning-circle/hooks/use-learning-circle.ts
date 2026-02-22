@@ -16,32 +16,50 @@ import {
 } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
+  approveMember,
   createCircle,
   createMeeting,
+  deleteAttendeeReport,
   deleteCircle,
   deleteMeeting,
+  deleteMeetingReport,
   editCircle,
+  editMeeting,
+  getAttendeeReport,
   getCircleDetail,
   getCircleMeetings,
   getCircleMembers,
   getCircles,
   getColleges,
+  getInviteByLink,
   getMeetingDetail,
+  getMeetingReport,
+  getMyPendingInvites,
   getPublicMeetings,
+  getSentInvites,
   getUserMeetings,
+  joinCircle,
   joinMeeting,
   leaveMeeting,
+  respondToInvite,
+  respondToInviteByLink,
   rsvpMeeting,
+  sendInvite,
   submitAttendeeReport,
   submitMeetingReport,
+  transferLead,
 } from "../api";
 import type {
+  ApproveMemberRequest,
   AttendeeReportRequest,
   CreateCircleRequest,
   CreateMeetingRequest,
   EditCircleRequest,
+  InviteResponseRequest,
   JoinMeetingRequest,
   MeetingReportRequest,
+  SendInviteRequest,
+  TransferLeadRequest,
 } from "../schemas";
 import { learningCircleKeys } from "./query-keys";
 
@@ -201,6 +219,164 @@ export function useDeleteCircle() {
 }
 
 // ============================================
+// Member Management Mutations
+// ============================================
+
+export function useApproveMember(circleId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: ApproveMemberRequest) => approveMember(circleId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.circleMembers(circleId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.circleDetail(circleId),
+      });
+      toast.success("Member status updated");
+    },
+    onError: () => {
+      toast.error("Failed to update member status");
+    },
+  });
+}
+
+export function useTransferLead(circleId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: TransferLeadRequest) => transferLead(circleId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.circleMembers(circleId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.circleDetail(circleId),
+      });
+      toast.success("Lead role transferred successfully");
+    },
+    onError: () => {
+      toast.error("Failed to transfer lead role");
+    },
+  });
+}
+
+// ============================================
+// Join & Invite
+// ============================================
+
+export function useJoinCircle() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (circleId: string) => joinCircle(circleId),
+    onSuccess: (_, circleId) => {
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.circleDetail(circleId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.circleMembers(circleId),
+      });
+      toast.success("Join request sent!");
+    },
+    onError: () => {
+      toast.error("Failed to send join request");
+    },
+  });
+}
+
+export function useSendInvite(circleId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: SendInviteRequest) => sendInvite(circleId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.sentInvites(circleId),
+      });
+      toast.success("Invite sent successfully!");
+    },
+    onError: () => {
+      toast.error("Failed to send invite");
+    },
+  });
+}
+
+export function useSentInvites(circleId: string) {
+  return useQuery({
+    queryKey: learningCircleKeys.sentInvites(circleId),
+    queryFn: () => getSentInvites(circleId),
+    staleTime: STALE_TIME,
+    enabled: !!circleId,
+  });
+}
+
+export function useMyPendingInvites() {
+  return useQuery({
+    queryKey: learningCircleKeys.myPendingInvites(),
+    queryFn: getMyPendingInvites,
+    staleTime: STALE_TIME,
+  });
+}
+
+export function useRespondToInvite() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: InviteResponseRequest & { id: string }) =>
+      respondToInvite(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.myPendingInvites(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.circleList(),
+      });
+      toast.success("Invite response submitted");
+    },
+    onError: () => {
+      toast.error("Failed to respond to invite");
+    },
+  });
+}
+
+export function useInviteByLink(linkId: string) {
+  return useQuery({
+    queryKey: learningCircleKeys.inviteByLink(linkId),
+    queryFn: () => getInviteByLink(linkId),
+    staleTime: STALE_TIME,
+    enabled: !!linkId,
+  });
+}
+
+export function useRespondToInviteByLink() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      linkId,
+      data,
+    }: {
+      linkId: string;
+      data: InviteResponseRequest;
+    }) => respondToInviteByLink(linkId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.myPendingInvites(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.circleList(),
+      });
+      toast.success("Invite response submitted");
+    },
+    onError: () => {
+      toast.error("Failed to respond to invite");
+    },
+  });
+}
+
+// ============================================
 // Meeting Mutations
 // ============================================
 
@@ -234,6 +410,27 @@ export function useDeleteMeeting() {
     },
     onError: () => {
       toast.error("Failed to delete meeting");
+    },
+  });
+}
+
+export function useEditMeeting(meetingId: string, circleId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: Partial<CreateMeetingRequest>) =>
+      editMeeting(meetingId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.meetingDetail(meetingId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.meetingsByCircle(circleId),
+      });
+      toast.success("Meeting updated successfully");
+    },
+    onError: () => {
+      toast.error("Failed to update meeting");
     },
   });
 }
@@ -350,6 +547,72 @@ export function useSubmitMeetingReport(meetingId: string) {
     },
     onError: () => {
       toast.error("Failed to submit meeting report");
+    },
+  });
+}
+
+// ============================================
+// Report Queries
+// ============================================
+
+export function useAttendeeReport(meetingId: string) {
+  return useQuery({
+    queryKey: learningCircleKeys.attendeeReport(meetingId),
+    queryFn: () => getAttendeeReport(meetingId),
+    staleTime: STALE_TIME,
+    enabled: !!meetingId,
+  });
+}
+
+export function useMeetingReport(meetingId: string) {
+  return useQuery({
+    queryKey: learningCircleKeys.meetingReport(meetingId),
+    queryFn: () => getMeetingReport(meetingId),
+    staleTime: STALE_TIME,
+    enabled: !!meetingId,
+  });
+}
+
+// ============================================
+// Delete Report Mutations
+// ============================================
+
+export function useDeleteAttendeeReport(meetingId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => deleteAttendeeReport(meetingId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.attendeeReport(meetingId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.meetingDetail(meetingId),
+      });
+      toast.success("Attendee report deleted");
+    },
+    onError: () => {
+      toast.error("Failed to delete attendee report");
+    },
+  });
+}
+
+export function useDeleteMeetingReport(meetingId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => deleteMeetingReport(meetingId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.meetingReport(meetingId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.meetingDetail(meetingId),
+      });
+      toast.success("Meeting report deleted");
+    },
+    onError: () => {
+      toast.error("Failed to delete meeting report");
     },
   });
 }
