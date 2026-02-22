@@ -22,6 +22,7 @@ export const ROLES = {
   ASSOCIATE: "Associate",
   ZONAL_CAMPUS_LEAD: "Zonal Campus Lead",
   APPRAISER: "Appraiser",
+  COMPANY: "Company",
   DISTRICT_CAMPUS_LEAD: "District Campus Lead",
   MENTOR: "Mentor",
   INTERN: "Intern",

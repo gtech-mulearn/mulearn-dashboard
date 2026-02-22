@@ -15,6 +15,7 @@
 import type { LucideIcon } from "lucide-react";
 import {
   BookOpen,
+  Calendar,
   Globe,
   GraduationCap,
   Home,
@@ -35,6 +36,7 @@ import {
   CAMPUS_MANAGEMENT_ROLES,
   DISTRICT_ROLES,
   MANAGEMENT_ROLES,
+  ROLES,
   ZONAL_ROLES,
 } from "@/lib/auth/roles";
 
@@ -119,6 +121,13 @@ export const NAV_ITEMS: readonly NavItem[] = [
     section: "main",
   },
   {
+    id: "events",
+    title: "Events",
+    href: "/dashboard/events",
+    icon: Calendar,
+    section: "main",
+  },
+  {
     id: "leaderboard",
     title: "Leaderboard",
     href: "/dashboard/leaderboard",
@@ -173,6 +182,19 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: Link,
     section: "management",
     roles: MANAGEMENT_ROLES,
+  },
+  {
+    id: "manage-events",
+    title: "Manage Events",
+    href: "/dashboard/manage-events",
+    icon: LayoutDashboard,
+    section: "management",
+    roles: [
+      ...CAMPUS_MANAGEMENT_ROLES,
+      ...DISTRICT_ROLES,
+      ROLES.COMPANY,
+      ...MANAGEMENT_ROLES,
+    ],
   },
 
   // ── Bottom Section (all authenticated users) ──────────────
