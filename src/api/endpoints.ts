@@ -142,6 +142,8 @@ export const endpoints = {
     /** GET - Events (OpenSheet or dashboard events) */
     events:
       "https://opensheet.elk.sh/19Os47FI_fAgpMk7lnhFWz9aRwyd72cB-4PKz7W8rF9g/1",
+    /** GET - Calendar events for dashboard */
+    calendarEvents: "/api/v1/dashboard/events/calendar/",
   },
 
   // ============================================

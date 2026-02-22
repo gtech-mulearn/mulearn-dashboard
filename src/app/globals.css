@@ -207,4 +207,64 @@ h5 {
       color-mix(in srgb, var(--primary) 10%, var(--background))
     );
   }
+
+  /* ── Home-page card backgrounds (uses theme palette only) ─────────── */
+  /* Learning Circles – soft teal/cyan tint */
+  .card-bg-circles {
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--chart-2) 22%, var(--background)),
+      color-mix(in srgb, var(--chart-3) 14%, var(--background))
+    );
+  }
+  /* Interest Groups – soft primary/blue tint */
+  .card-bg-groups {
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--primary) 18%, var(--background)),
+      color-mix(in srgb, var(--chart-2) 14%, var(--background))
+    );
+  }
+  /* Top Performers – warm gold/amber tint */
+  .card-bg-performers {
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--chart-4) 28%, var(--background)),
+      color-mix(in srgb, var(--chart-5) 20%, var(--background))
+    );
+  }
+
+  /* Shimmer animation for loading skeleton */
+  @keyframes shimmer {
+    0% {
+      background-position: -400px 0;
+    }
+    100% {
+      background-position: 400px 0;
+    }
+  }
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in srgb, var(--primary) 8%, transparent) 50%,
+      transparent 100%
+    );
+    background-size: 400px 100%;
+    animation: shimmer 1.6s ease-in-out infinite;
+  }
+
+  /* Calendar event day animation */
+  .calendar-event-day {
+    font-weight: 600;
+  }
+
+  /* Utility: hide scrollbar but keep scroll */
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
 }
