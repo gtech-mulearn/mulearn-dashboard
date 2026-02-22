@@ -27,7 +27,6 @@ import {
   ShareProfileModal,
   type UpdateProfileRequest,
   updateInterestGroups,
-  useChangeCollege,
   useEditableProfile,
   useUpdateProfile,
   useUpdateProfileImage,
@@ -35,9 +34,15 @@ import {
   useUserLog,
   useUserProfile,
 } from "@/features/profile";
+import {
+  type ChangeOrganizationFormValues,
+  ChangeOrganizationRequestSchema,
+  useChangeOrganization,
+} from "@/features/settings";
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<ProfileTab>("basic-details");
+  const [lastSavedDepartmentId, setLastSavedDepartmentId] = useState("");
 
   // Modal states
   const [showEditProfile, setShowEditProfile] = useState(false);
@@ -53,7 +58,7 @@ export default function ProfilePage() {
   } = useUserProfile();
   const updateProfileMutation = useUpdateProfile();
   const { data: editableProfile } = useEditableProfile();
-  const changeCollegeMutation = useChangeCollege();
+  const changeOrganizationMutation = useChangeOrganization();
   const updateProfileImageMutation = useUpdateProfileImage();
   const { data: userLog, isLoading: isLoadingLog } = useUserLog();
   const { data: userLevels, isLoading: isLoadingLevels } = useUserLevels();
@@ -124,18 +129,21 @@ export default function ProfilePage() {
     }
 
     const shouldUpdateCollege = Boolean(
-      dirtyFields.org_id ||
-        dirtyFields.department_id ||
-        dirtyFields.country_id ||
-        dirtyFields.state_id ||
-        dirtyFields.district_id,
+      dirtyFields.org_id || dirtyFields.department_id,
     );
 
     if (shouldUpdateCollege && data.org_id?.trim()) {
-      await changeCollegeMutation.mutateAsync({
-        org_id: data.org_id.trim(),
-        department_id: data.department_id?.trim() || undefined,
-      });
+      const organizationPayload: ChangeOrganizationFormValues = {
+        organization: data.org_id.trim(),
+        department: data.department_id?.trim() || "",
+      };
+      const validatedOrganization =
+        ChangeOrganizationRequestSchema.safeParse(organizationPayload);
+      if (!validatedOrganization.success) {
+        throw new Error("Invalid college details");
+      }
+      await changeOrganizationMutation.mutateAsync(validatedOrganization.data);
+      setLastSavedDepartmentId(validatedOrganization.data.department);
     }
 
     if (dirtyFields.profile_pic && data.profile_pic) {
@@ -237,6 +245,7 @@ export default function ProfilePage() {
         open={showEditProfile}
         onOpenChange={setShowEditProfile}
         profile={profile}
+        fallbackDepartmentId={lastSavedDepartmentId}
         onSave={handleSaveProfile}
       />
       <ShareProfileModal

@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { MultiSelectDropdown } from "@/features/manage-users/components";
+import { useDepartments } from "@/features/settings";
 import {
   useCommunities,
   useCountries,
@@ -51,6 +52,7 @@ interface EditProfileModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   profile: UserProfile;
+  fallbackDepartmentId?: string;
   onSave: (
     data: EditProfileFormValues,
     dirtyFields: Partial<Record<keyof EditProfileFormValues, boolean>>,
@@ -100,6 +102,7 @@ export function EditProfileModal({
   open,
   onOpenChange,
   profile,
+  fallbackDepartmentId,
   onSave,
 }: EditProfileModalProps) {
   const form = useForm<EditProfileFormValues>({
@@ -130,6 +133,7 @@ export function EditProfileModal({
   const { data: states = [] } = useStates(countryId);
   const { data: districts = [] } = useDistricts(stateId);
   const { data: organizationData } = useOrganizationData(districtId);
+  const { data: allDepartments = [] } = useDepartments();
 
   const currentOrgRaw = profile.college_id || "";
   const collegeOrgDisplayName = profile.college_code || currentOrgRaw;
@@ -137,6 +141,24 @@ export function EditProfileModal({
     ? {
         value: currentOrgRaw,
         label: collegeOrgDisplayName,
+      }
+    : null;
+  const currentDepartmentRaw =
+    profile.department_id ||
+    profile.department?.id ||
+    fallbackDepartmentId ||
+    "";
+  const currentDepartmentDisplayName =
+    profile.department_name ||
+    profile.department?.title ||
+    profile.department?.name ||
+    allDepartments.find((department) => department.id === currentDepartmentRaw)
+      ?.title ||
+    currentDepartmentRaw;
+  const currentDepartmentOption: LocationOption | null = currentDepartmentRaw
+    ? {
+        value: currentDepartmentRaw,
+        label: currentDepartmentDisplayName,
       }
     : null;
 
@@ -148,7 +170,10 @@ export function EditProfileModal({
       list.findIndex((candidate) => candidate.value === option.value) === index,
   );
 
-  const departments = [...(organizationData?.departments ?? [])].filter(
+  const departments = [
+    ...(currentDepartmentOption ? [currentDepartmentOption] : []),
+    ...(organizationData?.departments ?? []),
+  ].filter(
     (option, index, list) =>
       list.findIndex((candidate) => candidate.value === option.value) === index,
   );
@@ -174,9 +199,9 @@ export function EditProfileModal({
       state_id: "",
       district_id: "",
       org_id: profile.college_id || "",
-      department_id: "",
+      department_id: currentDepartmentRaw,
     });
-  }, [editableProfile, form, open, profile]);
+  }, [currentDepartmentRaw, editableProfile, form, open, profile]);
 
   useEffect(() => {
     if (!open) return;
@@ -201,6 +226,21 @@ export function EditProfileModal({
     }
   }, [form, open, organizations, profile.college_id]);
 
+  useEffect(() => {
+    if (!open) return;
+    const departmentRaw = currentDepartmentRaw;
+    if (!departmentRaw) return;
+    const resolvedDepartment = resolveOptionValue(departmentRaw, departments);
+    if (
+      resolvedDepartment &&
+      form.getValues("department_id") !== resolvedDepartment
+    ) {
+      form.setValue("department_id", resolvedDepartment, {
+        shouldDirty: false,
+      });
+    }
+  }, [currentDepartmentRaw, departments, form, open]);
+
   const imagePreviewUrl = useMemo(() => {
     if (selectedImage instanceof File) {
       return URL.createObjectURL(selectedImage);
@@ -223,6 +263,44 @@ export function EditProfileModal({
     const dirtyFields = form.formState.dirtyFields as Partial<
       Record<keyof EditProfileFormValues, boolean>
     >;
+    const hasCollegeEdits = Boolean(
+      dirtyFields.country_id ||
+        dirtyFields.state_id ||
+        dirtyFields.district_id ||
+        dirtyFields.org_id ||
+        dirtyFields.department_id,
+    );
+
+    if (hasCollegeEdits) {
+      let hasError = false;
+
+      if (!values.district_id?.trim()) {
+        form.setError("district_id", {
+          type: "manual",
+          message: "District is required",
+        });
+        hasError = true;
+      }
+
+      if (!values.org_id?.trim()) {
+        form.setError("org_id", {
+          type: "manual",
+          message: "College / School is required",
+        });
+        hasError = true;
+      }
+
+      if (!values.department_id?.trim()) {
+        form.setError("department_id", {
+          type: "manual",
+          message: "Department is required",
+        });
+        hasError = true;
+      }
+
+      if (hasError) return;
+    }
+
     const fullName = values.full_name?.trim() || "";
     const normalizedValues: EditProfileFormValues = {
       ...values,
@@ -521,6 +599,7 @@ export function EditProfileModal({
                         value={field.value || "__none__"}
                         onValueChange={(value) => {
                           field.onChange(value === "__none__" ? "" : value);
+                          form.clearErrors("district_id");
                           form.setValue("org_id", "", { shouldDirty: true });
                           form.setValue("department_id", "", {
                             shouldDirty: true,
@@ -557,9 +636,11 @@ export function EditProfileModal({
                       <FormLabel>College / School</FormLabel>
                       <Select
                         value={field.value || "__none__"}
-                        onValueChange={(value) =>
-                          field.onChange(value === "__none__" ? "" : value)
-                        }
+                        onValueChange={(value) => {
+                          field.onChange(value === "__none__" ? "" : value);
+                          form.clearErrors("org_id");
+                          form.clearErrors("department_id");
+                        }}
                         disabled={!districtId && organizations.length === 0}
                       >
                         <FormControl>
@@ -591,9 +672,10 @@ export function EditProfileModal({
                       <FormLabel>Department</FormLabel>
                       <Select
                         value={field.value || "__none__"}
-                        onValueChange={(value) =>
-                          field.onChange(value === "__none__" ? "" : value)
-                        }
+                        onValueChange={(value) => {
+                          field.onChange(value === "__none__" ? "" : value);
+                          form.clearErrors("department_id");
+                        }}
                         disabled={!districtId && departments.length === 0}
                       >
                         <FormControl>

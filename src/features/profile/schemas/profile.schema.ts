@@ -80,6 +80,17 @@ export const UserProfileSchema = z.object({
   dob: z.string().optional(),
   college_code: z.string().nullable(),
   college_id: z.string().nullable(),
+  department_id: z.string().nullable().optional(),
+  department_name: z.string().nullable().optional(),
+  department: z
+    .object({
+      id: z.string().nullable().optional(),
+      title: z.string().nullable().optional(),
+      name: z.string().nullable().optional(),
+    })
+    .passthrough()
+    .nullable()
+    .optional(),
   org_district_id: z.string().nullable().optional(),
   level: z.string().nullable(),
   karma: z.coerce.number().nullable(),
