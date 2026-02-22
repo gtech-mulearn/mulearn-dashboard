@@ -145,6 +145,25 @@ export const endpoints = {
   },
 
   // ============================================
+  // Events Endpoints
+  // ============================================
+
+  events: {
+    /** GET - List all events (paginated) */
+    list: `/api/v1/dashboard/events/`,
+    /** GET - Event details by ID */
+    detail: (eventId: string) => `/api/v1/dashboard/events/${eventId}/`,
+    /** POST - Create new event */
+    create: "/api/v1/dashboard/events/",
+    /** PUT - Edit event (full update) */
+    edit: (eventId: string) => `/api/v1/dashboard/events/${eventId}/`,
+    /** PATCH - Update event (partial update) */
+    patch: (eventId: string) => `/api/v1/dashboard/events/${eventId}/`,
+    /** DELETE - Delete event */
+    delete: (eventId: string) => `/api/v1/dashboard/events/${eventId}/`,
+  },
+
+  // ============================================
   // Campus Endpoints
   // ============================================
   campus: {
