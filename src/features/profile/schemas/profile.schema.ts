@@ -266,12 +266,6 @@ export const UpdateProfileRequestSchema = z.object({
 });
 export type UpdateProfileRequest = z.infer<typeof UpdateProfileRequestSchema>;
 
-export const ChangeCollegeRequestSchema = z.object({
-  org_id: z.string().min(1, "Organization is required"),
-  department_id: z.string().optional(),
-});
-export type ChangeCollegeRequest = z.infer<typeof ChangeCollegeRequestSchema>;
-
 export const UpdateProfileImageRequestSchema = z.object({
   profile: z.any(),
   user_id: z.string(),
@@ -288,37 +282,66 @@ export const UpdateProfileImageResponseSchema = ApiResponseSchema(
     .passthrough(),
 );
 
-export const EditProfileFormSchema = z.object({
-  full_name: z.string().trim().optional(),
-  email: z
-    .string()
-    .trim()
-    .optional()
-    .refine((value) => !value || z.email().safeParse(value).success, {
-      message: "Enter a valid email",
-    }),
-  mobile: z
-    .string()
-    .trim()
-    .optional()
-    .refine(
-      (value) => !value || (/^\+?[0-9]+$/.test(value) && value.length >= 10),
-      "Enter a valid mobile number",
-    )
-    .refine(
-      (value) => !value || value.length <= 15,
-      "Mobile number is too long",
-    ),
-  gender: z.string().trim().optional(),
-  dob: z.string().trim().optional(),
-  communities: z.array(z.string()).optional(),
-  country_id: z.string().trim().optional(),
-  state_id: z.string().trim().optional(),
-  district_id: z.string().trim().optional(),
-  org_id: z.string().trim().optional(),
-  department_id: z.string().trim().optional(),
-  profile_pic: z.any().optional(),
-});
+export const EditProfileFormSchema = z
+  .object({
+    full_name: z.string().trim().optional(),
+    email: z
+      .string()
+      .trim()
+      .optional()
+      .refine((value) => !value || z.email().safeParse(value).success, {
+        message: "Enter a valid email",
+      }),
+    mobile: z
+      .string()
+      .trim()
+      .optional()
+      .refine(
+        (value) => !value || (/^\+?[0-9]+$/.test(value) && value.length >= 10),
+        "Enter a valid mobile number",
+      )
+      .refine(
+        (value) => !value || value.length <= 15,
+        "Mobile number is too long",
+      ),
+    gender: z.string().trim().optional(),
+    dob: z.string().trim().optional(),
+    communities: z.array(z.string()).optional(),
+    country_id: z.string().trim().optional(),
+    state_id: z.string().trim().optional(),
+    district_id: z.string().trim().optional(),
+    org_id: z.string().trim().optional(),
+    department_id: z.string().trim().optional(),
+    has_college_changes: z.boolean().optional(),
+    profile_pic: z.any().optional(),
+  })
+  .superRefine((values, ctx) => {
+    if (!values.has_college_changes) return;
+
+    if (!values.district_id?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["district_id"],
+        message: "District is required",
+      });
+    }
+
+    if (!values.org_id?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["org_id"],
+        message: "College / School is required",
+      });
+    }
+
+    if (!values.department_id?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["department_id"],
+        message: "Department is required",
+      });
+    }
+  });
 export type EditProfileFormValues = z.infer<typeof EditProfileFormSchema>;
 
 const IdSchema = StringIdSchema;

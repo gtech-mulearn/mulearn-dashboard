@@ -14,8 +14,6 @@ export * from "./components";
 export * from "./hooks";
 // Schemas (explicit exports to avoid conflicts)
 export {
-  type ChangeCollegeRequest,
-  ChangeCollegeRequestSchema,
   CollegesByDistrictResponseSchema,
   CommunitiesResponseSchema,
   CountriesResponseSchema,

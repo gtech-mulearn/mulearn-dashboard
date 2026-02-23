@@ -11,7 +11,6 @@ import { ApiError, apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import { authStore } from "@/lib/auth";
 import {
-  type ChangeCollegeRequest,
   CollegesByDistrictResponseSchema,
   CommunitiesResponseSchema,
   type ConnectedDIDsData,
@@ -225,15 +224,6 @@ export async function syncDiscordProfileImage(): Promise<void> {
   await apiClient.patch(
     endpoints.user.updateProfileImage,
     {},
-    EmptyResponseSchema,
-  );
-}
-
-/** Update college/school and optional department */
-export async function changeCollege(data: ChangeCollegeRequest): Promise<void> {
-  await apiClient.patch(
-    endpoints.user.changeCollege,
-    data,
     EmptyResponseSchema,
   );
 }

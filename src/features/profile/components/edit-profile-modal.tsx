@@ -119,6 +119,7 @@ export function EditProfileModal({
       district_id: "",
       org_id: profile.college_id ?? "",
       department_id: "",
+      has_college_changes: false,
     },
   });
 
@@ -200,6 +201,7 @@ export function EditProfileModal({
       district_id: "",
       org_id: profile.college_id || "",
       department_id: currentDepartmentRaw,
+      has_college_changes: false,
     });
   }, [currentDepartmentRaw, editableProfile, form, open, profile]);
 
@@ -263,43 +265,6 @@ export function EditProfileModal({
     const dirtyFields = form.formState.dirtyFields as Partial<
       Record<keyof EditProfileFormValues, boolean>
     >;
-    const hasCollegeEdits = Boolean(
-      dirtyFields.country_id ||
-        dirtyFields.state_id ||
-        dirtyFields.district_id ||
-        dirtyFields.org_id ||
-        dirtyFields.department_id,
-    );
-
-    if (hasCollegeEdits) {
-      let hasError = false;
-
-      if (!values.district_id?.trim()) {
-        form.setError("district_id", {
-          type: "manual",
-          message: "District is required",
-        });
-        hasError = true;
-      }
-
-      if (!values.org_id?.trim()) {
-        form.setError("org_id", {
-          type: "manual",
-          message: "College / School is required",
-        });
-        hasError = true;
-      }
-
-      if (!values.department_id?.trim()) {
-        form.setError("department_id", {
-          type: "manual",
-          message: "Department is required",
-        });
-        hasError = true;
-      }
-
-      if (hasError) return;
-    }
 
     const fullName = values.full_name?.trim() || "";
     const normalizedValues: EditProfileFormValues = {
@@ -316,9 +281,9 @@ export function EditProfileModal({
   };
 
   const fieldClassName =
-    "h-12 rounded-2xl border border-border bg-muted px-4 text-base focus-visible:ring-1 focus-visible:ring-primary/20";
+    "h-12 w-full min-w-0 rounded-2xl border border-border bg-muted px-4 text-base focus-visible:ring-1 focus-visible:ring-primary/20";
   const selectTriggerClassName =
-    "h-12 w-full rounded-2xl border border-border bg-muted px-3.5 text-base";
+    "h-12 w-full min-w-0 overflow-hidden rounded-2xl border border-border bg-muted px-3.5 text-base [&>span]:truncate";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -519,6 +484,9 @@ export function EditProfileModal({
                       <Select
                         value={field.value || "__none__"}
                         onValueChange={(value) => {
+                          form.setValue("has_college_changes", true, {
+                            shouldDirty: false,
+                          });
                           field.onChange(value === "__none__" ? "" : value);
                           form.setValue("state_id", "", { shouldDirty: true });
                           form.setValue("district_id", "", {
@@ -560,6 +528,9 @@ export function EditProfileModal({
                       <Select
                         value={field.value || "__none__"}
                         onValueChange={(value) => {
+                          form.setValue("has_college_changes", true, {
+                            shouldDirty: false,
+                          });
                           field.onChange(value === "__none__" ? "" : value);
                           form.setValue("district_id", "", {
                             shouldDirty: true,
@@ -598,8 +569,10 @@ export function EditProfileModal({
                       <Select
                         value={field.value || "__none__"}
                         onValueChange={(value) => {
+                          form.setValue("has_college_changes", true, {
+                            shouldDirty: false,
+                          });
                           field.onChange(value === "__none__" ? "" : value);
-                          form.clearErrors("district_id");
                           form.setValue("org_id", "", { shouldDirty: true });
                           form.setValue("department_id", "", {
                             shouldDirty: true,
@@ -632,14 +605,15 @@ export function EditProfileModal({
                   control={form.control}
                   name="org_id"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="min-w-0 sm:col-span-2">
                       <FormLabel>College / School</FormLabel>
                       <Select
                         value={field.value || "__none__"}
                         onValueChange={(value) => {
+                          form.setValue("has_college_changes", true, {
+                            shouldDirty: false,
+                          });
                           field.onChange(value === "__none__" ? "" : value);
-                          form.clearErrors("org_id");
-                          form.clearErrors("department_id");
                         }}
                         disabled={!districtId && organizations.length === 0}
                       >
@@ -673,8 +647,10 @@ export function EditProfileModal({
                       <Select
                         value={field.value || "__none__"}
                         onValueChange={(value) => {
+                          form.setValue("has_college_changes", true, {
+                            shouldDirty: false,
+                          });
                           field.onChange(value === "__none__" ? "" : value);
-                          form.clearErrors("department_id");
                         }}
                         disabled={!districtId && departments.length === 0}
                       >

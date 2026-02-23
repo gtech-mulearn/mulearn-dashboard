@@ -10,7 +10,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { authKeys } from "@/features/auth/hooks/query-keys";
 import {
-  changeCollege,
   togglePublicProfile,
   updateProfile,
   updateProfileImage,
@@ -18,7 +17,6 @@ import {
   updateUserPreferences,
 } from "../api";
 import type {
-  ChangeCollegeRequest,
   Socials,
   UpdateProfileRequest,
   UserPreferences,
@@ -132,25 +130,6 @@ export function useUpdateProfile() {
     },
     onError: () => {
       toast.error("Failed to update profile");
-    },
-  });
-}
-
-/** Update college/school and optional department */
-export function useChangeCollege() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (data: ChangeCollegeRequest) => changeCollege(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: profileKeys.profile() });
-      queryClient.invalidateQueries({
-        queryKey: profileKeys.editableProfile(),
-      });
-      toast.success("College details updated");
-    },
-    onError: () => {
-      toast.error("Failed to update college details");
     },
   });
 }
