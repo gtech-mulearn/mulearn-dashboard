@@ -7,8 +7,6 @@
  * Shows karma, rank, and level only.
  */
 
-"use client";
-
 import { Award, Flame, TrendingUp, Zap } from "lucide-react";
 import type { UserProfile } from "../schemas";
 

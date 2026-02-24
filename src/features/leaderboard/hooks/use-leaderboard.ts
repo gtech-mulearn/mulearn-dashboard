@@ -17,11 +17,7 @@ import type {
   CollegeLeaderboardEntry,
   StudentLeaderboardEntry,
   WadhwaniLeaderboardEntry,
-} from "@/features/leaderboard";
-type LeaderboardApiData =
-  | CollegeLeaderboardEntry[]
-  | StudentLeaderboardEntry[]
-  | WadhwaniLeaderboardEntry[];
+} from "../schemas";
 import type {
   Category,
   LeaderboardEntry,
@@ -37,7 +33,7 @@ export function useLeaderboard(
   const monthly = timeframe === "monthly";
   const campus = timeframe === "campus";
 
-  return useQuery<LeaderboardApiData, Error, LeaderboardEntry[]>({
+  return useQuery({
     queryKey:
       category === "campus"
         ? leaderboardKeys.college(monthly)
@@ -45,29 +41,29 @@ export function useLeaderboard(
           ? leaderboardKeys.wadhwani(campus)
           : leaderboardKeys.students(monthly),
     staleTime: 24 * 60 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
+    gcTime: 25 * 60 * 60 * 1000,
     queryFn: async () => {
       if (category === "campus") return await fetchCampusLeaderboard(monthly);
       if (category === "wadhwani")
         return await fetchWadhwaniLeaderboard(campus);
       return await fetchStudentLeaderboard(monthly);
     },
-    select: (data): LeaderboardEntry[] => {
+    select: (
+      data:
+        | StudentLeaderboardEntry[]
+        | CollegeLeaderboardEntry[]
+        | WadhwaniLeaderboardEntry[],
+    ): LeaderboardEntry[] => {
       if (category === "campus") {
-        const campusData = data as CollegeLeaderboardEntry[];
-
-        return campusData.map((item, index) => ({
+        return (data as CollegeLeaderboardEntry[]).map((item, index) => ({
           id: item.code,
           rank: index + 1,
           name: item.title || item.code,
           karma: item.total_karma,
         }));
       }
-
       if (category === "wadhwani") {
-        const wadhwaniData = data as WadhwaniLeaderboardEntry[];
-
-        return wadhwaniData.map((item, index) => ({
+        return (data as WadhwaniLeaderboardEntry[]).map((item, index) => ({
           id: item.code,
           rank: index + 1,
           zone_name: item.zone_name,
@@ -75,10 +71,7 @@ export function useLeaderboard(
           karma: item.total_karma,
         }));
       }
-
-      const studentData = data as StudentLeaderboardEntry[];
-
-      return studentData.map((item, index) => ({
+      return (data as StudentLeaderboardEntry[]).map((item, index) => ({
         id: item.full_name,
         rank: index + 1,
         name: item.full_name,

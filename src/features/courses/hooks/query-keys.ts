@@ -14,6 +14,9 @@ export const courseKeys = {
   },
   wadhwani: {
     all: ["courses", "wadhwani"] as const,
-    list: () => ["courses", "wadhwani", "list"] as const,
+    sheet: () => ["courses", "wadhwani", "sheet"] as const,
+    token: () => ["courses", "wadhwani", "token"] as const,
+    list: (accessToken?: string) =>
+      ["courses", "wadhwani", "list", accessToken] as const,
   },
 };

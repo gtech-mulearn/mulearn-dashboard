@@ -8,6 +8,7 @@
 
 "use client";
 
+import { useMemo } from "react";
 import type { GetUserLevelsResponse, Task, UserLevelData } from "../schemas";
 import { LevelCard } from "./LevelCard";
 
@@ -26,6 +27,33 @@ export function StartLearningTab({
 }: StartLearningTabProps) {
   // Data comes from parent
   const data = levelsData;
+
+  // Response is directly an array of levels
+  const levels = data?.response ?? [];
+
+  // Filter out tasks with #cl- hashtags (expert/Interest Group tasks)
+  // Start Learning Tab: EXCLUDE tasks containing #cl- in their hashtag
+  const foundationLevels = useMemo(
+    () =>
+      levels
+        .map((level: UserLevelData) => ({
+          ...level,
+          tasks: (level.tasks || []).filter((task: Task) => {
+            const hashtag = task.hashtag || "";
+            const isFoundationTask = !hashtag.includes("#cl-");
+
+            // Apply completion filter
+            if (filter === "completed") {
+              return isFoundationTask && task.completed;
+            } else if (filter === "incomplete") {
+              return isFoundationTask && !task.completed;
+            }
+            return isFoundationTask;
+          }),
+        }))
+        .filter((level: UserLevelData) => (level.tasks || []).length > 0), // Remove empty levels
+    [levels, filter],
+  );
 
   if (isLoading) {
     return (
@@ -56,29 +84,6 @@ export function StartLearningTab({
       </div>
     );
   }
-
-  // Response is directly an array of levels
-  const levels = data.response;
-
-  // Filter out tasks with #cl- hashtags (expert/Interest Group tasks)
-  // Start Learning Tab: EXCLUDE tasks containing #cl- in their hashtag
-  const foundationLevels = levels
-    .map((level: UserLevelData) => ({
-      ...level,
-      tasks: (level.tasks || []).filter((task: Task) => {
-        const hashtag = task.hashtag || "";
-        const isFoundationTask = !hashtag.includes("#cl-");
-
-        // Apply completion filter
-        if (filter === "completed") {
-          return isFoundationTask && task.completed;
-        } else if (filter === "incomplete") {
-          return isFoundationTask && !task.completed;
-        }
-        return isFoundationTask;
-      }),
-    }))
-    .filter((level: UserLevelData) => (level.tasks || []).length > 0); // Remove empty levels
 
   return (
     <div className="space-y-10">

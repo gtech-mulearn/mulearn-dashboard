@@ -75,7 +75,7 @@ export function CourseCard({
             />
           </>
         ) : (
-          <div className="flex items-center justify-center h-full bg-gradient-to-br from-primary/5 to-primary/10 text-primary/30">
+          <div className="flex items-center justify-center h-full bg-linear-to-br from-primary/5 to-primary/10 text-primary/30">
             <svg
               role="img"
               aria-label="Course"

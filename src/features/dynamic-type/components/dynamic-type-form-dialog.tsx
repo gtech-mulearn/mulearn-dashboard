@@ -99,6 +99,14 @@ interface EditUserProps extends BaseProps {
 
 type DynamicTypeFormDialogProps = CreateProps | EditRoleProps | EditUserProps;
 
+function isEditRoleProps(p: DynamicTypeFormDialogProps): p is EditRoleProps {
+  return p.mode === "edit" && p.tab === "role" && "editId" in p;
+}
+
+function isEditUserProps(p: DynamicTypeFormDialogProps): p is EditUserProps {
+  return p.mode === "edit" && p.tab === "user" && "editId" in p;
+}
+
 // ============================================
 // Internal sub-forms
 // ============================================
@@ -460,17 +468,17 @@ export function DynamicTypeFormDialog(props: DynamicTypeFormDialogProps) {
         {mode === "create" && tab === "user" && (
           <CreateUserForm onClose={handleClose} />
         )}
-        {mode === "edit" && tab === "role" && "editId" in props && (
+        {isEditRoleProps(props) && (
           <EditRoleForm
-            editId={(props as EditRoleProps).editId}
-            initialRole={(props as EditRoleProps).initialRole}
+            editId={props.editId}
+            initialRole={props.initialRole}
             onClose={handleClose}
           />
         )}
-        {mode === "edit" && tab === "user" && "editId" in props && (
+        {isEditUserProps(props) && (
           <EditUserForm
-            editId={(props as EditUserProps).editId}
-            initialMuid={(props as EditUserProps).initialMuid}
+            editId={props.editId}
+            initialMuid={props.initialMuid}
             onClose={handleClose}
           />
         )}

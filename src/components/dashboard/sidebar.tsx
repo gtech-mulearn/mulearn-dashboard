@@ -3,7 +3,7 @@
  *
  * 📍 src/components/dashboard/sidebar.tsx
  *
- * Re * Config-driven sidebar navigation with RBAC integration.
+ * Config-driven sidebar navigation with RBAC integration.
  * Items are sourced from nav-config.ts and filtered by useFilteredNav().
  * Adding a nav item requires only editing nav-config.ts.
  */
@@ -14,7 +14,7 @@ import { ChevronLeft, ChevronRight, LogOut, Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { useFilteredNav } from "@/hooks/use-filtered-nav";
 import { authStore } from "@/lib/auth";
@@ -31,17 +31,20 @@ export function Sidebar() {
 
   const isCollapsed = !isSidebarExpanded;
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     authStore.clearTokens();
     useUIStore.getState().resetUI();
     toast.success("Logged out successfully");
     router.replace("/login");
-  };
+  }, [router]);
 
-  const isActive = (href: string) => {
-    if (href === "/dashboard") return pathname === "/dashboard";
-    return pathname.startsWith(href);
-  };
+  const isActive = useCallback(
+    (href: string) => {
+      if (href === "/dashboard") return pathname === "/dashboard";
+      return pathname.startsWith(href);
+    },
+    [pathname],
+  );
 
   /** Shared nav link renderer */
   const renderNavItem = (item: NavItem) => {
@@ -52,6 +55,7 @@ export function Sidebar() {
         key={item.id}
         href={item.href}
         onClick={() => setIsMobileOpen(false)}
+        aria-current={isActive(item.href) ? "page" : undefined}
         className={cn(
           "flex items-center rounded-xl transition-all py-2.5",
           isActive(item.href)
@@ -86,6 +90,7 @@ export function Sidebar() {
             onClick={() => setIsMobileOpen(true)}
             className="p-2 -ml-2 rounded-lg hover:bg-accent hover:text-accent-foreground"
             type="button"
+            aria-label="Open navigation menu"
           >
             <Menu className="w-6 h-6 text-muted-foreground" />
           </button>
@@ -144,6 +149,7 @@ export function Sidebar() {
               isCollapsed && "mx-auto",
             )}
             type="button"
+            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {isCollapsed ? (
               <ChevronRight className="w-4 h-4 text-muted-foreground" />
@@ -169,6 +175,7 @@ export function Sidebar() {
             onClick={() => setIsMobileOpen(false)}
             className="p-1.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors"
             type="button"
+            aria-label="Close navigation menu"
           >
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
@@ -176,6 +183,7 @@ export function Sidebar() {
 
         {/* Main Navigation */}
         <nav
+          aria-label="Main navigation"
           className={cn(
             "flex-1 space-y-1 overflow-y-auto",
             isCollapsed ? "p-2" : "p-4",

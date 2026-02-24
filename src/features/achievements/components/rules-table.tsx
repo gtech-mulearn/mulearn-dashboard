@@ -55,7 +55,7 @@ export function RulesTable() {
     {
       accessorKey: "achievement_name",
       header: "Achievement",
-      cell: ({ row }: { row: any }) => (
+      cell: ({ row }) => (
         <span className="font-medium">
           {row.original.achievement_name ?? row.original.achievement_id}
         </span>
@@ -64,14 +64,14 @@ export function RulesTable() {
     {
       accessorKey: "rule_type",
       header: "Rule Type",
-      cell: ({ row }: { row: any }) => (
+      cell: ({ row }) => (
         <Badge variant="secondary">{row.original.rule_type}</Badge>
       ),
     },
     {
       accessorKey: "version",
       header: "Version",
-      cell: ({ row }: { row: any }) => (
+      cell: ({ row }) => (
         <span className="text-sm text-muted-foreground">
           v{row.original.version}
         </span>
@@ -80,7 +80,7 @@ export function RulesTable() {
     {
       accessorKey: "is_active",
       header: "Status",
-      cell: ({ row }: { row: any }) =>
+      cell: ({ row }) =>
         row.original.is_active ? (
           <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
             Active
@@ -94,7 +94,7 @@ export function RulesTable() {
     {
       id: "actions",
       header: "",
-      cell: ({ row }: { row: any }) =>
+      cell: ({ row }) =>
         row.original.is_active ? (
           <TooltipProvider>
             <Tooltip>
@@ -159,7 +159,7 @@ export function RulesTable() {
               .map((headerGroup: HeaderGroup<AchievementRule>) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map(
-                    (header: Header<AchievementRule, any>) => {
+                    (header: Header<AchievementRule, unknown>) => {
                       return (
                         <TableHead key={header.id}>
                           {header.isPlaceholder
@@ -193,7 +193,7 @@ export function RulesTable() {
                 >
                   {row
                     .getVisibleCells()
-                    .map((cell: Cell<AchievementRule, any>) => (
+                    .map((cell: Cell<AchievementRule, unknown>) => (
                       <TableCell key={cell.id}>
                         {flexRender(
                           cell.column.columnDef.cell,

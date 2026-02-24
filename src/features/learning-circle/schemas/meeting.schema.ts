@@ -104,6 +104,9 @@ export const MeetingDetailSchema = z.object({
   is_started: z.boolean(),
   is_ended: z.boolean(),
   is_member: z.boolean(),
+  is_recurring: z.boolean().optional(),
+  recurrence_type: z.string().nullable().optional(),
+  recurrence: z.number().nullable().optional(),
   meet_code: z.string().nullable(), // Only visible to creator
   created_by_id: z.string(),
   attendees: z.array(MeetingAttendeeSchema),
@@ -119,6 +122,10 @@ export const CreateMeetingRequestSchema = z.object({
   title: z.string().min(1).max(100),
   description: z.string().min(1).max(1000),
   mode: z.enum(["online", "offline"]),
+  platform: z
+    .enum(["Zoom", "Google Meet", "Microsoft Teams", "Discord", "Other"])
+    .optional()
+    .nullable(),
   meet_place: z.string().min(1).max(100),
   meet_link: z.string().url().optional().nullable(),
   meet_time: z.string(),

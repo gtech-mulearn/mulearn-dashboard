@@ -7,6 +7,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
+import { toast } from "sonner";
 import { endpoints } from "@/api/endpoints";
 import { authStore } from "@/lib/auth";
 import {
@@ -159,6 +160,7 @@ export function useUpdateManageUser() {
       queryClient.invalidateQueries({
         queryKey: manageUsersKeys.detail(variables.id),
       });
+      toast.success("User updated successfully");
     },
   });
 }
@@ -170,6 +172,7 @@ export function useDeleteManageUser() {
     mutationFn: (id: string) => deleteManageUser(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: manageUsersKeys.lists() });
+      toast.success("User deleted successfully");
     },
   });
 }

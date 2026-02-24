@@ -6,10 +6,14 @@
  * Zod schemas for organization selection during onboarding.
  */
 
+import { ApiResponseSchema } from "@/lib/schemas/api-response";
+
+export { ApiResponseSchema };
+
 import { z } from "zod";
 
 // ============================================
-// Organization Type Constants
+// Common Response Wrapper (flexible)
 // ============================================
 
 export const ORG_TYPES = [
@@ -18,18 +22,6 @@ export const ORG_TYPES = [
 ] as const;
 
 export const ORG_TYPE_VALUES = ["College", "Company"] as const;
-
-// ============================================
-// Common Response Wrapper (flexible)
-// ============================================
-
-export const ApiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
-  z.object({
-    hasError: z.boolean(),
-    statusCode: z.number(),
-    message: z.any().optional(),
-    response: dataSchema,
-  });
 
 // ============================================
 // College/Organization Schemas (flexible field names)

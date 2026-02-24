@@ -381,7 +381,7 @@ export async function getConnectedDIDs(
   muid: string,
 ): Promise<ConnectedDIDsData> {
   const response = await apiClient.get(
-    `${endpoints.qseverse.connectedUsers}?key=muid&value=${muid}`,
+    endpoints.qseverse.connectedUsers(muid),
     ConnectedDIDsResponseSchema,
   );
   return response.response;

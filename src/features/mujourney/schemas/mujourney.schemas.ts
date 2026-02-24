@@ -8,6 +8,12 @@
 
 import { z } from "zod";
 
+/**
+ * Django message field: can be a plain string, an array of strings,
+ * or a validation-error record like `{ field: ["err", …] }`.
+ */
+const DjangoMessageSchema = z.unknown().optional().nullable();
+
 // ============================================
 // Task Schema - Very permissive
 // ============================================
@@ -78,7 +84,7 @@ export const GetUserLevelsResponseSchema = z
   .object({
     hasError: z.boolean().default(false),
     statusCode: z.number().default(200),
-    message: z.any().optional().nullable(),
+    message: DjangoMessageSchema,
     response: z.array(UserLevelDataSchema).default([]),
   })
   .passthrough();
@@ -90,7 +96,7 @@ export const PublicListLevelsResponseSchema = z
   .object({
     hasError: z.boolean().default(false),
     statusCode: z.number().default(200),
-    message: z.any().optional().nullable(),
+    message: DjangoMessageSchema,
     response: z.array(LevelSchema).default([]),
   })
   .passthrough();
@@ -104,7 +110,7 @@ export const TaskListResponseSchema = z
   .object({
     hasError: z.boolean().optional().default(false),
     statusCode: z.number().optional().default(200),
-    message: z.any().optional().nullable(),
+    message: DjangoMessageSchema,
     response: z
       .union([
         // Format 1: response is an object with data array
@@ -142,7 +148,7 @@ export const PublicUserJourneyResponseSchema = z
   .object({
     hasError: z.boolean().optional().default(false),
     statusCode: z.number().optional().default(200),
-    message: z.any().optional().nullable(),
+    message: DjangoMessageSchema,
     response: z
       .object({
         muid: z.string(),
@@ -165,7 +171,7 @@ export const UserLevelFeedResponseSchema = z
   .object({
     hasError: z.boolean().optional().default(false),
     statusCode: z.number().optional().default(200),
-    message: z.any().optional().nullable(),
+    message: DjangoMessageSchema,
     response: z
       .union([
         // Format 1: response is an object with feed array
@@ -264,10 +270,10 @@ export const InterestGroupsResponseSchema = z
   .object({
     hasError: z.boolean(),
     statusCode: z.number(),
-    message: z.any().optional().nullable(),
+    message: DjangoMessageSchema,
     response: z
       .object({
-        interestGroup: z.array(InterestGroupSchema).default([]),
+        aois: z.array(InterestGroupSchema).default([]),
       })
       .passthrough(),
   })

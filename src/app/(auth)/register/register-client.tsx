@@ -14,8 +14,8 @@ import {
   RegisterForm,
   RegisterRoleDetails,
   RegisterRoleSelection,
-  useRegister,
   type Role,
+  useRegister,
 } from "@/features/auth";
 import {
   useColleges,

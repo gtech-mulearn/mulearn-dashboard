@@ -3,6 +3,7 @@
 import { ImageIcon, Upload, X } from "lucide-react";
 import Image from "next/image";
 import * as React from "react";
+import { toast } from "sonner";
 import { Button } from "./button";
 
 interface ImageUploadProps {
@@ -31,16 +32,20 @@ export function ImageUpload({
       const objectUrl = URL.createObjectURL(value);
       setPreviewUrl(objectUrl);
       return () => URL.revokeObjectURL(objectUrl);
-    } else if (!currentUrl) {
-      setPreviewUrl(null);
+    } else {
+      setPreviewUrl(currentUrl ?? null);
     }
   }, [value, currentUrl]);
 
   const handleFile = (file: File) => {
     if (!file.type.startsWith("image/")) {
+      toast.error(
+        "Invalid file type. Please upload a JPEG, PNG, GIF, or WebP image.",
+      );
       return;
     }
     if (file.size > maxSizeMB * 1024 * 1024) {
+      toast.error("File is too large. Maximum size is 5MB.");
       return;
     }
     onChange(file);
@@ -73,15 +78,21 @@ export function ImageUpload({
         className="hidden"
         onChange={handleInputChange}
         disabled={disabled}
+        aria-label="Upload image"
         data-testid="image-upload-input"
       />
 
       {previewUrl ? (
         <div className="group relative h-32 w-32 overflow-hidden rounded-lg border bg-muted">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <Image src={previewUrl} alt="Preview" fill className="object-cover" />
+          <Image
+            src={previewUrl}
+            alt="Preview"
+            fill
+            className="object-cover"
+            unoptimized
+          />
           {!disabled && (
-            <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+            <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
               <Button
                 type="button"
                 size="sm"
@@ -96,6 +107,7 @@ export function ImageUpload({
                 size="sm"
                 variant="destructive"
                 onClick={handleRemove}
+                aria-label="Remove image"
                 data-testid="image-upload-remove"
               >
                 <X className="h-4 w-4" />

@@ -38,6 +38,7 @@ export const LearningCircleSchema = z.object({
   ig: z.string(),
   title: z.string(),
   org: z.string().nullable(),
+  total_members: z.number().default(0),
   attendees: z.array(z.unknown()).default([]),
 });
 
@@ -98,6 +99,49 @@ export type CreateCircleRequest = z.infer<typeof CreateCircleRequestSchema>;
 export const EditCircleRequestSchema = CreateCircleRequestSchema.partial();
 export type EditCircleRequest = z.infer<typeof EditCircleRequestSchema>;
 
+/** Accept or reject a pending member */
+export const ApproveMemberRequestSchema = z.object({
+  muid: z.string(),
+  flag: z.boolean(), // true = accept, false = reject
+});
+export type ApproveMemberRequest = z.infer<typeof ApproveMemberRequestSchema>;
+
+/** Transfer lead role to another member */
+export const TransferLeadRequestSchema = z.object({
+  muid: z.string(),
+});
+export type TransferLeadRequest = z.infer<typeof TransferLeadRequestSchema>;
+
+/** Send an invite to a user */
+export const SendInviteRequestSchema = z.object({
+  muid: z.string().min(1, "User ID is required"),
+});
+export type SendInviteRequest = z.infer<typeof SendInviteRequestSchema>;
+
+/** Accept or reject an invitation */
+export const InviteResponseRequestSchema = z.object({
+  is_accepted: z.boolean(),
+});
+export type InviteResponseRequest = z.infer<typeof InviteResponseRequestSchema>;
+
+// ============================================
+// Invite Schemas
+// ============================================
+
+/** Invite item returned by invite/sent and invite/status endpoints */
+export const InviteSchema = z.object({
+  id: z.string(),
+  circle_id: z.string().optional(),
+  circle_name: z.string().optional(),
+  user: z.string().optional(),
+  muid: z.string().optional(),
+  invited_by: z.string().optional(),
+  is_accepted: z.boolean().nullable().optional(),
+  created_at: z.string().optional(),
+});
+
+export type Invite = z.infer<typeof InviteSchema>;
+
 // ============================================
 // Response Schemas - matches Django CustomResponse
 // ============================================
@@ -117,8 +161,30 @@ export const ApiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
     response: dataSchema,
   });
 
+export const InviteListResponseSchema = ApiResponseSchema(
+  z.array(InviteSchema),
+);
+
+export const InviteByLinkResponseSchema = ApiResponseSchema(InviteSchema);
+
+/**
+ * Pagination shape returned by Django
+ */
+export const PaginationSchema = z.object({
+  count: z.number(),
+  totalPages: z.number(),
+  isNext: z.boolean(),
+  isPrev: z.boolean(),
+  nextPage: z.number().nullable(),
+});
+
+export type Pagination = z.infer<typeof PaginationSchema>;
+
 export const CircleListResponseSchema = ApiResponseSchema(
-  z.array(LearningCircleSchema),
+  z.object({
+    data: z.array(LearningCircleSchema),
+    pagination: PaginationSchema,
+  }),
 );
 
 export const CircleDetailResponseSchema = ApiResponseSchema(
@@ -175,12 +241,6 @@ export const CollegeListResponseSchema = z.object({
     .optional(),
   response: z.object({
     data: z.array(CollegeListItemSchema),
-    pagination: z.object({
-      count: z.number(),
-      totalPages: z.number(),
-      isNext: z.boolean(),
-      isPrev: z.boolean(),
-      nextPage: z.number().nullable(),
-    }),
+    pagination: PaginationSchema,
   }),
 });

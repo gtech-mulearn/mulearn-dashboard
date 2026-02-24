@@ -10,16 +10,21 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { authKeys } from "@/features/auth/hooks/query-keys";
 import {
+  issueVC,
   togglePublicProfile,
   updateProfile,
   updateProfileImage,
   updateSocials,
   updateUserPreferences,
+  updateVCURL,
 } from "../api";
 import type {
   Socials,
   UpdateProfileRequest,
   UserPreferences,
+  UserPreferences,
+  VCCredentialInfo,
+  VCSubjectInfo,
 } from "../schemas";
 import { profileKeys } from "./query-keys";
 
@@ -130,6 +135,41 @@ export function useUpdateProfile() {
     },
     onError: () => {
       toast.error("Failed to update profile");
+/**
+ * Issue a Verifiable Credential.
+ * Issues the VC via QSeverse, then updates the VC URL in the backend.
+ * Invalidates profile cache on success.
+ */
+export function useIssueVCMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      subjectInfo,
+      credentialInfo,
+      templateId,
+      achievementId,
+    }: {
+      subjectInfo: VCSubjectInfo;
+      credentialInfo: VCCredentialInfo;
+      templateId: string;
+      achievementId: string;
+    }) => {
+      const result = await issueVC(subjectInfo, credentialInfo, templateId);
+
+      if (result && result.length > 0) {
+        const vcUrl = result[0].subject_info.s3_url;
+        await updateVCURL(achievementId, vcUrl);
+      }
+
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: profileKeys.profile() });
+      toast.success("Verifiable Credential issued successfully!");
+    },
+    onError: () => {
+      toast.error("Failed to issue Verifiable Credential");
     },
   });
 }

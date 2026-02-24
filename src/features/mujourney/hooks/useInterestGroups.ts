@@ -13,12 +13,13 @@ import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import { authStore } from "@/lib/auth";
 import { InterestGroupsResponseSchema } from "../schemas/mujourney.schemas";
+import { mujourneyKeys } from "./query-keys";
 
 export function useInterestGroups() {
   const isAuthenticated = !!authStore.getAccessToken();
 
   return useQuery({
-    queryKey: ["interest-groups"],
+    queryKey: mujourneyKeys.interestGroups(),
     queryFn: () =>
       apiClient.get(
         endpoints.onboarding.areasOfInterest,

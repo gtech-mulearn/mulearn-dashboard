@@ -4,6 +4,13 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour >= 6 && hour < 12) return "Good Morning,";
+  if (hour >= 12 && hour < 16) return "Good Afternoon,";
+  return "Good Evening,";
+}
+
 type HeroCardProps = {
   name: string;
   src: string;
@@ -12,7 +19,7 @@ type HeroCardProps = {
 
 export function HeroCard({ name, src, alt }: HeroCardProps) {
   return (
-    <Card className="h-full relative overflow-hidden rounded-2xl border-none bg-card shadow-sm transition-all hover:shadow-md">
+    <Card className="h-full relative overflow-hidden rounded-2xl border-none bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-pointer">
       {/* Creative Background Elements */}
       <div className="absolute -top-24 -right-10 h-64 w-64 rounded-full bg-primary/10 blur-3xl transition-all duration-1000 animate-pulse" />
       <div className="absolute top-1/2 -left-10 h-64 w-64 rounded-full bg-primary/5 blur-3xl" />
@@ -31,7 +38,7 @@ export function HeroCard({ name, src, alt }: HeroCardProps) {
 
             <div className="space-y-4">
               <h1 className="font-display text-4xl font-bold tracking-tight text-foreground lg:text-5xl">
-                Hello, <span className="text-primary">{name}</span>
+                {getGreeting()} <span className="text-primary">{name}</span>
               </h1>
               <p className="max-w-xl text-lg text-muted-foreground leading-relaxed">
                 Track your learning circles, discover interest groups, and watch
@@ -67,7 +74,7 @@ export function HeroCard({ name, src, alt }: HeroCardProps) {
           <div className="relative hidden h-60 w-full items-center justify-center lg:flex">
             {/* Abstract Shapes behind image */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="h-48 w-48 rounded-full bg-gradient-to-tr from-primary/20 to-accent/20 blur-2xl" />
+              <div className="h-48 w-48 rounded-full bg-linear-to-tr from-primary/20 to-accent/20 blur-2xl" />
             </div>
             <Image
               alt={alt}

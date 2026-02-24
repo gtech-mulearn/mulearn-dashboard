@@ -11,20 +11,20 @@ import {
 } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
 import { useUserInfo } from "@/features/auth";
-import { useQsverseInfo } from "@/features/connect";
+import { useQseverseInfo } from "@/features/connect";
 
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
 
-export function QsverseConnectDialog({ open, onOpenChange }: Props) {
+export function QseverseConnectDialog({ open, onOpenChange }: Props) {
   const { data: user } = useUserInfo();
-  const qsverse = useQsverseInfo(user?.muid);
-  const isRefreshing = qsverse.isFetching;
+  const qseverse = useQseverseInfo(user?.muid);
+  const isRefreshing = qseverse.isFetching;
   const handleRefreshConnection = async () => {
     try {
-      const response = await qsverse.refetch();
+      const response = await qseverse.refetch();
       const dids = response?.data?.dids;
       if (Array.isArray(dids) && dids.length > 0) {
         toast.success("Wallet connected successfully!");

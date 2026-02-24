@@ -9,32 +9,7 @@
 import { cookies } from "next/headers";
 import type { z } from "zod";
 import { env } from "../../config/env";
-
-// ─── Errors ─────────────────────────────────────────────────────────────────
-
-export class ApiError extends Error {
-  constructor(
-    public status: number,
-    public message: string,
-    public data?: unknown,
-  ) {
-    super(message);
-  }
-}
-
-function extractDjangoMessage(data: unknown): string | null {
-  if (!data || typeof data !== "object") return null;
-  const d = data as Record<string, unknown>;
-  const msg = d.message;
-  if (msg && typeof msg === "object") {
-    const general = (msg as Record<string, unknown>).general;
-    if (Array.isArray(general) && typeof general[0] === "string") {
-      return general[0];
-    }
-  }
-  if (typeof d.detail === "string") return d.detail;
-  return null;
-}
+import { ApiError, extractDjangoMessage } from "./errors";
 
 // ─── URL + Headers ──────────────────────────────────────────────────────────
 
@@ -103,11 +78,12 @@ async function request<T>(
   if (options.schema) {
     const parsed = options.schema.safeParse(rawData);
     if (!parsed.success) {
-      console.error("❌ API schema mismatch (server)", {
-        errors: parsed.error.format(),
-        rawData,
-      });
-      throw new Error("Invalid API response");
+      console.error(
+        `⚠️ API schema mismatch (server) [${endpoint}]`,
+        parsed.error.issues,
+      );
+      // Return raw data preserving the full envelope shape.
+      return rawData as T;
     }
     return parsed.data;
   }

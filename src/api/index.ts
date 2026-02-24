@@ -4,5 +4,6 @@
  * Public API for the API layer
  */
 
-export { ApiError, apiClient } from "./client";
+export { apiClient } from "./client";
 export { endpoints } from "./endpoints";
+export { ApiError } from "./errors";

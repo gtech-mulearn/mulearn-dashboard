@@ -1,3 +1,4 @@
+export * from "./event-calendar-card";
 export * from "./events-slider-card";
 export * from "./hero-card";
 export * from "./home-page";

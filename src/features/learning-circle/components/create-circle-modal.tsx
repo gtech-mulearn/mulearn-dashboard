@@ -16,7 +16,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -82,34 +81,40 @@ export function CreateCircleModal({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button className="gap-2 bg-primary hover:bg-primary/90">
+          <Button className="gap-2 rounded-xl px-5 text-sm font-semibold">
             <Plus className="h-4 w-4" />
             Create Circle
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[520px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-50">
+          <DialogTitle className="flex items-center gap-3 text-lg">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/8">
               <Users className="h-5 w-5 text-primary" />
             </div>
-            Create Learning Circle
+            <div>
+              <span className="block">Create Learning Circle</span>
+              <span className="block text-xs font-normal text-muted-foreground">
+                Start collaborating with others
+              </span>
+            </div>
           </DialogTitle>
-          <DialogDescription>
-            Start a new learning circle to collaborate with others on shared
-            interests.
-          </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="mt-4 space-y-5">
+        <form onSubmit={handleSubmit(onSubmit)} className="mt-5 space-y-5">
           {/* Interest Group */}
           <div className="space-y-2">
-            <Label htmlFor="ig">Interest Group</Label>
+            <Label
+              htmlFor="ig"
+              className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+            >
+              Interest Group
+            </Label>
             <select
               id="ig"
               {...register("ig")}
-              className="block w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:border-ring focus:ring-ring"
+              className="block w-full rounded-xl border border-border/40 bg-white px-4 py-2.5 text-sm shadow-sm transition-shadow focus:border-primary/30 focus:shadow-[0_0_0_3px_rgba(9,97,245,0.06)] focus:outline-none focus:ring-0"
             >
               <option value="">Select an interest group</option>
               {interestGroups.map((ig) => (
@@ -119,17 +124,24 @@ export function CreateCircleModal({
               ))}
             </select>
             {errors.ig && (
-              <p className="text-sm text-red-500">{errors.ig.message}</p>
+              <p className="text-xs font-medium text-red-500">
+                {errors.ig.message}
+              </p>
             )}
           </div>
 
           {/* Organization */}
           <div className="space-y-2">
-            <Label htmlFor="org">Organization</Label>
+            <Label
+              htmlFor="org"
+              className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+            >
+              Organization
+            </Label>
             <select
               id="org"
               {...register("org")}
-              className="block w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:border-ring focus:ring-ring"
+              className="block w-full rounded-xl border border-border/30 bg-white px-4 py-2.5 text-sm transition-colors focus:border-primary/30 focus:outline-none focus:ring-0"
             >
               <option value="">Select an organization</option>
               {organizations.map((org) => (
@@ -139,54 +151,69 @@ export function CreateCircleModal({
               ))}
             </select>
             {errors.org && (
-              <p className="text-sm text-red-500">{errors.org.message}</p>
+              <p className="text-xs font-medium text-red-500">
+                {errors.org.message}
+              </p>
             )}
           </div>
 
           {/* Title */}
           <div className="space-y-2">
-            <Label htmlFor="title">Circle Title</Label>
+            <Label
+              htmlFor="title"
+              className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+            >
+              Circle Title
+            </Label>
             <Input
               id="title"
               placeholder="e.g., Python Study Group"
               {...register("title")}
-              className="w-full"
+              className="rounded-xl border-border/30 shadow-none"
             />
             {errors.title && (
-              <p className="text-sm text-red-500">{errors.title.message}</p>
+              <p className="text-xs font-medium text-red-500">
+                {errors.title.message}
+              </p>
             )}
           </div>
 
           {/* Description */}
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label
+              htmlFor="description"
+              className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+            >
+              Description
+            </Label>
             <Textarea
               id="description"
               placeholder="Describe what your circle is about..."
               rows={3}
               {...register("description")}
-              className="w-full resize-none"
+              className="resize-none rounded-xl border-border/30 shadow-none"
             />
             {errors.description && (
-              <p className="text-sm text-red-500">
+              <p className="text-xs font-medium text-red-500">
                 {errors.description.message}
               </p>
             )}
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="flex justify-end gap-3 border-t border-border/20 pt-5">
             <Button
               type="button"
               variant="outline"
               onClick={() => setOpen(false)}
+              className="rounded-xl border-border/30 px-5 text-sm font-semibold"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={isPending}
-              className="bg-primary hover:bg-primary/90"
+              className="rounded-xl px-5 text-sm font-semibold"
             >
               {isPending && <Spinner className="mr-2 h-4 w-4" />}
               Create Circle

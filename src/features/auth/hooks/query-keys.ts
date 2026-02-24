@@ -14,4 +14,6 @@ export const authKeys = {
   publicProfile: (muid: string) =>
     [...authKeys.all, "publicProfile", muid] as const,
   session: () => [...authKeys.all, "session"] as const,
+  resetToken: (token: string) =>
+    [...authKeys.all, "resetToken", token] as const,
 };

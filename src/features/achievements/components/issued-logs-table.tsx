@@ -5,6 +5,7 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useDebounce } from "@/hooks/use-debounce";
 import {
   ISSUED_LOGS_HEADERS,
   ISSUED_LOGS_PAGE_SIZE,
@@ -16,15 +17,12 @@ import { BulkIssueDialog } from "./bulk-issue-dialog";
 export function IssuedLogsTable() {
   const [page, setPage] = React.useState(1);
   const [search, setSearch] = React.useState("");
-  const [debouncedSearch, setDebouncedSearch] = React.useState("");
+  const debouncedSearch = useDebounce(search, 400);
 
-  // Debounce search
+  // Reset page when search input changes
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally reset page when search changes
   React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(search);
-      setPage(1);
-    }, 400);
-    return () => clearTimeout(timer);
+    setPage(1);
   }, [search]);
 
   const { data, isLoading, isFetching } = useIssuedLogs(
@@ -76,7 +74,7 @@ export function IssuedLogsTable() {
           </thead>
           <tbody className="[&_tr:last-child]:border-0">
             {isLoading ? (
-              Array.from({ length: 5 }).map((_: any, i: number) => (
+              Array.from({ length: 5 }).map((_, i) => (
                 // biome-ignore lint/suspicious/noArrayIndexKey: Skeletons are static
                 <tr key={i} className="border-b">
                   {ISSUED_LOGS_HEADERS.map((h: string) => (

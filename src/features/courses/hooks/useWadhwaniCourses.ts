@@ -7,23 +7,24 @@ import {
   fetchWadhwaniToken,
 } from "../api/courses.api";
 import type { UnifiedCourse } from "../schemas/courses.schemas";
+import { courseKeys } from "./query-keys";
 
 export const useWadhwaniCourses = () => {
   const sheetQuery = useQuery({
-    queryKey: ["wadhwani", "sheet"],
+    queryKey: courseKeys.wadhwani.sheet(),
     queryFn: fetchWadhwaniSheetData,
     staleTime: 1000 * 60 * 15,
   });
 
   const tokenQuery = useQuery({
-    queryKey: ["wadhwani", "token"],
+    queryKey: courseKeys.wadhwani.token(),
     queryFn: fetchWadhwaniToken,
     staleTime: 1000 * 60 * 5,
     retry: 1,
   });
 
   const coursesQuery = useQuery({
-    queryKey: ["wadhwani", "courses", tokenQuery.data?.access_token],
+    queryKey: courseKeys.wadhwani.list(tokenQuery.data?.access_token),
     queryFn: () =>
       fetchWadhwaniCourses(tokenQuery.data?.access_token as string),
     enabled: !!tokenQuery.data?.access_token,

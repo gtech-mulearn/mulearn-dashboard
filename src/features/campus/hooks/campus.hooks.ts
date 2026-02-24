@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { isValid, parseISO } from "date-fns";
 import { campusService } from "../api";
+import { campusKeys } from "./query-keys";
 
 export const useCampusInfo = (id: string) => {
   return useQuery({
-    queryKey: ["campus", "info", id],
+    queryKey: campusKeys.info(id),
     queryFn: () => campusService.getCampusInfo(id),
     enabled: !!id,
   });
@@ -12,7 +13,7 @@ export const useCampusInfo = (id: string) => {
 
 export const useWeeklyKarma = (id: string) => {
   return useQuery({
-    queryKey: ["campus", "weekly-karma", id],
+    queryKey: campusKeys.weeklyKarma(id),
     enabled: !!id,
     queryFn: () => campusService.getWeeklyKarma(id),
     select: (data) => {

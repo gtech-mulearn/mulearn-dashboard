@@ -107,7 +107,7 @@ export function InterestGroupDetailClient() {
       </button>
 
       {/* ── Hero ── */}
-      <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-primary/90 via-primary to-primary/80 p-8 sm:p-12 text-white shadow-xl shadow-primary/10">
+      <div className="relative overflow-hidden rounded-[2rem] bg-linear-to-br from-primary/90 via-primary to-primary/80 p-8 sm:p-12 text-white shadow-xl shadow-primary/10">
         <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
         <div className="absolute -left-20 -bottom-20 h-96 w-96 rounded-full bg-black/10 blur-3xl" />
 
@@ -305,7 +305,7 @@ export function InterestGroupDetailClient() {
                     key={person.name}
                     className="flex items-start gap-4 rounded-2xl border border-border/60 bg-muted/20 p-5 transition-all hover:border-border hover:bg-card hover:shadow-sm"
                   >
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/5 text-lg font-bold text-primary">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-primary/20 to-primary/5 text-lg font-bold text-primary">
                       {person.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0 flex-1">
@@ -350,7 +350,7 @@ export function InterestGroupDetailClient() {
                     key={mentor.name}
                     className="flex items-start gap-4 rounded-2xl border border-border/60 bg-muted/20 p-5 transition-all hover:border-border hover:bg-card hover:shadow-sm"
                   >
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-500/20 to-purple-500/5 text-lg font-bold text-purple-600">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-purple-500/20 to-purple-500/5 text-lg font-bold text-purple-600">
                       {mentor.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0 flex-1">
@@ -474,7 +474,7 @@ export function InterestGroupDetailClient() {
                         key={lead.email || lead.name}
                         className="flex items-center gap-3 rounded-xl border border-transparent hover:border-border hover:bg-muted/40 p-2 transition-all -mx-2"
                       >
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/60 text-sm font-bold text-white shadow-sm">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-primary to-primary/60 text-sm font-bold text-white shadow-sm">
                           {lead.name.charAt(0).toUpperCase()}
                         </div>
                         <div className="min-w-0 flex-1">
@@ -499,7 +499,7 @@ export function InterestGroupDetailClient() {
             )}
 
             {/* Support / Help Box */}
-            <div className="rounded-3xl bg-gradient-to-br from-muted/50 to-muted/10 p-6 border border-border/50 text-center">
+            <div className="rounded-3xl bg-linear-to-br from-muted/50 to-muted/10 p-6 border border-border/50 text-center">
               <p className="text-sm font-medium text-muted-foreground">
                 Need help or have questions? Reach out to the leads or join the
                 think tank channel.

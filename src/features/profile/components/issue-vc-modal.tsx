@@ -11,8 +11,7 @@
 
 import { Check, ExternalLink, RefreshCw } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -22,10 +21,8 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
-import { issueVC, updateVCURL } from "../api";
-import { useConnectedDIDs } from "../hooks";
+import { useConnectedDIDs, useIssueVCMutation } from "../hooks";
 import type {
-  IssuedVC,
   UserAchievement,
   VCCredentialInfo,
   VCSubjectInfo,
@@ -57,72 +54,47 @@ export function IssueVCModal({
     refetch: refetchDIDs,
   } = useConnectedDIDs(muid);
 
-  const [selectedDID, setSelectedDID] = useState<string>("");
-  const [isIssuing, setIsIssuing] = useState(false);
-  const [issuedCredential, setIssuedCredential] = useState<IssuedVC | null>(
-    null,
-  );
+  const issueVCMutation = useIssueVCMutation();
+
+  const [overrideDID, setOverrideDID] = useState<string | null>(null);
 
   const { achievement: achievementData, is_issued, vc_url } = achievement;
   const availableDIDs = didsData?.dids || [];
+  const selectedDID = overrideDID ?? availableDIDs[0] ?? "";
+  const issuedCredential =
+    issueVCMutation.data && issueVCMutation.data.length > 0
+      ? issueVCMutation.data[0]
+      : null;
 
-  // Reset state when modal opens
-  useEffect(() => {
-    if (open) {
-      setSelectedDID(availableDIDs[0] || "");
-      setIssuedCredential(null);
-    }
-  }, [open, availableDIDs]);
+  const handleIssueVC = () => {
+    if (!selectedDID) return;
 
-  const handleIssueVC = useCallback(async () => {
-    if (!selectedDID) {
-      toast.error("Please select a DID");
-      return;
-    }
+    const subjectInfo: VCSubjectInfo = {
+      type: "Badge",
+      did: selectedDID,
+      name: userName,
+      email: userEmail,
+    };
 
-    setIsIssuing(true);
-    try {
-      const subjectInfo: VCSubjectInfo = {
-        type: "Badge",
-        did: selectedDID,
-        name: userName,
-        email: userEmail,
-      };
+    const credentialInfo: VCCredentialInfo = {
+      course_name: achievementData.achievement_name,
+      name: achievementData.achievement_name,
+      tags: achievementData.tags,
+      description: achievementData.description || "",
+    };
 
-      const credentialInfo: VCCredentialInfo = {
-        course_name: achievementData.achievement_name,
-        name: achievementData.achievement_name,
-        tags: achievementData.tags,
-        description: achievementData.description || "",
-      };
+    const templateId = achievementData.template_id || "";
 
-      const templateId = achievementData.template_id || "";
-
-      const result = await issueVC(subjectInfo, credentialInfo, templateId);
-
-      if (result && result.length > 0) {
-        const vcUrl = result[0].subject_info.s3_url;
-
-        // Update the VC URL in the backend
-        await updateVCURL(achievement.id, vcUrl);
-
-        setIssuedCredential(result[0]);
-        toast.success("Verifiable Credential issued successfully!");
-        onSuccess?.();
-      }
-    } catch (_error) {
-      toast.error("Failed to issue Verifiable Credential");
-    } finally {
-      setIsIssuing(false);
-    }
-  }, [
-    selectedDID,
-    userName,
-    userEmail,
-    achievementData,
-    achievement.id,
-    onSuccess,
-  ]);
+    issueVCMutation.mutate(
+      {
+        subjectInfo,
+        credentialInfo,
+        templateId,
+        achievementId: achievement.id,
+      },
+      { onSuccess: () => onSuccess?.() },
+    );
+  };
 
   const renderContent = () => {
     // Viewing already issued VC
@@ -303,7 +275,7 @@ export function IssueVCModal({
                     name="did-selection"
                     value={did}
                     checked={selectedDID === did}
-                    onChange={(e) => setSelectedDID(e.target.value)}
+                    onChange={(e) => setOverrideDID(e.target.value)}
                     className="h-4 w-4 text-primary focus:ring-ring"
                   />
                   <span className="text-xs break-all">
@@ -332,13 +304,13 @@ export function IssueVCModal({
   const renderFooter = () => {
     // Already issued or just issued - show close button
     if (is_issued || issuedCredential) {
-      return <Button onClick={() => onOpenChange(false)}>Close</Button>;
+      return <Button onClick={() => handleOpenChange(false)}>Close</Button>;
     }
 
     // No DIDs - show only close
     if (availableDIDs.length === 0) {
       return (
-        <Button variant="outline" onClick={() => onOpenChange(false)}>
+        <Button variant="outline" onClick={() => handleOpenChange(false)}>
           Cancel
         </Button>
       );
@@ -347,15 +319,15 @@ export function IssueVCModal({
     // Issue form
     return (
       <>
-        <Button variant="outline" onClick={() => onOpenChange(false)}>
+        <Button variant="outline" onClick={() => handleOpenChange(false)}>
           Cancel
         </Button>
         <Button
           onClick={handleIssueVC}
-          disabled={isIssuing || !selectedDID}
+          disabled={issueVCMutation.isPending || !selectedDID}
           className="bg-primary hover:bg-primary/90"
         >
-          {isIssuing && <Spinner className="mr-2 h-4 w-4" />}
+          {issueVCMutation.isPending && <Spinner className="mr-2 h-4 w-4" />}
           Issue VC
         </Button>
       </>
@@ -369,8 +341,16 @@ export function IssueVCModal({
     return "Issue Verifiable Credential";
   };
 
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
+      setOverrideDID(null);
+      issueVCMutation.reset();
+    }
+    onOpenChange(nextOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{getTitle()}</DialogTitle>

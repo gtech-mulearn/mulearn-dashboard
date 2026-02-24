@@ -6,8 +6,6 @@
  * Shows user's roles/positions.
  */
 
-"use client";
-
 import { Shield } from "lucide-react";
 
 interface RolesDisplayProps {

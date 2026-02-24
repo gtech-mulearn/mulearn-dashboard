@@ -8,6 +8,7 @@
   --font-display: var(--font-bricolage);
   --font-montserrat: var(--font-montserrat);
   --font-open-sans: var(--font-open-sans);
+  --font-inter: var(--font-inter);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -126,8 +127,6 @@ h5 {
 }
 
 * {
-  box-sizing: border-box;
-  outline: none;
   -ms-overflow-style: none;
   scroll-behavior: smooth;
   scrollbar-width: none;
@@ -208,5 +207,151 @@ h5 {
       color-mix(in srgb, var(--chart-5) 10%, var(--background)),
       color-mix(in srgb, var(--primary) 10%, var(--background))
     );
+  }
+
+  /* ── Home-page card backgrounds (uses theme palette only) ─────────── */
+  /* Learning Circles – soft teal/cyan tint */
+  .card-bg-circles {
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--chart-2) 22%, var(--background)),
+      color-mix(in srgb, var(--chart-3) 14%, var(--background))
+    );
+  }
+  /* Interest Groups – soft primary/blue tint */
+  .card-bg-groups {
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--primary) 18%, var(--background)),
+      color-mix(in srgb, var(--chart-2) 14%, var(--background))
+    );
+  }
+  /* Top Performers – warm gold/amber tint */
+  .card-bg-performers {
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--chart-4) 28%, var(--background)),
+      color-mix(in srgb, var(--chart-5) 20%, var(--background))
+    );
+  }
+
+  /* Shimmer animation for loading skeleton */
+  @keyframes shimmer {
+    0% {
+      background-position: -400px 0;
+    }
+    100% {
+      background-position: 400px 0;
+    }
+  }
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in srgb, var(--primary) 8%, transparent) 50%,
+      transparent 100%
+    );
+    background-size: 400px 100%;
+    animation: shimmer 1.6s ease-in-out infinite;
+  }
+
+  /* Calendar event day animation */
+  .calendar-event-day {
+    font-weight: 600;
+  }
+
+  /* Utility: hide scrollbar but keep scroll */
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ============================================
+   Learning Circle — Studio-quality styles
+   ============================================ */
+
+@layer utilities {
+  .lc-font {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-feature-settings: "cv02", "cv03", "cv04";
+  }
+
+  .lc-card-shadow {
+    box-shadow:
+      0 1px 3px rgba(0, 0, 0, 0.06),
+      0 4px 16px rgba(0, 0, 0, 0.04);
+  }
+
+  .lc-card-shadow-hover {
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.1),
+      0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  .lc-card-border {
+    border: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+  .lc-section-label {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #9ca3af;
+  }
+
+  .lc-gradient-cta {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  }
+
+  .lc-gradient-cta:hover {
+    background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%);
+  }
+
+  .lc-stat-counter {
+    animation: lc-count-up 600ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+
+  .lc-fade-in {
+    animation: lc-fade-in 300ms ease both;
+  }
+
+  .lc-slide-up {
+    animation: lc-slide-up 400ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+}
+
+@keyframes lc-count-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes lc-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes lc-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

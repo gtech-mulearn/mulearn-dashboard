@@ -128,9 +128,14 @@ export function useDeactivateRule() {
 // ==========================================
 
 export function useManualIssue() {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: manualIssue,
     onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ACHIEVEMENT_KEYS.issuedLogsAll(),
+      });
       toast.success("Achievement issued successfully");
     },
     onError: (err: Error) => {
@@ -144,9 +149,14 @@ export function useManualIssue() {
 // ==========================================
 
 export function useRevokeAchievement() {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: revokeAchievement,
     onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ACHIEVEMENT_KEYS.issuedLogsAll(),
+      });
       toast.success("Achievement revoked");
     },
     onError: (err: Error) => {
@@ -166,7 +176,7 @@ export function useBulkIssue() {
     mutationFn: (formData: FormData) => bulkIssueAchievements(formData),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ACHIEVEMENT_KEYS.issuedLogs(1, 10),
+        queryKey: ACHIEVEMENT_KEYS.issuedLogsAll(),
       });
       toast.success("Bulk issue processed successfully");
     },

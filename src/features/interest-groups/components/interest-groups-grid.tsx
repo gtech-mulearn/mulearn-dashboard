@@ -9,7 +9,7 @@
 "use client";
 
 import { Sparkles } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { SearchInput } from "@/features/search/components/SearchInput";
 import type { InterestGroup } from "../schemas/interest-groups.schema";
 import { InterestGroupCard } from "./interest-group-card";
@@ -20,14 +20,14 @@ type InterestGroupsGridProps = {
 };
 
 const gradients = [
-  "bg-gradient-to-br from-primary via-primary/80 to-primary/60",
-  "bg-gradient-to-br from-chart-1 via-chart-2 to-chart-3",
-  "bg-gradient-to-br from-chart-2 via-chart-3 to-chart-4",
-  "bg-gradient-to-br from-chart-3 via-chart-4 to-chart-5",
-  "bg-gradient-to-br from-chart-5 via-chart-1 to-chart-2",
-  "bg-gradient-to-br from-chart-4 via-chart-5 to-chart-1",
-  "bg-gradient-to-br from-primary/90 via-accent to-primary/70",
-  "bg-gradient-to-br from-chart-1 via-primary to-chart-5",
+  "bg-linear-to-br from-primary via-primary/80 to-primary/60",
+  "bg-linear-to-br from-chart-1 via-chart-2 to-chart-3",
+  "bg-linear-to-br from-chart-2 via-chart-3 to-chart-4",
+  "bg-linear-to-br from-chart-3 via-chart-4 to-chart-5",
+  "bg-linear-to-br from-chart-5 via-chart-1 to-chart-2",
+  "bg-linear-to-br from-chart-4 via-chart-5 to-chart-1",
+  "bg-linear-to-br from-primary/90 via-accent to-primary/70",
+  "bg-linear-to-br from-chart-1 via-primary to-chart-5",
 ];
 
 export function InterestGroupsGrid({
@@ -36,8 +36,12 @@ export function InterestGroupsGrid({
 }: InterestGroupsGridProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredGroups = groups.filter((group) =>
-    group.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  const filteredGroups = useMemo(
+    () =>
+      groups.filter((group) =>
+        group.name.toLowerCase().includes(searchQuery.toLowerCase()),
+      ),
+    [groups, searchQuery],
   );
 
   return (
