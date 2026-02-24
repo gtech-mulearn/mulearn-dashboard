@@ -12,6 +12,7 @@ import { authKeys } from "@/features/auth/hooks/query-keys";
 import {
   issueVC,
   togglePublicProfile,
+  updateProfile,
   updateProfileImage,
   updateSocials,
   updateUserPreferences,
@@ -19,6 +20,8 @@ import {
 } from "../api";
 import type {
   Socials,
+  UpdateProfileRequest,
+  UserPreferences,
   UserPreferences,
   VCCredentialInfo,
   VCSubjectInfo,
@@ -93,10 +96,19 @@ export function useUpdateProfileImage() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (imageUrl: string) => updateProfileImage(imageUrl),
+    mutationFn: ({
+      profilePic,
+      userId,
+    }: {
+      profilePic: File;
+      userId: string;
+    }) => updateProfileImage(profilePic, userId),
     onSuccess: () => {
       // Invalidate both profile and user info caches
       queryClient.invalidateQueries({ queryKey: profileKeys.profile() });
+      queryClient.invalidateQueries({
+        queryKey: profileKeys.editableProfile(),
+      });
       queryClient.invalidateQueries({ queryKey: authKeys.userInfo() });
       toast.success("Profile image updated");
     },
@@ -106,6 +118,23 @@ export function useUpdateProfileImage() {
   });
 }
 
+/** Update profile fields */
+export function useUpdateProfile() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (profileData: UpdateProfileRequest) =>
+      updateProfile(profileData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: profileKeys.profile() });
+      queryClient.invalidateQueries({
+        queryKey: profileKeys.editableProfile(),
+      });
+      queryClient.invalidateQueries({ queryKey: authKeys.userInfo() });
+      toast.success("Profile updated");
+    },
+    onError: () => {
+      toast.error("Failed to update profile");
 /**
  * Issue a Verifiable Credential.
  * Issues the VC via QSeverse, then updates the VC URL in the backend.

@@ -15,6 +15,7 @@ import {
   Achievements,
   BasicDetails,
   EditInterestGroupsModal,
+  type EditProfileFormValues,
   EditProfileModal,
   KarmaHistory,
   MuVoyage,
@@ -24,14 +25,24 @@ import {
   type ProfileTab,
   ProfileTabs,
   ShareProfileModal,
+  type UpdateProfileRequest,
   updateInterestGroups,
+  useEditableProfile,
+  useUpdateProfile,
+  useUpdateProfileImage,
   useUserLevels,
   useUserLog,
   useUserProfile,
 } from "@/features/profile";
+import {
+  type ChangeOrganizationFormValues,
+  ChangeOrganizationRequestSchema,
+  useChangeOrganization,
+} from "@/features/settings";
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<ProfileTab>("basic-details");
+  const [lastSavedDepartmentId, setLastSavedDepartmentId] = useState("");
 
   // Modal states
   const [showEditProfile, setShowEditProfile] = useState(false);
@@ -45,6 +56,10 @@ export default function ProfilePage() {
     isError,
     refetch: refetchProfile,
   } = useUserProfile();
+  const updateProfileMutation = useUpdateProfile();
+  const { data: editableProfile } = useEditableProfile();
+  const changeOrganizationMutation = useChangeOrganization();
+  const updateProfileImageMutation = useUpdateProfileImage();
   const { data: userLog, isLoading: isLoadingLog } = useUserLog();
   const { data: userLevels, isLoading: isLoadingLevels } = useUserLevels();
 
@@ -68,12 +83,76 @@ export default function ProfilePage() {
   };
 
   // Save profile handler
-  const handleSaveProfile = async (_data: {
-    full_name?: string;
-    profile_pic?: string;
-  }) => {
-    // TODO: Implement API call to update profile
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+  const handleSaveProfile = async (
+    data: EditProfileFormValues,
+    dirtyFields: Partial<Record<keyof EditProfileFormValues, boolean>>,
+  ) => {
+    if (!profile) return;
+
+    const hasProfileUpdates = Boolean(
+      dirtyFields.full_name ||
+        dirtyFields.email ||
+        dirtyFields.mobile ||
+        dirtyFields.gender ||
+        dirtyFields.dob ||
+        dirtyFields.communities,
+    );
+
+    if (hasProfileUpdates) {
+      const baseFullName =
+        editableProfile?.full_name?.trim() || profile.full_name?.trim() || "";
+      const finalFullName = data.full_name?.trim() || baseFullName;
+      const [firstName, ...lastNameParts] = finalFullName.split(" ");
+
+      const baseEmail = editableProfile?.email?.trim() || profile.email || "";
+      const baseMobile =
+        editableProfile?.mobile?.trim() || profile.mobile || "";
+      const baseGender =
+        editableProfile?.gender?.trim() || profile.gender || "";
+      const baseDob = editableProfile?.dob?.trim() || profile.dob || "";
+      const baseCommunities = editableProfile?.communities ?? [];
+
+      const profilePayload: UpdateProfileRequest = {
+        first_name: firstName?.trim() || "",
+        last_name: lastNameParts.join(" ").trim(),
+        full_name: finalFullName,
+        email: data.email?.trim() || baseEmail,
+        mobile: data.mobile?.trim() || baseMobile,
+        gender: data.gender?.trim() || baseGender,
+        dob: data.dob?.trim() || baseDob,
+        communities: dirtyFields.communities
+          ? (data.communities ?? [])
+          : baseCommunities,
+      };
+
+      await updateProfileMutation.mutateAsync(profilePayload);
+    }
+
+    const shouldUpdateCollege = Boolean(
+      dirtyFields.org_id || dirtyFields.department_id,
+    );
+
+    if (shouldUpdateCollege && data.org_id?.trim()) {
+      const organizationPayload: ChangeOrganizationFormValues = {
+        organization: data.org_id.trim(),
+        department: data.department_id?.trim() || "",
+      };
+      const validatedOrganization =
+        ChangeOrganizationRequestSchema.safeParse(organizationPayload);
+      if (!validatedOrganization.success) {
+        throw new Error("Invalid college details");
+      }
+      await changeOrganizationMutation.mutateAsync(validatedOrganization.data);
+      setLastSavedDepartmentId(validatedOrganization.data.department);
+    }
+
+    if (dirtyFields.profile_pic && data.profile_pic) {
+      await updateProfileImageMutation.mutateAsync({
+        profilePic: data.profile_pic,
+        userId: profile.id,
+      });
+    }
+
     refetchProfile();
   };
 
@@ -166,6 +245,7 @@ export default function ProfilePage() {
         open={showEditProfile}
         onOpenChange={setShowEditProfile}
         profile={profile}
+        fallbackDepartmentId={lastSavedDepartmentId}
         onSave={handleSaveProfile}
       />
       <ShareProfileModal

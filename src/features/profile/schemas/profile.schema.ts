@@ -12,6 +12,10 @@ import { ApiResponseSchema } from "@/lib/schemas/api-response";
 
 export { ApiResponseSchema };
 
+const StringIdSchema = z
+  .union([z.string(), z.number()])
+  .transform((v) => String(v));
+
 // ============================================
 // User Profile Schemas
 // ============================================
@@ -60,10 +64,24 @@ export const UserProfileSchema = z.object({
   id: z.string(),
   muid: z.string(),
   full_name: z.string(),
+  email: z.string().optional(),
+  mobile: z.string().optional(),
   profile_pic: z.string().nullable(),
   gender: z.string().nullable(),
+  dob: z.string().optional(),
   college_code: z.string().nullable(),
   college_id: z.string().nullable(),
+  department_id: z.string().nullable().optional(),
+  department_name: z.string().nullable().optional(),
+  department: z
+    .object({
+      id: z.string().nullable().optional(),
+      title: z.string().nullable().optional(),
+      name: z.string().nullable().optional(),
+    })
+    .passthrough()
+    .nullable()
+    .optional(),
   org_district_id: z.string().nullable().optional(),
   level: z.string().nullable(),
   karma: z.coerce.number().nullable(),
@@ -80,6 +98,31 @@ export type UserProfile = z.infer<typeof UserProfileSchema>;
 /** Wrapped response for API validation */
 export const UserProfileResponseSchema = ApiResponseSchema(UserProfileSchema);
 export type UserProfileResponse = z.infer<typeof UserProfileResponseSchema>;
+
+/** GET /api/v1/dashboard/profile/ - edit profile prefill */
+export const EditableProfileSchema = z
+  .object({
+    full_name: z.string().nullable().optional().default(""),
+    email: z.string().nullable().optional().default(""),
+    mobile: z.string().nullable().optional().default(""),
+    gender: z.string().nullable().optional().default(""),
+    dob: z.string().nullable().optional().default(""),
+    communities: z.array(z.string()).nullable().optional(),
+    community: z.array(z.string()).nullable().optional(),
+  })
+  .transform((data) => ({
+    full_name: data.full_name ?? "",
+    email: data.email ?? "",
+    mobile: data.mobile ?? "",
+    gender: data.gender ?? "",
+    dob: data.dob ?? "",
+    communities: data.communities ?? data.community ?? [],
+  }));
+export type EditableProfile = z.infer<typeof EditableProfileSchema>;
+
+export const EditableProfileResponseSchema = ApiResponseSchema(
+  EditableProfileSchema,
+);
 
 // ============================================
 // User Activity Log Schemas
@@ -203,10 +246,177 @@ export type UserPreferencesResponseType = z.infer<
 // ============================================
 
 export const UpdateProfileRequestSchema = z.object({
+  first_name: z.string().optional(),
+  last_name: z.string().optional(),
   full_name: z.string().optional(),
-  profile_pic: z.string().optional(),
+  email: z.string().optional(),
+  mobile: z.string().optional(),
+  gender: z.string().optional(),
+  dob: z.string().optional(),
+  communities: z.array(z.string()).optional(),
 });
 export type UpdateProfileRequest = z.infer<typeof UpdateProfileRequestSchema>;
+
+export const UpdateProfileImageRequestSchema = z.object({
+  profile: z.any(),
+  user_id: z.string(),
+});
+export type UpdateProfileImageRequest = z.infer<
+  typeof UpdateProfileImageRequestSchema
+>;
+
+export const UpdateProfileImageResponseSchema = ApiResponseSchema(
+  z
+    .object({
+      profile_pic: z.string().optional(),
+    })
+    .passthrough(),
+);
+
+export const EditProfileFormSchema = z
+  .object({
+    full_name: z.string().trim().optional(),
+    email: z
+      .string()
+      .trim()
+      .optional()
+      .refine((value) => !value || z.email().safeParse(value).success, {
+        message: "Enter a valid email",
+      }),
+    mobile: z
+      .string()
+      .trim()
+      .optional()
+      .refine(
+        (value) => !value || (/^\+?[0-9]+$/.test(value) && value.length >= 10),
+        "Enter a valid mobile number",
+      )
+      .refine(
+        (value) => !value || value.length <= 15,
+        "Mobile number is too long",
+      ),
+    gender: z.string().trim().optional(),
+    dob: z.string().trim().optional(),
+    communities: z.array(z.string()).optional(),
+    country_id: z.string().trim().optional(),
+    state_id: z.string().trim().optional(),
+    district_id: z.string().trim().optional(),
+    org_id: z.string().trim().optional(),
+    department_id: z.string().trim().optional(),
+    has_college_changes: z.boolean().optional(),
+    profile_pic: z.any().optional(),
+  })
+  .superRefine((values, ctx) => {
+    if (!values.has_college_changes) return;
+
+    if (!values.district_id?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["district_id"],
+        message: "District is required",
+      });
+    }
+
+    if (!values.org_id?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["org_id"],
+        message: "College / School is required",
+      });
+    }
+
+    if (!values.department_id?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["department_id"],
+        message: "Department is required",
+      });
+    }
+  });
+export type EditProfileFormValues = z.infer<typeof EditProfileFormSchema>;
+
+const IdSchema = StringIdSchema;
+
+export const OptionSchema = z.object({
+  id: IdSchema,
+  title: z.string().optional(),
+  name: z.string().optional(),
+  location: z.string().optional(),
+});
+export type Option = z.infer<typeof OptionSchema>;
+
+export const CommunitiesResponseSchema = ApiResponseSchema(
+  z.object({
+    communities: z.array(OptionSchema),
+  }),
+);
+
+export const CountriesResponseSchema = ApiResponseSchema(
+  z.object({
+    countries: z.array(
+      z.object({
+        id: IdSchema,
+        name: z.string(),
+      }),
+    ),
+  }),
+);
+
+export const StatesResponseSchema = ApiResponseSchema(
+  z.object({
+    states: z.array(
+      z.object({
+        id: IdSchema,
+        name: z.string(),
+      }),
+    ),
+  }),
+);
+
+export const DistrictsResponseSchema = ApiResponseSchema(
+  z.object({
+    districts: z.array(
+      z.object({
+        id: IdSchema,
+        name: z.string(),
+      }),
+    ),
+  }),
+);
+
+export const CollegesByDistrictResponseSchema = ApiResponseSchema(
+  z.object({
+    colleges: z.array(
+      z.object({
+        id: IdSchema,
+        title: z.string(),
+      }),
+    ),
+    departments: z.array(
+      z.object({
+        id: IdSchema,
+        title: z.string(),
+      }),
+    ),
+  }),
+);
+
+export const SchoolsByDistrictResponseSchema = ApiResponseSchema(
+  z.object({
+    schools: z.array(
+      z.object({
+        id: IdSchema,
+        title: z.string(),
+      }),
+    ),
+  }),
+);
+
+export const LocationOptionSchema = z.object({
+  value: z.string(),
+  label: z.string(),
+});
+export type LocationOption = z.infer<typeof LocationOptionSchema>;
 
 // ============================================
 // Toggle Public Profile Schema
