@@ -22,7 +22,6 @@ import type {
   Socials,
   UpdateProfileRequest,
   UserPreferences,
-  UserPreferences,
   VCCredentialInfo,
   VCSubjectInfo,
 } from "../schemas";
@@ -135,6 +134,9 @@ export function useUpdateProfile() {
     },
     onError: () => {
       toast.error("Failed to update profile");
+    },
+  });
+}
 /**
  * Issue a Verifiable Credential.
  * Issues the VC via QSeverse, then updates the VC URL in the backend.

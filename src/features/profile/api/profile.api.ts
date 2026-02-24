@@ -339,6 +339,17 @@ export async function getOrganizationsAndDepartments(
   };
 }
 
+export async function editCollege(
+  org_id: string,
+  department_id: string,
+): Promise<void> {
+  await apiClient.patch(
+    endpoints.college.edit,
+    { org_id, department_id },
+    EmptyResponseSchema,
+  );
+}
+
 // ============================================
 // Interest Groups
 // ============================================

@@ -7,8 +7,9 @@
  * Profile data rarely changes, so we use a longer stale time.
  */
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
+  editCollege,
   getCommunities,
   getConnectedDIDs,
   getCountries,
@@ -202,6 +203,18 @@ export function useOrganizationData(districtId: string) {
     queryFn: () => getOrganizationsAndDepartments(districtId),
     enabled: Boolean(districtId),
     staleTime: 10 * 60 * 1000,
+  });
+}
+
+export function useEditCollege() {
+  return useMutation({
+    mutationFn: ({
+      organization,
+      department,
+    }: {
+      organization: string;
+      department: string;
+    }) => editCollege(organization, department),
   });
 }
 

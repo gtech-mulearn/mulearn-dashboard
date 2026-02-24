@@ -42,6 +42,9 @@ export const profileKeys = {
   organizationData: (districtId: string) =>
     [...profileKeys.all, "organization-data", districtId] as const,
 
+  editCollege: (orgId?: string, departmentId?: string) =>
+    [...profileKeys.all, "edit-college", orgId, departmentId] as const,
+
   // Achievements
   achievements: (muid: string) =>
     [...profileKeys.all, "achievements", muid] as const,
