@@ -28,6 +28,7 @@ import {
   type UpdateProfileRequest,
   updateInterestGroups,
   useEditableProfile,
+  useEditCollege,
   useUpdateProfile,
   useUpdateProfileImage,
   useUserLevels,
@@ -37,7 +38,6 @@ import {
 import {
   type ChangeOrganizationFormValues,
   ChangeOrganizationRequestSchema,
-  useChangeOrganization,
 } from "@/features/settings";
 
 export default function ProfilePage() {
@@ -58,7 +58,7 @@ export default function ProfilePage() {
   } = useUserProfile();
   const updateProfileMutation = useUpdateProfile();
   const { data: editableProfile } = useEditableProfile();
-  const changeOrganizationMutation = useChangeOrganization();
+  const changeOrganizationMutation = useEditCollege();
   const updateProfileImageMutation = useUpdateProfileImage();
   const { data: userLog, isLoading: isLoadingLog } = useUserLog();
   const { data: userLevels, isLoading: isLoadingLevels } = useUserLevels();

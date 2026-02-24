@@ -215,6 +215,8 @@ export const endpoints = {
   college: {
     /** GET - List all colleges (paginated) */
     list: "/api/v1/dashboard/college/",
+    /** PATCH - Edit college */
+    edit: "/api/v1/dashboard/college/change-college/",
   },
 
   // ============================================

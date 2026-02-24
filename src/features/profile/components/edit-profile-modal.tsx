@@ -676,18 +676,13 @@ export function EditProfileModal({
                   )}
                 />
                 <div className="space-y-2">
-                  <FormLabel>MUID</FormLabel>
+                  <div className="text-sm font-medium">MUID</div>
                   <Input
                     value={profile.muid}
                     disabled
                     className={fieldClassName}
                   />
                 </div>
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-indigo-500 to-purple-600 text-3xl font-bold text-white">
-                    {profile.full_name?.charAt(0) || "?"}
-                  </div>
-                )}
               </div>
             </div>
 
