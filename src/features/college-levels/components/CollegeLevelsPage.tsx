@@ -61,7 +61,7 @@ export default function CollegeLevelsPage() {
         total_karma: karma ? karma.total_karma_gained : "-",
         karma_gain: karma
           ? `${karma.total_karma_increased} (${Math.round(
-              karma.increased_percentage * 100,
+              karma.increased_percentage,
             )}%)`
           : "-",
       };
