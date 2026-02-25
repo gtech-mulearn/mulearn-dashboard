@@ -506,6 +506,17 @@ export const endpoints = {
     locationSearch: (param: string) =>
       `/api/v1/register/location/?q=${param || "india"}`,
   },
+  // ============================================
+  // Discord Moderation Endpoints
+  // ============================================
+  discordModeration: {
+    /** GET - List karma activity logs (paginated, searchable) */
+    taskList: "/api/v1/dashboard/discord-moderator/tasklist/",
+    /** GET - Get pending peer/appraiser approval counts */
+    pendingCounts: "/api/v1/dashboard/discord-moderator/pendingcounts/",
+    /** GET - Get moderator leaderboard (paginated) */
+    leaderboard: "/api/v1/dashboard/discord-moderator/leaderboard/",
+  },
 } as const;
 
 // Type for type-safe endpoint access
