@@ -510,6 +510,14 @@ export const endpoints = {
     locationSearch: (param: string) =>
       `/api/v1/register/location/?q=${param || "india"}`,
   },
+
+  // ============================================
+  // college levels Endpoints
+  // ============================================
+  collegeLevels: {
+    /** GET - List of colleges (query: perPage, pageIndex, search, sortBy) */
+    collegeList: "/api/v1/dashboard/college/",
+  },
 } as const;
 
 // Type for type-safe endpoint access
