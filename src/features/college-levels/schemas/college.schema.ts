@@ -42,36 +42,30 @@ const NoOfLCSchema = z.object({
    Organization Schema
 ===================================================== */
 
-const OrganizationSchema = z
-  .object({
-    id: z.string().uuid(),
-    level: z.number(),
-    org: z.string(),
-    number_of_members: NumberOfMembersSchema,
-    total_karma: z
-      .union([z.number(), TotalKarmaObjectSchema])
-      .nullable()
-      .optional(),
-    no_of_lc: NoOfLCSchema,
-    no_of_alumni: z.number(),
-  })
-  .passthrough();
+const OrganizationSchema = z.object({
+  id: z.string().uuid(),
+  level: z.number(),
+  org: z.string(),
+  number_of_members: NumberOfMembersSchema,
+  total_karma: z
+    .union([z.number(), TotalKarmaObjectSchema])
+    .nullable()
+    .optional(),
+  no_of_lc: NoOfLCSchema,
+  no_of_alumni: z.number(),
+});
 
-const PaginationSchema = z
-  .object({
-    count: z.number(),
-    totalPages: z.number(),
-    isNext: z.boolean(),
-    isPrev: z.boolean(),
-    nextPage: z.number().nullable(),
-  })
-  .passthrough();
+const PaginationSchema = z.object({
+  count: z.number(),
+  totalPages: z.number(),
+  isNext: z.boolean(),
+  isPrev: z.boolean(),
+  nextPage: z.number().nullable(),
+});
 
 export const GetOrganizationsResponseSchema = ApiResponseSchema(
-  z
-    .object({
-      data: z.array(OrganizationSchema),
-      pagination: PaginationSchema,
-    })
-    .passthrough(),
+  z.object({
+    data: z.array(OrganizationSchema),
+    pagination: PaginationSchema,
+  }),
 );
