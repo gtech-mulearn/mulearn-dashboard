@@ -7,14 +7,21 @@
  * Profile data rarely changes, so we use a longer stale time.
  */
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
+  editCollege,
+  getCommunities,
   getConnectedDIDs,
+  getCountries,
+  getDistricts,
+  getEditableUserProfile,
   getInterestGroupsList,
+  getOrganizationsAndDepartments,
   getPublicUserLevels,
   getPublicUserLog,
   getPublicUserProfile,
   getSocials,
+  getStates,
   getUserAchievements,
   getUserLevels,
   getUserLog,
@@ -39,6 +46,17 @@ export function useUserProfile() {
     queryKey: profileKeys.profile(),
     queryFn: getUserProfile,
     staleTime: PROFILE_STALE_TIME,
+  });
+}
+
+/** Fetch editable profile payload used by edit modal prefill */
+export function useEditableProfile(enabled = true) {
+  return useQuery({
+    queryKey: profileKeys.editableProfile(),
+    queryFn: getEditableUserProfile,
+    staleTime: 0,
+    enabled,
+    refetchOnMount: "always",
   });
 }
 
@@ -137,6 +155,66 @@ export function useInterestGroupsList() {
     queryKey: profileKeys.interestGroups(),
     queryFn: getInterestGroupsList,
     staleTime: 10 * 60 * 1000, // 10 minutes - rarely changes
+  });
+}
+
+/** Fetch available communities */
+export function useCommunities() {
+  return useQuery({
+    queryKey: profileKeys.communities(),
+    queryFn: getCommunities,
+    staleTime: 10 * 60 * 1000,
+  });
+}
+
+/** Fetch available countries */
+export function useCountries() {
+  return useQuery({
+    queryKey: profileKeys.countries(),
+    queryFn: getCountries,
+    staleTime: 10 * 60 * 1000,
+  });
+}
+
+/** Fetch states for selected country */
+export function useStates(countryId: string) {
+  return useQuery({
+    queryKey: profileKeys.states(countryId),
+    queryFn: () => getStates(countryId),
+    enabled: Boolean(countryId),
+    staleTime: 10 * 60 * 1000,
+  });
+}
+
+/** Fetch districts for selected state */
+export function useDistricts(stateId: string) {
+  return useQuery({
+    queryKey: profileKeys.districts(stateId),
+    queryFn: () => getDistricts(stateId),
+    enabled: Boolean(stateId),
+    staleTime: 10 * 60 * 1000,
+  });
+}
+
+/** Fetch organizations and departments for selected district */
+export function useOrganizationData(districtId: string) {
+  return useQuery({
+    queryKey: profileKeys.organizationData(districtId),
+    queryFn: () => getOrganizationsAndDepartments(districtId),
+    enabled: Boolean(districtId),
+    staleTime: 10 * 60 * 1000,
+  });
+}
+
+export function useEditCollege() {
+  return useMutation({
+    mutationFn: ({
+      organization,
+      department,
+    }: {
+      organization: string;
+      department: string;
+    }) => editCollege(organization, department),
   });
 }
 

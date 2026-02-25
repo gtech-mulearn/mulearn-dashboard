@@ -125,6 +125,8 @@ export const endpoints = {
     socialsEdit: "/api/v1/dashboard/profile/socials/edit/",
     /** PATCH - Update user's interest groups */
     interestGroups: "/api/v1/dashboard/profile/ig-edit/",
+    /** PATCH - Update user's profile fields */
+    updateProfile: "/api/v1/dashboard/profile/",
     /** POST - Update profile image */
     updateProfileImage: "/api/v1/dashboard/user/profile/update/",
     /** DELETE - Delete user account */
@@ -213,6 +215,8 @@ export const endpoints = {
   college: {
     /** GET - List all colleges (paginated) */
     list: "/api/v1/dashboard/college/",
+    /** PATCH - Edit college */
+    edit: "/api/v1/dashboard/college/change-college/",
   },
 
   // ============================================
