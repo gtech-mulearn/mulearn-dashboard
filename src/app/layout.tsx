@@ -1,13 +1,6 @@
 import type { Metadata } from "next";
-import {
-  Bricolage_Grotesque,
-  Geist,
-  Geist_Mono,
-  Inter,
-  Montserrat,
-  Open_Sans,
-} from "next/font/google";
-import { Toaster } from "@/components/ui/sonner";
+import { Bricolage_Grotesque, Geist } from "next/font/google";
+import { Toaster } from "sonner";
 import { Providers } from "./providers";
 import "./globals.css";
 
@@ -20,29 +13,6 @@ const bricolage = Bricolage_Grotesque({
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-const montserrat = Montserrat({
-  variable: "--font-montserrat",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const openSans = Open_Sans({
-  variable: "--font-open-sans",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -70,7 +40,7 @@ export default function RootLayout({
   return (
     <html lang="en" data-scroll-behavior="smooth">
       <body
-        className={`${bricolage.variable} ${geistSans.variable} ${geistMono.variable} ${montserrat.variable} ${openSans.variable} ${inter.variable} antialiased font-sans`}
+        className={`${bricolage.variable} ${geistSans.variable} antialiased font-sans`}
       >
         <Providers>
           {children}
