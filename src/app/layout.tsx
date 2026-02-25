@@ -10,9 +10,10 @@ const bricolage = Bricolage_Grotesque({
   display: "swap",
 });
 
-const geistSans = Geist({
+const geist = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -38,9 +39,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" data-scroll-behavior="smooth">
+    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <body
-        className={`${bricolage.variable} ${geistSans.variable} antialiased font-sans`}
+        className={`${bricolage.variable} ${geist.variable} antialiased font-sans`}
       >
         <Providers>
           {children}
