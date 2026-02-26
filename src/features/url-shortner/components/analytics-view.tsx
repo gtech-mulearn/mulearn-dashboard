@@ -95,8 +95,7 @@ export const AnalyticsView = ({ params }: AnalyticsViewProps) => {
             Failed to load analytics
           </div>
           <p className="text-muted-foreground text-sm">
-            We couldn&apos;t fetch analytics data. Please check your connection
-            or try again.
+            We couldn&apos;t fetch analytics data. Please try again later.
           </p>
           <Button variant={"default"} onClick={() => refetch()}>
             Retry
@@ -117,6 +116,9 @@ export const AnalyticsView = ({ params }: AnalyticsViewProps) => {
             This short URL hasn&apos;t received any clicks yet. Share the link
             to start tracking engagement.
           </p>
+          <Button variant={"default"} onClick={() => refetch()}>
+            Retry
+          </Button>
         </div>
       </div>
     );
