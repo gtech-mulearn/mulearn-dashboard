@@ -46,8 +46,8 @@ function DiscordModerationContent() {
       {/* ── Page Header ── */}
       <CardHeader className="px-0 py-0 sm:px-0 sm:py-0">
         <div className="flex flex-col gap-2">
-          <div className="inline-flex w-fit items-center gap-2 rounded-full border border-primary/20 bg-primary/6 px-3 py-1 text-xs font-semibold text-primary">
-            <Shield className="size-3.5" />
+          <div className="inline-flex w-fit items-center gap-2 text-base font-semibold text-primary">
+            <Shield className="size-5" />
             System Management
           </div>
           <CardTitle className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
@@ -64,25 +64,35 @@ function DiscordModerationContent() {
             value={option}
             onValueChange={(v) => setOption(v as LeaderboardOption)}
           >
-            <SelectTrigger className="w-36 rounded-xl text-sm" size="sm">
+            <SelectTrigger className="w-44 h-10 rounded-xl text-base font-medium cursor-pointer">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="peer">Peer</SelectItem>
-              <SelectItem value="appraiser">Appraiser</SelectItem>
+              <SelectItem
+                value="peer"
+                className="text-base py-2.5 cursor-pointer"
+              >
+                Peer
+              </SelectItem>
+              <SelectItem
+                value="appraiser"
+                className="text-base py-2.5 cursor-pointer"
+              >
+                Appraiser
+              </SelectItem>
             </SelectContent>
           </Select>
 
           {/* Leaderboard / Tasks tab buttons */}
-          <div className="flex rounded-xl border border-border overflow-hidden">
+          <div className="flex items-center gap-1">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setActiveTab("leaderboard")}
-              className={`rounded-none px-5 h-8 text-sm font-medium transition-colors ${
+              className={`px-3 h-9 text-base font-semibold border-0 bg-transparent shadow-none transition-all duration-200 hover:-translate-y-0.5 hover:scale-105 hover:bg-transparent ${
                 activeTab === "leaderboard"
-                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                  : "text-muted-foreground hover:bg-muted"
+                  ? "text-foreground"
+                  : "text-muted-foreground"
               }`}
             >
               Leaderboard
@@ -91,10 +101,10 @@ function DiscordModerationContent() {
               variant="ghost"
               size="sm"
               onClick={() => setActiveTab("tasks")}
-              className={`rounded-none px-5 h-8 text-sm font-medium border-l border-border transition-colors ${
+              className={`px-3 h-9 text-base font-semibold border-0 bg-transparent shadow-none transition-all duration-200 hover:-translate-y-0.5 hover:scale-105 hover:bg-transparent ${
                 activeTab === "tasks"
-                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                  : "text-muted-foreground hover:bg-muted"
+                  ? "text-foreground"
+                  : "text-muted-foreground"
               }`}
             >
               Tasks

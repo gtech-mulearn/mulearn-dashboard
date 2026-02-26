@@ -23,7 +23,6 @@ import {
   Link,
   Map as MapIcon,
   MapPin,
-  MessageSquareCode,
   Rocket,
   Search,
   Settings,
@@ -175,14 +174,6 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: Shield,
     section: "management",
     roles: MANAGEMENT_ROLES,
-  },
-  {
-    id: "discord-moderation",
-    title: "Discord Mod",
-    href: "/dashboard/discord-moderation",
-    icon: MessageSquareCode,
-    section: "management",
-    roles: [ROLES.DISCORD_MODERATOR, ...MANAGEMENT_ROLES],
   },
   {
     id: "url-shortener",

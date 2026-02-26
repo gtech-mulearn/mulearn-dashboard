@@ -20,9 +20,9 @@ import { useModeratorBoard } from "../hooks";
 // ─── Column definitions ───────────────────────────────────────────────────────
 
 const COLUMN_ORDER = [
-  { column: "name", Label: "Name", isSortable: true },
-  { column: "count", Label: "Task Count", isSortable: true },
-  { column: "muid", Label: "Muid", isSortable: false },
+  { column: "name", Label: "Name", isSortable: false, width: "w-1/4" },
+  { column: "count", Label: "Task Count", isSortable: false, width: "w-1/4" },
+  { column: "muid", Label: "Muid", isSortable: false, width: "w-1/4" },
 ];
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -62,6 +62,8 @@ export function ModeratorLeaderboard({ option }: ModeratorLeaderboardProps) {
         columnOrder={COLUMN_ORDER}
         onIconClick={() => undefined}
         action={false}
+        thClassName="text-xl"
+        slNoClassName="w-1/4"
       />
       <div>
         {!isLoading && (

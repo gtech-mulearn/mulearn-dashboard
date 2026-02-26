@@ -44,17 +44,19 @@ type ColumnDef = {
   column: string;
   Label: string;
   isSortable: boolean;
+  width?: string;
   wrap?: (data: string | ReactElement, id: string, row: Data) => ReactElement;
 };
 
 const COLUMN_ORDER: ColumnDef[] = [
-  { column: "full_name", Label: "User", isSortable: true },
-  { column: "task_name", Label: "Task", isSortable: true },
-  { column: "status", Label: "Status", isSortable: true },
+  { column: "full_name", Label: "User", isSortable: false, width: "w-1/5" },
+  { column: "task_name", Label: "Task", isSortable: false, width: "w-1/5" },
+  { column: "status", Label: "Status", isSortable: false, width: "w-1/5" },
   {
     column: "discordlink",
     Label: "Discord",
     isSortable: false,
+    width: "w-1/5",
     wrap: (data) => <DiscordLink href={String(data)} />,
   },
 ];
@@ -125,6 +127,8 @@ function TaskListTableContent() {
           columnOrder={COLUMN_ORDER}
           onIconClick={handleSortChange}
           action={false}
+          thClassName="text-xl"
+          slNoClassName="w-1/5"
         />
         <div>
           {!isLoading && (
