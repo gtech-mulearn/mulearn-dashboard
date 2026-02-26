@@ -1,7 +1,7 @@
 "use client";
 
-import { FileSpreadsheet, Plus, Shield, UserRound } from "lucide-react";
-import { useState } from "react";
+import { FileSpreadsheet, Plus, Shield, UserPlus } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table from "@/components/dashboard/table/Table";
 import TableTop from "@/components/dashboard/table/TableTop";
@@ -19,7 +19,9 @@ import { BulkImportDialog } from "./bulk-import-dialog";
 import { RoleFormDialog } from "./role-form-dialog";
 import { UserRoleAssignment } from "./user-role-assignment";
 
-const COLUMN_ORDER = [
+const buildColumnOrder = (
+  onAssign: (id: string | number | boolean) => void,
+) => [
   { column: "title", Label: "Title", isSortable: true },
   { column: "description", Label: "Description", isSortable: false },
   { column: "members", Label: "Members", isSortable: true },
@@ -27,6 +29,22 @@ const COLUMN_ORDER = [
   { column: "updated_by", Label: "Updated By", isSortable: false },
   { column: "created_by", Label: "Created By", isSortable: false },
   { column: "created_at", Label: "Created On", isSortable: true },
+  {
+    column: "id",
+    Label: "Assign",
+    isSortable: false,
+    width: "w-28",
+    wrap: (_data: string | import("react").ReactElement, id: string) => (
+      <button
+        type="button"
+        onClick={() => onAssign(id)}
+        className="inline-flex items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary transition-colors hover:bg-primary/20"
+      >
+        <UserPlus className="size-3" />
+        Assign
+      </button>
+    ),
+  },
 ];
 
 export default function ManageRoles() {
@@ -80,11 +98,19 @@ export default function ManageRoles() {
     setFormOpen(true);
   };
 
-  const handleAssignRow = (id: string | number | boolean) => {
-    const role = rows.find((r) => r.id === String(id)) ?? null;
-    setAssignRole(role);
-    setAssignOpen(true);
-  };
+  const handleAssignRow = useCallback(
+    (id: string | number | boolean) => {
+      const role = rows.find((r) => r.id === String(id)) ?? null;
+      setAssignRole(role);
+      setAssignOpen(true);
+    },
+    [rows],
+  );
+
+  const columnOrder = useMemo(
+    () => buildColumnOrder(handleAssignRow),
+    [handleAssignRow],
+  );
 
   const handleCreateOpen = () => {
     setEditRole(null);
@@ -149,18 +175,16 @@ export default function ManageRoles() {
             isloading={isLoading}
             page={currentPage}
             perPage={perPage}
-            columnOrder={COLUMN_ORDER}
+            columnOrder={columnOrder}
             id={["id"]}
             onEditClick={handleEditRow}
             onDeleteClick={handleDeleteRow}
-            onVerifyClick={handleAssignRow}
-            modalVerifyHeading="Assign Role"
             modalDeleteHeading="Delete Role"
             modalDeleteContent="Are you sure you want to delete this role? This cannot be undone."
             modalTypeContent="error"
           >
             <THead
-              columnOrder={COLUMN_ORDER}
+              columnOrder={columnOrder}
               onIconClick={handleSortChange}
               action
             />

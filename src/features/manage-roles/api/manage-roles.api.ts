@@ -1,5 +1,6 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
+import { env } from "../../../../config/env";
 import { authStore } from "@/lib/auth";
 import {
   type Role,
@@ -8,7 +9,7 @@ import {
   type RoleUser,
   GenericMutationResponseSchema,
   RoleListResponseSchema,
-  RoleUserListResponseSchema,
+  RoleUserFlexibleResponseSchema,
 } from "../schemas";
 
 interface FetchRolesParams {
@@ -88,6 +89,14 @@ export async function downloadRolesCsvBlob(): Promise<void> {
 
 // ─── User-Role (single assign / remove) ──────────────────────────────────────
 
+/** Safely extract a RoleUser[] from either a plain array or paginated wrapper */
+function extractUserArray(data: RoleUser[] | { data: RoleUser[] }): RoleUser[] {
+  if (Array.isArray(data)) return data;
+  if (data && typeof data === "object" && "data" in data)
+    return (data as { data: RoleUser[] }).data;
+  return [];
+}
+
 export async function fetchUsersByRole(
   roleId: string,
   search?: string,
@@ -96,8 +105,8 @@ export async function fetchUsersByRole(
     ? `${endpoints.manageRoles.userRoleSearch(roleId)}?search=${encodeURIComponent(search.trim())}`
     : endpoints.manageRoles.userRoleSearch(roleId);
 
-  const response = await apiClient.get(url, RoleUserListResponseSchema);
-  return response.response;
+  const response = await apiClient.get(url, RoleUserFlexibleResponseSchema);
+  return extractUserArray(response.response);
 }
 
 export async function assignUserRole(payload: {
@@ -115,11 +124,25 @@ export async function removeUserRole(payload: {
   user_id: string;
   role_id: string;
 }): Promise<void> {
-  await apiClient.delete(
-    endpoints.manageRoles.userRole,
-    GenericMutationResponseSchema,
-    { body: payload } as never,
+  const token = authStore.getAccessToken();
+  const res = await fetch(
+    `${env.NEXT_PUBLIC_DJANGO_API_URL}${endpoints.manageRoles.userRole}`,
+    {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(payload),
+    },
   );
+  if (!res.ok) {
+    const raw = await res.json().catch(() => null);
+    throw new Error(
+      (raw as { message?: { general?: string[] } })?.message?.general?.[0] ??
+        "Failed to remove role",
+    );
+  }
 }
 
 // ─── Bulk assign / remove ─────────────────────────────────────────────────────
@@ -127,9 +150,9 @@ export async function removeUserRole(payload: {
 export async function fetchBulkRoleUsers(roleId: string): Promise<RoleUser[]> {
   const response = await apiClient.get(
     endpoints.manageRoles.bulkAssign(roleId),
-    RoleUserListResponseSchema,
+    RoleUserFlexibleResponseSchema,
   );
-  return response.response;
+  return extractUserArray(response.response);
 }
 
 export async function fetchUsersWithoutRole(
@@ -138,9 +161,9 @@ export async function fetchUsersWithoutRole(
   const response = await apiClient.put(
     endpoints.manageRoles.bulkAssign(roleId),
     {},
-    RoleUserListResponseSchema,
+    RoleUserFlexibleResponseSchema,
   );
-  return response.response;
+  return extractUserArray(response.response);
 }
 
 export async function bulkAssignRole(

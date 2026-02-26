@@ -53,6 +53,16 @@ export const RoleUserListResponseSchema = ApiResponseSchema(
   z.array(RoleUserSchema),
 );
 
+// Some endpoints return a paginated wrapper instead of a plain array
+export const RoleUserPaginatedDataSchema = z.object({
+  data: z.array(RoleUserSchema),
+  pagination: PaginationSchema.optional(),
+});
+
+export const RoleUserFlexibleResponseSchema = ApiResponseSchema(
+  z.union([z.array(RoleUserSchema), RoleUserPaginatedDataSchema]),
+);
+
 // ─── Form validation ─────────────────────────────────────────────────────────
 
 export const RoleFormSchema = z.object({

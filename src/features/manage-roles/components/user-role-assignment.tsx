@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, UserMinus, UserPlus, X } from "lucide-react";
+import { Search, UserMinus, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -66,7 +66,12 @@ function SingleTab({ role }: { role: Role }) {
             Loading…
           </p>
         )}
-        {!isLoading && (!users || users.length === 0) && (
+        {!isLoading && !debouncedSearch && (
+          <p className="py-4 text-center text-sm text-muted-foreground">
+            Type a name or MUID to search users…
+          </p>
+        )}
+        {!isLoading && !!debouncedSearch && (!users || users.length === 0) && (
           <p className="py-4 text-center text-sm text-muted-foreground">
             No users found
           </p>

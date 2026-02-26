@@ -27,7 +27,7 @@ export function useUsersByRole(roleId: string, search: string) {
   return useQuery({
     queryKey: manageRolesKeys.usersByRole(roleId, search),
     queryFn: () => fetchUsersByRole(roleId, search),
-    enabled: Boolean(roleId),
+    enabled: Boolean(roleId) && Boolean(search),
     placeholderData: keepPreviousData,
     staleTime: 60 * 1000,
     refetchOnWindowFocus: false,
