@@ -91,10 +91,10 @@ export const AnalyticsView = ({ params }: AnalyticsViewProps) => {
     return (
       <div className="min-h-screen flex items-center justify-center px-6">
         <div className="text-center space-y-4 max-w-md">
-          <div className="text-destructive text-lg font-semibold">
+          <div className="text-destructive text-2xl font-semibold">
             Failed to load analytics
           </div>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-muted-foreground text-lg">
             We couldn&apos;t fetch analytics data. Please try again later.
           </p>
           <Button variant={"default"} onClick={() => refetch()}>
@@ -109,10 +109,10 @@ export const AnalyticsView = ({ params }: AnalyticsViewProps) => {
     return (
       <div className="min-h-screen flex items-center justify-center px-6">
         <div className="text-center space-y-3 max-w-md">
-          <p className="text-lg font-semibold text-foreground">
+          <p className="text-2xl font-semibold text-foreground">
             No Analytics Yet
           </p>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-muted-foreground text-lg">
             This short URL hasn&apos;t received any clicks yet. Share the link
             to start tracking engagement.
           </p>
