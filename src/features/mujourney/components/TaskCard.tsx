@@ -79,13 +79,13 @@ export function TaskCard({
         </div>
 
         {/* Task Title - Rendered with Markdown */}
-        <div className="text-xl font-semibold text-card-foreground leading-tight font-montserrat">
+        <div className="text-xl font-semibold text-card-foreground leading-tight">
           <MarkdownRenderer content={task.task_name} className="*:mb-0" />
         </div>
 
         {/* Description - Rendered with Markdown */}
         {/* {task.task_description && (
-          <div className="text-base text-muted-foreground line-clamp-2 leading-relaxed font-open-sans">
+          <div className="text-base text-muted-foreground line-clamp-2 leading-relaxed">
             <MarkdownRenderer
               content={task.task_description}
               className="[&>*]:mb-0"
@@ -94,7 +94,7 @@ export function TaskCard({
         )} */}
 
         {/* Metadata - Open Sans */}
-        <div className="space-y-3 text-base font-open-sans grow">
+        <div className="space-y-3 text-base grow">
           <div className="flex items-start gap-1.5">
             <span className="font-bold text-card-foreground">
               Interest Group:
@@ -123,7 +123,7 @@ export function TaskCard({
         <div className="mt-auto pt-5">
           <Button
             className={cn(
-              "w-full rounded-lg font-semibold text-white transition-all duration-200 h-11 text-base font-montserrat cursor-pointer",
+              "w-full rounded-lg font-semibold text-white transition-all duration-200 h-11 text-base cursor-pointer",
               // Blue background for all tasks
               // Primary background for active tasks
               status === "pending" && "bg-primary hover:bg-primary/90",

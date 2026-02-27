@@ -1,19 +1,22 @@
 "use client";
 
 import { use } from "react";
-import Loader from "@/app/loading";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ClicksChart } from "@/features/url-shortner";
-import { BrowserBreakdown } from "@/features/url-shortner/components/browser-breakdown";
-import { CityBreakdown } from "@/features/url-shortner/components/city-breakdown";
-import { CountryBreakdown } from "@/features/url-shortner/components/country-breakdown";
-import { DeviceBreakdown } from "@/features/url-shortner/components/device-breakdown";
-import { IpBreakdown } from "@/features/url-shortner/components/ip-breakdown";
-import { PlatformBreakdown } from "@/features/url-shortner/components/platform-breakdown";
-import { RegionBreakdown } from "@/features/url-shortner/components/region-breakdown";
-import { SourceBreakdown } from "@/features/url-shortner/components/source-breakdown";
-import { TimelineChart } from "@/features/url-shortner/components/timeline-chart";
-import { useShortUrlAnalytics } from "@/features/url-shortner/hooks/use-short-urls";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  BrowserBreakdown,
+  CityBreakdown,
+  ClicksChart,
+  CountryBreakdown,
+  DeviceBreakdown,
+  IpBreakdown,
+  PlatformBreakdown,
+  RegionBreakdown,
+  SourceBreakdown,
+  TimelineChart,
+  useShortUrlAnalytics,
+} from "@/features/url-shortner";
 
 interface AnalyticsViewProps {
   params: Promise<{
@@ -23,28 +26,100 @@ interface AnalyticsViewProps {
 
 export const AnalyticsView = ({ params }: AnalyticsViewProps) => {
   const { id } = use(params);
-  const { data: analytics, isLoading, isError } = useShortUrlAnalytics(id);
+  const {
+    data: analytics,
+    isLoading,
+    isError,
+    refetch,
+  } = useShortUrlAnalytics(id);
 
   if (!id) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Invalid URL ID</p>
+      <div className="min-h-screen flex items-center justify-center px-6">
+        <div className="text-center space-y-4 max-w-md">
+          <div className="text-destructive text-lg font-semibold">
+            Invalid URL ID
+          </div>
+          <p className="text-muted-foreground text-sm">
+            The URL ID provided is invalid or does not exist. Please check the
+            URL and try again.
+          </p>
+          <Button variant={"default"} onClick={() => refetch()}>
+            Retry
+          </Button>
+        </div>
       </div>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center">
-        <Loader />
+      <div className="min-h-screen">
+        <div className="border-b border-border sticky top-0 z-50 bg-background/95 backdrop-blur-sm">
+          <div className="max-w-7xl mx-auto px-6 py-6">
+            <Skeleton className="h-8 w-48 mb-2" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[...Array(4)].map((_, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: Skeletons don't have stable IDs
+              <Card key={i} className="p-6 space-y-3">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-8 w-16" />
+              </Card>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {[...Array(2)].map((_, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: Skeletons don't have stable IDs
+              <Card key={i} className="p-6 space-y-6">
+                <Skeleton className="h-5 w-32" />
+                <Skeleton className="h-64 w-full" />
+              </Card>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
 
-  if (isError || !analytics) {
+  if (isError) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-destructive">Failed to load analytics.</p>
+      <div className="min-h-screen flex items-center justify-center px-6">
+        <div className="text-center space-y-4 max-w-md">
+          <div className="text-destructive text-2xl font-semibold">
+            Failed to load analytics
+          </div>
+          <p className="text-muted-foreground text-lg">
+            We couldn&apos;t fetch analytics data. Please try again later.
+          </p>
+          <Button variant={"default"} onClick={() => refetch()}>
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!analytics) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-6">
+        <div className="text-center space-y-3 max-w-md">
+          <p className="text-2xl font-semibold text-foreground">
+            No Analytics Yet
+          </p>
+          <p className="text-muted-foreground text-lg">
+            This short URL hasn&apos;t received any clicks yet. Share the link
+            to start tracking engagement.
+          </p>
+          <Button variant={"default"} onClick={() => refetch()}>
+            Retry
+          </Button>
+        </div>
       </div>
     );
   }

@@ -50,7 +50,7 @@ const Modal = ({
               await click?.(id);
               setIsOpen(false);
             }}
-            className="rounded-xl"
+            className="rounded-xl text-secondary"
           >
             {type === "error" ? "Delete" : "Confirm"}
           </Button>
