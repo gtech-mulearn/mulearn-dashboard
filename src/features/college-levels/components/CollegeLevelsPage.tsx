@@ -30,11 +30,16 @@ export default function CollegeLevelsPage() {
     { column: "org", Label: "College", isSortable: true },
     { column: "level", Label: "Level", isSortable: true },
     { column: "member_count", Label: "No of Members", isSortable: true },
-    { column: "member_gain", Label: "Member Gain", isSortable: true },
+    {
+      column: "no_of_members_increased",
+      Label: "Member Gain",
+      isSortable: true,
+    },
     { column: "lc_count", Label: "Number of LCs", isSortable: true },
-    { column: "lc_gain", Label: "LC Gain", isSortable: true },
-    { column: "total_karma", Label: "Total Karma", isSortable: true },
-    { column: "karma_gain", Label: "Karma Gain", isSortable: true },
+    { column: "no_of_lc_increased", Label: "LC Gain", isSortable: true },
+    { column: "total_karma_gained", Label: "Total Karma", isSortable: true },
+    { column: "total_karma_increased", Label: "Karma Gain", isSortable: true },
+    { column: "no_of_alumni", Label: "Number of Alumni", isSortable: false },
   ];
 
   /* =====================================================
@@ -64,6 +69,7 @@ export default function CollegeLevelsPage() {
               karma.increased_percentage,
             )}%)`
           : "-",
+        no_of_alumni: item.no_of_alumni,
       };
     });
   }, [data]);
