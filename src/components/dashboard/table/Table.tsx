@@ -358,9 +358,22 @@ const Table: FC<TableProps> = (props) => {
                       <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                         {column.Label}
                       </p>
-                      <p className="break-words text-sm text-foreground">
-                        {convertToTableData(rowData[column.column])}
-                      </p>
+                      <div className="break-words text-sm text-foreground">
+                        {(() => {
+                          const customRendered = props.customCellRender?.(
+                            column.column,
+                            rowData,
+                          );
+                          if (customRendered) return customRendered;
+                          return column.wrap
+                            ? column.wrap(
+                                convertToTableData(rowData[column.column]),
+                                String(rowData.id ?? ""),
+                                rowData,
+                              )
+                            : convertToTableData(rowData[column.column]);
+                        })()}
+                      </div>
                     </div>
                   ))}
               </div>
