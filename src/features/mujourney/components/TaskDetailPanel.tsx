@@ -119,13 +119,13 @@ export function TaskDetailPanel({
               </div>
 
               {/* Task Title - with Markdown */}
-              <div className="text-3xl font-bold text-foreground font-montserrat">
+              <div className="text-3xl font-bold text-foreground">
                 <MarkdownRenderer content={task.task_name} className="*:mb-0" />
               </div>
 
               {/* Task Description/Steps - with Markdown */}
               {task.task_description && (
-                <div className="text-base text-muted-foreground font-open-sans prose prose-sm dark:prose-invert max-w-none">
+                <div className="text-base text-muted-foreground prose prose-sm dark:prose-invert max-w-none">
                   <MarkdownRenderer content={task.task_description} />
                 </div>
               )}
@@ -134,15 +134,15 @@ export function TaskDetailPanel({
               <div className="space-y-6 pt-4">
                 {/* Interest Group */}
                 <div className="space-y-2">
-                  <h3 className="text-lg font-bold text-foreground font-montserrat">
+                  <h3 className="text-lg font-bold text-foreground">
                     Interest Group
                   </h3>
-                  <p className="text-base text-muted-foreground font-open-sans">
+                  <p className="text-base text-muted-foreground">
                     {task.interest_group?.name || "General Tasks"}
                   </p>
                   {task.hashtag && (
                     <div className="pt-1">
-                      <span className="text-sm font-bold text-foreground font-open-sans">
+                      <span className="text-sm font-bold text-foreground">
                         Hashtag:
                       </span>{" "}
                       <span className="inline-block px-3 py-1 bg-muted text-muted-foreground rounded-full font-mono text-sm">
@@ -157,14 +157,14 @@ export function TaskDetailPanel({
                   Array.isArray(extendedTask.skills) &&
                   extendedTask.skills.length > 0 && (
                     <div className="space-y-2">
-                      <h3 className="text-lg font-bold text-foreground font-montserrat">
+                      <h3 className="text-lg font-bold text-foreground">
                         Skills:
                       </h3>
                       <div className="flex flex-wrap gap-2">
                         {extendedTask.skills.map((skill: string) => (
                           <span
                             key={skill}
-                            className="px-3 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-full text-sm font-medium font-open-sans"
+                            className="px-3 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-full text-sm font-medium"
                           >
                             <MarkdownRenderer
                               content={skill}
@@ -178,10 +178,10 @@ export function TaskDetailPanel({
 
                 {/* Published Info */}
                 <div className="space-y-2">
-                  <h3 className="text-lg font-bold text-foreground font-montserrat">
+                  <h3 className="text-lg font-bold text-foreground">
                     Published Info
                   </h3>
-                  <p className="text-base text-muted-foreground font-open-sans">
+                  <p className="text-base text-muted-foreground">
                     <span className="font-bold text-foreground">By:</span>{" "}
                     {extendedTask?.organization?.title || "μLearn Foundation"}
                   </p>
@@ -190,10 +190,10 @@ export function TaskDetailPanel({
                 {/* Prerequisites - with Markdown */}
                 {extendedTask?.prerequisites && (
                   <div className="space-y-2">
-                    <h3 className="text-lg font-bold text-foreground font-montserrat">
+                    <h3 className="text-lg font-bold text-foreground">
                       Prerequisites
                     </h3>
-                    <div className="text-base text-muted-foreground font-open-sans">
+                    <div className="text-base text-muted-foreground">
                       <MarkdownRenderer content={extendedTask.prerequisites} />
                     </div>
                   </div>
@@ -203,7 +203,7 @@ export function TaskDetailPanel({
               {/* Submit Proof of Work Button */}
               <div className="pt-6">
                 <Button
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-base h-11 rounded-lg font-montserrat cursor-pointer px-8"
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-base h-11 rounded-lg cursor-pointer px-8"
                   onClick={() => {
                     window.open(
                       "https://discord.com/channels/771670169691881483/782353185552465951",
