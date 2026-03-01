@@ -1,7 +1,7 @@
 "use client";
 
 import { Search, UserMinus, UserPlus } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -41,12 +41,14 @@ function SingleTab({ role }: { role: Role }) {
 
   const { data: users, isLoading } = useUsersByRole(role.id, debouncedSearch);
 
-  const handleSearch = (value: string) => {
-    setSearch(value);
-    // simple debounce via setTimeout reset
-    const id = setTimeout(() => setDebouncedSearch(value), 400);
-    return () => clearTimeout(id);
-  };
+  // Proper debounce implementation
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 400);
+
+    return () => clearTimeout(timeoutId);
+  }, [search]);
 
   return (
     <div className="space-y-4">
@@ -54,7 +56,7 @@ function SingleTab({ role }: { role: Role }) {
         <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground/60" />
         <Input
           value={search}
-          onChange={(e) => handleSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by name or MUID…"
           className="pl-9"
         />
@@ -66,14 +68,9 @@ function SingleTab({ role }: { role: Role }) {
             Loading…
           </p>
         )}
-        {!isLoading && !debouncedSearch && (
+        {!isLoading && (!users || users.length === 0) && (
           <p className="py-4 text-center text-sm text-muted-foreground">
-            Type a name or MUID to search users…
-          </p>
-        )}
-        {!isLoading && !!debouncedSearch && (!users || users.length === 0) && (
-          <p className="py-4 text-center text-sm text-muted-foreground">
-            No users found
+            {debouncedSearch ? "No users found" : "No users available"}
           </p>
         )}
         {users?.map((user) => (

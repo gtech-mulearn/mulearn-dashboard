@@ -27,7 +27,7 @@ export function useUsersByRole(roleId: string, search: string) {
   return useQuery({
     queryKey: manageRolesKeys.usersByRole(roleId, search),
     queryFn: () => fetchUsersByRole(roleId, search),
-    enabled: Boolean(roleId) && Boolean(search),
+    enabled: Boolean(roleId),
     placeholderData: keepPreviousData,
     staleTime: 60 * 1000,
     refetchOnWindowFocus: false,
@@ -169,10 +169,10 @@ export function useBulkExcelImport() {
     mutationFn: (file: File) => bulkAssignFromExcel(file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: manageRolesKeys.all });
-      toast.success("Bulk import successful");
+      // Toast will be handled in the component to show detailed results
     },
-    onError: (err: Error) => {
-      toast.error(err.message ?? "Bulk import failed");
+    onError: () => {
+      // Error toast will be handled in the component
     },
   });
 }

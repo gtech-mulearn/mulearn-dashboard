@@ -49,6 +49,28 @@ export const RoleUserSchema = z.object({
   full_name: z.string().nullable().optional().default(""),
 });
 
+// ─── Bulk Import Result ──────────────────────────────────────────────────────
+
+export const BulkImportResultSchema = z.object({
+  success_count: z.number().optional().default(0),
+  error_count: z.number().optional().default(0),
+  errors: z
+    .array(
+      z.object({
+        muid: z.string().optional(),
+        role: z.string().optional(),
+        error: z.string(),
+      }),
+    )
+    .optional()
+    .default([]),
+  message: z.string().optional(),
+});
+
+export const BulkImportResponseSchema = ApiResponseSchema(
+  BulkImportResultSchema,
+);
+
 export const RoleUserListResponseSchema = ApiResponseSchema(
   z.array(RoleUserSchema),
 );
@@ -76,3 +98,4 @@ export type Role = z.infer<typeof RoleSchema>;
 export type RoleListData = z.infer<typeof RoleListDataSchema>;
 export type RoleUser = z.infer<typeof RoleUserSchema>;
 export type RoleFormValues = z.infer<typeof RoleFormSchema>;
+export type BulkImportResult = z.infer<typeof BulkImportResultSchema>;

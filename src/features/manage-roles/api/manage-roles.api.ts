@@ -7,6 +7,7 @@ import {
   type RoleFormValues,
   type RoleListData,
   type RoleUser,
+  type BulkImportResult,
   GenericMutationResponseSchema,
   RoleListResponseSchema,
   RoleUserFlexibleResponseSchema,
@@ -211,15 +212,36 @@ export async function downloadBaseTemplate(): Promise<void> {
   window.URL.revokeObjectURL(url);
 }
 
-export async function bulkAssignFromExcel(file: File): Promise<void> {
+export async function bulkAssignFromExcel(
+  file: File,
+): Promise<BulkImportResult> {
   const formData = new FormData();
   formData.append("user_roles_list", file);
-  await apiClient.post(
+  const response = await apiClient.post(
     endpoints.manageRoles.bulkAssignExcel,
     formData,
-    GenericMutationResponseSchema,
+    undefined,
     { isFormData: true },
   );
+
+  // Extract the result from the response
+  if (response && typeof response === "object" && "response" in response) {
+    const result = (response as { response: Record<string, unknown> }).response;
+    return {
+      success_count:
+        typeof result?.success_count === "number" ? result.success_count : 0,
+      error_count:
+        typeof result?.error_count === "number" ? result.error_count : 0,
+      errors: Array.isArray(result?.errors) ? result.errors : [],
+      message: typeof result?.message === "string" ? result.message : undefined,
+    };
+  }
+
+  return {
+    success_count: 0,
+    error_count: 0,
+    errors: [],
+  };
 }
 
 // Re-export Role type for convenience

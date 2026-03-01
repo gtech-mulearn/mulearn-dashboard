@@ -22,26 +22,64 @@ import { UserRoleAssignment } from "./user-role-assignment";
 const buildColumnOrder = (
   onAssign: (id: string | number | boolean) => void,
 ) => [
-  { column: "title", Label: "Title", isSortable: true },
-  { column: "description", Label: "Description", isSortable: false },
-  { column: "members", Label: "Members", isSortable: true },
-  { column: "updated_at", Label: "Updated On", isSortable: true },
-  { column: "updated_by", Label: "Updated By", isSortable: false },
-  { column: "created_by", Label: "Created By", isSortable: false },
-  { column: "created_at", Label: "Created On", isSortable: true },
+  { column: "title", Label: "Title", isSortable: true, width: "min-w-[150px]" },
+  {
+    column: "description",
+    Label: "Description",
+    isSortable: false,
+    width: "min-w-[200px] max-w-[300px]",
+    wrap: (data: string | import("react").ReactElement) => (
+      <span
+        className="line-clamp-2 text-sm text-muted-foreground"
+        title={typeof data === "string" ? data : undefined}
+      >
+        {data || "—"}
+      </span>
+    ),
+  },
+  {
+    column: "members",
+    Label: "Members",
+    isSortable: true,
+    width: "min-w-[100px]",
+  },
+  {
+    column: "updated_at",
+    Label: "Updated On",
+    isSortable: true,
+    width: "min-w-[120px] hidden lg:table-cell",
+  },
+  {
+    column: "updated_by",
+    Label: "Updated By",
+    isSortable: false,
+    width: "min-w-[120px] hidden xl:table-cell",
+  },
+  {
+    column: "created_by",
+    Label: "Created By",
+    isSortable: false,
+    width: "min-w-[120px] hidden xl:table-cell",
+  },
+  {
+    column: "created_at",
+    Label: "Created On",
+    isSortable: true,
+    width: "min-w-[120px] hidden lg:table-cell",
+  },
   {
     column: "id",
     Label: "Assign",
     isSortable: false,
-    width: "w-28",
+    width: "w-20 min-w-[80px]",
     wrap: (_data: string | import("react").ReactElement, id: string) => (
       <button
         type="button"
         onClick={() => onAssign(id)}
-        className="inline-flex items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary transition-colors hover:bg-primary/20"
+        className="inline-flex items-center gap-1 rounded-lg border border-primary/30 bg-primary/10 px-2 py-1 text-xs font-semibold text-primary transition-colors hover:bg-primary/20 whitespace-nowrap"
       >
         <UserPlus className="size-3" />
-        Assign
+        <span className="hidden sm:inline">Assign</span>
       </button>
     ),
   },
@@ -123,7 +161,7 @@ export default function ManageRoles() {
         <CardHeader className="px-0 py-0 sm:px-0 sm:py-0">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-1.5">
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/[0.06] px-3 py-1 text-xs font-semibold text-primary">
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/6 px-3 py-1 text-xs font-semibold text-primary">
                 <Shield className="size-3.5" />
                 Management
               </div>
@@ -170,42 +208,47 @@ export default function ManageRoles() {
             searchInputClassName="h-10 text-sm"
           />
 
-          <Table
-            rows={rows}
-            isloading={isLoading}
-            page={currentPage}
-            perPage={perPage}
-            columnOrder={columnOrder}
-            id={["id"]}
-            onEditClick={handleEditRow}
-            onDeleteClick={handleDeleteRow}
-            modalDeleteHeading="Delete Role"
-            modalDeleteContent="Are you sure you want to delete this role? This cannot be undone."
-            modalTypeContent="error"
-          >
-            <THead
-              columnOrder={columnOrder}
-              onIconClick={handleSortChange}
-              action
-            />
-            <div>
-              {!isLoading && (
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  handleNextClick={() =>
-                    setCurrentPage((p) => Math.min(p + 1, totalPages || 1))
-                  }
-                  handlePreviousClick={() =>
-                    setCurrentPage((p) => Math.max(p - 1, 1))
-                  }
-                  perPage={perPage}
-                  totalCount={totalCount}
+          {/* Responsive table wrapper with horizontal scroll on mobile */}
+          <div className="w-full overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
+            <div className="min-w-200">
+              <Table
+                rows={rows}
+                isloading={isLoading}
+                page={currentPage}
+                perPage={perPage}
+                columnOrder={columnOrder}
+                id={["id"]}
+                onEditClick={handleEditRow}
+                onDeleteClick={handleDeleteRow}
+                modalDeleteHeading="Delete Role"
+                modalDeleteContent="Are you sure you want to delete this role? This cannot be undone."
+                modalTypeContent="error"
+              >
+                <THead
+                  columnOrder={columnOrder}
+                  onIconClick={handleSortChange}
+                  action
                 />
-              )}
+                <div>
+                  {!isLoading && (
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      handleNextClick={() =>
+                        setCurrentPage((p) => Math.min(p + 1, totalPages || 1))
+                      }
+                      handlePreviousClick={() =>
+                        setCurrentPage((p) => Math.max(p - 1, 1))
+                      }
+                      perPage={perPage}
+                      totalCount={totalCount}
+                    />
+                  )}
+                </div>
+                <div />
+              </Table>
             </div>
-            <div />
-          </Table>
+          </div>
         </CardContent>
       </Card>
 

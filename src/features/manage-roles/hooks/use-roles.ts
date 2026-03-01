@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
+import { ApiError, isDuplicateError } from "@/api/errors";
 import {
   createRole,
   deleteRole,
@@ -45,7 +46,20 @@ export function useCreateRole() {
       toast.success("Role created successfully");
     },
     onError: (err: Error) => {
-      toast.error(err.message ?? "Failed to create role");
+      // Check if it's a duplication error (by message keywords)
+      if (isDuplicateError(err)) {
+        toast.error(
+          "A role with this title already exists. Please use a different title.",
+        );
+      }
+      // Handle 500 errors - likely database constraint violations (e.g., duplicate title)
+      else if (err instanceof ApiError && err.status === 500) {
+        toast.error(
+          "Unable to create role. A role with this title may already exist. Please try a different title.",
+        );
+      } else {
+        toast.error(err.message ?? "Failed to create role");
+      }
     },
   });
 }
@@ -60,7 +74,20 @@ export function useUpdateRole() {
       toast.success("Role updated successfully");
     },
     onError: (err: Error) => {
-      toast.error(err.message ?? "Failed to update role");
+      // Check if it's a duplication error (by message keywords)
+      if (isDuplicateError(err)) {
+        toast.error(
+          "A role with this title already exists. Please use a different title.",
+        );
+      }
+      // Handle 500 errors - likely database constraint violations (e.g., duplicate title)
+      else if (err instanceof ApiError && err.status === 500) {
+        toast.error(
+          "Unable to update role. A role with this title may already exist. Please try a different title.",
+        );
+      } else {
+        toast.error(err.message ?? "Failed to update role");
+      }
     },
   });
 }
