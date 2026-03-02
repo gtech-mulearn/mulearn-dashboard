@@ -22,7 +22,6 @@ const COLUMN_ORDER = [
   { column: "mobile", Label: "Mobile", isSortable: true },
   { column: "role_title", Label: "Role", isSortable: true },
   { column: "verified", Label: "Status", isSortable: false },
-  { column: "actions", Label: "Actions", isSortable: false },
 ];
 
 export function RoleVerificationTable() {
@@ -90,6 +89,9 @@ export function RoleVerificationTable() {
         perPage={perPage}
         columnOrder={COLUMN_ORDER}
         id={["id"]}
+        customActionRender={(row) => (
+          <RoleVerificationActions item={row as any} />
+        )}
         customCellRender={(column, row) => {
           const rowData = row as any;
           if (column === "verified") {
@@ -109,16 +111,13 @@ export function RoleVerificationTable() {
               </Badge>
             );
           }
-          if (column === "actions") {
-            return <RoleVerificationActions item={rowData} />;
-          }
           return null;
         }}
       >
         <THead
           columnOrder={COLUMN_ORDER}
           onIconClick={handleSort}
-          action={false} // Custom actions handled in rows
+          action={true} // Fixed: Render the Action header in Desktop view
         />
 
         <div>
