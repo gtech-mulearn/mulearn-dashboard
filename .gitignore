@@ -44,3 +44,5 @@ next-env.d.ts
 
 package-lock.json
 bun.lock
+# Local Netlify folder
+.netlify

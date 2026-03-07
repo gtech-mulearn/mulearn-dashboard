@@ -9,7 +9,7 @@
 
 "use client";
 
-import { Check, Crown, Users, X } from "lucide-react";
+import { Check, Crown, Plus, Users, X } from "lucide-react";
 import Image from "next/image";
 import { Spinner } from "@/components/ui/spinner";
 import {
@@ -36,7 +36,7 @@ function getAvatarGradient(name: string) {
 }
 
 /* ─── Karma tier system ─── */
-function getKarmaTier(karma: number) {
+function _getKarmaTier(karma: number) {
   if (karma >= 1000)
     return {
       label: "Elite",
@@ -69,9 +69,14 @@ function getKarmaTier(karma: number) {
 interface MemberListProps {
   circleId: string;
   permissions: CirclePermissions;
+  onInviteClick?: () => void;
 }
 
-export function MemberList({ circleId, permissions }: MemberListProps) {
+export function MemberList({
+  circleId,
+  permissions,
+  onInviteClick,
+}: MemberListProps) {
   const { data: members, isLoading } = useCircleMembers(circleId);
   const approveMember = useApproveMember(circleId);
 
@@ -96,7 +101,7 @@ export function MemberList({ circleId, permissions }: MemberListProps) {
 
   if (!members || members.length === 0) {
     return (
-      <div className="lc-fade-in flex flex-col items-center justify-center rounded-[16px] bg-gradient-to-br from-[#F9FAFB] to-[#F3F4F6] px-8 py-14">
+      <div className="lc-fade-in flex flex-col items-center justify-center rounded-[16px] bg-linear-to-br from-[#F9FAFB] to-[#F3F4F6] px-8 py-14">
         <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-md">
           <Users className="h-5 w-5 text-[#4F46E5]" />
         </div>
@@ -109,67 +114,82 @@ export function MemberList({ circleId, permissions }: MemberListProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+    <div className="grid grid-cols-1 gap-x-3 gap-y-5 sm:grid-cols-1">
+      {/* Invite Member Button acts as first list item */}
+      {permissions.canSendInvites && (
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={onInviteClick}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-3 border-dashed border-gray-300 text-gray-500 hover:border-primary hover:bg-primary/10 hover:text-primary transition-colors"
+            title="Invite Member"
+          >
+            <Plus className="h-5 w-5" />
+          </button>
+          <div className="flex-1">
+            <button
+              type="button"
+              className="text-[14px] font-semibold text-gray-900 cursor-pointer hover:text-primary bg-transparent border-none p-0"
+              onClick={onInviteClick}
+            >
+              Invite Member
+            </button>
+          </div>
+        </div>
+      )}
+
       {members.map((member, index) => {
-        const tier = getKarmaTier(member.ig_karma);
         return (
           <div
             key={member.id}
-            className="group flex items-center gap-3 rounded-[14px] bg-[#FAFAFA] px-4 py-3.5
-              transition-all duration-200
-              hover:bg-white hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)]
-              lc-slide-up"
+            className="group flex min-w-0 items-center justify-between
+              transition-all duration-200 lc-slide-up"
             style={{ animationDelay: `${index * 30}ms` }}
           >
-            {/* Avatar */}
-            <div className="relative h-10 w-10 shrink-0">
-              {member.profile_pic ? (
-                <Image
-                  src={member.profile_pic}
-                  alt={member.full_name}
-                  fill
-                  className="rounded-full object-cover ring-2 ring-white shadow-sm"
-                />
-              ) : (
-                <div
-                  className={`flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br ${getAvatarGradient(member.full_name)} text-[14px] font-bold text-white ring-2 ring-white shadow-sm`}
-                >
-                  {member.full_name.charAt(0)}
-                </div>
-              )}
-              {member.is_leader && (
-                <div className="absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#F59E0B] ring-2 ring-[#FAFAFA] shadow-sm">
-                  <Crown className="h-2.5 w-2.5 text-white" />
-                </div>
-              )}
-            </div>
+            <div className="flex items-center gap-3 min-w-0 pr-2">
+              {/* Avatar */}
+              <div className="relative h-10 w-10 shrink-0">
+                {member.profile_pic ? (
+                  <Image
+                    src={member.profile_pic}
+                    alt={member.full_name}
+                    fill
+                    className="rounded-full object-cover ring-2 ring-white"
+                  />
+                ) : (
+                  <div
+                    className={`flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br ${getAvatarGradient(member.full_name)} text-[14px] font-bold text-white ring-2 ring-white`}
+                  >
+                    {member.full_name.charAt(0)}
+                  </div>
+                )}
+                {member.is_leader && (
+                  <div className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 ring-2 ring-white">
+                    <Crown className="h-[9px] w-[9px] text-white" />
+                  </div>
+                )}
+              </div>
 
-            {/* Info */}
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-[14px] font-bold text-[#111827]">
-                {member.full_name}
-              </p>
-              <div className="mt-0.5 flex items-center gap-2">
-                <div className={`h-1.5 w-1.5 rounded-full ${tier.dot}`} />
-                <span className="text-[11px] font-semibold text-[#9CA3AF]">
-                  {member.ig_karma.toLocaleString()} karma
-                </span>
-                <span
-                  className={`rounded-md px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider ${tier.bg} ${tier.text}`}
-                >
-                  {tier.label}
-                </span>
+              {/* Info */}
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[14px] font-semibold text-gray-900 leading-tight pb-0.5">
+                  {member.full_name}
+                </p>
+                <p className="text-[12px] font-medium text-gray-500 leading-tight">
+                  {member.is_leader
+                    ? "Lead"
+                    : `${member.ig_karma?.toLocaleString() || 0} karma`}
+                </p>
               </div>
             </div>
 
             {/* Actions — reveal on hover */}
             {permissions.canManageMembers && !member.is_leader && (
-              <div className="flex shrink-0 gap-1.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+              <div className="flex shrink-0 gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                 <button
                   type="button"
-                  className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#ECFDF5] text-[#059669]
-                    shadow-sm transition-all duration-150 hover:bg-[#059669] hover:text-white hover:shadow-md active:scale-90
-                    disabled:opacity-40"
+                  className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-50 text-emerald-600
+                    transition-colors hover:bg-emerald-100 active:scale-95 disabled:opacity-40"
                   onClick={() => handleApprove(member.muid)}
                   disabled={approveMember.isPending}
                   title="Approve"
@@ -178,9 +198,8 @@ export function MemberList({ circleId, permissions }: MemberListProps) {
                 </button>
                 <button
                   type="button"
-                  className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#FEF2F2] text-[#EF4444]
-                    shadow-sm transition-all duration-150 hover:bg-[#EF4444] hover:text-white hover:shadow-md active:scale-90
-                    disabled:opacity-40"
+                  className="flex h-6 w-6 items-center justify-center rounded-full bg-red-50 text-red-500
+                    transition-colors hover:bg-red-100 active:scale-95 disabled:opacity-40"
                   onClick={() => handleReject(member.muid)}
                   disabled={approveMember.isPending}
                   title="Remove"

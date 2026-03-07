@@ -89,3 +89,32 @@ export type Event = z.infer<typeof EventSchema>;
 // Array of mapped events
 export const EventsSchema = z.array(EventSchema);
 export type Events = z.infer<typeof EventsSchema>;
+
+// ============================================
+// Calendar Events (/api/v1/dashboard/events/calendar/)
+// ============================================
+
+export const CalendarEventSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string().optional().default(""),
+  date: z.string(), // ISO date string e.g. "2026-03-15"
+  type: z
+    .enum(["hackathon", "workshop", "meetup", "deadline", "other"])
+    .optional()
+    .default("other"),
+  location: z.string().optional().default(""),
+  link: z.string().optional().default(""),
+});
+export type CalendarEvent = z.infer<typeof CalendarEventSchema>;
+
+export const CalendarEventsDataSchema = z.object({
+  events: z.array(CalendarEventSchema),
+});
+
+export const CalendarEventsResponseSchema = ApiResponseSchema(
+  CalendarEventsDataSchema,
+);
+export type CalendarEventsResponse = z.infer<
+  typeof CalendarEventsResponseSchema
+>;

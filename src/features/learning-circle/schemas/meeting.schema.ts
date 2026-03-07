@@ -104,6 +104,9 @@ export const MeetingDetailSchema = z.object({
   is_started: z.boolean(),
   is_ended: z.boolean(),
   is_member: z.boolean(),
+  is_recurring: z.boolean().optional(),
+  recurrence_type: z.string().nullable().optional(),
+  recurrence: z.number().nullable().optional(),
   meet_code: z.string().nullable(), // Only visible to creator
   created_by_id: z.string(),
   attendees: z.array(MeetingAttendeeSchema),

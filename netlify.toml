@@ -1,0 +1,17 @@
+[build]
+  command = "bun run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Next.js runtime is auto-detected by Netlify.
+# The @netlify/plugin-nextjs plugin handles:
+# - Server-side rendering
+# - API routes
+# - Image optimization
+# - proxy.ts (Next.js 16 edge proxy / middleware replacement)
+# - Dynamic routes and catch-all routes
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

@@ -15,6 +15,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { toast } from "sonner";
+import type { ApiError } from "@/api";
 import {
   approveMember,
   createCircle,
@@ -545,8 +546,8 @@ export function useSubmitMeetingReport(meetingId: string) {
       });
       toast.success("Meeting report submitted successfully!");
     },
-    onError: () => {
-      toast.error("Failed to submit meeting report");
+    onError: (error: ApiError) => {
+      toast.error(error.message || "Failed to submit meeting report");
     },
   });
 }

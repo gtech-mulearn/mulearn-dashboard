@@ -1,19 +1,21 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
-  type QsverseInfo,
-  QsverseInfoResponseSchema,
+  type QseverseInfo,
+  QseverseInfoResponseSchema,
 } from "../schemas/connect.schema";
 
-export const fetchQsverseInfo = async (muid: string): Promise<QsverseInfo> => {
+export const fetchQseverseInfo = async (
+  muid: string,
+): Promise<QseverseInfo> => {
   const res = await apiClient.get(
     endpoints.qseverse.connectedUsers(muid),
-    QsverseInfoResponseSchema,
+    QseverseInfoResponseSchema,
   );
   if (res.hasError || !res.response) {
     throw new Error(
       res.message?.general?.[0] || "Failed to fetch Qsverse info",
     );
   }
-  return res.response as QsverseInfo;
+  return res.response as QseverseInfo;
 };

@@ -1,14 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchQsverseInfo } from "../api/connect.api";
-import type { QsverseInfo } from "../schemas/connect.schema";
+import { fetchQseverseInfo } from "../api/connect.api";
+import type { QseverseInfo } from "../schemas/connect.schema";
 import { connectKeys } from "./query-keys";
 
-export function useQsverseInfo(muid?: string) {
-  return useQuery<QsverseInfo>({
+export function useQseverseInfo(muid?: string) {
+  return useQuery<QseverseInfo>({
     queryKey: connectKeys.qsverse(muid),
     queryFn: () => {
       if (!muid) throw new Error("muid is required");
-      return fetchQsverseInfo(muid);
+      return fetchQseverseInfo(muid);
     },
     enabled: !!muid,
   });

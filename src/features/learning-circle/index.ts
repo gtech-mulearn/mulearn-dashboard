@@ -46,13 +46,14 @@ export {
   DeleteCircleButton,
   EditMeetingModal,
   InviteLinkView,
-  InviteSection,
+  InviteMemberForm,
   JoinMeetingModal,
   MeetingCard,
   MeetingDetailView,
   MeetingReportForm,
   MemberList,
   PendingInvites,
+  SentInvitesCard,
   TransferLeadModal,
 } from "./components";
 // Types - from hooks

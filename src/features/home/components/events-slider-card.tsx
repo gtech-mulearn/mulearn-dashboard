@@ -90,7 +90,7 @@ export function EventsSliderCard({ events, isLoading }: EventsSliderCardProps) {
 
   return (
     <Card
-      className="group relative h-full min-h-[400px] w-full overflow-hidden rounded-[2rem] border-0 bg-muted/20 shadow-xl ring-1 ring-border/50 transition-all hover:shadow-2xl"
+      className="group relative h-full min-h-[500px] w-full overflow-hidden rounded-[2rem] border-0 bg-muted/20 shadow-xl ring-1 ring-border/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
@@ -114,7 +114,7 @@ export function EventsSliderCard({ events, isLoading }: EventsSliderCardProps) {
                 }
                 alt={event.name}
                 fill
-                className="object-cover transition-transform duration-1000 group-hover:scale-105"
+                className="object-contain object-center transition-transform duration-1000 group-hover:scale-105"
                 sizes="(max-width: 1024px) 100vw, 33vw"
                 priority={slideIndex === 0}
               />

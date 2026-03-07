@@ -25,12 +25,12 @@ A modern, comprehensive dashboard and community management platform for the **μ
    ```
 
 3. Setup environment variables:
-   Copy `.env.example` to `.env` and fill in the required values (e.g., `NEXT_PUBLIC_DJANGO_API_URL`).
+   Copy `.env.example` to `.env` and fill in the required values.
 
 4. Run the development server:
 
    ```bash
-   bun run dev
+   bun dev
    ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
@@ -85,15 +85,15 @@ src/
 We use **Biome** for fast linting and formatting.
 
 ```bash
-npm run lint      # Check for issues
-npm run lint:fix  # Automatically fix issues
-npm run format    # Format the entire codebase
+bun run lint      # Check for issues
+bun run lint:fix  # Automatically fix issues
+bun run format    # Format the entire codebase
 ```
 
 ### Type Checking
 
 ```bash
-npm run typecheck
+bun run typecheck
 ```
 
 ---

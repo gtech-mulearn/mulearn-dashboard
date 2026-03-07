@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { useUserInfo } from "@/features/auth";
 import {
   DiscordConnectDialog,
-  QsverseConnectDialog,
-  useQsverseInfo,
+  QseverseConnectDialog,
+  useQseverseInfo,
 } from "@/features/connect";
 import { useUIStore } from "@/stores/ui-store";
 import { Spinner } from "../ui/spinner";
@@ -22,8 +22,8 @@ export function ConnectAccountsBanner() {
     (state) => state.dismissConnectBanner,
   );
   const user = useUserInfo();
-  const qsverse = useQsverseInfo(user.data?.muid);
-  const [isQsverseDialogOpen, setIsQsverseDialogOpen] = useState(false);
+  const qsverse = useQseverseInfo(user.data?.muid);
+  const [isQseverseDialogOpen, setIsQseverseDialogOpen] = useState(false);
   const [isDiscordDialogOpen, setIsDiscordDialogOpen] = useState(false);
   const ALLOWED_ROUTES = ["/dashboard/profile", "/dashboard/mujourney"];
   const isAllowedRoute = ALLOWED_ROUTES.includes(pathname);
@@ -61,9 +61,9 @@ export function ConnectAccountsBanner() {
               <Button
                 variant="inverted"
                 className="h-9 flex-1 text-xs md:flex-none md:text-sm"
-                onClick={() => setIsQsverseDialogOpen(true)}
+                onClick={() => setIsQseverseDialogOpen(true)}
               >
-                Connect Qsverse
+                Connect Qseverse
               </Button>
             )}
             <Button
@@ -78,9 +78,9 @@ export function ConnectAccountsBanner() {
           </div>
         </div>
       </div>
-      <QsverseConnectDialog
-        open={isQsverseDialogOpen}
-        onOpenChange={setIsQsverseDialogOpen}
+      <QseverseConnectDialog
+        open={isQseverseDialogOpen}
+        onOpenChange={setIsQseverseDialogOpen}
       />
       <DiscordConnectDialog
         open={isDiscordDialogOpen}

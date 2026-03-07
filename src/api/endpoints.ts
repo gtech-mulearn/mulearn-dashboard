@@ -125,6 +125,8 @@ export const endpoints = {
     socialsEdit: "/api/v1/dashboard/profile/socials/edit/",
     /** PATCH - Update user's interest groups */
     interestGroups: "/api/v1/dashboard/profile/ig-edit/",
+    /** PATCH - Update user's profile fields */
+    updateProfile: "/api/v1/dashboard/profile/",
     /** POST - Update profile image */
     updateProfileImage: "/api/v1/dashboard/user/profile/update/",
     /** DELETE - Delete user account */
@@ -142,6 +144,27 @@ export const endpoints = {
     /** GET - Events (OpenSheet or dashboard events) */
     events:
       "https://opensheet.elk.sh/19Os47FI_fAgpMk7lnhFWz9aRwyd72cB-4PKz7W8rF9g/1",
+    /** GET - Calendar events for dashboard */
+    calendarEvents: "/api/v1/dashboard/events/calendar/",
+  },
+
+  // ============================================
+  // Events Endpoints
+  // ============================================
+
+  events: {
+    /** GET - List all events (paginated) */
+    list: `/api/v1/dashboard/events/`,
+    /** GET - Event details by ID */
+    detail: (eventId: string) => `/api/v1/dashboard/events/${eventId}/`,
+    /** POST - Create new event */
+    create: "/api/v1/dashboard/events/",
+    /** PUT - Edit event (full update) */
+    edit: (eventId: string) => `/api/v1/dashboard/events/${eventId}/`,
+    /** PATCH - Update event (partial update) */
+    patch: (eventId: string) => `/api/v1/dashboard/events/${eventId}/`,
+    /** DELETE - Delete event */
+    delete: (eventId: string) => `/api/v1/dashboard/events/${eventId}/`,
   },
 
   // ============================================
@@ -192,6 +215,8 @@ export const endpoints = {
   college: {
     /** GET - List all colleges (paginated) */
     list: "/api/v1/dashboard/college/",
+    /** PATCH - Edit college */
+    edit: "/api/v1/dashboard/college/change-college/",
   },
 
   // ============================================

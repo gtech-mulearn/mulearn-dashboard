@@ -3,13 +3,13 @@
 import { Separator } from "@/components/ui/separator";
 import {
   CourseSection,
-  useOpenGradCourses,
+  // useOpenGradCourses,
   useWadhwaniCourses,
 } from "@/features/courses";
 
 export default function CoursesClient() {
   const wadhwani = useWadhwaniCourses();
-  const openGrad = useOpenGradCourses();
+  // const openGrad = useOpenGradCourses();
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-10 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -34,7 +34,7 @@ export default function CoursesClient() {
 
       <Separator className="my-8" />
 
-      <CourseSection
+      {/* <CourseSection
         title="OpenGrad"
         description="Waitlist and premium courses to master new technologies."
         courses={openGrad.courses}
@@ -43,7 +43,7 @@ export default function CoursesClient() {
         refetch={openGrad.refetch}
         onEnroll={openGrad.enroll}
         isEnrolling={openGrad.isEnrolling}
-      />
+      /> */}
     </div>
   );
 }
