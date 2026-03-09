@@ -59,29 +59,31 @@ function DiscordModerationContent() {
       <CardContent className="bg-transparent p-0 mt-6 space-y-6">
         {/* ── Controls row: dropdown + tabs ── */}
         <div className="flex items-center gap-3">
-          {/* Peer / Appraiser dropdown — only relevant while on leaderboard tab */}
-          <Select
-            value={option}
-            onValueChange={(v) => setOption(v as LeaderboardOption)}
-          >
-            <SelectTrigger className="w-44 h-10 rounded-xl text-base font-medium cursor-pointer">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem
-                value="peer"
-                className="text-base py-2.5 cursor-pointer"
-              >
-                Peer
-              </SelectItem>
-              <SelectItem
-                value="appraiser"
-                className="text-base py-2.5 cursor-pointer"
-              >
-                Appraiser
-              </SelectItem>
-            </SelectContent>
-          </Select>
+          {/* Peer / Appraiser dropdown — only shown on leaderboard tab */}
+          {activeTab === "leaderboard" && (
+            <Select
+              value={option}
+              onValueChange={(v) => setOption(v as LeaderboardOption)}
+            >
+              <SelectTrigger className="w-44 h-10 rounded-xl text-base font-medium cursor-pointer">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem
+                  value="peer"
+                  className="text-base py-2.5 cursor-pointer"
+                >
+                  Peer
+                </SelectItem>
+                <SelectItem
+                  value="appraiser"
+                  className="text-base py-2.5 cursor-pointer"
+                >
+                  Appraiser
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          )}
 
           {/* Leaderboard / Tasks tab buttons */}
           <div className="flex items-center gap-1">

@@ -37,7 +37,7 @@ export const TaskLogSchema = z.object({
     "Appraiser Approved",
     "Karma Awarded",
   ]),
-  discordlink: z.string(),
+  discordlink: z.string().nullable(),
 });
 
 export const TaskListDataSchema = z.object({

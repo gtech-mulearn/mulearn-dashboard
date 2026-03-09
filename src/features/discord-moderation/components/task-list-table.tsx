@@ -20,6 +20,27 @@ import TableTop from "@/components/dashboard/table/TableTop";
 import THead from "@/components/dashboard/table/Thead";
 import { useTaskList } from "../hooks";
 
+// ─── Status badge ────────────────────────────────────────────────────────────
+
+const STATUS_STYLES: Record<string, string> = {
+  Pending: "bg-yellow-500 text-white border-transparent",
+  "Peer Approved": "bg-blue-600 text-white border-transparent",
+  "Appraiser Approved": "bg-purple-600 text-white border-transparent",
+  "Karma Awarded": "bg-green-600 text-white border-transparent",
+};
+
+function StatusBadge({ status }: { status: string }): ReactElement {
+  const styles =
+    STATUS_STYLES[status] ?? "bg-muted text-muted-foreground border-border";
+  return (
+    <span
+      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${styles}`}
+    >
+      {status}
+    </span>
+  );
+}
+
 function DiscordLink({ href }: { href: string }): ReactElement {
   if (!href || href === "-") {
     return <span className="text-muted-foreground text-xs">—</span>;
@@ -51,13 +72,19 @@ type ColumnDef = {
 const COLUMN_ORDER: ColumnDef[] = [
   { column: "full_name", Label: "User", isSortable: false, width: "w-1/5" },
   { column: "task_name", Label: "Task", isSortable: false, width: "w-1/5" },
-  { column: "status", Label: "Status", isSortable: false, width: "w-1/5" },
+  {
+    column: "status",
+    Label: "Status",
+    isSortable: false,
+    width: "w-1/5",
+    wrap: (data) => <StatusBadge status={String(data)} />,
+  },
   {
     column: "discordlink",
     Label: "Discord",
     isSortable: false,
     width: "w-1/5",
-    wrap: (data) => <DiscordLink href={String(data)} />,
+    wrap: (data) => <DiscordLink href={data == null ? "" : String(data)} />,
   },
 ];
 
@@ -77,20 +104,30 @@ function TaskListTableContent() {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("");
 
+  // Search is handled client-side; the backend endpoint does not support it.
   const { data, isLoading } = useTaskList({
     pageIndex: currentPage,
     perPage,
-    search,
     sortBy,
   });
 
-  const rows = (data?.data ?? []) as unknown as Data[];
+  const allRows = (data?.data ?? []) as unknown as Data[];
+
+  const rows = search.trim()
+    ? allRows.filter((row) =>
+        Object.values(row).some((val) =>
+          String(val ?? "")
+            .toLowerCase()
+            .includes(search.trim().toLowerCase()),
+        ),
+      )
+    : allRows;
+
   const totalPages = data?.pagination?.totalPages ?? 1;
   const totalCount = data?.pagination?.total ?? 0;
 
   function handleSearch(value: string) {
     setSearch(value);
-    setCurrentPage(1);
   }
 
   function handlePerPageChange(value: number) {

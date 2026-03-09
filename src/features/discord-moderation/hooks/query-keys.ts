@@ -16,7 +16,6 @@ export const discordModerationKeys = {
       ...discordModerationKeys.taskLists(),
       params.pageIndex,
       params.perPage,
-      params.search ?? "",
       params.sortBy ?? "",
     ] as const,
 

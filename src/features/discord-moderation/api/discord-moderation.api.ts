@@ -25,7 +25,6 @@ import {
 export interface TaskListParams {
   pageIndex: number;
   perPage: number;
-  search?: string;
   sortBy?: string;
 }
 
@@ -47,10 +46,6 @@ export async function fetchTaskList(
     perPage: String(params.perPage),
     pageIndex: String(params.pageIndex),
   });
-
-  if (params.search?.trim()) {
-    query.set("search", params.search.trim());
-  }
 
   if (params.sortBy?.trim()) {
     query.set("sortBy", params.sortBy.trim());
