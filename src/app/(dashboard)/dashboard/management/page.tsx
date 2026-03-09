@@ -174,7 +174,7 @@ const MANAGEMENT_ITEMS: ManagementItem[] = [
     icon: Wrench,
     title: "Community: Discord Moderation",
     description: "Moderate and manage Discord integration.",
-    path: "/dashboard/management/discord-moderation",
+    path: "/dashboard/discord-moderation",
     color: "bg-chart-2/10 text-chart-2",
   },
   {
