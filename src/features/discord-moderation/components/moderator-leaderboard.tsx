@@ -13,17 +13,32 @@ import { useState } from "react";
 import { Blank } from "@/components/dashboard/table/Blank";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table, { type Data } from "@/components/dashboard/table/Table";
-import THead from "@/components/dashboard/table/Thead";
 import type { LeaderboardOption } from "../schemas";
 import { useModeratorBoard } from "../hooks";
 
 // ─── Column definitions ───────────────────────────────────────────────────────
 
 const COLUMN_ORDER = [
-  { column: "name", Label: "Name", isSortable: false, width: "w-1/4" },
-  { column: "count", Label: "Task Count", isSortable: false, width: "w-1/4" },
-  { column: "muid", Label: "Muid", isSortable: false, width: "w-1/4" },
+  { column: "name", Label: "Name", isSortable: false, width: "w-[30%]" },
+  { column: "count", Label: "Task Count", isSortable: false, width: "w-[30%]" },
+  { column: "muid", Label: "Muid", isSortable: false, width: "w-[30%]" },
 ];
+
+/** Custom thead so we can centre all columns uniformly. */
+function LeaderboardTHead() {
+  const thBase =
+    "border-b border-border px-6 py-3 text-sm font-bold tracking-wider";
+  return (
+    <thead>
+      <tr>
+        <th className={`${thBase} text-center w-[10%]`}>Sl.no</th>
+        <th className={`${thBase} text-left w-[30%]`}>Name</th>
+        <th className={`${thBase} text-center w-[30%]`}>Task Count</th>
+        <th className={`${thBase} text-left w-[30%]`}>Muid</th>
+      </tr>
+    </thead>
+  );
+}
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -57,14 +72,15 @@ export function ModeratorLeaderboard({ option }: ModeratorLeaderboardProps) {
       perPage={perPage}
       columnOrder={COLUMN_ORDER}
       id={[]}
+      slNoCellClassName="text-center"
+      customCellRender={(column, row) => {
+        if (column === "count") {
+          return <div className="text-center">{String(row.count ?? "-")}</div>;
+        }
+        return null;
+      }}
     >
-      <THead
-        columnOrder={COLUMN_ORDER}
-        onIconClick={() => undefined}
-        action={false}
-        thClassName="text-xl"
-        slNoClassName="w-1/4"
-      />
+      <LeaderboardTHead />
       <div>
         {!isLoading && (
           <Pagination
