@@ -74,7 +74,7 @@ export function useAssignUserRole(roleId: string) {
       toast.success("Role assigned");
     },
     onError: (err: Error) => {
-      toast.error(err.message ?? "Failed to assign role");
+      toast.error(err.message);
     },
   });
 }
@@ -97,7 +97,7 @@ export function useRemoveUserRole(roleId: string) {
       toast.success("Role removed");
     },
     onError: (err: Error) => {
-      toast.error(err.message ?? "Failed to remove role");
+      toast.error(err.message);
     },
   });
 }
@@ -116,7 +116,7 @@ export function useBulkAssignRole(roleId: string) {
       toast.success("Roles bulk-assigned");
     },
     onError: (err: Error) => {
-      toast.error(err.message ?? "Failed to bulk assign");
+      toast.error(err.message);
     },
   });
 }
@@ -135,7 +135,7 @@ export function useBulkRemoveRole(roleId: string) {
       toast.success("Roles bulk-removed");
     },
     onError: (err: Error) => {
-      toast.error(err.message ?? "Failed to bulk remove");
+      toast.error(err.message);
     },
   });
 }
@@ -150,9 +150,7 @@ export function useBaseTemplateDownload() {
     try {
       await downloadBaseTemplate();
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Failed to download template",
-      );
+      toast.error((err as Error).message);
     } finally {
       setIsDownloading(false);
     }

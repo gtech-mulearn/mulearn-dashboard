@@ -161,18 +161,11 @@ async function request<T>(
 
   if (!res.ok) {
     const backendMsg = extractDjangoMessage(rawData);
-
-    // Provide better default messages for common HTTP errors
-    let defaultMsg = `Request failed: ${endpoint}`;
-    if (res.status >= 500) {
-      defaultMsg = "Server error. Please try again later or contact support.";
-    } else if (res.status === 400) {
-      defaultMsg = "Invalid request. Please check your input.";
-    } else if (res.status === 404) {
-      defaultMsg = "Resource not found.";
-    }
-
-    const error = new ApiError(res.status, backendMsg || defaultMsg, rawData);
+    const error = new ApiError(
+      res.status,
+      backendMsg || `Request failed: ${endpoint}`,
+      rawData,
+    );
     console.error("[API Client] HTTP error:", {
       endpoint,
       status: res.status,
