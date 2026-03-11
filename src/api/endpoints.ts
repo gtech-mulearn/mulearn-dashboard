@@ -490,6 +490,38 @@ export const endpoints = {
       /** GET - Download CSV of unverified links */
       csv: "/api/v1/dashboard/user/verification/csv/",
     },
+
+    interestGroups: {
+      /** GET - List all IGs (paginated) */
+      list: "/api/v1/dashboard/ig/",
+
+      /** POST - Create new IG */
+      create: "/api/v1/dashboard/ig/",
+
+      /** PUT - Full update IG */
+      edit: (id: string) => `/api/v1/dashboard/ig/${id}/`,
+
+      /** DELETE - Delete IG */
+      delete: (id: string) => `/api/v1/dashboard/ig/${id}/`,
+
+      /** GET - Get single IG detail */
+      detail: (id: string) => `/api/v1/dashboard/ig/get/${id}/`,
+
+      /** PATCH - Partial update (lead-editable) */
+      partialUpdate: (id: string) => `/api/v1/dashboard/ig/get/${id}/`,
+
+      /** GET - Download IGs as CSV */
+      csv: "/api/v1/dashboard/ig/csv/",
+
+      /** GET - List IG requests (paginated) */
+      requestList: "/api/v1/dashboard/ig/request/",
+
+      /** POST - Submit new IG request */
+      requestSubmit: "/api/v1/dashboard/ig/request/",
+
+      /** PATCH - Update IG request status */
+      requestUpdate: (id: string) => `/api/v1/dashboard/ig/request/${id}/`,
+    },
   },
 
   // ============================================
