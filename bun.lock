@@ -50,6 +50,7 @@
         "@biomejs/biome": "^2.3.15",
         "@commitlint/cli": "^20.2.0",
         "@commitlint/config-conventional": "^20.2.0",
+        "@netlify/plugin-nextjs": "^5.15.8",
         "@tailwindcss/postcss": "^4",
         "@tanstack/react-query-devtools": "^5.91.2",
         "@types/js-cookie": "^3.0.6",
@@ -199,6 +200,8 @@
     "@jridgewell/sourcemap-codec": ["@jridgewell/sourcemap-codec@1.5.5", "", {}, ""],
 
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.31", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, ""],
+
+    "@netlify/plugin-nextjs": ["@netlify/plugin-nextjs@5.15.8", "", {}, "sha512-zxHVtYhNV1ixLX/4xX6PFTxpM5ltfQIMXUo0JbppUWvDaYeeZIqoEmlYdfIHx6BKyjLSMm8D/b3IRReK5VYuyA=="],
 
     "@next/env": ["@next/env@16.1.1", "", {}, ""],
 
