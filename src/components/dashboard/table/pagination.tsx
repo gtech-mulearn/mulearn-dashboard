@@ -30,17 +30,17 @@ const Pagination = ({
             Showing <strong className="text-foreground">{start}</strong> to{" "}
             <strong className="text-foreground">{end}</strong> entries
           </div>
-          <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-normal">
+          <div className="flex w-full flex-wrap items-center justify-center gap-2 sm:w-auto sm:justify-normal">
             <Button
               variant="outline"
               onClick={handlePreviousClick}
               disabled={currentPage <= 1}
-              className="h-10 rounded-xl border-primary/30 px-4 text-sm font-semibold text-primary transition-all hover:bg-primary/10 disabled:border-border"
+              className="h-10 shrink-0 whitespace-nowrap rounded-xl border-primary/30 px-4 text-sm font-semibold text-primary transition-all hover:bg-primary/10 disabled:border-border"
             >
               Previous
             </Button>
 
-            <div className="flex h-10 items-center rounded-xl border border-primary/20 bg-primary/[0.06] px-4 text-sm font-semibold text-foreground">
+            <div className="flex h-10 shrink-0 items-center justify-center whitespace-nowrap rounded-xl border border-primary/20 bg-primary/[0.06] px-4 text-sm font-semibold text-foreground">
               Page {currentPage} of {totalPages || 1}
             </div>
 
@@ -48,7 +48,7 @@ const Pagination = ({
               variant="default"
               onClick={handleNextClick}
               disabled={currentPage >= totalPages}
-              className="h-10 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-md shadow-primary/25 transition-all hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:shadow-none"
+              className="h-10 shrink-0 whitespace-nowrap rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-md shadow-primary/25 transition-all hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:shadow-none"
             >
               Next
             </Button>

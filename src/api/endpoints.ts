@@ -478,6 +478,18 @@ export const endpoints = {
       /** GET - Download XLSX import template */
       template: "/api/v1/dashboard/karma-voucher/base-template/",
     },
+    roleVerification: {
+      /** GET - List unverified user-role links (paginated) */
+      list: "/api/v1/dashboard/user/verification/",
+      /** PATCH - Update verification status */
+      update: (linkId: string) =>
+        `/api/v1/dashboard/user/verification/${linkId}/`,
+      /** DELETE - Delete a user-role link */
+      delete: (linkId: string) =>
+        `/api/v1/dashboard/user/verification/${linkId}/`,
+      /** GET - Download CSV of unverified links */
+      csv: "/api/v1/dashboard/user/verification/csv/",
+    },
   },
 
   // ============================================
