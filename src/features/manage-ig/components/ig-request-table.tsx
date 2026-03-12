@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, X, Clock, AlertCircle, Plus, Loader2 } from "lucide-react";
+import { Check, X, Clock, AlertCircle, Plus, Loader2, Ban } from "lucide-react";
 import { useState } from "react";
 import Table from "@/components/dashboard/table/Table";
 import TableTop from "@/components/dashboard/table/TableTop";
@@ -45,6 +45,8 @@ export function IGRequestTable() {
     setPage,
     setPerPage,
     setSearch,
+    status,
+    setStatus,
     updateStatus,
     submitRequest,
     isSubmitting,
@@ -187,6 +189,20 @@ export function IGRequestTable() {
             </TooltipTrigger>
             <TooltipContent>Reject Request</TooltipContent>
           </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 px-2.5 text-muted-foreground border-border hover:bg-muted/40 hover:text-foreground"
+                onClick={() => updateStatus(String(row.id), "cancelled")}
+              >
+                <Ban className="size-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Cancel Request</TooltipContent>
+          </Tooltip>
         </div>
       </TooltipProvider>
     );
@@ -232,6 +248,27 @@ export function IGRequestTable() {
         searchSize="md"
         searchPosition="right"
       />
+
+      <div className="flex flex-wrap items-center gap-3">
+        <Label className="text-xs uppercase tracking-wider text-muted-foreground">
+          Status
+        </Label>
+        <Select
+          value={status || "all"}
+          onValueChange={(val) => setStatus(val === "all" ? "" : val)}
+        >
+          <SelectTrigger className="h-8 w-44">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="requested">Requested</SelectItem>
+            <SelectItem value="active">Active</SelectItem>
+            <SelectItem value="rejected">Rejected</SelectItem>
+            <SelectItem value="cancelled">Cancelled</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
       <DataTableErrorBoundary>
         <Table
