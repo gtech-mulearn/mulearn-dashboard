@@ -69,22 +69,27 @@ export async function deleteRole(id: string): Promise<void> {
 
 export async function downloadRolesCsvBlob(): Promise<void> {
   const token = authStore.getAccessToken();
-  if (!token) throw new Error("Please login again to download CSV");
-
-  const base = process.env.NEXT_PUBLIC_DJANGO_API_URL ?? "";
-  const res = await fetch(`${base}${endpoints.manageRoles.csv}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const res = await fetch(
+    `${env.NEXT_PUBLIC_DJANGO_API_URL}${endpoints.manageRoles.csv}`,
+    {
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    },
+  );
   if (!res.ok) throw new Error("Failed to download CSV");
 
   const blob = await res.blob();
   const url = window.URL.createObjectURL(blob);
+
   const a = document.createElement("a");
   a.href = url;
   a.download = "roles.csv";
+
   document.body.appendChild(a);
   a.click();
   a.remove();
+
   window.URL.revokeObjectURL(url);
 }
 

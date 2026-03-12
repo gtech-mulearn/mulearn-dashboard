@@ -63,7 +63,7 @@ export function useAssignUserRole(roleId: string) {
       assignUserRole(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: manageRolesKeys.usersByRole(roleId, ""),
+        queryKey: [...manageRolesKeys.all, "users-by-role", roleId],
       });
       queryClient.invalidateQueries({
         queryKey: manageRolesKeys.bulkUsers(roleId),
@@ -86,7 +86,7 @@ export function useRemoveUserRole(roleId: string) {
       removeUserRole(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: manageRolesKeys.usersByRole(roleId, ""),
+        queryKey: [...manageRolesKeys.all, "users-by-role", roleId],
       });
       queryClient.invalidateQueries({
         queryKey: manageRolesKeys.bulkUsers(roleId),
@@ -108,6 +108,9 @@ export function useBulkAssignRole(roleId: string) {
     mutationFn: (users: string[]) => bulkAssignRole(roleId, users),
     onSuccess: () => {
       queryClient.invalidateQueries({
+        queryKey: [...manageRolesKeys.all, "users-by-role", roleId],
+      });
+      queryClient.invalidateQueries({
         queryKey: manageRolesKeys.bulkUsers(roleId),
       });
       queryClient.invalidateQueries({
@@ -126,6 +129,9 @@ export function useBulkRemoveRole(roleId: string) {
   return useMutation({
     mutationFn: (users: string[]) => bulkRemoveRole(roleId, users),
     onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [...manageRolesKeys.all, "users-by-role", roleId],
+      });
       queryClient.invalidateQueries({
         queryKey: manageRolesKeys.bulkUsers(roleId),
       });
