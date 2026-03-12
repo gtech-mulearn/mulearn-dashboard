@@ -68,18 +68,10 @@ export async function deleteRole(id: string): Promise<void> {
 // ─── CSV download ─────────────────────────────────────────────────────────────
 
 export async function downloadRolesCsvBlob(): Promise<void> {
-  const token = authStore.getAccessToken();
-  const res = await fetch(
-    `${env.NEXT_PUBLIC_DJANGO_API_URL}${endpoints.manageRoles.csv}`,
-    {
-      headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-    },
-  );
-  if (!res.ok) throw new Error("Failed to download CSV");
+  const blob = await apiClient.get<Blob>(endpoints.manageRoles.csv, undefined, {
+    responseType: "blob",
+  });
 
-  const blob = await res.blob();
   const url = window.URL.createObjectURL(blob);
 
   const a = document.createElement("a");
@@ -130,25 +122,11 @@ export async function removeUserRole(payload: {
   user_id: string;
   role_id: string;
 }): Promise<void> {
-  const token = authStore.getAccessToken();
-  const res = await fetch(
-    `${env.NEXT_PUBLIC_DJANGO_API_URL}${endpoints.manageRoles.userRole}`,
-    {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify(payload),
-    },
+  await apiClient.delete(
+    endpoints.manageRoles.userRole,
+    payload,
+    GenericMutationResponseSchema,
   );
-  if (!res.ok) {
-    const raw = await res.json().catch(() => null);
-    throw new Error(
-      (raw as { message?: { general?: string[] } })?.message?.general?.[0] ??
-        "Failed to remove role",
-    );
-  }
 }
 
 // ─── Bulk assign / remove ─────────────────────────────────────────────────────
@@ -197,16 +175,12 @@ export async function bulkRemoveRole(
 // ─── Excel template + bulk import ────────────────────────────────────────────
 
 export async function downloadBaseTemplate(): Promise<void> {
-  const token = authStore.getAccessToken();
-  if (!token) throw new Error("Please login again");
+  const blob = await apiClient.get<Blob>(
+    endpoints.manageRoles.baseTemplate,
+    undefined,
+    { responseType: "blob" },
+  );
 
-  const base = process.env.NEXT_PUBLIC_DJANGO_API_URL ?? "";
-  const res = await fetch(`${base}${endpoints.manageRoles.baseTemplate}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (!res.ok) throw new Error("Failed to download template");
-
-  const blob = await res.blob();
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
