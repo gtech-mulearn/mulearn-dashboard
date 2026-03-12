@@ -1,7 +1,5 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
-import { env } from "../../../../config/env";
-import { authStore } from "@/lib/auth";
 import {
   type Role,
   type RoleFormValues,
@@ -11,6 +9,7 @@ import {
   GenericMutationResponseSchema,
   RoleListResponseSchema,
   RoleUserFlexibleResponseSchema,
+  BulkImportResponseSchema,
 } from "../schemas";
 
 interface FetchRolesParams {
@@ -199,28 +198,11 @@ export async function bulkAssignFromExcel(
   const response = await apiClient.post(
     endpoints.manageRoles.bulkAssignExcel,
     formData,
-    undefined,
+    BulkImportResponseSchema,
     { isFormData: true },
   );
 
-  // Extract the result from the response
-  if (response && typeof response === "object" && "response" in response) {
-    const result = (response as { response: Record<string, unknown> }).response;
-    return {
-      success_count:
-        typeof result?.success_count === "number" ? result.success_count : 0,
-      error_count:
-        typeof result?.error_count === "number" ? result.error_count : 0,
-      errors: Array.isArray(result?.errors) ? result.errors : [],
-      message: typeof result?.message === "string" ? result.message : undefined,
-    };
-  }
-
-  return {
-    success_count: 0,
-    error_count: 0,
-    errors: [],
-  };
+  return response.response;
 }
 
 // Re-export Role type for convenience
