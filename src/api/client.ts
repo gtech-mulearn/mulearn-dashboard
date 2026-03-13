@@ -257,11 +257,13 @@ function createGateway(authenticated: boolean) {
 
     delete: <T>(
       endpoint: string,
+      body?: unknown,
       schema?: z.ZodSchema<T>,
       options?: ClientOptions,
     ) =>
       request<T>(endpoint, {
         method: "DELETE",
+        body,
         schema,
         authenticated,
         ...options,

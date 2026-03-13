@@ -48,7 +48,7 @@ export function EventCard({ event, onDelete, onEdit }: EventCardProps) {
         toast.success("Event deleted successfully");
         onDelete?.();
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to delete event");
     } finally {
       setIsDeleting(false);
@@ -105,7 +105,7 @@ export function EventCard({ event, onDelete, onEdit }: EventCardProps) {
 
         <div className="mt-auto flex items-center justify-between text-sm">
           <span className="text-gray-600 font-medium">
-            {parseInt(event.ticket_value) > 0
+            {parseInt(event.ticket_value, 10) > 0
               ? `₹${event.ticket_value}`
               : "Free"}
           </span>

@@ -556,11 +556,39 @@ export const endpoints = {
   },
 
   // ============================================
-  // college levels Endpoints
+  // College Levels Endpoints
   // ============================================
   collegeLevels: {
     /** GET - List of colleges (query: perPage, pageIndex, search, sortBy) */
     collegeList: "/api/v1/dashboard/college/",
+  },
+
+  // ============================================
+  // Manage Roles Endpoints
+  // ============================================
+  manageRoles: {
+    /** GET - List all roles (paginated) | POST - Create a new role */
+    list: "/api/v1/dashboard/roles/",
+    /**POST-Create a new role */
+    create: "/api/v1/dashboard/roles/",
+    /** PATCH - Update a role */
+    update: (roleId: string) => `/api/v1/dashboard/roles/${roleId}/`,
+    /** DELETE - Delete a role */
+    delete: (roleId: string) => `/api/v1/dashboard/roles/${roleId}/`,
+    /** GET - Download roles CSV */
+    csv: "/api/v1/dashboard/roles/csv/",
+    /** GET - Search users with a specific role */
+    userRoleSearch: (roleId: string) =>
+      `/api/v1/dashboard/roles/user-role/${roleId}/`,
+    /** POST - Assign role to single user | DELETE - Remove role from single user */
+    userRole: "/api/v1/dashboard/roles/user-role/",
+    /** GET - List users with role | PUT - List users without role | POST - Bulk assign | PATCH - Bulk remove */
+    bulkAssign: (roleId: string) =>
+      `/api/v1/dashboard/roles/bulk-assign/${roleId}/`,
+    /** GET - Download Excel template */
+    baseTemplate: "/api/v1/dashboard/roles/base-template/",
+    /** POST - Bulk assign from Excel upload */
+    bulkAssignExcel: "/api/v1/dashboard/roles/bulk-assign-excel/",
   },
 } as const;
 

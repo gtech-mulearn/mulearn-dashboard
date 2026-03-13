@@ -131,7 +131,7 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
           typeof blog === "string" ? { title: blog, url: blog } : blog,
         )
         .filter((blog): blog is { title: string; url: string } =>
-          Boolean(blog && blog.url),
+          Boolean(blog?.url),
         )
     : [];
   const peopleToFollow = Array.isArray(ig.people_to_follow)
@@ -141,14 +141,14 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
         )
         .filter(
           (person): person is { name: string; designation?: string | null } =>
-            Boolean(person && person.name),
+            Boolean(person?.name),
         )
     : [];
   const leads = Array.isArray(ig.leads)
     ? ig.leads
         .map((lead) => (typeof lead === "string" ? { name: lead } : lead))
         .filter((lead): lead is { name: string; email?: string | null } =>
-          Boolean(lead && lead.name),
+          Boolean(lead?.name),
         )
     : [];
   const mentors = Array.isArray(ig.mentors)
@@ -158,7 +158,7 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
         )
         .filter(
           (mentor): mentor is { name: string; expertise?: string | null } =>
-            Boolean(mentor && mentor.name),
+            Boolean(mentor?.name),
         )
     : [];
 

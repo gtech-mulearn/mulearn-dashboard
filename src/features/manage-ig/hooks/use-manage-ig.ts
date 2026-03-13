@@ -11,7 +11,7 @@ import {
   deleteInterestGroup as apiDeleteIG,
   exportIgCSV as apiExportCSV,
 } from "../api/manage-ig.api";
-import type { InterestGroupCreate, InterestGroupUpdate } from "../schemas";
+import type { InterestGroupUpdate } from "../schemas";
 
 export function useInterestGroupsAdmin() {
   const queryClient = useQueryClient();
