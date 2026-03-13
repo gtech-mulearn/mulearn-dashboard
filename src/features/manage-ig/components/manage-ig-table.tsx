@@ -37,6 +37,11 @@ export function ManageIGTable() {
   const [deleteTarget, setDeleteTarget] = useState<InterestGroup | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const handleSortChange = (column: string) => {
+    setPage(1);
+    setSortBy((prev) => (prev === column ? `-${column}` : column));
+  };
+
   const columnOrder = [
     {
       column: "name",
@@ -47,7 +52,7 @@ export function ManageIGTable() {
     { column: "code", Label: "Code", isSortable: false, width: "min-w-[5rem]" },
     { column: "category", Label: "Category", isSortable: true },
     { column: "members", Label: "Members", isSortable: true },
-    { column: "status", Label: "Status", isSortable: true },
+    { column: "status", Label: "Status", isSortable: false },
     { column: "created_by", Label: "Created By", isSortable: true },
     { column: "updated_by", Label: "Updated By", isSortable: true },
     { column: "created_at", Label: "Created On", isSortable: true },
@@ -228,7 +233,7 @@ export function ManageIGTable() {
         >
           <THead
             columnOrder={columnOrder}
-            onIconClick={setSortBy}
+            onIconClick={handleSortChange}
             action={true}
           />
           <div className="p-4">
