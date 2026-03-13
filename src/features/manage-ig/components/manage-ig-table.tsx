@@ -67,11 +67,11 @@ export function ManageIGTable() {
     }
     if (column === "category") {
       const colors: Record<string, string> = {
-        maker: "bg-orange-100 text-orange-700",
-        coder: "bg-blue-100 text-blue-700",
-        creative: "bg-purple-100 text-purple-700",
-        manager: "bg-green-100 text-green-700",
-        others: "bg-gray-100 text-gray-700",
+        maker: "ig-cat-maker",
+        coder: "ig-cat-coder",
+        creative: "ig-cat-creative",
+        manager: "ig-cat-manager",
+        others: "ig-cat-others",
       };
       const cat = String(row.category || "others");
       return (

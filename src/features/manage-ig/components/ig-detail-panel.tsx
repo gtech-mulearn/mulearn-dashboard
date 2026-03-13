@@ -109,18 +109,18 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
   if (!ig) return null;
 
   const statusColors: Record<string, string> = {
-    active: "bg-emerald-100 text-emerald-700",
-    requested: "bg-yellow-100 text-yellow-700",
-    cancelled: "bg-gray-100 text-gray-700",
-    rejected: "bg-red-100 text-red-700",
+    active: "ig-status-active",
+    requested: "ig-status-requested",
+    cancelled: "ig-status-cancelled",
+    rejected: "ig-status-rejected",
   };
 
   const categoryColors: Record<string, string> = {
-    maker: "bg-orange-100 text-orange-700",
-    coder: "bg-blue-100 text-blue-700",
-    creative: "bg-purple-100 text-purple-700",
-    manager: "bg-green-100 text-green-700",
-    others: "bg-gray-100 text-gray-700",
+    maker: "ig-cat-maker",
+    coder: "ig-cat-coder",
+    creative: "ig-cat-creative",
+    manager: "ig-cat-manager",
+    others: "ig-cat-others",
   };
 
   const prerequisites = parseStringList(ig.prerequisites);
