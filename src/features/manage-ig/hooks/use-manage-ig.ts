@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { ApiError, extractDjangoMessage } from "@/api/errors";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getAdminInterestGroups,
@@ -31,14 +32,25 @@ export function useInterestGroupsAdmin() {
       }),
   });
 
+  const getErrorMessage = (error: unknown, fallback: string) => {
+    if (error instanceof ApiError) {
+      return extractDjangoMessage(error.data) || error.message || fallback;
+    }
+    if (error && typeof error === "object" && "message" in error) {
+      const msg = (error as { message?: unknown }).message;
+      if (typeof msg === "string" && msg.trim()) return msg;
+    }
+    return fallback;
+  };
+
   const createMutation = useMutation({
     mutationFn: apiCreateIG,
     onSuccess: () => {
       toast.success("Interest Group created successfully");
       queryClient.invalidateQueries({ queryKey: ["admin-interest-groups"] });
     },
-    onError: () => {
-      toast.error("Failed to create interest group");
+    onError: (error) => {
+      toast.error(getErrorMessage(error, "Failed to create interest group"));
     },
   });
 
@@ -49,8 +61,8 @@ export function useInterestGroupsAdmin() {
       toast.success("Interest Group updated successfully");
       queryClient.invalidateQueries({ queryKey: ["admin-interest-groups"] });
     },
-    onError: () => {
-      toast.error("Failed to update interest group");
+    onError: (error) => {
+      toast.error(getErrorMessage(error, "Failed to update interest group"));
     },
   });
 
@@ -66,8 +78,8 @@ export function useInterestGroupsAdmin() {
       toast.success("Interest Group partially updated");
       queryClient.invalidateQueries({ queryKey: ["admin-interest-groups"] });
     },
-    onError: () => {
-      toast.error("Failed to update interest group");
+    onError: (error) => {
+      toast.error(getErrorMessage(error, "Failed to update interest group"));
     },
   });
 
@@ -77,8 +89,8 @@ export function useInterestGroupsAdmin() {
       toast.success("Interest Group deleted successfully");
       queryClient.invalidateQueries({ queryKey: ["admin-interest-groups"] });
     },
-    onError: () => {
-      toast.error("Failed to delete interest group");
+    onError: (error) => {
+      toast.error(getErrorMessage(error, "Failed to delete interest group"));
     },
   });
 
@@ -93,8 +105,8 @@ export function useInterestGroupsAdmin() {
       a.click();
       a.remove();
       toast.success("CSV exported successfully");
-    } catch {
-      toast.error("Failed to export CSV");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Failed to export CSV"));
     }
   };
 

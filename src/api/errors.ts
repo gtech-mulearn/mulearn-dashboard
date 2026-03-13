@@ -28,8 +28,15 @@ export function extractDjangoMessage(data: unknown): string | null {
   const msg = d.message;
   if (msg && typeof msg === "object") {
     const general = (msg as Record<string, unknown>).general;
-    if (Array.isArray(general) && typeof general[0] === "string") {
-      return general[0];
+    if (Array.isArray(general) && general.length > 0) {
+      const first = general[0];
+      if (typeof first === "string") return first;
+      if (first && typeof first === "object") {
+        const [field, value] = Object.entries(first)[0] ?? [];
+        if (Array.isArray(value) && typeof value[0] === "string") {
+          return field ? `${field}: ${value[0]}` : value[0];
+        }
+      }
     }
   }
 

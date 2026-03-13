@@ -52,7 +52,7 @@ export function ManageIGTable() {
     { column: "code", Label: "Code", isSortable: false, width: "min-w-[5rem]" },
     { column: "category", Label: "Category", isSortable: true },
     { column: "members", Label: "Members", isSortable: true },
-    { column: "status", Label: "Status", isSortable: false },
+    { column: "status", Label: "Status", isSortable: true },
     { column: "created_by", Label: "Created By", isSortable: true },
     { column: "updated_by", Label: "Updated By", isSortable: true },
     { column: "created_at", Label: "Created On", isSortable: true },

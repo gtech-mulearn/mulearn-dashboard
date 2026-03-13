@@ -15,15 +15,20 @@ export function useIGRequests() {
   const [perPage, setPerPage] = useState(10);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<string>("");
+  const [sortBy, setSortBy] = useState("");
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ["ig-requests", { pageIndex: page, perPage, search, status }],
+    queryKey: [
+      "ig-requests",
+      { pageIndex: page, perPage, search, status, sortBy },
+    ],
     queryFn: () =>
       getIgRequests({
         pageIndex: page,
         perPage,
         search,
         status,
+        sortBy,
       }),
   });
 
@@ -63,10 +68,12 @@ export function useIGRequests() {
     totalCount: data?.pagination?.count || 0,
     search,
     status,
+    sortBy,
     setPage,
     setPerPage,
     setSearch,
     setStatus,
+    setSortBy,
     updateStatus: (
       id: string,
       newStatus: "active" | "requested" | "cancelled" | "rejected",

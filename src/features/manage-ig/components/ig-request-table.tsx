@@ -47,6 +47,7 @@ export function IGRequestTable() {
     setSearch,
     status,
     setStatus,
+    setSortBy,
     updateStatus,
     submitRequest,
     isSubmitting,
@@ -59,6 +60,11 @@ export function IGRequestTable() {
     category: "coder",
     icon: "",
   });
+
+  const handleSortChange = (column: string) => {
+    setPage(1);
+    setSortBy((prev) => (prev === column ? `-${column}` : column));
+  };
 
   const columnOrder = [
     { column: "ig_name", Label: "IG Name", isSortable: true },
@@ -283,7 +289,7 @@ export function IGRequestTable() {
         >
           <THead
             columnOrder={columnOrder}
-            onIconClick={() => {}}
+            onIconClick={handleSortChange}
             action={true}
           />
           <div className="p-4">

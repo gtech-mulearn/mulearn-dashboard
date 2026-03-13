@@ -49,12 +49,15 @@ function handleTokenExpiry(rawData: unknown): void {
 
     if (
       data.statusCode === 1000 ||
-      data.message?.general?.some(
-        (msg) =>
-          msg.toLowerCase().includes("token expired") ||
-          msg.toLowerCase().includes("token invalid") ||
-          msg.toLowerCase().includes("invalid token"),
-      )
+      data.message?.general?.some((msg) => {
+        if (typeof msg !== "string") return false;
+        const lower = msg.toLowerCase();
+        return (
+          lower.includes("token expired") ||
+          lower.includes("token invalid") ||
+          lower.includes("invalid token")
+        );
+      })
     ) {
       authStore.clearTokens();
       window.location.href = "/login";
