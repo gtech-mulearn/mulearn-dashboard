@@ -2,6 +2,7 @@
 
 import {
   Sheet,
+  SheetClose,
   SheetContent,
   SheetHeader,
   SheetTitle,
@@ -20,6 +21,7 @@ import {
   UserCheck,
   Briefcase,
   Pencil,
+  X,
   ExternalLink,
 } from "lucide-react";
 
@@ -162,33 +164,58 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
         )
     : [];
 
+  const hasAbout = Boolean(ig.about);
+  const hasPrerequisites = prerequisites.length > 0;
+  const hasCareerOpportunities = careerOpportunities.length > 0;
+  const hasTopBlogs = topBlogs.length > 0;
+  const hasPeopleToFollow = peopleToFollow.length > 0;
+  const hasLeads = leads.length > 0;
+  const hasMentors = mentors.length > 0;
+  const hasLinks = Boolean(ig.thinktank || ig.office_hours || ig.resource);
+  const hasAnyDetails =
+    hasAbout ||
+    hasPrerequisites ||
+    hasCareerOpportunities ||
+    hasTopBlogs ||
+    hasPeopleToFollow ||
+    hasLeads ||
+    hasMentors ||
+    hasLinks;
+
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent className="sm:max-w-lg overflow-y-auto p-0">
         {/* Header */}
         <div className="sticky top-0 z-10 border-b border-border bg-card/95 backdrop-blur-sm px-6 py-5">
           <SheetHeader className="space-y-0">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <SheetTitle className="text-lg">{ig.name}</SheetTitle>
+            <SheetClose asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute left-1 top-1 h-8 w-8"
+                aria-label="Close"
+              >
+                <X className="size-6" />
+              </Button>
+            </SheetClose>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
+                <SheetTitle className="text-lg break-words">
+                  {ig.name}
+                </SheetTitle>
                 <p className="text-xs text-muted-foreground font-mono mt-0.5">
                   {ig.code}
                 </p>
               </div>
               {onEdit && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onEdit(ig)}
-                  className="shrink-0"
-                >
+                <Button variant="outline" size="sm" onClick={() => onEdit(ig)}>
                   <Pencil className="size-3.5 mr-1.5" /> Edit
                 </Button>
               )}
             </div>
           </SheetHeader>
 
-          <div className="flex items-center gap-3 mt-4">
+          <div className="mt-4 flex flex-wrap items-center gap-2 sm:gap-3">
             <span
               className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${statusColors[ig.status] || statusColors.cancelled}`}
             >
@@ -199,7 +226,7 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
             >
               {ig.category}
             </span>
-            <div className="flex items-center gap-1.5 text-sm text-muted-foreground ml-auto">
+            <div className="flex items-center gap-1.5 text-sm text-muted-foreground sm:ml-auto">
               <Users className="size-3.5" />
               <span className="font-semibold text-foreground tabular-nums">
                 {ig.members?.toLocaleString() ?? 0}
@@ -211,8 +238,13 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
 
         {/* Body */}
         <div className="px-6 py-5 space-y-5">
+          {!hasAnyDetails && (
+            <div className="rounded-lg border border-dashed border-border bg-muted/40 px-4 py-6 text-center text-sm text-muted-foreground">
+              No additional details provided for this interest group.
+            </div>
+          )}
           {/* About */}
-          {ig.about && (
+          {hasAbout && (
             <DetailSection icon={BookOpen} label="About">
               <p className="text-sm leading-relaxed text-foreground/90">
                 {ig.about}
@@ -221,21 +253,21 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
           )}
 
           {/* Prerequisites */}
-          {prerequisites.length > 0 && (
+          {hasPrerequisites && (
             <DetailSection icon={Lightbulb} label="Prerequisites">
               <TagList items={prerequisites} />
             </DetailSection>
           )}
 
           {/* Career Opportunities */}
-          {careerOpportunities.length > 0 && (
+          {hasCareerOpportunities && (
             <DetailSection icon={Briefcase} label="Career Opportunities">
               <TagList items={careerOpportunities} />
             </DetailSection>
           )}
 
           {/* Top Blogs */}
-          {topBlogs.length > 0 && (
+          {hasTopBlogs && (
             <DetailSection icon={BookOpen} label="Top Blogs">
               <div className="space-y-2">
                 {topBlogs.map((blog) => (
@@ -255,7 +287,7 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
           )}
 
           {/* People to Follow */}
-          {peopleToFollow.length > 0 && (
+          {hasPeopleToFollow && (
             <DetailSection icon={UserCheck} label="People to Follow">
               <div className="space-y-2">
                 {peopleToFollow.map((person) => (
@@ -275,50 +307,52 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
             </DetailSection>
           )}
 
-          <Separator />
+          {(hasLeads || hasMentors) && <Separator />}
 
           {/* Leads & Mentors */}
-          <div className="grid grid-cols-2 gap-4">
-            {leads.length > 0 && (
-              <DetailSection icon={UserCheck} label="Leads">
-                <div className="space-y-1.5">
-                  {leads.map((lead) => (
-                    <div key={lead.name} className="text-sm">
-                      <span className="font-medium text-foreground">
-                        {lead.name}
-                      </span>
-                      {lead.email && (
-                        <span className="text-muted-foreground text-xs ml-1">
-                          ({lead.email})
+          {(hasLeads || hasMentors) && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {hasLeads && (
+                <DetailSection icon={UserCheck} label="Leads">
+                  <div className="space-y-1.5">
+                    {leads.map((lead) => (
+                      <div key={lead.name} className="text-sm flex flex-col">
+                        <span className="font-medium text-foreground">
+                          {lead.name}
                         </span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </DetailSection>
-            )}
-            {mentors.length > 0 && (
-              <DetailSection icon={Users} label="Mentors">
-                <div className="space-y-1.5">
-                  {mentors.map((mentor) => (
-                    <div key={mentor.name} className="text-sm">
-                      <span className="font-medium text-foreground">
-                        {mentor.name}
-                      </span>
-                      {mentor.expertise && (
-                        <span className="text-muted-foreground text-xs ml-1">
-                          ({mentor.expertise})
+                        {lead.email && (
+                          <span className="text-muted-foreground text-xs break-all">
+                            ({lead.email})
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </DetailSection>
+              )}
+              {hasMentors && (
+                <DetailSection icon={Users} label="Mentors">
+                  <div className="space-y-1.5">
+                    {mentors.map((mentor) => (
+                      <div key={mentor.name} className="text-sm">
+                        <span className="font-medium text-foreground">
+                          {mentor.name}
                         </span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </DetailSection>
-            )}
-          </div>
+                        {mentor.expertise && (
+                          <span className="text-muted-foreground text-xs ml-1">
+                            ({mentor.expertise})
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </DetailSection>
+              )}
+            </div>
+          )}
 
           {/* Links */}
-          {(ig.thinktank || ig.office_hours || ig.resource) && (
+          {hasLinks && (
             <>
               <Separator />
               <div className="space-y-3">
@@ -355,7 +389,7 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
 
           {/* Footer Metadata */}
           <div className="rounded-lg bg-muted/50 p-4 space-y-2">
-            <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-xs">
+            <div className="grid grid-cols-1 gap-y-2 gap-x-4 text-xs sm:grid-cols-2">
               <div>
                 <span className="text-muted-foreground">Created by</span>
                 <p className="font-medium text-foreground mt-0.5">
