@@ -532,6 +532,7 @@ export const endpoints = {
     pendingCounts: "/api/v1/dashboard/discord-moderator/pendingcounts/",
     /** GET - Get moderator leaderboard (paginated) */
     leaderboard: "/api/v1/dashboard/discord-moderator/leaderboard/",
+  },
 
   // ============================================
   // Manage Roles Endpoints
