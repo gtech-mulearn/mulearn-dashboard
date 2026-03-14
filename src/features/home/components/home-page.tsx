@@ -1,5 +1,7 @@
 "use client";
+
 import { useUserInfo, useUserProfile } from "@/features/auth/hooks/use-session";
+import { useAuthStore } from "@/stores/auth-store";
 import {
   useCalendarEvents,
   useEvents,
@@ -13,7 +15,17 @@ import { InterestGroupsCard } from "./interest-groups-card";
 import { KarmaEarnersCard } from "./karma-earners-card";
 import { LearningCirclesCard } from "./learning-circles-card";
 
+// Import role-specific components (commented out for now)
+// import {
+//   StudentHome,
+//   MuLearnerHome,
+//   EnablerHome,
+//   MentorHome,
+//   CompanyHome,
+// } from "./index";
+
 export function HomePage() {
+  const { role } = useAuthStore();
   const { data: userInfo } = useUserInfo();
   const { data: userProfile } = useUserProfile();
   const { data: interestGroups, isLoading: loadingGroups } =
@@ -22,6 +34,7 @@ export function HomePage() {
   const { data: events, isLoading: loadingEvents } = useEvents();
   const { data: calendarEvents, isLoading: loadingCalendar } =
     useCalendarEvents();
+
   const displayName = userInfo?.full_name?.split(" ")[0] ?? "Learner";
   const selectedDomain = userInfo?.user_domains?.[0]?.toLowerCase();
 
@@ -75,8 +88,35 @@ export function HomePage() {
         )
       : (interestGroups ?? []);
 
+  /**
+   * Role-based home component switcher (Disabled for now)
+   *
+   * const renderHome = () => {
+   *   switch (role?.toLowerCase()) {
+   *     case "student":
+   *       return <StudentHome />;
+   *     case "mulearner":
+   *       return <MuLearnerHome />;
+   *     case "enabler":
+   *       return <EnablerHome />;
+   *     case "mentor":
+   *       return <MentorHome />;
+   *     case "company":
+   *       return <CompanyHome />;
+   *     default:
+   *       return null;
+   *   }
+   * };
+   */
+
   return (
     <div className="space-y-8 p-1">
+      {/* 
+        To enable role-based content, uncomment the line below and 
+        comment out the grid div.
+        {renderHome()} 
+      */}
+
       <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
         <div className="col-span-1 md:col-span-3">
           <HeroCard name={displayName} src={src} alt={alt} />
