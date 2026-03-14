@@ -14,6 +14,7 @@ export const useZones = (params: LocationParams) => {
     queryKey: ["zones", params],
     queryFn: () => fetchZones(params),
     placeholderData: (previousData) => previousData,
+    enabled: params.enabled ?? true,
   });
 };
 

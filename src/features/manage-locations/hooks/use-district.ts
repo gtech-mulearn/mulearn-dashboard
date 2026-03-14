@@ -18,6 +18,7 @@ export const useDistricts = (params: LocationParams) => {
     queryKey: ["districts", params],
     queryFn: () => fetchDistricts(params),
     placeholderData: keepPreviousData,
+    enabled: params.enabled ?? true,
   });
 };
 

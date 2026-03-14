@@ -5,20 +5,15 @@ import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import type { z } from "zod";
 import { DataTableErrorBoundary } from "@/components/dashboard/DataTableErrorBoundary";
-import { Blank } from "@/components/dashboard/table/Blank";
-import Pagination from "@/components/dashboard/table/pagination";
-import Table, { type Data } from "@/components/dashboard/table/Table";
 import THead from "@/components/dashboard/table/Thead";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -27,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import {
   useAddCountry,
   useAddDistrict,
@@ -48,6 +44,7 @@ import {
   useZoneDropdown,
   useZones,
 } from "../hooks";
+
 import type {
   DistrictItemSchema,
   LocationItemSchema,
@@ -72,6 +69,16 @@ type FormData = {
   zone: string;
 };
 
+const TABS = ["countries", "states", "zones", "districts"] as const;
+type TabType = (typeof TABS)[number];
+
+const SINGULAR: Record<TabType, string> = {
+  countries: "Country",
+  states: "State",
+  zones: "Zone",
+  districts: "District",
+};
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function LocationManagementPage() {
@@ -83,26 +90,37 @@ export default function LocationManagementPage() {
 }
 
 function LocationContent() {
-  const tabs = ["countries", "states", "zones", "districts"] as const;
-  type TabType = (typeof tabs)[number];
-
   const [activeTab, setActiveTab] = useState<TabType>("countries");
   const [page, setPage] = useState(1);
   const [perPage] = useState(10);
-  const [search] = useState("");
+  const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("");
   const [open, setOpen] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: string;
+    label: string;
+  } | null>(null);
   const [editingItem, setEditingItem] = useState<LocationRow | null>(null);
 
   const params = { page, perPage, search, sortBy };
 
-  // ─── Queries ───────────────────────────────────────────────────────────────
+  const countriesQuery = useCountries({
+    ...params,
+    enabled: activeTab === "countries",
+  });
+  const statesQuery = useStates({ ...params, enabled: activeTab === "states" });
+  const zonesQuery = useZones({ ...params, enabled: activeTab === "zones" });
+  const districtsQuery = useDistricts({
+    ...params,
+    enabled: activeTab === "districts",
+  });
 
   const queryMap = {
-    countries: useCountries(params),
-    states: useStates(params),
-    zones: useZones(params),
-    districts: useDistricts(params),
+    countries: countriesQuery,
+    states: statesQuery,
+    zones: zonesQuery,
+    districts: districtsQuery,
   };
 
   const deleteMap = {
@@ -131,31 +149,28 @@ function LocationContent() {
   const { mutateAsync: updateZone } = useUpdateZone();
   const { mutateAsync: updateDistrict } = useUpdateDistrict();
 
-  // ─── Dropdowns — only needed when adding, not editing ──────────────────────
+  // ─── Dropdowns ─────────────────────────────────────────────────────────────
 
-  const needsCountry = open && activeTab !== "countries"; // removed !editingItem
+  const needsCountry = open && activeTab !== "countries";
   const needsState =
     open && (activeTab === "zones" || activeTab === "districts");
   const needsZone = open && activeTab === "districts";
 
-  const { data: countryList = [] } = useCountryDropdown(needsCountry);
-  const { data: statesList = [] } = useStateDropdown(needsState);
-  const { data: zonesList = [] } = useZoneDropdown(needsZone);
+  const { data: countryList = [], isLoading: countryListLoading } =
+    useCountryDropdown(needsCountry);
+  const { data: statesList = [], isLoading: statesListLoading } =
+    useStateDropdown(needsState);
+  const { data: zonesList = [], isLoading: zonesListLoading } =
+    useZoneDropdown(needsZone);
 
   // ─── Form ──────────────────────────────────────────────────────────────────
 
   const { register, handleSubmit, reset, control } = useForm<FormData>({
-    defaultValues: {
-      label: "",
-      country: "",
-      state: "",
-      zone: "",
-    },
+    defaultValues: { label: "", country: "", state: "", zone: "" },
   });
 
   useEffect(() => {
     if (!open) return;
-
     if (editingItem) {
       reset({
         label: (editingItem as LocationRow & { label?: string }).label ?? "",
@@ -170,7 +185,7 @@ function LocationContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editingItem, open, reset]);
 
-  // ─── Submit ────────────────────────────────────────────────────────────────
+  // ─── Submit ───────────────────────
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -185,7 +200,6 @@ function LocationContent() {
         const existingZoneLabel =
           (editingItem as LocationRow & { zone?: string }).zone ?? "";
 
-        // Match label → UUID from dropdown lists
         const countryId =
           (countryList as DropdownOption[]).find(
             (c) => c.label.toLowerCase() === existingCountryLabel.toLowerCase(),
@@ -200,6 +214,16 @@ function LocationContent() {
           (zonesList as DropdownOption[]).find(
             (z) => z.label.toLowerCase() === existingZoneLabel.toLowerCase(),
           )?.value ?? "";
+
+        if (activeTab === "states" && !countryId) {
+          return;
+        }
+        if (activeTab === "zones" && (!countryId || !stateId)) {
+          return;
+        }
+        if (activeTab === "districts" && (!countryId || !stateId || !zoneId)) {
+          return;
+        }
 
         if (activeTab === "countries") {
           await updateCountry({ id, label });
@@ -236,26 +260,30 @@ function LocationContent() {
     }
   };
 
+  // ─── Dropdown loading guard for edit mode ──────────────────────────────────
+
+  const isDropdownLoading =
+    (needsCountry && countryListLoading) ||
+    (needsState && statesListLoading) ||
+    (needsZone && zonesListLoading);
+
   // ─── Columns ───────────────────────────────────────────────────────────────
 
   const columnConfig = useMemo(() => {
+    const base = [
+      { column: "created_at", Label: "Created On", isSortable: true },
+      { column: "created_by", Label: "Created By", isSortable: true },
+      { column: "updated_by", Label: "Updated By", isSortable: true },
+      { column: "updated_at", Label: "Updated On", isSortable: true },
+    ];
     if (activeTab === "countries") {
-      return [
-        { column: "label", Label: "Country", isSortable: true },
-        { column: "created_at", Label: "Created On", isSortable: true },
-        { column: "created_by", Label: "Created By", isSortable: true },
-        { column: "updated_by", Label: "Updated By", isSortable: true },
-        { column: "updated_at", Label: "Updated On", isSortable: true },
-      ];
+      return [{ column: "label", Label: "Country", isSortable: true }, ...base];
     }
     if (activeTab === "states") {
       return [
         { column: "country", Label: "Country", isSortable: true },
         { column: "label", Label: "State", isSortable: true },
-        { column: "created_at", Label: "Created On", isSortable: true },
-        { column: "created_by", Label: "Created By", isSortable: true },
-        { column: "updated_by", Label: "Updated By", isSortable: true },
-        { column: "updated_at", Label: "Updated On", isSortable: true },
+        ...base,
       ];
     }
     if (activeTab === "zones") {
@@ -263,10 +291,7 @@ function LocationContent() {
         { column: "country", Label: "Country", isSortable: true },
         { column: "state", Label: "State", isSortable: true },
         { column: "label", Label: "Zone", isSortable: true },
-        { column: "created_at", Label: "Created On", isSortable: true },
-        { column: "created_by", Label: "Created By", isSortable: true },
-        { column: "updated_by", Label: "Updated By", isSortable: true },
-        { column: "updated_at", Label: "Updated On", isSortable: true },
+        ...base,
       ];
     }
     return [
@@ -274,21 +299,31 @@ function LocationContent() {
       { column: "state", Label: "State", isSortable: true },
       { column: "zone", Label: "Zone", isSortable: true },
       { column: "label", Label: "District", isSortable: true },
-      { column: "created_at", Label: "Created On", isSortable: true },
-      { column: "created_by", Label: "Created By", isSortable: true },
-      { column: "updated_by", Label: "Updated By", isSortable: true },
-      { column: "updated_at", Label: "Updated On", isSortable: true },
+      ...base,
     ];
   }, [activeTab]);
 
-  const singularize = (tab: TabType) => {
-    const map: Record<TabType, string> = {
-      countries: "Country",
-      states: "State",
-      zones: "Zone",
-      districts: "District",
-    };
-    return map[tab];
+  const handleDeleteClick = (id: string) => {
+    const row = rows.find(
+      (r: LocationRow) => (r as LocationRow & { value: string }).value === id,
+    );
+    const label = (row as LocationRow & { label?: string })?.label ?? id;
+    setDeleteTarget({ id, label });
+    setOpenDelete(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!deleteTarget) return;
+    currentDelete.mutate(deleteTarget.id, {
+      onSuccess: () => {
+        setOpenDelete(false);
+        setDeleteTarget(null);
+      },
+      onError: () => {
+        setOpenDelete(false);
+        setDeleteTarget(null);
+      },
+    });
   };
 
   // ─── Render ────────────────────────────────────────────────────────────────
@@ -296,7 +331,7 @@ function LocationContent() {
   return (
     <Card className="border-0 bg-transparent shadow-none rounded-none">
       <CardHeader className="px-0">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <MapIcon className="size-5 text-primary" />
             <CardTitle className="text-2xl font-bold">
@@ -304,31 +339,33 @@ function LocationContent() {
             </CardTitle>
           </div>
           <Button
+            className="w-full sm:w-auto"
             onClick={() => {
               setEditingItem(null);
               setOpen(true);
             }}
           >
-            Add {singularize(activeTab)}
+            Add {SINGULAR[activeTab]}
           </Button>
         </div>
       </CardHeader>
 
       <CardContent className="mt-6 p-0 space-y-6">
         {/* Tabs */}
-        <div className="flex gap-2 border-b pb-2">
-          {tabs.map((tab) => (
+        <div className="flex overflow-x-auto gap-1 border-b pb-0 no-scrollbar">
+          {TABS.map((tab) => (
             <Button
               key={tab}
               variant="ghost"
               onClick={() => {
                 setActiveTab(tab);
                 setPage(1);
+                setSearch("");
               }}
-              className={`capitalize rounded-none border-b-2 ${
+              className={`capitalize shrink-0 rounded-none border-b-2 transition-colors ${
                 activeTab === tab
                   ? "border-primary text-primary"
-                  : "border-transparent"
+                  : "border-transparent text-muted-foreground"
               }`}
             >
               {tab}
@@ -336,36 +373,278 @@ function LocationContent() {
           ))}
         </div>
 
-        {/* Dialog */}
-        <Dialog
-          open={open}
-          onOpenChange={(val) => {
-            setOpen(val);
-            if (!val) setEditingItem(null);
+        {/* Search */}
+        <Input
+          placeholder={`Search ${activeTab}...`}
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(1);
           }}
+          className="max-w-sm"
+        />
+
+        {/* Desktop table */}
+        <div className="hidden md:block overflow-x-auto rounded-md border">
+          <Table>
+            <THead
+              columnOrder={columnConfig}
+              onIconClick={(column) => {
+                setSortBy(column);
+                setPage(1);
+              }}
+              action={true}
+            />
+            <TableBody>
+              {currentQuery.isLoading ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={columnConfig.length + 2}
+                    className="text-center py-8 text-muted-foreground"
+                  >
+                    Loading...
+                  </TableCell>
+                </TableRow>
+              ) : rows.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={columnConfig.length + 2}
+                    className="text-center py-8 text-muted-foreground"
+                  >
+                    No {activeTab} found.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                rows.map((row: LocationRow, index: number) => {
+                  const r = row as LocationRow & {
+                    value: string;
+                    label?: string;
+                    country?: string;
+                    state?: string;
+                    zone?: string;
+                    created_at?: string;
+                    created_by?: string;
+                    updated_at?: string;
+                    updated_by?: string;
+                  };
+                  return (
+                    <TableRow key={r.value}>
+                      <TableCell className="w-12">
+                        {(page - 1) * perPage + index + 1}
+                      </TableCell>
+                      {activeTab !== "countries" && (
+                        <TableCell>{r.country}</TableCell>
+                      )}
+                      {(activeTab === "zones" || activeTab === "districts") && (
+                        <TableCell>{r.state}</TableCell>
+                      )}
+                      {activeTab === "districts" && (
+                        <TableCell>{r.zone}</TableCell>
+                      )}
+                      <TableCell className="font-medium">{r.label}</TableCell>
+                      <TableCell>
+                        {r.created_at
+                          ? new Date(r.created_at).toLocaleDateString()
+                          : "—"}
+                      </TableCell>
+                      <TableCell>{r.created_by ?? "—"}</TableCell>
+                      <TableCell>{r.updated_by ?? "—"}</TableCell>
+                      <TableCell>
+                        {r.updated_at
+                          ? new Date(r.updated_at).toLocaleDateString()
+                          : "—"}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setEditingItem(row);
+                              setOpen(true);
+                            }}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDeleteClick(r.value)}
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* Mobile cards */}
+        <div className="flex flex-col gap-3 md:hidden">
+          {currentQuery.isLoading ? (
+            <p className="text-center py-8 text-muted-foreground text-sm">
+              Loading...
+            </p>
+          ) : rows.length === 0 ? (
+            <p className="text-center py-8 text-muted-foreground text-sm">
+              No {activeTab} found.
+            </p>
+          ) : (
+            rows.map((row: LocationRow, index: number) => {
+              const r = row as LocationRow & {
+                value: string;
+                label?: string;
+                country?: string;
+                state?: string;
+                zone?: string;
+                created_at?: string;
+                created_by?: string;
+              };
+              return (
+                <div
+                  key={r.value}
+                  className="rounded-lg border bg-card p-4 space-y-3 shadow-sm"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">
+                      #{(page - 1) * perPage + index + 1}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {r.created_at
+                        ? new Date(r.created_at).toLocaleDateString()
+                        : "—"}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">{r.label}</p>
+                    {r.country && (
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {r.country}
+                      </p>
+                    )}
+                    {r.state && (
+                      <p className="text-xs text-muted-foreground">{r.state}</p>
+                    )}
+                    {r.zone && (
+                      <p className="text-xs text-muted-foreground">{r.zone}</p>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">
+                      By{" "}
+                      <span className="text-foreground font-medium">
+                        {r.created_by ?? "—"}
+                      </span>
+                    </span>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setEditingItem(row);
+                          setOpen(true);
+                        }}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDeleteClick(r.value)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Pagination */}
+        {!currentQuery.isLoading && rows.length > 0 && (
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between text-sm text-muted-foreground">
+            <span>
+              Page {page} of {totalPages} · {totalCount} total
+            </span>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 sm:flex-none"
+                disabled={page === 1}
+                onClick={() => setPage((p) => Math.max(p - 1, 1))}
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 sm:flex-none"
+                disabled={page >= totalPages}
+                onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        )}
+      </CardContent>
+
+      {/* Add / Edit Dialog */}
+      <Dialog
+        open={open}
+        onOpenChange={(val) => {
+          setOpen(val);
+          if (!val) setEditingItem(null);
+        }}
+      >
+        <DialogContent
+          aria-describedby={undefined}
+          className="w-[95vw] max-w-md rounded-lg overflow-visible max-h-[90vh]"
         >
-          <DialogContent
-            aria-describedby={undefined}
-            className="overflow-visible max-h-[90vh]"
-          >
-            <DialogHeader>
-              <DialogTitle>
-                {editingItem
-                  ? `Edit ${singularize(activeTab)}`
-                  : `Add ${singularize(activeTab)}`}
-              </DialogTitle>
-            </DialogHeader>
+          <DialogHeader>
+            <DialogTitle>
+              {editingItem
+                ? `Edit ${SINGULAR[activeTab]}`
+                : `Add ${SINGULAR[activeTab]}`}
+            </DialogTitle>
+          </DialogHeader>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <Input placeholder="Name" {...register("label")} />
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div className="space-y-1">
+              <label
+                htmlFor="location-label"
+                className="text-sm text-muted-foreground"
+              >
+                Name
+              </label>
+              <Input
+                id="location-label"
+                placeholder="Name"
+                {...register("label")}
+              />
+            </div>
 
-              {/* Country — dropdown when adding, text input when editing */}
-              {activeTab !== "countries" &&
-                (editingItem ? (
+            {/* Country */}
+            {activeTab !== "countries" && (
+              <div className="space-y-1">
+                <label
+                  htmlFor="country"
+                  className="text-sm text-muted-foreground"
+                >
+                  Country
+                </label>
+                {editingItem ? (
                   <Input
                     placeholder="Country"
                     {...register("country")}
-                    readOnly // 👈 prevent editing
+                    readOnly
                     className="bg-muted cursor-not-allowed opacity-60"
                   />
                 ) : (
@@ -395,11 +674,20 @@ function LocationContent() {
                       </Select>
                     )}
                   />
-                ))}
+                )}
+              </div>
+            )}
 
-              {/* State — dropdown when adding, text input when editing */}
-              {(activeTab === "zones" || activeTab === "districts") &&
-                (editingItem ? (
+            {/* State */}
+            {(activeTab === "zones" || activeTab === "districts") && (
+              <div className="space-y-1">
+                <label
+                  htmlFor="state"
+                  className="text-sm text-muted-foreground"
+                >
+                  State
+                </label>
+                {editingItem ? (
                   <Input
                     placeholder="State"
                     {...register("state")}
@@ -433,11 +721,20 @@ function LocationContent() {
                       </Select>
                     )}
                   />
-                ))}
+                )}
+              </div>
+            )}
 
-              {/* Zone — dropdown when adding, text input when editing */}
-              {activeTab === "districts" &&
-                (editingItem ? (
+            {/* Zone */}
+            {activeTab === "districts" && (
+              <div className="space-y-1">
+                <label
+                  htmlFor="district"
+                  className="text-sm text-muted-foreground"
+                >
+                  Zone
+                </label>
+                {editingItem ? (
                   <Input
                     placeholder="Zone"
                     {...register("zone")}
@@ -471,52 +768,73 @@ function LocationContent() {
                       </Select>
                     )}
                   />
-                ))}
+                )}
+              </div>
+            )}
 
-              <Button type="submit">{editingItem ? "Update" : "Save"}</Button>
-            </form>
-          </DialogContent>
-        </Dialog>
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setOpen(false);
+                  setEditingItem(null);
+                }}
+              >
+                Cancel
+              </Button>
+              {/* Fix 1: disable submit while dropdowns are still loading */}
+              <Button type="submit" disabled={isDropdownLoading}>
+                {isDropdownLoading
+                  ? "Loading..."
+                  : editingItem
+                    ? "Update"
+                    : "Save"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
 
-        {/* Table */}
-        <Table
-          rows={rows as unknown as Data[]}
-          isloading={currentQuery.isLoading}
-          page={page}
-          perPage={perPage}
-          columnOrder={columnConfig}
-          id={["value"]}
-          onDeleteClick={(id) => id && currentDelete.mutate(id)}
-          onEditClick={(id) => {
-            const fullRow = rows.find(
-              (row: LocationRow) =>
-                (row as LocationRow & { value: string }).value === id,
-            );
-            setEditingItem(fullRow ?? null);
-            setOpen(true);
-          }}
-        >
-          <THead
-            columnOrder={columnConfig}
-            onIconClick={(column) => {
-              setSortBy(column);
-              setPage(1);
-            }}
-            action
-          />
-          {!currentQuery.isLoading && (
-            <Pagination
-              currentPage={page}
-              totalPages={totalPages}
-              handleNextClick={() => setPage((p) => p + 1)}
-              handlePreviousClick={() => setPage((p) => p - 1)}
-              perPage={perPage}
-              totalCount={totalCount}
-            />
-          )}
-          <Blank />
-        </Table>
-      </CardContent>
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={openDelete}
+        onOpenChange={(val) => {
+          setOpenDelete(val);
+          if (!val) setDeleteTarget(null);
+        }}
+      >
+        <DialogContent className="w-[95vw] max-w-sm rounded-lg">
+          <DialogHeader>
+            <DialogTitle>Delete {SINGULAR[activeTab]}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Are you sure you want to delete{" "}
+            <span className="font-semibold text-foreground">
+              {deleteTarget?.label}
+            </span>
+            ? This action cannot be undone.
+          </p>
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setOpenDelete(false);
+                setDeleteTarget(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={currentDelete.isPending}
+              onClick={handleConfirmDelete}
+            >
+              {currentDelete.isPending ? "Deleting..." : "Delete"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

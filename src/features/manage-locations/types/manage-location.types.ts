@@ -23,6 +23,7 @@ export interface LocationParams {
   perPage: number;
   search?: string;
   sortBy?: string;
+  enabled?: boolean;
 }
 
 export type CreateCountryInput = {

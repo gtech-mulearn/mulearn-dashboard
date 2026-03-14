@@ -14,6 +14,7 @@ export const useStates = (params: LocationParams) => {
     queryKey: ["states", params],
     queryFn: () => fetchStates(params),
     placeholderData: (previousData) => previousData,
+    enabled: params.enabled ?? true,
   });
 };
 

@@ -158,7 +158,9 @@ function ChannelContent() {
     <>
       <Card>
         <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <CardTitle>Channels</CardTitle>
+          <CardTitle className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            Channels
+          </CardTitle>
           <Button
             className="w-full sm:w-auto"
             onClick={() => toggleCreateModal(true)}

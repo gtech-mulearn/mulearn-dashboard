@@ -14,6 +14,7 @@ export function useCountries(params: LocationParams) {
     queryKey: ["countries", params],
     queryFn: () => fetchLocation(params),
     placeholderData: (previousData) => previousData,
+    enabled: params.enabled ?? true,
   });
 }
 
