@@ -581,7 +581,8 @@ export const endpoints = {
     update: (districtId: string | number) =>
       `/api/v1/dashboard/location/districts/${districtId}/`, // PATCH
     delete: (districtId: string | number) =>
-      `/api/v1/dashboard/location/districts/${districtId}/`, // DELETE
+      `/api/v1/dashboard/location/districts/${districtId}/`,
+  }, // DELETE
   // Manage Roles Endpoints
   // ============================================
   manageRoles: {
