@@ -125,8 +125,6 @@ export async function addState(data: CreateStateInput): Promise<void> {
 }
 
 export async function updateState(data: UpdateStateInput): Promise<void> {
-  console.log("url:", endpoints.states.update(data.id));
-  console.log("payload:", data);
   await apiClient.patch(
     endpoints.states.update(data.id),
     data,
@@ -193,7 +191,6 @@ export async function fetchDistricts(
 }
 
 export async function addDistrict(data: CreateDistrictInput): Promise<void> {
-  console.log("addDistrict payload:", data);
   await apiClient.post(
     endpoints.districts.create,
     data,

@@ -571,6 +571,15 @@ export const endpoints = {
     delete: (districtId: string | number) =>
       `/api/v1/dashboard/location/districts/${districtId}/`, // DELETE
   },
+  // channels
+  channels: {
+    List: "/api/v1/dashboard/channels/",
+    Create: "/api/v1/dashboard/channels/",
+    update: (channel_id: string | number) =>
+      `/api/v1/dashboard/channels/${channel_id}/`,
+    delete: (channel_id: string | number) =>
+      `/api/v1/dashboard/channels/${channel_id}/`,
+  },
 } as const;
 
 // Type for type-safe endpoint access
