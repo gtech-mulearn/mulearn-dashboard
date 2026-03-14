@@ -478,6 +478,18 @@ export const endpoints = {
       /** GET - Download XLSX import template */
       template: "/api/v1/dashboard/karma-voucher/base-template/",
     },
+    roleVerification: {
+      /** GET - List unverified user-role links (paginated) */
+      list: "/api/v1/dashboard/user/verification/",
+      /** PATCH - Update verification status */
+      update: (linkId: string) =>
+        `/api/v1/dashboard/user/verification/${linkId}/`,
+      /** DELETE - Delete a user-role link */
+      delete: (linkId: string) =>
+        `/api/v1/dashboard/user/verification/${linkId}/`,
+      /** GET - Download CSV of unverified links */
+      csv: "/api/v1/dashboard/user/verification/csv/",
+    },
   },
 
   // ============================================
@@ -570,6 +582,31 @@ export const endpoints = {
       `/api/v1/dashboard/location/districts/${districtId}/`, // PATCH
     delete: (districtId: string | number) =>
       `/api/v1/dashboard/location/districts/${districtId}/`, // DELETE
+  // Manage Roles Endpoints
+  // ============================================
+  manageRoles: {
+    /** GET - List all roles (paginated) | POST - Create a new role */
+    list: "/api/v1/dashboard/roles/",
+    /**POST-Create a new role */
+    create: "/api/v1/dashboard/roles/",
+    /** PATCH - Update a role */
+    update: (roleId: string) => `/api/v1/dashboard/roles/${roleId}/`,
+    /** DELETE - Delete a role */
+    delete: (roleId: string) => `/api/v1/dashboard/roles/${roleId}/`,
+    /** GET - Download roles CSV */
+    csv: "/api/v1/dashboard/roles/csv/",
+    /** GET - Search users with a specific role */
+    userRoleSearch: (roleId: string) =>
+      `/api/v1/dashboard/roles/user-role/${roleId}/`,
+    /** POST - Assign role to single user | DELETE - Remove role from single user */
+    userRole: "/api/v1/dashboard/roles/user-role/",
+    /** GET - List users with role | PUT - List users without role | POST - Bulk assign | PATCH - Bulk remove */
+    bulkAssign: (roleId: string) =>
+      `/api/v1/dashboard/roles/bulk-assign/${roleId}/`,
+    /** GET - Download Excel template */
+    baseTemplate: "/api/v1/dashboard/roles/base-template/",
+    /** POST - Bulk assign from Excel upload */
+    bulkAssignExcel: "/api/v1/dashboard/roles/bulk-assign-excel/",
   },
   // channels
   channels: {
