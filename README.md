@@ -11,7 +11,7 @@ A modern, comprehensive dashboard and community management platform for the **μ
 
 ### Installation
 
-1. Clone the repository:
+1. Clone the repository:=
 
    ```bash
    git clone <repository-url>
