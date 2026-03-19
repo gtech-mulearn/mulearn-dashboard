@@ -535,6 +535,65 @@ export const endpoints = {
   },
 
   // ============================================
+  // Location Management Endpoints
+  // ============================================
+  countries: {
+    // Admin
+    list: "/api/v1/dashboard/location/countries/", // GET (paginated)
+    create: "/api/v1/dashboard/location/countries/", // POST
+    update: (countryId: string | number) =>
+      `/api/v1/dashboard/location/countries/${countryId}/`, // PATCH
+    delete: (countryId: string | number) =>
+      `/api/v1/dashboard/location/countries/${countryId}/`, // DELETE
+
+    // Public
+    dropdownList: "/api/v1/dashboard/location/countries/list/", // GET (simple list)
+  },
+
+  // =========================
+  // STATES
+  // =========================
+  states: {
+    // Admin
+    list: "/api/v1/dashboard/location/states/", // GET (paginated)
+    create: "/api/v1/dashboard/location/states/", // POST
+    update: (stateId: string | number) =>
+      `/api/v1/dashboard/location/states/${stateId}/`, // PATCH
+    delete: (stateId: string | number) =>
+      `/api/v1/dashboard/location/states/${stateId}/`, // DELETE
+
+    // Public
+    dropdownList: "/api/v1/dashboard/location/states/list/", // GET (simple list)
+  },
+
+  // =========================
+  // ZONES
+  // =========================
+  zones: {
+    // Admin
+    list: "/api/v1/dashboard/location/zones/", // GET (paginated)
+    create: "/api/v1/dashboard/location/zones/", // POST
+    update: (zoneId: string | number) =>
+      `/api/v1/dashboard/location/zones/${zoneId}/`, // PATCH
+    delete: (zoneId: string | number) =>
+      `/api/v1/dashboard/location/zones/${zoneId}/`, // DELETE
+
+    // Public
+    dropdownList: "/api/v1/dashboard/location/zones/list/", // GET (simple list)
+  },
+
+  // =========================
+  // DISTRICTS
+  // =========================
+  districts: {
+    // Admin
+    list: "/api/v1/dashboard/location/districts/", // GET (paginated)
+    create: "/api/v1/dashboard/location/districts/", // POST
+    update: (districtId: string | number) =>
+      `/api/v1/dashboard/location/districts/${districtId}/`, // PATCH
+    delete: (districtId: string | number) =>
+      `/api/v1/dashboard/location/districts/${districtId}/`,
+  }, // DELETE
   // Manage Roles Endpoints
   // ============================================
   manageRoles: {
@@ -560,6 +619,15 @@ export const endpoints = {
     baseTemplate: "/api/v1/dashboard/roles/base-template/",
     /** POST - Bulk assign from Excel upload */
     bulkAssignExcel: "/api/v1/dashboard/roles/bulk-assign-excel/",
+  },
+  // channels
+  channels: {
+    List: "/api/v1/dashboard/channels/",
+    Create: "/api/v1/dashboard/channels/",
+    update: (channel_id: string | number) =>
+      `/api/v1/dashboard/channels/${channel_id}/`,
+    delete: (channel_id: string | number) =>
+      `/api/v1/dashboard/channels/${channel_id}/`,
   },
 } as const;
 
