@@ -43,6 +43,7 @@ type TableProps = {
   modalDeleteContent?: string;
   modalTypeContent?: string;
   customCellRender?: (column: string, row: Data) => ReactElement | null;
+  slNoCellClassName?: string;
   customActionRender?: (row: Data) => ReactElement | null;
 };
 
@@ -166,7 +167,9 @@ const Table: FC<TableProps> = (props) => {
                   key={`${rowData.id ?? index}`}
                   className="odd:bg-muted/70 even:bg-transparent"
                 >
-                  <td className="border-b border-border px-3.5 py-3 w-16">
+                  <td
+                    className={`border-b border-border px-3.5 py-3 w-16 ${props.slNoCellClassName ?? ""}`}
+                  >
                     {startIndex + index + 1}
                   </td>
                   {props.columnOrder.map((column) => (

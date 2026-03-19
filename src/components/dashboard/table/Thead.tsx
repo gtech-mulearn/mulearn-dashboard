@@ -12,6 +12,8 @@ interface TableHeadProps {
   onIconClick: (column: string) => void;
   action: boolean;
   verify?: boolean;
+  thClassName?: string;
+  slNoClassName?: string;
 }
 
 const THead = ({
@@ -19,16 +21,20 @@ const THead = ({
   onIconClick,
   action,
   verify = false,
+  thClassName = "",
+  slNoClassName = "w-16",
 }: TableHeadProps) => {
   return (
     <thead>
       <tr>
-        <th className="border-b border-border px-3.5 py-3 text-left text-sm font-bold uppercase tracking-wider w-16">
+        <th
+          className={`border-b border-border px-3.5 py-3 text-left text-sm font-bold uppercase tracking-wider ${slNoClassName} ${thClassName}`}
+        >
           Sl.no
         </th>
         {columnOrder.map((column) => (
           <th
-            className={`border-b border-border px-3.5 py-3 text-left text-sm font-bold tracking-wider ${column.width || ""}`}
+            className={`border-b border-border px-3.5 py-3 text-left text-sm font-bold tracking-wider ${column.width || ""} ${thClassName}`}
             key={column.column}
           >
             <div className="flex items-center gap-2">
