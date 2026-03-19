@@ -1,5 +1,12 @@
-import { EventForm } from "@/features/events";
+"use client";
+
+import { useRouter } from "next/navigation";
+import { EventModal } from "@/features/events";
 
 export default function CreateEventPage() {
-  return <EventForm />;
+  const router = useRouter();
+
+  return (
+    <EventModal open onClose={() => router.push("/dashboard/events/manage")} />
+  );
 }

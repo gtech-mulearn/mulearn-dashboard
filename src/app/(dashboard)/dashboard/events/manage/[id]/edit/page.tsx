@@ -4,8 +4,7 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { use } from "react";
 import { Button } from "@/components/ui/button";
-import { EventForm } from "@/features/events";
-import { useManageEvent } from "@/features/events/hooks/events.hooks";
+import { EventModal, useManageEventDetail } from "@/features/events";
 
 interface EditEventPageProps {
   params: Promise<{ id: string }>;
@@ -13,7 +12,7 @@ interface EditEventPageProps {
 
 export default function EditEventPage(props: EditEventPageProps) {
   const { id } = use(props.params);
-  const { data: event, isLoading, error } = useManageEvent(id);
+  const { data: event, isLoading, error } = useManageEventDetail(id);
 
   if (isLoading) {
     return (
@@ -38,5 +37,14 @@ export default function EditEventPage(props: EditEventPageProps) {
     );
   }
 
-  return <EventForm initialData={event} />;
+  return (
+    <EventModal
+      open
+      onClose={() => {
+        window.location.href = "/dashboard/events/manage";
+      }}
+      initialData={event}
+      isEdit
+    />
+  );
 }

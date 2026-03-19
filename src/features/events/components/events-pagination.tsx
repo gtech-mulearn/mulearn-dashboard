@@ -2,17 +2,10 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-interface Pagination {
-  count: number;
-  totalPages: number;
-  isNext: boolean;
-  isPrev: boolean;
-  nextPage?: number | null;
-}
+import type { PaginationMeta } from "../types";
 
 interface EventsPaginationProps {
-  pagination: Pagination | undefined;
+  pagination: PaginationMeta | undefined;
   currentPage: number;
   onPageChange: (page: number) => void;
   itemsPerPage?: number;

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Loader from "@/app/loading";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { EventType, IGCluster } from "@/features/events";
 import {
   EventsFilters,
   EventsGrid,
@@ -10,24 +11,25 @@ import {
 } from "@/features/events";
 
 export default function EventsPage() {
-  const [activeTab, setActiveTab] = useState("active");
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedCategory, setSelectedCategory] = useState("All Category");
-  const [searchQuery, setSearchQuery] = useState("");
-
-  const { data, isLoading } = useEventsList(
-    currentPage,
-    activeTab !== "active" ? activeTab : undefined,
-    selectedCategory !== "All Category" ? selectedCategory : undefined,
+  const [search, setSearch] = useState("");
+  const [selectedCluster, setSelectedCluster] = useState<IGCluster | "all">(
+    "all",
   );
+  const [selectedEventType, setSelectedEventType] = useState<EventType | "all">(
+    "all",
+  );
+
+  const { data, isLoading } = useEventsList({
+    page: currentPage,
+    search: search || undefined,
+    cluster: selectedCluster === "all" ? undefined : selectedCluster,
+    event_type: selectedEventType === "all" ? undefined : selectedEventType,
+    sortBy: "-start_datetime",
+  });
 
   const events = data?.data ?? [];
   const pagination = data?.pagination;
-
-  const handleTabChange = (tab: string) => {
-    setActiveTab(tab);
-    setCurrentPage(1);
-  };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -44,18 +46,21 @@ export default function EventsPage() {
 
       <div className="mb-6">
         <EventsFilters
-          activeTab={activeTab}
-          onTabChange={handleTabChange}
-          onSearch={setSearchQuery}
-          onCategoryChange={setSelectedCategory}
-          selectedCategory={selectedCategory}
+          onSearch={setSearch}
+          selectedCluster={selectedCluster}
+          onClusterChange={setSelectedCluster}
+          selectedEventType={selectedEventType}
+          onEventTypeChange={setSelectedEventType}
         />
       </div>
 
       <div className="mb-6">
         {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Skeleton className="h-72 rounded-xl" />
+            <Skeleton className="h-72 rounded-xl" />
+            <Skeleton className="h-72 rounded-xl" />
+            <Skeleton className="h-72 rounded-xl" />
           </div>
         ) : (
           <EventsGrid events={events} />

@@ -16,7 +16,7 @@ import {
   Users,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import type { EventType } from "../schemas/events.schema";
+import type { EventType } from "../types";
 
 const typeConfig: Record<
   EventType,

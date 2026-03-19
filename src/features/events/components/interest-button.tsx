@@ -1,65 +1,38 @@
-/**
- * Interest Button
- *
- * 📍 src/features/events/components/interest-button.tsx
- *
- * "I'm Going" toggle button with optimistic UI. Uses auth check.
- */
-
 "use client";
 
-import { Heart, HeartOff, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useMarkInterest, useRemoveInterest } from "../hooks/events.hooks";
-import type { ViewerInterestStatus } from "../schemas/events.schema";
+import { useToggleInterest } from "../hooks";
+import type { ViewerInterestStatus } from "../types";
 
 interface InterestButtonProps {
   eventId: string;
-  interestStatus: ViewerInterestStatus | null;
-  interestCount: number;
-  className?: string;
+  status: ViewerInterestStatus | null;
+  count: number;
+  disabled?: boolean;
 }
 
 export function InterestButton({
   eventId,
-  interestStatus,
-  interestCount,
-  className,
+  status,
+  count,
+  disabled,
 }: InterestButtonProps) {
-  const markInterest = useMarkInterest();
-  const removeInterest = useRemoveInterest();
-
-  const isInterested = interestStatus === "interested";
-  const isPending = markInterest.isPending || removeInterest.isPending;
-
-  const handleToggle = () => {
-    if (isPending) return;
-    if (isInterested) {
-      removeInterest.mutate(eventId);
-    } else {
-      markInterest.mutate(eventId);
-    }
-  };
+  const mutation = useToggleInterest(eventId);
+  const isInterested = status === "interested";
 
   return (
     <Button
+      type="button"
       variant={isInterested ? "default" : "outline"}
-      size="sm"
-      className={`gap-2 ${className ?? ""}`}
-      onClick={handleToggle}
-      disabled={isPending}
+      className={isInterested ? "bg-pink-600 hover:bg-pink-700 text-white" : ""}
+      disabled={disabled || mutation.isPending}
+      onClick={() => mutation.mutate(status)}
     >
-      {isPending ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
-      ) : isInterested ? (
-        <Heart className="h-4 w-4 fill-current" />
-      ) : (
-        <HeartOff className="h-4 w-4" />
-      )}
-      {isInterested ? "Going" : "I'm Going"}
-      {interestCount > 0 && (
-        <span className="text-xs opacity-70">({interestCount})</span>
-      )}
+      {mutation.isPending ? (
+        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+      ) : null}
+      {isInterested ? `Going · ${count}` : `I'm Going · ${count}`}
     </Button>
   );
 }

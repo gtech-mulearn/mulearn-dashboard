@@ -1,46 +1,254 @@
 import { z } from "zod";
 
-export const eventTagsSchema = z
-  .object({
-    topics: z.array(z.string()).optional(),
-    level: z.string().optional(),
-    tracks: z.array(z.string()).optional(),
-    featured: z.boolean().optional(),
-  })
-  .passthrough();
+// ─── VENUE TYPE SCHEMA ──────────────────────────────────────────────────────
 
-export const createEventSchema = z.object({
-  name: z.string().min(1, "Event name is required").max(200, "Name too long"),
-  description: z.string().min(1, "Description is required"),
-  registration_start_date: z.string().optional(),
-  registration_end_date: z.string().optional(),
-  event_start_date: z.string().optional(),
-  event_end_date: z.string().optional(),
-  event_start_time: z.string().optional().default("09:00:00"),
-  event_end_time: z.string().optional().default("18:00:00"),
-  user_limit: z.number().min(0).optional(),
-  event_type: z.enum(["online", "offline", "hybrid"]),
-  ticket_type: z.enum(["free", "paid", "karma"]),
-  cover_image: z.string().url("Invalid image URL").optional().or(z.literal("")),
-  location_name: z.string().optional(),
-  location_address: z.string().optional(),
-  ticket_value: z.number().min(0).optional(),
-  link: z.string().url("Invalid URL").optional().or(z.literal("")),
-  tag: eventTagsSchema.optional(),
-  category: z.string().uuid("Invalid category ID").optional().or(z.literal("")),
-});
+export const venueTypeSchema = z.enum(["physical", "online", "hybrid"]);
+
+// ─── CREATE/UPDATE EVENT SCHEMA ─────────────────────────────────────────────
+
+export const createEventSchema = z
+  .object({
+    title: z.string().min(1, "Title is required").max(200, "Title too long"),
+    description: z.string().min(1, "Description is required"),
+    event_type: z
+      .enum([
+        "workshop",
+        "webinar",
+        "hackathon",
+        "meetup",
+        "competition",
+        "social_gathering",
+        "other",
+      ])
+      .optional(),
+    scope: z.enum(["global", "campus", "ig", "campus_ig"]),
+    organiser_type: z.enum([
+      "global_ig",
+      "campus_ig",
+      "campus",
+      "company",
+      "admin",
+    ]),
+    organiser_ig_id: z.string().uuid().optional(),
+    organiser_campus_id: z.string().uuid().optional(),
+    organiser_campus_ig_id: z.string().uuid().optional(),
+    organiser_company_id: z.string().uuid().optional(),
+    start_datetime: z.string(),
+    end_datetime: z.string(),
+    venue_type: z.enum(["physical", "online", "hybrid"]),
+    address: z
+      .union([z.string(), z.literal("")])
+      .optional()
+      .transform((v) => (v === "" ? null : v)),
+    city: z
+      .union([z.string(), z.literal("")])
+      .optional()
+      .transform((v) => (v === "" ? null : v)),
+    maps_url: z
+      .union([z.string(), z.literal("")])
+      .optional()
+      .transform((v) => (v === "" ? null : v)),
+    online_link: z
+      .union([z.string(), z.literal("")])
+      .optional()
+      .transform((v) => (v === "" ? null : v)),
+    platform: z
+      .union([z.string(), z.literal("")])
+      .optional()
+      .transform((v) => (v === "" ? null : v)),
+    cover_image: z
+      .union([z.string().url("Invalid URL"), z.literal("")])
+      .optional()
+      .transform((v) => (v === "" ? null : v)),
+    banner_image: z
+      .union([z.string().url("Invalid URL"), z.literal("")])
+      .optional()
+      .transform((v) => (v === "" ? null : v)),
+    registration_url: z
+      .union([z.string().url("Invalid URL"), z.literal("")])
+      .optional()
+      .transform((v) => (v === "" ? null : v)),
+    registration_deadline: z
+      .string()
+      .datetime({ offset: true })
+      .nullable()
+      .optional(),
+    min_karma: z.number().int().min(0).nullable().optional(),
+    linked_tasks: z
+      .array(
+        z.object({
+          task_id: z.string().uuid(),
+        }),
+      )
+      .optional(),
+    co_owners: z
+      .array(
+        z.object({
+          user_id: z.string().uuid(),
+          role: z.enum(["co_owner", "admin"]).optional(),
+        }),
+      )
+      .optional(),
+    is_collaboration: z.boolean().optional().default(false),
+    target_campus_id: z.string().uuid().nullable().optional(),
+    target_ig_id: z.string().uuid().nullable().optional(),
+    target_campus_ig_id: z.string().uuid().nullable().optional(),
+    tags: z.array(z.string()).optional(),
+    is_featured: z.boolean().optional(),
+  })
+  .superRefine((data, ctx) => {
+    // Validate organiser_type → entity ID pairing
+    if (data.organiser_type === "global_ig" && !data.organiser_ig_id) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["organiser_ig_id"],
+        message: "Organiser IG is required for global_ig",
+      });
+    }
+    if (data.organiser_type === "campus" && !data.organiser_campus_id) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["organiser_campus_id"],
+        message: "Organiser campus is required for campus",
+      });
+    }
+    if (data.organiser_type === "campus_ig" && !data.organiser_campus_ig_id) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["organiser_campus_ig_id"],
+        message: "Organiser campus IG is required for campus_ig",
+      });
+    }
+    if (data.organiser_type === "company" && !data.organiser_company_id) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["organiser_company_id"],
+        message: "Organiser company is required for company",
+      });
+    }
+
+    // Validate scope → target ID pairing
+    if (data.scope === "campus" && !data.target_campus_id) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["target_campus_id"],
+        message: "Target campus is required for campus scope",
+      });
+    }
+    if (data.scope === "ig" && !data.target_ig_id) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["target_ig_id"],
+        message: "Target IG is required for IG scope",
+      });
+    }
+    if (data.scope === "campus_ig" && !data.target_campus_ig_id) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["target_campus_ig_id"],
+        message: "Target campus IG is required for campus_ig scope",
+      });
+    }
+
+    // Validate venue_type → required fields
+    if (data.venue_type === "physical" && !data.address) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["address"],
+        message: "Address is required for physical venues",
+      });
+    }
+    if (data.venue_type === "physical" && !data.city) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["city"],
+        message: "City is required for physical venues",
+      });
+    }
+    if (data.venue_type === "online" && !data.online_link) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["online_link"],
+        message: "Online link is required for online venues",
+      });
+    }
+    if (data.venue_type === "online" && !data.platform) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["platform"],
+        message: "Platform is required for online venues",
+      });
+    }
+
+    // Validate end_datetime > start_datetime
+    if (data.start_datetime && data.end_datetime) {
+      const start = new Date(data.start_datetime).getTime();
+      const end = new Date(data.end_datetime).getTime();
+      if (end <= start) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["end_datetime"],
+          message: "End datetime must be after start datetime",
+        });
+      }
+    }
+  });
 
 export const updateEventSchema = createEventSchema.partial();
 
+// ─── EVENT LIST PARAMS SCHEMA ──────────────────────────────────────────────
+
 export const eventListParamsSchema = z.object({
-  page: z.number().min(1).optional().default(1),
-  page_size: z.number().min(1).max(100).optional().default(10),
-  status: z
-    .enum(["upcoming", "active", "request", "past", "draft", "completed"])
-    .optional(),
-  event_type: z.enum(["online", "offline", "hybrid"]).optional(),
+  page: z.number().min(1).optional(),
+  perPage: z.number().min(1).max(100).optional(),
   search: z.string().optional(),
+  event_type: z
+    .enum([
+      "workshop",
+      "webinar",
+      "hackathon",
+      "meetup",
+      "competition",
+      "social_gathering",
+      "other",
+    ])
+    .optional(),
+  scope: z.enum(["global", "campus", "ig", "campus_ig"]).optional(),
+  status: z
+    .enum([
+      "draft",
+      "pending_campus_approval",
+      "pending_approval",
+      "pending_mentor_approval",
+      "published",
+      "ongoing",
+      "completed",
+      "cancelled",
+    ])
+    .optional(),
+  ig_id: z.string().uuid().optional(),
+  campus_id: z.string().uuid().optional(),
+  company_id: z.string().uuid().optional(),
+  campus_ig_id: z.string().uuid().optional(),
+  cluster: z.enum(["coder", "maker", "manager", "creative"]).optional(),
+  is_featured: z.boolean().optional(),
+  tags: z.string().optional(),
+  eligible_only: z.boolean().optional(),
+  start_date: z.string().optional(),
+  end_date: z.string().optional(),
+  sortBy: z
+    .enum([
+      "start_datetime",
+      "-start_datetime",
+      "created_at",
+      "-created_at",
+      "interest_count",
+      "-interest_count",
+    ])
+    .optional(),
 });
+
+// ─── TYPE EXPORTS ──────────────────────────────────────────────────────────
 
 export type CreateEventSchema = z.infer<typeof createEventSchema>;
 export type UpdateEventSchema = z.infer<typeof updateEventSchema>;

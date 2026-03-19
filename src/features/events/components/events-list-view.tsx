@@ -1,85 +1,82 @@
-/**
- * Events List View
- *
- * 📍 src/features/events/components/events-list-view.tsx
- *
- * Top-level view component for the public events listing page.
- * Manages URL-synced filter/pagination state and composes
- * EventsFilters, EventsGrid, and EventsPagination.
- */
-
 "use client";
 
-import { useCallback, useState } from "react";
+import { useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useEvents } from "../hooks/events.hooks";
-import type { EventListQueryParams } from "../schemas/events.schema";
+import { useDebounce } from "@/hooks/use-debounce";
+import { useEventsList } from "../hooks";
+import type { EventType, IGCluster } from "../types";
 import { EventsFilters } from "./events-filters";
 import { EventsGrid } from "./events-grid";
 import { EventsPagination } from "./events-pagination";
 
 export function EventsListView() {
-  const [params, setParams] = useState<EventListQueryParams>({
-    pageIndex: 1,
-    perPage: 12,
-  });
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [cluster, setCluster] = useState<IGCluster | "all">("all");
+  const [eventType, setEventType] = useState<EventType | "all">("all");
 
-  const { data, isLoading } = useEvents(params);
+  const debouncedSearch = useDebounce(search, 300);
 
+  const params = useMemo(
+    () => ({
+      page,
+      perPage: 8,
+      search: debouncedSearch || undefined,
+      cluster: cluster === "all" ? undefined : cluster,
+      event_type: eventType === "all" ? undefined : eventType,
+    }),
+    [cluster, debouncedSearch, eventType, page],
+  );
+
+  const { data, isLoading, isError, error, refetch } = useEventsList(params);
   const events = data?.data ?? [];
-  const pagination = data?.pagination;
-
-  const handleParamsChange = useCallback(
-    (patch: Partial<EventListQueryParams>) => {
-      setParams((prev) => ({ ...prev, ...patch }));
-    },
-    [],
-  );
-
-  const handlePageChange = useCallback(
-    (page: number) => {
-      handleParamsChange({ pageIndex: page });
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    },
-    [handleParamsChange],
-  );
 
   return (
-    <main className="flex-1 p-6 md:p-8 space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Events</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Discover workshops, hackathons, meetups, and more.
-        </p>
-      </div>
+    <div className="space-y-6">
+      <EventsFilters
+        onSearch={(value) => {
+          setSearch(value);
+          setPage(1);
+        }}
+        selectedCluster={cluster}
+        onClusterChange={(value) => {
+          setCluster(value);
+          setPage(1);
+        }}
+        selectedEventType={eventType}
+        onEventTypeChange={(value) => {
+          setEventType(value);
+          setPage(1);
+        }}
+      />
 
-      {/* Filters */}
-      <EventsFilters params={params} onParamsChange={handleParamsChange} />
-
-      {/* Grid */}
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          <Skeleton className="h-72 rounded-lg" />
-          <Skeleton className="h-72 rounded-lg" />
-          <Skeleton className="h-72 rounded-lg" />
-          <Skeleton className="h-72 rounded-lg" />
-          <Skeleton className="h-72 rounded-lg" />
-          <Skeleton className="h-72 rounded-lg" />
-          <Skeleton className="h-72 rounded-lg" />
-          <Skeleton className="h-72 rounded-lg" />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Skeleton className="h-72 rounded-xl" />
+          <Skeleton className="h-72 rounded-xl" />
+          <Skeleton className="h-72 rounded-xl" />
+          <Skeleton className="h-72 rounded-xl" />
+        </div>
+      ) : isError ? (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
+          <p className="text-sm">
+            {error instanceof Error ? error.message : "Failed to load events"}
+          </p>
+          <Button className="mt-3" variant="outline" onClick={() => refetch()}>
+            Retry
+          </Button>
         </div>
       ) : (
-        <EventsGrid events={events} />
+        <>
+          <EventsGrid events={events} />
+          <EventsPagination
+            pagination={data?.pagination}
+            currentPage={page}
+            onPageChange={(value) => setPage(value)}
+          />
+        </>
       )}
-
-      {/* Pagination */}
-      <EventsPagination
-        pagination={pagination}
-        currentPage={params.pageIndex ?? 1}
-        onPageChange={handlePageChange}
-        perPage={params.perPage}
-      />
-    </main>
+    </div>
   );
 }

@@ -9,7 +9,7 @@
  * Depends on: ../schemas (types only)
  */
 
-import type { EventListQueryParams, IGCluster } from "../schemas/events.schema";
+import type { EventListQueryParams, IGCluster } from "../types";
 
 export const eventKeys = {
   /** Root key — invalidating this clears ALL event-related cache */
