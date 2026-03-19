@@ -5,6 +5,7 @@ import {
   Legend,
   Pie,
   PieChart,
+  type PieLabelRenderProps,
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
@@ -38,7 +39,9 @@ export function BrowserBreakdown({ data }: BrowserBreakdownProps) {
             cx="50%"
             cy="50%"
             labelLine={false}
-            label={({ name, value }) => `${name}: ${value}`}
+            label={({ name, value }: PieLabelRenderProps) =>
+              `${name ?? ""}: ${value ?? 0}`
+            }
             outerRadius={80}
             fill="#8884d8"
             dataKey="value"

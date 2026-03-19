@@ -12,6 +12,7 @@
 import { useRouter } from "next/navigation";
 import { type ReactNode, useEffect } from "react";
 import { useUserInfo } from "@/features/auth";
+import { useAuthStore } from "@/stores/auth-store";
 import Loader from "../loading";
 
 interface OnboardingGuardProps {
@@ -21,6 +22,14 @@ interface OnboardingGuardProps {
 export function OnboardingGuard({ children }: OnboardingGuardProps) {
   const router = useRouter();
   const { data: user, isLoading, isError } = useUserInfo();
+  const { setRole } = useAuthStore();
+
+  useEffect(() => {
+    if (user?.roles) {
+      const primaryRole = user.roles[0]?.toLowerCase();
+      if (primaryRole) setRole(primaryRole);
+    }
+  }, [user, setRole]);
 
   useEffect(() => {
     if (isLoading) return;
