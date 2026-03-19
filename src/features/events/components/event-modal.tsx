@@ -10,7 +10,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateEvent, useUpdateEvent } from "../hooks/events.hooks";
-import type { Event } from "../types/events.types";
+import type {
+  CreateEventPayload,
+  Event,
+  UpdateEventPayload,
+} from "../types/events.types";
 
 interface EventModalProps {
   open: boolean;
@@ -47,10 +51,34 @@ const EventModal: React.FC<EventModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const ticketValue =
+      form.ticket_value !== undefined && form.ticket_value !== null
+        ? Number(form.ticket_value)
+        : undefined;
+    const payload: CreateEventPayload = {
+      name: form.name || "",
+      description: form.description || "",
+      event_type: form.event_type || "online",
+      ticket_type: form.ticket_type || "free",
+      registration_start_date: form.registration_start_date || undefined,
+      registration_end_date: form.registration_end_date || undefined,
+      event_start_date: form.event_start_date || undefined,
+      event_end_date: form.event_end_date || undefined,
+      event_start_time: form.event_start_time || undefined,
+      event_end_time: form.event_end_time || undefined,
+      user_limit: form.user_limit ?? undefined,
+      cover_image: form.cover_image || undefined,
+      location_name: form.location_name || undefined,
+      location_address: form.location_address || undefined,
+      ticket_value: Number.isNaN(ticketValue) ? undefined : ticketValue,
+      link: form.link || undefined,
+      category: form.category || undefined,
+      tag: form.tags || undefined,
+    };
     if (isEdit && form.id) {
-      await updateEvent.mutateAsync(form as any);
+      await updateEvent.mutateAsync(payload as UpdateEventPayload);
     } else {
-      await createEvent.mutateAsync(form as any);
+      await createEvent.mutateAsync(payload);
     }
     onClose();
   };

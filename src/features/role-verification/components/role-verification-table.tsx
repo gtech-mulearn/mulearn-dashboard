@@ -13,6 +13,8 @@ import {
 } from "../hooks/use-role-verification";
 import { RoleVerificationActions } from "./role-verification-actions";
 import { Badge } from "@/components/ui/badge";
+import type { RoleVerificationItem } from "../schemas";
+import type { Data } from "@/components/dashboard/table/Table";
 
 const COLUMN_ORDER = [
   { column: "full_name", Label: "Full Name", isSortable: true },
@@ -41,7 +43,7 @@ export function RoleVerificationTable() {
   const pagination = data?.pagination;
 
   // Transform rows to match the Table Data type
-  const tableRows = rows.map((row) => ({
+  const tableRows: Data[] = rows.map((row: RoleVerificationItem) => ({
     ...row,
     id: row.id,
     discord_id: row.discord_id || "N/A",
@@ -83,17 +85,17 @@ export function RoleVerificationTable() {
       />
 
       <Table
-        rows={tableRows as any}
+        rows={tableRows}
         isloading={isLoading}
         page={page}
         perPage={perPage}
         columnOrder={COLUMN_ORDER}
         id={["id"]}
         customActionRender={(row) => (
-          <RoleVerificationActions item={row as any} />
+          <RoleVerificationActions item={row as RoleVerificationItem} />
         )}
         customCellRender={(column, row) => {
-          const rowData = row as any;
+          const rowData = row as RoleVerificationItem;
           if (column === "verified") {
             return rowData.verified ? (
               <Badge

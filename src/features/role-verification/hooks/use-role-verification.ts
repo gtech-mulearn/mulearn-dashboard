@@ -11,18 +11,20 @@ import {
   updateRoleVerification,
 } from "../api/role-verification.api";
 
-export const ROLE_VERIFICATION_KEYS = {
-  all: ["role-verifications"] as const,
-  list: (params: any) =>
-    [...ROLE_VERIFICATION_KEYS.all, "list", params] as const,
-};
-
-export function useRoleVerifications(params: {
+export type RoleVerificationListParams = {
   pageIndex: number;
   perPage: number;
   search?: string;
   sortBy?: string;
-}) {
+};
+
+export const ROLE_VERIFICATION_KEYS = {
+  all: ["role-verifications"] as const,
+  list: (params: RoleVerificationListParams) =>
+    [...ROLE_VERIFICATION_KEYS.all, "list", params] as const,
+};
+
+export function useRoleVerifications(params: RoleVerificationListParams) {
   return useQuery({
     queryKey: ROLE_VERIFICATION_KEYS.list(params),
     queryFn: () => fetchRoleVerifications(params),
