@@ -74,7 +74,7 @@ export function EventCard({ event, onDelete, onEdit }: EventCardProps) {
 
       <div className="absolute left-3 right-3 top-3 flex items-start justify-between">
         <Badge variant="secondary" className="capitalize">
-          {event.event_type.replace(/_/g, " ")}
+          {event.event_type?.replace(/_/g, " ") ?? ""}
         </Badge>
         <EventStatusBadge status={event.status} />
       </div>

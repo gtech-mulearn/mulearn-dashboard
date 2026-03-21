@@ -6,97 +6,103 @@ export const venueTypeSchema = z.enum(["physical", "online", "hybrid"]);
 
 // ─── CREATE/UPDATE EVENT SCHEMA ─────────────────────────────────────────────
 
-export const createEventSchema = z
-  .object({
-    title: z.string().min(1, "Title is required").max(200, "Title too long"),
-    description: z.string().min(1, "Description is required"),
-    event_type: z
-      .enum([
-        "workshop",
-        "webinar",
-        "hackathon",
-        "meetup",
-        "competition",
-        "social_gathering",
-        "other",
-      ])
-      .optional(),
-    scope: z.enum(["global", "campus", "ig", "campus_ig"]),
-    organiser_type: z.enum([
-      "global_ig",
-      "campus_ig",
-      "campus",
-      "company",
-      "admin",
-    ]),
-    organiser_ig_id: z.string().uuid().optional(),
-    organiser_campus_id: z.string().uuid().optional(),
-    organiser_campus_ig_id: z.string().uuid().optional(),
-    organiser_company_id: z.string().uuid().optional(),
-    start_datetime: z.string(),
-    end_datetime: z.string(),
-    venue_type: z.enum(["physical", "online", "hybrid"]),
-    address: z
-      .union([z.string(), z.literal("")])
-      .optional()
-      .transform((v) => (v === "" ? null : v)),
-    city: z
-      .union([z.string(), z.literal("")])
-      .optional()
-      .transform((v) => (v === "" ? null : v)),
-    maps_url: z
-      .union([z.string(), z.literal("")])
-      .optional()
-      .transform((v) => (v === "" ? null : v)),
-    online_link: z
-      .union([z.string(), z.literal("")])
-      .optional()
-      .transform((v) => (v === "" ? null : v)),
-    platform: z
-      .union([z.string(), z.literal("")])
-      .optional()
-      .transform((v) => (v === "" ? null : v)),
-    cover_image: z
-      .union([z.string().url("Invalid URL"), z.literal("")])
-      .optional()
-      .transform((v) => (v === "" ? null : v)),
-    banner_image: z
-      .union([z.string().url("Invalid URL"), z.literal("")])
-      .optional()
-      .transform((v) => (v === "" ? null : v)),
-    registration_url: z
-      .union([z.string().url("Invalid URL"), z.literal("")])
-      .optional()
-      .transform((v) => (v === "" ? null : v)),
-    registration_deadline: z
-      .string()
-      .datetime({ offset: true })
-      .nullable()
-      .optional(),
-    min_karma: z.number().int().min(0).nullable().optional(),
-    linked_tasks: z
-      .array(
-        z.object({
-          task_id: z.string().uuid(),
-        }),
-      )
-      .optional(),
-    co_owners: z
-      .array(
-        z.object({
-          user_id: z.string().uuid(),
-          role: z.enum(["co_owner", "admin"]).optional(),
-        }),
-      )
-      .optional(),
-    is_collaboration: z.boolean().optional().default(false),
-    target_campus_id: z.string().uuid().nullable().optional(),
-    target_ig_id: z.string().uuid().nullable().optional(),
-    target_campus_ig_id: z.string().uuid().nullable().optional(),
-    tags: z.array(z.string()).optional(),
-    is_featured: z.boolean().optional(),
-  })
-  .superRefine((data, ctx) => {
+// Base object shape — kept separate so .partial() can be called without hitting
+// the Zod restriction: ".partial() cannot be used on object schemas containing refinements"
+const createEventBaseSchema = z.object({
+  title: z.string().min(1, "Title is required").max(200, "Title too long"),
+  description: z.string().min(1, "Description is required"),
+  event_type: z
+    .enum([
+      "workshop",
+      "webinar",
+      "hackathon",
+      "meetup",
+      "competition",
+      "social_gathering",
+      "other",
+    ])
+    .optional(),
+  scope: z.enum(["global", "campus", "ig", "campus_ig"]),
+  organiser_type: z.enum([
+    "global_ig",
+    "campus_ig",
+    "campus",
+    "company",
+    "admin",
+  ]),
+  organiser_ig_id: z.string().uuid().optional(),
+  organiser_campus_id: z.string().uuid().optional(),
+  organiser_campus_ig_id: z.string().uuid().optional(),
+  organiser_company_id: z.string().uuid().optional(),
+  start_datetime: z.string(),
+  end_datetime: z.string(),
+  venue_type: z.enum(["physical", "online", "hybrid"]),
+  address: z
+    .union([z.string(), z.literal("")])
+    .optional()
+    .transform((v) => (v === "" ? null : v)),
+  city: z
+    .union([z.string(), z.literal("")])
+    .optional()
+    .transform((v) => (v === "" ? null : v)),
+  maps_url: z
+    .union([z.string(), z.literal("")])
+    .optional()
+    .transform((v) => (v === "" ? null : v)),
+  online_link: z
+    .union([z.string(), z.literal("")])
+    .optional()
+    .transform((v) => (v === "" ? null : v)),
+  platform: z
+    .union([z.string(), z.literal("")])
+    .optional()
+    .transform((v) => (v === "" ? null : v)),
+  cover_image: z
+    .union([z.string().url("Invalid URL"), z.literal("")])
+    .optional()
+    .transform((v) => (v === "" ? null : v)),
+  banner_image: z
+    .union([z.string().url("Invalid URL"), z.literal("")])
+    .optional()
+    .transform((v) => (v === "" ? null : v)),
+  registration_url: z
+    .union([z.string().url("Invalid URL"), z.literal("")])
+    .optional()
+    .transform((v) => (v === "" ? null : v)),
+  registration_deadline: z
+    .string()
+    .datetime({ offset: true })
+    .nullable()
+    .optional(),
+  min_karma: z.number().int().min(0).nullable().optional(),
+  linked_tasks: z
+    .array(
+      z.object({
+        task_id: z.string().uuid(),
+      }),
+    )
+    .optional(),
+  co_owners: z
+    .array(
+      z.object({
+        user_id: z.string().uuid(),
+        role: z.enum(["co_owner", "admin"]).optional(),
+      }),
+    )
+    .optional(),
+  is_collaboration: z.boolean().optional().default(false),
+  target_campus_id: z.string().uuid().nullable().optional(),
+  target_ig_id: z.string().uuid().nullable().optional(),
+  target_campus_ig_id: z.string().uuid().nullable().optional(),
+  tags: z.array(z.string()).optional(),
+  is_featured: z.boolean().optional(),
+});
+
+// Re-usable cross-field refinement logic
+function applyEventRefinements<T extends typeof createEventBaseSchema>(
+  schema: T,
+) {
+  return schema.superRefine((data, ctx) => {
     // Validate organiser_type → entity ID pairing
     if (data.organiser_type === "global_ig" && !data.organiser_ig_id) {
       ctx.addIssue({
@@ -193,8 +199,12 @@ export const createEventSchema = z
       }
     }
   });
+}
 
-export const updateEventSchema = createEventSchema.partial();
+export const createEventSchema = applyEventRefinements(createEventBaseSchema);
+
+// .partial() is called on the plain base object (no superRefine), which is valid in Zod
+export const updateEventSchema = createEventBaseSchema.partial();
 
 // ─── EVENT LIST PARAMS SCHEMA ──────────────────────────────────────────────
 
