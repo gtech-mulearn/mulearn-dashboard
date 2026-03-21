@@ -299,12 +299,12 @@ export const campusManageApi = {
     };
   },
 
-  async getKarmaByCluster(orgId: string): Promise<ClusterKarmaPoint[]> {
+  async getKarmaByCluster(orgId?: string): Promise<ClusterKarmaPoint[]> {
     if (!orgId) return [];
 
-    const raw = await apiClient.get<unknown>(
-      endpoints.campusManage.karmaByCluster(orgId),
-    );
+    const endpoint = endpoints.campusManage.karmaByCluster(orgId);
+
+    const raw = await apiClient.get<unknown>(endpoint);
 
     return unwrapDataArray(raw).map((item) => {
       const row = asRecord(item);
@@ -404,15 +404,17 @@ export const campusManageApi = {
 
     return unwrapDataArray(raw).map((item, index) => {
       const row = asRecord(item);
-      const rawId = safeToString(row.execom_id ?? row.id, "");
+      const rawId = safeToString(row.user_id ?? row.id ?? row.execom_id, "");
       return {
         id: rawId || `execom-${index}`,
-        name: safeToString(row.name ?? row.full_name, "-"),
+        name: safeToString(row.full_name ?? row.name, "-"),
+        muid: safeToString(row.muid, "-"),
         role: safeToString(row.role_title ?? row.role, "member"),
         igChapter: safeToString(
           row.ig_chapter ?? row.ig ?? row.chapter,
           "Campus",
         ),
+        profilePic: row.profile_pic ? safeToString(row.profile_pic) : null,
       };
     });
   },
@@ -463,12 +465,12 @@ export const campusManageApi = {
     );
   },
 
-  async getIgChapters(orgId: string): Promise<IgChapter[]> {
+  async getIgChapters(orgId?: string): Promise<IgChapter[]> {
     if (!orgId) return [];
 
-    const raw = await apiClient.get<unknown>(
-      endpoints.campusManage.igChapters(orgId),
-    );
+    const endpoint = endpoints.campusManage.igChapters(orgId);
+
+    const raw = await apiClient.get<unknown>(endpoint);
 
     return unwrapDataArray(raw).map((item, index) => {
       const row = asRecord(item);
@@ -487,7 +489,7 @@ export const campusManageApi = {
     });
   },
 
-  async getSocialLinks(orgId: string): Promise<SocialLinks> {
+  async getSocialLinks(orgId?: string): Promise<SocialLinks> {
     if (!orgId) {
       return {
         instagram: undefined,

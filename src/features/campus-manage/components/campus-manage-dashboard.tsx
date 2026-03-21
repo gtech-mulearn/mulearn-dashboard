@@ -32,6 +32,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -774,11 +775,25 @@ export function CampusManageDashboard() {
                         key={member.id}
                         className="flex items-center justify-between rounded-xl border border-border/60 p-3"
                       >
-                        <div>
-                          <p className="font-medium">{member.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {member.igChapter}
-                          </p>
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage
+                              src={member.profilePic || ""}
+                              alt={member.name}
+                            />
+                            <AvatarFallback>
+                              {member.name.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium">{member.name}</p>
+                            <p className="text-[10px] text-muted-foreground font-mono">
+                              {member.muid}
+                            </p>
+                            <p className="text-xs text-muted-foreground uppercase tracking-tight">
+                              {member.igChapter}
+                            </p>
+                          </div>
                         </div>
                         <div className="flex items-center gap-3">
                           <Badge variant="secondary">{member.role}</Badge>

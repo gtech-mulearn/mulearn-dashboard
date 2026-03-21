@@ -99,8 +99,10 @@ export interface IgChapter {
 export interface ExecomMember {
   id: string;
   name: string;
+  muid: string;
   role: string;
   igChapter: string;
+  profilePic: string | null;
 }
 
 export interface SocialLinks {

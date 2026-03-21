@@ -29,8 +29,7 @@ export function useCampusLeaderboard(filters: CampusLeaderboardFilters) {
 export function useKarmaByCluster(orgId?: string) {
   return useQuery({
     queryKey: campusManageKeys.karmaByCluster(orgId),
-    queryFn: () => campusManageApi.getKarmaByCluster(orgId || ""),
-    enabled: !!orgId,
+    queryFn: () => campusManageApi.getKarmaByCluster(orgId),
   });
 }
 
@@ -133,15 +132,13 @@ export function useChangeStudentType() {
 export function useIgChapters(orgId?: string) {
   return useQuery({
     queryKey: campusManageKeys.igChapters(orgId),
-    queryFn: () => campusManageApi.getIgChapters(orgId || ""),
-    enabled: !!orgId,
+    queryFn: () => campusManageApi.getIgChapters(orgId),
   });
 }
 
 export function useSocialLinks(orgId?: string) {
   return useQuery({
     queryKey: campusManageKeys.socialLinks(orgId),
-    queryFn: () => campusManageApi.getSocialLinks(orgId || ""),
-    enabled: !!orgId,
+    queryFn: () => campusManageApi.getSocialLinks(orgId),
   });
 }
