@@ -179,6 +179,71 @@ export const endpoints = {
   },
 
   // ============================================
+  // Campus Manage Endpoints
+  // ============================================
+  campusManage: {
+    // --- Campus Details ---
+    /** GET - Authenticated Campus Lead/Enabler's campus details */
+    details: "/api/v1/dashboard/campus/campus-details/",
+    /** GET - Public campus details for a specific org */
+    publicCampusDetail: (orgId: string) => `/api/v1/dashboard/campus/${orgId}/`,
+
+    // --- Students & Leaderboard ---
+    /** GET - Count of students in each MuLearn level */
+    studentLevel: "/api/v1/dashboard/campus/student-level/",
+    /** GET - Student levels for a specific org (public) */
+    studentLevelByOrg: (orgId: string) =>
+      `/api/v1/dashboard/campus/student-level/${orgId}/`,
+    /** GET - Paginated student details (supports is_alumni filter) */
+    studentDetails: "/api/v1/dashboard/campus/student-details/",
+    /** GET - Download student details as CSV */
+    studentDetailsCsv: "/api/v1/dashboard/campus/student-details/csv/",
+    /** GET - Paginated student leaderboard for a specific campus */
+    leaderboard: (orgId: string) =>
+      `/api/v1/dashboard/campus/${orgId}/leaderboard/`,
+
+    // --- Karma & Insights ---
+    /** GET - Weekly karma insights for the authenticated campus */
+    weeklyKarma: "/api/v1/dashboard/campus/weekly-karma/",
+    /** GET - Weekly karma for a specific org (public) */
+    weeklyKarmaByOrg: (orgId: string) =>
+      `/api/v1/dashboard/campus/weekly-karma/${orgId}/`,
+    /** GET - Karma distribution by cluster for a specific campus */
+    karmaByCluster: (orgId: string) =>
+      `/api/v1/dashboard/campus/${orgId}/karma-by-cluster/`,
+
+    // --- Role Management & Execom ---
+    /** GET - List Execom members | POST - Appoint a member to an Execom role */
+    execom: "/api/v1/dashboard/campus/execom/",
+    /** DELETE - Remove an Execom role from a member by role link ID */
+    execomDelete: (memberId: string) =>
+      `/api/v1/dashboard/campus/execom/${memberId}/`,
+    /** POST - Transfer the Campus Lead role to another user by MUID */
+    transferLeadRole: "/api/v1/dashboard/campus/transfer-lead-role/",
+    /** POST - Transfer the Lead Enabler role to another user */
+    transferEnablerRole: "/api/v1/dashboard/campus/transfer-enabler-role/",
+    /** GET - List active IG codes | POST - Appoint a new IG Lead */
+    transferIgRole: "/api/v1/dashboard/campus/transfer-ig-role/",
+
+    // --- Event Management ---
+    /** GET - Paginated campus events (supports status, scope, type, date filters) */
+    events: "/api/v1/dashboard/campus/events/",
+    /** GET - Ranked tag distribution across all campus events */
+    eventsDistribution: "/api/v1/dashboard/campus/events/distribution/",
+
+    // --- Other Utilities ---
+    /** PATCH - Update a student's type/status within the campus org */
+    changeStudentType: (memberId: string) =>
+      `/api/v1/dashboard/campus/change-student-type/${memberId}/`,
+    /** GET - Campus IG chapters */
+    igChapters: (orgId: string) =>
+      `/api/v1/dashboard/campus/${orgId}/ig-chapters/`,
+    /** GET - Campus social links */
+    socialLinks: (orgId: string) =>
+      `/api/v1/dashboard/campus/${orgId}/social-links/`,
+  },
+
+  // ============================================
   // Leaderboard Endpoints
   // ============================================
   leaderboard: {
