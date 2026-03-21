@@ -71,10 +71,16 @@ export interface CampusEvent {
   id: string;
   title: string;
   date: string;
+  endDate: string;
   tags: string[];
   interestCount: number;
   status: string;
   type: string;
+  scope: string;
+  organiserType: string;
+  venueType: string;
+  venueCity: string;
+  coverImage: string | null;
 }
 
 export interface CampusEventsResponse {

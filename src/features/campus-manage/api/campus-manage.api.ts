@@ -359,10 +359,24 @@ export const campusManageApi = {
         date: safeToString(
           row.start_datetime ?? row.date ?? row.event_start_date,
         ),
+        endDate: safeToString(
+          row.end_datetime ?? row.event_end_date ?? row.end_date,
+        ),
         tags,
         interestCount: toNumber(row.interest_count ?? row.interested_users),
         status: safeToString(row.status, "unknown"),
-        type: safeToString(row.event_type ?? row.type, "general"),
+        type: safeToString(
+          row.event_type ?? row.organiser_type ?? row.type,
+          "general",
+        ),
+        scope: safeToString(row.scope, "-"),
+        organiserType: safeToString(
+          row.organiser_type ?? row.organiserType,
+          "-",
+        ),
+        venueType: safeToString(row.venue_type ?? row.venueType, "-"),
+        venueCity: safeToString(row.venue_city ?? row.venueCity, "-"),
+        coverImage: row.cover_image ? safeToString(row.cover_image) : null,
       };
     });
 

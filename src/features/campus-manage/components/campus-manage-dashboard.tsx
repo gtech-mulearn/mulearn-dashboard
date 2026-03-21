@@ -594,7 +594,20 @@ export function CampusManageDashboard() {
             ) : (
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {events.map((event) => (
-                  <Card key={event.id} className="border-border/60">
+                  <Card
+                    key={event.id}
+                    className="overflow-hidden border-border/60"
+                  >
+                    {/* Cover image */}
+                    {event.coverImage && (
+                      <div className="h-36 w-full overflow-hidden bg-muted">
+                        <img
+                          src={event.coverImage}
+                          alt={event.title}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                    )}
                     <CardHeader className="space-y-2 pb-2">
                       <div className="flex items-start justify-between gap-2">
                         <CardTitle className="text-base leading-snug">
@@ -604,7 +617,8 @@ export function CampusManageDashboard() {
                           variant={
                             event.status === "completed"
                               ? "secondary"
-                              : event.status === "ongoing"
+                              : event.status === "ongoing" ||
+                                  event.status === "published"
                                 ? "default"
                                 : "outline"
                           }
@@ -613,34 +627,81 @@ export function CampusManageDashboard() {
                           {event.status}
                         </Badge>
                       </div>
+
+                      {/* Date range */}
                       <p className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <CalendarDays className="h-3 w-3" />
+                        <CalendarDays className="h-3 w-3 shrink-0" />
                         {event.date
                           ? new Date(event.date).toLocaleDateString()
                           : "Date TBD"}
+                        {event.endDate && event.endDate !== event.date && (
+                          <>
+                            {" → "}
+                            {new Date(event.endDate).toLocaleDateString()}
+                          </>
+                        )}
                       </p>
                     </CardHeader>
+
                     <CardContent className="space-y-3">
-                      <div className="flex flex-wrap gap-2">
+                      {/* Tags */}
+                      <div className="flex flex-wrap gap-1">
                         {event.tags.length > 0 ? (
                           event.tags.map((tag, index) => (
                             <Badge
                               key={`${event.id}-${tag || "tag"}-${index}`}
                               variant="outline"
+                              className="text-xs"
                             >
                               {tag}
                             </Badge>
                           ))
                         ) : (
-                          <Badge variant="outline">No tags</Badge>
+                          <Badge variant="outline" className="text-xs">
+                            No tags
+                          </Badge>
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        Interested members:{" "}
+
+                      {/* Venue & meta info */}
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                        {event.venueCity && event.venueCity !== "-" && (
+                          <>
+                            <span>City</span>
+                            <span className="font-medium text-foreground capitalize">
+                              {event.venueCity}
+                            </span>
+                          </>
+                        )}
+                        {event.venueType && event.venueType !== "-" && (
+                          <>
+                            <span>Venue</span>
+                            <span className="font-medium text-foreground capitalize">
+                              {event.venueType}
+                            </span>
+                          </>
+                        )}
+                        {event.scope && event.scope !== "-" && (
+                          <>
+                            <span>Scope</span>
+                            <span className="font-medium text-foreground capitalize">
+                              {event.scope}
+                            </span>
+                          </>
+                        )}
+                        {event.organiserType && event.organiserType !== "-" && (
+                          <>
+                            <span>Organiser</span>
+                            <span className="font-medium text-foreground capitalize">
+                              {event.organiserType}
+                            </span>
+                          </>
+                        )}
+                        <span>Interested</span>
                         <span className="font-semibold text-foreground">
                           {event.interestCount}
                         </span>
-                      </p>
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
