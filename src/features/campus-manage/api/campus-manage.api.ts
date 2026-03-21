@@ -324,7 +324,7 @@ export const campusManageApi = {
       const row = asRecord(item);
       return {
         tag: safeToString(row.tag ?? row.name ?? row.event_tag, "Other"),
-        count: toNumber(row.count ?? row.value),
+        count: toNumber(row.event_count ?? row.count ?? row.value),
       };
     });
   },
