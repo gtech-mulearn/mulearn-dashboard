@@ -405,21 +405,31 @@ export function CampusManageDashboard() {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Name</TableHead>
+                        <TableHead>MUID</TableHead>
                         <TableHead>Karma</TableHead>
                         <TableHead>Rank</TableHead>
                         <TableHead>Level</TableHead>
-                        <TableHead>IG</TableHead>
-                        <TableHead>Cluster</TableHead>
+                        <TableHead>Department / Cluster</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {filteredLeaderboard.map((student) => (
                         <TableRow key={student.id}>
-                          <TableCell>{student.name}</TableCell>
-                          <TableCell>{student.karma}</TableCell>
+                          <TableCell className="font-medium">
+                            {student.name}
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground">
+                            {student.id}
+                          </TableCell>
+                          <TableCell>
+                            {student.karma.toLocaleString()}
+                          </TableCell>
                           <TableCell>#{student.rank}</TableCell>
-                          <TableCell>{student.level}</TableCell>
-                          <TableCell>{student.ig}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="text-xs">
+                              {student.level}
+                            </Badge>
+                          </TableCell>
                           <TableCell>{student.cluster}</TableCell>
                         </TableRow>
                       ))}

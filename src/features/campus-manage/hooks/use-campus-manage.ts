@@ -23,7 +23,6 @@ export function useCampusLeaderboard(filters: CampusLeaderboardFilters) {
       filters.alumni,
     ),
     queryFn: () => campusManageApi.getLeaderboard(filters),
-    enabled: !!filters.orgId,
   });
 }
 

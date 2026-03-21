@@ -228,48 +228,70 @@ export const campusManageApi = {
   async getLeaderboard(
     filters: CampusLeaderboardFilters,
   ): Promise<CampusLeaderboardResponse> {
-    if (!filters.orgId) {
-      return {
-        items: [],
-        pagination: {
-          count: 0,
-          next: null,
-          previous: null,
-        },
-      };
-    }
-
     const params = new URLSearchParams();
     params.set("page", String(filters.page));
-    if (filters.ig) params.set("ig_id", filters.ig);
-    if (filters.cluster) params.set("cluster", filters.cluster);
+
+    // Filters supported by both endpoints
     if (filters.alumni !== "all") {
       params.set("is_alumni", String(filters.alumni === "alumni"));
     }
+    if (filters.search) params.set("search", filters.search);
 
-    const suffix = params.toString();
-    const endpoint = suffix
-      ? `${endpoints.campusManage.leaderboard(filters.orgId)}?${suffix}`
-      : endpoints.campusManage.leaderboard(filters.orgId);
+    let endpoint: string;
+
+    if (filters.orgId) {
+      // Public org-scoped leaderboard (ranked by karma)
+      if (filters.ig) params.set("ig_id", filters.ig);
+      if (filters.cluster) params.set("cluster", filters.cluster);
+      const suffix = params.toString();
+      endpoint = suffix
+        ? `${endpoints.campusManage.leaderboard(filters.orgId)}?${suffix}`
+        : endpoints.campusManage.leaderboard(filters.orgId);
+    } else {
+      // Auth-scoped: campus lead sees their own campus student list
+      const suffix = params.toString();
+      endpoint = suffix
+        ? `${endpoints.campusManage.studentDetails}?${suffix}`
+        : endpoints.campusManage.studentDetails;
+    }
 
     const raw = await apiClient.get<unknown>(endpoint);
 
-    const items = unwrapDataArray(raw).map(
-      (item, index): CampusLeaderboardItem => {
+    const seenIds = new Set<string>();
+    const items = unwrapDataArray(raw)
+      .map((item, index): CampusLeaderboardItem | null => {
+        // Skip non-object entries (e.g. stale or malformed items)
+        if (!item || typeof item !== "object") return null;
+
         const row = asRecord(item);
-        const rawId = safeToString(row.id ?? row.muid ?? row.user_id, "");
+
+        // student-details uses user_id + full_name; org leaderboard uses id + name
+        const rawId = safeToString(row.user_id ?? row.id ?? row.muid, "");
+        const id = rawId || `leaderboard-${index}`;
+
+        const name = safeToString(row.full_name ?? row.name, "");
+        // Skip entries with neither a real id nor a real name
+        if (!rawId && !name) return null;
+
+        // Deduplicate by id (guards against stale React Query cache merges)
+        if (seenIds.has(id)) return null;
+        seenIds.add(id);
+
         return {
-          id: rawId || `leaderboard-${index}`,
-          name: safeToString(row.name ?? row.full_name, "Unknown"),
+          id,
+          name: name || "Unknown",
           karma: toNumber(row.karma ?? row.total_karma),
           rank: toNumber(row.rank, index + 1),
           level: safeToString(row.level ?? row.level_name, "-"),
           ig: safeToString(row.ig ?? row.ig_chapter ?? row.interest_group, "-"),
-          cluster: safeToString(row.cluster ?? row.cluster_name, "-"),
+          cluster: safeToString(
+            row.cluster ?? row.cluster_name ?? row.department,
+            "-",
+          ),
           alumni: toBoolean(row.alumni ?? row.is_alumni),
         };
-      },
-    );
+      })
+      .filter((item): item is CampusLeaderboardItem => item !== null);
 
     return {
       items,
