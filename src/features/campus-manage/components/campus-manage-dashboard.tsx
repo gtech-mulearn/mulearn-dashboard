@@ -34,6 +34,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Table,
   TableBody,
@@ -331,7 +332,7 @@ export function CampusManageDashboard() {
                           .toUpperCase()}
                       </div>
                       <div>
-                        <h3 className="text-lg font-bold leading-snug tracking-tight">
+                        <h3 className="text-lg font-bold leading-snug tracking-tight text-foreground">
                           {overview?.collegeName ?? "-"}
                         </h3>
                         <div className="mt-1.5 flex flex-wrap gap-2">
@@ -393,38 +394,35 @@ export function CampusManageDashboard() {
                       accentText="#b45309"
                     />
                   </div>
-                  {/* ── Small: 7-Day Karma ── */}
+                </div>
+
+                {/* ── Secondary Stats — single row of 5 ── */}
+                <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
                   <StatCard
                     title="7-Day Karma"
                     value={(overview?.karma7Day ?? 0).toLocaleString()}
                     icon={<Zap className="h-4 w-4" />}
                   />
-                  {/* ── Small: 30-Day Karma ── */}
                   <StatCard
                     title="30-Day Karma"
                     value={(overview?.karma30Day ?? 0).toLocaleString()}
                     icon={<Zap className="h-4 w-4" />}
                   />
-                  {/* ── Small: Total Members ── */}
                   <StatCard
                     title="Total Members"
                     value={(overview?.totalMembers ?? 0).toLocaleString()}
                     icon={<Users className="h-4 w-4" />}
                   />
-                  {/* ── Small: Active Members ── */}
                   <StatCard
                     title="Active Members"
                     value={(overview?.activeMembers ?? 0).toLocaleString()}
                     icon={<Users className="h-4 w-4" />}
                   />
-                  {/* ── Full-width: Active IGs ── */}
-                  <div className="col-span-2 md:col-span-4">
-                    <StatCard
-                      title="Active IG Chapters"
-                      value={overview?.igChaptersCount ?? 0}
-                      icon={<BookOpen className="h-4 w-4" />}
-                    />
-                  </div>
+                  <StatCard
+                    title="Active IG Chapters"
+                    value={overview?.igChaptersCount ?? 0}
+                    icon={<BookOpen className="h-4 w-4" />}
+                  />
                 </div>
 
                 {/* ── Karma Trend Chart — separated card ── */}
@@ -658,464 +656,524 @@ export function CampusManageDashboard() {
             )}
           </section>
 
-          {/* ── 3. Analytics: Karma by Cluster + Events by Tag ── */}
+          {/* ── Tabs + Social Links side panel ── */}
           <section>
-            <SectionTitle
-              title="3. Analytics"
-              subtitle="Karma by cluster and events tag distribution"
-            />
-            <div className="grid gap-4 lg:grid-cols-2">
-              {/* Karma by cluster bar chart */}
-              <Card className="border-border/60">
-                <CardHeader>
-                  <CardTitle className="text-base">Karma by cluster</CardTitle>
-                </CardHeader>
-                <CardContent className="h-72 min-w-0">
-                  {isClusterLoading ? (
-                    <Skeleton className="h-full w-full" />
-                  ) : clusterData.length === 0 ? (
-                    <p className="mt-8 text-center text-sm text-muted-foreground">
-                      No cluster data available.
-                    </p>
-                  ) : (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={clusterData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="cluster" />
-                        <YAxis allowDecimals={false} />
-                        <Tooltip />
-                        <Bar dataKey="karma" fill="#0284c7" radius={8} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  )}
-                </CardContent>
-              </Card>
+            <div className="flex flex-col gap-6 xl:flex-row xl:items-start">
+              {/* Left: Tabs */}
+              <div className="min-w-0 flex-1">
+                <Tabs defaultValue="analytics">
+                  <TabsList className="mb-4 w-full justify-start">
+                    <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                    <TabsTrigger value="events">Events</TabsTrigger>
+                    <TabsTrigger value="execom">Execom</TabsTrigger>
+                    <TabsTrigger value="ig">IG Chapters</TabsTrigger>
+                  </TabsList>
 
-              {/* Events by tag pie chart */}
-              <Card className="border-border/60">
-                <CardHeader>
-                  <CardTitle className="text-base">Events by tag</CardTitle>
-                </CardHeader>
-                <CardContent className="h-72 min-w-0">
-                  {isDistributionLoading ? (
-                    <Skeleton className="h-full w-full" />
-                  ) : distribution.length === 0 ? (
-                    <p className="mt-8 text-center text-sm text-muted-foreground">
-                      No event tag data available.
-                    </p>
-                  ) : (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={distribution}
-                          dataKey="count"
-                          nameKey="tag"
-                          outerRadius={90}
-                          label
-                        >
-                          {distribution.map((entry, index) => (
-                            <Cell
-                              key={`${entry.tag}-${index}`}
-                              fill={PIE_COLORS[index % PIE_COLORS.length]}
-                            />
-                          ))}
-                        </Pie>
-                        <Tooltip />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </section>
+                  {/* ── Analytics Tab ── */}
+                  <TabsContent value="analytics">
+                    <div className="grid gap-4 lg:grid-cols-2">
+                      {/* Karma by cluster bar chart */}
+                      <Card className="border-border/60">
+                        <CardHeader>
+                          <CardTitle className="text-base">
+                            Karma by Cluster
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="h-72 min-w-0">
+                          {isClusterLoading ? (
+                            <Skeleton className="h-full w-full" />
+                          ) : clusterData.length === 0 ? (
+                            <div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground">
+                              <Users className="h-8 w-8 opacity-30" />
+                              <p className="text-sm">
+                                No cluster data available.
+                              </p>
+                            </div>
+                          ) : (
+                            <ResponsiveContainer width="100%" height="100%">
+                              <BarChart
+                                data={clusterData}
+                                margin={{
+                                  top: 4,
+                                  right: 8,
+                                  left: 0,
+                                  bottom: 0,
+                                }}
+                              >
+                                <CartesianGrid
+                                  vertical={false}
+                                  stroke="currentColor"
+                                  strokeOpacity={0.07}
+                                />
+                                <XAxis
+                                  dataKey="cluster"
+                                  tick={{ fontSize: 11 }}
+                                  tickLine={false}
+                                  axisLine={false}
+                                />
+                                <YAxis
+                                  allowDecimals={false}
+                                  tick={{ fontSize: 11 }}
+                                  tickLine={false}
+                                  axisLine={false}
+                                  width={36}
+                                />
+                                <Tooltip
+                                  contentStyle={{
+                                    borderRadius: "10px",
+                                    border: "1px solid hsl(var(--border))",
+                                    background: "hsl(var(--card))",
+                                    boxShadow: "0 8px 30px rgba(0,0,0,.14)",
+                                    fontSize: "12px",
+                                  }}
+                                />
+                                <Bar
+                                  dataKey="karma"
+                                  fill="#0d9488"
+                                  radius={[6, 6, 0, 0]}
+                                />
+                              </BarChart>
+                            </ResponsiveContainer>
+                          )}
+                        </CardContent>
+                      </Card>
 
-          {/* ── 4. Events feed ── */}
-          <section>
-            <SectionTitle
-              title="4. Events"
-              subtitle="Filter and review campus events with tags and interest count"
-            />
+                      {/* Events by tag pie chart */}
+                      <Card className="border-border/60">
+                        <CardHeader>
+                          <CardTitle className="text-base">
+                            Events by Tag
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="h-72 min-w-0">
+                          {isDistributionLoading ? (
+                            <Skeleton className="h-full w-full" />
+                          ) : distribution.length === 0 ? (
+                            <div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground">
+                              <CalendarDays className="h-8 w-8 opacity-30" />
+                              <p className="text-sm">
+                                No event tag data available.
+                              </p>
+                            </div>
+                          ) : (
+                            <ResponsiveContainer width="100%" height="100%">
+                              <PieChart>
+                                <Pie
+                                  data={distribution}
+                                  dataKey="count"
+                                  nameKey="tag"
+                                  outerRadius={90}
+                                  innerRadius={40}
+                                  label
+                                >
+                                  {distribution.map((entry, index) => (
+                                    <Cell
+                                      key={`${entry.tag}-${index}`}
+                                      fill={
+                                        PIE_COLORS[index % PIE_COLORS.length]
+                                      }
+                                    />
+                                  ))}
+                                </Pie>
+                                <Tooltip
+                                  contentStyle={{
+                                    borderRadius: "10px",
+                                    border: "1px solid hsl(var(--border))",
+                                    background: "hsl(var(--card))",
+                                    boxShadow: "0 8px 30px rgba(0,0,0,.14)",
+                                    fontSize: "12px",
+                                  }}
+                                />
+                              </PieChart>
+                            </ResponsiveContainer>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </TabsContent>
 
-            <div className="mb-4 flex flex-col gap-3 lg:flex-row">
-              <FilterSelect
-                value={eventFilters.status}
-                onChange={handleEventFilterChange("status")}
-                options={[
-                  { label: "All Status", value: "" },
-                  { label: "Draft", value: "draft" },
-                  { label: "Published", value: "published" },
-                  { label: "Ongoing", value: "ongoing" },
-                  { label: "Completed", value: "completed" },
-                  { label: "Cancelled", value: "cancelled" },
-                ]}
-              />
-              <FilterSelect
-                value={eventFilters.type}
-                onChange={handleEventFilterChange("type")}
-                options={[
-                  { label: "All Types", value: "" },
-                  { label: "Hackathon", value: "hackathon" },
-                  { label: "Workshop", value: "workshop" },
-                  { label: "Meetup", value: "meetup" },
-                  { label: "Conference", value: "conference" },
-                  { label: "Bootcamp", value: "bootcamp" },
-                  { label: "Competition", value: "competition" },
-                  { label: "Other", value: "other" },
-                ]}
-              />
-              <Input
-                value={eventFilters.date}
-                type="date"
-                onChange={(e) =>
-                  handleEventFilterChange("date")(e.target.value)
-                }
-                className="max-w-xs"
-              />
-            </div>
+                  {/* ── Events Tab ── */}
+                  <TabsContent value="events">
+                    <div className="mb-4 flex flex-col gap-3 lg:flex-row">
+                      <FilterSelect
+                        value={eventFilters.status}
+                        onChange={handleEventFilterChange("status")}
+                        options={[
+                          { label: "All Status", value: "" },
+                          { label: "Draft", value: "draft" },
+                          { label: "Published", value: "published" },
+                          { label: "Ongoing", value: "ongoing" },
+                          { label: "Completed", value: "completed" },
+                          { label: "Cancelled", value: "cancelled" },
+                        ]}
+                      />
+                      <FilterSelect
+                        value={eventFilters.type}
+                        onChange={handleEventFilterChange("type")}
+                        options={[
+                          { label: "All Types", value: "" },
+                          { label: "Hackathon", value: "hackathon" },
+                          { label: "Workshop", value: "workshop" },
+                          { label: "Meetup", value: "meetup" },
+                          { label: "Conference", value: "conference" },
+                          { label: "Bootcamp", value: "bootcamp" },
+                          { label: "Competition", value: "competition" },
+                          { label: "Other", value: "other" },
+                        ]}
+                      />
+                      <Input
+                        value={eventFilters.date}
+                        type="date"
+                        onChange={(e) =>
+                          handleEventFilterChange("date")(e.target.value)
+                        }
+                        className="max-w-xs"
+                      />
+                    </div>
 
-            {isEventsLoading ? (
-              <Skeleton className="h-52 w-full" />
-            ) : (
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {events.map((event) => (
-                  <Card
-                    key={event.id}
-                    className="overflow-hidden border-border/60"
-                  >
-                    {/* Cover image */}
-                    {event.coverImage && (
-                      <div className="h-36 w-full overflow-hidden bg-muted">
-                        <img
-                          src={event.coverImage}
-                          alt={event.title}
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                    )}
-                    <CardHeader className="space-y-2 pb-2">
-                      <div className="flex items-start justify-between gap-2">
-                        <CardTitle className="text-base leading-snug">
-                          {event.title}
-                        </CardTitle>
-                        <Badge
-                          variant={
-                            event.status === "completed"
-                              ? "secondary"
-                              : event.status === "ongoing" ||
-                                  event.status === "published"
-                                ? "default"
-                                : "outline"
-                          }
-                          className="shrink-0 capitalize"
-                        >
-                          {event.status}
-                        </Badge>
-                      </div>
-
-                      {/* Date range */}
-                      <p className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <CalendarDays className="h-3 w-3 shrink-0" />
-                        {event.date
-                          ? new Date(event.date).toLocaleDateString()
-                          : "Date TBD"}
-                        {event.endDate && event.endDate !== event.date && (
-                          <>
-                            {" → "}
-                            {new Date(event.endDate).toLocaleDateString()}
-                          </>
-                        )}
-                      </p>
-                    </CardHeader>
-
-                    <CardContent className="space-y-3">
-                      {/* Tags */}
-                      <div className="flex flex-wrap gap-1">
-                        {event.tags.length > 0 ? (
-                          event.tags.map((tag, index) => (
-                            <Badge
-                              key={`${event.id}-${tag || "tag"}-${index}`}
-                              variant="outline"
-                              className="text-xs"
-                            >
-                              {tag}
-                            </Badge>
-                          ))
-                        ) : (
-                          <Badge variant="outline" className="text-xs">
-                            No tags
-                          </Badge>
-                        )}
-                      </div>
-
-                      {/* Venue & meta info */}
-                      <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                        {event.venueCity && event.venueCity !== "-" && (
-                          <>
-                            <span>City</span>
-                            <span className="font-medium text-foreground capitalize">
-                              {event.venueCity}
-                            </span>
-                          </>
-                        )}
-                        {event.venueType && event.venueType !== "-" && (
-                          <>
-                            <span>Venue</span>
-                            <span className="font-medium text-foreground capitalize">
-                              {event.venueType}
-                            </span>
-                          </>
-                        )}
-                        {event.scope && event.scope !== "-" && (
-                          <>
-                            <span>Scope</span>
-                            <span className="font-medium text-foreground capitalize">
-                              {event.scope}
-                            </span>
-                          </>
-                        )}
-                        {event.organiserType && event.organiserType !== "-" && (
-                          <>
-                            <span>Organiser</span>
-                            <span className="font-medium text-foreground capitalize">
-                              {event.organiserType}
-                            </span>
-                          </>
-                        )}
-                        <span>Interested</span>
-                        <span className="font-semibold text-foreground">
-                          {event.interestCount}
-                        </span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-                {events.length === 0 && (
-                  <Card className="border-dashed md:col-span-2 xl:col-span-3">
-                    <CardContent className="py-8 text-center text-muted-foreground">
-                      No events matched these filters.
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-            )}
-          </section>
-
-          {/* ── 5. Execom Administration Panel ── */}
-          <section>
-            <SectionTitle
-              title="5. Execom Administration"
-              subtitle="Manage execom members — add by MUID or remove existing roles"
-            />
-
-            {/* Add member */}
-            <Card className="mb-4 border-border/60">
-              <CardHeader>
-                <CardTitle className="text-sm font-semibold">
-                  Add Execom Member
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex gap-2">
-                  <Input
-                    value={newMuid}
-                    onChange={(e) => setNewMuid(e.target.value)}
-                    placeholder="Enter MUID (e.g. john@mulearn)"
-                    className="max-w-sm"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") handleAddExecom();
-                    }}
-                  />
-                  <Button
-                    onClick={handleAddExecom}
-                    disabled={isAdding || !newMuid.trim()}
-                    size="sm"
-                  >
-                    {isAdding ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                    {isEventsLoading ? (
+                      <Skeleton className="h-52 w-full" />
                     ) : (
-                      <Plus className="h-4 w-4" />
-                    )}
-                    <span className="ml-1">Add</span>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Execom member list */}
-            <Card className="border-border/60">
-              <CardHeader>
-                <CardTitle className="text-sm font-semibold">
-                  Current Execom Roster
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isExecomLoading ? (
-                  <Skeleton className="h-40 w-full" />
-                ) : execom.length > 0 ? (
-                  <div className="space-y-2">
-                    {execom.map((member) => (
-                      <div
-                        key={member.id}
-                        className="flex items-center justify-between rounded-xl border border-border/60 p-3"
-                      >
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-10 w-10">
-                            <AvatarImage
-                              src={member.profilePic || ""}
-                              alt={member.name}
-                            />
-                            <AvatarFallback>
-                              {member.name.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <p className="font-medium">{member.name}</p>
-                            <p className="text-[10px] text-muted-foreground font-mono">
-                              {member.muid}
-                            </p>
-                            <p className="text-xs text-muted-foreground uppercase tracking-tight">
-                              {member.igChapter}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <Badge variant="secondary">{member.role}</Badge>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                            disabled={isRemoving}
-                            onClick={() => removeExecom(member.id)}
-                            title="Remove execom role"
+                      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                        {events.map((event) => (
+                          <Card
+                            key={event.id}
+                            className="overflow-hidden border-border/60"
                           >
-                            {isRemoving ? (
+                            {event.coverImage && (
+                              <div className="h-36 w-full overflow-hidden bg-muted">
+                                <img
+                                  src={event.coverImage}
+                                  alt={event.title}
+                                  className="h-full w-full object-cover"
+                                />
+                              </div>
+                            )}
+                            <CardHeader className="space-y-2 pb-2">
+                              <div className="flex items-start justify-between gap-2">
+                                <CardTitle className="text-base leading-snug">
+                                  {event.title}
+                                </CardTitle>
+                                <Badge
+                                  variant={
+                                    event.status === "completed"
+                                      ? "secondary"
+                                      : event.status === "ongoing" ||
+                                          event.status === "published"
+                                        ? "default"
+                                        : "outline"
+                                  }
+                                  className="shrink-0 capitalize"
+                                >
+                                  {event.status}
+                                </Badge>
+                              </div>
+                              <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <CalendarDays className="h-3 w-3 shrink-0" />
+                                {event.date
+                                  ? new Date(event.date).toLocaleDateString()
+                                  : "Date TBD"}
+                                {event.endDate &&
+                                  event.endDate !== event.date && (
+                                    <>
+                                      {" → "}
+                                      {new Date(
+                                        event.endDate,
+                                      ).toLocaleDateString()}
+                                    </>
+                                  )}
+                              </p>
+                            </CardHeader>
+                            <CardContent className="space-y-3">
+                              <div className="flex flex-wrap gap-1">
+                                {event.tags.length > 0 ? (
+                                  event.tags.map((tag, index) => (
+                                    <Badge
+                                      key={`${event.id}-${tag || "tag"}-${index}`}
+                                      variant="outline"
+                                      className="text-xs"
+                                    >
+                                      {tag}
+                                    </Badge>
+                                  ))
+                                ) : (
+                                  <Badge variant="outline" className="text-xs">
+                                    No tags
+                                  </Badge>
+                                )}
+                              </div>
+                              <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                                {event.venueCity && event.venueCity !== "-" && (
+                                  <>
+                                    <span>City</span>
+                                    <span className="font-medium text-foreground capitalize">
+                                      {event.venueCity}
+                                    </span>
+                                  </>
+                                )}
+                                {event.venueType && event.venueType !== "-" && (
+                                  <>
+                                    <span>Venue</span>
+                                    <span className="font-medium text-foreground capitalize">
+                                      {event.venueType}
+                                    </span>
+                                  </>
+                                )}
+                                {event.scope && event.scope !== "-" && (
+                                  <>
+                                    <span>Scope</span>
+                                    <span className="font-medium text-foreground capitalize">
+                                      {event.scope}
+                                    </span>
+                                  </>
+                                )}
+                                {event.organiserType &&
+                                  event.organiserType !== "-" && (
+                                    <>
+                                      <span>Organiser</span>
+                                      <span className="font-medium text-foreground capitalize">
+                                        {event.organiserType}
+                                      </span>
+                                    </>
+                                  )}
+                                <span>Interested</span>
+                                <span className="font-semibold text-foreground">
+                                  {event.interestCount}
+                                </span>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                        {events.length === 0 && (
+                          <Card className="border-dashed md:col-span-2 xl:col-span-3">
+                            <CardContent className="py-8 text-center text-muted-foreground">
+                              No events matched these filters.
+                            </CardContent>
+                          </Card>
+                        )}
+                      </div>
+                    )}
+                  </TabsContent>
+
+                  {/* ── Execom Tab ── */}
+                  <TabsContent value="execom">
+                    <Card className="mb-4 border-border/60">
+                      <CardHeader>
+                        <CardTitle className="text-sm font-semibold">
+                          Add Execom Member
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex gap-2">
+                          <Input
+                            value={newMuid}
+                            onChange={(e) => setNewMuid(e.target.value)}
+                            placeholder="Enter MUID (e.g. john@mulearn)"
+                            className="max-w-sm"
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") handleAddExecom();
+                            }}
+                          />
+                          <Button
+                            onClick={handleAddExecom}
+                            disabled={isAdding || !newMuid.trim()}
+                            size="sm"
+                          >
+                            {isAdding ? (
                               <Loader2 className="h-4 w-4 animate-spin" />
                             ) : (
-                              <Trash2 className="h-4 w-4" />
+                              <Plus className="h-4 w-4" />
                             )}
+                            <span className="ml-1">Add</span>
                           </Button>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    No execom members found.
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          </section>
+                      </CardContent>
+                    </Card>
 
-          {/* ── 6. IG Chapter Administration ── */}
-          <section>
-            <SectionTitle
-              title="6. IG Chapters"
-              subtitle="Interest Group chapters with leads and member counts"
-            />
-
-            {isChaptersLoading ? (
-              <Skeleton className="h-40 w-full" />
-            ) : chapters.length > 0 ? (
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {chapters.map((chapter) => (
-                  <Card key={chapter.id} className="border-border/60">
-                    <CardHeader className="pb-2">
-                      <div className="flex items-center gap-2">
-                        <BookOpen className="h-4 w-4 text-primary" />
-                        <CardTitle className="text-base">
-                          {chapter.name}
+                    <Card className="border-border/60">
+                      <CardHeader>
+                        <CardTitle className="text-sm font-semibold">
+                          Current Execom Roster
                         </CardTitle>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">Lead</span>
-                        <span className="font-medium">{chapter.lead}</span>
-                      </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">Members</span>
-                        <Badge variant="secondary">
-                          {chapter.membersCount}
-                        </Badge>
-                      </div>
-                      {chapter.execomMembers.length > 0 && (
-                        <div className="pt-1">
-                          <p className="mb-1 text-xs text-muted-foreground">
-                            Execom
-                          </p>
-                          <div className="flex flex-wrap gap-1">
-                            {chapter.execomMembers.map((name) => (
-                              <Badge
-                                key={name}
-                                variant="outline"
-                                className="text-xs"
+                      </CardHeader>
+                      <CardContent>
+                        {isExecomLoading ? (
+                          <Skeleton className="h-40 w-full" />
+                        ) : execom.length > 0 ? (
+                          <div className="space-y-2">
+                            {execom.map((member) => (
+                              <div
+                                key={member.id}
+                                className="flex items-center justify-between rounded-xl border border-border/60 p-3"
                               >
-                                {name}
-                              </Badge>
+                                <div className="flex items-center gap-3">
+                                  <Avatar className="h-10 w-10">
+                                    <AvatarImage
+                                      src={member.profilePic || ""}
+                                      alt={member.name}
+                                    />
+                                    <AvatarFallback>
+                                      {member.name.charAt(0)}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div>
+                                    <p className="font-medium">{member.name}</p>
+                                    <p className="font-mono text-[10px] text-muted-foreground">
+                                      {member.muid}
+                                    </p>
+                                    <p className="text-xs uppercase tracking-tight text-muted-foreground">
+                                      {member.igChapter}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <Badge variant="secondary">
+                                    {member.role}
+                                  </Badge>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                    disabled={isRemoving}
+                                    onClick={() => removeExecom(member.id)}
+                                    title="Remove execom role"
+                                  >
+                                    {isRemoving ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <Trash2 className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                </div>
+                              </div>
                             ))}
                           </div>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
+                        ) : (
+                          <p className="text-sm text-muted-foreground">
+                            No execom members found.
+                          </p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+
+                  {/* ── IG Chapters Tab ── */}
+                  <TabsContent value="ig">
+                    {isChaptersLoading ? (
+                      <Skeleton className="h-40 w-full" />
+                    ) : chapters.length > 0 ? (
+                      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                        {chapters.map((chapter) => (
+                          <Card key={chapter.id} className="border-border/60">
+                            <CardHeader className="pb-2">
+                              <div className="flex items-center gap-2">
+                                <BookOpen className="h-4 w-4 text-primary" />
+                                <CardTitle className="text-base">
+                                  {chapter.name}
+                                </CardTitle>
+                              </div>
+                            </CardHeader>
+                            <CardContent className="space-y-2">
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="text-muted-foreground">
+                                  Lead
+                                </span>
+                                <span className="font-medium">
+                                  {chapter.lead}
+                                </span>
+                              </div>
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="text-muted-foreground">
+                                  Members
+                                </span>
+                                <Badge variant="secondary">
+                                  {chapter.membersCount}
+                                </Badge>
+                              </div>
+                              {chapter.execomMembers.length > 0 && (
+                                <div className="pt-1">
+                                  <p className="mb-1 text-xs text-muted-foreground">
+                                    Execom
+                                  </p>
+                                  <div className="flex flex-wrap gap-1">
+                                    {chapter.execomMembers.map((name) => (
+                                      <Badge
+                                        key={name}
+                                        variant="outline"
+                                        className="text-xs"
+                                      >
+                                        {name}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    ) : (
+                      <Card className="border-dashed">
+                        <CardContent className="py-8 text-center text-sm text-muted-foreground">
+                          No IG chapters found for this campus.
+                        </CardContent>
+                      </Card>
+                    )}
+                  </TabsContent>
+                </Tabs>
               </div>
-            ) : (
-              <Card className="border-dashed">
-                <CardContent className="py-8 text-center text-sm text-muted-foreground">
-                  No IG chapters found for this campus.
-                </CardContent>
-              </Card>
-            )}
-          </section>
 
-          {/* ── 7. Social Links Management ── */}
-          <section>
-            <SectionTitle
-              title="7. Social Links"
-              subtitle="Campus social media presence"
-            />
-
-            <Card className="border-border/60">
-              <CardContent className="p-4">
-                {isSocialLoading ? (
-                  <div className="flex gap-3">
-                    <Skeleton className="h-10 w-36" />
-                    <Skeleton className="h-10 w-36" />
-                  </div>
-                ) : socialLinks?.instagram || socialLinks?.linkedin ? (
-                  <div className="flex flex-wrap gap-3">
-                    {socialLinks.instagram && (
-                      <a
-                        href={socialLinks.instagram}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2 text-sm transition-colors hover:bg-muted"
-                      >
-                        <Instagram className="h-4 w-4 text-pink-500" />
-                        Instagram
-                      </a>
+              {/* Right: Social Links — permanent side panel */}
+              <div className="w-full xl:w-72 xl:shrink-0">
+                <Card className="border-border/60">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold">
+                      Social Links
+                    </CardTitle>
+                    <p className="text-xs text-muted-foreground">
+                      Campus social media presence
+                    </p>
+                  </CardHeader>
+                  <CardContent>
+                    {isSocialLoading ? (
+                      <div className="flex flex-col gap-2">
+                        <Skeleton className="h-10 w-full rounded-xl" />
+                        <Skeleton className="h-10 w-full rounded-xl" />
+                      </div>
+                    ) : socialLinks?.instagram || socialLinks?.linkedin ? (
+                      <div className="flex flex-col gap-2">
+                        {socialLinks.instagram && (
+                          <a
+                            href={socialLinks.instagram}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex w-full items-center gap-3 rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
+                          >
+                            <Instagram className="h-4 w-4 text-pink-500" />
+                            Instagram
+                          </a>
+                        )}
+                        {socialLinks.linkedin && (
+                          <a
+                            href={socialLinks.linkedin}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex w-full items-center gap-3 rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
+                          >
+                            <Linkedin className="h-4 w-4 text-blue-600" />
+                            LinkedIn
+                          </a>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        No social links configured yet.
+                      </p>
                     )}
-                    {socialLinks.linkedin && (
-                      <a
-                        href={socialLinks.linkedin}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2 text-sm transition-colors hover:bg-muted"
-                      >
-                        <Linkedin className="h-4 w-4 text-blue-600" />
-                        LinkedIn
-                      </a>
-                    )}
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    No social links configured for this campus yet.
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
           </section>
         </CardContent>
       </Card>
