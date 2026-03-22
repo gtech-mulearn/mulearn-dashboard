@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { EventType, IGCluster } from "@/features/events";
 import {
@@ -11,6 +12,7 @@ import {
 } from "@/features/events";
 
 export default function EventsPage() {
+  const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState("");
   const [selectedCluster, setSelectedCluster] = useState<IGCluster | "all">(
@@ -26,6 +28,7 @@ export default function EventsPage() {
     cluster: selectedCluster === "all" ? undefined : selectedCluster,
     event_type: selectedEventType === "all" ? undefined : selectedEventType,
     sortBy: "-start_datetime",
+    perPage: 12,
   });
 
   const events = data?.data ?? [];
@@ -34,6 +37,21 @@ export default function EventsPage() {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleSearch = (value: string) => {
+    setSearch(value);
+    setCurrentPage(1);
+  };
+
+  const handleClusterChange = (value: IGCluster | "all") => {
+    setSelectedCluster(value);
+    setCurrentPage(1);
+  };
+
+  const handleEventTypeChange = (value: EventType | "all") => {
+    setSelectedEventType(value);
+    setCurrentPage(1);
   };
 
   return (
@@ -46,11 +64,11 @@ export default function EventsPage() {
 
       <div className="mb-6">
         <EventsFilters
-          onSearch={setSearch}
+          onSearch={handleSearch}
           selectedCluster={selectedCluster}
-          onClusterChange={setSelectedCluster}
+          onClusterChange={handleClusterChange}
           selectedEventType={selectedEventType}
-          onEventTypeChange={setSelectedEventType}
+          onEventTypeChange={handleEventTypeChange}
         />
       </div>
 
@@ -63,7 +81,12 @@ export default function EventsPage() {
             <Skeleton className="h-72 rounded-xl" />
           </div>
         ) : (
-          <EventsGrid events={events} />
+          <EventsGrid
+            events={events}
+            onEventView={(event) =>
+              router.push(`/dashboard/events/${event.id}`)
+            }
+          />
         )}
       </div>
 
@@ -72,6 +95,7 @@ export default function EventsPage() {
           pagination={pagination}
           currentPage={currentPage}
           onPageChange={handlePageChange}
+          currentCount={events.length}
         />
       )}
     </main>
