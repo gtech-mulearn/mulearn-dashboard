@@ -32,8 +32,8 @@ function getAuthHeaders(): Record<string, string> {
 
 // ─── Token expiry detection ─────────────────────────────────────────────────
 
-function handleTokenExpiry(rawData: unknown): boolean {
-  if (typeof window === "undefined") return false;
+function handleTokenExpiry(rawData: unknown): void {
+  if (typeof window === "undefined") return;
 
   if (
     rawData &&
@@ -58,10 +58,8 @@ function handleTokenExpiry(rawData: unknown): boolean {
     ) {
       authStore.clearTokens();
       window.location.href = "/login";
-      return true; // ← signal: redirect already happened
     }
   }
-  return false; // ← signal: no redirect
 }
 
 // ─── Request options ────────────────────────────────────────────────────────
@@ -123,9 +121,9 @@ async function request<T>(
 
   // Token expiry handling only for authenticated calls
   if (options.authenticated) {
-    const didExpire = handleTokenExpiry(rawData);
+    handleTokenExpiry(rawData);
 
-    if (!didExpire && (res.status === 401 || res.status === 403)) {
+    if (res.status === 401 || res.status === 403) {
       authStore.clearTokens();
       if (typeof window !== "undefined") {
         window.location.href = "/login";
@@ -259,11 +257,13 @@ function createGateway(authenticated: boolean) {
 
     delete: <T>(
       endpoint: string,
+      body?: unknown,
       schema?: z.ZodSchema<T>,
       options?: ClientOptions,
     ) =>
       request<T>(endpoint, {
         method: "DELETE",
+        body,
         schema,
         authenticated,
         ...options,
