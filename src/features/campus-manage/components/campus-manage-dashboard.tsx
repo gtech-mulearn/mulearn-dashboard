@@ -14,12 +14,12 @@ import {
 } from "lucide-react";
 import { type ReactNode, useMemo, useState } from "react";
 import {
+  Area,
+  AreaChart,
   Bar,
   BarChart,
   CartesianGrid,
   Cell,
-  Line,
-  LineChart,
   Pie,
   PieChart,
   ResponsiveContainer,
@@ -104,19 +104,70 @@ function StatCard({
   title,
   value,
   icon,
+  featured = false,
+  accent,
+  accentText,
 }: {
   title: string;
   value: string | number;
   icon: ReactNode;
+  featured?: boolean;
+  accent?: string;
+  accentText?: string;
 }) {
+  if (featured) {
+    return (
+      <Card
+        className="h-full border-border/60 relative overflow-hidden transition-all duration-200 hover:scale-[1.02] hover:shadow-lg cursor-default"
+        style={{
+          background: accent
+            ? `linear-gradient(135deg, ${accent}15 0%, ${accent}04 100%)`
+            : undefined,
+        }}
+      >
+        <div
+          className="absolute inset-0 opacity-[0.08]"
+          style={{
+            background: accent
+              ? `radial-gradient(circle at top right, ${accent}, transparent 65%)`
+              : undefined,
+          }}
+        />
+        <CardContent className="relative flex h-full flex-col justify-between p-5">
+          <div className="flex items-start justify-between">
+            <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              {title}
+            </span>
+            <span
+              className="flex h-8 w-8 items-center justify-center rounded-xl"
+              style={{
+                background: accent ? `${accent}18` : undefined,
+                color: accent,
+              }}
+            >
+              {icon}
+            </span>
+          </div>
+          <p
+            className="text-4xl font-bold tracking-tight"
+            style={{ color: accentText ?? accent }}
+          >
+            {value}
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
   return (
-    <Card className="border-border/60">
-      <CardContent className="p-4">
+    <Card className="h-full border-border/60 transition-all duration-200 hover:scale-[1.02] hover:shadow-md cursor-default">
+      <CardContent className="flex h-full flex-col justify-between p-4">
         <div className="flex items-center justify-between text-muted-foreground">
-          <span className="text-sm font-medium">{title}</span>
-          <span>{icon}</span>
+          <span className="text-[10px] font-semibold uppercase tracking-widest">
+            {title}
+          </span>
+          <span className="opacity-50">{icon}</span>
         </div>
-        <p className="mt-2 text-2xl font-semibold">{value}</p>
+        <p className="text-2xl font-bold">{value}</p>
       </CardContent>
     </Card>
   );
@@ -245,114 +296,246 @@ export function CampusManageDashboard() {
               subtitle="Campus details, karma, rank and member statistics"
             />
             {isOverviewLoading ? (
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                {[...Array(7)].map((_, i) => (
-                  // biome-ignore lint/suspicious/noArrayIndexKey: static placeholders
-                  <Skeleton key={i} className="h-24 w-full" />
-                ))}
+              <div className="space-y-4">
+                <Skeleton className="h-36 w-full rounded-2xl" />
+                <div className="grid gap-4 md:grid-cols-4">
+                  {[...Array(7)].map((_, i) => (
+                    // biome-ignore lint/suspicious/noArrayIndexKey: static placeholders
+                    <Skeleton key={i} className="h-24 w-full rounded-2xl" />
+                  ))}
+                </div>
+                <Skeleton className="h-64 w-full rounded-2xl" />
               </div>
             ) : (
               <>
-                {/* Campus identity strip */}
-                <div className="mb-4 rounded-xl border border-border/60 bg-muted/40 px-5 py-4">
-                  <h3 className="text-lg font-bold leading-tight">
-                    {overview?.collegeName ?? "-"}
-                  </h3>
-                  <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                    <span>
-                      Code:{" "}
-                      <span className="font-medium text-foreground">
-                        {overview?.campusCode ?? "-"}
+                {/* ── Glassmorphism Hero Header ── */}
+                <div className="relative mb-6 overflow-hidden rounded-2xl border border-border/40">
+                  {/* gradient backdrop */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-teal-500/20 via-sky-500/10 to-violet-500/20" />
+                  <div className="absolute inset-0 backdrop-blur-[2px]" />
+                  {/* subtle grid pattern */}
+                  <div
+                    className="absolute inset-0 opacity-[0.04]"
+                    style={{
+                      backgroundImage:
+                        "repeating-linear-gradient(0deg,transparent,transparent 24px,currentColor 24px,currentColor 25px),repeating-linear-gradient(90deg,transparent,transparent 24px,currentColor 24px,currentColor 25px)",
+                    }}
+                  />
+                  <div className="relative flex flex-col gap-5 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
+                    {/* Left: avatar + college info */}
+                    <div className="flex items-center gap-4">
+                      {/* Initials avatar */}
+                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-sky-600 text-lg font-bold text-white shadow-lg">
+                        {(overview?.campusCode ?? overview?.collegeName ?? "C")
+                          .slice(0, 2)
+                          .toUpperCase()}
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold leading-snug tracking-tight">
+                          {overview?.collegeName ?? "-"}
+                        </h3>
+                        <div className="mt-1.5 flex flex-wrap gap-2">
+                          <span className="inline-flex items-center rounded-lg bg-background/60 px-2.5 py-0.5 text-xs font-medium ring-1 ring-border/60">
+                            {overview?.campusCode ?? "-"}
+                          </span>
+                          <span className="inline-flex items-center rounded-lg bg-background/60 px-2.5 py-0.5 text-xs font-medium ring-1 ring-border/60">
+                            Level {overview?.campusLevel ?? "-"}
+                          </span>
+                          {overview?.campusZone && (
+                            <span className="inline-flex items-center rounded-lg bg-background/60 px-2.5 py-0.5 text-xs font-medium ring-1 ring-border/60">
+                              {overview.campusZone}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    {/* Right: lead + enabler */}
+                    <div className="flex flex-col gap-1 text-sm sm:items-end">
+                      <span className="text-muted-foreground">
+                        Lead:{" "}
+                        <span className="font-semibold text-foreground">
+                          {overview?.campusLead ?? "-"}
+                        </span>
                       </span>
-                    </span>
-                    <span>
-                      Zone:{" "}
-                      <span className="font-medium text-foreground">
-                        {overview?.campusZone ?? "-"}
+                      <span className="text-muted-foreground">
+                        Enabler:{" "}
+                        <span className="font-semibold text-foreground">
+                          {overview?.enabler ?? "Not assigned"}
+                        </span>
                       </span>
-                    </span>
-                    <span>
-                      Level:{" "}
-                      <span className="font-medium text-foreground">
-                        {overview?.campusLevel ?? "-"}
-                      </span>
-                    </span>
-                  </div>
-                  <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                    <span>
-                      Campus Lead:{" "}
-                      <span className="font-medium text-foreground">
-                        {overview?.campusLead ?? "-"}
-                      </span>
-                    </span>
-                    <span>
-                      Enabler:{" "}
-                      <span className="font-medium text-foreground">
-                        {overview?.enabler ?? "Not assigned"}
-                      </span>
-                    </span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Stat grid */}
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                {/* ── Bento Grid Stats ── */}
+                <div
+                  className="grid grid-cols-2 gap-4 md:grid-cols-4"
+                  style={{ gridAutoRows: "88px" }}
+                >
+                  {/* ── Hero: Total Karma ── */}
+                  <div className="col-span-1 row-span-2 md:col-span-2">
+                    <StatCard
+                      title="Total Karma"
+                      value={(overview?.totalKarma ?? 0).toLocaleString()}
+                      icon={<Zap className="h-4 w-4" />}
+                      featured
+                      accent="#0d9488"
+                    />
+                  </div>
+                  {/* ── Hero: Global Rank ── */}
+                  <div className="col-span-1 row-span-2 md:col-span-2">
+                    <StatCard
+                      title="Global Rank"
+                      value={overview?.rank ? `#${overview.rank}` : "-"}
+                      icon={<Trophy className="h-4 w-4" />}
+                      featured
+                      accent="#f59e0b"
+                      accentText="#b45309"
+                    />
+                  </div>
+                  {/* ── Small: 7-Day Karma ── */}
                   <StatCard
-                    title="Total Karma"
-                    value={overview?.totalKarma ?? 0}
+                    title="7-Day Karma"
+                    value={(overview?.karma7Day ?? 0).toLocaleString()}
                     icon={<Zap className="h-4 w-4" />}
                   />
+                  {/* ── Small: 30-Day Karma ── */}
                   <StatCard
-                    title="Rank"
-                    value={overview?.rank ? `#${overview.rank}` : "-"}
-                    icon={<Trophy className="h-4 w-4" />}
-                  />
-                  <StatCard
-                    title="7-day Karma"
-                    value={overview?.karma7Day ?? 0}
+                    title="30-Day Karma"
+                    value={(overview?.karma30Day ?? 0).toLocaleString()}
                     icon={<Zap className="h-4 w-4" />}
                   />
-                  <StatCard
-                    title="30-day Karma"
-                    value={overview?.karma30Day ?? 0}
-                    icon={<Zap className="h-4 w-4" />}
-                  />
+                  {/* ── Small: Total Members ── */}
                   <StatCard
                     title="Total Members"
-                    value={overview?.totalMembers ?? 0}
+                    value={(overview?.totalMembers ?? 0).toLocaleString()}
                     icon={<Users className="h-4 w-4" />}
                   />
+                  {/* ── Small: Active Members ── */}
                   <StatCard
                     title="Active Members"
-                    value={overview?.activeMembers ?? 0}
+                    value={(overview?.activeMembers ?? 0).toLocaleString()}
                     icon={<Users className="h-4 w-4" />}
                   />
-                  <StatCard
-                    title="Active IGs"
-                    value={overview?.igChaptersCount ?? 0}
-                    icon={<BookOpen className="h-4 w-4" />}
-                  />
+                  {/* ── Full-width: Active IGs ── */}
+                  <div className="col-span-2 md:col-span-4">
+                    <StatCard
+                      title="Active IG Chapters"
+                      value={overview?.igChaptersCount ?? 0}
+                      icon={<BookOpen className="h-4 w-4" />}
+                    />
+                  </div>
                 </div>
 
-                {/* Karma trend chart */}
-                <div className="mt-6 h-72 min-w-0 rounded-xl border border-border/60 p-4">
-                  <p className="mb-3 text-sm font-medium text-muted-foreground">
-                    Karma trend
-                  </p>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={overview?.trend ?? []}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="label" />
-                      <YAxis allowDecimals={false} />
-                      <Tooltip />
-                      <Line
-                        type="monotone"
-                        dataKey="value"
-                        stroke="#0f766e"
-                        strokeWidth={2}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
+                {/* ── Karma Trend Chart — separated card ── */}
+                <Card className="mt-4 border-border/60">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-semibold">
+                      Karma Trend
+                    </CardTitle>
+                    <p className="text-xs text-muted-foreground">
+                      Weekly karma activity over time
+                    </p>
+                  </CardHeader>
+                  <CardContent className="pb-5">
+                    {/* Empty-state overlay when all values are zero */}
+                    {(() => {
+                      const trend = overview?.trend ?? [];
+                      const isEmpty =
+                        trend.length === 0 || trend.every((p) => p.value === 0);
+                      return (
+                        <div className="relative h-56 min-w-0">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart
+                              data={trend}
+                              margin={{ top: 4, right: 8, left: 0, bottom: 0 }}
+                            >
+                              <defs>
+                                <linearGradient
+                                  id="karmaGradient"
+                                  x1="0"
+                                  y1="0"
+                                  x2="0"
+                                  y2="1"
+                                >
+                                  <stop
+                                    offset="5%"
+                                    stopColor="#0d9488"
+                                    stopOpacity={0.3}
+                                  />
+                                  <stop
+                                    offset="95%"
+                                    stopColor="#0d9488"
+                                    stopOpacity={0}
+                                  />
+                                </linearGradient>
+                              </defs>
+                              {/* Horizontal lines only */}
+                              <CartesianGrid
+                                horizontal
+                                vertical={false}
+                                stroke="currentColor"
+                                strokeOpacity={0.07}
+                              />
+                              <XAxis
+                                dataKey="label"
+                                tick={{ fontSize: 10 }}
+                                tickLine={false}
+                                axisLine={false}
+                              />
+                              <YAxis
+                                allowDecimals={false}
+                                tick={{ fontSize: 10 }}
+                                tickLine={false}
+                                axisLine={false}
+                                width={36}
+                              />
+                              <Tooltip
+                                cursor={{
+                                  stroke: "#0d9488",
+                                  strokeWidth: 1,
+                                  strokeDasharray: "4 4",
+                                }}
+                                contentStyle={{
+                                  borderRadius: "10px",
+                                  border: "1px solid hsl(var(--border))",
+                                  background: "hsl(var(--card))",
+                                  boxShadow: "0 8px 30px rgba(0,0,0,.14)",
+                                  fontSize: "12px",
+                                }}
+                              />
+                              <Area
+                                type="monotone"
+                                dataKey="value"
+                                stroke="#0d9488"
+                                strokeWidth={2}
+                                fill="url(#karmaGradient)"
+                                dot={false}
+                                activeDot={{
+                                  r: 4,
+                                  fill: "#0d9488",
+                                  strokeWidth: 2,
+                                  stroke: "#fff",
+                                }}
+                              />
+                            </AreaChart>
+                          </ResponsiveContainer>
+                          {/* Empty-state overlay */}
+                          {isEmpty && (
+                            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1.5">
+                              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
+                                <Zap className="h-4 w-4 text-muted-foreground/50" />
+                              </div>
+                              <p className="text-xs font-medium text-muted-foreground">
+                                No activity recorded this period
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </CardContent>
+                </Card>
               </>
             )}
           </section>
