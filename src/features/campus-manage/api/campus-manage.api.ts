@@ -280,6 +280,7 @@ export const campusManageApi = {
         return {
           id,
           name: name || "Unknown",
+          muid: safeToString(row.muid, "-"),
           karma: toNumber(row.karma ?? row.total_karma),
           rank: toNumber(row.rank, index + 1),
           level: safeToString(row.level ?? row.level_name, "-"),

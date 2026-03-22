@@ -7,8 +7,10 @@ import {
   Linkedin,
   Loader2,
   Plus,
+  Search,
   Trash2,
   Trophy,
+  User,
   Users,
   Zap,
 } from "lucide-react";
@@ -87,17 +89,37 @@ function FilterSelect({
   options: Array<{ label: string; value: string }>;
 }) {
   return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="h-10 rounded-xl border border-input bg-background px-3 text-sm"
-    >
-      {options.map((opt) => (
-        <option key={opt.value} value={opt.value}>
-          {opt.label}
-        </option>
-      ))}
-    </select>
+    <div className="relative group">
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="h-9 w-full min-w-[140px] appearance-none rounded-full border border-border/60 bg-background pl-4 pr-10 text-[11px] font-semibold uppercase tracking-wider transition-all hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20"
+      >
+        {options.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
+      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-muted-foreground/40 group-hover:text-primary/60">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-label="Chevron Down"
+          role="img"
+        >
+          <title>Chevron Down</title>
+          <path d="m6 9 6 6 6-6" />
+        </svg>
+      </div>
+    </div>
   );
 }
 
@@ -235,10 +257,12 @@ export function CampusManageDashboard() {
 
   const filteredLeaderboard = useMemo(() => {
     const query = leaderboardFilters.search.trim().toLowerCase();
-    return leaderboard.filter((item) => {
+    const filtered = leaderboard.filter((item) => {
       if (query && !item.name.toLowerCase().includes(query)) return false;
       return true;
     });
+    // Explicitly ensure sorting by rank
+    return [...filtered].sort((a, b) => a.rank - b.rank);
   }, [leaderboard, leaderboardFilters.search]);
 
   const totalPages = Math.max(
@@ -545,83 +569,132 @@ export function CampusManageDashboard() {
               subtitle="Search and filter by IG, cluster and alumni status"
             />
 
-            <div className="mb-4 flex flex-col gap-3 lg:flex-row">
-              <Input
-                value={leaderboardFilters.search}
-                onChange={(e) =>
-                  handleLeaderboardFilterChange("search")(e.target.value)
-                }
-                placeholder="Search students"
-                className="max-w-sm"
-              />
-              <FilterSelect
-                value={leaderboardFilters.ig}
-                onChange={handleLeaderboardFilterChange("ig")}
-                options={[{ label: "All IG", value: "" }, ...igOptions]}
-              />
-              <FilterSelect
-                value={leaderboardFilters.cluster}
-                onChange={handleLeaderboardFilterChange("cluster")}
-                options={[
-                  { label: "All Clusters", value: "" },
-                  ...clusterOptions,
-                ]}
-              />
-              <FilterSelect
-                value={leaderboardFilters.alumni}
-                onChange={handleLeaderboardFilterChange("alumni")}
-                options={[
-                  { label: "All", value: "all" },
-                  { label: "Alumni", value: "alumni" },
-                  { label: "Students", value: "student" },
-                ]}
-              />
+            <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="relative w-full lg:max-w-sm">
+                <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                <Input
+                  value={leaderboardFilters.search}
+                  onChange={(e) =>
+                    handleLeaderboardFilterChange("search")(e.target.value)
+                  }
+                  placeholder="Search students..."
+                  className="rounded-full border-border/60 pl-10 h-10 shadow-sm transition-all focus-visible:ring-primary/20"
+                />
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <FilterSelect
+                  value={leaderboardFilters.ig}
+                  onChange={handleLeaderboardFilterChange("ig")}
+                  options={[
+                    { label: "Interest Group", value: "" },
+                    ...igOptions,
+                  ]}
+                />
+                <FilterSelect
+                  value={leaderboardFilters.cluster}
+                  onChange={handleLeaderboardFilterChange("cluster")}
+                  options={[
+                    { label: "All Clusters", value: "" },
+                    ...clusterOptions,
+                  ]}
+                />
+                <FilterSelect
+                  value={leaderboardFilters.alumni}
+                  onChange={handleLeaderboardFilterChange("alumni")}
+                  options={[
+                    { label: "Status: All", value: "all" },
+                    { label: "Status: Alumni", value: "alumni" },
+                    { label: "Status: Student", value: "student" },
+                  ]}
+                />
+              </div>
             </div>
 
             {isLeaderboardLoading ? (
-              <Skeleton className="h-72 w-full" />
+              <Skeleton className="h-[500px] w-full rounded-2xl" />
             ) : (
-              <Card className="border-border/60">
+              <Card className="overflow-hidden border-border/60 shadow-md">
                 <CardContent className="p-0">
                   <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>MUID</TableHead>
+                    <TableHeader className="bg-muted/30">
+                      <TableRow className="hover:bg-transparent">
+                        <TableHead className="w-24 text-center">Rank</TableHead>
+                        <TableHead>Student</TableHead>
                         <TableHead>Karma</TableHead>
-                        <TableHead>Rank</TableHead>
                         <TableHead>Level</TableHead>
                         <TableHead>Department / Cluster</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {filteredLeaderboard.map((student) => (
-                        <TableRow key={student.id}>
-                          <TableCell className="font-medium">
-                            {student.name}
-                          </TableCell>
-                          <TableCell className="text-xs text-muted-foreground">
-                            {student.id}
+                        <TableRow
+                          key={student.id}
+                          className="group transition-colors hover:bg-muted/50"
+                        >
+                          <TableCell className="text-center font-bold">
+                            <div
+                              className={`mx-auto flex h-9 w-9 items-center justify-center rounded-full text-xs font-black shadow-sm transition-all duration-300 ${
+                                student.rank === 1
+                                  ? "bg-amber-100 text-amber-600 ring-2 ring-amber-400/50 shadow-[0_0_15px_rgba(251,191,36,0.25)] dark:bg-amber-900/40 dark:text-amber-400"
+                                  : student.rank === 2
+                                    ? "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                                    : student.rank === 3
+                                      ? "bg-orange-100 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400"
+                                      : "bg-background text-muted-foreground border border-border/50"
+                              }`}
+                            >
+                              #{student.rank}
+                            </div>
                           </TableCell>
                           <TableCell>
-                            {student.karma.toLocaleString()}
+                            <div className="flex flex-col">
+                              <span className="text-sm font-semibold tracking-tight transition-colors group-hover:text-primary">
+                                {student.name}
+                              </span>
+                              <span className="text-[11px] text-muted-foreground">
+                                @{student.muid.split("@")[0]}
+                              </span>
+                            </div>
                           </TableCell>
-                          <TableCell>#{student.rank}</TableCell>
                           <TableCell>
-                            <Badge variant="outline" className="text-xs">
+                            <span className="text-lg font-black tracking-tighter text-emerald-600 dark:text-emerald-500">
+                              {student.karma.toLocaleString()}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              className={`h-6 px-2.5 font-bold uppercase tracking-wider text-[10px] shadow-sm ${
+                                student.level?.includes("7")
+                                  ? "bg-purple-600 hover:bg-purple-700"
+                                  : student.level?.includes("6")
+                                    ? "bg-blue-600 hover:bg-blue-700"
+                                    : student.level?.includes("5")
+                                      ? "bg-indigo-600 hover:bg-indigo-700 font-black"
+                                      : student.level?.includes("4")
+                                        ? "bg-teal-600 hover:bg-teal-700 font-black"
+                                        : "bg-slate-500/80 hover:bg-slate-500 font-black"
+                              }`}
+                            >
                               {student.level}
                             </Badge>
                           </TableCell>
-                          <TableCell>{student.cluster}</TableCell>
+                          <TableCell className="max-w-[200px] truncate text-xs text-muted-foreground">
+                            {student.cluster}
+                          </TableCell>
                         </TableRow>
                       ))}
                       {filteredLeaderboard.length === 0 && (
                         <TableRow>
                           <TableCell
-                            colSpan={6}
-                            className="py-8 text-center text-muted-foreground"
+                            colSpan={5}
+                            className="py-12 text-center text-muted-foreground"
                           >
-                            No leaderboard data for selected filters.
+                            <div className="flex flex-col items-center gap-2 opacity-50">
+                              <Users className="h-10 w-10" />
+                              <p className="text-sm">
+                                No students found matching your filters.
+                              </p>
+                            </div>
                           </TableCell>
                         </TableRow>
                       )}

@@ -35,6 +35,7 @@ export interface PaginationInfo {
 export interface CampusLeaderboardItem {
   id: string;
   name: string;
+  muid: string;
   karma: number;
   rank: number;
   level: string;
