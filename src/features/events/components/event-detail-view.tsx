@@ -98,7 +98,7 @@ export function EventDetailView({ eventId }: EventDetailViewProps) {
       <div className="flex flex-wrap items-center gap-2">
         <EventStatusBadge status={event.status} />
         <Badge variant="secondary" className="capitalize">
-          {event.event_type.replace(/_/g, " ")}
+          {event.event_type?.replace(/_/g, " ")}
         </Badge>
         {event.is_featured ? (
           <Badge className="bg-amber-100 text-amber-800">

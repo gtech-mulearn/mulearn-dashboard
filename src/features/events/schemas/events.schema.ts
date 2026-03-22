@@ -30,10 +30,22 @@ const createEventBaseSchema = z.object({
     "company",
     "admin",
   ]),
-  organiser_ig_id: z.string().uuid().optional(),
-  organiser_campus_id: z.string().uuid().optional(),
-  organiser_campus_ig_id: z.string().uuid().optional(),
-  organiser_company_id: z.string().uuid().optional(),
+  organiser_ig_id: z
+    .union([z.string().uuid(), z.literal("")])
+    .optional()
+    .transform((v) => (v === "" ? undefined : v)),
+  organiser_campus_id: z
+    .union([z.string().uuid(), z.literal("")])
+    .optional()
+    .transform((v) => (v === "" ? undefined : v)),
+  organiser_campus_ig_id: z
+    .union([z.string().uuid(), z.literal("")])
+    .optional()
+    .transform((v) => (v === "" ? undefined : v)),
+  organiser_company_id: z
+    .union([z.string().uuid(), z.literal("")])
+    .optional()
+    .transform((v) => (v === "" ? undefined : v)),
   start_datetime: z.string(),
   end_datetime: z.string(),
   venue_type: z.enum(["physical", "online", "hybrid"]),
@@ -70,10 +82,10 @@ const createEventBaseSchema = z.object({
     .optional()
     .transform((v) => (v === "" ? null : v)),
   registration_deadline: z
-    .string()
-    .datetime({ offset: true })
+    .union([z.string(), z.literal("")])
     .nullable()
-    .optional(),
+    .optional()
+    .transform((v) => (v === "" ? null : v)),
   min_karma: z.number().int().min(0).nullable().optional(),
   linked_tasks: z
     .array(
@@ -91,9 +103,21 @@ const createEventBaseSchema = z.object({
     )
     .optional(),
   is_collaboration: z.boolean().optional().default(false),
-  target_campus_id: z.string().uuid().nullable().optional(),
-  target_ig_id: z.string().uuid().nullable().optional(),
-  target_campus_ig_id: z.string().uuid().nullable().optional(),
+  target_campus_id: z
+    .union([z.string().uuid(), z.literal("")])
+    .nullable()
+    .optional()
+    .transform((v) => (v === "" ? null : v)),
+  target_ig_id: z
+    .union([z.string().uuid(), z.literal("")])
+    .nullable()
+    .optional()
+    .transform((v) => (v === "" ? null : v)),
+  target_campus_ig_id: z
+    .union([z.string().uuid(), z.literal("")])
+    .nullable()
+    .optional()
+    .transform((v) => (v === "" ? null : v)),
   tags: z.array(z.string()).optional(),
   is_featured: z.boolean().optional(),
 });
