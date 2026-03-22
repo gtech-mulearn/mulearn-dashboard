@@ -32,8 +32,8 @@ function getAuthHeaders(): Record<string, string> {
 
 // ─── Token expiry detection ─────────────────────────────────────────────────
 
-function handleTokenExpiry(rawData: unknown): void {
-  if (typeof window === "undefined") return;
+function handleTokenExpiry(rawData: unknown): boolean {
+  if (typeof window === "undefined") return false;
 
   if (
     rawData &&
@@ -58,8 +58,10 @@ function handleTokenExpiry(rawData: unknown): void {
     ) {
       authStore.clearTokens();
       window.location.href = "/login";
+      return true; // ← signal: redirect already happened
     }
   }
+  return false; // ← signal: no redirect
 }
 
 // ─── Request options ────────────────────────────────────────────────────────
@@ -121,9 +123,9 @@ async function request<T>(
 
   // Token expiry handling only for authenticated calls
   if (options.authenticated) {
-    handleTokenExpiry(rawData);
+    const didExpire = handleTokenExpiry(rawData);
 
-    if (res.status === 401 || res.status === 403) {
+    if (!didExpire && (res.status === 401 || res.status === 403)) {
       authStore.clearTokens();
       if (typeof window !== "undefined") {
         window.location.href = "/login";

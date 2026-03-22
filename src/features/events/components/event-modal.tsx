@@ -18,13 +18,23 @@ import {
   createEventSchema,
   updateEventSchema,
 } from "../schemas";
-import type { EventListItem } from "../types";
+import type {
+  EventDetail,
+  EventDetailManage,
+  EventListItem,
+  EventPatchBody,
+  EventWriteBody,
+} from "../types";
 import { VenueSection } from "./venue-section";
 
 interface EventModalProps {
   open: boolean;
   onClose: () => void;
-  initialData?: Partial<EventListItem> | null;
+  initialData?:
+    | Partial<EventListItem>
+    | Partial<EventDetail>
+    | Partial<EventDetailManage>
+    | null;
   isEdit?: boolean;
 }
 
@@ -68,7 +78,7 @@ export default function EventModal({
   isEdit,
 }: EventModalProps) {
   const createEvent = useCreateEvent();
-  const patchEvent = usePatchEvent((initialData?.id as string) || "");
+  const patchEvent = usePatchEvent(initialData?.id ?? "");
 
   const {
     control,
@@ -86,18 +96,38 @@ export default function EventModal({
 
   useEffect(() => {
     if (!open) return;
+    const d = initialData as Partial<EventDetailManage> | null | undefined;
     reset({
       ...defaultValues,
-      title: initialData?.title ?? "",
-      event_type: initialData?.event_type,
-      scope: initialData?.scope ?? "global",
-      start_datetime: initialData?.start_datetime ?? "",
-      end_datetime: initialData?.end_datetime ?? "",
-      venue_type: initialData?.venue_type ?? "online",
-      city: initialData?.venue_city ?? undefined,
-      min_karma: initialData?.min_karma ?? null,
-      tags: initialData?.tags ?? [],
-      is_featured: initialData?.is_featured ?? false,
+      title: d?.title ?? "",
+      description: d?.description ?? "",
+      event_type: d?.event_type,
+      scope: d?.scope ?? "global",
+      organiser_type: d?.organizer?.type ?? "admin",
+      organiser_ig_id: d?.organizer?.ig?.id,
+      organiser_campus_id: d?.organizer?.campus?.id,
+      organiser_campus_ig_id: d?.organizer?.campus_ig?.id,
+      organiser_company_id: d?.organizer?.company?.id,
+      start_datetime: d?.start_datetime ?? "",
+      end_datetime: d?.end_datetime ?? "",
+      venue_type:
+        d?.venue?.type ?? (d as Partial<EventListItem>)?.venue_type ?? "online",
+      address: d?.venue?.address ?? "",
+      city: d?.venue?.city ?? (d as Partial<EventListItem>)?.venue_city ?? "",
+      maps_url: d?.venue?.maps_url ?? "",
+      online_link: d?.venue?.online_link ?? "",
+      platform: d?.venue?.platform ?? "",
+      cover_image: d?.cover_image ?? "",
+      banner_image: d?.banner_image ?? "",
+      registration_url: d?.registration_url ?? "",
+      registration_deadline: d?.registration_deadline ?? null,
+      min_karma: d?.min_karma ?? null,
+      is_collaboration: d?.is_collaboration ?? false,
+      target_campus_id: d?.target_campus?.id ?? null,
+      target_ig_id: d?.target_ig?.id ?? null,
+      target_campus_ig_id: d?.target_campus_ig?.id ?? null,
+      tags: d?.tags ?? [],
+      is_featured: d?.is_featured ?? false,
     });
   }, [initialData, open, reset]);
 
@@ -105,15 +135,17 @@ export default function EventModal({
   const organiserType = watch("organiser_type");
 
   const onSubmit = async (values: CreateEventSchema) => {
-    const payload = values;
-
-    if (isEdit && initialData?.id) {
-      await patchEvent.mutateAsync(payload);
-    } else {
-      await createEvent.mutateAsync(payload);
+    try {
+      if (isEdit && initialData?.id) {
+        await patchEvent.mutateAsync(values as EventPatchBody);
+      } else if (!isEdit) {
+        await createEvent.mutateAsync(values as EventWriteBody);
+      }
+      onClose();
+    } catch {
+      // Error already handled by mutation onError toast.
+      // Do NOT call onClose() here — keep modal open so user can fix.
     }
-
-    onClose();
   };
 
   return (
@@ -139,7 +171,7 @@ export default function EventModal({
           </section>
 
           <section className="space-y-3 rounded-lg border p-4">
-            <h3 className="font-semibold">Type & Scope</h3>
+            <h3 className="font-semibold">Type &amp; Scope</h3>
             <select
               className="h-10 w-full rounded-md border px-3 text-sm"
               {...register("event_type")}
@@ -270,7 +302,7 @@ export default function EventModal({
           </section>
 
           <section className="space-y-3 rounded-lg border p-4">
-            <h3 className="font-semibold">Tags & Collaboration</h3>
+            <h3 className="font-semibold">Tags &amp; Collaboration</h3>
             <Controller
               control={control}
               name="tags"
