@@ -1,8 +1,12 @@
 "use client";
 
 import {
+  BarChart3,
   BookOpen,
   CalendarDays,
+  ExternalLink,
+  Github,
+  Globe,
   Instagram,
   Linkedin,
   Loader2,
@@ -12,9 +16,11 @@ import {
   Trophy,
   User,
   Users,
+  X,
   Zap,
 } from "lucide-react";
 import { type ReactNode, useMemo, useState } from "react";
+import { format, isSameDay } from "date-fns";
 import {
   Area,
   AreaChart,
@@ -57,6 +63,13 @@ import {
   useRemoveExecomMember,
   useSocialLinks,
 } from "../hooks";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import type { CampusEventFilters, CampusLeaderboardFilters } from "../types";
 
 const PIE_COLORS = ["#16a34a", "#0ea5e9", "#f59e0b", "#ef4444", "#8b5cf6"];
@@ -119,6 +132,54 @@ function FilterSelect({
           <path d="m6 9 6 6 6-6" />
         </svg>
       </div>
+    </div>
+  );
+}
+
+function CampusDatePicker({
+  date,
+  onChange,
+}: {
+  date: string;
+  onChange: (date: string) => void;
+}) {
+  const selectedDate = date ? new Date(date) : undefined;
+
+  return (
+    <div className="flex items-center gap-2">
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            className={cn(
+              "h-9 w-full min-w-[160px] justify-start rounded-full border-border/60 bg-background px-4 text-left text-[11px] font-semibold uppercase tracking-wider transition-all hover:border-primary/50 focus:ring-2 focus:ring-primary/20",
+              !date && "text-muted-foreground",
+            )}
+          >
+            <CalendarDays className="mr-2 h-3.5 w-3.5 opacity-60" />
+            {date ? format(selectedDate!, "PPP") : <span>Select Date</span>}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            selected={selectedDate}
+            onSelect={(d) => onChange(d ? format(d, "yyyy-MM-dd") : "")}
+            initialFocus
+          />
+        </PopoverContent>
+      </Popover>
+      {date && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 rounded-full text-muted-foreground hover:bg-muted"
+          onClick={() => onChange("")}
+          title="Clear date filter"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      )}
     </div>
   );
 }
@@ -253,7 +314,23 @@ export function CampusManageDashboard() {
   // ─── Derived leaderboard data ────────────────────────────────────────────
   const leaderboard = leaderboardData?.items ?? [];
   const leaderboardPagination = leaderboardData?.pagination;
-  const events = eventsData?.items ?? [];
+  const unfilteredEvents = eventsData?.items ?? [];
+
+  const events = useMemo(() => {
+    if (!eventFilters.date) return unfilteredEvents;
+    const filterDate = new Date(eventFilters.date);
+    filterDate.setHours(0, 0, 0, 0);
+
+    return unfilteredEvents.filter((event) => {
+      if (!event.date) return false;
+      const start = new Date(event.date);
+      start.setHours(0, 0, 0, 0);
+      const end = event.endDate ? new Date(event.endDate) : start;
+      end.setHours(0, 0, 0, 0);
+
+      return filterDate >= start && filterDate <= end;
+    });
+  }, [unfilteredEvents, eventFilters.date]);
 
   const filteredLeaderboard = useMemo(() => {
     const query = leaderboardFilters.search.trim().toLowerCase();
@@ -324,9 +401,8 @@ export function CampusManageDashboard() {
               <div className="space-y-4">
                 <Skeleton className="h-36 w-full rounded-2xl" />
                 <div className="grid gap-4 md:grid-cols-4">
-                  {[...Array(7)].map((_, i) => (
-                    // biome-ignore lint/suspicious/noArrayIndexKey: static placeholders
-                    <Skeleton key={i} className="h-24 w-full rounded-2xl" />
+                  {["s1", "s2", "s3", "s4", "s5", "s6", "s7"].map((id) => (
+                    <Skeleton key={id} className="h-24 w-full rounded-2xl" />
                   ))}
                 </div>
                 <Skeleton className="h-64 w-full rounded-2xl" />
@@ -729,136 +805,169 @@ export function CampusManageDashboard() {
             )}
           </section>
 
-          {/* ── Tabs + Social Links side panel ── */}
-          <section>
-            <div className="flex flex-col gap-6 xl:flex-row xl:items-start">
-              {/* Left: Tabs */}
-              <div className="min-w-0 flex-1">
-                <Tabs defaultValue="analytics">
-                  <TabsList className="mb-4 w-full justify-start">
-                    <TabsTrigger value="analytics">Analytics</TabsTrigger>
-                    <TabsTrigger value="events">Events</TabsTrigger>
-                    <TabsTrigger value="execom">Execom</TabsTrigger>
-                    <TabsTrigger value="ig">IG Chapters</TabsTrigger>
+          {/* ── Dashboard Content Area ── */}
+          <section className="p-6">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-stretch">
+              {/* Left Column: Content (75%) */}
+              <div className="w-full lg:w-3/4">
+                <Tabs defaultValue="analytics" className="w-full">
+                  <TabsList className="mb-6 h-auto w-full justify-start gap-4 rounded-none border-b bg-transparent p-0">
+                    {["analytics", "events", "execom", "ig"].map((tab) => (
+                      <TabsTrigger
+                        key={tab}
+                        value={tab}
+                        className="rounded-none border-b-2 border-transparent px-2 pb-3 pt-0 text-sm font-semibold capitalize tracking-tight transition-all data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary/70"
+                      >
+                        {tab === "ig" ? "IG Chapters" : tab}
+                      </TabsTrigger>
+                    ))}
                   </TabsList>
 
                   {/* ── Analytics Tab ── */}
                   <TabsContent value="analytics">
                     <div className="grid gap-4 lg:grid-cols-2">
-                      {/* Karma by cluster bar chart */}
-                      <Card className="border-border/60">
-                        <CardHeader>
-                          <CardTitle className="text-base">
+                      {/* Card 1: Karma by Cluster (No Data state) */}
+                      <Card className="border-border/60 shadow-sm transition-shadow hover:shadow-md">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
                             Karma by Cluster
                           </CardTitle>
                         </CardHeader>
-                        <CardContent className="h-72 min-w-0">
-                          {isClusterLoading ? (
-                            <Skeleton className="h-full w-full" />
-                          ) : clusterData.length === 0 ? (
-                            <div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground">
-                              <Users className="h-8 w-8 opacity-30" />
-                              <p className="text-sm">
-                                No cluster data available.
-                              </p>
-                            </div>
-                          ) : (
-                            <ResponsiveContainer width="100%" height="100%">
-                              <BarChart
-                                data={clusterData}
-                                margin={{
-                                  top: 4,
-                                  right: 8,
-                                  left: 0,
-                                  bottom: 0,
-                                }}
-                              >
-                                <CartesianGrid
-                                  vertical={false}
-                                  stroke="currentColor"
-                                  strokeOpacity={0.07}
-                                />
-                                <XAxis
-                                  dataKey="cluster"
-                                  tick={{ fontSize: 11 }}
-                                  tickLine={false}
-                                  axisLine={false}
-                                />
-                                <YAxis
-                                  allowDecimals={false}
-                                  tick={{ fontSize: 11 }}
-                                  tickLine={false}
-                                  axisLine={false}
-                                  width={36}
-                                />
-                                <Tooltip
-                                  contentStyle={{
-                                    borderRadius: "10px",
-                                    border: "1px solid hsl(var(--border))",
-                                    background: "hsl(var(--card))",
-                                    boxShadow: "0 8px 30px rgba(0,0,0,.14)",
-                                    fontSize: "12px",
-                                  }}
-                                />
-                                <Bar
-                                  dataKey="karma"
-                                  fill="#0d9488"
-                                  radius={[6, 6, 0, 0]}
-                                />
-                              </BarChart>
-                            </ResponsiveContainer>
-                          )}
+                        <CardContent className="flex h-80 flex-col items-center justify-center p-8 text-center">
+                          <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-muted/40 transition-transform hover:scale-105">
+                            <BarChart3 className="h-10 w-10 text-muted-foreground/30" />
+                          </div>
+                          <h4 className="mb-2 text-lg font-bold tracking-tight text-foreground/80">
+                            Coming Soon
+                          </h4>
+                          <p className="max-w-[200px] text-xs font-medium leading-relaxed text-muted-foreground">
+                            Cluster-level analytics for this campus are
+                            currently being processed.
+                          </p>
                         </CardContent>
                       </Card>
 
-                      {/* Events by tag pie chart */}
-                      <Card className="border-border/60">
-                        <CardHeader>
-                          <CardTitle className="text-base">
+                      {/* Card 2: Events by Tag (Donut Chart) */}
+                      <Card className="border-border/60 shadow-sm transition-shadow hover:shadow-md">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
                             Events by Tag
                           </CardTitle>
                         </CardHeader>
-                        <CardContent className="h-72 min-w-0">
+                        <CardContent className="h-80 p-0">
                           {isDistributionLoading ? (
-                            <Skeleton className="h-full w-full" />
-                          ) : distribution.length === 0 ? (
-                            <div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground">
-                              <CalendarDays className="h-8 w-8 opacity-30" />
-                              <p className="text-sm">
-                                No event tag data available.
-                              </p>
-                            </div>
+                            <Skeleton className="m-6 h-64 w-full rounded-xl" />
                           ) : (
-                            <ResponsiveContainer width="100%" height="100%">
-                              <PieChart>
-                                <Pie
-                                  data={distribution}
-                                  dataKey="count"
-                                  nameKey="tag"
-                                  outerRadius={90}
-                                  innerRadius={40}
-                                  label
-                                >
-                                  {distribution.map((entry, index) => (
-                                    <Cell
-                                      key={`${entry.tag}-${index}`}
-                                      fill={
-                                        PIE_COLORS[index % PIE_COLORS.length]
+                            <div className="flex h-full items-center justify-between px-6">
+                              {/* Donut Chart Container */}
+                              <div className="relative h-full w-[180px] shrink-0">
+                                <ResponsiveContainer width="100%" height="100%">
+                                  <PieChart>
+                                    <Pie
+                                      data={
+                                        distribution.length > 0
+                                          ? distribution
+                                          : [{ tag: "Empty", count: 1 }]
                                       }
+                                      dataKey="count"
+                                      nameKey="tag"
+                                      innerRadius={65}
+                                      outerRadius={85}
+                                      paddingAngle={5}
+                                      stroke="transparent"
+                                      className="outline-none"
+                                    >
+                                      {(distribution.length > 0
+                                        ? distribution
+                                        : [{ tag: "Empty", count: 1 }]
+                                      ).map((entry, index) => (
+                                        <Cell
+                                          key={`cell-${entry.tag}`}
+                                          fill={
+                                            distribution.length > 0
+                                              ? PIE_COLORS[
+                                                  index % PIE_COLORS.length
+                                                ]
+                                              : "#f1f5f9"
+                                          }
+                                          className="transition-opacity hover:opacity-80"
+                                        />
+                                      ))}
+                                    </Pie>
+                                    <Tooltip
+                                      content={({ active, payload }) => {
+                                        if (
+                                          active &&
+                                          payload &&
+                                          payload.length &&
+                                          distribution.length > 0
+                                        ) {
+                                          return (
+                                            <div className="rounded-xl border border-border/60 bg-background/95 p-2.5 shadow-xl backdrop-blur-sm">
+                                              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                                {payload[0].name}
+                                              </p>
+                                              <p className="text-sm font-black text-primary">
+                                                {payload[0].value} Events
+                                              </p>
+                                            </div>
+                                          );
+                                        }
+                                        return null;
+                                      }}
                                     />
-                                  ))}
-                                </Pie>
-                                <Tooltip
-                                  contentStyle={{
-                                    borderRadius: "10px",
-                                    border: "1px solid hsl(var(--border))",
-                                    background: "hsl(var(--card))",
-                                    boxShadow: "0 8px 30px rgba(0,0,0,.14)",
-                                    fontSize: "12px",
-                                  }}
-                                />
-                              </PieChart>
-                            </ResponsiveContainer>
+                                  </PieChart>
+                                </ResponsiveContainer>
+                                {/* Center Label */}
+                                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                  <span className="text-3xl font-black tracking-tighter text-primary">
+                                    {events.length}
+                                  </span>
+                                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                                    Events
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Custom Legend */}
+                              <div className="flex flex-1 flex-col gap-3.5 pl-8">
+                                {distribution.map((entry, index) => {
+                                  const percentage =
+                                    Math.round(
+                                      (entry.count / events.length) * 100,
+                                    ) || 0;
+                                  return (
+                                    <div
+                                      key={entry.tag}
+                                      className="group/item flex flex-col gap-0.5"
+                                    >
+                                      <div className="flex items-center gap-2">
+                                        <div
+                                          className="h-2.5 w-2.5 shrink-0 rounded-full transition-transform group-hover/item:scale-125"
+                                          style={{
+                                            backgroundColor:
+                                              PIE_COLORS[
+                                                index % PIE_COLORS.length
+                                              ],
+                                          }}
+                                        />
+                                        <span className="max-w-[100px] truncate text-xs font-bold tracking-tight text-foreground/80">
+                                          {entry.tag}
+                                        </span>
+                                      </div>
+                                      <span className="ml-4.5 text-[10px] font-bold text-muted-foreground transition-colors group-hover/item:text-primary/70">
+                                        {percentage}% of total
+                                      </span>
+                                    </div>
+                                  );
+                                })}
+                                {distribution.length === 0 && (
+                                  <p className="text-[11px] font-medium italic text-muted-foreground">
+                                    No tags recorded
+                                  </p>
+                                )}
+                              </div>
+                            </div>
                           )}
                         </CardContent>
                       </Card>
@@ -894,13 +1003,9 @@ export function CampusManageDashboard() {
                           { label: "Other", value: "other" },
                         ]}
                       />
-                      <Input
-                        value={eventFilters.date}
-                        type="date"
-                        onChange={(e) =>
-                          handleEventFilterChange("date")(e.target.value)
-                        }
-                        className="max-w-xs"
+                      <CampusDatePicker
+                        date={eventFilters.date}
+                        onChange={handleEventFilterChange("date")}
                       />
                     </div>
 
@@ -960,9 +1065,9 @@ export function CampusManageDashboard() {
                             <CardContent className="space-y-3">
                               <div className="flex flex-wrap gap-1">
                                 {event.tags.length > 0 ? (
-                                  event.tags.map((tag, index) => (
+                                  event.tags.map((tag) => (
                                     <Badge
-                                      key={`${event.id}-${tag || "tag"}-${index}`}
+                                      key={`${event.id}-${tag || "unnamed"}`}
                                       variant="outline"
                                       className="text-xs"
                                     >
@@ -1019,8 +1124,38 @@ export function CampusManageDashboard() {
                         ))}
                         {events.length === 0 && (
                           <Card className="border-dashed md:col-span-2 xl:col-span-3">
-                            <CardContent className="py-8 text-center text-muted-foreground">
-                              No events matched these filters.
+                            <CardContent className="py-12 text-center text-muted-foreground">
+                              <div className="flex flex-col items-center gap-4">
+                                <CalendarDays className="h-10 w-10 opacity-20" />
+                                <div className="space-y-1">
+                                  <p className="text-sm font-medium text-foreground">
+                                    No events found
+                                  </p>
+                                  <p className="text-xs opacity-70">
+                                    Try adjusting your filters to find what
+                                    you're looking for.
+                                  </p>
+                                </div>
+                                {(eventFilters.date ||
+                                  eventFilters.status ||
+                                  eventFilters.type) && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      setEventFilters({
+                                        page: 1,
+                                        status: "",
+                                        type: "",
+                                        date: "",
+                                      })
+                                    }
+                                    className="mt-2 rounded-full border-primary/20 hover:border-primary/50 hover:bg-primary/5 hover:text-primary"
+                                  >
+                                    View All Events
+                                  </Button>
+                                )}
+                              </div>
                             </CardContent>
                           </Card>
                         )}
@@ -1196,53 +1331,76 @@ export function CampusManageDashboard() {
                 </Tabs>
               </div>
 
-              {/* Right: Social Links — permanent side panel */}
-              <div className="w-full xl:w-72 xl:shrink-0">
-                <Card className="border-border/60">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-semibold">
-                      Social Links
+              {/* Right Column: Social Presence Sidebar (25%) */}
+              <div className="w-full lg:w-1/4">
+                <Card className="h-full border-border/60 shadow-sm transition-shadow hover:shadow-md">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                      Social Presence
                     </CardTitle>
-                    <p className="text-xs text-muted-foreground">
-                      Campus social media presence
-                    </p>
                   </CardHeader>
-                  <CardContent>
-                    {isSocialLoading ? (
-                      <div className="flex flex-col gap-2">
-                        <Skeleton className="h-10 w-full rounded-xl" />
-                        <Skeleton className="h-10 w-full rounded-xl" />
+                  <CardContent className="flex flex-col gap-2 p-4 pt-0">
+                    {[
+                      {
+                        id: "instagram",
+                        label: "Instagram",
+                        icon: Instagram,
+                        url: socialLinks?.instagram,
+                      },
+                      {
+                        id: "linkedin",
+                        label: "LinkedIn",
+                        icon: Linkedin,
+                        url: socialLinks?.linkedin,
+                      },
+                      {
+                        id: "github",
+                        label: "GitHub",
+                        icon: Github,
+                        url: null,
+                      },
+                      {
+                        id: "website",
+                        label: "Website",
+                        icon: Globe,
+                        url: null,
+                      },
+                    ].map((link) => (
+                      <div key={link.id} className="group relative">
+                        <Button
+                          variant="ghost"
+                          className={`h-11 w-full justify-start gap-3 rounded-xl px-4 transition-all duration-300 ${
+                            !link.url
+                              ? "cursor-not-allowed opacity-40 grayscale"
+                              : "hover:bg-primary/5 hover:text-primary active:scale-[0.98]"
+                          }`}
+                          asChild={!!link.url}
+                        >
+                          {link.url ? (
+                            <a href={link.url} target="_blank" rel="noreferrer">
+                              <link.icon className="h-4.5 w-4.5" />
+                              <span className="text-sm font-bold tracking-tight">
+                                {link.label}
+                              </span>
+                              <ExternalLink className="ml-auto h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100" />
+                            </a>
+                          ) : (
+                            <div className="flex w-full items-center">
+                              <link.icon className="h-4.5 w-4.5" />
+                              <span className="text-sm font-bold tracking-tight">
+                                {link.label}
+                              </span>
+                              <Badge
+                                variant="outline"
+                                className="ml-auto border-dashed text-[8px] font-black uppercase tracking-tighter opacity-80"
+                              >
+                                Not Linked
+                              </Badge>
+                            </div>
+                          )}
+                        </Button>
                       </div>
-                    ) : socialLinks?.instagram || socialLinks?.linkedin ? (
-                      <div className="flex flex-col gap-2">
-                        {socialLinks.instagram && (
-                          <a
-                            href={socialLinks.instagram}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex w-full items-center gap-3 rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
-                          >
-                            <Instagram className="h-4 w-4 text-pink-500" />
-                            Instagram
-                          </a>
-                        )}
-                        {socialLinks.linkedin && (
-                          <a
-                            href={socialLinks.linkedin}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex w-full items-center gap-3 rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
-                          >
-                            <Linkedin className="h-4 w-4 text-blue-600" />
-                            LinkedIn
-                          </a>
-                        )}
-                      </div>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">
-                        No social links configured yet.
-                      </p>
-                    )}
+                    ))}
                   </CardContent>
                 </Card>
               </div>
