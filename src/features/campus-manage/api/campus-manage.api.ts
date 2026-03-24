@@ -134,95 +134,108 @@ const normalizeTrend = (value: unknown): TrendPoint[] => {
 
 export const campusManageApi = {
   async getOverview(): Promise<CampusOverview> {
-    const [overviewRaw, weeklyRaw] = await Promise.all([
-      apiClient.get<unknown>(endpoints.campusManage.details),
-      apiClient.get<unknown>(endpoints.campusManage.weeklyKarma),
-    ]);
+    try {
+      const [overviewRaw, weeklyRaw] = await Promise.all([
+        apiClient.get<unknown>(endpoints.campusManage.details),
+        apiClient.get<unknown>(endpoints.campusManage.weeklyKarma),
+      ]);
 
-    const data = unwrapDataObject(overviewRaw);
-    const weekly = unwrapDataObject(weeklyRaw);
-    const lead = asRecord(data.lead);
+      const data = unwrapDataObject(overviewRaw);
+      const weekly = unwrapDataObject(weeklyRaw);
+      const lead = asRecord(data.lead);
 
-    const collegeName = safeToString(
-      data.college_name ?? data.collegeName ?? data.name,
-      "-",
-    );
-    const campusCode = safeToString(
-      data.campus_code ?? data.campusCode ?? data.code,
-      "-",
-    );
-    const campusZone = safeToString(
-      data.campus_zone ?? data.campusZone ?? data.zone,
-      "-",
-    );
-    const campusLevel = toNumber(data.campus_level ?? data.campusLevel);
-    const totalKarma = toNumber(data.total_karma ?? data.totalKarma);
-    const totalMembers = toNumber(data.total_members ?? data.totalMembers);
-    const activeMembers = toNumber(data.active_members ?? data.activeMembers);
-    const rank = toNumber(data.rank);
-    const campusLead = safeToString(
-      lead.campus_lead ?? data.campus_lead ?? data.campusLead,
-      "-",
-    );
-    const enabler = safeToString(lead.enabler ?? data.enabler, "") || null;
-    const karma7Day = toNumber(
-      data.karma_last_7_days ??
-        data.karma_rate_7d ??
-        data.karma_7_day ??
-        data.karma7Day,
-    );
-    const karma30Day = toNumber(
-      data.karma_last_30_days ??
-        data.karma_rate_30d ??
-        data.karma_30_day ??
-        data.karma30Day,
-    );
-    const igChaptersCount = toNumber(
-      data.active_ig_count ??
-        data.ig_chapters_count ??
-        data.igCount ??
-        data.ig_chapters,
-    );
-    const orgId =
-      safeToString(data.org_id ?? data.orgId ?? data.organization_id, "") ||
-      undefined;
+      const collegeName = safeToString(
+        data.college_name ?? data.collegeName ?? data.name,
+        "-",
+      );
+      const campusCode = safeToString(
+        data.campus_code ?? data.campusCode ?? data.code,
+        "-",
+      );
+      const campusZone = safeToString(
+        data.campus_zone ?? data.campusZone ?? data.zone,
+        "-",
+      );
+      const campusLevel = toNumber(data.campus_level ?? data.campusLevel);
+      const totalKarma = toNumber(data.total_karma ?? data.totalKarma);
+      const totalMembers = toNumber(data.total_members ?? data.totalMembers);
+      const activeMembers = toNumber(data.active_members ?? data.activeMembers);
+      const rank = toNumber(data.rank);
+      const campusLead = safeToString(
+        lead.campus_lead ?? data.campus_lead ?? data.campusLead,
+        "-",
+      );
+      const enabler = safeToString(lead.enabler ?? data.enabler, "") || null;
+      const karma7Day = toNumber(
+        data.karma_last_7_days ??
+          data.karma_rate_7d ??
+          data.karma_7_day ??
+          data.karma7Day,
+      );
+      const karma30Day = toNumber(
+        data.karma_last_30_days ??
+          data.karma_rate_30d ??
+          data.karma_30_day ??
+          data.karma30Day,
+      );
+      const igChaptersCount = toNumber(
+        data.active_ig_count ??
+          data.ig_chapters_count ??
+          data.igCount ??
+          data.ig_chapters,
+      );
+      const orgId =
+        safeToString(
+          data.id ??
+            data.org_id ??
+            data.orgId ??
+            data.organization_id ??
+            data.campus_id ??
+            data.campusId,
+          "",
+        ) || undefined;
 
-    const weeklyTrend = Object.entries(weekly)
-      .filter(([key]) => /^\d{4}-\d{2}-\d{2}$/.test(key))
-      .map(([key, value]) => ({
-        label: key,
-        value: toNumber(value),
-      }))
-      .sort((a, b) => a.label.localeCompare(b.label));
+      const weeklyTrend = Object.entries(weekly)
+        .filter(([key]) => /^\d{4}-\d{2}-\d{2}$/.test(key))
+        .map(([key, value]) => ({
+          label: key,
+          value: toNumber(value),
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label));
 
-    const trend =
-      weeklyTrend.length > 0
-        ? weeklyTrend
-        : normalizeTrend(data.trend_7_day ?? data.trend ?? data.trend_7d);
+      const trend =
+        weeklyTrend.length > 0
+          ? weeklyTrend
+          : normalizeTrend(data.trend_7_day ?? data.trend ?? data.trend_7d);
 
-    return {
-      collegeName,
-      campusCode,
-      campusZone,
-      campusLevel,
-      totalKarma,
-      totalMembers,
-      activeMembers,
-      rank,
-      campusLead,
-      enabler,
-      karma7Day,
-      karma30Day,
-      igChaptersCount,
-      orgId,
-      trend:
-        trend.length > 0
-          ? trend
-          : [
-              { label: "7D", value: karma7Day },
-              { label: "30D", value: karma30Day },
-            ],
-    };
+      return {
+        collegeName,
+        campusCode,
+        campusZone,
+        campusLevel,
+        totalKarma,
+        totalMembers,
+        activeMembers,
+        rank,
+        campusLead,
+        enabler,
+        karma7Day,
+        karma30Day,
+        igChaptersCount,
+        orgId,
+        trend:
+          trend.length > 0
+            ? trend
+            : [
+                { label: "7D", value: karma7Day },
+                { label: "30D", value: karma30Day },
+              ],
+        clusterData: [] as ClusterKarmaPoint[],
+      };
+    } catch (e) {
+      console.error("[CampusManageApi] getOverview CRASHED:", e);
+      throw e;
+    }
   },
 
   async getLeaderboard(
@@ -304,16 +317,28 @@ export const campusManageApi = {
     if (!orgId) return [];
 
     const endpoint = endpoints.campusManage.karmaByCluster(orgId);
-
     const raw = await apiClient.get<unknown>(endpoint);
+    const data = unwrapDataObject(raw);
 
-    return unwrapDataArray(raw).map((item) => {
-      const row = asRecord(item);
-      return {
-        cluster: safeToString(row.cluster ?? row.cluster_name, "Unknown"),
-        karma: toNumber(row.karma ?? row.total_karma),
-      };
-    });
+    // The API returns an object where keys are cluster names
+    // (technology, design, unclustered, etc.)
+    const results = Object.entries(data)
+      .filter(
+        ([key]) =>
+          !["hasError", "statusCode", "message", "response"].includes(key),
+      )
+      .map(([cluster, details]) => {
+        const row = asRecord(details);
+        return {
+          cluster: safeToString(cluster, "Unknown"),
+          karma: toNumber(row.total_karma ?? row.karma ?? row.points),
+          memberCount: toNumber(row.member_count ?? row.count),
+        };
+      })
+      .filter((item) => item.karma > 0 || item.memberCount > 0)
+      .sort((a, b) => b.karma - a.karma);
+
+    return results;
   },
 
   async getEventDistribution(): Promise<EventDistributionPoint[]> {
@@ -466,28 +491,57 @@ export const campusManageApi = {
     );
   },
 
-  async getIgChapters(orgId?: string): Promise<IgChapter[]> {
-    if (!orgId) return [];
-
-    const endpoint = endpoints.campusManage.igChapters(orgId);
-
+  async getIgChapters(): Promise<IgChapter[]> {
+    const endpoint = endpoints.campusManage.igChapters;
     const raw = await apiClient.get<unknown>(endpoint);
+    const data = unwrapDataArray(raw);
 
-    return unwrapDataArray(raw).map((item, index) => {
+    return data.map((item) => {
       const row = asRecord(item);
       const ig = asRecord(row.ig);
       const lead = asRecord(row.lead);
-      const rawId = safeToString(row.id ?? row.name, "");
+
       return {
-        id: rawId || `ig-${index}`,
-        name: safeToString(ig.name ?? row.name ?? row.title, "IG chapter"),
-        lead: safeToString(lead.full_name ?? row.lead ?? row.lead_name, "-"),
-        membersCount: toNumber(
-          row.member_count ?? row.members_count ?? row.members,
+        id: safeToString(row.id),
+        igId: safeToString(row.ig_id ?? ig.id),
+        name: safeToString(row.ig_name ?? ig.name ?? row.name, "IG Chapter"),
+        code: safeToString(row.ig_code ?? ig.code),
+        icon: safeToString(row.ig_icon ?? ig.icon),
+        leadId: safeToString(row.lead_id ?? lead.id),
+        lead: safeToString(
+          row.lead_name ?? lead.full_name ?? row.lead,
+          "No Lead Assistant",
         ),
+        membersCount: toNumber(
+          row.campus_ig_member_count ?? row.member_count ?? row.members,
+        ),
+        description: safeToString(row.description),
+        isActive: Boolean(row.is_active ?? true),
         execomMembers: [],
       };
     });
+  },
+
+  async createIgChapter(data: {
+    ig: string;
+    description?: string;
+    lead?: string;
+  }) {
+    return apiClient.post(endpoints.campusManage.igChapters, data);
+  },
+
+  async updateIgChapter(
+    chapterId: string,
+    data: { description?: string; lead?: string; is_active?: boolean },
+  ) {
+    return apiClient.patch(
+      endpoints.campusManage.igChapterDetail(chapterId),
+      data,
+    );
+  },
+
+  async deleteIgChapter(chapterId: string) {
+    return apiClient.delete(endpoints.campusManage.igChapterDetail(chapterId));
   },
 
   async getSocialLinks(orgId?: string): Promise<SocialLinks> {

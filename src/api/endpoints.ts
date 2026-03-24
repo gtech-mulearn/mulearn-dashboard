@@ -235,9 +235,11 @@ export const endpoints = {
     /** PATCH - Update a student's type/status within the campus org */
     changeStudentType: (memberId: string) =>
       `/api/v1/dashboard/campus/change-student-type/${memberId}/`,
-    /** GET - Campus IG chapters */
-    igChapters: (orgId: string) =>
-      `/api/v1/dashboard/campus/${orgId}/ig-chapters/`,
+    /** GET/POST - Campus IG chapters (authenticated user's campus) */
+    igChapters: "/api/v1/dashboard/campus/ig-chapters/",
+    /** PATCH/DELETE - Specific IG chapter management */
+    igChapterDetail: (chapterId: string) =>
+      `/api/v1/dashboard/campus/ig-chapters/${chapterId}/`,
     /** GET - Campus social links */
     socialLinks: (orgId: string) =>
       `/api/v1/dashboard/campus/${orgId}/social-links/`,

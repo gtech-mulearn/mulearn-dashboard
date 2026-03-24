@@ -24,6 +24,7 @@ export interface CampusOverview {
   igChaptersCount: number;
   orgId?: string;
   trend: TrendPoint[];
+  clusterData: ClusterKarmaPoint[];
 }
 
 export interface PaginationInfo {
@@ -52,6 +53,7 @@ export interface CampusLeaderboardResponse {
 export interface ClusterKarmaPoint {
   cluster: string;
   karma: number;
+  memberCount: number;
 }
 
 export interface KarmaByClusterItem {
@@ -91,9 +93,15 @@ export interface CampusEventsResponse {
 
 export interface IgChapter {
   id: string;
+  igId?: string;
   name: string;
+  code?: string;
+  icon?: string;
+  leadId?: string;
   lead: string;
   membersCount: number;
+  description?: string;
+  isActive?: boolean;
   execomMembers: string[];
 }
 

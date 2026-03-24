@@ -70,7 +70,11 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import type { CampusEventFilters, CampusLeaderboardFilters } from "../types";
+import type {
+  CampusEventFilters,
+  CampusLeaderboardFilters,
+  ClusterKarmaPoint,
+} from "../types";
 
 const PIE_COLORS = ["#16a34a", "#0ea5e9", "#f59e0b", "#ef4444", "#8b5cf6"];
 const PAGE_SIZE = 10;
@@ -300,8 +304,7 @@ export function CampusManageDashboard() {
 
   const { data: execom = [], isLoading: isExecomLoading } = useExecomMembers();
 
-  const { data: chapters = [], isLoading: isChaptersLoading } =
-    useIgChapters(orgId);
+  const { data: chapters = [], isLoading: isChaptersLoading } = useIgChapters();
 
   const { data: socialLinks, isLoading: isSocialLoading } =
     useSocialLinks(orgId);
@@ -826,24 +829,101 @@ export function CampusManageDashboard() {
                   {/* ── Analytics Tab ── */}
                   <TabsContent value="analytics">
                     <div className="grid gap-4 lg:grid-cols-2">
-                      {/* Card 1: Karma by Cluster (No Data state) */}
+                      {/* Card 1: Karma by Cluster */}
                       <Card className="border-border/60 shadow-sm transition-shadow hover:shadow-md">
                         <CardHeader className="pb-2">
                           <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
                             Karma by Cluster
                           </CardTitle>
                         </CardHeader>
-                        <CardContent className="flex h-80 flex-col items-center justify-center p-8 text-center">
-                          <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-muted/40 transition-transform hover:scale-105">
-                            <BarChart3 className="h-10 w-10 text-muted-foreground/30" />
-                          </div>
-                          <h4 className="mb-2 text-lg font-bold tracking-tight text-foreground/80">
-                            Coming Soon
-                          </h4>
-                          <p className="max-w-[200px] text-xs font-medium leading-relaxed text-muted-foreground">
-                            Cluster-level analytics for this campus are
-                            currently being processed.
-                          </p>
+                        <CardContent className="h-80 p-0">
+                          {isClusterLoading ? (
+                            <Skeleton className="m-6 h-64 w-full rounded-xl" />
+                          ) : clusterData.length > 0 ? (
+                            <div className="h-full w-full p-4">
+                              <ResponsiveContainer width="100%" height="100%">
+                                <BarChart
+                                  data={clusterData}
+                                  layout="vertical"
+                                  margin={{
+                                    top: 5,
+                                    right: 30,
+                                    left: 40,
+                                    bottom: 5,
+                                  }}
+                                >
+                                  <CartesianGrid
+                                    strokeDasharray="3 3"
+                                    horizontal={false}
+                                    strokeOpacity={0.1}
+                                  />
+                                  <XAxis type="number" hide />
+                                  <YAxis
+                                    dataKey="cluster"
+                                    type="category"
+                                    tick={{ fontSize: 10, fontWeight: 600 }}
+                                    width={80}
+                                    axisLine={false}
+                                    tickLine={false}
+                                  />
+                                  <Tooltip
+                                    cursor={{ fill: "transparent" }}
+                                    content={({ active, payload }) => {
+                                      if (active && payload && payload.length) {
+                                        const point = payload[0]
+                                          .payload as ClusterKarmaPoint;
+                                        return (
+                                          <div className="rounded-xl border border-border/60 bg-background/95 p-2.5 shadow-xl backdrop-blur-sm">
+                                            <p className="mb-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                                              {point.cluster}
+                                            </p>
+                                            <div className="flex flex-col gap-0.5">
+                                              <p className="text-sm font-black text-primary">
+                                                {point.karma?.toLocaleString()}{" "}
+                                                Karma
+                                              </p>
+                                              <p className="text-[11px] font-bold text-muted-foreground">
+                                                {point.memberCount?.toLocaleString()}{" "}
+                                                Members
+                                              </p>
+                                            </div>
+                                          </div>
+                                        );
+                                      }
+                                      return null;
+                                    }}
+                                  />
+                                  <Bar
+                                    dataKey="karma"
+                                    fill="hsl(var(--primary))"
+                                    radius={[0, 4, 4, 0]}
+                                    barSize={20}
+                                  >
+                                    {clusterData.map((entry, index) => (
+                                      <Cell
+                                        key={`cell-${entry.cluster}`}
+                                        fill={
+                                          PIE_COLORS[index % PIE_COLORS.length]
+                                        }
+                                      />
+                                    ))}
+                                  </Bar>
+                                </BarChart>
+                              </ResponsiveContainer>
+                            </div>
+                          ) : (
+                            <div className="flex h-full flex-col items-center justify-center p-8 text-center">
+                              <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-muted/40 transition-transform hover:scale-105">
+                                <BarChart3 className="h-10 w-10 text-muted-foreground/30" />
+                              </div>
+                              <h4 className="mb-2 text-lg font-bold tracking-tight text-foreground/80">
+                                No Data
+                              </h4>
+                              <p className="max-w-[200px] text-xs font-medium leading-relaxed text-muted-foreground">
+                                No cluster data available for this campus.
+                              </p>
+                            </div>
+                          )}
                         </CardContent>
                       </Card>
 
@@ -921,7 +1001,10 @@ export function CampusManageDashboard() {
                                 {/* Center Label */}
                                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                                   <span className="text-3xl font-black tracking-tighter text-primary">
-                                    {events.length}
+                                    {distribution.reduce(
+                                      (acc, curr) => acc + curr.count,
+                                      0,
+                                    )}
                                   </span>
                                   <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
                                     Events
@@ -932,9 +1015,13 @@ export function CampusManageDashboard() {
                               {/* Custom Legend */}
                               <div className="flex flex-1 flex-col gap-3.5 pl-8">
                                 {distribution.map((entry, index) => {
+                                  const totalDist = distribution.reduce(
+                                    (acc, curr) => acc + curr.count,
+                                    0,
+                                  );
                                   const percentage =
                                     Math.round(
-                                      (entry.count / events.length) * 100,
+                                      (entry.count / totalDist) * 100,
                                     ) || 0;
                                   return (
                                     <div

@@ -27,9 +27,18 @@ export function useCampusLeaderboard(filters: CampusLeaderboardFilters) {
 }
 
 export function useKarmaByCluster(orgId?: string) {
+  const { data: overview } = useCampusOverview();
+
   return useQuery({
-    queryKey: campusManageKeys.karmaByCluster(orgId),
-    queryFn: () => campusManageApi.getKarmaByCluster(orgId),
+    queryKey: campusManageKeys.karmaByCluster(orgId || overview?.orgId),
+    queryFn: async () => {
+      const id = orgId || overview?.orgId;
+      if (!id) return [];
+      return campusManageApi.getKarmaByCluster(id);
+    },
+    enabled: !!(orgId || overview?.orgId),
+    initialData:
+      !orgId && overview?.clusterData ? overview.clusterData : undefined,
   });
 }
 
@@ -129,10 +138,54 @@ export function useChangeStudentType() {
   });
 }
 
-export function useIgChapters(orgId?: string) {
+export function useIgChapters() {
   return useQuery({
-    queryKey: campusManageKeys.igChapters(orgId),
-    queryFn: () => campusManageApi.getIgChapters(orgId),
+    queryKey: campusManageKeys.igChapters(),
+    queryFn: () => campusManageApi.getIgChapters(),
+  });
+}
+
+export function useCreateIgChapter() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { ig: string; description?: string; lead?: string }) =>
+      campusManageApi.createIgChapter(data),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: campusManageKeys.igChapters(),
+      });
+    },
+  });
+}
+
+export function useUpdateIgChapter() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      chapterId,
+      data,
+    }: {
+      chapterId: string;
+      data: { description?: string; lead?: string; is_active?: boolean };
+    }) => campusManageApi.updateIgChapter(chapterId, data),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: campusManageKeys.igChapters(),
+      });
+    },
+  });
+}
+
+export function useDeleteIgChapter() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (chapterId: string) =>
+      campusManageApi.deleteIgChapter(chapterId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: campusManageKeys.igChapters(),
+      });
+    },
   });
 }
 
