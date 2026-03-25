@@ -240,9 +240,11 @@ export const endpoints = {
     /** PATCH/DELETE - Specific IG chapter management */
     igChapterDetail: (chapterId: string) =>
       `/api/v1/dashboard/campus/ig-chapters/${chapterId}/`,
-    /** GET - Campus social links */
-    socialLinks: (orgId: string) =>
-      `/api/v1/dashboard/campus/${orgId}/social-links/`,
+    /** GET/PUT - Campus social links (authenticated user's info from token) */
+    socialLinks: "/api/v1/dashboard/campus/social-links/",
+    /** DELETE - Delete a specific social link record (requires bearer token) */
+    socialLinkDetail: (linkId: string) =>
+      `/api/v1/dashboard/campus/social-links/${linkId}/`,
   },
 
   // ============================================

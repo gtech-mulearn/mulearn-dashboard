@@ -30,6 +30,4 @@ export const campusManageKeys = {
   igCodes: () => [...campusManageKeys.all, "ig-codes"] as const,
   igChapters: (orgId?: string) =>
     [...campusManageKeys.all, "ig-chapters", orgId ?? ""] as const,
-  socialLinks: (orgId?: string) =>
-    [...campusManageKeys.all, "social-links", orgId ?? ""] as const,
 };

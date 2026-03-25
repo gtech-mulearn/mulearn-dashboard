@@ -5,18 +5,28 @@ import {
   BookOpen,
   CalendarDays,
   ExternalLink,
+  Facebook,
   Github,
   Globe,
   Instagram,
+  Link2,
   Linkedin,
   Loader2,
+  MessageSquare,
+  Pencil,
   Plus,
+  PlusCircle,
   Search,
   Trash2,
   Trophy,
+  Twitter,
   User,
   Users,
   X,
+  Youtube,
+  MapPin,
+  Briefcase,
+  Heart,
   Zap,
 } from "lucide-react";
 import { type ReactNode, useMemo, useState } from "react";
@@ -44,6 +54,21 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
   Table,
   TableBody,
   TableCell,
@@ -61,7 +86,9 @@ import {
   useIgChapters,
   useKarmaByCluster,
   useRemoveExecomMember,
-  useSocialLinks,
+  useUpsertSocialLink,
+  useDeleteSocialLink,
+  useUserProfile,
 } from "../hooks";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -74,10 +101,96 @@ import type {
   CampusEventFilters,
   CampusLeaderboardFilters,
   ClusterKarmaPoint,
+  SocialLink,
+  SocialLinks,
 } from "../types";
 
 const PIE_COLORS = ["#16a34a", "#0ea5e9", "#f59e0b", "#ef4444", "#8b5cf6"];
 const PAGE_SIZE = 10;
+
+const SOCIAL_PLATFORMS = [
+  {
+    id: "instagram",
+    label: "Instagram",
+    icon: Instagram,
+    color: "text-pink-500",
+    bg: "bg-pink-500/10",
+  },
+  {
+    id: "linkedin",
+    label: "LinkedIn",
+    icon: Linkedin,
+    color: "text-blue-600",
+    bg: "bg-blue-600/10",
+  },
+  {
+    id: "twitter",
+    label: "Twitter",
+    icon: Twitter,
+    color: "text-sky-500",
+    bg: "bg-sky-500/10",
+  },
+  {
+    id: "facebook",
+    label: "Facebook",
+    icon: Facebook,
+    color: "text-blue-700",
+    bg: "bg-blue-700/10",
+  },
+  {
+    id: "youtube",
+    label: "YouTube",
+    icon: Youtube,
+    color: "text-red-600",
+    bg: "bg-red-600/10",
+  },
+  {
+    id: "discord",
+    label: "Discord",
+    icon: MessageSquare,
+    color: "text-violet-500",
+    bg: "bg-violet-500/10",
+  },
+  {
+    id: "github",
+    label: "GitHub",
+    icon: Github,
+    color: "text-slate-800",
+    bg: "bg-slate-800/10",
+  },
+  {
+    id: "website",
+    label: "Website",
+    icon: Globe,
+    color: "text-indigo-500",
+    bg: "bg-indigo-500/10",
+  },
+  {
+    id: "other",
+    label: "Other",
+    icon: Link2,
+    color: "text-amber-500",
+    bg: "bg-amber-500/10",
+  },
+] as const;
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+const formatDateRange = (start?: string, end?: string) => {
+  if (!start) return "Date TBD";
+  const startDate = new Date(start);
+  if (!end || isSameDay(startDate, new Date(end))) {
+    return format(startDate, "MMM d, yyyy");
+  }
+  const endDate = new Date(end);
+  if (
+    startDate.getMonth() === endDate.getMonth() &&
+    startDate.getFullYear() === endDate.getFullYear()
+  ) {
+    return `${format(startDate, "MMM d")} - ${format(endDate, "d, yyyy")}`;
+  }
+  return `${format(startDate, "MMM d")} - ${format(endDate, "MMM d, yyyy")}`;
+};
 
 // ─── Reusable sub-components ────────────────────────────────────────────────
 
@@ -306,13 +419,26 @@ export function CampusManageDashboard() {
 
   const { data: chapters = [], isLoading: isChaptersLoading } = useIgChapters();
 
-  const { data: socialLinks, isLoading: isSocialLoading } =
-    useSocialLinks(orgId);
+  const socialLinks = overview?.socialLinks;
+  const isSocialLoading = isOverviewLoading;
+
+  // ─── Execom user verification ──
+  const { data: verifiedUser, isFetching: isVerifyingUser } =
+    useUserProfile(newMuid);
 
   // ─── Mutations ───────────────────────────────────────────────────────────
+  const { mutate: upsertSocial, isPending: isUpsertingSocial } =
+    useUpsertSocialLink();
+  const { mutate: deleteSocial, isPending: isDeletingSocial } =
+    useDeleteSocialLink();
   const { mutate: addExecom, isPending: isAdding } = useAddExecomMember();
   const { mutate: removeExecom, isPending: isRemoving } =
     useRemoveExecomMember();
+
+  // ─── Social presence state ──
+  const [editingPlatform, setEditingPlatform] = useState<string | null>(null);
+  const [socialValue, setSocialValue] = useState("");
+  const [isAddingNewSocial, setIsAddingNewSocial] = useState(false);
 
   // ─── Derived leaderboard data ────────────────────────────────────────────
   const leaderboard = leaderboardData?.items ?? [];
@@ -1099,114 +1225,143 @@ export function CampusManageDashboard() {
                     {isEventsLoading ? (
                       <Skeleton className="h-52 w-full" />
                     ) : (
-                      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                         {events.map((event) => (
                           <Card
                             key={event.id}
-                            className="overflow-hidden border-border/60"
+                            className="group flex flex-col overflow-hidden border-border/60 p-0 gap-0 transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-xl"
                           >
+                            {/* Header Image Area */}
                             {event.coverImage && (
-                              <div className="h-36 w-full overflow-hidden bg-muted">
+                              <div className="relative aspect-video w-full overflow-hidden">
                                 <img
                                   src={event.coverImage}
                                   alt={event.title}
-                                  className="h-full w-full object-cover"
+                                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                                 />
                               </div>
                             )}
-                            <CardHeader className="space-y-2 pb-2">
-                              <div className="flex items-start justify-between gap-2">
-                                <CardTitle className="text-base leading-snug">
+
+                            {/* Content */}
+                            <div className="flex flex-1 flex-col p-5">
+                              <div className="mb-4">
+                                <h3 className="line-clamp-1 text-lg font-bold leading-tight group-hover:text-primary transition-colors">
                                   {event.title}
-                                </CardTitle>
-                                <Badge
-                                  variant={
-                                    event.status === "completed"
-                                      ? "secondary"
-                                      : event.status === "ongoing" ||
-                                          event.status === "published"
-                                        ? "default"
-                                        : "outline"
-                                  }
-                                  className="shrink-0 capitalize"
-                                >
-                                  {event.status}
-                                </Badge>
+                                </h3>
+                                <div className="mt-2 flex items-center gap-1.5 text-sm font-semibold text-primary">
+                                  <CalendarDays className="h-4 w-4" />
+                                  {formatDateRange(event.date, event.endDate)}
+                                </div>
                               </div>
-                              <p className="flex items-center gap-1 text-xs text-muted-foreground">
-                                <CalendarDays className="h-3 w-3 shrink-0" />
-                                {event.date
-                                  ? new Date(event.date).toLocaleDateString()
-                                  : "Date TBD"}
-                                {event.endDate &&
-                                  event.endDate !== event.date && (
-                                    <>
-                                      {" → "}
-                                      {new Date(
-                                        event.endDate,
-                                      ).toLocaleDateString()}
-                                    </>
-                                  )}
-                              </p>
-                            </CardHeader>
-                            <CardContent className="space-y-3">
-                              <div className="flex flex-wrap gap-1">
+
+                              {/* Tags */}
+                              <div className="mb-5 flex flex-wrap gap-1.5">
                                 {event.tags.length > 0 ? (
                                   event.tags.map((tag) => (
                                     <Badge
                                       key={`${event.id}-${tag || "unnamed"}`}
-                                      variant="outline"
-                                      className="text-xs"
+                                      variant="secondary"
+                                      className="h-5 bg-muted/50 px-2 text-[10px] font-bold"
                                     >
                                       {tag}
                                     </Badge>
                                   ))
                                 ) : (
-                                  <Badge variant="outline" className="text-xs">
+                                  <Badge
+                                    variant="secondary"
+                                    className="h-5 bg-muted/50 px-2 text-[10px] font-bold"
+                                  >
                                     No tags
                                   </Badge>
                                 )}
                               </div>
-                              <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                                {event.venueCity && event.venueCity !== "-" && (
-                                  <>
-                                    <span>City</span>
-                                    <span className="font-medium text-foreground capitalize">
-                                      {event.venueCity}
-                                    </span>
-                                  </>
-                                )}
-                                {event.venueType && event.venueType !== "-" && (
-                                  <>
-                                    <span>Venue</span>
-                                    <span className="font-medium text-foreground capitalize">
-                                      {event.venueType}
-                                    </span>
-                                  </>
-                                )}
-                                {event.scope && event.scope !== "-" && (
-                                  <>
-                                    <span>Scope</span>
-                                    <span className="font-medium text-foreground capitalize">
-                                      {event.scope}
-                                    </span>
-                                  </>
-                                )}
-                                {event.organiserType &&
-                                  event.organiserType !== "-" && (
-                                    <>
-                                      <span>Organiser</span>
-                                      <span className="font-medium text-foreground capitalize">
-                                        {event.organiserType}
-                                      </span>
-                                    </>
+
+                              {/* Information Grid 2x2 */}
+                              <div className="grid grid-cols-2 gap-4 border-t border-border/40 pt-5">
+                                <div className="flex items-start gap-2.5">
+                                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                                  </div>
+                                  <div className="min-w-0">
+                                    <div className="truncate text-xs font-bold capitalize">
+                                      {event.venueCity || "Kochi"}
+                                    </div>
+                                    <div className="text-[10px] uppercase tracking-tighter text-muted-foreground/60">
+                                      {event.venueType || "Location"}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-start gap-2.5">
+                                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                                    <Users className="h-4 w-4 text-muted-foreground" />
+                                  </div>
+                                  <div className="min-w-0">
+                                    <div className="truncate text-xs font-bold capitalize">
+                                      {event.scope || "-"}
+                                    </div>
+                                    <div className="text-[10px] uppercase tracking-tighter text-muted-foreground/60">
+                                      Scope
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-start gap-2.5">
+                                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                                    <Briefcase className="h-4 w-4 text-muted-foreground" />
+                                  </div>
+                                  <div className="min-w-0">
+                                    <div className="truncate text-xs font-bold capitalize">
+                                      {event.organiserType || "-"}
+                                    </div>
+                                    <div className="text-[10px] uppercase tracking-tighter text-muted-foreground/60">
+                                      Organizer
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-start gap-2.5">
+                                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                                    <Trophy className="h-4 w-4 text-muted-foreground" />
+                                  </div>
+                                  <div className="min-w-0">
+                                    <div className="truncate text-xs font-bold capitalize">
+                                      {event.type || "Event"}
+                                    </div>
+                                    <div className="text-[10px] uppercase tracking-tighter text-muted-foreground/60">
+                                      Category
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Social Proof Footer */}
+                            <div className="flex items-center justify-between border-t border-border/40 bg-muted/5 px-5 py-3.5">
+                              <div className="flex items-center gap-2">
+                                <Heart
+                                  className={cn(
+                                    "h-4 w-4 transition-all duration-300",
+                                    event.interestCount > 0
+                                      ? "fill-red-500 text-red-500 scale-110"
+                                      : "text-muted-foreground",
                                   )}
-                                <span>Interested</span>
-                                <span className="font-semibold text-foreground">
-                                  {event.interestCount}
+                                />
+                                <span className="text-xs font-bold">
+                                  {event.interestCount}{" "}
+                                  <span className="font-medium text-muted-foreground">
+                                    Interested
+                                  </span>
                                 </span>
                               </div>
-                            </CardContent>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary transition-colors"
+                              >
+                                <ExternalLink className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </Card>
                         ))}
                         {events.length === 0 && (
@@ -1251,105 +1406,163 @@ export function CampusManageDashboard() {
                   </TabsContent>
 
                   {/* ── Execom Tab ── */}
-                  <TabsContent value="execom">
-                    <Card className="mb-4 border-border/60">
-                      <CardHeader>
-                        <CardTitle className="text-sm font-semibold">
-                          Add Execom Member
+                  <TabsContent
+                    value="execom"
+                    className="animate-in fade-in slide-in-from-bottom-2"
+                  >
+                    <Card className="mb-6 border-border/60 shadow-sm">
+                      <CardHeader className="pb-3 text-center sm:text-left">
+                        <CardTitle className="text-xl font-bold tracking-tight">
+                          Manage Leadership Team
                         </CardTitle>
+                        <p className="text-xs text-muted-foreground">
+                          Appoint members to the campus executive committee
+                        </p>
                       </CardHeader>
                       <CardContent>
-                        <div className="flex gap-2">
-                          <Input
-                            value={newMuid}
-                            onChange={(e) => setNewMuid(e.target.value)}
-                            placeholder="Enter MUID (e.g. john@mulearn)"
-                            className="max-w-sm"
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") handleAddExecom();
-                            }}
-                          />
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                          <div className="group relative flex-1">
+                            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                            <Input
+                              value={newMuid}
+                              onChange={(e) => setNewMuid(e.target.value)}
+                              placeholder="Enter MUID (e.g. john@mulearn)"
+                              className="h-11 rounded-xl border-border/60 pl-10 pr-12 shadow-sm transition-all focus-visible:ring-primary/20"
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") handleAddExecom();
+                              }}
+                            />
+                            {/* Instant Verification Indicator */}
+                            {newMuid.includes("@") && (
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+                                {isVerifyingUser ? (
+                                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground/50" />
+                                ) : verifiedUser?.name ? (
+                                  <div className="flex items-center gap-1.5 animate-in zoom-in-90 fade-in">
+                                    <div className="h-7 w-7 overflow-hidden rounded-lg shadow-sm border border-border/40">
+                                      {verifiedUser.profilePic ? (
+                                        <img
+                                          src={verifiedUser.profilePic}
+                                          alt=""
+                                          className="h-full w-full object-cover"
+                                        />
+                                      ) : (
+                                        <div className="flex h-full w-full items-center justify-center bg-primary/5">
+                                          <User className="h-3.5 w-3.5 text-primary/40" />
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                ) : null}
+                              </div>
+                            )}
+                          </div>
                           <Button
                             onClick={handleAddExecom}
                             disabled={isAdding || !newMuid.trim()}
-                            size="sm"
+                            className="h-11 rounded-xl px-6 font-bold shadow-lg shadow-primary/10 transition-all hover:shadow-primary/20 active:scale-[0.98]"
                           >
                             {isAdding ? (
                               <Loader2 className="h-4 w-4 animate-spin" />
                             ) : (
                               <Plus className="h-4 w-4" />
                             )}
-                            <span className="ml-1">Add</span>
+                            <span className="ml-2">Add Member</span>
                           </Button>
                         </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="border-border/60">
-                      <CardHeader>
-                        <CardTitle className="text-sm font-semibold">
-                          Current Execom Roster
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        {isExecomLoading ? (
-                          <Skeleton className="h-40 w-full" />
-                        ) : execom.length > 0 ? (
-                          <div className="space-y-2">
-                            {execom.map((member) => (
-                              <div
-                                key={member.id}
-                                className="flex items-center justify-between rounded-xl border border-border/60 p-3"
-                              >
-                                <div className="flex items-center gap-3">
-                                  <Avatar className="h-10 w-10">
-                                    <AvatarImage
-                                      src={member.profilePic || ""}
-                                      alt={member.name}
-                                    />
-                                    <AvatarFallback>
-                                      {member.name.charAt(0)}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <div>
-                                    <p className="font-medium">{member.name}</p>
-                                    <p className="font-mono text-[10px] text-muted-foreground">
-                                      {member.muid}
-                                    </p>
-                                    <p className="text-xs uppercase tracking-tight text-muted-foreground">
-                                      {member.igChapter}
-                                    </p>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                  <Badge variant="secondary">
-                                    {member.role}
-                                  </Badge>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                                    disabled={isRemoving}
-                                    onClick={() => removeExecom(member.id)}
-                                    title="Remove execom role"
-                                  >
-                                    {isRemoving ? (
-                                      <Loader2 className="h-4 w-4 animate-spin" />
-                                    ) : (
-                                      <Trash2 className="h-4 w-4" />
-                                    )}
-                                  </Button>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="text-sm text-muted-foreground">
-                            No execom members found.
+                        {verifiedUser?.name && (
+                          <p className="mt-2 pl-3 text-[10px] font-bold uppercase tracking-widest text-primary animate-in fade-in slide-in-from-left-1">
+                            Found: {verifiedUser.name}
                           </p>
                         )}
                       </CardContent>
                     </Card>
+
+                    <SectionTitle
+                      title="Current Execom Roster"
+                      subtitle="Our campus leadership team for this tenure"
+                    />
+
+                    {isExecomLoading ? (
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        {[1, 2, 3].map((i) => (
+                          <Skeleton
+                            key={i}
+                            className="h-28 w-full rounded-2xl"
+                          />
+                        ))}
+                      </div>
+                    ) : execom.length > 0 ? (
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        {execom.map((member) => (
+                          <div
+                            key={member.id}
+                            className="group relative flex items-center gap-4 rounded-2xl border border-border/60 bg-card p-4 transition-all duration-300 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5"
+                          >
+                            {/* Profile Picture (Strict Policy) */}
+                            <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-border/40 bg-muted shadow-sm transition-transform group-hover:scale-105">
+                              {member.profilePic ? (
+                                <img
+                                  src={member.profilePic}
+                                  alt={member.name}
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                <div className="flex h-full w-full items-center justify-center bg-primary/[0.03]">
+                                  <User className="h-8 w-8 text-primary/10" />
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Info */}
+                            <div className="min-w-0 flex-1 space-y-1">
+                              <p className="truncate text-base font-bold tracking-tight text-foreground">
+                                {member.name}
+                              </p>
+                              <div className="flex flex-col gap-0.5">
+                                <p className="truncate font-mono text-[10px] font-medium text-muted-foreground/80">
+                                  {member.muid}
+                                </p>
+                                <div className="mt-1 flex flex-wrap gap-1.5">
+                                  <Badge
+                                    variant="secondary"
+                                    className="rounded-lg bg-primary/5 px-2 py-0 text-[10px] font-black uppercase tracking-widest text-primary/80"
+                                  >
+                                    {member.role === "member"
+                                      ? "Execom"
+                                      : member.role}
+                                  </Badge>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Delete Button (Hover Only) */}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="absolute right-2 top-2 h-8 w-8 rounded-full text-destructive opacity-0 transition-all hover:bg-destructive/10 group-hover:opacity-100"
+                              disabled={isRemoving}
+                              onClick={() => removeExecom(member.id)}
+                            >
+                              {isRemoving ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <Card className="border-dashed py-12 text-center text-muted-foreground">
+                        <div className="flex flex-col items-center gap-3">
+                          <Users className="h-10 w-10 opacity-10" />
+                          <p className="text-sm font-medium">
+                            No execom members appointed yet
+                          </p>
+                        </div>
+                      </Card>
+                    )}
                   </TabsContent>
 
                   {/* ── IG Chapters Tab ── */}
@@ -1420,74 +1633,219 @@ export function CampusManageDashboard() {
 
               {/* Right Column: Social Presence Sidebar (25%) */}
               <div className="w-full lg:w-1/4">
-                <Card className="h-full border-border/60 shadow-sm transition-shadow hover:shadow-md">
+                <Card className="h-full border-border/60 shadow-sm transition-shadow hover:shadow-md/20">
                   <CardHeader className="pb-4">
                     <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                       Social Presence
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="flex flex-col gap-2 p-4 pt-0">
-                    {[
-                      {
-                        id: "instagram",
-                        label: "Instagram",
-                        icon: Instagram,
-                        url: socialLinks?.instagram,
-                      },
-                      {
-                        id: "linkedin",
-                        label: "LinkedIn",
-                        icon: Linkedin,
-                        url: socialLinks?.linkedin,
-                      },
-                      {
-                        id: "github",
-                        label: "GitHub",
-                        icon: Github,
-                        url: null,
-                      },
-                      {
-                        id: "website",
-                        label: "Website",
-                        icon: Globe,
-                        url: null,
-                      },
-                    ].map((link) => (
-                      <div key={link.id} className="group relative">
+                  <CardContent className="flex flex-col gap-3 p-4 pt-0">
+                    {/* Active List */}
+                    <div className="flex flex-col gap-2">
+                      {SOCIAL_PLATFORMS.map((platform) => {
+                        const linkData = socialLinks?.[platform.id] as
+                          | SocialLink
+                          | undefined;
+
+                        // Show row if it has data OR if we are currently editing it
+                        if (!linkData && editingPlatform !== platform.id)
+                          return null;
+
+                        const isEditing = editingPlatform === platform.id;
+
+                        return (
+                          <div
+                            key={platform.id}
+                            className="group flex items-center gap-3 rounded-xl border border-transparent p-1.5 transition-all hover:border-border/60 hover:bg-muted/30"
+                          >
+                            <div
+                              className={cn(
+                                "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg shadow-sm transition-transform group-hover:scale-105",
+                                platform.bg,
+                                platform.color,
+                              )}
+                            >
+                              <platform.icon className="h-4.5 w-4.5" />
+                            </div>
+
+                            {isEditing ? (
+                              <div className="flex flex-1 items-center gap-1.5 animate-in fade-in slide-in-from-right-2">
+                                <Input
+                                  value={socialValue}
+                                  onChange={(e) =>
+                                    setSocialValue(e.target.value)
+                                  }
+                                  placeholder={`Enter ${platform.label} URL...`}
+                                  className="h-8 text-[11px] font-medium"
+                                  autoFocus
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter" && socialValue) {
+                                      upsertSocial(
+                                        {
+                                          platform: platform.id,
+                                          url: socialValue,
+                                        },
+                                        {
+                                          onSuccess: () =>
+                                            setEditingPlatform(null),
+                                        },
+                                      );
+                                    }
+                                    if (e.key === "Escape")
+                                      setEditingPlatform(null);
+                                  }}
+                                />
+                                <div className="flex shrink-0 items-center gap-0.5">
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-7 w-7 text-green-600 hover:bg-green-50"
+                                    disabled={isUpsertingSocial || !socialValue}
+                                    onClick={() => {
+                                      upsertSocial(
+                                        {
+                                          platform: platform.id,
+                                          url: socialValue,
+                                        },
+                                        {
+                                          onSuccess: () =>
+                                            setEditingPlatform(null),
+                                        },
+                                      );
+                                    }}
+                                  >
+                                    {isUpsertingSocial ? (
+                                      <Loader2 className="h-3 w-3 animate-spin" />
+                                    ) : (
+                                      <Plus className="h-3.5 w-3.5" />
+                                    )}
+                                  </Button>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-7 w-7 text-muted-foreground hover:bg-muted"
+                                    onClick={() => setEditingPlatform(null)}
+                                  >
+                                    <X className="h-3.5 w-3.5" />
+                                  </Button>
+                                </div>
+                              </div>
+                            ) : (
+                              <>
+                                <div className="flex flex-1 flex-col overflow-hidden">
+                                  <span className="text-[11px] font-black uppercase tracking-tight text-foreground/80">
+                                    {platform.label}
+                                  </span>
+                                  <a
+                                    href={linkData?.url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="truncate text-[10px] font-medium text-muted-foreground transition-colors hover:text-primary hover:underline"
+                                  >
+                                    {linkData?.url}
+                                  </a>
+                                </div>
+                                <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-all duration-200 group-focus-within:opacity-100 group-hover:translate-x-0 group-hover:opacity-100">
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-7 w-7 hover:bg-muted"
+                                    onClick={() => {
+                                      setEditingPlatform(platform.id);
+                                      setSocialValue(linkData?.url || "");
+                                    }}
+                                    title={`Edit ${platform.label}`}
+                                  >
+                                    <Pencil className="h-3 w-3" />
+                                  </Button>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-7 w-7 text-destructive hover:bg-destructive/10"
+                                    disabled={isDeletingSocial}
+                                    onClick={() => deleteSocial(linkData!.id)}
+                                    title={`Remove ${platform.label}`}
+                                  >
+                                    {isDeletingSocial ? (
+                                      <Loader2 className="h-3 w-3 animate-spin" />
+                                    ) : (
+                                      <Trash2 className="h-3 w-3" />
+                                    )}
+                                  </Button>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Empty State */}
+                    {(!socialLinks?.items || socialLinks.items.length === 0) &&
+                      !editingPlatform &&
+                      !isAddingNewSocial && (
+                        <div className="flex flex-col items-center justify-center py-8 text-center animate-in fade-in zoom-in-95">
+                          <div className="mb-4 rounded-full bg-muted/50 p-4 ring-8 ring-muted/20">
+                            <PlusCircle className="h-7 w-7 text-muted-foreground/30" />
+                          </div>
+                          <h4 className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/60">
+                            Connect Social Presence
+                          </h4>
+                          <p className="mt-1 text-[10px] font-medium text-muted-foreground/40">
+                            Display your official links to the community
+                          </p>
+                        </div>
+                      )}
+
+                    {/* Add Workflow */}
+                    {isAddingNewSocial ? (
+                      <div className="flex flex-col gap-2 rounded-xl border border-dashed border-border/60 bg-muted/10 p-2 animate-in fade-in slide-in-from-bottom-2">
+                        <Select
+                          onValueChange={(val) => {
+                            setEditingPlatform(val);
+                            setSocialValue("");
+                            setIsAddingNewSocial(false);
+                          }}
+                        >
+                          <SelectTrigger className="h-9 rounded-lg text-xs font-black uppercase tracking-tight">
+                            <SelectValue placeholder="PLATFORM" />
+                          </SelectTrigger>
+                          <SelectContent className="rounded-xl">
+                            {SOCIAL_PLATFORMS.filter(
+                              (p) => !socialLinks?.[p.id as keyof SocialLinks],
+                            ).map((p) => (
+                              <SelectItem
+                                key={p.id}
+                                value={p.id}
+                                className="text-xs font-bold uppercase tracking-tight"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <p.icon className={cn("h-3 w-3", p.color)} />
+                                  {p.label}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <Button
                           variant="ghost"
-                          className={`h-11 w-full justify-start gap-3 rounded-xl px-4 transition-all duration-300 ${
-                            !link.url
-                              ? "cursor-not-allowed opacity-40 grayscale"
-                              : "hover:bg-primary/5 hover:text-primary active:scale-[0.98]"
-                          }`}
-                          asChild={!!link.url}
+                          size="sm"
+                          className="h-7 text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 hover:text-foreground"
+                          onClick={() => setIsAddingNewSocial(false)}
                         >
-                          {link.url ? (
-                            <a href={link.url} target="_blank" rel="noreferrer">
-                              <link.icon className="h-4.5 w-4.5" />
-                              <span className="text-sm font-bold tracking-tight">
-                                {link.label}
-                              </span>
-                              <ExternalLink className="ml-auto h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100" />
-                            </a>
-                          ) : (
-                            <div className="flex w-full items-center">
-                              <link.icon className="h-4.5 w-4.5" />
-                              <span className="text-sm font-bold tracking-tight">
-                                {link.label}
-                              </span>
-                              <Badge
-                                variant="outline"
-                                className="ml-auto border-dashed text-[8px] font-black uppercase tracking-tighter opacity-80"
-                              >
-                                Not Linked
-                              </Badge>
-                            </div>
-                          )}
+                          Cancel
                         </Button>
                       </div>
-                    ))}
+                    ) : (
+                      <Button
+                        variant="outline"
+                        className="mt-2 h-10 w-full gap-2 rounded-xl border-dashed border-border/60 text-[11px] font-black uppercase tracking-widest transition-all hover:border-primary/40 hover:bg-primary/5 hover:text-primary active:scale-[0.98]"
+                        onClick={() => setIsAddingNewSocial(true)}
+                      >
+                        <PlusCircle className="h-4 w-4" />
+                        Add Social Link
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               </div>

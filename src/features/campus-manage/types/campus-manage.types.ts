@@ -25,6 +25,7 @@ export interface CampusOverview {
   orgId?: string;
   trend: TrendPoint[];
   clusterData: ClusterKarmaPoint[];
+  socialLinks?: SocialLinks;
 }
 
 export interface PaginationInfo {
@@ -114,9 +115,24 @@ export interface ExecomMember {
   profilePic: string | null;
 }
 
+export interface SocialLink {
+  id: string;
+  platform: string;
+  url: string;
+}
+
 export interface SocialLinks {
-  instagram?: string;
-  linkedin?: string;
+  instagram?: SocialLink;
+  linkedin?: SocialLink;
+  github?: SocialLink;
+  website?: SocialLink;
+  twitter?: SocialLink;
+  facebook?: SocialLink;
+  youtube?: SocialLink;
+  discord?: SocialLink;
+  other?: SocialLink;
+  items: SocialLink[];
+  [key: string]: SocialLink | SocialLink[] | undefined;
 }
 
 export interface CampusLeaderboardFilters {

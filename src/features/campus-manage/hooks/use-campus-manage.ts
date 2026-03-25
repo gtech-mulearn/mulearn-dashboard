@@ -189,9 +189,36 @@ export function useDeleteIgChapter() {
   });
 }
 
-export function useSocialLinks(orgId?: string) {
+export function useUpsertSocialLink() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { platform: string; url: string }) =>
+      campusManageApi.upsertSocialLink(data),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: campusManageKeys.overview(),
+      });
+    },
+  });
+}
+
+export function useDeleteSocialLink() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (linkId: string) => campusManageApi.deleteSocialLink(linkId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: campusManageKeys.overview(),
+      });
+    },
+  });
+}
+
+export function useUserProfile(muid: string) {
   return useQuery({
-    queryKey: campusManageKeys.socialLinks(orgId),
-    queryFn: () => campusManageApi.getSocialLinks(orgId),
+    queryKey: ["user-profile", muid],
+    queryFn: () => campusManageApi.getUserProfile(muid),
+    enabled: !!muid && muid.includes("@"),
+    retry: false,
   });
 }

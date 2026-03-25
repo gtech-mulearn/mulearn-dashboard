@@ -14,6 +14,7 @@ import type {
   IgChapter,
   KarmaByClusterResponse,
   PaginationInfo,
+  SocialLink,
   SocialLinks,
   StudentLevelCount,
   TrendPoint,
@@ -208,6 +209,32 @@ export const campusManageApi = {
           ? weeklyTrend
           : normalizeTrend(data.trend_7_day ?? data.trend ?? data.trend_7d);
 
+      // Extract social links if available in the main detail response
+      const rawLinks = unwrapDataArray(data.social_links ?? data.socialLinks);
+      const links = rawLinks.map((item): SocialLink => {
+        const row = asRecord(item);
+        return {
+          id: safeToString(row.id),
+          platform: safeToString(row.platform).toLowerCase(),
+          url: safeToString(row.url),
+        };
+      });
+
+      const findByPlatform = (p: string) => links.find((l) => l.platform === p);
+
+      const socialLinks: SocialLinks = {
+        items: links,
+        instagram: findByPlatform("instagram"),
+        linkedin: findByPlatform("linkedin"),
+        github: findByPlatform("github"),
+        website: findByPlatform("website"),
+        twitter: findByPlatform("twitter"),
+        facebook: findByPlatform("facebook"),
+        youtube: findByPlatform("youtube"),
+        discord: findByPlatform("discord"),
+        other: findByPlatform("other"),
+      };
+
       return {
         collegeName,
         campusCode,
@@ -231,6 +258,7 @@ export const campusManageApi = {
                 { label: "30D", value: karma30Day },
               ],
         clusterData: [] as ClusterKarmaPoint[],
+        socialLinks,
       };
     } catch (e) {
       console.error("[CampusManageApi] getOverview CRASHED:", e);
@@ -445,6 +473,19 @@ export const campusManageApi = {
     });
   },
 
+  async getUserProfile(
+    muid: string,
+  ): Promise<{ name: string; profilePic: string | null }> {
+    const raw = await apiClient.get<unknown>(
+      endpoints.user.publicProfile(muid),
+    );
+    const data = unwrapDataObject(raw);
+    return {
+      name: safeToString(data.full_name ?? data.name, ""),
+      profilePic: data.profile_pic ? safeToString(data.profile_pic) : null,
+    };
+  },
+
   async addExecomMember(muid: string): Promise<unknown> {
     return apiClient.post<unknown>(endpoints.campusManage.execom, { muid });
   },
@@ -544,29 +585,11 @@ export const campusManageApi = {
     return apiClient.delete(endpoints.campusManage.igChapterDetail(chapterId));
   },
 
-  async getSocialLinks(orgId?: string): Promise<SocialLinks> {
-    if (!orgId) {
-      return {
-        instagram: undefined,
-        linkedin: undefined,
-      };
-    }
+  async upsertSocialLink(data: { platform: string; url: string }) {
+    return apiClient.put(endpoints.campusManage.socialLinks, data);
+  },
 
-    const endpoint = endpoints.campusManage.socialLinks(orgId);
-    const raw = await apiClient.get<unknown>(endpoint);
-    const links = unwrapDataArray(raw).map((item) => asRecord(item));
-
-    const findPlatform = (platform: string): string | undefined => {
-      const record = links.find(
-        (item) => safeToString(item.platform).toLowerCase() === platform,
-      );
-      if (!record) return undefined;
-      return safeToString(record.url) || undefined;
-    };
-
-    return {
-      instagram: findPlatform("instagram"),
-      linkedin: findPlatform("linkedin"),
-    };
+  async deleteSocialLink(linkId: string) {
+    return apiClient.delete(endpoints.campusManage.socialLinkDetail(linkId));
   },
 };
