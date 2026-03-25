@@ -74,14 +74,21 @@ export function EventCard({
 
   return (
     <article
-      className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md cursor-pointer"
-      onClick={() => !isManageView && onView?.(event)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          !isManageView && onView?.(event);
-        }
-      }}
+      className={`group relative flex h-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md ${!isManageView ? "cursor-pointer" : ""}`}
+      onClick={!isManageView ? () => onView?.(event) : undefined}
+      onKeyDown={
+        !isManageView
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onView?.(event);
+              }
+            }
+          : undefined
+      }
+      tabIndex={!isManageView ? 0 : undefined}
+      role={!isManageView ? "button" : undefined}
+      aria-label={!isManageView ? "View event details" : undefined}
     >
       <div className="relative aspect-video w-full overflow-hidden">
         <Image

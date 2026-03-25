@@ -9,6 +9,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ApiError } from "@/api/client";
 import { useManageEventsList } from "../hooks";
 import type { EventListItem, EventStatus } from "../types";
 import EventModal from "./event-modal";
@@ -49,11 +50,7 @@ export default function ManageEventsDashboard() {
     refetch();
   };
 
-  const is403 =
-    error instanceof Error &&
-    (error.message.includes("403") ||
-      error.message.includes("Forbidden") ||
-      error.message.includes("permission"));
+  const is403 = error instanceof ApiError && error.status === 403;
 
   return (
     <div className="space-y-6 p-6">

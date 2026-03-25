@@ -46,8 +46,18 @@ const createEventBaseSchema = z.object({
     .union([z.string().uuid(), z.literal("")])
     .optional()
     .transform((v) => (v === "" ? undefined : v)),
-  start_datetime: z.string(),
-  end_datetime: z.string(),
+  start_datetime: z
+    .string()
+    .refine(
+      (val) => val === "" || /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(val),
+      "Invalid date format",
+    ),
+  end_datetime: z
+    .string()
+    .refine(
+      (val) => val === "" || /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(val),
+      "Invalid date format",
+    ),
   venue_type: z.enum(["physical", "online", "hybrid"]),
   address: z
     .union([z.string(), z.literal("")])
@@ -82,7 +92,15 @@ const createEventBaseSchema = z.object({
     .optional()
     .transform((v) => (v === "" ? null : v)),
   registration_deadline: z
-    .union([z.string(), z.literal("")])
+    .union([
+      z
+        .string()
+        .refine(
+          (val) => val === "" || /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(val),
+          "Invalid date format",
+        ),
+      z.literal(""),
+    ])
     .nullable()
     .optional()
     .transform((v) => (v === "" ? null : v)),

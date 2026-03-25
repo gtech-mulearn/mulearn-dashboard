@@ -28,7 +28,7 @@ import type {
 import { VenueSection } from "./venue-section";
 
 // Convert a datetime-local string (e.g. "2026-03-22T10:00") to a full ISO string
-// with timezone offset required by the backend.
+// in UTC (ending in 'Z') for the backend.
 function toISOWithOffset(value: string | null | undefined): string | null {
   if (!value) return null;
   if (value.includes("+") || value.includes("Z")) return value;
@@ -40,11 +40,10 @@ function toISOWithOffset(value: string | null | undefined): string | null {
 // Convert a full ISO string from the API back to "YYYY-MM-DDTHH:mm" for datetime-local inputs.
 function toDatetimeLocal(iso: string | null | undefined): string {
   if (!iso) return "";
-  try {
-    return new Date(iso).toISOString().slice(0, 16);
-  } catch {
-    return "";
-  }
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 interface EventModalProps {
@@ -106,6 +105,7 @@ export default function EventModal({
     watch,
     handleSubmit,
     reset,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm<CreateEventSchema>({
     resolver: zodResolver(
@@ -140,9 +140,10 @@ export default function EventModal({
       cover_image: d?.cover_image ?? "",
       banner_image: d?.banner_image ?? "",
       registration_url: d?.registration_url ?? "",
-      registration_deadline: toDatetimeLocal(
-        d?.registration_deadline as string | null | undefined,
-      ) as unknown as null,
+      registration_deadline:
+        toDatetimeLocal(
+          d?.registration_deadline as string | null | undefined,
+        ) || "",
       min_karma: d?.min_karma ?? null,
       is_collaboration: d?.is_collaboration ?? false,
       target_campus_id: d?.target_campus?.id ?? null,
@@ -160,14 +161,41 @@ export default function EventModal({
     createEvent.isPending || patchEvent.isPending || isSubmitting;
 
   const onSubmit = async (values: CreateEventSchema) => {
+    const start = toISOWithOffset(values.start_datetime);
+    const end = toISOWithOffset(values.end_datetime);
+    const deadline = values.registration_deadline
+      ? toISOWithOffset(values.registration_deadline as unknown as string)
+      : null;
+
+    let hasDateError = false;
+    if (!start) {
+      setError("start_datetime", {
+        type: "manual",
+        message: "Invalid date format",
+      });
+      hasDateError = true;
+    }
+    if (!end) {
+      setError("end_datetime", {
+        type: "manual",
+        message: "Invalid date format",
+      });
+      hasDateError = true;
+    }
+    if (values.registration_deadline && !deadline) {
+      setError("registration_deadline", {
+        type: "manual",
+        message: "Invalid date format",
+      });
+      hasDateError = true;
+    }
+    if (hasDateError) return;
+
     const payload = {
       ...values,
-      start_datetime:
-        toISOWithOffset(values.start_datetime) ?? values.start_datetime,
-      end_datetime: toISOWithOffset(values.end_datetime) ?? values.end_datetime,
-      registration_deadline: toISOWithOffset(
-        values.registration_deadline as unknown as string,
-      ),
+      start_datetime: start as string,
+      end_datetime: end as string,
+      registration_deadline: deadline,
     };
 
     try {
