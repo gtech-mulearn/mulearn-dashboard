@@ -105,6 +105,11 @@ const ROLE_PROTECTED_ROUTES: Record<string, RouteConfig> = {
 
   // Tasks
   "/dashboard/tasks": { roles: [ROLE_VALUES.ADMIN] },
+
+  // Events Management
+  "/dashboard/events/manage": {
+    roles: [ROLE_VALUES.ADMIN, ROLE_VALUES.FELLOW],
+  },
 };
 
 // ─── Route Classification ──────────────────────────────────

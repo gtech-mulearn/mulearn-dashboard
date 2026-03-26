@@ -1,6 +1,6 @@
 "use client";
 
-import { Lock, MapPin, MoreVertical } from "lucide-react";
+import { Eye, Lock, MapPin, MoreVertical } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useDeleteEvent } from "../hooks";
@@ -18,8 +19,10 @@ import { InterestButton } from "./interest-button";
 
 interface EventCardProps {
   event: EventListItem;
+  isManageView?: boolean;
   onDelete?: () => void;
   onEdit?: (event: EventListItem) => void;
+  onView?: (event: EventListItem) => void;
 }
 
 function getOrganizerName(organizer: OrganizerInfo): string {
@@ -38,11 +41,19 @@ function getOrganizerName(organizer: OrganizerInfo): string {
   return "muLearn";
 }
 
-export function EventCard({ event, onDelete, onEdit }: EventCardProps) {
+export function EventCard({
+  event,
+  isManageView,
+  onDelete,
+  onEdit,
+  onView,
+}: EventCardProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const deleteEvent = useDeleteEvent(event.id);
 
-  const onDeleteClick = async () => {
+  const onDeleteClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!window.confirm("Are you sure you want to delete this event?")) return;
     setIsDeleting(true);
     try {
       await deleteEvent.mutateAsync();
@@ -62,7 +73,23 @@ export function EventCard({ event, onDelete, onEdit }: EventCardProps) {
   );
 
   return (
-    <article className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md">
+    <article
+      className={`group relative flex h-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md ${!isManageView ? "cursor-pointer" : ""}`}
+      onClick={!isManageView ? () => onView?.(event) : undefined}
+      onKeyDown={
+        !isManageView
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onView?.(event);
+              }
+            }
+          : undefined
+      }
+      tabIndex={!isManageView ? 0 : undefined}
+      role={!isManageView ? "button" : undefined}
+      aria-label={!isManageView ? "View event details" : undefined}
+    >
       <div className="relative aspect-video w-full overflow-hidden">
         <Image
           src={event.cover_image ?? "/images/fallback.webp"}
@@ -76,10 +103,10 @@ export function EventCard({ event, onDelete, onEdit }: EventCardProps) {
         <Badge variant="secondary" className="capitalize">
           {event.event_type?.replace(/_/g, " ") ?? ""}
         </Badge>
-        <EventStatusBadge status={event.status} />
+        {isManageView && <EventStatusBadge status={event.status} />}
       </div>
 
-      <div className="p-4">
+      <div className="p-4 flex-1 flex flex-col">
         <p className="text-xs text-gray-500">{formattedDate}</p>
         <h3 className="mt-1 line-clamp-2 text-sm font-semibold text-gray-900">
           {event.title}
@@ -102,40 +129,69 @@ export function EventCard({ event, onDelete, onEdit }: EventCardProps) {
           </p>
         )}
 
-        <div className="mt-4 flex items-center justify-between">
-          <InterestButton
-            eventId={event.id}
-            status={event.viewer_interest_status}
-            count={event.interest_count}
-          />
+        <div className="mt-4 flex items-center justify-between mt-auto">
+          {isManageView ? (
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              <span>{event.interest_count} interested</span>
+              {event.is_collaboration && (
+                <Badge variant="outline" className="text-xs">
+                  Collab
+                </Badge>
+              )}
+            </div>
+          ) : (
+            <InterestButton
+              eventId={event.id}
+              status={event.viewer_interest_status}
+              count={event.interest_count}
+            />
+          )}
         </div>
       </div>
 
-      <div className="absolute right-3 top-3">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 bg-white/90 opacity-0 transition-opacity hover:bg-white group-hover:opacity-100"
-            >
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => onEdit?.(event)}>
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={onDeleteClick}
-              disabled={isDeleting || deleteEvent.isPending}
-              className="text-red-600"
-            >
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      {isManageView && (
+        <div className="absolute right-3 top-3">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 bg-white/90 opacity-0 transition-opacity hover:bg-white group-hover:opacity-100"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onView?.(event);
+                }}
+              >
+                <Eye className="mr-2 h-4 w-4" />
+                View details
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit?.(event);
+                }}
+              >
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={onDeleteClick}
+                disabled={isDeleting || deleteEvent.isPending}
+                className="text-red-600"
+              >
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      )}
     </article>
   );
 }

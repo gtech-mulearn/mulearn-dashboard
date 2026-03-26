@@ -1,9 +1,15 @@
 "use client";
 
+// TODO: add RBAC guard — check user role from /api/v1/dashboard/user/info/ before rendering
+// The manage endpoint likely requires staff/organiser permissions server-side.
+// If the current user doesn't have those permissions, the API returns an empty list or 403.
+
 import { Plus } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ApiError } from "@/api/client";
 import { useManageEventsList } from "../hooks";
 import type { EventListItem, EventStatus } from "../types";
 import EventModal from "./event-modal";
@@ -22,6 +28,7 @@ const statusPills: Array<{ label: string; value: EventStatus | "all" }> = [
 ];
 
 export default function ManageEventsDashboard() {
+  const router = useRouter();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<EventStatus | "all">("all");
@@ -32,7 +39,18 @@ export default function ManageEventsDashboard() {
     page,
     search: search || undefined,
     status: statusFilter === "all" ? undefined : statusFilter,
+    perPage: 12,
   });
+
+  const events = data?.data ?? [];
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setEditingEvent(null);
+    refetch();
+  };
+
+  const is403 = error instanceof ApiError && error.status === 403;
 
   return (
     <div className="space-y-6 p-6">
@@ -82,32 +100,38 @@ export default function ManageEventsDashboard() {
         </div>
       ) : isError ? (
         <p className="text-sm text-red-600">
-          {error instanceof Error ? error.message : "Failed to load events"}
+          {is403
+            ? "You don't have permission to manage events"
+            : error instanceof Error
+              ? error.message
+              : "Failed to load events"}
         </p>
       ) : (
         <>
           <EventsGrid
-            events={data?.data ?? []}
+            events={events}
+            isManageView
             onEventDeleted={() => refetch()}
             onEventEdit={(event) => {
               setEditingEvent(event);
               setIsModalOpen(true);
+            }}
+            onEventView={(event) => {
+              router.push(`/dashboard/events/manage/${event.id}`);
             }}
           />
           <EventsPagination
             pagination={data?.pagination}
             currentPage={page}
             onPageChange={setPage}
+            currentCount={events.length}
           />
         </>
       )}
 
       <EventModal
         open={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setEditingEvent(null);
-        }}
+        onClose={handleModalClose}
         initialData={editingEvent}
         isEdit={!!editingEvent}
       />

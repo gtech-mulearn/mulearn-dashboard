@@ -1,5 +1,8 @@
 "use client";
 
+// TODO: add RBAC guard — verify user has is_staff or appropriate role
+// from /api/v1/dashboard/user/info/ before rendering management UI
+
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
