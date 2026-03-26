@@ -208,6 +208,75 @@ export const endpoints = {
   },
 
   // ============================================
+  // Campus Manage Endpoints
+  // ============================================
+  campusManage: {
+    // --- Campus Details ---
+    /** GET - Authenticated Campus Lead/Enabler's campus details */
+    details: "/api/v1/dashboard/campus/campus-details/",
+    /** GET - Public campus details for a specific org */
+    publicCampusDetail: (orgId: string) => `/api/v1/dashboard/campus/${orgId}/`,
+
+    // --- Students & Leaderboard ---
+    /** GET - Count of students in each MuLearn level */
+    studentLevel: "/api/v1/dashboard/campus/student-level/",
+    /** GET - Student levels for a specific org (public) */
+    studentLevelByOrg: (orgId: string) =>
+      `/api/v1/dashboard/campus/student-level/${orgId}/`,
+    /** GET - Paginated student details (supports is_alumni filter) */
+    studentDetails: "/api/v1/dashboard/campus/student-details/",
+    /** GET - Download student details as CSV */
+    studentDetailsCsv: "/api/v1/dashboard/campus/student-details/csv/",
+    /** GET - Paginated student leaderboard for a specific campus */
+    leaderboard: (orgId: string) =>
+      `/api/v1/dashboard/campus/${orgId}/leaderboard/`,
+
+    // --- Karma & Insights ---
+    /** GET - Weekly karma insights for the authenticated campus */
+    weeklyKarma: "/api/v1/dashboard/campus/weekly-karma/",
+    /** GET - Weekly karma for a specific org (public) */
+    weeklyKarmaByOrg: (orgId: string) =>
+      `/api/v1/dashboard/campus/weekly-karma/${orgId}/`,
+    /** GET - Karma distribution by cluster for a specific campus */
+    karmaByCluster: (orgId: string) =>
+      `/api/v1/dashboard/campus/${orgId}/karma-by-cluster/`,
+
+    // --- Role Management & Execom ---
+    /** GET - List Execom members | POST - Appoint a member to an Execom role */
+    execom: "/api/v1/dashboard/campus/execom/",
+    /** DELETE - Remove an Execom role from a member by role link ID */
+    execomDelete: (memberId: string) =>
+      `/api/v1/dashboard/campus/execom/${memberId}/`,
+    /** POST - Transfer the Campus Lead role to another user by MUID */
+    transferLeadRole: "/api/v1/dashboard/campus/transfer-lead-role/",
+    /** POST - Transfer the Lead Enabler role to another user */
+    transferEnablerRole: "/api/v1/dashboard/campus/transfer-enabler-role/",
+    /** GET - List active IG codes | POST - Appoint a new IG Lead */
+    transferIgRole: "/api/v1/dashboard/campus/transfer-ig-role/",
+
+    // --- Event Management ---
+    /** GET - Paginated campus events (supports status, scope, type, date filters) */
+    events: "/api/v1/dashboard/campus/events/",
+    /** GET - Ranked tag distribution across all campus events */
+    eventsDistribution: "/api/v1/dashboard/campus/events/distribution/",
+
+    // --- Other Utilities ---
+    /** PATCH - Update a student's type/status within the campus org */
+    changeStudentType: (memberId: string) =>
+      `/api/v1/dashboard/campus/change-student-type/${memberId}/`,
+    /** GET/POST - Campus IG chapters (authenticated user's campus) */
+    igChapters: "/api/v1/dashboard/campus/ig-chapters/",
+    /** PATCH/DELETE - Specific IG chapter management */
+    igChapterDetail: (chapterId: string) =>
+      `/api/v1/dashboard/campus/ig-chapters/${chapterId}/`,
+    /** GET/PUT - Campus social links (authenticated user's info from token) */
+    socialLinks: "/api/v1/dashboard/campus/social-links/",
+    /** DELETE - Delete a specific social link record (requires bearer token) */
+    socialLinkDetail: (linkId: string) =>
+      `/api/v1/dashboard/campus/social-links/${linkId}/`,
+  },
+
+  // ============================================
   // Leaderboard Endpoints
   // ============================================
   leaderboard: {
@@ -507,6 +576,50 @@ export const endpoints = {
       /** GET - Download XLSX import template */
       template: "/api/v1/dashboard/karma-voucher/base-template/",
     },
+    roleVerification: {
+      /** GET - List unverified user-role links (paginated) */
+      list: "/api/v1/dashboard/user/verification/",
+      /** PATCH - Update verification status */
+      update: (linkId: string) =>
+        `/api/v1/dashboard/user/verification/${linkId}/`,
+      /** DELETE - Delete a user-role link */
+      delete: (linkId: string) =>
+        `/api/v1/dashboard/user/verification/${linkId}/`,
+      /** GET - Download CSV of unverified links */
+      csv: "/api/v1/dashboard/user/verification/csv/",
+    },
+
+    interestGroups: {
+      /** GET - List all IGs (paginated) */
+      list: "/api/v1/dashboard/ig/",
+
+      /** POST - Create new IG */
+      create: "/api/v1/dashboard/ig/",
+
+      /** PUT - Full update IG */
+      edit: (id: string) => `/api/v1/dashboard/ig/${id}/`,
+
+      /** DELETE - Delete IG */
+      delete: (id: string) => `/api/v1/dashboard/ig/${id}/`,
+
+      /** GET - Get single IG detail */
+      detail: (id: string) => `/api/v1/dashboard/ig/get/${id}/`,
+
+      /** PATCH - Partial update (lead-editable) */
+      partialUpdate: (id: string) => `/api/v1/dashboard/ig/get/${id}/`,
+
+      /** GET - Download IGs as CSV */
+      csv: "/api/v1/dashboard/ig/csv/",
+
+      /** GET - List IG requests (paginated) */
+      requestList: "/api/v1/dashboard/ig/request/",
+
+      /** POST - Submit new IG request */
+      requestSubmit: "/api/v1/dashboard/ig/request/",
+
+      /** PATCH - Update IG request status */
+      requestUpdate: (id: string) => `/api/v1/dashboard/ig/request/${id}/`,
+    },
   },
 
   // ============================================
@@ -538,6 +651,124 @@ export const endpoints = {
     /** GET - Search locations */
     locationSearch: (param: string) =>
       `/api/v1/register/location/?q=${param || "india"}`,
+  },
+  // ============================================
+  // Discord Moderation Endpoints
+  // ============================================
+  discordModeration: {
+    /** GET - List karma activity logs (paginated, searchable) */
+    taskList: "/api/v1/dashboard/discord-moderator/tasklist/",
+    /** GET - Get pending peer/appraiser approval counts */
+    pendingCounts: "/api/v1/dashboard/discord-moderator/pendingcounts/",
+    /** GET - Get moderator leaderboard (paginated) */
+    leaderboard: "/api/v1/dashboard/discord-moderator/leaderboard/",
+  },
+
+  // ============================================
+  // College Levels Endpoints
+  // ============================================
+  collegeLevels: {
+    /** GET - List of colleges (query: perPage, pageIndex, search, sortBy) */
+    collegeList: "/api/v1/dashboard/college/",
+  },
+
+  // ============================================
+
+  // Location Management Endpoints
+  // ============================================
+  countries: {
+    // Admin
+    list: "/api/v1/dashboard/location/countries/", // GET (paginated)
+    create: "/api/v1/dashboard/location/countries/", // POST
+    update: (countryId: string | number) =>
+      `/api/v1/dashboard/location/countries/${countryId}/`, // PATCH
+    delete: (countryId: string | number) =>
+      `/api/v1/dashboard/location/countries/${countryId}/`, // DELETE
+
+    // Public
+    dropdownList: "/api/v1/dashboard/location/countries/list/", // GET (simple list)
+  },
+
+  // =========================
+  // STATES
+  // =========================
+  states: {
+    // Admin
+    list: "/api/v1/dashboard/location/states/", // GET (paginated)
+    create: "/api/v1/dashboard/location/states/", // POST
+    update: (stateId: string | number) =>
+      `/api/v1/dashboard/location/states/${stateId}/`, // PATCH
+    delete: (stateId: string | number) =>
+      `/api/v1/dashboard/location/states/${stateId}/`, // DELETE
+
+    // Public
+    dropdownList: "/api/v1/dashboard/location/states/list/", // GET (simple list)
+  },
+
+  // =========================
+  // ZONES
+  // =========================
+  zones: {
+    // Admin
+    list: "/api/v1/dashboard/location/zones/", // GET (paginated)
+    create: "/api/v1/dashboard/location/zones/", // POST
+    update: (zoneId: string | number) =>
+      `/api/v1/dashboard/location/zones/${zoneId}/`, // PATCH
+    delete: (zoneId: string | number) =>
+      `/api/v1/dashboard/location/zones/${zoneId}/`, // DELETE
+
+    // Public
+    dropdownList: "/api/v1/dashboard/location/zones/list/", // GET (simple list)
+  },
+
+  // =========================
+  // DISTRICTS
+  // =========================
+  districts: {
+    // Admin
+    list: "/api/v1/dashboard/location/districts/", // GET (paginated)
+    create: "/api/v1/dashboard/location/districts/", // POST
+    update: (districtId: string | number) =>
+      `/api/v1/dashboard/location/districts/${districtId}/`, // PATCH
+    delete: (districtId: string | number) =>
+      `/api/v1/dashboard/location/districts/${districtId}/`,
+  }, // DELETE
+  
+  
+  // Manage Roles Endpoints
+  // ============================================
+  manageRoles: {
+    /** GET - List all roles (paginated) | POST - Create a new role */
+    list: "/api/v1/dashboard/roles/",
+    /**POST-Create a new role */
+    create: "/api/v1/dashboard/roles/",
+    /** PATCH - Update a role */
+    update: (roleId: string) => `/api/v1/dashboard/roles/${roleId}/`,
+    /** DELETE - Delete a role */
+    delete: (roleId: string) => `/api/v1/dashboard/roles/${roleId}/`,
+    /** GET - Download roles CSV */
+    csv: "/api/v1/dashboard/roles/csv/",
+    /** GET - Search users with a specific role */
+    userRoleSearch: (roleId: string) =>
+      `/api/v1/dashboard/roles/user-role/${roleId}/`,
+    /** POST - Assign role to single user | DELETE - Remove role from single user */
+    userRole: "/api/v1/dashboard/roles/user-role/",
+    /** GET - List users with role | PUT - List users without role | POST - Bulk assign | PATCH - Bulk remove */
+    bulkAssign: (roleId: string) =>
+      `/api/v1/dashboard/roles/bulk-assign/${roleId}/`,
+    /** GET - Download Excel template */
+    baseTemplate: "/api/v1/dashboard/roles/base-template/",
+    /** POST - Bulk assign from Excel upload */
+    bulkAssignExcel: "/api/v1/dashboard/roles/bulk-assign-excel/",
+  },
+  // channels
+  channels: {
+    List: "/api/v1/dashboard/channels/",
+    Create: "/api/v1/dashboard/channels/",
+    update: (channel_id: string | number) =>
+      `/api/v1/dashboard/channels/${channel_id}/`,
+    delete: (channel_id: string | number) =>
+      `/api/v1/dashboard/channels/${channel_id}/`,
   },
 } as const;
 

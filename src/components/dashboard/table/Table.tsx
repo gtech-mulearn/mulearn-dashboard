@@ -43,6 +43,8 @@ type TableProps = {
   modalDeleteContent?: string;
   modalTypeContent?: string;
   customCellRender?: (column: string, row: Data) => ReactElement | null;
+  slNoCellClassName?: string;
+  customActionRender?: (row: Data) => ReactElement | null;
 };
 
 function convertToTableData(dateString: unknown): string {
@@ -165,7 +167,9 @@ const Table: FC<TableProps> = (props) => {
                   key={`${rowData.id ?? index}`}
                   className="odd:bg-muted/70 even:bg-transparent"
                 >
-                  <td className="border-b border-border px-3.5 py-3 w-16">
+                  <td
+                    className={`border-b border-border px-3.5 py-3 w-16 ${props.slNoCellClassName ?? ""}`}
+                  >
                     {startIndex + index + 1}
                   </td>
                   {props.columnOrder.map((column) => (
@@ -195,60 +199,66 @@ const Table: FC<TableProps> = (props) => {
                       key={column}
                     >
                       <div className="flex items-center justify-end gap-1">
-                        {props.analytics && (
-                          <button
-                            type="button"
-                            className="rounded-md p-2 text-muted-foreground hover:bg-muted"
-                            onClick={() =>
-                              props.analytics?.(rowData[column] ?? "")
-                            }
-                          >
-                            <TrendingUp className="size-4" />
-                          </button>
-                        )}
-                        {props.onCopyClick && (
-                          <button
-                            type="button"
-                            className="rounded-md p-2 text-muted-foreground hover:bg-muted"
-                            onClick={() =>
-                              props.onCopyClick?.(rowData[column] ?? "")
-                            }
-                          >
-                            <Copy className="size-4" />
-                          </button>
-                        )}
-                        {props.onEditClick && (
-                          <button
-                            type="button"
-                            className="rounded-md p-2 text-muted-foreground hover:bg-muted"
-                            onClick={() =>
-                              props.onEditClick?.(rowData[column] ?? "")
-                            }
-                          >
-                            <HiOutlinePencil />
-                          </button>
-                        )}
-                        {props.onVerifyClick && (
-                          <button
-                            type="button"
-                            className="rounded-md px-2 py-1 text-xs font-medium text-primary hover:bg-muted"
-                            onClick={() =>
-                              openVerify(rowData[column] ?? "", rowData)
-                            }
-                          >
-                            Verify
-                          </button>
-                        )}
-                        {props.onDeleteClick && (
-                          <button
-                            type="button"
-                            className="rounded-md p-2 text-muted-foreground hover:bg-muted"
-                            onClick={() =>
-                              setDeleteRowId(String(rowData[column] ?? ""))
-                            }
-                          >
-                            <AiOutlineDelete />
-                          </button>
+                        {props.customActionRender ? (
+                          props.customActionRender(rowData)
+                        ) : (
+                          <>
+                            {props.analytics && (
+                              <button
+                                type="button"
+                                className="rounded-md p-2 text-muted-foreground hover:bg-muted"
+                                onClick={() =>
+                                  props.analytics?.(rowData[column] ?? "")
+                                }
+                              >
+                                <TrendingUp className="size-4" />
+                              </button>
+                            )}
+                            {props.onCopyClick && (
+                              <button
+                                type="button"
+                                className="rounded-md p-2 text-muted-foreground hover:bg-muted"
+                                onClick={() =>
+                                  props.onCopyClick?.(rowData[column] ?? "")
+                                }
+                              >
+                                <Copy className="size-4" />
+                              </button>
+                            )}
+                            {props.onEditClick && (
+                              <button
+                                type="button"
+                                className="rounded-md p-2 text-muted-foreground hover:bg-muted"
+                                onClick={() =>
+                                  props.onEditClick?.(rowData[column] ?? "")
+                                }
+                              >
+                                <HiOutlinePencil />
+                              </button>
+                            )}
+                            {props.onVerifyClick && (
+                              <button
+                                type="button"
+                                className="rounded-md px-2 py-1 text-xs font-medium text-primary hover:bg-muted"
+                                onClick={() =>
+                                  openVerify(rowData[column] ?? "", rowData)
+                                }
+                              >
+                                Verify
+                              </button>
+                            )}
+                            {props.onDeleteClick && (
+                              <button
+                                type="button"
+                                className="rounded-md p-2 text-muted-foreground hover:bg-muted"
+                                onClick={() =>
+                                  setDeleteRowId(String(rowData[column] ?? ""))
+                                }
+                              >
+                                <AiOutlineDelete />
+                              </button>
+                            )}
+                          </>
                         )}
                       </div>
                     </td>
@@ -291,60 +301,68 @@ const Table: FC<TableProps> = (props) => {
                 </div>
                 {actionIdColumn && (
                   <div className="flex items-center gap-1">
-                    {props.analytics && (
-                      <button
-                        type="button"
-                        className="rounded-md p-2 text-muted-foreground hover:bg-muted"
-                        onClick={() =>
-                          props.analytics?.(rowData[actionIdColumn] ?? "")
-                        }
-                      >
-                        <TrendingUp className="size-4" />
-                      </button>
-                    )}
-                    {props.onCopyClick && (
-                      <button
-                        type="button"
-                        className="rounded-md p-2 text-muted-foreground hover:bg-muted"
-                        onClick={() =>
-                          props.onCopyClick?.(rowData[actionIdColumn] ?? "")
-                        }
-                      >
-                        <Copy className="size-4" />
-                      </button>
-                    )}
-                    {props.onEditClick && (
-                      <button
-                        type="button"
-                        className="rounded-md p-2 text-muted-foreground hover:bg-muted"
-                        onClick={() =>
-                          props.onEditClick?.(rowData[actionIdColumn] ?? "")
-                        }
-                      >
-                        <HiOutlinePencil />
-                      </button>
-                    )}
-                    {props.onVerifyClick && (
-                      <button
-                        type="button"
-                        className="rounded-md px-2 py-1 text-xs font-medium text-primary hover:bg-muted"
-                        onClick={() =>
-                          openVerify(rowData[actionIdColumn] ?? "", rowData)
-                        }
-                      >
-                        Verify
-                      </button>
-                    )}
-                    {props.onDeleteClick && (
-                      <button
-                        type="button"
-                        className="rounded-md p-2 text-muted-foreground hover:bg-muted"
-                        onClick={() =>
-                          setDeleteRowId(String(rowData[actionIdColumn] ?? ""))
-                        }
-                      >
-                        <AiOutlineDelete />
-                      </button>
+                    {props.customActionRender ? (
+                      props.customActionRender(rowData)
+                    ) : (
+                      <>
+                        {props.analytics && (
+                          <button
+                            type="button"
+                            className="rounded-md p-2 text-muted-foreground hover:bg-muted"
+                            onClick={() =>
+                              props.analytics?.(rowData[actionIdColumn] ?? "")
+                            }
+                          >
+                            <TrendingUp className="size-4" />
+                          </button>
+                        )}
+                        {props.onCopyClick && (
+                          <button
+                            type="button"
+                            className="rounded-md p-2 text-muted-foreground hover:bg-muted"
+                            onClick={() =>
+                              props.onCopyClick?.(rowData[actionIdColumn] ?? "")
+                            }
+                          >
+                            <Copy className="size-4" />
+                          </button>
+                        )}
+                        {props.onEditClick && (
+                          <button
+                            type="button"
+                            className="rounded-md p-2 text-muted-foreground hover:bg-muted"
+                            onClick={() =>
+                              props.onEditClick?.(rowData[actionIdColumn] ?? "")
+                            }
+                          >
+                            <HiOutlinePencil />
+                          </button>
+                        )}
+                        {props.onVerifyClick && (
+                          <button
+                            type="button"
+                            className="rounded-md px-2 py-1 text-xs font-medium text-primary hover:bg-muted"
+                            onClick={() =>
+                              openVerify(rowData[actionIdColumn] ?? "", rowData)
+                            }
+                          >
+                            Verify
+                          </button>
+                        )}
+                        {props.onDeleteClick && (
+                          <button
+                            type="button"
+                            className="rounded-md p-2 text-muted-foreground hover:bg-muted"
+                            onClick={() =>
+                              setDeleteRowId(
+                                String(rowData[actionIdColumn] ?? ""),
+                              )
+                            }
+                          >
+                            <AiOutlineDelete />
+                          </button>
+                        )}
+                      </>
                     )}
                   </div>
                 )}
@@ -358,9 +376,22 @@ const Table: FC<TableProps> = (props) => {
                       <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                         {column.Label}
                       </p>
-                      <p className="break-words text-sm text-foreground">
-                        {convertToTableData(rowData[column.column])}
-                      </p>
+                      <div className="break-words text-sm text-foreground">
+                        {(() => {
+                          const customRendered = props.customCellRender?.(
+                            column.column,
+                            rowData,
+                          );
+                          if (customRendered) return customRendered;
+                          return column.wrap
+                            ? column.wrap(
+                                convertToTableData(rowData[column.column]),
+                                String(rowData.id ?? ""),
+                                rowData,
+                              )
+                            : convertToTableData(rowData[column.column]);
+                        })()}
+                      </div>
                     </div>
                   ))}
               </div>

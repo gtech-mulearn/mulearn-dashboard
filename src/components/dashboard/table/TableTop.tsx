@@ -87,7 +87,7 @@ const TableTop = ({
         <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
           <div
             className={cn(
-              "relative flex-1",
+              "relative flex-1 w-full lg:w-auto",
               searchFieldWrapperClassName,
               !CSV && "lg:flex-none",
             )}
@@ -105,25 +105,27 @@ const TableTop = ({
               )}
             />
           </div>
-          <div className="flex items-center gap-2">
-            <span className="whitespace-nowrap text-xs font-medium text-muted-foreground">
-              Rows per page
-            </span>
-            <Select
-              value={String(perPage)}
-              onValueChange={(value) => onPerPageNumber(Number(value))}
-            >
-              <SelectTrigger className="h-10 w-[88px] rounded-xl border-border bg-background">
-                <SelectValue placeholder="Rows" />
-              </SelectTrigger>
-              <SelectContent>
-                {perPageOptions.map((option) => (
-                  <SelectItem key={option} value={String(option)}>
-                    {option}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="flex flex-wrap items-center justify-between gap-2 w-full lg:w-auto">
+            <div className="flex items-center gap-2">
+              <span className="whitespace-nowrap text-xs font-medium text-muted-foreground">
+                Rows per page
+              </span>
+              <Select
+                value={String(perPage)}
+                onValueChange={(value) => onPerPageNumber(Number(value))}
+              >
+                <SelectTrigger className="h-10 w-[88px] rounded-xl border-border bg-background">
+                  <SelectValue placeholder="Rows" />
+                </SelectTrigger>
+                <SelectContent>
+                  {perPageOptions.map((option) => (
+                    <SelectItem key={option} value={String(option)}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             {CSV && (
               <Button
                 variant="outline"
