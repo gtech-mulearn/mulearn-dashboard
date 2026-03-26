@@ -153,18 +153,47 @@ export const endpoints = {
   // ============================================
 
   events: {
-    /** GET - List all events (paginated) */
-    list: `/api/v1/dashboard/events/`,
-    /** GET - Event details by ID */
-    detail: (eventId: string) => `/api/v1/dashboard/events/${eventId}/`,
-    /** POST - Create new event */
-    create: "/api/v1/dashboard/events/",
-    /** PUT - Edit event (full update) */
-    edit: (eventId: string) => `/api/v1/dashboard/events/${eventId}/`,
-    /** PATCH - Update event (partial update) */
-    patch: (eventId: string) => `/api/v1/dashboard/events/${eventId}/`,
-    /** DELETE - Delete event */
-    delete: (eventId: string) => `/api/v1/dashboard/events/${eventId}/`,
+    list: "/api/v1/dashboard/events/",
+    featured: "/api/v1/dashboard/events/featured/",
+    detail: (id: string) => `/api/v1/dashboard/events/${id}/`,
+    interest: (id: string) => `/api/v1/dashboard/events/${id}/interest/`,
+    manageList: "/api/v1/dashboard/events/manage/",
+    manageCreate: "/api/v1/dashboard/events/manage/",
+    manageDetail: (id: string) => `/api/v1/dashboard/events/manage/${id}/`,
+    manageUpdate: (id: string) => `/api/v1/dashboard/events/manage/${id}/`,
+    managePatch: (id: string) => `/api/v1/dashboard/events/manage/${id}/`,
+    manageDelete: (id: string) => `/api/v1/dashboard/events/manage/${id}/`,
+    publish: (id: string) => `/api/v1/dashboard/events/manage/${id}/publish/`,
+    coOwners: (id: string) =>
+      `/api/v1/dashboard/events/manage/${id}/co-owners/`,
+    coOwnerItem: (id: string, coOwnerId: string) =>
+      `/api/v1/dashboard/events/manage/${id}/co-owners/${coOwnerId}/`,
+    collaborators: (id: string) =>
+      `/api/v1/dashboard/events/manage/${id}/collaborators/`,
+    collaboratorAccept: (id: string, cId: string) =>
+      `/api/v1/dashboard/events/manage/${id}/collaborators/${cId}/accept/`,
+    collaboratorReject: (id: string, cId: string) =>
+      `/api/v1/dashboard/events/manage/${id}/collaborators/${cId}/reject/`,
+    collaboratorItem: (id: string, cId: string) =>
+      `/api/v1/dashboard/events/manage/${id}/collaborators/${cId}/`,
+    adminList: "/api/v1/dashboard/events/admin/",
+    adminApprove: (id: string) =>
+      `/api/v1/dashboard/events/admin/${id}/approve/`,
+    adminReject: (id: string) => `/api/v1/dashboard/events/admin/${id}/reject/`,
+    adminFeature: (id: string) =>
+      `/api/v1/dashboard/events/admin/${id}/feature/`,
+    igEvents: (igId: string) => `/api/v1/dashboard/events/ig/${igId}/`,
+    clusterEvents: (cluster: string) =>
+      `/api/v1/dashboard/events/ig/cluster/${cluster}/`,
+    campusEvents: (campusId: string) =>
+      `/api/v1/dashboard/events/campus/${campusId}/`,
+    campusIgEvents: (campusIgId: string) =>
+      `/api/v1/dashboard/events/campus-ig/${campusIgId}/`,
+    companyEvents: (companyId: string) =>
+      `/api/v1/dashboard/events/company/${companyId}/`,
+    organizerOptions: "/api/v1/dashboard/events/meta/organizer-options/",
+    collaborationTargets: (search: string) =>
+      `/api/v1/dashboard/events/meta/collaboration-targets/?search=${encodeURIComponent(search)}`,
   },
 
   // ============================================

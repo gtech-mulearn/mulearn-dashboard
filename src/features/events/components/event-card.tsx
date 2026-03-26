@@ -1,142 +1,197 @@
 "use client";
 
-import { MoreVertical } from "lucide-react";
+import { Eye, Lock, MapPin, MoreVertical } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
-import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useDeleteEvent } from "../hooks/events.hooks";
-import type { Event } from "../types";
+import { useDeleteEvent } from "../hooks";
+import type { EventListItem, OrganizerInfo } from "../types";
+import { EventStatusBadge } from "./event-status-badge";
+import { InterestButton } from "./interest-button";
 
 interface EventCardProps {
-  event: Event;
+  event: EventListItem;
+  isManageView?: boolean;
   onDelete?: () => void;
-  onEdit?: (event: Event) => void;
+  onEdit?: (event: EventListItem) => void;
+  onView?: (event: EventListItem) => void;
 }
 
-export function EventCard({ event, onDelete, onEdit }: EventCardProps) {
+function getOrganizerName(organizer: OrganizerInfo): string {
+  if (organizer.type === "global_ig") {
+    return organizer.ig?.name ?? "Global IG";
+  }
+  if (organizer.type === "campus_ig") {
+    return organizer.campus_ig?.ig.name ?? "Campus IG";
+  }
+  if (organizer.type === "campus") {
+    return organizer.campus?.name ?? "Campus";
+  }
+  if (organizer.type === "company") {
+    return organizer.company?.name ?? "Company";
+  }
+  return "muLearn";
+}
+
+export function EventCard({
+  event,
+  isManageView,
+  onDelete,
+  onEdit,
+  onView,
+}: EventCardProps) {
   const [isDeleting, setIsDeleting] = useState(false);
-  const deleteEventMutation = useDeleteEvent(event.id);
+  const deleteEvent = useDeleteEvent(event.id);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "bg-pink-100 text-pink-700";
-      case "upcoming":
-        return "bg-blue-100 text-blue-700";
-      case "past":
-        return "bg-gray-100 text-gray-700";
-      case "request":
-        return "bg-yellow-100 text-yellow-700";
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
-  };
-
-  const handleDelete = async () => {
+  const onDeleteClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!window.confirm("Are you sure you want to delete this event?")) return;
     setIsDeleting(true);
     try {
-      const response = await deleteEventMutation.mutateAsync();
-      if (!response.hasError) {
-        toast.success("Event deleted successfully");
-        onDelete?.();
-      }
-    } catch (_error) {
-      toast.error("Failed to delete event");
+      await deleteEvent.mutateAsync();
+      onDelete?.();
     } finally {
       setIsDeleting(false);
     }
   };
 
-  const formatDate = (date: string | null) => {
-    if (!date) return "No date";
-    return new Date(date).toLocaleDateString("en-US", {
+  const formattedDate = new Date(event.start_datetime).toLocaleDateString(
+    undefined,
+    {
       month: "short",
       day: "numeric",
       year: "numeric",
-    });
-  };
+    },
+  );
 
   return (
-    <div className="group relative bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-gray-200 flex flex-col h-full">
-      <div className="w-full" style={{ aspectRatio: "16/9" }}>
-        <div className="p-3 h-full flex items-center justify-center overflow-hidden">
-          <Image
-            src={event.cover_image ?? "/images/fallback.webp"}
-            alt={event.name}
-            width={100}
-            height={100}
-            className="w-full h-full object-cover rounded-md"
-            style={{ display: "block" }}
-          />
-        </div>
+    <article
+      className={`group relative flex h-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md ${!isManageView ? "cursor-pointer" : ""}`}
+      onClick={!isManageView ? () => onView?.(event) : undefined}
+      onKeyDown={
+        !isManageView
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onView?.(event);
+              }
+            }
+          : undefined
+      }
+      tabIndex={!isManageView ? 0 : undefined}
+      role={!isManageView ? "button" : undefined}
+      aria-label={!isManageView ? "View event details" : undefined}
+    >
+      <div className="relative aspect-video w-full overflow-hidden">
+        <Image
+          src={event.cover_image ?? "/images/fallback.webp"}
+          alt={event.title}
+          fill
+          className="object-cover"
+        />
       </div>
 
-      <div className="absolute top-3 left-3 right-3 flex justify-between items-start">
-        <Badge className={`font-medium`}>{event.category || "Event"}</Badge>
-        <Badge
-          className={`${getStatusColor(event.status)} font-medium capitalize`}
-        >
-          {event.status}
+      <div className="absolute left-3 right-3 top-3 flex items-start justify-between">
+        <Badge variant="secondary" className="capitalize">
+          {event.event_type?.replace(/_/g, " ") ?? ""}
         </Badge>
+        {isManageView && <EventStatusBadge status={event.status} />}
       </div>
 
-      <div className="p-4 flex flex-col flex-1">
-        <div className="text-xs text-gray-500 mb-2">
-          {formatDate(event.event_start_date)} • {event.event_start_time}
-        </div>
-
-        <h3 className="font-semibold text-sm mb-1 line-clamp-2 text-gray-900">
-          {event.name}
+      <div className="p-4 flex-1 flex flex-col">
+        <p className="text-xs text-gray-500">{formattedDate}</p>
+        <h3 className="mt-1 line-clamp-2 text-sm font-semibold text-gray-900">
+          {event.title}
         </h3>
+        <p className="mt-1 text-xs text-gray-600">
+          By {getOrganizerName(event.organizer)}
+        </p>
+        <p className="mt-1 flex items-center gap-1 text-xs text-gray-600">
+          <MapPin className="h-3.5 w-3.5" />
+          <span className="capitalize">
+            {event.venue_type}
+            {event.venue_city ? ` · ${event.venue_city}` : ""}
+          </span>
+        </p>
 
-        {event.location_name && (
-          <div className="text-xs text-gray-600 mb-3">
-            📍 {event.location_name}
-          </div>
+        {event.min_karma != null && (
+          <p className="mt-2 inline-flex items-center gap-1 rounded bg-gray-100 px-2 py-1 text-xs text-gray-700">
+            <Lock className="h-3.5 w-3.5" />
+            {event.min_karma} karma
+          </p>
         )}
 
-        <div className="mt-auto flex items-center justify-between text-sm">
-          <span className="text-gray-600 font-medium">
-            {parseInt(event.ticket_value, 10) > 0
-              ? `₹${event.ticket_value}`
-              : "Free"}
-          </span>
+        <div className="mt-4 flex items-center justify-between mt-auto">
+          {isManageView ? (
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              <span>{event.interest_count} interested</span>
+              {event.is_collaboration && (
+                <Badge variant="outline" className="text-xs">
+                  Collab
+                </Badge>
+              )}
+            </div>
+          ) : (
+            <InterestButton
+              eventId={event.id}
+              status={event.viewer_interest_status}
+              count={event.interest_count}
+            />
+          )}
         </div>
       </div>
 
-      <div className="absolute top-3 right-3">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 hover:bg-white"
-            >
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => onEdit?.(event)}>
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={handleDelete}
-              disabled={isDeleting}
-              className="text-red-600"
-            >
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-    </div>
+      {isManageView && (
+        <div className="absolute right-3 top-3">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 bg-white/90 opacity-0 transition-opacity hover:bg-white group-hover:opacity-100"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onView?.(event);
+                }}
+              >
+                <Eye className="mr-2 h-4 w-4" />
+                View details
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit?.(event);
+                }}
+              >
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={onDeleteClick}
+                disabled={isDeleting || deleteEvent.isPending}
+                className="text-red-600"
+              >
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      )}
+    </article>
   );
 }
