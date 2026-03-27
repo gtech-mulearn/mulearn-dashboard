@@ -98,5 +98,8 @@ export const DISTRICT_ROLES = [
   ROLES.DISTRICT_CAMPUS_LEAD,
 ] as const;
 
+/** Roles that can view interest group dashboards */
+export const IG_ROLES = [ROLES.ADMIN, ROLES.FELLOW, ROLES.IG_LEAD] as const;
+
 /** Roles with technical access (error logs, debugging tools) */
 export const TECH_ROLES = [ROLES.ADMIN, ROLES.TECH_TEAM] as const;

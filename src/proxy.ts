@@ -37,6 +37,7 @@ const ROLE_VALUES = {
   CAMPUS_LEAD: "Campus Lead",
   LEAD_ENABLER: "Lead Enabler",
   TECH_TEAM: "Tech Team",
+  IG_LEAD: "IG Lead",
 } as const;
 
 /**
@@ -101,6 +102,10 @@ const ROLE_PROTECTED_ROUTES: Record<string, RouteConfig> = {
   // URL Shortener (broader access)
   "/dashboard/url-shortener": {
     roles: [ROLE_VALUES.ADMIN, ROLE_VALUES.FELLOW, ROLE_VALUES.ASSOCIATE],
+  },
+
+  "/dashboard/interest-groups": {
+    roles: [ROLE_VALUES.ADMIN, ROLE_VALUES.FELLOW, ROLE_VALUES.IG_LEAD],
   },
 
   // Tasks
