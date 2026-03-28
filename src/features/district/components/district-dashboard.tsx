@@ -3,7 +3,6 @@
 import { type ReactNode, useMemo, useState } from "react";
 import {
   BarChart3,
-  Building2,
   GraduationCap,
   MapPin,
   Trophy,
@@ -20,6 +19,14 @@ import Pagination from "@/components/dashboard/table/pagination";
 import TableTop from "@/components/dashboard/table/TableTop";
 import { Blank } from "@/components/dashboard/table/Blank";
 import { cn } from "@/lib/utils";
+import {
+  Bar,
+  BarChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import {
   useDistrictCollegeDetails,
   useDistrictDetails,
@@ -178,6 +185,12 @@ export function DistrictDashboard() {
   const collegeTotalPages = collegeDetails?.pagination?.totalPages ?? 0;
   const collegeTotalCount = collegeDetails?.pagination?.count ?? 0;
 
+  const sortedStudentLevels = useMemo(() => {
+    return [...studentLevels].sort(
+      (a, b) => Number(a.level_order) - Number(b.level_order),
+    );
+  }, [studentLevels]);
+
   const handleStudentSort = (column: string) => {
     setStudentPage(1);
     setStudentSort((prev) => (prev === column ? `-${column}` : column));
@@ -190,18 +203,6 @@ export function DistrictDashboard() {
 
   return (
     <div className="space-y-8">
-      <Card className="border-0 bg-transparent shadow-none">
-        <CardHeader className="px-0">
-          <CardTitle className="text-2xl font-bold tracking-tight md:text-3xl">
-            District Dashboard
-          </CardTitle>
-          <p className="text-sm text-muted-foreground md:text-base">
-            Performance, member insights, and college coverage for your
-            district.
-          </p>
-        </CardHeader>
-      </Card>
-
       <section className="space-y-4">
         <SectionHeader
           title="District Overview"
@@ -307,46 +308,52 @@ export function DistrictDashboard() {
             {isTopCampusLoading ? (
               <div className="space-y-3">
                 {["a", "b", "c"].map((key) => (
-                  <Skeleton key={key} className="h-12 w-full rounded-xl" />
+                  <Skeleton key={key} className="h-44 w-full rounded-xl" />
                 ))}
               </div>
             ) : topCampus.length ? (
-              <div className="space-y-3">
-                {topCampus.map((campus, index) => {
-                  const percent = (campus.karma / maxTopCampusKarma) * 100 || 0;
-                  return (
-                    <div
-                      key={`${campus.campus_code}-${index}`}
-                      className="rounded-2xl border border-border/60 bg-card p-4"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          <Badge
-                            variant="secondary"
-                            className="rounded-lg text-xs font-bold"
-                          >
-                            #{campus.rank}
-                          </Badge>
-                          <div>
-                            <p className="text-sm font-semibold text-foreground">
-                              {campus.campus_code}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {numberFormatter.format(campus.karma)} karma
-                            </p>
-                          </div>
-                        </div>
-                        <Building2 className="h-5 w-5 text-muted-foreground" />
-                      </div>
-                      <div className="mt-3 h-2 w-full rounded-full bg-muted">
-                        <div
-                          className="h-2 rounded-full bg-[color:var(--chart-2)]"
-                          style={{ width: `${percent}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
+              <div className="h-[350px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={topCampus}
+                    margin={{ top: 20, right: 0, left: -20, bottom: 0 }}
+                  >
+                    <XAxis
+                      dataKey="campus_code"
+                      axisLine={false}
+                      tickLine={false}
+                      fontSize={12}
+                      tick={{ fill: "var(--color-muted-foreground)" }}
+                    />
+                    <YAxis
+                      axisLine={false}
+                      tickLine={false}
+                      fontSize={12}
+                      tick={{ fill: "var(--color-muted-foreground)" }}
+                      tickFormatter={(value) => numberFormatter.format(value)}
+                    />
+                    <Tooltip
+                      cursor={{ fill: "var(--color-muted)", opacity: 0.2 }}
+                      contentStyle={{
+                        borderRadius: "8px",
+                        border: "1px solid var(--color-border)",
+                        backgroundColor: "var(--color-card)",
+                        color: "var(--color-foreground)",
+                      }}
+                      formatter={(value: number | undefined) => [
+                        numberFormatter.format(Number(value) || 0),
+                        "Karma",
+                      ]}
+                    />
+                    <Bar
+                      dataKey="karma"
+                      name="Karma"
+                      fill="var(--color-primary)"
+                      radius={[4, 4, 0, 0]}
+                      maxBarSize={48}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
             ) : (
               <div className="rounded-2xl border border-dashed border-border/70 bg-muted/30 p-6 text-center text-sm text-muted-foreground">
@@ -372,38 +379,51 @@ export function DistrictDashboard() {
                   <Skeleton key={key} className="h-10 w-full rounded-xl" />
                 ))}
               </div>
-            ) : studentLevels.length ? (
-              <div className="space-y-3">
-                {studentLevels.map((level) => {
-                  const percent =
-                    (level.students_count / maxStudentLevel) * 100 || 0;
-                  return (
-                    <div key={level.level_order} className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-2">
-                          <Badge
-                            variant="outline"
-                            className="rounded-lg text-xs font-semibold"
-                          >
-                            Level {level.level_order}
-                          </Badge>
-                          <span className="text-muted-foreground">
-                            Students
-                          </span>
-                        </div>
-                        <span className="font-semibold text-foreground">
-                          {numberFormatter.format(level.students_count)}
-                        </span>
-                      </div>
-                      <div className="h-2 w-full rounded-full bg-muted">
-                        <div
-                          className="h-2 rounded-full bg-[color:var(--chart-4)]"
-                          style={{ width: `${percent}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
+            ) : sortedStudentLevels.length ? (
+              <div className="h-[350px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={sortedStudentLevels}
+                    margin={{ top: 20, right: 0, left: -20, bottom: 0 }}
+                  >
+                    <XAxis
+                      dataKey="level_order"
+                      axisLine={false}
+                      tickLine={false}
+                      fontSize={12}
+                      tickFormatter={(val) => `Level ${val}`}
+                      tick={{ fill: "var(--color-muted-foreground)" }}
+                    />
+                    <YAxis
+                      axisLine={false}
+                      tickLine={false}
+                      fontSize={12}
+                      tick={{ fill: "var(--color-muted-foreground)" }}
+                      tickFormatter={(value) => numberFormatter.format(value)}
+                    />
+                    <Tooltip
+                      cursor={{ fill: "var(--color-muted)", opacity: 0.2 }}
+                      contentStyle={{
+                        borderRadius: "8px",
+                        border: "1px solid var(--color-border)",
+                        backgroundColor: "var(--color-card)",
+                        color: "var(--color-foreground)",
+                      }}
+                      formatter={(value: number | undefined) => [
+                        numberFormatter.format(Number(value) || 0),
+                        "Students",
+                      ]}
+                      labelFormatter={(label) => `Level ${label}`}
+                    />
+                    <Bar
+                      dataKey="students_count"
+                      name="Students"
+                      fill="var(--color-chart-4)"
+                      radius={[4, 4, 0, 0]}
+                      maxBarSize={48}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
             ) : (
               <div className="rounded-2xl border border-dashed border-border/70 bg-muted/30 p-6 text-center text-sm text-muted-foreground">
@@ -456,7 +476,10 @@ export function DistrictDashboard() {
               customCellRender={(column, row) => {
                 if (column === "level") {
                   return (
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge
+                      variant="outline"
+                      className="border-primary/20 bg-primary/10 text-xs font-semibold text-primary"
+                    >
                       {String(row.level ?? "-")}
                     </Badge>
                   );
@@ -522,7 +545,10 @@ export function DistrictDashboard() {
               customCellRender={(column, row) => {
                 if (column === "level") {
                   return (
-                    <Badge variant="outline" className="text-xs">
+                    <Badge
+                      variant="outline"
+                      className="border-primary/20 bg-primary/10 text-xs font-semibold text-primary"
+                    >
                       {String(row.level ?? "-")}
                     </Badge>
                   );
