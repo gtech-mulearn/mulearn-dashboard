@@ -733,8 +733,7 @@ export const endpoints = {
     delete: (districtId: string | number) =>
       `/api/v1/dashboard/location/districts/${districtId}/`,
   }, // DELETE
-  
-  
+
   // Manage Roles Endpoints
   // ============================================
   manageRoles: {
@@ -769,6 +768,35 @@ export const endpoints = {
       `/api/v1/dashboard/channels/${channel_id}/`,
     delete: (channel_id: string | number) =>
       `/api/v1/dashboard/channels/${channel_id}/`,
+  },
+
+  // ============================================
+  // District Dashboard Endpoints
+  // ============================================
+  district: {
+    // --- District Overview ---
+    /** GET - District details (zone, lead, karma, members) */
+    details: "/api/dashboard/district/district-details/",
+
+    /** GET - Top 3 campuses in district by karma */
+    topCampus: "/api/dashboard/district/top-campus/",
+
+    /** GET - Student level distribution across district */
+    studentLevel: "/api/dashboard/district/student-level/",
+
+    // --- Students ---
+    /** GET - Paginated student details (supports search, sort, pagination) */
+    studentDetails: "/api/dashboard/district/student-details/",
+
+    /** GET - Download all student details as CSV */
+    studentDetailsCsv: "/api/dashboard/district/student-details/csv/",
+
+    // --- Colleges ---
+    /** GET - Paginated college details in district */
+    collegeDetails: "/api/dashboard/district/college-details/",
+
+    /** GET - Download all college details as CSV */
+    collegeDetailsCsv: "/api/dashboard/district/college-details/csv/",
   },
 } as const;
 
