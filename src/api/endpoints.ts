@@ -776,27 +776,27 @@ export const endpoints = {
   district: {
     // --- District Overview ---
     /** GET - District details (zone, lead, karma, members) */
-    details: "/api/dashboard/district/district-details/",
+    details: "/api/v1/dashboard/district/district-details/",
 
     /** GET - Top 3 campuses in district by karma */
-    topCampus: "/api/dashboard/district/top-campus/",
+    topCampus: "/api/v1/dashboard/district/top-campus/",
 
     /** GET - Student level distribution across district */
-    studentLevel: "/api/dashboard/district/student-level/",
+    studentLevel: "/api/v1/dashboard/district/student-level/",
 
     // --- Students ---
     /** GET - Paginated student details (supports search, sort, pagination) */
-    studentDetails: "/api/dashboard/district/student-details/",
+    studentDetails: "/api/v1/dashboard/district/student-details/",
 
     /** GET - Download all student details as CSV */
-    studentDetailsCsv: "/api/dashboard/district/student-details/csv/",
+    studentDetailsCsv: "/api/v1/dashboard/district/student-details/csv/",
 
     // --- Colleges ---
     /** GET - Paginated college details in district */
-    collegeDetails: "/api/dashboard/district/college-details/",
+    collegeDetails: "/api/v1/dashboard/district/college-details/",
 
     /** GET - Download all college details as CSV */
-    collegeDetailsCsv: "/api/dashboard/district/college-details/csv/",
+    collegeDetailsCsv: "/api/v1/dashboard/district/college-details/csv/",
   },
 } as const;
 

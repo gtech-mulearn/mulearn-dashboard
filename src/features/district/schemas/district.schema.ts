@@ -79,7 +79,16 @@ export const DistrictPaginationSchema = z.object({
   totalPages: numberSchema.optional(),
   isFirst: z.boolean().optional(),
   isLast: z.boolean().optional(),
-  nextPage: z.string().nullable().optional(),
+  isNext: z.boolean().optional(),
+  isPrev: z.boolean().optional(),
+  nextPage: z
+    .union([z.string(), z.number(), z.null(), z.undefined()])
+    .transform((val) => {
+      if (val === null || val === undefined || val === "") return null;
+      return typeof val === "string" ? Number(val) || null : val;
+    })
+    .nullable()
+    .optional(),
 });
 
 export const DistrictStudentDetailsDataSchema = z.object({
