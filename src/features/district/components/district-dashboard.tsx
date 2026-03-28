@@ -166,19 +166,6 @@ export function DistrictDashboard() {
     { column: "lead_number", Label: "Lead Number", isSortable: false },
   ];
 
-  const maxTopCampusKarma = useMemo(() => {
-    if (!topCampus.length) return 1;
-    return Math.max(...topCampus.map((item) => item.karma || 0), 1);
-  }, [topCampus]);
-
-  const maxStudentLevel = useMemo(() => {
-    if (!studentLevels.length) return 1;
-    return Math.max(
-      ...studentLevels.map((item) => item.students_count || 0),
-      1,
-    );
-  }, [studentLevels]);
-
   const studentTotalPages = studentDetails?.pagination?.totalPages ?? 0;
   const studentTotalCount = studentDetails?.pagination?.count ?? 0;
 
