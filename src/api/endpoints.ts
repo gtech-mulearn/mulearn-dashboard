@@ -733,8 +733,7 @@ export const endpoints = {
     delete: (districtId: string | number) =>
       `/api/v1/dashboard/location/districts/${districtId}/`,
   }, // DELETE
-  
-  
+
   // Manage Roles Endpoints
   // ============================================
   manageRoles: {
