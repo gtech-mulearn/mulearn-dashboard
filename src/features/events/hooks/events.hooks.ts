@@ -3,16 +3,21 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ApiError } from "@/api/errors";
+import { useDebounce } from "@/hooks/use-debounce";
 import { eventsApi } from "../api";
 import type {
   CollaboratorInviteBody,
+  CollaboratorType,
   EventDetailData,
+  EventListData,
   EventListQueryParams,
   EventPatchBody,
   EventWriteBody,
   IGCluster,
+  OrganizerOptionsResponse,
   ViewerInterestStatus,
 } from "../types";
+import { eventKeys } from "./query-keys";
 
 function getErrorMessage(error: unknown, fallback: string): string {
   if (error instanceof ApiError && error.message) {
@@ -26,21 +31,21 @@ function getErrorMessage(error: unknown, fallback: string): string {
 
 export function useEventsList(params?: EventListQueryParams) {
   return useQuery({
-    queryKey: ["events", params],
+    queryKey: eventKeys.list(params ?? {}),
     queryFn: () => eventsApi.list(params),
   });
 }
 
 export function useFeaturedEvents(params?: EventListQueryParams) {
   return useQuery({
-    queryKey: ["events", "featured", params],
+    queryKey: [...eventKeys.featured(), params ?? {}],
     queryFn: () => eventsApi.featured(params),
   });
 }
 
 export function useEventDetail(id?: string) {
   return useQuery({
-    queryKey: ["event", id],
+    queryKey: eventKeys.detail(id as string),
     queryFn: () => eventsApi.detail(id as string),
     enabled: !!id,
   });
@@ -48,14 +53,14 @@ export function useEventDetail(id?: string) {
 
 export function useManageEventsList(params?: EventListQueryParams) {
   return useQuery({
-    queryKey: ["manage-events", params],
+    queryKey: eventKeys.manageList(params ?? {}),
     queryFn: () => eventsApi.manageList(params),
   });
 }
 
 export function useManageEventDetail(id?: string) {
   return useQuery({
-    queryKey: ["manage-event", id],
+    queryKey: eventKeys.manageDetail(id as string),
     queryFn: () => eventsApi.manageDetail(id as string),
     enabled: !!id,
   });
@@ -63,7 +68,7 @@ export function useManageEventDetail(id?: string) {
 
 export function useEventCoOwners(eventId?: string) {
   return useQuery({
-    queryKey: ["event-co-owners", eventId],
+    queryKey: eventKeys.coOwners(eventId as string),
     queryFn: () => eventsApi.getCoOwners(eventId as string),
     enabled: !!eventId,
   });
@@ -71,22 +76,44 @@ export function useEventCoOwners(eventId?: string) {
 
 export function useEventCollaborators(eventId?: string) {
   return useQuery({
-    queryKey: ["event-collaborators", eventId],
+    queryKey: eventKeys.collaborators(eventId as string),
     queryFn: () => eventsApi.getCollaborators(eventId as string),
     enabled: !!eventId,
   });
 }
 
 export function useOrganizerOptions() {
-  return useQuery({
-    queryKey: ["organizer-options"],
+  return useQuery<OrganizerOptionsResponse>({
+    queryKey: eventKeys.organizerOptions(),
     queryFn: () => eventsApi.getOrganizerOptions(),
   });
 }
 
-export function useIGEvents(igId?: string, params?: EventListQueryParams) {
+export function useCollaborationTargets(
+  search: string,
+  type?: CollaboratorType,
+) {
+  const debouncedSearch = useDebounce(search, 300);
   return useQuery({
-    queryKey: ["ig-events", igId, params],
+    queryKey: eventKeys.collaborationTargets({ search: debouncedSearch, type }),
+    queryFn: () => eventsApi.searchCollaborationTargets(debouncedSearch, type),
+    enabled: debouncedSearch.length >= 2,
+  });
+}
+
+export function useUserSearch(query: string) {
+  const debouncedQuery = useDebounce(query, 300);
+  return useQuery({
+    queryKey: eventKeys.userSearch(debouncedQuery),
+    queryFn: () => eventsApi.searchUsers(debouncedQuery),
+    enabled: debouncedQuery.length >= 2,
+  });
+}
+
+export function useIGEvents(igId?: string, params?: EventListQueryParams) {
+  // Ready to consume - pending IG detail page implementation.
+  return useQuery({
+    queryKey: eventKeys.igFeed(igId as string, params ?? {}),
     queryFn: () => eventsApi.igEvents(igId as string, params),
     enabled: !!igId,
   });
@@ -97,7 +124,7 @@ export function useClusterEvents(
   params?: EventListQueryParams,
 ) {
   return useQuery({
-    queryKey: ["cluster-events", cluster, params],
+    queryKey: eventKeys.clusterFeed(cluster as IGCluster, params ?? {}),
     queryFn: () => eventsApi.clusterEvents(cluster as IGCluster, params),
     enabled: !!cluster,
   });
@@ -107,24 +134,27 @@ export function useCampusEvents(
   campusId?: string,
   params?: EventListQueryParams,
 ) {
+  // Ready to consume - pending campus detail page implementation.
   return useQuery({
-    queryKey: ["campus-events", campusId, params],
+    queryKey: eventKeys.campusFeed(campusId as string, params ?? {}),
     queryFn: () => eventsApi.campusEvents(campusId as string, params),
     enabled: !!campusId,
   });
 }
 
 export function useCampusIgEvents(id?: string, params?: EventListQueryParams) {
+  // Ready to consume - pending campus IG page implementation.
   return useQuery({
-    queryKey: ["campus-ig-events", id, params],
+    queryKey: eventKeys.campusIgFeed(id as string, params ?? {}),
     queryFn: () => eventsApi.campusIgEvents(id as string, params),
     enabled: !!id,
   });
 }
 
 export function useCompanyEvents(id?: string, params?: EventListQueryParams) {
+  // Ready to consume - pending company page implementation.
   return useQuery({
-    queryKey: ["company-events", id, params],
+    queryKey: eventKeys.companyFeed(id as string, params ?? {}),
     queryFn: () => eventsApi.companyEvents(id as string, params),
     enabled: !!id,
   });
@@ -137,8 +167,8 @@ export function useCreateEvent() {
     mutationFn: (body: EventWriteBody) => eventsApi.create(body),
     onSuccess: () => {
       toast.success("Event created");
-      queryClient.invalidateQueries({ queryKey: ["events"] });
-      queryClient.invalidateQueries({ queryKey: ["manage-events"] });
+      queryClient.invalidateQueries({ queryKey: eventKeys.all });
+      queryClient.invalidateQueries({ queryKey: eventKeys.manage() });
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error, "Failed to create event"));
@@ -153,10 +183,12 @@ export function useUpdateEvent(eventId: string) {
     mutationFn: (body: EventWriteBody) => eventsApi.update(eventId, body),
     onSuccess: () => {
       toast.success("Event updated");
-      queryClient.invalidateQueries({ queryKey: ["events"] });
-      queryClient.invalidateQueries({ queryKey: ["manage-events"] });
-      queryClient.invalidateQueries({ queryKey: ["event", eventId] });
-      queryClient.invalidateQueries({ queryKey: ["manage-event", eventId] });
+      queryClient.invalidateQueries({ queryKey: eventKeys.all });
+      queryClient.invalidateQueries({ queryKey: eventKeys.manage() });
+      queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
+      queryClient.invalidateQueries({
+        queryKey: eventKeys.manageDetail(eventId),
+      });
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error, "Failed to update event"));
@@ -171,10 +203,12 @@ export function usePatchEvent(eventId: string) {
     mutationFn: (body: EventPatchBody) => eventsApi.patch(eventId, body),
     onSuccess: () => {
       toast.success("Event updated");
-      queryClient.invalidateQueries({ queryKey: ["events"] });
-      queryClient.invalidateQueries({ queryKey: ["manage-events"] });
-      queryClient.invalidateQueries({ queryKey: ["event", eventId] });
-      queryClient.invalidateQueries({ queryKey: ["manage-event", eventId] });
+      queryClient.invalidateQueries({ queryKey: eventKeys.all });
+      queryClient.invalidateQueries({ queryKey: eventKeys.manage() });
+      queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
+      queryClient.invalidateQueries({
+        queryKey: eventKeys.manageDetail(eventId),
+      });
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error, "Failed to update event"));
@@ -189,8 +223,8 @@ export function useDeleteEvent(eventId: string) {
     mutationFn: () => eventsApi.delete(eventId),
     onSuccess: () => {
       toast.success("Event cancelled");
-      queryClient.invalidateQueries({ queryKey: ["events"] });
-      queryClient.invalidateQueries({ queryKey: ["manage-events"] });
+      queryClient.invalidateQueries({ queryKey: eventKeys.all });
+      queryClient.invalidateQueries({ queryKey: eventKeys.manage() });
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error, "Failed to cancel event"));
@@ -205,8 +239,10 @@ export function usePublishEvent(eventId: string) {
     mutationFn: () => eventsApi.publish(eventId),
     onSuccess: () => {
       toast.success("Event submitted");
-      queryClient.invalidateQueries({ queryKey: ["manage-event", eventId] });
-      queryClient.invalidateQueries({ queryKey: ["manage-events"] });
+      queryClient.invalidateQueries({
+        queryKey: eventKeys.manageDetail(eventId),
+      });
+      queryClient.invalidateQueries({ queryKey: eventKeys.manageLists() });
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error, "Failed to publish event"));
@@ -222,7 +258,7 @@ export function useAddCoOwner(eventId: string) {
       eventsApi.addCoOwner(eventId, body),
     onSuccess: () => {
       toast.success("Co-owner added");
-      queryClient.invalidateQueries({ queryKey: ["event-co-owners", eventId] });
+      queryClient.invalidateQueries({ queryKey: eventKeys.coOwners(eventId) });
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error, "Failed to add co-owner"));
@@ -238,7 +274,7 @@ export function useRemoveCoOwner(eventId: string) {
       eventsApi.removeCoOwner(eventId, coOwnerId),
     onSuccess: () => {
       toast.success("Co-owner removed");
-      queryClient.invalidateQueries({ queryKey: ["event-co-owners", eventId] });
+      queryClient.invalidateQueries({ queryKey: eventKeys.coOwners(eventId) });
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error, "Failed to remove co-owner"));
@@ -255,9 +291,11 @@ export function useInviteCollaborator(eventId: string) {
     onSuccess: () => {
       toast.success("Collaborator invited");
       queryClient.invalidateQueries({
-        queryKey: ["event-collaborators", eventId],
+        queryKey: eventKeys.collaborators(eventId),
       });
-      queryClient.invalidateQueries({ queryKey: ["manage-event", eventId] });
+      queryClient.invalidateQueries({
+        queryKey: eventKeys.manageDetail(eventId),
+      });
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error, "Failed to invite collaborator"));
@@ -274,7 +312,7 @@ export function useAcceptCollaborator(eventId: string) {
     onSuccess: () => {
       toast.success("Collaborator accepted");
       queryClient.invalidateQueries({
-        queryKey: ["event-collaborators", eventId],
+        queryKey: eventKeys.collaborators(eventId),
       });
     },
     onError: (error: unknown) => {
@@ -292,7 +330,7 @@ export function useRejectCollaborator(eventId: string) {
     onSuccess: () => {
       toast.success("Collaborator rejected");
       queryClient.invalidateQueries({
-        queryKey: ["event-collaborators", eventId],
+        queryKey: eventKeys.collaborators(eventId),
       });
     },
     onError: (error: unknown) => {
@@ -310,7 +348,7 @@ export function useRemoveCollaborator(eventId: string) {
     onSuccess: () => {
       toast.success("Collaborator removed");
       queryClient.invalidateQueries({
-        queryKey: ["event-collaborators", eventId],
+        queryKey: eventKeys.collaborators(eventId),
       });
     },
     onError: (error: unknown) => {
@@ -326,42 +364,130 @@ export function useToggleInterest(eventId: string) {
     unknown,
     unknown,
     ViewerInterestStatus | null,
-    { previousDetail?: EventDetailData }
+    {
+      previousDetail?: EventDetailData;
+      previousListData?: Array<[readonly unknown[], EventListData | undefined]>;
+    }
   >({
     mutationFn: (currentStatus: ViewerInterestStatus | null) =>
       currentStatus === "interested"
         ? eventsApi.removeInterest(eventId)
         : eventsApi.addInterest(eventId),
     onMutate: async (currentStatus) => {
-      await queryClient.cancelQueries({ queryKey: ["event", eventId] });
+      await queryClient.cancelQueries({ queryKey: eventKeys.detail(eventId) });
+      await queryClient.cancelQueries({ queryKey: eventKeys.lists() });
 
-      const previousDetail = queryClient.getQueryData<EventDetailData>([
-        "event",
-        eventId,
-      ]);
-
-      const isGoing = currentStatus !== "interested";
-      queryClient.setQueryData<EventDetailData>(["event", eventId], (old) => {
-        if (!old) return old;
-        return {
-          ...old,
-          viewer_interest_status: isGoing ? "interested" : "none",
-          interest_count: isGoing
-            ? old.interest_count + 1
-            : Math.max(0, old.interest_count - 1),
-        };
+      const previousDetail = queryClient.getQueryData<EventDetailData>(
+        eventKeys.detail(eventId),
+      );
+      const previousListData = queryClient.getQueriesData<EventListData>({
+        queryKey: eventKeys.lists(),
       });
 
-      return { previousDetail };
+      const isGoing = currentStatus !== "interested";
+      queryClient.setQueryData<EventDetailData>(
+        eventKeys.detail(eventId),
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            viewer_interest_status: isGoing ? "interested" : "none",
+            interest_count: isGoing
+              ? old.interest_count + 1
+              : Math.max(0, old.interest_count - 1),
+          };
+        },
+      );
+
+      for (const [queryKey, listData] of previousListData) {
+        if (!listData) continue;
+        queryClient.setQueryData<EventListData>(queryKey, {
+          ...listData,
+          data: listData.data.map((event) => {
+            if (event.id !== eventId) return event;
+            return {
+              ...event,
+              viewer_interest_status: isGoing ? "interested" : "none",
+              interest_count: isGoing
+                ? event.interest_count + 1
+                : Math.max(0, event.interest_count - 1),
+            };
+          }),
+        });
+      }
+
+      return { previousDetail, previousListData };
     },
     onError: (error: unknown, _status, context) => {
       if (context?.previousDetail) {
-        queryClient.setQueryData(["event", eventId], context.previousDetail);
+        queryClient.setQueryData(
+          eventKeys.detail(eventId),
+          context.previousDetail,
+        );
+      }
+      if (context?.previousListData) {
+        for (const [queryKey, listData] of context.previousListData) {
+          queryClient.setQueryData(queryKey, listData);
+        }
       }
       toast.error(getErrorMessage(error, "Failed to update interest"));
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["event", eventId] });
+      queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
+      queryClient.invalidateQueries({ queryKey: eventKeys.lists() });
+    },
+  });
+}
+
+export function useAdminApprove(eventId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (note?: string) => eventsApi.adminApprove(eventId, note),
+    onSuccess: () => {
+      toast.success("Event approved");
+      queryClient.invalidateQueries({
+        queryKey: eventKeys.manageDetail(eventId),
+      });
+      queryClient.invalidateQueries({ queryKey: eventKeys.manageLists() });
+    },
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, "Failed to approve event"));
+    },
+  });
+}
+
+export function useAdminReject(eventId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (reason: string) => eventsApi.adminReject(eventId, reason),
+    onSuccess: () => {
+      toast.success("Event returned to draft");
+      queryClient.invalidateQueries({
+        queryKey: eventKeys.manageDetail(eventId),
+      });
+      queryClient.invalidateQueries({ queryKey: eventKeys.manageLists() });
+    },
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, "Failed to reject event"));
+    },
+  });
+}
+
+export function useAdminFeature(eventId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (isFeatured: boolean) =>
+      eventsApi.adminFeature(eventId, isFeatured),
+    onSuccess: () => {
+      toast.success("Featured status updated");
+      queryClient.invalidateQueries({
+        queryKey: eventKeys.manageDetail(eventId),
+      });
+      queryClient.invalidateQueries({ queryKey: eventKeys.featured() });
+      queryClient.invalidateQueries({ queryKey: eventKeys.lists() });
+    },
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, "Failed to update featured status"));
     },
   });
 }

@@ -3,8 +3,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { authStore } from "@/lib/auth";
 import { endpoints } from "@/api/endpoints";
+import { authStore } from "@/lib/auth";
 import {
   deleteRoleVerification,
   fetchRoleVerifications,

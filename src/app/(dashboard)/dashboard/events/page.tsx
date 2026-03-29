@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { EventType, IGCluster } from "@/features/events";
 import {
   EventsFilters,
   EventsGrid,
   EventsPagination,
+  FeaturedEventsCarousel,
   useEventsList,
 } from "@/features/events";
 
@@ -60,6 +61,10 @@ export default function EventsPage() {
         <div>
           <h1 className="text-3xl font-bold text-foreground">Events</h1>
         </div>
+      </div>
+
+      <div className="mb-6">
+        <FeaturedEventsCarousel />
       </div>
 
       <div className="mb-6">

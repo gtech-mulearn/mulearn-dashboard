@@ -4,17 +4,17 @@ import { useState } from "react";
 import { endpoints } from "@/api/endpoints";
 import { Blank } from "@/components/dashboard/table/Blank";
 import Pagination from "@/components/dashboard/table/pagination";
+import type { Data } from "@/components/dashboard/table/Table";
 import Table from "@/components/dashboard/table/Table";
 import TableTop from "@/components/dashboard/table/TableTop";
 import THead from "@/components/dashboard/table/Thead";
-import {
-  useRoleVerifications,
-  useRoleVerificationCsvDownload,
-} from "../hooks/use-role-verification";
-import { RoleVerificationActions } from "./role-verification-actions";
 import { Badge } from "@/components/ui/badge";
+import {
+  useRoleVerificationCsvDownload,
+  useRoleVerifications,
+} from "../hooks/use-role-verification";
 import type { RoleVerificationItem } from "../schemas";
-import type { Data } from "@/components/dashboard/table/Table";
+import { RoleVerificationActions } from "./role-verification-actions";
 
 const COLUMN_ORDER = [
   { column: "full_name", Label: "Full Name", isSortable: true },

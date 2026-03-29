@@ -49,8 +49,10 @@ export const eventKeys = {
   // ── Meta ───────────────────────────────────────────────────
   meta: () => [...eventKeys.all, "meta"] as const,
   organizerOptions: () => [...eventKeys.meta(), "organizer-options"] as const,
-  collaborationTargets: (params: Record<string, unknown>) =>
+  collaborationTargets: (params: { search: string; type?: string }) =>
     [...eventKeys.meta(), "collaboration-targets", params] as const,
+  userSearch: (query: string) =>
+    [...eventKeys.meta(), "user-search", query] as const,
 
   // ── Scoped Feeds ───────────────────────────────────────────
   feeds: () => [...eventKeys.all, "feed"] as const,

@@ -136,7 +136,7 @@ export const routeAccessMap: Record<string, RouteConfig> = {
   },
 
   // ── Events Management ────────────────────────────────────
-  "/dashboard/events/manage": {
+  "/dashboard/manage-events": {
     roles: [ROLES.ADMIN, ROLES.FELLOW],
   },
 };

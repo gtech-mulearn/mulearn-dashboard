@@ -1,15 +1,15 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
+  BulkImportResponseSchema,
+  type BulkImportResult,
+  GenericMutationResponseSchema,
   type Role,
   type RoleFormValues,
   type RoleListData,
-  type RoleUser,
-  type BulkImportResult,
-  GenericMutationResponseSchema,
   RoleListResponseSchema,
+  type RoleUser,
   RoleUserFlexibleResponseSchema,
-  BulkImportResponseSchema,
 } from "../schemas";
 
 interface FetchRolesParams {

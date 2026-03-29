@@ -3,15 +3,16 @@
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import {
   useAcceptCollaborator,
   useEventCollaborators,
-  useInviteCollaborator,
   useRejectCollaborator,
   useRemoveCollaborator,
 } from "../hooks";
-import type { CollaboratorInviteBody, EventCollaborator } from "../types";
+import type { EventCollaborator } from "../types";
+import { CollaboratorSearchInput } from "./collaborator-search-input";
 
 interface CollaboratorsPanelProps {
   eventId: string;
@@ -32,15 +33,11 @@ export function CollaboratorsPanel({
   eventId,
   isManageView,
 }: CollaboratorsPanelProps) {
-  const [invite, setInvite] = useState<CollaboratorInviteBody>({
-    entity_type: "collab_ig",
-    entity_id: "",
-    role_label: "",
-  });
+  const [selectedCollaborator, setSelectedCollaborator] =
+    useState<EventCollaborator | null>(null);
   const [rejectReason, setRejectReason] = useState<Record<string, string>>({});
 
   const { data: collaborators } = useEventCollaborators(eventId);
-  const inviteMutation = useInviteCollaborator(eventId);
   const acceptMutation = useAcceptCollaborator(eventId);
   const rejectMutation = useRejectCollaborator(eventId);
   const removeMutation = useRemoveCollaborator(eventId);
@@ -112,7 +109,7 @@ export function CollaboratorsPanel({
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => removeMutation.mutate(collab.id)}
+                onClick={() => setSelectedCollaborator(collab)}
               >
                 Remove
               </Button>
@@ -121,51 +118,27 @@ export function CollaboratorsPanel({
         ))}
       </div>
 
-      {isManageView ? (
-        <div className="space-y-2 rounded border p-3">
-          <p className="text-sm font-medium">Invite collaborator</p>
-          <select
-            className="h-9 w-full rounded-md border px-3 text-sm"
-            value={invite.entity_type}
-            onChange={(e) =>
-              setInvite((prev) => ({
-                ...prev,
-                entity_type: e.target
-                  .value as CollaboratorInviteBody["entity_type"],
-              }))
-            }
-          >
-            <option value="collab_ig">IG</option>
-            <option value="collab_campus">Campus</option>
-            <option value="collab_campus_ig">Campus IG</option>
-            <option value="collab_company">Company</option>
-          </select>
-          <Input
-            placeholder="Entity UUID"
-            value={invite.entity_id}
-            onChange={(e) =>
-              setInvite((prev) => ({ ...prev, entity_id: e.target.value }))
-            }
-          />
-          <Input
-            placeholder="Role label"
-            value={invite.role_label ?? ""}
-            onChange={(e) =>
-              setInvite((prev) => ({ ...prev, role_label: e.target.value }))
-            }
-          />
-          <Button
-            type="button"
-            onClick={() => {
-              if (!invite.entity_id.trim()) return;
-              inviteMutation.mutate(invite);
-              setInvite((prev) => ({ ...prev, entity_id: "", role_label: "" }));
-            }}
-          >
-            Invite
-          </Button>
-        </div>
-      ) : null}
+      {isManageView ? <CollaboratorSearchInput eventId={eventId} /> : null}
+
+      <ConfirmDialog
+        open={!!selectedCollaborator}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedCollaborator(null);
+          }
+        }}
+        title="Remove collaborator"
+        description="This collaborator will be removed from the event."
+        onConfirm={() => {
+          if (selectedCollaborator) {
+            removeMutation.mutate(selectedCollaborator.id, {
+              onSuccess: () => setSelectedCollaborator(null),
+            });
+          }
+        }}
+        isPending={removeMutation.isPending}
+        confirmLabel="Remove"
+      />
     </section>
   );
 }

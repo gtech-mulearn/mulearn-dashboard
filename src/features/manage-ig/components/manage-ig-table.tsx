@@ -1,20 +1,20 @@
 "use client";
 
-import { Plus, Eye, Pencil, Trash2, Download } from "lucide-react";
+import { Download, Eye, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { DataTableErrorBoundary } from "@/components/dashboard/DataTableErrorBoundary";
+import Pagination from "@/components/dashboard/table/pagination";
+import type { Data } from "@/components/dashboard/table/Table";
 import Table from "@/components/dashboard/table/Table";
 import TableTop from "@/components/dashboard/table/TableTop";
-import Pagination from "@/components/dashboard/table/pagination";
 import THead from "@/components/dashboard/table/Thead";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useInterestGroupsAdmin } from "../hooks/use-manage-ig";
 import type { InterestGroup } from "../schemas";
-import type { Data } from "@/components/dashboard/table/Table";
-import { InterestGroupFormDialog } from "./ig-form-dialog";
 import { IGDetailPanel } from "./ig-detail-panel";
-import { DataTableErrorBoundary } from "@/components/dashboard/DataTableErrorBoundary";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { InterestGroupFormDialog } from "./ig-form-dialog";
 
 export function ManageIGTable() {
   const {

@@ -1,5 +1,5 @@
 import { ManageEventsDashboard } from "@/features/events";
 
-export default function EventsPage() {
+export default function ManageEventsPage() {
   return <ManageEventsDashboard />;
 }

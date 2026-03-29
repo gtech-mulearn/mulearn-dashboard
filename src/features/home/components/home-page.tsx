@@ -1,7 +1,6 @@
 "use client";
 
 import { useUserInfo, useUserProfile } from "@/features/auth/hooks/use-session";
-import { useAuthStore } from "@/stores/auth-store";
 import {
   useCalendarEvents,
   useEvents,
@@ -25,7 +24,6 @@ import { LearningCirclesCard } from "./learning-circles-card";
 // } from "./index";
 
 export function HomePage() {
-  const { role } = useAuthStore();
   const { data: userInfo } = useUserInfo();
   const { data: userProfile } = useUserProfile();
   const { data: interestGroups, isLoading: loadingGroups } =

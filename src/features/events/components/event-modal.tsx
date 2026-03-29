@@ -1,8 +1,10 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Controller, type Resolver, useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,20 +13,27 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { useCreateEvent, usePatchEvent } from "../hooks";
+import { eventsApi } from "../api";
+import { useCreateEvent, useOrganizerOptions, usePatchEvent } from "../hooks";
 import {
   type CreateEventSchema,
   createEventSchema,
   updateEventSchema,
 } from "../schemas";
 import type {
+  EventCoOwnerInput,
   EventDetail,
   EventDetailManage,
   EventListItem,
   EventPatchBody,
   EventWriteBody,
+  OrganizerOptionsResponse,
+  OrganizerType,
 } from "../types";
+import { CollaboratorSearchInput } from "./collaborator-search-input";
+import { UserSearchInput } from "./user-search-input";
 import { VenueSection } from "./venue-section";
 
 // Convert a datetime-local string (e.g. "2026-03-22T10:00") to a full ISO string
@@ -57,16 +66,30 @@ interface EventModalProps {
   isEdit?: boolean;
 }
 
+interface SelectedOrganiser {
+  label: string;
+  type: OrganizerType;
+  id: string;
+}
+
+type OrganizerOptionsLike = Partial<OrganizerOptionsResponse> & {
+  canCreateAsIg?: OrganizerOptionsResponse["can_create_as_ig"];
+  canCreateAsCampusIg?: OrganizerOptionsResponse["can_create_as_campus_ig"];
+  canCreateAsCampus?: OrganizerOptionsResponse["can_create_as_campus"];
+  canCreateAsCompany?: OrganizerOptionsResponse["can_create_as_company"];
+  canCreateAsAdmin?: OrganizerOptionsResponse["can_create_as_admin"];
+  response?: Partial<OrganizerOptionsResponse>;
+};
+
+function safeArray<T>(value: unknown): T[] {
+  return Array.isArray(value) ? (value as T[]) : [];
+}
+
 const defaultValues: CreateEventSchema = {
   title: "",
   description: "",
   event_type: undefined,
   scope: "global",
-  organiser_type: "admin",
-  organiser_ig_id: undefined,
-  organiser_campus_id: undefined,
-  organiser_campus_ig_id: undefined,
-  organiser_company_id: undefined,
   start_datetime: "",
   end_datetime: "",
   venue_type: "online",
@@ -98,6 +121,64 @@ export default function EventModal({
 }: EventModalProps) {
   const createEvent = useCreateEvent();
   const patchEvent = usePatchEvent(initialData?.id ?? "");
+  const organizerOptionsQuery = useOrganizerOptions();
+
+  const organizerOptions = useMemo<SelectedOrganiser[]>(() => {
+    const raw = organizerOptionsQuery.data as OrganizerOptionsLike | undefined;
+    if (!raw) return [];
+
+    const options = (raw.response ?? raw) as OrganizerOptionsLike;
+
+    const igs = safeArray<OrganizerOptionsResponse["can_create_as_ig"][number]>(
+      options.can_create_as_ig ?? options.canCreateAsIg,
+    );
+    const campusIgs = safeArray<
+      OrganizerOptionsResponse["can_create_as_campus_ig"][number]
+    >(options.can_create_as_campus_ig ?? options.canCreateAsCampusIg);
+    const campuses = safeArray<
+      OrganizerOptionsResponse["can_create_as_campus"][number]
+    >(options.can_create_as_campus ?? options.canCreateAsCampus);
+    const companies = safeArray<
+      OrganizerOptionsResponse["can_create_as_company"][number]
+    >(options.can_create_as_company ?? options.canCreateAsCompany);
+    const canCreateAsAdmin = Boolean(
+      options.can_create_as_admin ?? options.canCreateAsAdmin,
+    );
+
+    const all: SelectedOrganiser[] = [];
+
+    for (const ig of igs) {
+      all.push({ label: ig.name, type: "global_ig", id: ig.id });
+    }
+
+    for (const campusIg of campusIgs) {
+      all.push({
+        label: `${campusIg.ig.name} - ${campusIg.campus.name}`,
+        type: "campus_ig",
+        id: campusIg.id,
+      });
+    }
+
+    for (const campus of campuses) {
+      all.push({ label: campus.name, type: "campus", id: campus.id });
+    }
+
+    for (const company of companies) {
+      all.push({ label: company.name, type: "company", id: company.id });
+    }
+
+    if (canCreateAsAdmin) {
+      all.push({ label: "Admin", type: "admin", id: "" });
+    }
+
+    return all;
+  }, [organizerOptionsQuery.data]);
+
+  const [selectedOrganiserId, setSelectedOrganiserId] = useState<string>("");
+  const [selectedCoOwners, setSelectedCoOwners] = useState<EventCoOwnerInput[]>(
+    [],
+  );
+  const [tagInput, setTagInput] = useState("");
 
   const {
     control,
@@ -123,11 +204,6 @@ export default function EventModal({
       description: d?.description ?? "",
       event_type: d?.event_type,
       scope: d?.scope ?? "global",
-      organiser_type: d?.organizer?.type ?? "admin",
-      organiser_ig_id: d?.organizer?.ig?.id,
-      organiser_campus_id: d?.organizer?.campus?.id,
-      organiser_campus_ig_id: d?.organizer?.campus_ig?.id,
-      organiser_company_id: d?.organizer?.company?.id,
       start_datetime: toDatetimeLocal(d?.start_datetime),
       end_datetime: toDatetimeLocal(d?.end_datetime),
       venue_type:
@@ -152,15 +228,50 @@ export default function EventModal({
       tags: d?.tags ?? [],
       is_featured: d?.is_featured ?? false,
     });
+    setSelectedCoOwners(
+      d?.co_owners?.map((owner) => ({
+        user_id: owner.user.id,
+        role: owner.role,
+      })) ?? [],
+    );
   }, [initialData, open, reset]);
 
+  useEffect(() => {
+    if (organizerOptions.length === 1 && !selectedOrganiserId) {
+      setSelectedOrganiserId(
+        `${organizerOptions[0].type}:${organizerOptions[0].id}`,
+      );
+    }
+  }, [organizerOptions, selectedOrganiserId]);
+
+  useEffect(() => {
+    const d = initialData as Partial<EventDetailManage> | null | undefined;
+    if (!d?.organizer || organizerOptions.length === 0) return;
+
+    const organizerType = d.organizer.type;
+    const organizerId =
+      d.organizer.ig?.id ??
+      d.organizer.campus?.id ??
+      d.organizer.campus_ig?.id ??
+      d.organizer.company?.id ??
+      "";
+    const matching = organizerOptions.find(
+      (option) => option.type === organizerType && option.id === organizerId,
+    );
+    if (matching) {
+      setSelectedOrganiserId(`${matching.type}:${matching.id}`);
+    }
+  }, [initialData, organizerOptions]);
+
   const scope = watch("scope");
-  const organiserType = watch("organiser_type");
 
   const isPending =
     createEvent.isPending || patchEvent.isPending || isSubmitting;
 
-  const onSubmit = async (values: CreateEventSchema) => {
+  const onSubmit = async (
+    values: CreateEventSchema,
+    action: "draft" | "publish",
+  ) => {
     const start = toISOWithOffset(values.start_datetime);
     const end = toISOWithOffset(values.end_datetime);
     const deadline = values.registration_deadline
@@ -191,19 +302,60 @@ export default function EventModal({
     }
     if (hasDateError) return;
 
-    const payload = {
+    const selectedOrganiser = organizerOptions.find(
+      (option) => `${option.type}:${option.id}` === selectedOrganiserId,
+    );
+    if (!selectedOrganiser) {
+      setError("title", {
+        type: "manual",
+        message: "Select an organiser before saving",
+      });
+      return;
+    }
+
+    const payload: EventWriteBody = {
       ...values,
       start_datetime: start as string,
       end_datetime: end as string,
       registration_deadline: deadline,
+      organiser_type: selectedOrganiser.type,
+      organiser_ig_id:
+        selectedOrganiser.type === "global_ig"
+          ? selectedOrganiser.id
+          : undefined,
+      organiser_campus_id:
+        selectedOrganiser.type === "campus" ? selectedOrganiser.id : undefined,
+      organiser_campus_ig_id:
+        selectedOrganiser.type === "campus_ig"
+          ? selectedOrganiser.id
+          : undefined,
+      organiser_company_id:
+        selectedOrganiser.type === "company" ? selectedOrganiser.id : undefined,
+      co_owners: selectedCoOwners,
     };
 
     try {
+      let savedEventId = initialData?.id;
+
       if (isEdit && initialData?.id) {
-        await patchEvent.mutateAsync(payload as EventPatchBody);
+        const updated = await patchEvent.mutateAsync(payload as EventPatchBody);
+        savedEventId = updated.id;
       } else if (!isEdit) {
-        await createEvent.mutateAsync(payload as EventWriteBody);
+        const created = await createEvent.mutateAsync(
+          payload as EventWriteBody,
+        );
+        savedEventId = created.id;
       }
+
+      if (action === "publish" && savedEventId) {
+        try {
+          await eventsApi.publish(savedEventId);
+        } catch {
+          toast.error("Event saved as draft, but publish failed");
+          return;
+        }
+      }
+
       onClose();
     } catch {
       // Error already handled by mutation onError toast.
@@ -218,7 +370,7 @@ export default function EventModal({
           <DialogTitle>{isEdit ? "Edit Event" : "Create Event"}</DialogTitle>
         </DialogHeader>
 
-        <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+        <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
           <section className="space-y-3 rounded-lg border p-4">
             <h3 className="font-semibold">Basic Info</h3>
             <Input placeholder="Title" {...register("title")} />
@@ -278,44 +430,26 @@ export default function EventModal({
             ) : null}
           </section>
 
-          <section className="space-y-3 rounded-lg border p-4">
-            <h3 className="font-semibold">Organiser</h3>
-            <select
-              className="h-10 w-full rounded-md border px-3 text-sm"
-              {...register("organiser_type")}
-            >
-              <option value="admin">Admin</option>
-              <option value="global_ig">Global IG</option>
-              <option value="campus_ig">Campus IG</option>
-              <option value="campus">Campus</option>
-              <option value="company">Company</option>
-            </select>
-
-            {organiserType === "global_ig" ? (
-              <Input
-                placeholder="Organiser IG UUID"
-                {...register("organiser_ig_id")}
-              />
-            ) : null}
-            {organiserType === "campus" ? (
-              <Input
-                placeholder="Organiser campus UUID"
-                {...register("organiser_campus_id")}
-              />
-            ) : null}
-            {organiserType === "campus_ig" ? (
-              <Input
-                placeholder="Organiser campus IG UUID"
-                {...register("organiser_campus_ig_id")}
-              />
-            ) : null}
-            {organiserType === "company" ? (
-              <Input
-                placeholder="Organiser company UUID"
-                {...register("organiser_company_id")}
-              />
-            ) : null}
-          </section>
+          {organizerOptions.length > 1 ? (
+            <section className="space-y-3 rounded-lg border p-4">
+              <h3 className="font-semibold">Create as...</h3>
+              <select
+                className="h-10 w-full rounded-md border px-3 text-sm"
+                value={selectedOrganiserId}
+                onChange={(e) => setSelectedOrganiserId(e.target.value)}
+              >
+                <option value="">Select organiser</option>
+                {organizerOptions.map((option) => (
+                  <option
+                    key={`${option.type}:${option.id}`}
+                    value={`${option.type}:${option.id}`}
+                  >
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </section>
+          ) : null}
 
           <section className="space-y-3 rounded-lg border p-4">
             <h3 className="font-semibold">Dates</h3>
@@ -433,39 +567,132 @@ export default function EventModal({
               control={control}
               name="tags"
               render={({ field }) => (
-                <Input
-                  placeholder="Tags (comma separated)"
-                  value={
-                    Array.isArray(field.value) ? field.value.join(", ") : ""
-                  }
-                  onChange={(e) => {
-                    const tags = e.target.value
-                      .split(",")
-                      .map((tag) => tag.trim())
-                      .filter(Boolean);
-                    field.onChange(tags);
-                  }}
-                />
+                <div className="space-y-2">
+                  <Input
+                    placeholder="Type a tag and press Enter"
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === ",") {
+                        e.preventDefault();
+                        const nextTag = tagInput.trim().replace(/,$/, "");
+                        if (!nextTag) return;
+                        const existingTags = Array.isArray(field.value)
+                          ? field.value
+                          : [];
+                        if (!existingTags.includes(nextTag)) {
+                          field.onChange([...existingTags, nextTag]);
+                        }
+                        setTagInput("");
+                      }
+                    }}
+                  />
+                  <div className="flex flex-wrap gap-2">
+                    {(field.value ?? []).map((tag) => (
+                      <Badge
+                        key={tag}
+                        variant="outline"
+                        className="cursor-pointer"
+                        onClick={() =>
+                          field.onChange(
+                            (field.value ?? []).filter((t) => t !== tag),
+                          )
+                        }
+                      >
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
               )}
             />
-            <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" {...register("is_collaboration")} />
-              This is a collaboration event
-            </label>
+
+            <div className="flex items-center justify-between">
+              <label htmlFor="is_collaboration" className="text-sm">
+                This is a collaboration event
+              </label>
+              <Controller
+                control={control}
+                name="is_collaboration"
+                render={({ field }) => (
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    id="is_collaboration"
+                  />
+                )}
+              />
+            </div>
+
+            {watch("is_collaboration") ? (
+              isEdit && initialData?.id ? (
+                <CollaboratorSearchInput eventId={initialData.id} />
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  You can add collaborators after creating the event from the
+                  manage screen.
+                </p>
+              )
+            ) : null}
+
+            <div className="rounded-md border border-dashed p-3">
+              <p className="text-sm font-medium">Linked tasks</p>
+              <p className="text-xs text-muted-foreground">Coming soon</p>
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Co-owners</p>
+              <UserSearchInput
+                onSelect={(user) => {
+                  if (
+                    selectedCoOwners.some((owner) => owner.user_id === user.id)
+                  ) {
+                    return;
+                  }
+                  setSelectedCoOwners((prev) => [
+                    ...prev,
+                    { user_id: user.id, role: "co_owner" },
+                  ]);
+                }}
+                placeholder="Search by name or muid..."
+              />
+              <div className="flex flex-wrap gap-2">
+                {selectedCoOwners.map((owner) => (
+                  <Badge
+                    key={owner.user_id}
+                    variant="outline"
+                    className="cursor-pointer"
+                    onClick={() =>
+                      setSelectedCoOwners((prev) =>
+                        prev.filter((item) => item.user_id !== owner.user_id),
+                      )
+                    }
+                  >
+                    {owner.user_id}
+                  </Badge>
+                ))}
+              </div>
+            </div>
           </section>
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isPending}>
-              {isPending
-                ? isEdit
-                  ? "Saving…"
-                  : "Creating…"
-                : isEdit
-                  ? "Save Changes"
-                  : "Create Event"}
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isPending}
+              onClick={handleSubmit((values) => onSubmit(values, "draft"))}
+            >
+              Save as Draft
+            </Button>
+            <Button
+              type="button"
+              disabled={isPending}
+              onClick={handleSubmit((values) => onSubmit(values, "publish"))}
+            >
+              Save and Publish
             </Button>
           </div>
         </form>

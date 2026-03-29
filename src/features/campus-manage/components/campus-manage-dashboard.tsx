@@ -1,17 +1,21 @@
 "use client";
 
+import { format, isSameDay } from "date-fns";
 import {
   BarChart3,
   BookOpen,
+  Briefcase,
   CalendarDays,
   ExternalLink,
   Facebook,
   Github,
   Globe,
+  Heart,
   Instagram,
   Link2,
   Linkedin,
   Loader2,
+  MapPin,
   MessageSquare,
   Pencil,
   Plus,
@@ -24,13 +28,10 @@ import {
   Users,
   X,
   Youtube,
-  MapPin,
-  Briefcase,
-  Heart,
   Zap,
 } from "lucide-react";
+import Image from "next/image";
 import { type ReactNode, useMemo, useState } from "react";
-import { format, isSameDay } from "date-fns";
 import {
   Area,
   AreaChart,
@@ -48,11 +49,14 @@ import {
 import Pagination from "@/components/dashboard/table/pagination";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -60,14 +64,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -76,27 +73,22 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 import {
   useAddExecomMember,
   useCampusEvents,
   useCampusLeaderboard,
   useCampusOverview,
+  useDeleteSocialLink,
   useEventDistribution,
   useExecomMembers,
   useIgChapters,
   useKarmaByCluster,
   useRemoveExecomMember,
   useUpsertSocialLink,
-  useDeleteSocialLink,
   useUserProfile,
 } from "../hooks";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
 import type {
   CampusEventFilters,
   CampusLeaderboardFilters,
@@ -274,7 +266,11 @@ function CampusDatePicker({
             )}
           >
             <CalendarDays className="mr-2 h-3.5 w-3.5 opacity-60" />
-            {date ? format(selectedDate!, "PPP") : <span>Select Date</span>}
+            {selectedDate ? (
+              format(selectedDate, "PPP")
+            ) : (
+              <span>Select Date</span>
+            )}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
@@ -420,7 +416,6 @@ export function CampusManageDashboard() {
   const { data: chapters = [], isLoading: isChaptersLoading } = useIgChapters();
 
   const socialLinks = overview?.socialLinks;
-  const isSocialLoading = isOverviewLoading;
 
   // ─── Execom user verification ──
   const { data: verifiedUser, isFetching: isVerifyingUser } =
@@ -1234,10 +1229,12 @@ export function CampusManageDashboard() {
                             {/* Header Image Area */}
                             {event.coverImage && (
                               <div className="relative aspect-video w-full overflow-hidden">
-                                <img
+                                <Image
                                   src={event.coverImage}
                                   alt={event.title}
-                                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                  fill
+                                  sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                                  className="object-cover transition-transform duration-500 group-hover:scale-105"
                                 />
                               </div>
                             )}
@@ -1441,9 +1438,11 @@ export function CampusManageDashboard() {
                                   <div className="flex items-center gap-1.5 animate-in zoom-in-90 fade-in">
                                     <div className="h-7 w-7 overflow-hidden rounded-lg shadow-sm border border-border/40">
                                       {verifiedUser.profilePic ? (
-                                        <img
+                                        <Image
                                           src={verifiedUser.profilePic}
                                           alt=""
+                                          width={28}
+                                          height={28}
                                           className="h-full w-full object-cover"
                                         />
                                       ) : (
@@ -1502,9 +1501,11 @@ export function CampusManageDashboard() {
                             {/* Profile Picture (Strict Policy) */}
                             <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-border/40 bg-muted shadow-sm transition-transform group-hover:scale-105">
                               {member.profilePic ? (
-                                <img
+                                <Image
                                   src={member.profilePic}
                                   alt={member.name}
+                                  width={64}
+                                  height={64}
                                   className="h-full w-full object-cover"
                                 />
                               ) : (
@@ -1763,7 +1764,9 @@ export function CampusManageDashboard() {
                                     variant="ghost"
                                     className="h-7 w-7 text-destructive hover:bg-destructive/10"
                                     disabled={isDeletingSocial}
-                                    onClick={() => deleteSocial(linkData!.id)}
+                                    onClick={() =>
+                                      linkData && deleteSocial(linkData.id)
+                                    }
                                     title={`Remove ${platform.label}`}
                                   >
                                     {isDeletingSocial ? (
