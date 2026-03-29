@@ -35,6 +35,7 @@ import type { Permission } from "@/lib/auth/permissions";
 import {
   CAMPUS_MANAGEMENT_ROLES,
   DISTRICT_ROLES,
+  IG_ROLES,
   MANAGEMENT_ROLES,
   ROLES,
   ZONAL_ROLES,
@@ -166,6 +167,14 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: MapPin,
     section: "management",
     roles: DISTRICT_ROLES,
+  },
+  {
+    id: "interest-groups",
+    title: "Interest Groups",
+    href: "/dashboard/interest-groups",
+    icon: Users,
+    section: "management",
+    roles: IG_ROLES,
   },
   {
     id: "management",
