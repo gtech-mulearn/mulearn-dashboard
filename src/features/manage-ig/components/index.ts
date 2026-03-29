@@ -1,3 +1,6 @@
+export * from "./ig-card";
+export * from "./ig-client";
+export * from "./edit-interest-group-form";
 export * from "./ig-detail-panel";
 export * from "./ig-form-dialog";
 export * from "./ig-request-table";

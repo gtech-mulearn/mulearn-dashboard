@@ -54,6 +54,11 @@ export const routeAccessMap: Record<string, RouteConfig> = {
     roles: [ROLES.ADMIN, ROLES.FELLOW, ROLES.DISTRICT_CAMPUS_LEAD],
   },
 
+  // ── Interest Group Dashboard ─────────────────────────────
+  "/dashboard/interest-groups": {
+    roles: [ROLES.ADMIN, ROLES.FELLOW, ROLES.IG_LEAD],
+  },
+
   // ── Admin Routes ─────────────────────────────────────────
   // Broad admin prefix — catches any /dashboard/admin/* route
   "/dashboard/admin": {
