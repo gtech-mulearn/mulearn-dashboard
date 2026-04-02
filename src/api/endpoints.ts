@@ -770,6 +770,16 @@ export const endpoints = {
     /** GET - Download all college details as CSV */
     collegeDetailsCsv: "/api/v1/dashboard/district/college-details/csv/",
   },
+
+  zonal: {
+    details: "/api/dashboard/zonal/zonal-details/",
+    TopDistrict: "/api/dashboard/zonal/top-districts/",
+    StudentLevel: "/api/dashboard/zonal/student-level/",
+    StudentList: "/api/dashboard/zonal/student-details/",
+    StudentCsv: "/api/dashboard/zonal/student-details/csv/",
+    CollegeList: "/api/dashboard/zonal/college-details/",
+    CollegeCsv: "/api/dashboard/zonal/college-details/csv/",
+  },
 } as const;
 
 // Type for type-safe endpoint access
