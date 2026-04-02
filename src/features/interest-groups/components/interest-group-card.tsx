@@ -38,7 +38,7 @@ export function InterestGroupCard({ group, gradient }: InterestGroupCardProps) {
       <div className="absolute left-5 right-5 top-5 flex items-start justify-between z-10 transition-transform duration-500 group-hover:-translate-y-1">
         <div className="rounded-full bg-white/20 px-4 py-1.5 backdrop-blur-md ring-1 ring-white/30 shadow-lg">
           <p className="text-[10px] font-extrabold uppercase tracking-widest text-white drop-shadow-md">
-            {group.category || "Interest Group"}
+            {group.category}
           </p>
         </div>
         {group.code && (
