@@ -1,6 +1,22 @@
 "use client";
 
 import {
+  BookOpen,
+  Briefcase,
+  Calendar,
+  Clock,
+  ExternalLink,
+  Lightbulb,
+  Link as LinkIcon,
+  Pencil,
+  UserCheck,
+  Users,
+  X,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import {
   Sheet,
   SheetClose,
   SheetContent,
@@ -8,22 +24,6 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import type { InterestGroup } from "../schemas";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import {
-  Users,
-  Calendar,
-  Clock,
-  Link as LinkIcon,
-  BookOpen,
-  Lightbulb,
-  UserCheck,
-  Briefcase,
-  Pencil,
-  X,
-  ExternalLink,
-} from "lucide-react";
 
 type Props = {
   isOpen: boolean;
@@ -149,8 +149,14 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
   const leads = Array.isArray(ig.leads)
     ? ig.leads
         .map((lead) => (typeof lead === "string" ? { name: lead } : lead))
-        .filter((lead): lead is { name: string; email?: string | null } =>
-          Boolean(lead?.name),
+        .filter(
+          (
+            lead,
+          ): lead is {
+            name: string;
+            email?: string | null;
+            muid?: string | null;
+          } => Boolean(lead?.name),
         )
     : [];
   const mentors = Array.isArray(ig.mentors)
@@ -159,8 +165,13 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
           typeof mentor === "string" ? { name: mentor } : mentor,
         )
         .filter(
-          (mentor): mentor is { name: string; expertise?: string | null } =>
-            Boolean(mentor?.name),
+          (
+            mentor,
+          ): mentor is {
+            name: string;
+            expertise?: string | null;
+            muid?: string | null;
+          } => Boolean(mentor?.name),
         )
     : [];
 
@@ -325,6 +336,11 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
                             ({lead.email})
                           </span>
                         )}
+                        {lead.muid && (
+                          <span className="text-muted-foreground text-xs">
+                            MUID: {lead.muid}
+                          </span>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -341,6 +357,11 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
                         {mentor.expertise && (
                           <span className="text-muted-foreground text-xs ml-1">
                             ({mentor.expertise})
+                          </span>
+                        )}
+                        {mentor.muid && (
+                          <span className="text-muted-foreground text-xs block">
+                            MUID: {mentor.muid}
                           </span>
                         )}
                       </div>

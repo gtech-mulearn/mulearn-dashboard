@@ -6,7 +6,6 @@
 
 "use client";
 
-import { useState } from "react";
 import {
   ArrowLeft,
   BookOpen,
@@ -23,10 +22,11 @@ import {
   Users,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
+import Loader from "@/app/loading";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useInterestGroupDetail } from "@/features/interest-groups";
 import { EditInterestGroupForm } from "./edit-interest-group-form";
-import Loader from "@/app/loading";
 
 export function IGDetail() {
   const router = useRouter();
@@ -391,6 +391,11 @@ export function IGDetail() {
                           LinkedIn Profile
                         </a>
                       )}
+                      {mentor.muid && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          MUID: {mentor.muid}
+                        </p>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -507,6 +512,11 @@ export function IGDetail() {
                               <Mail className="h-3 w-3" />
                               {lead.email}
                             </a>
+                          )}
+                          {lead.muid && (
+                            <p className="text-xs text-muted-foreground">
+                              MUID: {lead.muid}
+                            </p>
                           )}
                         </div>
                       </div>

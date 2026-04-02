@@ -1,14 +1,17 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2, Lock } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -19,6 +22,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { MuidSearchInput } from "@/components/ui/muid-search-input";
 import {
   Select,
   SelectContent,
@@ -26,17 +31,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import { useInterestGroupsAdmin } from "../hooks/use-manage-ig";
 import {
-  InterestGroupCreateSchema,
   type InterestGroup,
   type InterestGroupCreate,
+  InterestGroupCreateSchema,
 } from "../schemas";
-import { useInterestGroupsAdmin } from "../hooks/use-manage-ig";
-import { useEffect, useState } from "react";
-import { Loader2, Lock } from "lucide-react";
 
 type Props = {
   isOpen: boolean;
@@ -51,8 +53,13 @@ type InterestGroupArrayField =
   | string[]
   | { title: string; url: string }[]
   | { name: string; twitter?: string | null; designation?: string | null }[]
-  | { name: string; email?: string | null }[]
-  | { name: string; expertise?: string | null; linkedin?: string | null }[]
+  | { name: string; email?: string | null; muid?: string | null }[]
+  | {
+      name: string;
+      expertise?: string | null;
+      linkedin?: string | null;
+      muid?: string | null;
+    }[]
   | null
   | undefined;
 
@@ -96,6 +103,12 @@ export function InterestGroupFormDialog({
   } = useInterestGroupsAdmin();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const [leadMuids, setLeadMuids] = useState<string[]>([]);
+  const [mentorMuids, setMentorMuids] = useState<string[]>([]);
+
+  const rawLeads = initialData?.leads;
+  const rawMentors = initialData?.mentors;
+
   const form = useForm<InterestGroupCreate>({
     resolver: zodResolver(InterestGroupCreateSchema),
     defaultValues: {
@@ -131,8 +144,8 @@ export function InterestGroupFormDialog({
         resource: initialData.resource || "",
         top_blogs: normalizeArrayField(initialData.top_blogs),
         people_to_follow: normalizeArrayField(initialData.people_to_follow),
-        leads: normalizeArrayField(initialData.leads),
-        mentors: normalizeArrayField(initialData.mentors),
+        leads: [],
+        mentors: [],
         thinktank: initialData.thinktank || "",
         office_hours: initialData.office_hours || "",
       });
@@ -156,19 +169,48 @@ export function InterestGroupFormDialog({
     }
   }, [initialData, form]);
 
+  useEffect(() => {
+    const extract = (raw: unknown): string[] => {
+      if (!raw) return [];
+      if (Array.isArray(raw)) {
+        return raw
+          .map((item) => {
+            if (typeof item === "string") return item;
+            if (
+              item &&
+              typeof item === "object" &&
+              "muid" in item &&
+              (item as Record<string, unknown>).muid
+            )
+              return String((item as Record<string, unknown>).muid);
+            if (item && typeof item === "object" && "name" in item)
+              return String((item as Record<string, unknown>).name);
+            return null;
+          })
+          .filter(Boolean) as string[];
+      }
+      return [];
+    };
+    setLeadMuids(extract(rawLeads));
+    setMentorMuids(extract(rawMentors));
+  }, [rawLeads, rawMentors]);
+
   const onSubmit = async (data: InterestGroupCreate) => {
     setIsSubmitting(true);
     try {
+      const leadsPayload = leadMuids.map((m) => ({ muid: m }));
+      const mentorsPayload = mentorMuids.map((m) => ({ muid: m }));
+      const payload = { ...data, leads: leadsPayload, mentors: mentorsPayload };
+
       if (initialData) {
         if (isIGLead) {
-          // IG Lead: only send lead-editable fields via PATCH
-          const { name, code, category, ...leadFields } = data;
+          const { name, code, category, ...leadFields } = payload;
           await partialUpdateInterestGroup(initialData.id, leadFields);
         } else {
-          await updateInterestGroup(initialData.id, data);
+          await updateInterestGroup(initialData.id, payload);
         }
       } else {
-        await createInterestGroup(data);
+        await createInterestGroup(payload);
       }
       onClose();
     } catch {
@@ -436,16 +478,22 @@ export function InterestGroupFormDialog({
                 Team & Schedule
               </h3>
               <div className="grid grid-cols-2 gap-4">
-                <ArrayInput
-                  label="Leads"
-                  name="leads"
-                  placeholder="e.g. John Doe, Jane Smith"
-                />
-                <ArrayInput
-                  label="Mentors"
-                  name="mentors"
-                  placeholder="e.g. Prof. Ada, Dr. Turing"
-                />
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Leads</Label>
+                  <MuidSearchInput
+                    value={leadMuids}
+                    onChange={setLeadMuids}
+                    placeholder="Search users by muid…"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Mentors</Label>
+                  <MuidSearchInput
+                    value={mentorMuids}
+                    onChange={setMentorMuids}
+                    placeholder="Search users by muid…"
+                  />
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <FormField
