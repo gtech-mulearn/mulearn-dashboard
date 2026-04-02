@@ -55,10 +55,10 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 - **Auth System**: Integrated token-based authentication with automatic redirection on expiry/invalid sessions.
 - **Dynamic Leaderboard**: Real-time tracking of community member progress.
-- **Campus & Learning Circles**: Dedicated modules for managing and viewing campus-level activities and learning groups.
-- **Profile Management**: Personalized user profiles with progression tracking and gamification elements.
-- **Optimized Data Layer**: Centralized API client with built-in schema validation using Zod.
-- **Responsive Design**: Mobile-first architecture built with Tailwind CSS.
+- **Campus Management**: Real-time tools for Campus Leads and Enablers to manage leadership teams and social presence.
+- **Analytics & Insights**: Performance tracking via Karma by Cluster, Event Distribution, and individual student progress.
+- **Event Lifecycle**: Comprehensive tracking of campus-level meetups, hackathons, and workshops.
+- **Responsive Architecture**: Premium, mobile-first design system with optimized charts and interactive elements.
 
 ---
 

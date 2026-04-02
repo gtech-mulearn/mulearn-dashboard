@@ -36,7 +36,7 @@ export function CategorySelector({
     <>
       <div className="w-full mt-5 md:hidden flex justify-center">
         <Select value={selected} onValueChange={(v) => onChange(v as Category)}>
-          <SelectTrigger className="w-[200px] border-primary text-primary focus:ring-primary">
+          <SelectTrigger className="w-52 border-primary text-primary focus:ring-primary">
             <SelectValue placeholder="Select category" />
           </SelectTrigger>
 

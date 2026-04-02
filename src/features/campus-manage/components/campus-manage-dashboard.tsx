@@ -346,7 +346,7 @@ function StatCard({
             </span>
           </div>
           <p
-            className="text-4xl font-bold tracking-tight"
+            className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight"
             style={{ color: accentText ?? accent }}
           >
             {value}
@@ -475,18 +475,18 @@ export function CampusManageDashboard() {
 
   const igOptions = useMemo(
     () =>
-      Array.from(new Set(leaderboard.map((item) => item.ig)))
-        .filter(Boolean)
-        .map((ig) => ({ label: ig, value: ig })),
-    [leaderboard],
+      chapters
+        .map((ch) => ({ label: ch.name, value: ch.igId || ch.id }))
+        .sort((a, b) => a.label.localeCompare(b.label)),
+    [chapters],
   );
 
   const clusterOptions = useMemo(
     () =>
-      Array.from(new Set(leaderboard.map((item) => item.cluster)))
-        .filter(Boolean)
-        .map((cluster) => ({ label: cluster, value: cluster })),
-    [leaderboard],
+      clusterData
+        .map((cl) => ({ label: cl.cluster, value: cl.cluster }))
+        .sort((a, b) => a.label.localeCompare(b.label)),
+    [clusterData],
   );
 
   // ─── Handlers ────────────────────────────────────────────────────────────
@@ -546,28 +546,28 @@ export function CampusManageDashboard() {
                         "repeating-linear-gradient(0deg,transparent,transparent 24px,currentColor 24px,currentColor 25px),repeating-linear-gradient(90deg,transparent,transparent 24px,currentColor 24px,currentColor 25px)",
                     }}
                   />
-                  <div className="relative flex flex-col gap-5 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="relative flex flex-col gap-5 px-4 py-6 sm:px-6 sm:flex-row sm:items-center sm:justify-between">
                     {/* Left: avatar + college info */}
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3 sm:gap-4 overflow-hidden">
                       {/* Initials avatar */}
-                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-sky-600 text-lg font-bold text-white shadow-lg">
+                      <div className="flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl bg-gradient-to-br from-teal-500 to-sky-600 text-base sm:text-lg font-bold text-white shadow-lg">
                         {(overview?.campusCode ?? overview?.collegeName ?? "C")
                           .slice(0, 2)
                           .toUpperCase()}
                       </div>
-                      <div>
-                        <h3 className="text-lg font-bold leading-snug tracking-tight text-foreground">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-base sm:text-lg font-bold leading-tight tracking-tight text-foreground truncate">
                           {overview?.collegeName ?? "-"}
                         </h3>
-                        <div className="mt-1.5 flex flex-wrap gap-2">
-                          <span className="inline-flex items-center rounded-lg bg-background/60 px-2.5 py-0.5 text-xs font-medium ring-1 ring-border/60">
+                        <div className="mt-1.5 flex flex-wrap gap-1.5">
+                          <span className="inline-flex items-center rounded-lg bg-background/60 px-2 py-0.5 text-[10px] sm:text-xs font-semibold ring-1 ring-border/40">
                             {overview?.campusCode ?? "-"}
                           </span>
-                          <span className="inline-flex items-center rounded-lg bg-background/60 px-2.5 py-0.5 text-xs font-medium ring-1 ring-border/60">
-                            Level {overview?.campusLevel ?? "-"}
+                          <span className="inline-flex items-center rounded-lg bg-background/60 px-2 py-0.5 text-[10px] sm:text-xs font-semibold ring-1 ring-border/40">
+                            Lvl {overview?.campusLevel ?? "-"}
                           </span>
                           {overview?.campusZone && (
-                            <span className="inline-flex items-center rounded-lg bg-background/60 px-2.5 py-0.5 text-xs font-medium ring-1 ring-border/60">
+                            <span className="max-w-[80px] truncate inline-flex items-center rounded-lg bg-background/60 px-2 py-0.5 text-[10px] sm:text-xs font-semibold ring-1 ring-border/40">
                               {overview.campusZone}
                             </span>
                           )}
@@ -575,30 +575,30 @@ export function CampusManageDashboard() {
                       </div>
                     </div>
                     {/* Right: lead + enabler */}
-                    <div className="flex flex-col gap-1 text-sm sm:items-end">
-                      <span className="text-muted-foreground">
-                        Lead:{" "}
-                        <span className="font-semibold text-foreground">
+                    <div className="flex flex-col gap-1.5 text-xs sm:text-sm sm:items-end border-t border-border/10 pt-4 sm:border-0 sm:pt-0">
+                      <div className="flex items-center justify-between sm:justify-end gap-2">
+                        <span className="opacity-60 text-[10px] uppercase tracking-widest">
+                          Lead:
+                        </span>
+                        <span className="font-bold truncate max-w-[120px] sm:max-w-none">
                           {overview?.campusLead ?? "-"}
                         </span>
-                      </span>
-                      <span className="text-muted-foreground">
-                        Enabler:{" "}
-                        <span className="font-semibold text-foreground">
+                      </div>
+                      <div className="flex items-center justify-between sm:justify-end gap-2">
+                        <span className="opacity-60 text-[10px] uppercase tracking-widest">
+                          Enabler:
+                        </span>
+                        <span className="font-bold truncate max-w-[120px] sm:max-w-none">
                           {overview?.enabler ?? "Not assigned"}
                         </span>
-                      </span>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* ── Bento Grid Stats ── */}
-                <div
-                  className="grid grid-cols-2 gap-4 md:grid-cols-4"
-                  style={{ gridAutoRows: "88px" }}
-                >
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
                   {/* ── Hero: Total Karma ── */}
-                  <div className="col-span-1 row-span-2 md:col-span-2">
+                  <div className="sm:col-span-1 md:col-span-2">
                     <StatCard
                       title="Total Karma"
                       value={(overview?.totalKarma ?? 0).toLocaleString()}
@@ -608,7 +608,7 @@ export function CampusManageDashboard() {
                     />
                   </div>
                   {/* ── Hero: Global Rank ── */}
-                  <div className="col-span-1 row-span-2 md:col-span-2">
+                  <div className="sm:col-span-1 md:col-span-2">
                     <StatCard
                       title="Global Rank"
                       value={overview?.rank ? `#${overview.rank}` : "-"}
@@ -815,91 +815,95 @@ export function CampusManageDashboard() {
             ) : (
               <Card className="overflow-hidden border-border/60 shadow-md">
                 <CardContent className="p-0">
-                  <Table>
-                    <TableHeader className="bg-muted/30">
-                      <TableRow className="hover:bg-transparent">
-                        <TableHead className="w-24 text-center">Rank</TableHead>
-                        <TableHead>Student</TableHead>
-                        <TableHead>Karma</TableHead>
-                        <TableHead>Level</TableHead>
-                        <TableHead>Department / Cluster</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredLeaderboard.map((student) => (
-                        <TableRow
-                          key={student.id}
-                          className="group transition-colors hover:bg-muted/50"
-                        >
-                          <TableCell className="text-center font-bold">
-                            <div
-                              className={`mx-auto flex h-9 w-9 items-center justify-center rounded-full text-xs font-black shadow-sm transition-all duration-300 ${
-                                student.rank === 1
-                                  ? "bg-amber-100 text-amber-600 ring-2 ring-amber-400/50 shadow-[0_0_15px_rgba(251,191,36,0.25)] dark:bg-amber-900/40 dark:text-amber-400"
-                                  : student.rank === 2
-                                    ? "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
-                                    : student.rank === 3
-                                      ? "bg-orange-100 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400"
-                                      : "bg-background text-muted-foreground border border-border/50"
-                              }`}
-                            >
-                              #{student.rank}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-col">
-                              <span className="text-sm font-semibold tracking-tight transition-colors group-hover:text-primary">
-                                {student.name}
-                              </span>
-                              <span className="text-[11px] text-muted-foreground">
-                                @{student.muid.split("@")[0]}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <span className="text-lg font-black tracking-tighter text-emerald-600 dark:text-emerald-500">
-                              {student.karma.toLocaleString()}
-                            </span>
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              className={`h-6 px-2.5 font-bold uppercase tracking-wider text-[10px] shadow-sm ${
-                                student.level?.includes("7")
-                                  ? "bg-purple-600 hover:bg-purple-700"
-                                  : student.level?.includes("6")
-                                    ? "bg-blue-600 hover:bg-blue-700"
-                                    : student.level?.includes("5")
-                                      ? "bg-indigo-600 hover:bg-indigo-700 font-black"
-                                      : student.level?.includes("4")
-                                        ? "bg-teal-600 hover:bg-teal-700 font-black"
-                                        : "bg-slate-500/80 hover:bg-slate-500 font-black"
-                              }`}
-                            >
-                              {student.level}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="max-w-[200px] truncate text-xs text-muted-foreground">
-                            {student.cluster}
-                          </TableCell>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader className="bg-muted/30">
+                        <TableRow className="hover:bg-transparent">
+                          <TableHead className="w-24 text-center">
+                            Rank
+                          </TableHead>
+                          <TableHead>Student</TableHead>
+                          <TableHead>Karma</TableHead>
+                          <TableHead>Level</TableHead>
+                          <TableHead>Department / Cluster</TableHead>
                         </TableRow>
-                      ))}
-                      {filteredLeaderboard.length === 0 && (
-                        <TableRow>
-                          <TableCell
-                            colSpan={5}
-                            className="py-12 text-center text-muted-foreground"
+                      </TableHeader>
+                      <TableBody>
+                        {filteredLeaderboard.map((student) => (
+                          <TableRow
+                            key={student.id}
+                            className="group transition-colors hover:bg-muted/50"
                           >
-                            <div className="flex flex-col items-center gap-2 opacity-50">
-                              <Users className="h-10 w-10" />
-                              <p className="text-sm">
-                                No students found matching your filters.
-                              </p>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
+                            <TableCell className="text-center font-bold">
+                              <div
+                                className={`mx-auto flex h-9 w-9 items-center justify-center rounded-full text-xs font-black shadow-sm transition-all duration-300 ${
+                                  student.rank === 1
+                                    ? "bg-amber-100 text-amber-600 ring-2 ring-amber-400/50 shadow-[0_0_15px_rgba(251,191,36,0.25)] dark:bg-amber-900/40 dark:text-amber-400"
+                                    : student.rank === 2
+                                      ? "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                                      : student.rank === 3
+                                        ? "bg-orange-100 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400"
+                                        : "bg-background text-muted-foreground border border-border/50"
+                                }`}
+                              >
+                                #{student.rank}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex flex-col">
+                                <span className="text-sm font-semibold tracking-tight transition-colors group-hover:text-primary">
+                                  {student.name}
+                                </span>
+                                <span className="text-[11px] text-muted-foreground">
+                                  @{student.muid.split("@")[0]}
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <span className="text-lg font-black tracking-tighter text-emerald-600 dark:text-emerald-500">
+                                {student.karma.toLocaleString()}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                className={`h-6 px-2.5 font-bold uppercase tracking-wider text-[10px] shadow-sm ${
+                                  student.level?.includes("7")
+                                    ? "bg-purple-600 hover:bg-purple-700"
+                                    : student.level?.includes("6")
+                                      ? "bg-blue-600 hover:bg-blue-700"
+                                      : student.level?.includes("5")
+                                        ? "bg-indigo-600 hover:bg-indigo-700 font-black"
+                                        : student.level?.includes("4")
+                                          ? "bg-teal-600 hover:bg-teal-700 font-black"
+                                          : "bg-slate-500/80 hover:bg-slate-500 font-black"
+                                }`}
+                              >
+                                {student.level}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="max-w-[200px] truncate text-xs text-muted-foreground">
+                              {student.cluster}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                        {filteredLeaderboard.length === 0 && (
+                          <TableRow>
+                            <TableCell
+                              colSpan={5}
+                              className="py-12 text-center text-muted-foreground"
+                            >
+                              <div className="flex flex-col items-center gap-2 opacity-50">
+                                <Users className="h-10 w-10" />
+                                <p className="text-sm">
+                                  No students found matching your filters.
+                                </p>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
                   <div className="p-4">
                     <Pagination
                       currentPage={leaderboardPage}
@@ -931,16 +935,16 @@ export function CampusManageDashboard() {
 
           {/* ── Dashboard Content Area ── */}
           <section className="p-6">
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-stretch">
-              {/* Left Column: Content (75%) */}
-              <div className="w-full lg:w-3/4">
+            <div className="flex flex-col gap-8 lg:flex-row">
+              {/* Main Column: Content */}
+              <div className="flex-1 min-w-0">
                 <Tabs defaultValue="analytics" className="w-full">
-                  <TabsList className="mb-6 h-auto w-full justify-start gap-4 rounded-none border-b bg-transparent p-0">
+                  <TabsList className="mb-8 flex h-auto w-full items-center justify-start md:justify-center gap-6 overflow-x-auto no-scrollbar rounded-none border-b border-border/40 bg-transparent p-0 pb-1 px-4">
                     {["analytics", "events", "execom", "ig"].map((tab) => (
                       <TabsTrigger
                         key={tab}
                         value={tab}
-                        className="rounded-none border-b-2 border-transparent px-2 pb-3 pt-0 text-sm font-semibold capitalize tracking-tight transition-all data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary/70"
+                        className="relative h-10 shrink-0 rounded-none border-b-2 border-transparent bg-transparent px-1 pb-3 pt-2 text-sm font-bold capitalize tracking-tight text-muted-foreground transition-all data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary/70"
                       >
                         {tab === "ig" ? "IG Chapters" : tab}
                       </TabsTrigger>
@@ -957,19 +961,20 @@ export function CampusManageDashboard() {
                             Karma by Cluster
                           </CardTitle>
                         </CardHeader>
-                        <CardContent className="h-80 p-0">
+                        <CardContent className="h-[280px] p-2">
                           {isClusterLoading ? (
-                            <Skeleton className="m-6 h-64 w-full rounded-xl" />
+                            <Skeleton className="m-4 h-56 w-full rounded-xl" />
                           ) : clusterData.length > 0 ? (
-                            <div className="h-full w-full p-4">
+                            <div className="h-full w-full">
                               <ResponsiveContainer width="100%" height="100%">
                                 <BarChart
                                   data={clusterData}
                                   layout="vertical"
+                                  barSize={20}
                                   margin={{
-                                    top: 5,
-                                    right: 30,
-                                    left: 40,
+                                    top: 10,
+                                    right: 35,
+                                    left: 5,
                                     bottom: 5,
                                   }}
                                 >
@@ -982,8 +987,8 @@ export function CampusManageDashboard() {
                                   <YAxis
                                     dataKey="cluster"
                                     type="category"
-                                    tick={{ fontSize: 10, fontWeight: 600 }}
-                                    width={80}
+                                    tick={{ fontSize: 10, fontWeight: 700 }}
+                                    width={70}
                                     axisLine={false}
                                     tickLine={false}
                                   />
@@ -1055,13 +1060,13 @@ export function CampusManageDashboard() {
                             Events by Tag
                           </CardTitle>
                         </CardHeader>
-                        <CardContent className="h-80 p-0">
+                        <CardContent className="h-64 p-0">
                           {isDistributionLoading ? (
-                            <Skeleton className="m-6 h-64 w-full rounded-xl" />
+                            <Skeleton className="m-6 h-48 w-full rounded-xl" />
                           ) : (
-                            <div className="flex h-full items-center justify-between px-6">
+                            <div className="flex h-full flex-col items-center justify-center gap-4 px-6 sm:flex-row sm:justify-between py-4">
                               {/* Donut Chart Container */}
-                              <div className="relative h-full w-[180px] shrink-0">
+                              <div className="relative h-full w-[160px] shrink-0">
                                 <ResponsiveContainer width="100%" height="100%">
                                   <PieChart>
                                     <Pie
@@ -1072,9 +1077,9 @@ export function CampusManageDashboard() {
                                       }
                                       dataKey="count"
                                       nameKey="tag"
-                                      innerRadius={65}
-                                      outerRadius={85}
-                                      paddingAngle={5}
+                                      innerRadius={55}
+                                      outerRadius={75}
+                                      paddingAngle={4}
                                       stroke="transparent"
                                       className="outline-none"
                                     >
@@ -1134,7 +1139,7 @@ export function CampusManageDashboard() {
                               </div>
 
                               {/* Custom Legend */}
-                              <div className="flex flex-1 flex-col gap-3.5 pl-8">
+                              <div className="flex flex-1 flex-col justify-center gap-3.5 sm:pl-8 w-full">
                                 {distribution.map((entry, index) => {
                                   const totalDist = distribution.reduce(
                                     (acc, curr) => acc + curr.count,
@@ -1184,7 +1189,7 @@ export function CampusManageDashboard() {
 
                   {/* ── Events Tab ── */}
                   <TabsContent value="events">
-                    <div className="mb-4 flex flex-col gap-3 lg:flex-row">
+                    <div className="mb-6 flex flex-wrap items-center gap-3">
                       <FilterSelect
                         value={eventFilters.status}
                         onChange={handleEventFilterChange("status")}
@@ -1220,15 +1225,15 @@ export function CampusManageDashboard() {
                     {isEventsLoading ? (
                       <Skeleton className="h-52 w-full" />
                     ) : (
-                      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                         {events.map((event) => (
                           <Card
                             key={event.id}
                             className="group flex flex-col overflow-hidden border-border/60 p-0 gap-0 transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-xl"
                           >
                             {/* Header Image Area */}
-                            {event.coverImage && (
-                              <div className="relative aspect-video w-full overflow-hidden">
+                            {event.coverImage ? (
+                              <div className="relative aspect-video w-full overflow-hidden shrink-0">
                                 <Image
                                   src={event.coverImage}
                                   alt={event.title}
@@ -1237,28 +1242,32 @@ export function CampusManageDashboard() {
                                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                                 />
                               </div>
+                            ) : (
+                              <div className="flex aspect-video w-full items-center justify-center bg-muted/30 shrink-0">
+                                <CalendarDays className="h-10 w-10 text-muted-foreground/30" />
+                              </div>
                             )}
 
                             {/* Content */}
                             <div className="flex flex-1 flex-col p-5">
                               <div className="mb-4">
-                                <h3 className="line-clamp-1 text-lg font-bold leading-tight group-hover:text-primary transition-colors">
+                                <h3 className="line-clamp-2 text-base sm:text-lg font-bold leading-tight group-hover:text-primary transition-colors">
                                   {event.title}
                                 </h3>
-                                <div className="mt-2 flex items-center gap-1.5 text-sm font-semibold text-primary">
-                                  <CalendarDays className="h-4 w-4" />
+                                <div className="mt-2 flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-primary">
+                                  <CalendarDays className="h-3.5 w-3.5" />
                                   {formatDateRange(event.date, event.endDate)}
                                 </div>
                               </div>
 
-                              {/* Tags */}
-                              <div className="mb-5 flex flex-wrap gap-1.5">
+                              {/* Tags (Scrollable on tiny screens) */}
+                              <div className="mb-5 flex items-center gap-1.5 overflow-x-auto no-scrollbar scroll-smooth pb-0.5">
                                 {event.tags.length > 0 ? (
                                   event.tags.map((tag) => (
                                     <Badge
                                       key={`${event.id}-${tag || "unnamed"}`}
                                       variant="secondary"
-                                      className="h-5 bg-muted/50 px-2 text-[10px] font-bold"
+                                      className="h-5 shrink-0 bg-muted/60 px-2 text-[9px] font-bold uppercase tracking-wider"
                                     >
                                       {tag}
                                     </Badge>
@@ -1266,87 +1275,87 @@ export function CampusManageDashboard() {
                                 ) : (
                                   <Badge
                                     variant="secondary"
-                                    className="h-5 bg-muted/50 px-2 text-[10px] font-bold"
+                                    className="h-5 shrink-0 bg-muted/60 px-2 text-[9px] font-bold uppercase tracking-wider"
                                   >
                                     No tags
                                   </Badge>
                                 )}
                               </div>
 
-                              {/* Information Grid 2x2 */}
-                              <div className="grid grid-cols-2 gap-4 border-t border-border/40 pt-5">
+                              {/* Information Grid 2x2 with responsive columns */}
+                              <div className="grid grid-cols-2 gap-x-4 gap-y-5 border-t border-border/40 pt-5 mt-auto">
                                 <div className="flex items-start gap-2.5">
-                                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted/50">
                                     <MapPin className="h-4 w-4 text-muted-foreground" />
                                   </div>
-                                  <div className="min-w-0">
-                                    <div className="truncate text-xs font-bold capitalize">
+                                  <div className="min-w-0 flex-1">
+                                    <p className="truncate text-[11px] font-bold capitalize leading-none">
                                       {event.venueCity || "Kochi"}
-                                    </div>
-                                    <div className="text-[10px] uppercase tracking-tighter text-muted-foreground/60">
+                                    </p>
+                                    <p className="mt-1 text-[9px] uppercase tracking-tighter text-muted-foreground/60 font-bold">
                                       {event.venueType || "Location"}
-                                    </div>
+                                    </p>
                                   </div>
                                 </div>
 
                                 <div className="flex items-start gap-2.5">
-                                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted/50">
                                     <Users className="h-4 w-4 text-muted-foreground" />
                                   </div>
-                                  <div className="min-w-0">
-                                    <div className="truncate text-xs font-bold capitalize">
+                                  <div className="min-w-0 flex-1">
+                                    <p className="truncate text-[11px] font-bold capitalize leading-none">
                                       {event.scope || "-"}
-                                    </div>
-                                    <div className="text-[10px] uppercase tracking-tighter text-muted-foreground/60">
+                                    </p>
+                                    <p className="mt-1 text-[9px] uppercase tracking-tighter text-muted-foreground/60 font-bold">
                                       Scope
-                                    </div>
+                                    </p>
                                   </div>
                                 </div>
 
                                 <div className="flex items-start gap-2.5">
-                                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted/50">
                                     <Briefcase className="h-4 w-4 text-muted-foreground" />
                                   </div>
-                                  <div className="min-w-0">
-                                    <div className="truncate text-xs font-bold capitalize">
+                                  <div className="min-w-0 flex-1">
+                                    <p className="truncate text-[11px] font-bold capitalize leading-none">
                                       {event.organiserType || "-"}
-                                    </div>
-                                    <div className="text-[10px] uppercase tracking-tighter text-muted-foreground/60">
+                                    </p>
+                                    <p className="mt-1 text-[9px] uppercase tracking-tighter text-muted-foreground/60 font-bold">
                                       Organizer
-                                    </div>
+                                    </p>
                                   </div>
                                 </div>
 
                                 <div className="flex items-start gap-2.5">
-                                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted/50">
                                     <Trophy className="h-4 w-4 text-muted-foreground" />
                                   </div>
-                                  <div className="min-w-0">
-                                    <div className="truncate text-xs font-bold capitalize">
+                                  <div className="min-w-0 flex-1">
+                                    <p className="truncate text-[11px] font-bold capitalize leading-none">
                                       {event.type || "Event"}
-                                    </div>
-                                    <div className="text-[10px] uppercase tracking-tighter text-muted-foreground/60">
+                                    </p>
+                                    <p className="mt-1 text-[9px] uppercase tracking-tighter text-muted-foreground/60 font-bold">
                                       Category
-                                    </div>
+                                    </p>
                                   </div>
                                 </div>
                               </div>
                             </div>
 
                             {/* Social Proof Footer */}
-                            <div className="flex items-center justify-between border-t border-border/40 bg-muted/5 px-5 py-3.5">
+                            <div className="flex items-center justify-between border-t border-border/40 bg-muted/5 px-5 py-3.5 mt-auto">
                               <div className="flex items-center gap-2">
                                 <Heart
                                   className={cn(
-                                    "h-4 w-4 transition-all duration-300",
+                                    "h-4 w-4",
                                     event.interestCount > 0
-                                      ? "fill-red-500 text-red-500 scale-110"
+                                      ? "fill-red-500 text-red-500"
                                       : "text-muted-foreground",
                                   )}
                                 />
-                                <span className="text-xs font-bold">
+                                <span className="text-xs font-bold tabular-nums">
                                   {event.interestCount}{" "}
-                                  <span className="font-medium text-muted-foreground">
+                                  <span className="font-medium text-muted-foreground/70">
                                     Interested
                                   </span>
                                 </span>
@@ -1515,19 +1524,19 @@ export function CampusManageDashboard() {
                               )}
                             </div>
 
-                            {/* Info */}
-                            <div className="min-w-0 flex-1 space-y-1">
-                              <p className="truncate text-base font-bold tracking-tight text-foreground">
+                            {/* Info Container with padding to prevent button overlap */}
+                            <div className="min-w-0 flex-1 space-y-1.5 pr-8">
+                              <p className="truncate text-[15px] font-bold tracking-tight text-foreground">
                                 {member.name}
                               </p>
-                              <div className="flex flex-col gap-0.5">
-                                <p className="truncate font-mono text-[10px] font-medium text-muted-foreground/80">
+                              <div className="flex flex-col gap-1">
+                                <p className="truncate font-mono text-[9px] font-semibold text-muted-foreground/60">
                                   {member.muid}
                                 </p>
-                                <div className="mt-1 flex flex-wrap gap-1.5">
+                                <div className="mt-0.5 flex flex-wrap gap-1">
                                   <Badge
                                     variant="secondary"
-                                    className="rounded-lg bg-primary/5 px-2 py-0 text-[10px] font-black uppercase tracking-widest text-primary/80"
+                                    className="rounded-lg bg-primary/5 px-2 py-0 text-[9px] font-black uppercase tracking-widest text-primary/80 ring-1 ring-primary/10"
                                   >
                                     {member.role === "member"
                                       ? "Execom"
@@ -1537,18 +1546,18 @@ export function CampusManageDashboard() {
                               </div>
                             </div>
 
-                            {/* Delete Button (Hover Only) */}
+                            {/* Delete Button - Fixed accessibility and visibility */}
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="absolute right-2 top-2 h-8 w-8 rounded-full text-destructive opacity-0 transition-all hover:bg-destructive/10 group-hover:opacity-100"
+                              className="absolute right-3 top-3 h-7 w-7 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all lg:opacity-0 lg:group-hover:opacity-100"
                               disabled={isRemoving}
                               onClick={() => removeExecom(member.id)}
                             >
                               {isRemoving ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
                               ) : (
-                                <Trash2 className="h-4 w-4" />
+                                <Trash2 className="h-3.5 w-3.5" />
                               )}
                             </Button>
                           </div>
