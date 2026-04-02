@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import type { Permission } from "@/lib/auth/permissions";
 import {
+  ADMIN_ROLES,
   CAMPUS_MANAGEMENT_ROLES,
   DISTRICT_ROLES,
   IG_ROLES,
@@ -66,6 +67,10 @@ export interface NavItem {
    * If set, item is visible to users who have any of these roles.
    */
   roles?: readonly string[];
+  /**
+   * Children items for nested navigation menus.
+   */
+  children?: NavItem[];
 }
 
 // ─── Navigation Items ───────────────────────────────────────
@@ -147,42 +152,57 @@ export const NAV_ITEMS: readonly NavItem[] = [
   {
     id: "campus-manage",
     title: "Campus",
-    href: "/dashboard/campus/manage",
     icon: LayoutDashboard,
+    href: "/dashboard/campus/manage",
     section: "management",
     roles: CAMPUS_MANAGEMENT_ROLES,
   },
   {
-    id: "zonal",
-    title: "Zonal",
-    href: "/dashboard/zonal",
-    icon: Globe,
-    section: "management",
-    roles: ZONAL_ROLES,
-  },
-  {
-    id: "district",
-    title: "District",
-    href: "/dashboard/district",
-    icon: MapPin,
-    section: "management",
-    roles: DISTRICT_ROLES,
-  },
-  {
-    id: "interest-groups",
-    title: "Interest Groups",
-    href: "/dashboard/interest-groups",
-    icon: Users,
-    section: "management",
-    roles: IG_ROLES,
-  },
-  {
     id: "management",
     title: "Management",
-    href: "/dashboard/management",
     icon: Shield,
+    href: "/dashboard/management",
     section: "management",
-    roles: MANAGEMENT_ROLES,
+    roles: [
+      ...MANAGEMENT_ROLES,
+      ...ZONAL_ROLES,
+      ...DISTRICT_ROLES,
+      ...IG_ROLES,
+    ],
+    children: [
+      {
+        id: "management-dashboard",
+        title: "Dashboard",
+        href: "/dashboard/management",
+        icon: Shield,
+        section: "management",
+        roles: ADMIN_ROLES,
+      },
+      {
+        id: "zonal",
+        title: "Zonal",
+        href: "/dashboard/zonal",
+        icon: Globe,
+        section: "management",
+        roles: ZONAL_ROLES,
+      },
+      {
+        id: "district",
+        title: "District",
+        href: "/dashboard/district",
+        icon: MapPin,
+        section: "management",
+        roles: DISTRICT_ROLES,
+      },
+      {
+        id: "interest-groups-mgmt",
+        title: "Interest Groups",
+        href: "/dashboard/interest-groups",
+        icon: Users,
+        section: "management",
+        roles: IG_ROLES,
+      },
+    ],
   },
   {
     id: "url-shortener",

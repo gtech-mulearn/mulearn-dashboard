@@ -33,29 +33,48 @@ export function useFilteredNav(): UseFilteredNavReturn {
   const { can, hasRole, isLoading } = usePermissions();
 
   const filtered = useMemo(() => {
-    const visible = NAV_ITEMS.filter((item) => {
+    const isVisible = (item: NavItem): boolean => {
       // No restriction → visible to all authenticated users
       if (!item.permission && (!item.roles || item.roles.length === 0)) {
         return true;
       }
 
       // Permission-based check
-      if (item.permission) {
-        return can(item.permission);
+      if (item.permission && can(item.permission)) {
+        return true;
       }
 
       // Role-based check
-      if (item.roles && item.roles.length > 0) {
-        return hasRole(item.roles);
+      if (item.roles && item.roles.length > 0 && hasRole(item.roles)) {
+        return true;
       }
 
       return false;
-    });
+    };
+
+    const filterItems = (items: readonly NavItem[]): NavItem[] => {
+      return items.filter(isVisible).map((item) => {
+        if (item.children) {
+          const filteredChildren = filterItems(item.children);
+          // If the item itself is visible (checked by filter above)
+          // we return it with its filtered children.
+          return {
+            ...item,
+            children: filteredChildren,
+          };
+        }
+        return item;
+      });
+    };
+
+    const visibleItems = filterItems(NAV_ITEMS);
 
     return {
-      mainItems: visible.filter((item) => item.section === "main"),
-      managementItems: visible.filter((item) => item.section === "management"),
-      bottomItems: visible.filter((item) => item.section === "bottom"),
+      mainItems: visibleItems.filter((item) => item.section === "main"),
+      managementItems: visibleItems.filter(
+        (item) => item.section === "management",
+      ),
+      bottomItems: visibleItems.filter((item) => item.section === "bottom"),
     };
   }, [can, hasRole]);
 

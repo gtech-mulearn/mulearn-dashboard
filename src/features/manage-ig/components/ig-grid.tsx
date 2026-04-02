@@ -2,10 +2,10 @@
 
 import { Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
-import { SearchInput } from "@/features/search/components/SearchInput";
-import type { InterestGroup } from "@/features/interest-groups/schemas";
-import { InterestGroupCard } from "./ig-card";
 import Loader from "@/app/loading";
+import type { InterestGroup } from "@/features/interest-groups/schemas";
+import { SearchInput } from "@/features/search/components/SearchInput";
+import { InterestGroupCard } from "./ig-card";
 
 type InterestGroupsGridProps = {
   groups: InterestGroup[];
