@@ -75,6 +75,10 @@ export interface NavItem {
    * If true, the item is marked as "In Development" and navigation is disabled.
    */
   isUnderConstruction?: boolean;
+  /**
+   * Minimum user level required to see/access the item.
+   */
+  requiredLevel?: number;
 }
 
 // ─── Navigation Items ───────────────────────────────────────
@@ -151,6 +155,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: Rocket,
     section: "main",
     isUnderConstruction: true,
+    requiredLevel: 7,
   },
 
   // ── Management Section (role-gated) ───────────────────────

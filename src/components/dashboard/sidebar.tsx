@@ -15,6 +15,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Lock,
   LogOut,
   Menu,
   X,
@@ -24,6 +25,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useUserProfile } from "@/features/profile/hooks/use-profile";
 import { useFilteredNav } from "@/hooks/use-filtered-nav";
 import { authStore } from "@/lib/auth";
 import type { NavItem } from "@/lib/nav-config";
@@ -37,6 +39,7 @@ interface SidebarItemProps {
   onCloseMobile: () => void;
   /** Function to check if an item or its children are active */
   checkActive: (item: NavItem) => boolean;
+  userLevel: number;
   level?: number;
 }
 
@@ -46,11 +49,13 @@ function SidebarItem({
   isCollapsed,
   onCloseMobile,
   checkActive,
+  userLevel,
   level = 0,
 }: SidebarItemProps) {
   const [isOpen, setIsOpen] = useState(isActive);
   const hasChildren = item.children && item.children.length > 0;
-  const Icon = item.icon;
+  const isLocked = item.requiredLevel ? userLevel < item.requiredLevel : false;
+  const Icon = isLocked ? Lock : item.icon;
 
   // Sync open state with active state (e.g. when navigating)
   useEffect(() => {
@@ -58,6 +63,15 @@ function SidebarItem({
   }, [isActive]);
 
   const toggle = (e: React.MouseEvent) => {
+    if (isLocked) {
+      e.preventDefault();
+      e.stopPropagation();
+      toast.error(`Feature Locked!`, {
+        description: `You need to reach Level ${item.requiredLevel} to access ${item.title}. Keep earning karma!`,
+      });
+      return;
+    }
+
     if (item.isUnderConstruction) {
       e.preventDefault();
       e.stopPropagation();
@@ -87,8 +101,9 @@ function SidebarItem({
         isCollapsed && "lg:justify-center lg:px-0",
         // Indentation for nested items
         !isCollapsed && level > 0 && "ml-4",
-        // Under Construction dimming
-        item.isUnderConstruction && "opacity-70 grayscale-[0.3]",
+        // Under Construction / Locked dimming
+        (item.isUnderConstruction || isLocked) && "opacity-70 grayscale-[0.3]",
+        isLocked && "cursor-not-allowed",
       )}
       title={isCollapsed ? item.title : undefined}
     >
@@ -97,6 +112,7 @@ function SidebarItem({
           "shrink-0",
           level > 0 ? "w-4 h-4" : "w-5 h-5",
           hasChildren && !isCollapsed && "ml-0.5",
+          isLocked && "text-muted-foreground",
         )}
       />
       <div className="flex items-center gap-2 overflow-hidden">
@@ -107,11 +123,17 @@ function SidebarItem({
               ? "lg:w-0 lg:opacity-0 lg:pointer-events-none"
               : "w-auto opacity-100",
             level > 0 && "text-[13px]",
+            isLocked && "text-muted-foreground",
           )}
         >
           {item.title}
         </span>
-        {item.isUnderConstruction && !isCollapsed && (
+        {isLocked && !isCollapsed && (
+          <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground uppercase tracking-tighter">
+            Lvl {item.requiredLevel}
+          </span>
+        )}
+        {item.isUnderConstruction && !isLocked && !isCollapsed && (
           <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-orange-500/10 text-orange-600 uppercase tracking-tighter">
             Soon
           </span>
@@ -131,7 +153,7 @@ function SidebarItem({
 
   return (
     <div className="w-full">
-      {hasChildren || item.isUnderConstruction ? (
+      {hasChildren || item.isUnderConstruction || isLocked ? (
         <button
           type="button"
           onClick={toggle}
@@ -164,6 +186,7 @@ function SidebarItem({
                   isCollapsed={isCollapsed}
                   onCloseMobile={onCloseMobile}
                   checkActive={checkActive}
+                  userLevel={userLevel}
                   level={level + 1}
                 />
               ))}
@@ -181,8 +204,12 @@ export function Sidebar() {
   const { isSidebarExpanded, toggleSidebar } = useUIStore();
   const { mainItems, managementItems, bottomItems } = useFilteredNav();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const { data: profile } = useUserProfile();
 
   const isCollapsed = !isSidebarExpanded;
+
+  // Extract level number (e.g., "Level 7" -> 7)
+  const userLevel = profile?.level ? Number(profile.level.replace(/\D/g, "")) : 1;
 
   const isActive = useCallback(
     (href: string) => {
@@ -327,6 +354,7 @@ export function Sidebar() {
               isCollapsed={isCollapsed}
               onCloseMobile={() => setIsMobileOpen(false)}
               checkActive={isActiveItem}
+              userLevel={userLevel}
             />
           ))}
 
@@ -349,6 +377,7 @@ export function Sidebar() {
                   isCollapsed={isCollapsed}
                   onCloseMobile={() => setIsMobileOpen(false)}
                   checkActive={isActiveItem}
+                  userLevel={userLevel}
                 />
               ))}
             </>
@@ -370,8 +399,10 @@ export function Sidebar() {
               isCollapsed={isCollapsed}
               onCloseMobile={() => setIsMobileOpen(false)}
               checkActive={isActiveItem}
+              userLevel={userLevel}
             />
           ))}
+
 
           {/* Logout Button */}
           <button
