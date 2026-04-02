@@ -37,13 +37,17 @@ export function LevelCard({ level, isLocked = false }: LevelCardProps) {
   return (
     <div className={cn("space-y-6", isLocked && "opacity-60")}>
       {/* Level Header */}
-      <div className="px-2 py-3">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">
-            Level {levelNumber}
-            {isLocked && " 🔒"}
-          </h2>
-          <p className="text-base text-muted-foreground mt-1">{levelName}</p>
+      <div className="flex items-center justify-between px-2">
+        <div className="space-y-1">
+          <div className="flex items-center gap-3">
+            <div className="bg-primary/10 text-primary w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg">
+              {levelNumber}
+            </div>
+            <h2 className="text-2xl font-black text-foreground tracking-tight">
+              {levelName}
+              {isLocked && " 🔒"}
+            </h2>
+          </div>
         </div>
       </div>
 

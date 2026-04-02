@@ -1,7 +1,15 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
+import { Filter } from "lucide-react";
 import { useState } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   BecomeExpertTab,
   EventsTab,
@@ -44,7 +52,6 @@ export function MuJourneyDashboard({
   ];
 
   // Calculate stats - if we have data (public or private), use it.
-  // Note: User might be loading if this is a private route CSR.
   const levels = levelsData?.response || [];
   const totalKarma = levels.reduce((sum, level) => sum + (level.karma || 0), 0);
 
@@ -55,7 +62,7 @@ export function MuJourneyDashboard({
       : undefined;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10 max-w-7xl mx-auto">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -72,32 +79,35 @@ export function MuJourneyDashboard({
       </motion.div>
 
       {/* Tab Navigation & Filter */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <JourneyTabs
-          tabs={tabs}
-          defaultTab="start-learning"
-          onTabChange={setActiveTab}
-        />
+      <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+        <div className="w-full lg:w-auto overflow-x-hidden">
+          <JourneyTabs
+            tabs={tabs}
+            defaultTab="start-learning"
+            onTabChange={setActiveTab}
+          />
+        </div>
 
-        <div className="flex items-center gap-3">
-          <span className="text-base font-medium text-foreground">
-            Filter by:
-          </span>
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="px-5 py-2.5 border border-border rounded-lg bg-card text-base font-medium text-card-foreground cursor-pointer hover:border-ring transition-colors [&>option]:cursor-pointer outline-none focus:ring-2 focus:ring-ring"
-          >
-            <option value="all" className="cursor-pointer">
-              All
-            </option>
-            <option value="completed" className="cursor-pointer">
-              Completed
-            </option>
-            <option value="incomplete" className="cursor-pointer">
-              Incomplete
-            </option>
-          </select>
+        <div className="flex items-center gap-3 w-full sm:w-auto shrink-0 bg-card/40 backdrop-blur-md p-2 rounded-2xl border border-border shadow-xs">
+          <div className="bg-primary/10 p-2 rounded-xl">
+            <Filter className="h-4 w-4 text-primary" />
+          </div>
+          <Select value={filter} onValueChange={setFilter}>
+            <SelectTrigger className="w-full sm:w-48 bg-transparent border-none focus:ring-0 font-semibold uppercase tracking-widest text-[10px] sm:text-xs">
+              <SelectValue placeholder="All Tasks" />
+            </SelectTrigger>
+            <SelectContent className="rounded-xl border-border">
+              <SelectItem value="all" className="font-medium">
+                ALL TASKS
+              </SelectItem>
+              <SelectItem value="completed" className="font-medium">
+                COMPLETED
+              </SelectItem>
+              <SelectItem value="incomplete" className="font-medium">
+                INCOMPLETE
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

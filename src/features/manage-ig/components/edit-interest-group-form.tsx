@@ -1,12 +1,10 @@
 "use client";
 
-import { useState, useCallback } from "react";
 import { Plus, Trash2, XCircle } from "lucide-react";
+import { useCallback, useState } from "react";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { TagInput } from "@/components/ui/tag-input";
 import {
   Select,
   SelectContent,
@@ -15,14 +13,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  SheetHeader,
-  SheetTitle,
+  SheetClose,
   SheetDescription,
   SheetFooter,
-  SheetClose,
+  SheetHeader,
+  SheetTitle,
 } from "@/components/ui/sheet";
-import { useEditInterestGroup } from "../hooks/use-edit-interest-group";
+import { TagInput } from "@/components/ui/tag-input";
+import { Textarea } from "@/components/ui/textarea";
 import type { InterestGroupDetail } from "@/features/interest-groups/schemas";
+import { useEditInterestGroup } from "../hooks/use-edit-interest-group";
 
 // ─── Types ──────────────────────────────────────────────────
 

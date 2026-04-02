@@ -19,137 +19,127 @@ interface TaskCardProps {
   onClick?: () => void;
 }
 
+import { Copy } from "lucide-react";
+import { toast } from "sonner";
+
 export function TaskCard({
   task,
   status = "pending",
   className,
   onClick,
 }: TaskCardProps) {
-  // Status badge colors matching the reference image
-  const statusBadges = {
-    completed: "bg-green-50 text-green-600 border border-green-200",
-    pending: "bg-yellow-50 text-yellow-600 border border-yellow-200",
-    locked: "bg-muted text-muted-foreground border border-border",
+  // Status constants derived from theme vibes
+  const isCompleted = status === "completed";
+  const isLocked = status === "locked";
+  const isPending = status === "pending";
+
+  const handleCopyHashtag = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(task.hashtag);
+    toast.success("Hashtag copied to clipboard!");
   };
-
-  // Hover effect with shadow only for pending tasks - enhanced shadow for more elevation
-  const cardHoverClass = status === "pending" ? "hover:shadow-2xl" : "";
-
-  // Fade effect for completed tasks
-  const completedFadeClass = status === "completed" ? "opacity-60" : "";
 
   return (
     <Card
       className={cn(
-        "relative transition-all duration-300 bg-card border border-border rounded-xl overflow-hidden shadow-md h-full flex flex-col focus:outline-none focus:ring-2 focus:ring-ring",
-        cardHoverClass,
-        completedFadeClass,
-        onClick && status !== "locked" && "cursor-pointer",
+        "group relative h-full flex flex-col transition-all duration-500 rounded-3xl overflow-hidden border border-border/50 shadow-xs hover:shadow-xl hover:-translate-y-1.5 cursor-pointer bg-card/60 backdrop-blur-xl",
+        isCompleted && "bg-emerald-500/5 border-emerald-500/20",
+        isLocked && "cursor-not-allowed opacity-60",
         className,
       )}
-      onClick={() => {
-        if (onClick && status !== "locked") {
-          onClick();
-        }
-      }}
-      role={onClick && status !== "locked" ? "button" : undefined}
-      tabIndex={onClick && status !== "locked" ? 0 : undefined}
-      onKeyDown={(e) => {
-        if (
-          onClick &&
-          status !== "locked" &&
-          (e.key === "Enter" || e.key === " ")
-        ) {
-          e.preventDefault();
-          onClick();
-        }
-      }}
+      onClick={() => !isLocked && onClick?.()}
     >
-      <CardContent className="p-5 sm:p-7 space-y-5 flex flex-col grow">
-        {/* Status Badge */}
-        <div>
-          <span
+      {/* Soft Theme-aligned Glows */}
+      <div
+        className={cn(
+          "absolute -top-12 -right-12 w-32 h-32 blur-3xl rounded-full opacity-10 transition-opacity duration-700 group-hover:opacity-25",
+          isCompleted
+            ? "bg-emerald-500"
+            : isPending
+              ? "bg-primary"
+              : "bg-muted-foreground",
+        )}
+      />
+      <div
+        className={cn(
+          "absolute -bottom-8 -left-8 w-24 h-24 blur-2xl rounded-full opacity-5",
+          isCompleted ? "bg-emerald-400" : "bg-primary/50",
+        )}
+      />
+
+      <CardContent className="p-7 sm:p-9 flex flex-col h-full space-y-7 relative z-10">
+        {/* Header Badges */}
+        <div className="flex items-center justify-between">
+          <div
             className={cn(
-              "inline-block px-5 py-2 rounded-full text-sm font-semibold",
-              statusBadges[status],
+              "flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border backdrop-blur-sm",
+              isCompleted &&
+                "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+              isPending && "bg-amber-500/10 text-amber-600 border-amber-500/20",
+              isLocked && "bg-muted/50 text-muted-foreground border-border",
             )}
           >
+            <span className="text-sm shrink-0">
+              {isCompleted ? "✨" : isPending ? "⏳" : "🔒"}
+            </span>
             {status}
-          </span>
+          </div>
+
+          <div className="bg-primary/5 px-3 py-1 rounded-lg border border-primary/10">
+            <span className="text-[10px] font-black text-primary/80 tabular-nums">
+              {task.karma} KARMA
+            </span>
+          </div>
         </div>
 
-        {/* Task Title - Rendered with Markdown */}
-        <div className="text-xl font-semibold text-card-foreground leading-tight">
-          <MarkdownRenderer content={task.task_name} className="*:mb-0" />
+        {/* Task Title Area */}
+        <div className="space-y-2 grow">
+          <div className="text-xl font-bold text-foreground leading-tight tracking-tight group-hover:text-primary transition-colors">
+            <MarkdownRenderer content={task.task_name} className="*:mb-0" />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <div className="w-1 h-1 rounded-full bg-primary/40" />
+            <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">
+              {task.interest_group?.name || "Foundation"}
+            </span>
+          </div>
         </div>
 
-        {/* Description - Rendered with Markdown */}
-        {/* {task.task_description && (
-          <div className="text-base text-muted-foreground line-clamp-2 leading-relaxed">
-            <MarkdownRenderer
-              content={task.task_description}
-              className="[&>*]:mb-0"
-            />
-          </div>
-        )} */}
-
-        {/* Metadata - Open Sans */}
-        <div className="space-y-3 text-base grow min-w-0">
-          <div className="flex items-start gap-1.5">
-            <span className="font-bold text-card-foreground">
-              Interest Group:
-            </span>
-            <span className="text-muted-foreground font-normal">
-              {task.interest_group?.name || "General Tasks"}
-            </span>
-          </div>
-
-          <div className="flex items-start gap-1.5">
-            <span className="font-bold text-card-foreground">Karma:</span>
-            <span className="text-muted-foreground font-normal">
-              {task.karma}
-            </span>
-          </div>
-
-          <div className="flex items-start gap-1.5 min-w-0">
-            <span className="font-bold text-card-foreground shrink-0">
-              Hashtag:
-            </span>
-            <span
-              className="inline-block px-3 py-1 bg-muted text-muted-foreground rounded-full font-mono text-sm font-normal truncate max-w-full"
-              title={task.hashtag}
-            >
+        {/* Submission Panel - Softer and more integrated */}
+        <div className="bg-muted/30 p-4 rounded-2xl border border-border/40 shadow-xs">
+          <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50 mb-1.5">
+            Submission ID
+          </p>
+          <div className="flex items-center gap-2 bg-background/50 p-1 rounded-xl border border-border/20">
+            <code className="text-xs font-mono text-foreground/80 font-bold block truncate grow pl-2">
               {task.hashtag}
-            </span>
+            </code>
+            <button
+              type="button"
+              onClick={handleCopyHashtag}
+              className="p-1.5 hover:bg-muted rounded-lg transition-colors group/copy shrink-0"
+              title="Copy to clipboard"
+            >
+              <Copy className="h-3 w-3 text-muted-foreground group-hover/copy:text-primary" />
+            </button>
           </div>
         </div>
 
-        {/* Action Button - Montserrat */}
-        <div className="mt-auto pt-5">
-          <Button
-            className={cn(
-              "w-full rounded-lg font-semibold text-white transition-all duration-200 h-11 text-base cursor-pointer",
-              // Blue background for all tasks
-              // Primary background for active tasks
-              status === "pending" && "bg-primary hover:bg-primary/90",
-              // Dimmed primary for completed tasks
-              status === "completed" &&
-                "bg-primary/60 hover:bg-primary/70 opacity-80",
-              // Muted for locked tasks
-              status === "locked" &&
-                "bg-muted text-muted-foreground cursor-not-allowed",
-            )}
-            disabled={status === "locked"}
-            onClick={(e) => {
-              e.stopPropagation(); // Prevent card click when button is clicked
-              if (onClick && status !== "locked") {
-                onClick();
-              }
-            }}
-          >
-            {status === "locked" ? <span>🔒 Locked</span> : <span>View</span>}
-          </Button>
-        </div>
+        {/* Action Button - Standardized with site palette */}
+        <Button
+          disabled={isLocked}
+          className={cn(
+            "w-full h-12 rounded-xl font-black uppercase tracking-widest text-[11px] transition-all duration-500",
+            isPending &&
+              "bg-primary text-white shadow-lg shadow-primary/20 hover:bg-primary/90 hover:scale-[1.02]",
+            isCompleted &&
+              "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 hover:bg-emerald-500/15 shadow-none",
+            isLocked && "bg-muted text-muted-foreground opacity-50 shadow-none",
+          )}
+        >
+          {isLocked ? "Locked" : isCompleted ? "Completed" : "Start Task"}
+        </Button>
       </CardContent>
     </Card>
   );

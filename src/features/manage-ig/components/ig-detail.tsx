@@ -6,7 +6,6 @@
 
 "use client";
 
-import { useState } from "react";
 import {
   ArrowLeft,
   BookOpen,
@@ -23,10 +22,11 @@ import {
   Users,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
+import Loader from "@/app/loading";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useInterestGroupDetail } from "@/features/interest-groups";
 import { EditInterestGroupForm } from "./edit-interest-group-form";
-import Loader from "@/app/loading";
 
 export function IGDetail() {
   const router = useRouter();

@@ -61,24 +61,22 @@ export function TaskList({
 
   return (
     <div className="relative group">
-      {/* Left Arrow */}
+      {/* Left Arrow - hidden on small mobile, visible on sm and up hover */}
       <button
         type="button"
         onClick={() => scroll("left")}
-        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-card hover:bg-muted rounded-full p-3 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring"
+        className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-card/80 backdrop-blur-sm hover:bg-card rounded-full p-2.5 shadow-xl border border-border hidden sm:block group-hover:block transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
         aria-label="Scroll left"
       >
-        <ChevronLeft className="w-6 h-6 text-card-foreground" />
+        <ChevronLeft className="w-5 h-5 text-foreground" />
       </button>
 
       {/* Horizontal scrollable container */}
       <div
         ref={scrollContainerRef}
-        className="flex gap-6 min-h-[500px] overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        className="flex gap-4 sm:gap-6 min-h-[500px] overflow-x-auto snap-x snap-mandatory no-scrollbar pb-6 px-4"
       >
         {tasks.map((task, index) => {
-          // Use hashtag (without #) with prefix or fallback to index for unique key
           const baseKey = task.hashtag
             ? task.hashtag.replace("#", "")
             : `task-${index}`;
@@ -87,7 +85,7 @@ export function TaskList({
           return (
             <div
               key={uniqueKey}
-              className="shrink-0 w-[85vw] sm:w-[350px] snap-start h-full"
+              className="shrink-0 w-[78vw] sm:w-[350px] snap-start h-full"
             >
               <TaskCard
                 task={task}
@@ -97,17 +95,29 @@ export function TaskList({
             </div>
           );
         })}
+        {/* Spacer to allow the last card to peek correctly */}
+        <div className="shrink-0 w-4 sm:hidden" aria-hidden="true" />
       </div>
 
-      {/* Right Arrow */}
+      {/* Right Arrow - more visible on hover, but accessible */}
       <button
         type="button"
         onClick={() => scroll("right")}
-        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-card hover:bg-muted rounded-full p-3 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring"
+        className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-card/80 backdrop-blur-sm hover:bg-card rounded-full p-2.5 shadow-xl border border-border hidden sm:block group-hover:block transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
         aria-label="Scroll right"
       >
-        <ChevronRight className="w-6 h-6 text-card-foreground" />
+        <ChevronRight className="w-5 h-5 text-foreground" />
       </button>
+
+      {/* Mobile Scroll Hint - Pulse animation on the last partially visible card edge or just card layout */}
+      <div className="flex justify-center gap-1.5 mt-2 sm:hidden">
+        {tasks.slice(0, Math.min(tasks.length, 5)).map((_, i) => (
+          <div
+            key={`dot-${i}`}
+            className="w-1.5 h-1.5 rounded-full bg-primary/20"
+          />
+        ))}
+      </div>
 
       {/* Task Detail Panel */}
       <TaskDetailPanel

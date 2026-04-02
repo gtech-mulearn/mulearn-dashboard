@@ -2,9 +2,9 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { igKeys } from "@/features/interest-groups";
 import { partialUpdateInterestGroup } from "@/features/manage-ig/api/manage-ig.api";
 import type { InterestGroupUpdate } from "@/features/manage-ig/schemas";
-import { igKeys } from "@/features/interest-groups";
 
 export function useEditInterestGroup() {
   const queryClient = useQueryClient();
