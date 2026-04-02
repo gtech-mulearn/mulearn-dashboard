@@ -1,15 +1,15 @@
 "use client";
 
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  getAdminInterestGroups,
   createInterestGroup as apiCreateIG,
-  updateInterestGroup as apiUpdateIG,
-  partialUpdateInterestGroup as apiPartialUpdateIG,
   deleteInterestGroup as apiDeleteIG,
   exportIgCSV as apiExportCSV,
+  partialUpdateInterestGroup as apiPartialUpdateIG,
+  updateInterestGroup as apiUpdateIG,
+  getAdminInterestGroups,
 } from "../api/manage-ig.api";
 import type { InterestGroupUpdate } from "../schemas";
 

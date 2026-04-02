@@ -1,7 +1,9 @@
 import { apiClient, endpoints } from "@/api";
 import type {
+  CollaborationTarget,
   CollaboratorInviteBody,
   CollaboratorsListData,
+  CollaboratorType,
   CoOwnersListData,
   EventCoOwner,
   EventCoOwnerInput,
@@ -15,6 +17,8 @@ import type {
   EventPatchBody,
   EventWriteBody,
   IGCluster,
+  MinimalUser,
+  OrganizerOptionsResponse,
 } from "../types";
 
 // ─── HELPERS ────────────────────────────────────────────────────────────────
@@ -54,7 +58,7 @@ export const eventsApi = {
   // ─── PUBLIC LIST ENDPOINTS ───────────────────────────────────────────────
   list: async (params?: EventListQueryParams): Promise<EventListData> => {
     const qs = buildQueryString(params);
-    return apiClient.get<EventListData>(`${endpoints.events.list}${qs}`);
+    return apiClient.get<EventListData>(`${endpoints.events.base}${qs}`);
   },
 
   featured: async (params?: EventListQueryParams): Promise<EventListData> => {
@@ -64,33 +68,35 @@ export const eventsApi = {
 
   // ─── PUBLIC DETAIL & INTEREST ────────────────────────────────────────────
   detail: async (id: string): Promise<EventDetailData> => {
-    return apiClient.get<EventDetailData>(endpoints.events.detail(id));
+    return apiClient.get<EventDetailData>(`${endpoints.events.base}${id}/`);
   },
 
   addInterest: async (id: string): Promise<EventInterestData> => {
-    return apiClient.post<EventInterestData>(endpoints.events.interest(id), {});
+    return apiClient.post<EventInterestData>(
+      `${endpoints.events.base}${id}/interest/`,
+      {},
+    );
   },
 
   removeInterest: async (id: string): Promise<EventDeleteData> => {
-    return apiClient.delete<EventDeleteData>(endpoints.events.interest(id));
+    return apiClient.delete<EventDeleteData>(
+      `${endpoints.events.base}${id}/interest/`,
+    );
   },
 
   // ─── MANAGE: LIST & CRUD ─────────────────────────────────────────────────
   manageList: async (params?: EventListQueryParams): Promise<EventListData> => {
     const qs = buildQueryString(params);
-    return apiClient.get<EventListData>(`${endpoints.events.manageList}${qs}`);
+    return apiClient.get<EventListData>(`${endpoints.events.manage}${qs}`);
   },
 
   create: async (body: EventWriteBody): Promise<EventMutationData> => {
-    return apiClient.post<EventMutationData>(
-      endpoints.events.manageCreate,
-      body,
-    );
+    return apiClient.post<EventMutationData>(endpoints.events.manage, body);
   },
 
   manageDetail: async (id: string): Promise<EventDetailManageData> => {
     return apiClient.get<EventDetailManageData>(
-      endpoints.events.manageDetail(id),
+      `${endpoints.events.manage}${id}/`,
     );
   },
 
@@ -99,7 +105,7 @@ export const eventsApi = {
     body: EventWriteBody,
   ): Promise<EventMutationData> => {
     return apiClient.put<EventMutationData>(
-      endpoints.events.manageUpdate(id),
+      `${endpoints.events.manage}${id}/`,
       body,
     );
   },
@@ -109,29 +115,39 @@ export const eventsApi = {
     body: EventPatchBody,
   ): Promise<EventMutationData> => {
     return apiClient.patch<EventMutationData>(
-      endpoints.events.managePatch(id),
+      `${endpoints.events.manage}${id}/`,
       body,
     );
   },
 
   delete: async (id: string): Promise<EventDeleteData> => {
-    return apiClient.delete<EventDeleteData>(endpoints.events.manageDelete(id));
+    return apiClient.delete<EventDeleteData>(
+      `${endpoints.events.manage}${id}/`,
+    );
   },
 
   publish: async (id: string): Promise<EventMutationData> => {
-    return apiClient.post<EventMutationData>(endpoints.events.publish(id), {});
+    return apiClient.post<EventMutationData>(
+      `${endpoints.events.manage}${id}/publish/`,
+      {},
+    );
   },
 
   // ─── CO-OWNERS ───────────────────────────────────────────────────────────
   getCoOwners: async (id: string): Promise<CoOwnersListData> => {
-    return apiClient.get<CoOwnersListData>(endpoints.events.coOwners(id));
+    return apiClient.get<CoOwnersListData>(
+      `${endpoints.events.manage}${id}/co-owners/`,
+    );
   },
 
   addCoOwner: async (
     id: string,
     body: EventCoOwnerInput,
   ): Promise<EventCoOwner> => {
-    return apiClient.post<EventCoOwner>(endpoints.events.coOwners(id), body);
+    return apiClient.post<EventCoOwner>(
+      `${endpoints.events.manage}${id}/co-owners/`,
+      body,
+    );
   },
 
   removeCoOwner: async (
@@ -139,14 +155,14 @@ export const eventsApi = {
     coOwnerId: string,
   ): Promise<EventDeleteData> => {
     return apiClient.delete<EventDeleteData>(
-      endpoints.events.coOwnerItem(id, coOwnerId),
+      `${endpoints.events.manage}${id}/co-owners/${coOwnerId}/`,
     );
   },
 
   // ─── COLLABORATORS ──────────────────────────────────────────────────────
   getCollaborators: async (id: string): Promise<CollaboratorsListData> => {
     return apiClient.get<CollaboratorsListData>(
-      endpoints.events.collaborators(id),
+      `${endpoints.events.manage}${id}/collaborators/`,
     );
   },
 
@@ -155,7 +171,7 @@ export const eventsApi = {
     body: CollaboratorInviteBody,
   ): Promise<EventDeleteData> => {
     return apiClient.post<EventDeleteData>(
-      endpoints.events.collaborators(id),
+      `${endpoints.events.manage}${id}/collaborators/`,
       body,
     );
   },
@@ -165,7 +181,7 @@ export const eventsApi = {
     cId: string,
   ): Promise<EventDeleteData> => {
     return apiClient.post<EventDeleteData>(
-      endpoints.events.collaboratorAccept(id, cId),
+      `${endpoints.events.manage}${id}/collaborators/${cId}/accept/`,
       {},
     );
   },
@@ -176,7 +192,7 @@ export const eventsApi = {
     reason?: string,
   ): Promise<EventDeleteData> => {
     return apiClient.post<EventDeleteData>(
-      endpoints.events.collaboratorReject(id, cId),
+      `${endpoints.events.manage}${id}/collaborators/${cId}/reject/`,
       { reason },
     );
   },
@@ -186,7 +202,27 @@ export const eventsApi = {
     cId: string,
   ): Promise<EventDeleteData> => {
     return apiClient.delete<EventDeleteData>(
-      endpoints.events.collaboratorItem(id, cId),
+      `${endpoints.events.manage}${id}/collaborators/${cId}/`,
+    );
+  },
+
+  searchCollaborationTargets: async (
+    search: string,
+    type?: CollaboratorType,
+  ): Promise<CollaborationTarget[]> => {
+    const searchParams = new URLSearchParams({ search });
+    if (type) {
+      searchParams.set("type", type);
+    }
+    return apiClient.get<CollaborationTarget[]>(
+      `${endpoints.events.meta.collaborationTargets}?${searchParams.toString()}`,
+    );
+  },
+
+  searchUsers: async (query: string): Promise<MinimalUser[]> => {
+    const searchParams = new URLSearchParams({ search: query });
+    return apiClient.get<MinimalUser[]>(
+      `${endpoints.search.students}?${searchParams.toString()}`,
     );
   },
 
@@ -196,9 +232,7 @@ export const eventsApi = {
     params?: EventListQueryParams,
   ): Promise<EventListData> => {
     const qs = buildQueryString(params);
-    return apiClient.get<EventListData>(
-      `${endpoints.events.igEvents(igId)}${qs}`,
-    );
+    return apiClient.get<EventListData>(`${endpoints.events.ig}${igId}/${qs}`);
   },
 
   clusterEvents: async (
@@ -207,7 +241,7 @@ export const eventsApi = {
   ): Promise<EventListData> => {
     const qs = buildQueryString(params);
     return apiClient.get<EventListData>(
-      `${endpoints.events.clusterEvents(cluster)}${qs}`,
+      `${endpoints.events.ig}cluster/${cluster}/${qs}`,
     );
   },
 
@@ -217,7 +251,7 @@ export const eventsApi = {
   ): Promise<EventListData> => {
     const qs = buildQueryString(params);
     return apiClient.get<EventListData>(
-      `${endpoints.events.campusEvents(campusId)}${qs}`,
+      `${endpoints.events.campus}${campusId}/${qs}`,
     );
   },
 
@@ -227,7 +261,7 @@ export const eventsApi = {
   ): Promise<EventListData> => {
     const qs = buildQueryString(params);
     return apiClient.get<EventListData>(
-      `${endpoints.events.campusIgEvents(campusIgId)}${qs}`,
+      `${endpoints.events.campusIg}${campusIgId}/${qs}`,
     );
   },
 
@@ -237,12 +271,56 @@ export const eventsApi = {
   ): Promise<EventListData> => {
     const qs = buildQueryString(params);
     return apiClient.get<EventListData>(
-      `${endpoints.events.companyEvents(companyId)}${qs}`,
+      `${endpoints.events.company}${companyId}/${qs}`,
+    );
+  },
+
+  // ─── ADMIN ENDPOINTS ─────────────────────────────────────────────────────
+  adminList: async (params?: EventListQueryParams): Promise<EventListData> => {
+    const qs = buildQueryString(params);
+    return apiClient.get<EventListData>(`${endpoints.events.admin}${qs}`);
+  },
+
+  adminApprove: async (
+    id: string,
+    note?: string,
+  ): Promise<EventMutationData> => {
+    return apiClient.post<EventMutationData>(
+      `${endpoints.events.admin}${id}/approve/`,
+      {
+        note,
+      },
+    );
+  },
+
+  adminReject: async (
+    id: string,
+    reason: string,
+  ): Promise<EventMutationData> => {
+    return apiClient.post<EventMutationData>(
+      `${endpoints.events.admin}${id}/reject/`,
+      {
+        reason,
+      },
+    );
+  },
+
+  adminFeature: async (
+    id: string,
+    is_featured: boolean,
+  ): Promise<EventMutationData> => {
+    return apiClient.patch<EventMutationData>(
+      `${endpoints.events.admin}${id}/feature/`,
+      {
+        is_featured,
+      },
     );
   },
 
   // ─── META / FORM OPTIONS ────────────────────────────────────────────────
-  getOrganizerOptions: async (): Promise<unknown> => {
-    return apiClient.get<unknown>(endpoints.events.organizerOptions);
+  getOrganizerOptions: async (): Promise<OrganizerOptionsResponse> => {
+    return apiClient.get<OrganizerOptionsResponse>(
+      endpoints.events.meta.organizerOptions,
+    );
   },
 };

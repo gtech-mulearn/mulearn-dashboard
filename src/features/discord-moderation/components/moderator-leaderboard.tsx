@@ -13,8 +13,8 @@ import { useState } from "react";
 import { Blank } from "@/components/dashboard/table/Blank";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table, { type Data } from "@/components/dashboard/table/Table";
-import type { LeaderboardOption } from "../schemas";
 import { useModeratorBoard } from "../hooks";
+import type { LeaderboardOption } from "../schemas";
 
 // ─── Column definitions ───────────────────────────────────────────────────────
 

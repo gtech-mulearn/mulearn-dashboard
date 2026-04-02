@@ -1,6 +1,6 @@
 "use client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ManageIGTable, IGRequestTable } from "@/features/manage-ig";
+import { IGRequestTable, ManageIGTable } from "@/features/manage-ig";
 
 export default function InterestGroupsManagementPage() {
   return (

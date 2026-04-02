@@ -1,12 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import Table from "@/components/dashboard/table/Table";
-import THead from "@/components/dashboard/table/Thead";
-import Pagination from "@/components/dashboard/table/pagination";
-import TableTop from "@/components/dashboard/table/TableTop";
 import { Blank } from "@/components/dashboard/table/Blank";
+import Pagination from "@/components/dashboard/table/pagination";
+import Table from "@/components/dashboard/table/Table";
+import TableTop from "@/components/dashboard/table/TableTop";
+import THead from "@/components/dashboard/table/Thead";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCollegeLevelsList } from "@/features/college-levels/hooks";
 
 export default function CollegeLevelsPage() {
