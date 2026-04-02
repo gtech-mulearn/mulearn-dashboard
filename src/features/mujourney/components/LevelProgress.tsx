@@ -50,7 +50,7 @@ export function LevelProgress({
           value={percentage}
           className="h-3 rounded-full bg-primary/10 border border-primary/5"
         />
-        <div className="absolute inset-0 bg-linear-to-r from-blue-600/20 to-transparent blur-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+        <div className="absolute inset-0 bg-linear-to-r from-primary/20 to-transparent blur-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
       </div>
     </div>
   );

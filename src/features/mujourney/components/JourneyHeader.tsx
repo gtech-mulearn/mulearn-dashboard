@@ -22,7 +22,7 @@ export function JourneyHeader({
       {/* Creative Background Elements */}
       <div className="absolute -top-24 -right-10 h-64 w-64 rounded-full bg-primary/10 blur-3xl animate-pulse" />
       <div className="absolute top-1/2 -left-10 h-64 w-64 rounded-full bg-primary/5 blur-3xl" />
-      <div className="absolute bottom-0 right-1/4 h-32 w-32 rounded-full bg-violet-500/10 blur-2xl" />
+      <div className="absolute bottom-0 right-1/4 h-32 w-32 rounded-full bg-chart-5/10 blur-2xl" />
 
       {/* Grid Pattern Overlay */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--color-border)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-border)_1px,transparent_1px)] bg-[size:18px_18px] opacity-[0.15]" />
@@ -61,7 +61,7 @@ export function JourneyHeader({
           <div className="relative hidden lg:flex h-48 w-full items-center justify-center">
             {/* Abstract Shapes behind image */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="h-40 w-40 rounded-full bg-linear-to-tr from-primary/20 to-violet-500/20 blur-2xl" />
+              <div className="h-40 w-40 rounded-full bg-linear-to-tr from-primary/20 to-chart-2/20 blur-2xl" />
             </div>
             <div className="relative z-10 flex flex-col items-center gap-2">
               <div className="bg-primary/10 p-4 rounded-3xl backdrop-blur-xl border border-primary/20 shadow-xl group hover:scale-105 transition-all duration-300">

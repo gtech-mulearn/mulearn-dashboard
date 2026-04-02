@@ -43,7 +43,7 @@ export function TaskCard({
     <Card
       className={cn(
         "group relative h-full flex flex-col transition-all duration-500 rounded-3xl overflow-hidden border border-border/50 shadow-xs hover:shadow-xl hover:-translate-y-1.5 cursor-pointer bg-card/60 backdrop-blur-xl",
-        isCompleted && "bg-emerald-500/5 border-emerald-500/20",
+        isCompleted && "bg-chart-2/5 border-chart-2/25",
         isLocked && "cursor-not-allowed opacity-60",
         className,
       )}
@@ -54,7 +54,7 @@ export function TaskCard({
         className={cn(
           "absolute -top-12 -right-12 w-32 h-32 blur-3xl rounded-full opacity-10 transition-opacity duration-700 group-hover:opacity-25",
           isCompleted
-            ? "bg-emerald-500"
+            ? "bg-chart-2"
             : isPending
               ? "bg-primary"
               : "bg-muted-foreground",
@@ -63,7 +63,7 @@ export function TaskCard({
       <div
         className={cn(
           "absolute -bottom-8 -left-8 w-24 h-24 blur-2xl rounded-full opacity-5",
-          isCompleted ? "bg-emerald-400" : "bg-primary/50",
+          isCompleted ? "bg-chart-2/60" : "bg-primary/50",
         )}
       />
 
@@ -74,7 +74,7 @@ export function TaskCard({
             className={cn(
               "flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border backdrop-blur-sm",
               isCompleted &&
-                "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+                "bg-chart-2/10 text-chart-2 border-chart-2/20",
               isPending && "bg-amber-500/10 text-amber-600 border-amber-500/20",
               isLocked && "bg-muted/50 text-muted-foreground border-border",
             )}
@@ -134,7 +134,7 @@ export function TaskCard({
             isPending &&
               "bg-primary text-white shadow-lg shadow-primary/20 hover:bg-primary/90 hover:scale-[1.02]",
             isCompleted &&
-              "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 hover:bg-emerald-500/15 shadow-none",
+              "bg-chart-2/10 text-chart-2 border border-chart-2/20 hover:bg-chart-2/15 shadow-none",
             isLocked && "bg-muted text-muted-foreground opacity-50 shadow-none",
           )}
         >
