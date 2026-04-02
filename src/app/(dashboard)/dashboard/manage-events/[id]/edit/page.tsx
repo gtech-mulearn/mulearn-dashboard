@@ -2,6 +2,7 @@
 
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { use } from "react";
 import { Button } from "@/components/ui/button";
 import { EventModal, useManageEventDetail } from "@/features/events";
@@ -12,6 +13,7 @@ interface EditEventPageProps {
 
 export default function EditEventPage(props: EditEventPageProps) {
   const { id } = use(props.params);
+  const router = useRouter();
   const { data: event, isLoading, error } = useManageEventDetail(id);
 
   if (isLoading) {
@@ -29,7 +31,7 @@ export default function EditEventPage(props: EditEventPageProps) {
           Failed to load event for editing.
         </p>
         <Button variant="ghost" className="mt-4" asChild>
-          <Link href="/dashboard/events/manage">
+          <Link href="/dashboard/manage-events">
             <ArrowLeft className="mr-2 h-4 w-4" /> Back to Manage Events
           </Link>
         </Button>
@@ -41,7 +43,7 @@ export default function EditEventPage(props: EditEventPageProps) {
     <EventModal
       open
       onClose={() => {
-        window.location.href = "/dashboard/events/manage";
+        router.push("/dashboard/manage-events");
       }}
       initialData={event}
       isEdit

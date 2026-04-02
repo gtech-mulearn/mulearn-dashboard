@@ -23,7 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateRole, useUpdateRole } from "../hooks/use-roles";
-import { RoleFormSchema, type Role, type RoleFormValues } from "../schemas";
+import { type Role, RoleFormSchema, type RoleFormValues } from "../schemas";
 
 interface RoleFormDialogProps {
   open: boolean;

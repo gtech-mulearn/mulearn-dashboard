@@ -23,29 +23,6 @@ const createEventBaseSchema = z.object({
     ])
     .optional(),
   scope: z.enum(["global", "campus", "ig", "campus_ig"]),
-  organiser_type: z.enum([
-    "global_ig",
-    "campus_ig",
-    "campus",
-    "company",
-    "admin",
-  ]),
-  organiser_ig_id: z
-    .union([z.string().uuid(), z.literal("")])
-    .optional()
-    .transform((v) => (v === "" ? undefined : v)),
-  organiser_campus_id: z
-    .union([z.string().uuid(), z.literal("")])
-    .optional()
-    .transform((v) => (v === "" ? undefined : v)),
-  organiser_campus_ig_id: z
-    .union([z.string().uuid(), z.literal("")])
-    .optional()
-    .transform((v) => (v === "" ? undefined : v)),
-  organiser_company_id: z
-    .union([z.string().uuid(), z.literal("")])
-    .optional()
-    .transform((v) => (v === "" ? undefined : v)),
   start_datetime: z
     .string()
     .refine(
@@ -145,36 +122,6 @@ function applyEventRefinements<T extends typeof createEventBaseSchema>(
   schema: T,
 ) {
   return schema.superRefine((data, ctx) => {
-    // Validate organiser_type → entity ID pairing
-    if (data.organiser_type === "global_ig" && !data.organiser_ig_id) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["organiser_ig_id"],
-        message: "Organiser IG is required for global_ig",
-      });
-    }
-    if (data.organiser_type === "campus" && !data.organiser_campus_id) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["organiser_campus_id"],
-        message: "Organiser campus is required for campus",
-      });
-    }
-    if (data.organiser_type === "campus_ig" && !data.organiser_campus_ig_id) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["organiser_campus_ig_id"],
-        message: "Organiser campus IG is required for campus_ig",
-      });
-    }
-    if (data.organiser_type === "company" && !data.organiser_company_id) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["organiser_company_id"],
-        message: "Organiser company is required for company",
-      });
-    }
-
     // Validate scope → target ID pairing
     if (data.scope === "campus" && !data.target_campus_id) {
       ctx.addIssue({

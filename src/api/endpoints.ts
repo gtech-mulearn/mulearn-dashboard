@@ -153,47 +153,19 @@ export const endpoints = {
   // ============================================
 
   events: {
-    list: "/api/v1/dashboard/events/",
+    base: "/api/v1/dashboard/events/",
     featured: "/api/v1/dashboard/events/featured/",
-    detail: (id: string) => `/api/v1/dashboard/events/${id}/`,
-    interest: (id: string) => `/api/v1/dashboard/events/${id}/interest/`,
-    manageList: "/api/v1/dashboard/events/manage/",
-    manageCreate: "/api/v1/dashboard/events/manage/",
-    manageDetail: (id: string) => `/api/v1/dashboard/events/manage/${id}/`,
-    manageUpdate: (id: string) => `/api/v1/dashboard/events/manage/${id}/`,
-    managePatch: (id: string) => `/api/v1/dashboard/events/manage/${id}/`,
-    manageDelete: (id: string) => `/api/v1/dashboard/events/manage/${id}/`,
-    publish: (id: string) => `/api/v1/dashboard/events/manage/${id}/publish/`,
-    coOwners: (id: string) =>
-      `/api/v1/dashboard/events/manage/${id}/co-owners/`,
-    coOwnerItem: (id: string, coOwnerId: string) =>
-      `/api/v1/dashboard/events/manage/${id}/co-owners/${coOwnerId}/`,
-    collaborators: (id: string) =>
-      `/api/v1/dashboard/events/manage/${id}/collaborators/`,
-    collaboratorAccept: (id: string, cId: string) =>
-      `/api/v1/dashboard/events/manage/${id}/collaborators/${cId}/accept/`,
-    collaboratorReject: (id: string, cId: string) =>
-      `/api/v1/dashboard/events/manage/${id}/collaborators/${cId}/reject/`,
-    collaboratorItem: (id: string, cId: string) =>
-      `/api/v1/dashboard/events/manage/${id}/collaborators/${cId}/`,
-    adminList: "/api/v1/dashboard/events/admin/",
-    adminApprove: (id: string) =>
-      `/api/v1/dashboard/events/admin/${id}/approve/`,
-    adminReject: (id: string) => `/api/v1/dashboard/events/admin/${id}/reject/`,
-    adminFeature: (id: string) =>
-      `/api/v1/dashboard/events/admin/${id}/feature/`,
-    igEvents: (igId: string) => `/api/v1/dashboard/events/ig/${igId}/`,
-    clusterEvents: (cluster: string) =>
-      `/api/v1/dashboard/events/ig/cluster/${cluster}/`,
-    campusEvents: (campusId: string) =>
-      `/api/v1/dashboard/events/campus/${campusId}/`,
-    campusIgEvents: (campusIgId: string) =>
-      `/api/v1/dashboard/events/campus-ig/${campusIgId}/`,
-    companyEvents: (companyId: string) =>
-      `/api/v1/dashboard/events/company/${companyId}/`,
-    organizerOptions: "/api/v1/dashboard/events/meta/organizer-options/",
-    collaborationTargets: (search: string) =>
-      `/api/v1/dashboard/events/meta/collaboration-targets/?search=${encodeURIComponent(search)}`,
+    manage: "/api/v1/dashboard/events/manage/",
+    admin: "/api/v1/dashboard/events/admin/",
+    ig: "/api/v1/dashboard/events/ig/",
+    campus: "/api/v1/dashboard/events/campus/",
+    campusIg: "/api/v1/dashboard/events/campus-ig/",
+    company: "/api/v1/dashboard/events/company/",
+    meta: {
+      organizerOptions: "/api/v1/dashboard/events/meta/organizer-options/",
+      collaborationTargets:
+        "/api/v1/dashboard/events/meta/collaboration-targets/",
+    },
   },
 
   // ============================================
@@ -770,14 +742,33 @@ export const endpoints = {
       `/api/v1/dashboard/channels/${channel_id}/`,
   },
 
-  zonal: {
-    details: "/api/dashboard/zonal/zonal-details/",
-    TopDistrict: "/api/dashboard/zonal/top-districts/",
-    StudentLevel: "/api/dashboard/zonal/student-level/",
-    StudentList: "/api/dashboard/zonal/student-details/",
-    StudentCsv: "/api/dashboard/zonal/student-details/csv/",
-    CollegeList: "/api/dashboard/zonal/college-details/",
-    CollegeCsv: "/api/dashboard/zonal/college-details/csv/",
+  // ============================================
+  // District Dashboard Endpoints
+  // ============================================
+  district: {
+    // --- District Overview ---
+    /** GET - District details (zone, lead, karma, members) */
+    details: "/api/v1/dashboard/district/district-details/",
+
+    /** GET - Top 3 campuses in district by karma */
+    topCampus: "/api/v1/dashboard/district/top-campus/",
+
+    /** GET - Student level distribution across district */
+    studentLevel: "/api/v1/dashboard/district/student-level/",
+
+    // --- Students ---
+    /** GET - Paginated student details (supports search, sort, pagination) */
+    studentDetails: "/api/v1/dashboard/district/student-details/",
+
+    /** GET - Download all student details as CSV */
+    studentDetailsCsv: "/api/v1/dashboard/district/student-details/csv/",
+
+    // --- Colleges ---
+    /** GET - Paginated college details in district */
+    collegeDetails: "/api/v1/dashboard/district/college-details/",
+
+    /** GET - Download all college details as CSV */
+    collegeDetailsCsv: "/api/v1/dashboard/district/college-details/csv/",
   },
 } as const;
 

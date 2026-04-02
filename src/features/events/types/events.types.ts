@@ -127,6 +127,21 @@ export interface OrganizerInfo {
   company?: MinimalCompany;
 }
 
+export interface OrganizerOptionsResponse {
+  can_create_as_ig: MinimalIG[];
+  can_create_as_campus_ig: MinimalCampusIG[];
+  can_create_as_campus: MinimalCampus[];
+  can_create_as_company: MinimalCompany[];
+  can_create_as_admin: boolean;
+}
+
+export interface CollaborationTarget {
+  collaborator_type: CollaboratorType;
+  id: UUID;
+  name: string;
+  logo: string | null;
+}
+
 // ─── CO-OWNERS ──────────────────────────────────────────────────────────────
 
 export interface EventCoOwner {

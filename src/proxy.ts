@@ -37,6 +37,7 @@ const ROLE_VALUES = {
   CAMPUS_LEAD: "Campus Lead",
   LEAD_ENABLER: "Lead Enabler",
   TECH_TEAM: "Tech Team",
+  IG_LEAD: "IG Lead",
 } as const;
 
 /**
@@ -103,11 +104,15 @@ const ROLE_PROTECTED_ROUTES: Record<string, RouteConfig> = {
     roles: [ROLE_VALUES.ADMIN, ROLE_VALUES.FELLOW, ROLE_VALUES.ASSOCIATE],
   },
 
+  "/dashboard/interest-groups": {
+    roles: [ROLE_VALUES.ADMIN, ROLE_VALUES.FELLOW, ROLE_VALUES.IG_LEAD],
+  },
+
   // Tasks
   "/dashboard/tasks": { roles: [ROLE_VALUES.ADMIN] },
 
   // Events Management
-  "/dashboard/events/manage": {
+  "/dashboard/manage-events": {
     roles: [ROLE_VALUES.ADMIN, ROLE_VALUES.FELLOW],
   },
 };

@@ -4,15 +4,19 @@ import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useAddCoOwner, useEventCoOwners, useRemoveCoOwner } from "../hooks";
+import type { EventCoOwner } from "../types";
+import { UserSearchInput } from "./user-search-input";
 
 interface CoOwnersPanelProps {
   eventId: string;
 }
 
 export function CoOwnersPanel({ eventId }: CoOwnersPanelProps) {
-  const [userId, setUserId] = useState("");
+  const [selectedCoOwner, setSelectedCoOwner] = useState<EventCoOwner | null>(
+    null,
+  );
   const { data: coOwners } = useEventCoOwners(eventId);
   const addCoOwner = useAddCoOwner(eventId);
   const removeCoOwner = useRemoveCoOwner(eventId);
@@ -44,11 +48,7 @@ export function CoOwnersPanel({ eventId }: CoOwnersPanelProps) {
               type="button"
               size="sm"
               variant="outline"
-              onClick={() => {
-                if (window.confirm("Remove this co-owner?")) {
-                  removeCoOwner.mutate(coOwner.id);
-                }
-              }}
+              onClick={() => setSelectedCoOwner(coOwner)}
             >
               Remove
             </Button>
@@ -56,23 +56,30 @@ export function CoOwnersPanel({ eventId }: CoOwnersPanelProps) {
         ))}
       </div>
 
-      <div className="flex gap-2">
-        <Input
-          placeholder="User UUID"
-          value={userId}
-          onChange={(e) => setUserId(e.target.value)}
-        />
-        <Button
-          type="button"
-          onClick={() => {
-            if (!userId.trim()) return;
-            addCoOwner.mutate({ user_id: userId.trim() });
-            setUserId("");
-          }}
-        >
-          Add
-        </Button>
-      </div>
+      <UserSearchInput
+        placeholder="Search by name or muid..."
+        onSelect={(user) => addCoOwner.mutate({ user_id: user.id })}
+      />
+
+      <ConfirmDialog
+        open={!!selectedCoOwner}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedCoOwner(null);
+          }
+        }}
+        title="Remove co-owner"
+        description="This user will lose co-owner permissions for this event."
+        onConfirm={() => {
+          if (selectedCoOwner) {
+            removeCoOwner.mutate(selectedCoOwner.id, {
+              onSuccess: () => setSelectedCoOwner(null),
+            });
+          }
+        }}
+        isPending={removeCoOwner.isPending}
+        confirmLabel="Remove"
+      />
     </section>
   );
 }
