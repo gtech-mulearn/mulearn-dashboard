@@ -1,25 +1,24 @@
 "use client";
 
-import { Check, X, Clock, AlertCircle, Plus, Loader2, Ban } from "lucide-react";
+import { AlertCircle, Ban, Check, Clock, Loader2, Plus, X } from "lucide-react";
 import { useState } from "react";
+import { DataTableErrorBoundary } from "@/components/dashboard/DataTableErrorBoundary";
+import Pagination from "@/components/dashboard/table/pagination";
+import type { Data } from "@/components/dashboard/table/Table";
 import Table from "@/components/dashboard/table/Table";
 import TableTop from "@/components/dashboard/table/TableTop";
-import Pagination from "@/components/dashboard/table/pagination";
 import THead from "@/components/dashboard/table/Thead";
-import { useIGRequests } from "../hooks/use-ig-requests";
-import type { Data } from "@/components/dashboard/table/Table";
-
-import { DataTableErrorBoundary } from "@/components/dashboard/DataTableErrorBoundary";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -27,13 +26,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useIGRequests } from "../hooks/use-ig-requests";
 
 export function IGRequestTable() {
   const {

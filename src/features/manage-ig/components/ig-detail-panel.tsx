@@ -1,6 +1,22 @@
 "use client";
 
 import {
+  BookOpen,
+  Briefcase,
+  Calendar,
+  Clock,
+  ExternalLink,
+  Lightbulb,
+  Link as LinkIcon,
+  Pencil,
+  UserCheck,
+  Users,
+  X,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import {
   Sheet,
   SheetClose,
   SheetContent,
@@ -8,22 +24,6 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import type { InterestGroup } from "../schemas";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import {
-  Users,
-  Calendar,
-  Clock,
-  Link as LinkIcon,
-  BookOpen,
-  Lightbulb,
-  UserCheck,
-  Briefcase,
-  Pencil,
-  X,
-  ExternalLink,
-} from "lucide-react";
 
 type Props = {
   isOpen: boolean;

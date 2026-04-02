@@ -112,7 +112,7 @@ const ROLE_PROTECTED_ROUTES: Record<string, RouteConfig> = {
   "/dashboard/tasks": { roles: [ROLE_VALUES.ADMIN] },
 
   // Events Management
-  "/dashboard/events/manage": {
+  "/dashboard/manage-events": {
     roles: [ROLE_VALUES.ADMIN, ROLE_VALUES.FELLOW],
   },
 };

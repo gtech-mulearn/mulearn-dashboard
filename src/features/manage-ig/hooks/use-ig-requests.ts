@@ -1,12 +1,12 @@
 "use client";
 
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
+  submitIgRequest as apiSubmitRequest,
   getIgRequests,
   updateIgRequestStatus,
-  submitIgRequest as apiSubmitRequest,
 } from "../api/manage-ig.api";
 
 export function useIGRequests() {

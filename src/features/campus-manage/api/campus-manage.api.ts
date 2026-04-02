@@ -12,7 +12,6 @@ import type {
   EventDistributionPoint,
   ExecomMember,
   IgChapter,
-  KarmaByClusterResponse,
   PaginationInfo,
   SocialLink,
   SocialLinks,

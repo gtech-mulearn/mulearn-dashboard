@@ -1,3 +1,5 @@
+export * from "./company-home";
+export * from "./enabler-home";
 export * from "./event-calendar-card";
 export * from "./events-slider-card";
 export * from "./hero-card";
@@ -5,8 +7,6 @@ export * from "./home-page";
 export * from "./interest-groups-card";
 export * from "./karma-earners-card";
 export * from "./learning-circles-card";
-export * from "./student-home";
-export * from "./mulearner-home";
-export * from "./enabler-home";
 export * from "./mentor-home";
-export * from "./company-home";
+export * from "./mulearner-home";
+export * from "./student-home";

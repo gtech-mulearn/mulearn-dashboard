@@ -1,7 +1,5 @@
 "use client";
 
-import React from "react";
-
 export function EnablerHome() {
   return (
     <div className="flex bg-card items-center justify-center min-h-[400px] border rounded-lg shadow-sm">

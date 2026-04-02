@@ -1,14 +1,17 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2, Lock } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -26,17 +29,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import { useInterestGroupsAdmin } from "../hooks/use-manage-ig";
 import {
-  InterestGroupCreateSchema,
   type InterestGroup,
   type InterestGroupCreate,
+  InterestGroupCreateSchema,
 } from "../schemas";
-import { useInterestGroupsAdmin } from "../hooks/use-manage-ig";
-import { useEffect, useState } from "react";
-import { Loader2, Lock } from "lucide-react";
 
 type Props = {
   isOpen: boolean;
