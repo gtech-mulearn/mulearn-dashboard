@@ -58,6 +58,15 @@ function SidebarItem({
   }, [isActive]);
 
   const toggle = (e: React.MouseEvent) => {
+    if (item.isUnderConstruction) {
+      e.preventDefault();
+      e.stopPropagation();
+      toast.info("This feature is coming soon!", {
+        description: `We're still working on ${item.title}. Stay tuned!`,
+      });
+      return;
+    }
+
     if (hasChildren) {
       e.preventDefault();
       e.stopPropagation();
@@ -68,7 +77,7 @@ function SidebarItem({
   const content = (
     <div
       className={cn(
-        "flex items-center rounded-xl transition-all py-2.5 cursor-pointer",
+        "flex items-center rounded-xl transition-all py-2.5 cursor-pointer relative",
         isActive
           ? "bg-primary text-primary-foreground shadow-md"
           : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
@@ -78,6 +87,8 @@ function SidebarItem({
         isCollapsed && "lg:justify-center lg:px-0",
         // Indentation for nested items
         !isCollapsed && level > 0 && "ml-4",
+        // Under Construction dimming
+        item.isUnderConstruction && "opacity-70 grayscale-[0.3]",
       )}
       title={isCollapsed ? item.title : undefined}
     >
@@ -88,17 +99,24 @@ function SidebarItem({
           hasChildren && !isCollapsed && "ml-0.5",
         )}
       />
-      <span
-        className={cn(
-          "text-sm font-medium whitespace-nowrap transition-all duration-300",
-          isCollapsed
-            ? "lg:w-0 lg:opacity-0 lg:pointer-events-none"
-            : "w-auto opacity-100",
-          level > 0 && "text-[13px]",
+      <div className="flex items-center gap-2 overflow-hidden">
+        <span
+          className={cn(
+            "text-sm font-medium whitespace-nowrap transition-all duration-300",
+            isCollapsed
+              ? "lg:w-0 lg:opacity-0 lg:pointer-events-none"
+              : "w-auto opacity-100",
+            level > 0 && "text-[13px]",
+          )}
+        >
+          {item.title}
+        </span>
+        {item.isUnderConstruction && !isCollapsed && (
+          <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-orange-500/10 text-orange-600 uppercase tracking-tighter">
+            Soon
+          </span>
         )}
-      >
-        {item.title}
-      </span>
+      </div>
 
       {hasChildren && !isCollapsed && (
         <ChevronDown
@@ -113,7 +131,7 @@ function SidebarItem({
 
   return (
     <div className="w-full">
-      {hasChildren ? (
+      {hasChildren || item.isUnderConstruction ? (
         <button
           type="button"
           onClick={toggle}

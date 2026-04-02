@@ -71,6 +71,10 @@ export interface NavItem {
    * Children items for nested navigation menus.
    */
   children?: NavItem[];
+  /**
+   * If true, the item is marked as "In Development" and navigation is disabled.
+   */
+  isUnderConstruction?: boolean;
 }
 
 // ─── Navigation Items ───────────────────────────────────────
@@ -146,6 +150,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     href: "/dashboard/muverse",
     icon: Rocket,
     section: "main",
+    isUnderConstruction: true,
   },
 
   // ── Management Section (role-gated) ───────────────────────
@@ -180,19 +185,21 @@ export const NAV_ITEMS: readonly NavItem[] = [
       },
       {
         id: "zonal",
-        title: "Zonal",
+        title: "Zonal Dashboard",
         href: "/dashboard/zonal",
         icon: Globe,
         section: "management",
         roles: ZONAL_ROLES,
+        isUnderConstruction: true,
       },
       {
         id: "district",
-        title: "District",
+        title: "District Dashboard",
         href: "/dashboard/district",
         icon: MapPin,
         section: "management",
         roles: DISTRICT_ROLES,
+        isUnderConstruction: true,
       },
       {
         id: "interest-groups-mgmt",
