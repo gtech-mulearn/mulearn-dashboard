@@ -28,7 +28,6 @@ export function InterestGroupDetailClient() {
   const params = useParams();
   const id = Array.isArray(params?.id) ? params.id[0] : params?.id;
 
-  // Ensure we have an ID before making the API call
   const { data, isLoading, error } = useInterestGroupDetail(id || "");
   const group = data?.response?.interestGroup;
 
@@ -127,7 +126,7 @@ export function InterestGroupDetailClient() {
             </div>
 
             <div className="space-y-4">
-              <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl text-white">
+              <h1 className="text-3xl font-bold tracking-tight md:text-6xl text-white">
                 {group.name}
               </h1>
               {group.about && (

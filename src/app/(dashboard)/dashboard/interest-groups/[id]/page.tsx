@@ -1,5 +1,13 @@
-import { IGDetail } from "@/features/manage-ig";
+/**
+ * Interest Group Detail Page
+ *
+ * 📍 src/app/(dashboard)/dashboard/ig/[id]/page.tsx
+ *
+ * Detailed view of a specific interest group.
+ */
 
-export default async function IGDetailPage() {
-  return <IGDetail />;
+import { InterestGroupDetailClient } from "@/features/interest-groups";
+
+export default async function InterestGroupDetailPage() {
+  return <InterestGroupDetailClient />;
 }

@@ -308,7 +308,7 @@ export function RegisterRoleDetails({
 
       {/* Header */}
       <div className="space-y-2 text-center lg:text-left">
-        <h1 className="text-2xl font-display font-bold text-foreground">
+        <h1 className="text-2xl font-bold text-foreground">
           Complete your profile
         </h1>
         <p className="text-sm text-muted-foreground">
