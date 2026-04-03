@@ -44,6 +44,7 @@ export interface CampusLeaderboardItem {
   ig: string;
   cluster: string;
   alumni: boolean;
+  [key: string]: string | number | boolean | null | undefined;
 }
 
 export interface CampusLeaderboardResponse {

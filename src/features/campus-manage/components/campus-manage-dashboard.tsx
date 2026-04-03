@@ -47,7 +47,7 @@ import {
   YAxis,
 } from "recharts";
 import Pagination from "@/components/dashboard/table/pagination";
-import DataTable from "@/components/dashboard/table/Table";
+import DataTable, { type Data } from "@/components/dashboard/table/Table";
 import THead from "@/components/dashboard/table/Thead";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -87,6 +87,7 @@ import {
 import type {
   CampusEventFilters,
   CampusLeaderboardFilters,
+  CampusLeaderboardItem,
   ClusterKarmaPoint,
   SocialLink,
   SocialLinks,
@@ -418,15 +419,12 @@ export function CampusManageDashboard() {
   const socialLinks = overview?.socialLinks;
 
   // ─── Execom user verification ──
-  const { data: verifiedUser, isFetching: isVerifyingUser } = useUserProfile(
-    newMuids[0] || "",
-  );
+  const { data: verifiedUser } = useUserProfile(newMuids[0] || "");
 
   // ─── Mutations ───────────────────────────────────────────────────────────
   const { mutate: upsertSocial, isPending: isUpsertingSocial } =
     useUpsertSocialLink();
-  const { mutate: deleteSocial, isPending: isDeletingSocial } =
-    useDeleteSocialLink();
+  const { mutate: deleteSocial } = useDeleteSocialLink();
   const { mutate: addExecom, isPending: isAdding } = useAddExecomMember();
   const { mutate: removeExecom, isPending: isRemoving } =
     useRemoveExecomMember();
@@ -522,8 +520,8 @@ export function CampusManageDashboard() {
     const column = isDesc ? sortBy.slice(1) : sortBy;
 
     return [...filteredLeaderboard].sort((a, b) => {
-      const valA = (a as any)[column];
-      const valB = (b as any)[column];
+      const valA = a[column as keyof CampusLeaderboardItem];
+      const valB = b[column as keyof CampusLeaderboardItem];
 
       if (typeof valA === "number" && typeof valB === "number") {
         return isDesc ? valB - valA : valA - valB;
@@ -545,7 +543,8 @@ export function CampusManageDashboard() {
     [],
   );
 
-  const customCellRender = (column: string, row: any) => {
+  const customCellRender = (column: string, rowData: Data) => {
+    const row = rowData as unknown as CampusLeaderboardItem;
     if (column === "rank") {
       return (
         <div
@@ -928,7 +927,7 @@ export function CampusManageDashboard() {
             </div>
 
             <DataTable
-              rows={sortedLeaderboard as any}
+              rows={sortedLeaderboard}
               columnOrder={leaderboardColumns}
               customCellRender={customCellRender}
               page={leaderboardPage}
