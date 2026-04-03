@@ -209,7 +209,9 @@ export function Sidebar() {
   const isCollapsed = !isSidebarExpanded;
 
   // Extract level number (e.g., "Level 7" -> 7)
-  const userLevel = profile?.level ? Number(profile.level.replace(/\D/g, "")) : 1;
+  const userLevel = profile?.level
+    ? Number(profile.level.replace(/\D/g, ""))
+    : 1;
 
   const isActive = useCallback(
     (href: string) => {
@@ -402,7 +404,6 @@ export function Sidebar() {
               userLevel={userLevel}
             />
           ))}
-
 
           {/* Logout Button */}
           <button

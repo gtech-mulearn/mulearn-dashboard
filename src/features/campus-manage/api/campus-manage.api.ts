@@ -458,7 +458,7 @@ export const campusManageApi = {
 
     return unwrapDataArray(raw).map((item, index) => {
       const row = asRecord(item);
-      const rawId = safeToString(row.user_id ?? row.id ?? row.execom_id, "");
+      const rawId = safeToString(row.id ?? row.execom_id ?? row.user_id, "");
       return {
         id: rawId || `execom-${index}`,
         name: safeToString(row.full_name ?? row.name, "-"),

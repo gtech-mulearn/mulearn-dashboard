@@ -47,11 +47,14 @@ import {
   YAxis,
 } from "recharts";
 import Pagination from "@/components/dashboard/table/pagination";
+import DataTable from "@/components/dashboard/table/Table";
+import THead from "@/components/dashboard/table/Thead";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { MuidSearchInput } from "@/components/ui/muid-search-input";
 import {
   Popover,
   PopoverContent,
@@ -65,14 +68,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import {
@@ -205,17 +200,22 @@ function FilterSelect({
   value,
   onChange,
   options,
+  className,
 }: {
   value: string;
   onChange: (value: string) => void;
   options: Array<{ label: string; value: string }>;
+  className?: string;
 }) {
   return (
     <div className="relative group">
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="h-9 w-full min-w-[140px] appearance-none rounded-full border border-border/60 bg-background pl-4 pr-10 text-[11px] font-semibold uppercase tracking-wider transition-all hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20"
+        className={cn(
+          "h-9 w-full min-w-[140px] appearance-none rounded-full border border-border/60 bg-background pl-4 pr-10 text-[11px] font-semibold uppercase tracking-wider transition-all hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20",
+          className,
+        )}
       >
         {options.map((opt) => (
           <option key={opt.value} value={opt.value}>
@@ -393,7 +393,7 @@ export function CampusManageDashboard() {
   });
 
   // ── Execom admin state ──
-  const [newMuid, setNewMuid] = useState("");
+  const [newMuids, setNewMuids] = useState<string[]>([]);
 
   // ─── Queries ────────────────────────────────────────────────────────────
   const { data: overview, isLoading: isOverviewLoading } = useCampusOverview();
@@ -418,8 +418,9 @@ export function CampusManageDashboard() {
   const socialLinks = overview?.socialLinks;
 
   // ─── Execom user verification ──
-  const { data: verifiedUser, isFetching: isVerifyingUser } =
-    useUserProfile(newMuid);
+  const { data: verifiedUser, isFetching: isVerifyingUser } = useUserProfile(
+    newMuids[0] || "",
+  );
 
   // ─── Mutations ───────────────────────────────────────────────────────────
   const { mutate: upsertSocial, isPending: isUpsertingSocial } =
@@ -489,7 +490,8 @@ export function CampusManageDashboard() {
     [clusterData],
   );
 
-  // ─── Handlers ────────────────────────────────────────────────────────────
+  const [sortBy, setSortBy] = useState<string>("");
+
   const handleLeaderboardFilterChange =
     (key: keyof CampusLeaderboardFilters) => (value: string) => {
       setLeaderboardPage(1);
@@ -502,9 +504,104 @@ export function CampusManageDashboard() {
     };
 
   const handleAddExecom = () => {
-    const muid = newMuid.trim();
-    if (!muid) return;
-    addExecom(muid, { onSuccess: () => setNewMuid("") });
+    if (newMuids.length === 0) return;
+    newMuids.forEach((muid) => {
+      addExecom(muid);
+    });
+    setNewMuids([]);
+  };
+
+  const handleSort = (column: string) => {
+    setSortBy((prev) => (prev === column ? `-${column}` : column));
+  };
+
+  const sortedLeaderboard = useMemo(() => {
+    if (!sortBy) return filteredLeaderboard;
+
+    const isDesc = sortBy.startsWith("-");
+    const column = isDesc ? sortBy.slice(1) : sortBy;
+
+    return [...filteredLeaderboard].sort((a, b) => {
+      const valA = (a as any)[column];
+      const valB = (b as any)[column];
+
+      if (typeof valA === "number" && typeof valB === "number") {
+        return isDesc ? valB - valA : valA - valB;
+      }
+      return isDesc
+        ? String(valB).localeCompare(String(valA))
+        : String(valA).localeCompare(String(valB));
+    });
+  }, [filteredLeaderboard, sortBy]);
+
+  const leaderboardColumns = useMemo(
+    () => [
+      { column: "rank", Label: "Rank", isSortable: true, width: "w-24" },
+      { column: "name", Label: "Student", isSortable: true },
+      { column: "karma", Label: "Karma", isSortable: true },
+      { column: "level", Label: "Level", isSortable: true },
+      { column: "cluster", Label: "Department / Cluster", isSortable: true },
+    ],
+    [],
+  );
+
+  const customCellRender = (column: string, row: any) => {
+    if (column === "rank") {
+      return (
+        <div
+          className={`flex h-9 w-9 items-center justify-center rounded-full text-xs font-black shadow-lg shadow-chart-1/20 transition-all duration-300 ${
+            row.rank === 1
+              ? "bg-chart-1/15 text-chart-1 ring-2 ring-chart-1/40"
+              : row.rank === 2
+                ? "bg-muted text-muted-foreground"
+                : row.rank === 3
+                  ? "bg-chart-5/15 text-chart-5"
+                  : "bg-background text-muted-foreground border border-border/50"
+          }`}
+        >
+          #{row.rank}
+        </div>
+      );
+    }
+    if (column === "name") {
+      return (
+        <div className="flex flex-col">
+          <span className="text-sm font-semibold tracking-tight transition-colors group-hover:text-primary">
+            {row.name}
+          </span>
+          <span className="text-[11px] text-muted-foreground">
+            @{row.muid.split("@")[0]}
+          </span>
+        </div>
+      );
+    }
+    if (column === "karma") {
+      return (
+        <span className="text-lg font-black tracking-tighter text-chart-2">
+          {row.karma?.toLocaleString()}
+        </span>
+      );
+    }
+    if (column === "level") {
+      return (
+        <Badge
+          className={`h-6 px-2.5 font-bold uppercase tracking-wider text-[10px] shadow-sm ${
+            row.level?.includes("7")
+              ? "bg-chart-5 hover:opacity-90"
+              : row.level?.includes("6")
+                ? "bg-primary hover:opacity-90"
+                : row.level?.includes("5")
+                  ? "bg-chart-1 hover:opacity-90 font-black"
+                  : row.level?.includes("4")
+                    ? "bg-chart-2 hover:opacity-90 font-black"
+                    : "bg-muted text-muted-foreground hover:bg-muted font-black"
+          }`}
+        >
+          {row.level}
+        </Badge>
+      );
+    }
+    return null;
   };
 
   // ─── Render ───────────────────────────────────────────────────────────────
@@ -536,7 +633,7 @@ export function CampusManageDashboard() {
                 {/* ── Glassmorphism Hero Header ── */}
                 <div className="relative mb-6 overflow-hidden rounded-2xl border border-border/40">
                   {/* gradient backdrop */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-teal-500/20 via-sky-500/10 to-violet-500/20" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-chart-2/20 via-primary/10 to-chart-5/20" />
                   <div className="absolute inset-0 backdrop-blur-[2px]" />
                   {/* subtle grid pattern */}
                   <div
@@ -550,7 +647,7 @@ export function CampusManageDashboard() {
                     {/* Left: avatar + college info */}
                     <div className="flex items-center gap-3 sm:gap-4 overflow-hidden">
                       {/* Initials avatar */}
-                      <div className="flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl bg-gradient-to-br from-teal-500 to-sky-600 text-base sm:text-lg font-bold text-white shadow-lg">
+                      <div className="flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl bg-gradient-to-br from-chart-2 to-primary text-base sm:text-lg font-bold text-white shadow-lg">
                         {(overview?.campusCode ?? overview?.collegeName ?? "C")
                           .slice(0, 2)
                           .toUpperCase()}
@@ -604,7 +701,7 @@ export function CampusManageDashboard() {
                       value={(overview?.totalKarma ?? 0).toLocaleString()}
                       icon={<Zap className="h-4 w-4" />}
                       featured
-                      accent="#0d9488"
+                      accent="var(--chart-2)"
                     />
                   </div>
                   {/* ── Hero: Global Rank ── */}
@@ -614,8 +711,8 @@ export function CampusManageDashboard() {
                       value={overview?.rank ? `#${overview.rank}` : "-"}
                       icon={<Trophy className="h-4 w-4" />}
                       featured
-                      accent="#f59e0b"
-                      accentText="#b45309"
+                      accent="var(--chart-1)"
+                      accentText="var(--chart-1)"
                     />
                   </div>
                 </div>
@@ -651,7 +748,7 @@ export function CampusManageDashboard() {
 
                 {/* ── Karma Trend Chart — separated card ── */}
                 <Card className="mt-4 border-border/60">
-                  <CardHeader className="pb-2">
+                  <CardHeader className="py-4 px-4">
                     <CardTitle className="text-sm font-semibold">
                       Karma Trend
                     </CardTitle>
@@ -659,7 +756,7 @@ export function CampusManageDashboard() {
                       Weekly karma activity over time
                     </p>
                   </CardHeader>
-                  <CardContent className="pb-5">
+                  <CardContent className="p-4 sm:p-6">
                     {/* Empty-state overlay when all values are zero */}
                     {(() => {
                       const trend = overview?.trend ?? [];
@@ -670,7 +767,12 @@ export function CampusManageDashboard() {
                           <ResponsiveContainer width="100%" height="100%">
                             <AreaChart
                               data={trend}
-                              margin={{ top: 4, right: 8, left: 0, bottom: 0 }}
+                              margin={{
+                                top: 4,
+                                right: 30,
+                                left: 30,
+                                bottom: 0,
+                              }}
                             >
                               <defs>
                                 <linearGradient
@@ -710,7 +812,7 @@ export function CampusManageDashboard() {
                                 tick={{ fontSize: 10 }}
                                 tickLine={false}
                                 axisLine={false}
-                                width={36}
+                                width={44}
                               />
                               <Tooltip
                                 cursor={{
@@ -742,15 +844,17 @@ export function CampusManageDashboard() {
                               />
                             </AreaChart>
                           </ResponsiveContainer>
-                          {/* Empty-state overlay */}
+                          {/* Centralized high-visibility empty-state background overlay */}
                           {isEmpty && (
-                            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1.5">
-                              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
-                                <Zap className="h-4 w-4 text-muted-foreground/50" />
+                            <div className="pointer-events-none absolute inset-0 z-0 flex flex-col items-center justify-center p-4">
+                              <div className="flex animate-in fade-in zoom-in-95 flex-col items-center gap-1.5 rounded-2xl bg-muted/10 p-5 backdrop-blur-[1px] ring-1 ring-border/10">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted shadow-inner opacity-40">
+                                  <Zap className="h-5 w-5 text-muted-foreground" />
+                                </div>
+                                <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/70 text-center max-w-[150px]">
+                                  No activity recorded this period
+                                </p>
                               </div>
-                              <p className="text-xs font-medium text-muted-foreground">
-                                No activity recorded this period
-                              </p>
                             </div>
                           )}
                         </div>
@@ -769,199 +873,130 @@ export function CampusManageDashboard() {
               subtitle="Search and filter by IG, cluster and alumni status"
             />
 
-            <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div className="relative w-full lg:max-w-sm">
-                <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
-                <Input
-                  value={leaderboardFilters.search}
-                  onChange={(e) =>
-                    handleLeaderboardFilterChange("search")(e.target.value)
-                  }
-                  placeholder="Search students..."
-                  className="rounded-full border-border/60 pl-10 h-10 shadow-sm transition-all focus-visible:ring-primary/20"
-                />
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <FilterSelect
-                  value={leaderboardFilters.ig}
-                  onChange={handleLeaderboardFilterChange("ig")}
-                  options={[
-                    { label: "Interest Group", value: "" },
-                    ...igOptions,
-                  ]}
-                />
-                <FilterSelect
-                  value={leaderboardFilters.cluster}
-                  onChange={handleLeaderboardFilterChange("cluster")}
-                  options={[
-                    { label: "All Clusters", value: "" },
-                    ...clusterOptions,
-                  ]}
-                />
-                <FilterSelect
-                  value={leaderboardFilters.alumni}
-                  onChange={handleLeaderboardFilterChange("alumni")}
-                  options={[
-                    { label: "Status: All", value: "all" },
-                    { label: "Status: Alumni", value: "alumni" },
-                    { label: "Status: Student", value: "student" },
-                  ]}
-                />
+            <div className="mb-6 flex flex-col gap-5">
+              <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+                <div className="group relative flex-1 min-w-0 max-w-full lg:max-w-md">
+                  <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                  <Input
+                    value={leaderboardFilters.search}
+                    onChange={(e) =>
+                      handleLeaderboardFilterChange("search")(e.target.value)
+                    }
+                    placeholder="Search students by name or MUID..."
+                    className="h-12 w-full rounded-2xl border-border/60 bg-muted/20 pl-11 shadow-sm transition-all focus-visible:ring-primary/20 placeholder:text-muted-foreground/40"
+                  />
+                </div>
+
+                {/* 3 Redesigned Dropdowns - Horizontal Scroll Rail for Mobile */}
+                <div className="flex w-full items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth pb-1 pt-0.5 lg:w-auto lg:flex-wrap lg:overflow-visible lg:pb-0">
+                  <div className="flex shrink-0 items-center">
+                    <FilterSelect
+                      value={leaderboardFilters.ig}
+                      onChange={handleLeaderboardFilterChange("ig")}
+                      options={[
+                        { label: "Interest Group", value: "" },
+                        ...igOptions,
+                      ]}
+                      className="h-9 min-w-[130px] rounded-full border-border/40 bg-card text-[9px] font-black uppercase tracking-widest transition-all hover:border-primary/40 hover:bg-muted/30 lg:h-11 lg:min-w-[140px] lg:text-[10px]"
+                    />
+                  </div>
+                  <div className="flex shrink-0 items-center">
+                    <FilterSelect
+                      value={leaderboardFilters.cluster}
+                      onChange={handleLeaderboardFilterChange("cluster")}
+                      options={[
+                        { label: "All Clusters", value: "" },
+                        ...clusterOptions,
+                      ]}
+                      className="h-9 min-w-[120px] rounded-full border-border/40 bg-card text-[9px] font-black uppercase tracking-widest transition-all hover:border-primary/40 hover:bg-muted/30 lg:h-11 lg:min-w-[130px] lg:text-[10px]"
+                    />
+                  </div>
+                  <div className="flex shrink-0 items-center">
+                    <FilterSelect
+                      value={leaderboardFilters.alumni}
+                      onChange={handleLeaderboardFilterChange("alumni")}
+                      options={[
+                        { label: "Status: All", value: "all" },
+                        { label: "Status: Alumni", value: "alumni" },
+                        { label: "Status: Student", value: "student" },
+                      ]}
+                      className="h-9 min-w-[120px] rounded-full border-border/40 bg-card text-[9px] font-black uppercase tracking-widest transition-all hover:border-primary/40 hover:bg-muted/30 lg:h-11 lg:min-w-[130px] lg:text-[10px]"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 
-            {isLeaderboardLoading ? (
-              <Skeleton className="h-[500px] w-full rounded-2xl" />
-            ) : (
-              <Card className="overflow-hidden border-border/60 shadow-md">
-                <CardContent className="p-0">
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader className="bg-muted/30">
-                        <TableRow className="hover:bg-transparent">
-                          <TableHead className="w-24 text-center">
-                            Rank
-                          </TableHead>
-                          <TableHead>Student</TableHead>
-                          <TableHead>Karma</TableHead>
-                          <TableHead>Level</TableHead>
-                          <TableHead>Department / Cluster</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredLeaderboard.map((student) => (
-                          <TableRow
-                            key={student.id}
-                            className="group transition-colors hover:bg-muted/50"
-                          >
-                            <TableCell className="text-center font-bold">
-                              <div
-                                className={`mx-auto flex h-9 w-9 items-center justify-center rounded-full text-xs font-black shadow-sm transition-all duration-300 ${
-                                  student.rank === 1
-                                    ? "bg-amber-100 text-amber-600 ring-2 ring-amber-400/50 shadow-[0_0_15px_rgba(251,191,36,0.25)] dark:bg-amber-900/40 dark:text-amber-400"
-                                    : student.rank === 2
-                                      ? "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
-                                      : student.rank === 3
-                                        ? "bg-orange-100 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400"
-                                        : "bg-background text-muted-foreground border border-border/50"
-                                }`}
-                              >
-                                #{student.rank}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex flex-col">
-                                <span className="text-sm font-semibold tracking-tight transition-colors group-hover:text-primary">
-                                  {student.name}
-                                </span>
-                                <span className="text-[11px] text-muted-foreground">
-                                  @{student.muid.split("@")[0]}
-                                </span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <span className="text-lg font-black tracking-tighter text-emerald-600 dark:text-emerald-500">
-                                {student.karma.toLocaleString()}
-                              </span>
-                            </TableCell>
-                            <TableCell>
-                              <Badge
-                                className={`h-6 px-2.5 font-bold uppercase tracking-wider text-[10px] shadow-sm ${
-                                  student.level?.includes("7")
-                                    ? "bg-purple-600 hover:bg-purple-700"
-                                    : student.level?.includes("6")
-                                      ? "bg-blue-600 hover:bg-blue-700"
-                                      : student.level?.includes("5")
-                                        ? "bg-indigo-600 hover:bg-indigo-700 font-black"
-                                        : student.level?.includes("4")
-                                          ? "bg-teal-600 hover:bg-teal-700 font-black"
-                                          : "bg-slate-500/80 hover:bg-slate-500 font-black"
-                                }`}
-                              >
-                                {student.level}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="max-w-[200px] truncate text-xs text-muted-foreground">
-                              {student.cluster}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                        {filteredLeaderboard.length === 0 && (
-                          <TableRow>
-                            <TableCell
-                              colSpan={5}
-                              className="py-12 text-center text-muted-foreground"
-                            >
-                              <div className="flex flex-col items-center gap-2 opacity-50">
-                                <Users className="h-10 w-10" />
-                                <p className="text-sm">
-                                  No students found matching your filters.
-                                </p>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
-                  </div>
-                  <div className="p-4">
-                    <Pagination
-                      currentPage={leaderboardPage}
-                      totalPages={totalPages}
-                      handleNextClick={() => {
-                        const next = Math.min(leaderboardPage + 1, totalPages);
-                        setLeaderboardPage(next);
-                        setLeaderboardFilters((prev) => ({
-                          ...prev,
-                          page: next,
-                        }));
-                      }}
-                      handlePreviousClick={() => {
-                        const prev = Math.max(leaderboardPage - 1, 1);
-                        setLeaderboardPage(prev);
-                        setLeaderboardFilters((p) => ({ ...p, page: prev }));
-                      }}
-                      perPage={PAGE_SIZE}
-                      totalCount={
-                        leaderboardPagination?.count ??
-                        filteredLeaderboard.length
-                      }
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+            <DataTable
+              rows={sortedLeaderboard as any}
+              columnOrder={leaderboardColumns}
+              customCellRender={customCellRender}
+              page={leaderboardPage}
+              perPage={PAGE_SIZE}
+              isloading={isLeaderboardLoading}
+            >
+              <THead
+                key="header"
+                columnOrder={leaderboardColumns}
+                onIconClick={handleSort}
+                action={false}
+              />
+              <Pagination
+                key="pagination"
+                currentPage={leaderboardPage}
+                totalPages={totalPages}
+                handleNextClick={() => {
+                  const next = Math.min(leaderboardPage + 1, totalPages);
+                  setLeaderboardPage(next);
+                  setLeaderboardFilters((prev) => ({
+                    ...prev,
+                    page: next,
+                  }));
+                }}
+                handlePreviousClick={() => {
+                  const prev = Math.max(leaderboardPage - 1, 1);
+                  setLeaderboardPage(prev);
+                  setLeaderboardFilters((p) => ({ ...p, page: prev }));
+                }}
+                perPage={PAGE_SIZE}
+                totalCount={
+                  leaderboardPagination?.count ?? filteredLeaderboard.length
+                }
+              />
+            </DataTable>
           </section>
 
           {/* ── Dashboard Content Area ── */}
-          <section className="p-6">
+          <section>
             <div className="flex flex-col gap-8 lg:flex-row">
               {/* Main Column: Content */}
               <div className="flex-1 min-w-0">
                 <Tabs defaultValue="analytics" className="w-full">
-                  <TabsList className="mb-8 flex h-auto w-full items-center justify-start md:justify-center gap-6 overflow-x-auto no-scrollbar rounded-none border-b border-border/40 bg-transparent p-0 pb-1 px-4">
-                    {["analytics", "events", "execom", "ig"].map((tab) => (
-                      <TabsTrigger
-                        key={tab}
-                        value={tab}
-                        className="relative h-10 shrink-0 rounded-none border-b-2 border-transparent bg-transparent px-1 pb-3 pt-2 text-sm font-bold capitalize tracking-tight text-muted-foreground transition-all data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary/70"
-                      >
-                        {tab === "ig" ? "IG Chapters" : tab}
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
+                  <div className="mb-8 flex justify-start sm:justify-center overflow-x-auto no-scrollbar px-4 py-3">
+                    <TabsList className="h-auto inline-flex items-center gap-2 rounded-full bg-muted/40 p-1.5 backdrop-blur-sm shadow-inner min-w-max overflow-visible border-none ring-0">
+                      {["analytics", "events", "execom", "ig"].map((tab) => (
+                        <TabsTrigger
+                          key={tab}
+                          value={tab}
+                          className="h-10 sm:h-11 shrink-0 rounded-full px-6 sm:px-10 text-xs sm:text-sm font-black capitalize text-foreground transition-all duration-300 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-lg data-[state=active]:shadow-primary/10 hover:text-primary/70 border-none ring-0"
+                        >
+                          {tab === "ig" ? "IG Chapters" : tab}
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                  </div>
 
                   {/* ── Analytics Tab ── */}
                   <TabsContent value="analytics">
                     <div className="grid gap-4 lg:grid-cols-2">
                       {/* Card 1: Karma by Cluster */}
                       <Card className="border-border/60 shadow-sm transition-shadow hover:shadow-md">
-                        <CardHeader className="pb-2">
+                        <CardHeader className="py-4 px-4">
                           <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
                             Karma by Cluster
                           </CardTitle>
                         </CardHeader>
-                        <CardContent className="h-[280px] p-2">
+                        <CardContent className="p-4 sm:p-6 min-h-[340px]">
                           {isClusterLoading ? (
                             <Skeleton className="m-4 h-56 w-full rounded-xl" />
                           ) : clusterData.length > 0 ? (
@@ -974,7 +1009,7 @@ export function CampusManageDashboard() {
                                   margin={{
                                     top: 10,
                                     right: 35,
-                                    left: 5,
+                                    left: 35,
                                     bottom: 5,
                                   }}
                                 >
@@ -988,7 +1023,7 @@ export function CampusManageDashboard() {
                                     dataKey="cluster"
                                     type="category"
                                     tick={{ fontSize: 10, fontWeight: 700 }}
-                                    width={70}
+                                    width={60}
                                     axisLine={false}
                                     tickLine={false}
                                   />
@@ -1055,18 +1090,18 @@ export function CampusManageDashboard() {
 
                       {/* Card 2: Events by Tag (Donut Chart) */}
                       <Card className="border-border/60 shadow-sm transition-shadow hover:shadow-md">
-                        <CardHeader className="pb-2">
+                        <CardHeader className="py-4 px-4">
                           <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
                             Events by Tag
                           </CardTitle>
                         </CardHeader>
-                        <CardContent className="h-64 p-0">
+                        <CardContent className="p-0">
                           {isDistributionLoading ? (
                             <Skeleton className="m-6 h-48 w-full rounded-xl" />
                           ) : (
-                            <div className="flex h-full flex-col items-center justify-center gap-4 px-6 sm:flex-row sm:justify-between py-4">
+                            <div className="flex flex-col items-center gap-6 p-4 sm:p-6 min-h-[340px]">
                               {/* Donut Chart Container */}
-                              <div className="relative h-full w-[160px] shrink-0">
+                              <div className="relative h-[200px] w-[200px] shrink-0">
                                 <ResponsiveContainer width="100%" height="100%">
                                   <PieChart>
                                     <Pie
@@ -1077,8 +1112,8 @@ export function CampusManageDashboard() {
                                       }
                                       dataKey="count"
                                       nameKey="tag"
-                                      innerRadius={55}
-                                      outerRadius={75}
+                                      innerRadius={65}
+                                      outerRadius={85}
                                       paddingAngle={4}
                                       stroke="transparent"
                                       className="outline-none"
@@ -1138,8 +1173,8 @@ export function CampusManageDashboard() {
                                 </div>
                               </div>
 
-                              {/* Custom Legend */}
-                              <div className="flex flex-1 flex-col justify-center gap-3.5 sm:pl-8 w-full">
+                              {/* Custom Legend - Scrollable if too many items */}
+                              <div className="flex w-full flex-col gap-3 max-h-[140px] overflow-y-auto no-scrollbar py-2 mt-2">
                                 {distribution.map((entry, index) => {
                                   const totalDist = distribution.reduce(
                                     (acc, curr) => acc + curr.count,
@@ -1152,9 +1187,9 @@ export function CampusManageDashboard() {
                                   return (
                                     <div
                                       key={entry.tag}
-                                      className="group/item flex flex-col gap-0.5"
+                                      className="group/item flex items-center justify-between w-full px-4 sm:px-6"
                                     >
-                                      <div className="flex items-center gap-2">
+                                      <div className="flex items-center gap-3">
                                         <div
                                           className="h-2.5 w-2.5 shrink-0 rounded-full transition-transform group-hover/item:scale-125"
                                           style={{
@@ -1164,20 +1199,22 @@ export function CampusManageDashboard() {
                                               ],
                                           }}
                                         />
-                                        <span className="max-w-[100px] truncate text-xs font-bold tracking-tight text-foreground/80">
-                                          {entry.tag}
+                                        <span className="truncate text-xs font-black tracking-tight text-foreground/80 lowercase">
+                                          #{entry.tag}
                                         </span>
                                       </div>
-                                      <span className="ml-4.5 text-[10px] font-bold text-muted-foreground transition-colors group-hover/item:text-primary/70">
+                                      <span className="text-[10px] font-bold text-muted-foreground transition-colors group-hover/item:text-primary/70">
                                         {percentage}% of total
                                       </span>
                                     </div>
                                   );
                                 })}
                                 {distribution.length === 0 && (
-                                  <p className="text-[11px] font-medium italic text-muted-foreground">
-                                    No tags recorded
-                                  </p>
+                                  <div className="flex flex-col items-center justify-center py-4 text-center">
+                                    <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/40">
+                                      No Data recorded
+                                    </p>
+                                  </div>
                                 )}
                               </div>
                             </div>
@@ -1426,49 +1463,23 @@ export function CampusManageDashboard() {
                         </p>
                       </CardHeader>
                       <CardContent>
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                          <div className="group relative flex-1">
-                            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
-                            <Input
-                              value={newMuid}
-                              onChange={(e) => setNewMuid(e.target.value)}
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                          <div className="flex-1 min-w-0">
+                            <MuidSearchInput
+                              value={newMuids}
+                              onChange={setNewMuids}
                               placeholder="Enter MUID (e.g. john@mulearn)"
-                              className="h-11 rounded-xl border-border/60 pl-10 pr-12 shadow-sm transition-all focus-visible:ring-primary/20"
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter") handleAddExecom();
-                              }}
                             />
-                            {/* Instant Verification Indicator */}
-                            {newMuid.includes("@") && (
-                              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-                                {isVerifyingUser ? (
-                                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground/50" />
-                                ) : verifiedUser?.name ? (
-                                  <div className="flex items-center gap-1.5 animate-in zoom-in-90 fade-in">
-                                    <div className="h-7 w-7 overflow-hidden rounded-lg shadow-sm border border-border/40">
-                                      {verifiedUser.profilePic ? (
-                                        <Image
-                                          src={verifiedUser.profilePic}
-                                          alt=""
-                                          width={28}
-                                          height={28}
-                                          className="h-full w-full object-cover"
-                                        />
-                                      ) : (
-                                        <div className="flex h-full w-full items-center justify-center bg-primary/5">
-                                          <User className="h-3.5 w-3.5 text-primary/40" />
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-                                ) : null}
-                              </div>
+                            {verifiedUser?.name && (
+                              <p className="mt-2.5 pl-3 text-[10px] font-black uppercase tracking-widest text-primary animate-in fade-in slide-in-from-left-1">
+                                Identified: {verifiedUser.name}
+                              </p>
                             )}
                           </div>
                           <Button
                             onClick={handleAddExecom}
-                            disabled={isAdding || !newMuid.trim()}
-                            className="h-11 rounded-xl px-6 font-bold shadow-lg shadow-primary/10 transition-all hover:shadow-primary/20 active:scale-[0.98]"
+                            disabled={isAdding || newMuids.length === 0}
+                            className="h-11 rounded-2xl px-8 font-black shadow-lg shadow-primary/20 transition-all hover:shadow-primary/30 active:scale-[0.98] bg-primary hover:bg-primary/90 shrink-0"
                           >
                             {isAdding ? (
                               <Loader2 className="h-4 w-4 animate-spin" />
@@ -1478,11 +1489,6 @@ export function CampusManageDashboard() {
                             <span className="ml-2">Add Member</span>
                           </Button>
                         </div>
-                        {verifiedUser?.name && (
-                          <p className="mt-2 pl-3 text-[10px] font-bold uppercase tracking-widest text-primary animate-in fade-in slide-in-from-left-1">
-                            Found: {verifiedUser.name}
-                          </p>
-                        )}
                       </CardContent>
                     </Card>
 
@@ -1643,73 +1649,70 @@ export function CampusManageDashboard() {
 
               {/* Right Column: Social Presence Sidebar (25%) */}
               <div className="w-full lg:w-1/4">
-                <Card className="h-full border-border/60 shadow-sm transition-shadow hover:shadow-md/20">
-                  <CardHeader className="pb-4">
-                    <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                <Card className="border-border/60 shadow-sm transition-shadow hover:shadow-md/20 overflow-hidden">
+                  <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border/40">
+                    <CardTitle className="text-[11px] font-black uppercase tracking-widest text-foreground/70">
                       Social Presence
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="flex flex-col gap-3 p-4 pt-0">
-                    {/* Active List */}
-                    <div className="flex flex-col gap-2">
+                  <CardContent className="p-4">
+                    {/* View Mode Grid / Edit Mode List */}
+                    <div
+                      className={cn(
+                        "flex gap-3",
+                        editingPlatform ? "flex-col" : "flex-wrap",
+                      )}
+                    >
                       {SOCIAL_PLATFORMS.map((platform) => {
                         const linkData = socialLinks?.[platform.id] as
                           | SocialLink
                           | undefined;
 
-                        // Show row if it has data OR if we are currently editing it
-                        if (!linkData && editingPlatform !== platform.id)
-                          return null;
-
                         const isEditing = editingPlatform === platform.id;
+
+                        // Only show in view mode if it has data
+                        if (!linkData && !isEditing) return null;
 
                         return (
                           <div
                             key={platform.id}
-                            className="group flex items-center gap-3 rounded-xl border border-transparent p-1.5 transition-all hover:border-border/60 hover:bg-muted/30"
+                            className={cn(
+                              "group transition-all",
+                              isEditing
+                                ? "flex flex-col gap-3 w-full animate-in fade-in slide-in-from-top-2"
+                                : "relative",
+                            )}
                           >
-                            <div
-                              className={cn(
-                                "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg shadow-sm transition-transform group-hover:scale-105",
-                                platform.bg,
-                                platform.color,
-                              )}
-                            >
-                              <platform.icon className="h-4.5 w-4.5" />
-                            </div>
-
                             {isEditing ? (
-                              <div className="flex flex-1 items-center gap-1.5 animate-in fade-in slide-in-from-right-2">
-                                <Input
-                                  value={socialValue}
-                                  onChange={(e) =>
-                                    setSocialValue(e.target.value)
-                                  }
-                                  placeholder={`Enter ${platform.label} URL...`}
-                                  className="h-8 text-[11px] font-medium"
-                                  autoFocus
-                                  onKeyDown={(e) => {
-                                    if (e.key === "Enter" && socialValue) {
-                                      upsertSocial(
-                                        {
-                                          platform: platform.id,
-                                          url: socialValue,
-                                        },
-                                        {
-                                          onSuccess: () =>
-                                            setEditingPlatform(null),
-                                        },
-                                      );
+                              <div className="flex items-center gap-4 p-3 rounded-2xl bg-muted/30 border border-primary/10 shadow-sm shadow-primary/5">
+                                <div
+                                  className={cn(
+                                    "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
+                                    platform.bg,
+                                    platform.color,
+                                  )}
+                                >
+                                  <platform.icon className="h-5 w-5" />
+                                </div>
+                                <div className="flex flex-1 flex-col gap-1.5 min-w-0">
+                                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-1">
+                                    {platform.label}
+                                  </span>
+                                  <Input
+                                    value={socialValue}
+                                    onChange={(e) =>
+                                      setSocialValue(e.target.value)
                                     }
-                                    if (e.key === "Escape")
-                                      setEditingPlatform(null);
-                                  }}
-                                />
-                                <div className="flex shrink-0 items-center gap-0.5">
+                                    placeholder="Enter profile URL..."
+                                    className="h-8 border-none bg-transparent p-1 text-sm font-medium shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 border-b border-border/80 rounded-none w-full"
+                                    autoFocus
+                                  />
+                                </div>
+                                <div className="flex shrink-0 items-center gap-1">
                                   <Button
                                     size="icon"
                                     variant="ghost"
-                                    className="h-7 w-7 text-green-600 hover:bg-green-50"
+                                    className="h-8 w-8 rounded-full bg-green-500/10 text-green-600 hover:bg-green-500/20"
                                     disabled={isUpsertingSocial || !socialValue}
                                     onClick={() => {
                                       upsertSocial(
@@ -1725,67 +1728,72 @@ export function CampusManageDashboard() {
                                     }}
                                   >
                                     {isUpsertingSocial ? (
-                                      <Loader2 className="h-3 w-3 animate-spin" />
+                                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
                                     ) : (
-                                      <Plus className="h-3.5 w-3.5" />
+                                      <Plus className="h-4.5 w-4.5" />
                                     )}
                                   </Button>
                                   <Button
                                     size="icon"
                                     variant="ghost"
-                                    className="h-7 w-7 text-muted-foreground hover:bg-muted"
+                                    className="h-8 w-8 rounded-full bg-muted text-muted-foreground hover:bg-muted/80"
                                     onClick={() => setEditingPlatform(null)}
                                   >
-                                    <X className="h-3.5 w-3.5" />
+                                    <X className="h-4 w-4" />
                                   </Button>
                                 </div>
                               </div>
                             ) : (
-                              <>
-                                <div className="flex flex-1 flex-col overflow-hidden">
-                                  <span className="text-[11px] font-black uppercase tracking-tight text-foreground/80">
+                              /* Standard View Mode Pattern (Responsive) */
+                              <div className="relative group/item flex items-center gap-3 w-full lg:w-auto">
+                                <a
+                                  href={linkData?.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className={cn(
+                                    "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl shadow-sm transition-all duration-300 hover:scale-110 hover:-translate-y-1 hover:shadow-lg",
+                                    platform.bg,
+                                    platform.color,
+                                    "hover:shadow-[0_8px_20px_rgba(var(--background),0.3)]",
+                                  )}
+                                  title={platform.label}
+                                >
+                                  <platform.icon className="h-5 w-5" />
+                                </a>
+
+                                {/* Label: Only visible on WEB or if row layout forced */}
+                                <div className="hidden lg:flex flex-col min-w-0">
+                                  <span className="text-[10px] font-black uppercase tracking-widest text-foreground/80">
                                     {platform.label}
                                   </span>
-                                  <a
-                                    href={linkData?.url}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="truncate text-[10px] font-medium text-muted-foreground transition-colors hover:text-primary hover:underline"
-                                  >
-                                    {linkData?.url}
-                                  </a>
+                                  <span className="truncate text-[9px] font-medium text-muted-foreground/60">
+                                    {linkData?.url.replace(/^https?:\/\//, "")}
+                                  </span>
                                 </div>
-                                <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-all duration-200 group-focus-within:opacity-100 group-hover:translate-x-0 group-hover:opacity-100">
-                                  <Button
-                                    size="icon"
-                                    variant="ghost"
-                                    className="h-7 w-7 hover:bg-muted"
+
+                                {/* Actions: Always visible on mobile, hover on Desktop */}
+                                <div className="absolute -top-1.5 -right-1.5 flex items-center gap-0.5 transition-all duration-200 lg:opacity-0 lg:group-hover/item:opacity-100 lg:scale-75 lg:group-hover/item:scale-100">
+                                  <button
+                                    type="button"
                                     onClick={() => {
                                       setEditingPlatform(platform.id);
                                       setSocialValue(linkData?.url || "");
                                     }}
-                                    title={`Edit ${platform.label}`}
+                                    className="flex h-5 w-5 items-center justify-center rounded-full bg-background border border-border shadow-sm text-muted-foreground hover:text-primary transition-colors"
                                   >
-                                    <Pencil className="h-3 w-3" />
-                                  </Button>
-                                  <Button
-                                    size="icon"
-                                    variant="ghost"
-                                    className="h-7 w-7 text-destructive hover:bg-destructive/10"
-                                    disabled={isDeletingSocial}
+                                    <Pencil className="h-2.5 w-2.5" />
+                                  </button>
+                                  <button
+                                    type="button"
                                     onClick={() =>
                                       linkData && deleteSocial(linkData.id)
                                     }
-                                    title={`Remove ${platform.label}`}
+                                    className="flex h-5 w-5 items-center justify-center rounded-full bg-background border border-border shadow-sm text-muted-foreground hover:text-destructive transition-colors"
                                   >
-                                    {isDeletingSocial ? (
-                                      <Loader2 className="h-3 w-3 animate-spin" />
-                                    ) : (
-                                      <Trash2 className="h-3 w-3" />
-                                    )}
-                                  </Button>
+                                    <Trash2 className="h-2.5 w-2.5" />
+                                  </button>
                                 </div>
-                              </>
+                              </div>
                             )}
                           </div>
                         );
@@ -1796,68 +1804,76 @@ export function CampusManageDashboard() {
                     {(!socialLinks?.items || socialLinks.items.length === 0) &&
                       !editingPlatform &&
                       !isAddingNewSocial && (
-                        <div className="flex flex-col items-center justify-center py-8 text-center animate-in fade-in zoom-in-95">
-                          <div className="mb-4 rounded-full bg-muted/50 p-4 ring-8 ring-muted/20">
-                            <PlusCircle className="h-7 w-7 text-muted-foreground/30" />
+                        <div className="flex flex-col items-center justify-center py-6 text-center animate-in fade-in zoom-in-95">
+                          <div className="mb-3 rounded-full bg-muted/60 p-3 ring-4 ring-muted/20">
+                            <PlusCircle className="h-6 w-6 text-muted-foreground/30" />
                           </div>
-                          <h4 className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/60">
-                            Connect Social Presence
-                          </h4>
-                          <p className="mt-1 text-[10px] font-medium text-muted-foreground/40">
-                            Display your official links to the community
+                          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">
+                            No Social Links
                           </p>
                         </div>
                       )}
 
                     {/* Add Workflow */}
-                    {isAddingNewSocial ? (
-                      <div className="flex flex-col gap-2 rounded-xl border border-dashed border-border/60 bg-muted/10 p-2 animate-in fade-in slide-in-from-bottom-2">
-                        <Select
-                          onValueChange={(val) => {
-                            setEditingPlatform(val);
-                            setSocialValue("");
-                            setIsAddingNewSocial(false);
-                          }}
-                        >
-                          <SelectTrigger className="h-9 rounded-lg text-xs font-black uppercase tracking-tight">
-                            <SelectValue placeholder="PLATFORM" />
-                          </SelectTrigger>
-                          <SelectContent className="rounded-xl">
-                            {SOCIAL_PLATFORMS.filter(
-                              (p) => !socialLinks?.[p.id as keyof SocialLinks],
-                            ).map((p) => (
-                              <SelectItem
-                                key={p.id}
-                                value={p.id}
-                                className="text-xs font-bold uppercase tracking-tight"
-                              >
-                                <div className="flex items-center gap-2">
-                                  <p.icon className={cn("h-3 w-3", p.color)} />
-                                  {p.label}
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                    <div className="mt-4 pt-3 border-t border-dashed border-border/60">
+                      {isAddingNewSocial ? (
+                        <div className="flex flex-col gap-2 rounded-2xl border border-dashed border-primary/20 bg-primary/[0.01] p-3 animate-in fade-in slide-in-from-bottom-2">
+                          <Select
+                            onValueChange={(val) => {
+                              setEditingPlatform(val);
+                              setSocialValue("");
+                              setIsAddingNewSocial(false);
+                            }}
+                          >
+                            <SelectTrigger className="h-9 border-none bg-background shadow-sm rounded-xl text-xs font-black uppercase tracking-widest ring-1 ring-border/60">
+                              <SelectValue placeholder="SELECT PLATFORM" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-2xl border-border/60 shadow-2xl">
+                              {SOCIAL_PLATFORMS.filter(
+                                (p) =>
+                                  !socialLinks?.[p.id as keyof SocialLinks],
+                              ).map((p) => (
+                                <SelectItem
+                                  key={p.id}
+                                  value={p.id}
+                                  className="text-[10px] font-black uppercase tracking-widest py-2.5 focus:bg-primary/5 focus:text-primary transition-colors"
+                                >
+                                  <div className="flex items-center gap-2.5">
+                                    <div
+                                      className={cn(
+                                        "flex h-6 w-6 items-center justify-center rounded-lg shadow-sm",
+                                        p.bg,
+                                        p.color,
+                                      )}
+                                    >
+                                      <p.icon className="h-3 w-3" />
+                                    </div>
+                                    {p.label}
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 hover:text-foreground transition-colors"
+                            onClick={() => setIsAddingNewSocial(false)}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      ) : (
                         <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 hover:text-foreground"
-                          onClick={() => setIsAddingNewSocial(false)}
+                          variant="outline"
+                          className="h-10 w-full gap-2.5 rounded-2xl border-dashed border-border/80 text-[10px] font-black uppercase tracking-widest transition-all hover:border-primary/40 hover:bg-primary/5 hover:text-primary shadow-sm hover:translate-y-[-1px] group"
+                          onClick={() => setIsAddingNewSocial(true)}
                         >
-                          Cancel
+                          <PlusCircle className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                          Add Social Link
                         </Button>
-                      </div>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        className="mt-2 h-10 w-full gap-2 rounded-xl border-dashed border-border/60 text-[11px] font-black uppercase tracking-widest transition-all hover:border-primary/40 hover:bg-primary/5 hover:text-primary active:scale-[0.98]"
-                        onClick={() => setIsAddingNewSocial(true)}
-                      >
-                        <PlusCircle className="h-4 w-4" />
-                        Add Social Link
-                      </Button>
-                    )}
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               </div>

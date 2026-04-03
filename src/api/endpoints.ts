@@ -218,7 +218,7 @@ export const endpoints = {
     execom: "/api/v1/dashboard/campus/execom/",
     /** DELETE - Remove an Execom role from a member by role link ID */
     execomDelete: (memberId: string) =>
-      `/api/v1/dashboard/campus/execom/${memberId}/`,
+      `/api/dashboard/campus/execom/${memberId}/`,
     /** POST - Transfer the Campus Lead role to another user by MUID */
     transferLeadRole: "/api/v1/dashboard/campus/transfer-lead-role/",
     /** POST - Transfer the Lead Enabler role to another user */

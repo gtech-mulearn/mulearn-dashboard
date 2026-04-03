@@ -160,14 +160,6 @@ export const NAV_ITEMS: readonly NavItem[] = [
 
   // ── Management Section (role-gated) ───────────────────────
   {
-    id: "campus-manage",
-    title: "Campus",
-    icon: LayoutDashboard,
-    href: "/dashboard/campus/manage",
-    section: "management",
-    roles: CAMPUS_MANAGEMENT_ROLES,
-  },
-  {
     id: "management",
     title: "Management",
     icon: Shield,
@@ -178,6 +170,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
       ...ZONAL_ROLES,
       ...DISTRICT_ROLES,
       ...IG_ROLES,
+      ...CAMPUS_MANAGEMENT_ROLES,
     ],
     children: [
       {
@@ -205,6 +198,14 @@ export const NAV_ITEMS: readonly NavItem[] = [
         section: "management",
         roles: DISTRICT_ROLES,
         isUnderConstruction: true,
+      },
+      {
+        id: "campus-manage",
+        title: "Campus",
+        icon: LayoutDashboard,
+        href: "/dashboard/campus/manage",
+        section: "management",
+        roles: CAMPUS_MANAGEMENT_ROLES,
       },
       {
         id: "interest-groups-mgmt",
