@@ -1,9 +1,11 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Controller, type Resolver, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { apiClient, endpoints } from "@/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -124,6 +126,18 @@ export default function EventModal({
   const createEvent = useCreateEvent();
   const patchEvent = usePatchEvent(initialData?.id ?? "");
   const organizerOptionsQuery = useOrganizerOptions();
+  const { data: userInfo } = useQuery({
+    queryKey: ["user", "info", "events-modal"],
+    queryFn: () => apiClient.get<Record<string, unknown>>(endpoints.user.info),
+  });
+
+  const isAdminUser = Boolean(
+    (userInfo?.is_staff as boolean | undefined) ||
+      (Array.isArray(userInfo?.roles) &&
+        (userInfo.roles as string[]).some((role) =>
+          role.toLowerCase().includes("admin"),
+        )),
+  );
 
   const organizerOptions = useMemo<SelectedOrganiser[]>(() => {
     const raw = organizerOptionsQuery.data as OrganizerOptionsLike | undefined;
@@ -173,6 +187,10 @@ export default function EventModal({
       all.push({ label: "Admin", type: "admin", id: "" });
     }
 
+    if (all.length === 0 && isAdminUser) {
+      all.push({ label: "Admin", type: "admin", id: "" });
+    }
+
     if (
       all.length === 0 &&
       (Object.keys(raw).length > 0 || Object.keys(options).length > 0)
@@ -184,7 +202,7 @@ export default function EventModal({
     }
 
     return all;
-  }, [organizerOptionsQuery.data]);
+  }, [organizerOptionsQuery.data, isAdminUser]);
 
   const [selectedOrganiserId, setSelectedOrganiserId] = useState<string>("");
   const [selectedCoOwners, setSelectedCoOwners] = useState<EventCoOwnerInput[]>(
@@ -681,6 +699,19 @@ export default function EventModal({
                 onChange={setCoverImageFile}
                 currentUrl={watch("cover_image") ?? undefined}
               />
+              <div className="space-y-1">
+                <label
+                  htmlFor="cover_image"
+                  className="text-xs text-muted-foreground"
+                >
+                  Or paste image URL
+                </label>
+                <Input
+                  id="cover_image"
+                  placeholder="https://example.com/cover.jpg"
+                  {...register("cover_image")}
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <p className="text-sm font-medium text-foreground">
@@ -694,6 +725,19 @@ export default function EventModal({
                 onChange={setBannerImageFile}
                 currentUrl={watch("banner_image") ?? undefined}
               />
+              <div className="space-y-1">
+                <label
+                  htmlFor="banner_image"
+                  className="text-xs text-muted-foreground"
+                >
+                  Or paste image URL
+                </label>
+                <Input
+                  id="banner_image"
+                  placeholder="https://example.com/banner.jpg"
+                  {...register("banner_image")}
+                />
+              </div>
             </div>
           </section>
 

@@ -62,6 +62,7 @@ export function ManageEventDetailView({
         )),
   );
   const canAdmin = canApprove;
+  const canSelfPublish = canApprove || event?.organizer.type === "company";
 
   const deleteEvent = useDeleteEvent(eventId);
   const adminFeature = useAdminFeature(eventId);
@@ -87,7 +88,7 @@ export function ManageEventDetailView({
   }
 
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-6 px-1">
+    <div className="mx-auto w-full max-w-7xl space-y-6 px-1 pb-24 sm:pb-0">
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-card p-3 shadow-sm">
         <Button
           variant="ghost"
@@ -126,7 +127,7 @@ export function ManageEventDetailView({
           </SheetTrigger>
           <SheetContent
             side="right"
-            className="w-full max-w-md overflow-y-auto"
+            className="w-full max-w-full overflow-y-auto sm:max-w-md"
           >
             <SheetHeader>
               <SheetTitle>Event Management</SheetTitle>
@@ -145,7 +146,11 @@ export function ManageEventDetailView({
                 </TabsList>
 
                 <TabsContent value="publishing" className="space-y-3 pt-3">
-                  <PublishFlowPanel event={event} canApprove={canApprove} />
+                  <PublishFlowPanel
+                    event={event}
+                    canApprove={canApprove}
+                    canSelfPublish={canSelfPublish}
+                  />
                   {canAdmin ? (
                     <Card>
                       <CardHeader>
@@ -183,7 +188,46 @@ export function ManageEventDetailView({
                       <CardTitle>Edit History</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="overflow-x-auto">
+                      <div className="space-y-2 sm:hidden">
+                        {sortedHistory.map((entry) => (
+                          <div
+                            key={entry.edited_at + entry.edited_by.id}
+                            className="rounded-lg border p-3"
+                          >
+                            <p className="font-medium">
+                              {entry.edited_by.full_name}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {entry.edited_by.muid}
+                            </p>
+                            <div className="mt-2 flex flex-wrap gap-1">
+                              {entry.changed_fields.map((field) => (
+                                <span
+                                  key={field}
+                                  className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono"
+                                >
+                                  {field.replace(/_/g, " ")}
+                                </span>
+                              ))}
+                            </div>
+                            <p className="mt-2 text-xs text-muted-foreground">
+                              {new Date(entry.edited_at).toLocaleString(
+                                undefined,
+                                {
+                                  dateStyle: "medium",
+                                  timeStyle: "short",
+                                },
+                              )}
+                            </p>
+                          </div>
+                        ))}
+                        {sortedHistory.length === 0 ? (
+                          <p className="py-4 text-center text-sm text-muted-foreground">
+                            No edit history yet
+                          </p>
+                        ) : null}
+                      </div>
+                      <div className="hidden overflow-x-auto sm:block">
                         <table className="w-full border-collapse text-left text-sm">
                           <thead>
                             <tr className="border-b bg-muted/50">
@@ -224,7 +268,7 @@ export function ManageEventDetailView({
                                     ))}
                                   </div>
                                 </td>
-                                <td className="whitespace-nowrap px-3 py-2 text-muted-foreground">
+                                <td className="px-3 py-2 text-muted-foreground">
                                   {new Date(entry.edited_at).toLocaleString(
                                     undefined,
                                     {
@@ -279,7 +323,11 @@ export function ManageEventDetailView({
             </TabsList>
 
             <TabsContent value="publishing" className="space-y-3 pt-3">
-              <PublishFlowPanel event={event} canApprove={canApprove} />
+              <PublishFlowPanel
+                event={event}
+                canApprove={canApprove}
+                canSelfPublish={canSelfPublish}
+              />
               {canAdmin ? (
                 <Card>
                   <CardHeader>
@@ -358,7 +406,7 @@ export function ManageEventDetailView({
                                 ))}
                               </div>
                             </td>
-                            <td className="whitespace-nowrap px-3 py-2 text-muted-foreground">
+                            <td className="px-3 py-2 text-muted-foreground">
                               {new Date(entry.edited_at).toLocaleString(
                                 undefined,
                                 {
@@ -390,7 +438,7 @@ export function ManageEventDetailView({
       </div>
 
       <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 p-3 backdrop-blur sm:hidden">
-        <div className="mx-auto grid max-w-7xl grid-cols-3 gap-2">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-2">
           <Button
             variant="outline"
             onClick={() =>

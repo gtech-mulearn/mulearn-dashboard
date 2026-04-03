@@ -53,14 +53,28 @@ export function EntitySearchSelect({
   const { data, isLoading } = useCollaborationTargets(query, type);
 
   const targets = useMemo(() => {
-    if (Array.isArray(data)) return data;
-    if (data && typeof data === "object" && "data" in data) {
-      const maybeData = (data as { data?: unknown }).data;
-      if (Array.isArray(maybeData)) {
-        return maybeData as CollaborationTarget[];
+    if (Array.isArray(data)) return data as CollaborationTarget[];
+    if (data && typeof data === "object") {
+      const shaped = data as {
+        data?: unknown;
+        response?: unknown;
+        results?: unknown;
+      };
+      if (Array.isArray(shaped.data)) {
+        return shaped.data as CollaborationTarget[];
+      }
+      if (Array.isArray(shaped.results)) {
+        return shaped.results as CollaborationTarget[];
+      }
+      if (
+        shaped.response &&
+        typeof shaped.response === "object" &&
+        Array.isArray((shaped.response as { data?: unknown }).data)
+      ) {
+        return (shaped.response as { data: CollaborationTarget[] }).data;
       }
     }
-    return [] as CollaborationTarget[];
+    return [];
   }, [data]);
 
   const selectedId = value ?? "";

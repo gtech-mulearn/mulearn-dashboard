@@ -13,7 +13,6 @@ import { ApiError } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Switch } from "@/components/ui/switch";
 import { eventsApi } from "../api";
 import { eventKeys } from "../hooks/query-keys";
 import type { EventListItem, EventStatus } from "../types";
@@ -38,7 +37,6 @@ export default function ManageEventsDashboard() {
   const [statusFilter, setStatusFilter] = useState<EventStatus | "all">("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<EventListItem | null>(null);
-  const [adminView, setAdminView] = useState(false);
 
   const { data: userInfo } = useQuery({
     queryKey: ["user", "info", "events-manage"],
@@ -53,7 +51,7 @@ export default function ManageEventsDashboard() {
         )),
   );
 
-  const useAdminView = canAdminView && adminView;
+  const useAdminView = canAdminView;
 
   const listParams = {
     page,
@@ -175,7 +173,7 @@ export default function ManageEventsDashboard() {
   const is403 = error instanceof ApiError && error.status === 403;
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-4 sm:p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Manage Events</h1>
       </div>
@@ -242,19 +240,6 @@ export default function ManageEventsDashboard() {
             setPage(1);
           }}
         />
-
-        {canAdminView ? (
-          <div className="flex items-center gap-2 rounded-md border px-3 py-2">
-            <span className="text-sm font-medium">Admin View</span>
-            <Switch
-              checked={adminView}
-              onCheckedChange={(checked) => {
-                setAdminView(checked);
-                setPage(1);
-              }}
-            />
-          </div>
-        ) : null}
 
         <Button
           onClick={() => {

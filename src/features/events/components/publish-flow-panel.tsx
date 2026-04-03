@@ -18,6 +18,7 @@ import { EventStatusBadge } from "./event-status-badge";
 interface PublishFlowPanelProps {
   event: EventDetail | EventDetailManage;
   canApprove?: boolean;
+  canSelfPublish?: boolean;
 }
 
 function statusDescription(status: EventDetail["status"]): string {
@@ -35,6 +36,7 @@ function statusDescription(status: EventDetail["status"]): string {
 export function PublishFlowPanel({
   event,
   canApprove = false,
+  canSelfPublish = false,
 }: PublishFlowPanelProps) {
   const [approveNote, setApproveNote] = useState("");
   const [showApproveInput, setShowApproveInput] = useState(false);
@@ -57,20 +59,31 @@ export function PublishFlowPanel({
       <p className="text-sm text-gray-600">{statusDescription(event.status)}</p>
 
       {event.status === "draft" ? (
-        <Button onClick={() => publish.mutate()} disabled={publish.isPending}>
-          Submit for review
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={() => publish.mutate()} disabled={publish.isPending}>
+            {canSelfPublish ? "Publish now" : "Submit for review"}
+          </Button>
+          {canApprove && !canSelfPublish ? (
+            <Button
+              variant="outline"
+              onClick={() => approve.mutate(undefined)}
+              disabled={approve.isPending}
+            >
+              Admin publish
+            </Button>
+          ) : null}
+        </div>
       ) : null}
 
       {isPendingStatus && canApprove ? (
         <div className="space-y-2">
           {showApproveInput ? (
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
               <Input
                 value={approveNote}
                 onChange={(e) => setApproveNote(e.target.value)}
                 placeholder="Approval note (optional)"
-                className="max-w-sm"
+                className="w-full sm:max-w-sm"
               />
               <Button
                 onClick={() =>

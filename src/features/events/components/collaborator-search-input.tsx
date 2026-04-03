@@ -13,6 +13,56 @@ interface CollaboratorSearchInputProps {
   onInvited?: () => void;
 }
 
+function normalizeTargets(data: unknown): CollaborationTarget[] {
+  const source = (() => {
+    if (Array.isArray(data)) return data;
+    if (data && typeof data === "object") {
+      const shaped = data as {
+        data?: unknown;
+        response?: unknown;
+        results?: unknown;
+      };
+      if (Array.isArray(shaped.data)) return shaped.data;
+      if (Array.isArray(shaped.results)) return shaped.results;
+      if (
+        shaped.response &&
+        typeof shaped.response === "object" &&
+        Array.isArray((shaped.response as { data?: unknown }).data)
+      ) {
+        return (shaped.response as { data: unknown[] }).data;
+      }
+    }
+    return [] as unknown[];
+  })();
+
+  return source
+    .map((item): CollaborationTarget | null => {
+      if (!item || typeof item !== "object") return null;
+      const value = item as Record<string, unknown>;
+      const id =
+        (value.id as string | undefined) ??
+        (value.ig_id as string | undefined) ??
+        (value.org_id as string | undefined) ??
+        (value.company_id as string | undefined);
+      const collaboratorType =
+        (value.collaborator_type as CollaboratorType | undefined) ?? "ig";
+      const name =
+        (value.name as string | undefined) ??
+        (value.ig_name as string | undefined) ??
+        (value.org_name as string | undefined) ??
+        (value.company_name as string | undefined);
+
+      if (!id || !name) return null;
+      return {
+        id,
+        name,
+        collaborator_type: collaboratorType,
+        logo: (value.logo as string | null | undefined) ?? null,
+      };
+    })
+    .filter((item): item is CollaborationTarget => Boolean(item));
+}
+
 const typeOptions: Array<{ label: string; value: CollaboratorType | "all" }> = [
   { label: "All", value: "all" },
   { label: "IG", value: "ig" },
@@ -49,14 +99,7 @@ export function CollaboratorSearchInput({
   const inviteCollaborator = useInviteCollaborator(eventId);
 
   const targets = useMemo(() => {
-    if (Array.isArray(data)) return data;
-    if (data && typeof data === "object" && "data" in data) {
-      const maybeData = (data as { data?: unknown }).data;
-      if (Array.isArray(maybeData)) {
-        return maybeData as CollaborationTarget[];
-      }
-    }
-    return [];
+    return normalizeTargets(data);
   }, [data]);
 
   return (

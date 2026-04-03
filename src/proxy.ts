@@ -113,7 +113,7 @@ const ROLE_PROTECTED_ROUTES: Record<string, RouteConfig> = {
 
   // Events Management
   "/dashboard/manage-events": {
-    roles: [ROLE_VALUES.ADMIN, ROLE_VALUES.FELLOW],
+    roles: [ROLE_VALUES.ADMIN, ROLE_VALUES.FELLOW, ROLE_VALUES.ASSOCIATE],
   },
 };
 
