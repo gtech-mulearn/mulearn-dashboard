@@ -277,12 +277,13 @@ export const campusManageApi = {
     }
     if (filters.search) params.set("search", filters.search);
 
+    if (filters.ig) params.set("ig_id", filters.ig);
+    if (filters.cluster) params.set("cluster", filters.cluster);
+
     let endpoint: string;
 
     if (filters.orgId) {
       // Public org-scoped leaderboard (ranked by karma)
-      if (filters.ig) params.set("ig_id", filters.ig);
-      if (filters.cluster) params.set("cluster", filters.cluster);
       const suffix = params.toString();
       endpoint = suffix
         ? `${endpoints.campusManage.leaderboard(filters.orgId)}?${suffix}`

@@ -27,21 +27,21 @@ export function Podium({ entries }: PodiumProps) {
   };
 
   return (
-    <div className="relative mb-8 md:mb-20 md:px-4">
-      <div className="flex items-end justify-center gap-3 md:gap-16">
+    <div className="relative mb-8 md:mb-20 px-1 md:px-4">
+      <div className="flex items-end justify-center gap-1.5 sm:gap-4 md:gap-16">
         {podiumOrder.map((entry, idx) => {
           if (!entry) return null;
           const config = getRankConfig(entry.rank);
           return (
             <div
               key={entry.id}
-              className={`flex flex-col items-center transition-all duration-300 hover:translate-y-[-8px] ${
+              className={`flex flex-col items-center transition-all duration-300 hover:-translate-y-2 flex-1 max-w-32 md:max-w-none ${
                 idx === 1 ? "order-2" : idx === 0 ? "order-1" : "order-3"
               }`}
             >
               <div className="mb-2 md:mb-4 relative">
                 <Avatar
-                  className={`w-16 h-16 md:w-24 md:h-24 ${config.bg} ring-4 ring-primary`}
+                  className={`w-14 h-14 sm:w-16 sm:h-16 md:w-24 md:h-24 ${config.bg} ring-2 md:ring-4 ring-primary shadow-lg`}
                 >
                   <AvatarImage
                     src={entry.profile_pic}
@@ -49,29 +49,29 @@ export function Podium({ entries }: PodiumProps) {
                     className="object-cover"
                   />
                   <AvatarFallback
-                    className={`font-black ${config.bg} text-2xl md:text-4xl`}
+                    className={`font-black ${config.bg} text-xl md:text-4xl`}
                   >
                     {entry.name?.charAt(0)?.toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
               </div>
-              <div className="text-center mb-2 md:mb-4 space-y-1 md:space-y-2 w-full max-w-20 md:max-w-36">
-                <p className="font-black text-[10px] md:text-base text-foreground uppercase tracking-tight">
+              <div className="text-center mb-2 md:mb-4 space-y-1 md:space-y-2 w-full px-1">
+                <p className="font-black text-xs md:text-base text-foreground uppercase tracking-tight line-clamp-3 leading-tight min-h-14">
                   {entry.name}
                 </p>
                 <div className="space-y-0.5 md:space-y-1">
-                  <div className="flex items-center justify-between text-[8px] md:text-xs font-black">
-                    <span>KARMA</span>
+                  <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between text-xs font-black gap-0 sm:gap-1">
+                    <span className="opacity-70">KARMA</span>
                     <span>{entry.karma.toLocaleString()}</span>
                   </div>
                 </div>
               </div>
               <Card
-                className={`w-25 md:w-47 ${getPodiumHeight(entry.rank)} ${config.bg} transition-all duration-300 hover:translate-x-[-2px]`}
+                className={`w-full ${getPodiumHeight(entry.rank)} ${config.bg} border-2 border-primary/20 transition-all duration-300 hover:translate-x-[-2px] shadow-md`}
               >
                 <CardContent className="h-full flex flex-col items-center justify-center p-2 md:p-4 relative">
                   <div
-                    className={`text-4xl md:text-7xl font-black leading-none mb-1 md:mb-2`}
+                    className={`text-3xl sm:text-4xl md:text-7xl font-black leading-none mb-1 md:mb-2`}
                   >
                     {entry.rank}
                   </div>
