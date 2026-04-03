@@ -20,6 +20,10 @@ function getInitials(name: string): string {
   return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
 }
 
+function getUserKey(user: MinimalUser): string {
+  return user.id || user.muid;
+}
+
 export function UserSearchInput({
   onSelect,
   placeholder,
@@ -28,11 +32,21 @@ export function UserSearchInput({
   const { data, isLoading } = useUserSearch(query);
 
   const users = useMemo(() => {
-    if (Array.isArray(data)) return data;
+    if (Array.isArray(data)) {
+      return Array.from(
+        new Map(data.map((user) => [getUserKey(user), user] as const)).values(),
+      );
+    }
     if (data && typeof data === "object" && "data" in data) {
       const maybeData = (data as { data?: unknown }).data;
       if (Array.isArray(maybeData)) {
-        return maybeData as MinimalUser[];
+        return Array.from(
+          new Map(
+            (maybeData as MinimalUser[]).map(
+              (user) => [getUserKey(user), user] as const,
+            ),
+          ).values(),
+        );
       }
     }
     return [];
@@ -61,7 +75,7 @@ export function UserSearchInput({
           <div className="max-h-64 space-y-1 overflow-y-auto p-2">
             {users.map((user) => (
               <div
-                key={user.id}
+                key={getUserKey(user)}
                 className="flex items-center justify-between gap-3 rounded-md border p-2"
               >
                 <div className="flex min-w-0 items-center gap-2">
