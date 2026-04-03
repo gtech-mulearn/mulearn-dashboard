@@ -35,14 +35,14 @@ export function JourneyTabs({
   };
 
   return (
-    <div className="flex gap-2 p-1.5 bg-card rounded-full w-fit shadow-lg">
+    <div className="flex gap-1 sm:gap-2 p-1.5 bg-card rounded-full w-fit max-w-full overflow-x-auto shadow-lg no-scrollbar">
       {tabs.map((tab) => (
         <button
           key={tab.id}
           type="button"
           onClick={() => handleTabChange(tab.id)}
           className={cn(
-            "px-7 py-3 rounded-full font-semibold text-base transition-all cursor-pointer",
+            "px-4 sm:px-7 py-2 sm:py-3 rounded-full font-semibold text-sm sm:text-base whitespace-nowrap transition-all cursor-pointer shrink-0",
             activeTab === tab.id
               ? "bg-blue-600 text-white shadow-md"
               : "text-card-foreground hover:bg-muted",

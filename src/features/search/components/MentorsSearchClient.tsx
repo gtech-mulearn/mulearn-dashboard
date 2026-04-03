@@ -32,15 +32,15 @@ export function MentorsSearchClient() {
 
   return (
     <>
-      <div className="mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="flex-1 w-full sm:w-auto">
+      <div className="mb-6 flex flex-col gap-4 items-start">
+        <div className="flex-1 w-full">
           <SearchInput
             value={searchQuery}
             onChange={setSearchQuery}
-            placeholder="Search public profiles by name, skill, or role..."
+            placeholder="Search mentors by name, skill, or role..."
           />
         </div>
-        <div className="shrink-0">
+        <div className="w-full shrink-0">
           <SearchTabsClient tabs={searchTabs} />
         </div>
       </div>

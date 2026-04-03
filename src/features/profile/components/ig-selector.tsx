@@ -61,7 +61,9 @@ export function IGSelector({
 
   // Format level to display as "Level X"
   const formatLevel = (level: { unit: string; count: number }) => {
-    return `${level.unit.charAt(0).toUpperCase() + level.unit.slice(1)} ${level.count}`;
+    const unit = level.unit || "Level";
+    const count = level.count || 1;
+    return `${unit.charAt(0).toUpperCase() + unit.slice(1)} ${count}`;
   };
 
   const handleRemoveIg = (igId: string) => {

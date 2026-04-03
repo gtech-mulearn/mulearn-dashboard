@@ -101,25 +101,27 @@ export const InterestGroupDetailSchema = z.object({
     .nullable()
     .catch(undefined),
 
-  // Array of { name, email }
+  // Array of { name, email, muid }
   leads: z
     .array(
       z.object({
         name: z.string(),
         email: z.string().optional().nullable(),
+        muid: z.string().optional().nullable(),
       }),
     )
     .optional()
     .nullable()
     .catch(undefined),
 
-  // Array of { name, expertise, linkedin }
+  // Array of { name, expertise, linkedin, muid }
   mentors: z
     .array(
       z.object({
         name: z.string(),
         expertise: z.string().optional().nullable(),
         linkedin: z.string().optional().nullable(),
+        muid: z.string().optional().nullable(),
       }),
     )
     .optional()
