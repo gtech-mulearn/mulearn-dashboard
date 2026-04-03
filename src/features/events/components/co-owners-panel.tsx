@@ -21,12 +21,20 @@ export function CoOwnersPanel({ eventId }: CoOwnersPanelProps) {
   const addCoOwner = useAddCoOwner(eventId);
   const removeCoOwner = useRemoveCoOwner(eventId);
 
+  const coOwnersList = Array.isArray(coOwners)
+    ? coOwners
+    : coOwners && typeof coOwners === "object" && "data" in coOwners
+      ? Array.isArray((coOwners as { data?: unknown }).data)
+        ? ((coOwners as { data?: EventCoOwner[] }).data ?? [])
+        : []
+      : [];
+
   return (
     <section className="space-y-3 rounded-lg border p-4">
       <h3 className="font-semibold">Co-Owners</h3>
 
       <div className="space-y-2">
-        {(coOwners ?? []).map((coOwner) => (
+        {coOwnersList.map((coOwner) => (
           <div
             key={coOwner.id}
             className="flex items-center gap-3 rounded border p-2"

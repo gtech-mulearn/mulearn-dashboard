@@ -42,7 +42,17 @@ export function CollaboratorsPanel({
   const rejectMutation = useRejectCollaborator(eventId);
   const removeMutation = useRemoveCollaborator(eventId);
 
-  const visible = (collaborators ?? []).filter((collab) =>
+  const collaboratorsList = Array.isArray(collaborators)
+    ? collaborators
+    : collaborators &&
+        typeof collaborators === "object" &&
+        "data" in collaborators
+      ? Array.isArray((collaborators as { data?: unknown }).data)
+        ? ((collaborators as { data?: EventCollaborator[] }).data ?? [])
+        : []
+      : [];
+
+  const visible = collaboratorsList.filter((collab) =>
     isManageView ? true : collab.invite_status === "accepted",
   );
 

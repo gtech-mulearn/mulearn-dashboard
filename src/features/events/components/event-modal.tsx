@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
@@ -33,6 +34,7 @@ import type {
   OrganizerType,
 } from "../types";
 import { CollaboratorSearchInput } from "./collaborator-search-input";
+import { EntitySearchSelect } from "./entity-search-select";
 import { UserSearchInput } from "./user-search-input";
 import { VenueSection } from "./venue-section";
 
@@ -171,6 +173,16 @@ export default function EventModal({
       all.push({ label: "Admin", type: "admin", id: "" });
     }
 
+    if (
+      all.length === 0 &&
+      (Object.keys(raw).length > 0 || Object.keys(options).length > 0)
+    ) {
+      console.warn("[events] organizer options returned empty", {
+        raw,
+        options,
+      });
+    }
+
     return all;
   }, [organizerOptionsQuery.data]);
 
@@ -178,12 +190,18 @@ export default function EventModal({
   const [selectedCoOwners, setSelectedCoOwners] = useState<EventCoOwnerInput[]>(
     [],
   );
+  const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
+  const [bannerImageFile, setBannerImageFile] = useState<File | null>(null);
+  const [selectedCampusName, setSelectedCampusName] = useState<string>("");
+  const [selectedIgName, setSelectedIgName] = useState<string>("");
+  const [selectedCampusIgName, setSelectedCampusIgName] = useState<string>("");
   const [tagInput, setTagInput] = useState("");
 
   const {
     control,
     register,
     watch,
+    setValue,
     handleSubmit,
     reset,
     setError,
@@ -234,6 +252,15 @@ export default function EventModal({
         role: owner.role,
       })) ?? [],
     );
+    setCoverImageFile(null);
+    setBannerImageFile(null);
+    setSelectedCampusName(d?.target_campus?.name ?? "");
+    setSelectedIgName(d?.target_ig?.name ?? "");
+    setSelectedCampusIgName(
+      d?.target_campus_ig
+        ? `${d.target_campus_ig.ig.name} @ ${d.target_campus_ig.campus.name}`
+        : "",
+    );
   }, [initialData, open, reset]);
 
   useEffect(() => {
@@ -265,8 +292,26 @@ export default function EventModal({
 
   const scope = watch("scope");
 
+  const selectedOrganizer = organizerOptions.find(
+    (option) => `${option.type}:${option.id}` === selectedOrganiserId,
+  );
   const isPending =
     createEvent.isPending || patchEvent.isPending || isSubmitting;
+  const hasOrganizerPermission = organizerOptions.length > 0;
+  const requiresOrganizerSelection = organizerOptions.length > 1;
+  const missingOrganizerSelection = !selectedOrganizer;
+  const disableSaveActions =
+    isPending ||
+    !hasOrganizerPermission ||
+    (requiresOrganizerSelection && missingOrganizerSelection);
+
+  const toBase64 = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
 
   const onSubmit = async (
     values: CreateEventSchema,
@@ -302,9 +347,7 @@ export default function EventModal({
     }
     if (hasDateError) return;
 
-    const selectedOrganiser = organizerOptions.find(
-      (option) => `${option.type}:${option.id}` === selectedOrganiserId,
-    );
+    const selectedOrganiser = selectedOrganizer;
     if (!selectedOrganiser) {
       setError("title", {
         type: "manual",
@@ -313,11 +356,20 @@ export default function EventModal({
       return;
     }
 
+    const coverBase64 = coverImageFile
+      ? await toBase64(coverImageFile)
+      : (values.cover_image ?? null);
+    const bannerBase64 = bannerImageFile
+      ? await toBase64(bannerImageFile)
+      : (values.banner_image ?? null);
+
     const payload: EventWriteBody = {
       ...values,
       start_datetime: start as string,
       end_datetime: end as string,
       registration_deadline: deadline,
+      cover_image: coverBase64,
+      banner_image: bannerBase64,
       organiser_type: selectedOrganiser.type,
       organiser_ig_id:
         selectedOrganiser.type === "global_ig"
@@ -365,19 +417,41 @@ export default function EventModal({
 
   return (
     <Dialog open={open} onOpenChange={(state) => !state && onClose()}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
+      <DialogContent className="max-h-[90vh] w-full overflow-y-auto p-4 sm:max-w-3xl sm:p-6">
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit Event" : "Create Event"}</DialogTitle>
         </DialogHeader>
 
         <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
           <section className="space-y-3 rounded-lg border p-4">
-            <h3 className="font-semibold">Basic Info</h3>
-            <Input placeholder="Title" {...register("title")} />
+            <h3 className="mb-3 text-sm font-semibold text-foreground">
+              Basic Info
+            </h3>
+            <div className="space-y-1">
+              <label
+                htmlFor="title"
+                className="text-sm font-medium text-foreground"
+              >
+                Title <span className="text-red-500">*</span>
+              </label>
+              <Input id="title" placeholder="Title" {...register("title")} />
+            </div>
             {errors.title?.message ? (
               <p className="text-xs text-red-600">{errors.title.message}</p>
             ) : null}
-            <Textarea placeholder="Description" {...register("description")} />
+            <div className="space-y-1">
+              <label
+                htmlFor="description"
+                className="text-sm font-medium text-foreground"
+              >
+                Description <span className="text-red-500">*</span>
+              </label>
+              <Textarea
+                id="description"
+                placeholder="Description"
+                {...register("description")}
+              />
+            </div>
             {errors.description?.message ? (
               <p className="text-xs text-red-600">
                 {errors.description.message}
@@ -386,53 +460,140 @@ export default function EventModal({
           </section>
 
           <section className="space-y-3 rounded-lg border p-4">
-            <h3 className="font-semibold">Type &amp; Scope</h3>
-            <select
-              className="h-10 w-full rounded-md border px-3 text-sm"
-              {...register("event_type")}
-            >
-              <option value="">Select event type</option>
-              <option value="workshop">Workshop</option>
-              <option value="webinar">Webinar</option>
-              <option value="hackathon">Hackathon</option>
-              <option value="meetup">Meetup</option>
-              <option value="competition">Competition</option>
-              <option value="social_gathering">Social Gathering</option>
-              <option value="other">Other</option>
-            </select>
-            <select
-              className="h-10 w-full rounded-md border px-3 text-sm"
-              {...register("scope")}
-            >
-              <option value="global">Global</option>
-              <option value="campus">Campus</option>
-              <option value="ig">IG</option>
-              <option value="campus_ig">Campus IG</option>
-            </select>
+            <h3 className="mb-3 text-sm font-semibold text-foreground">
+              Type &amp; Scope
+            </h3>
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <div className="space-y-1">
+                <label
+                  htmlFor="event_type"
+                  className="text-sm font-medium text-foreground"
+                >
+                  Event type <span className="text-red-500">*</span>
+                </label>
+                <select
+                  id="event_type"
+                  className="h-10 w-full rounded-md border px-3 text-sm"
+                  {...register("event_type")}
+                >
+                  <option value="">Select event type</option>
+                  <option value="workshop">Workshop</option>
+                  <option value="webinar">Webinar</option>
+                  <option value="hackathon">Hackathon</option>
+                  <option value="meetup">Meetup</option>
+                  <option value="competition">Competition</option>
+                  <option value="social_gathering">Social Gathering</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label
+                  htmlFor="scope"
+                  className="text-sm font-medium text-foreground"
+                >
+                  Scope <span className="text-red-500">*</span>
+                </label>
+                <select
+                  id="scope"
+                  className="h-10 w-full rounded-md border px-3 text-sm"
+                  {...register("scope")}
+                >
+                  <option value="global">Global</option>
+                  <option value="campus">Campus</option>
+                  <option value="ig">IG</option>
+                  <option value="campus_ig">Campus IG</option>
+                </select>
+              </div>
+            </div>
 
             {scope === "campus" ? (
-              <Input
-                placeholder="Target campus UUID"
-                {...register("target_campus_id")}
-              />
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-foreground">
+                  Target campus <span className="text-red-500">*</span>
+                </p>
+                <EntitySearchSelect
+                  type="campus"
+                  value={watch("target_campus_id") ?? null}
+                  selectedName={selectedCampusName}
+                  placeholder="Search campus"
+                  onChange={(id, name) => {
+                    setValue("target_campus_id", id || null, {
+                      shouldValidate: true,
+                    });
+                    setSelectedCampusName(name);
+                  }}
+                />
+              </div>
             ) : null}
             {scope === "ig" ? (
-              <Input
-                placeholder="Target IG UUID"
-                {...register("target_ig_id")}
-              />
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-foreground">
+                  Target IG <span className="text-red-500">*</span>
+                </p>
+                <EntitySearchSelect
+                  type="ig"
+                  value={watch("target_ig_id") ?? null}
+                  selectedName={selectedIgName}
+                  placeholder="Search interest group"
+                  onChange={(id, name) => {
+                    setValue("target_ig_id", id || null, {
+                      shouldValidate: true,
+                    });
+                    setSelectedIgName(name);
+                  }}
+                />
+              </div>
             ) : null}
             {scope === "campus_ig" ? (
-              <Input
-                placeholder="Target campus IG UUID"
-                {...register("target_campus_ig_id")}
-              />
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-foreground">
+                  Target campus IG <span className="text-red-500">*</span>
+                </p>
+                <EntitySearchSelect
+                  type="campus_ig"
+                  value={watch("target_campus_ig_id") ?? null}
+                  selectedName={selectedCampusIgName}
+                  placeholder="Search campus IG"
+                  onChange={(id, name) => {
+                    setValue("target_campus_ig_id", id || null, {
+                      shouldValidate: true,
+                    });
+                    setSelectedCampusIgName(name);
+                  }}
+                />
+              </div>
+            ) : null}
+            {errors.target_campus_id?.message ? (
+              <p className="text-xs text-red-600">
+                {errors.target_campus_id.message}
+              </p>
+            ) : null}
+            {errors.target_ig_id?.message ? (
+              <p className="text-xs text-red-600">
+                {errors.target_ig_id.message}
+              </p>
+            ) : null}
+            {errors.target_campus_ig_id?.message ? (
+              <p className="text-xs text-red-600">
+                {errors.target_campus_ig_id.message}
+              </p>
             ) : null}
           </section>
 
-          {organizerOptions.length > 1 ? (
+          {!hasOrganizerPermission ? (
             <section className="space-y-3 rounded-lg border p-4">
-              <h3 className="font-semibold">Create as...</h3>
+              <h3 className="mb-3 text-sm font-semibold text-foreground">
+                Organizer
+              </h3>
+              <p className="text-sm text-destructive">
+                You do not have permission to create events. Contact an admin.
+              </p>
+            </section>
+          ) : organizerOptions.length > 1 ? (
+            <section className="space-y-3 rounded-lg border p-4">
+              <h3 className="mb-3 text-sm font-semibold text-foreground">
+                Create as
+              </h3>
               <select
                 className="h-10 w-full rounded-md border px-3 text-sm"
                 value={selectedOrganiserId}
@@ -449,14 +610,25 @@ export default function EventModal({
                 ))}
               </select>
             </section>
-          ) : null}
+          ) : (
+            <section className="space-y-3 rounded-lg border p-4">
+              <h3 className="mb-3 text-sm font-semibold text-foreground">
+                Create as
+              </h3>
+              <div className="rounded-md border bg-muted/40 px-3 py-2 text-sm">
+                {selectedOrganizer?.label ?? "Organizer unavailable"}
+              </div>
+            </section>
+          )}
 
           <section className="space-y-3 rounded-lg border p-4">
-            <h3 className="font-semibold">Dates</h3>
+            <h3 className="mb-3 text-sm font-semibold text-foreground">
+              Dates
+            </h3>
             <div className="space-y-1">
               <label
                 htmlFor="start_datetime"
-                className="text-sm font-medium text-gray-700"
+                className="text-sm font-medium text-foreground"
               >
                 Start date &amp; time <span className="text-red-500">*</span>
               </label>
@@ -474,7 +646,7 @@ export default function EventModal({
             <div className="space-y-1">
               <label
                 htmlFor="end_datetime"
-                className="text-sm font-medium text-gray-700"
+                className="text-sm font-medium text-foreground"
               >
                 End date &amp; time <span className="text-red-500">*</span>
               </label>
@@ -494,47 +666,66 @@ export default function EventModal({
           <VenueSection control={control} watch={watch} errors={errors} />
 
           <section className="space-y-3 rounded-lg border p-4">
-            <h3 className="font-semibold">Images</h3>
-            <div className="space-y-1">
-              <label
-                htmlFor="cover_image"
-                className="text-sm font-medium text-gray-700"
-              >
-                Cover image URL
-              </label>
-              <Input
-                id="cover_image"
-                placeholder="https://..."
-                {...register("cover_image")}
+            <h3 className="mb-3 text-sm font-semibold text-foreground">
+              Images
+            </h3>
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-foreground">
+                Cover Image{" "}
+                <span className="text-xs text-muted-foreground">
+                  (optional)
+                </span>
+              </p>
+              <ImageUpload
+                value={coverImageFile}
+                onChange={setCoverImageFile}
+                currentUrl={watch("cover_image") ?? undefined}
               />
             </div>
-            <div className="space-y-1">
-              <label
-                htmlFor="banner_image"
-                className="text-sm font-medium text-gray-700"
-              >
-                Banner image URL
-              </label>
-              <Input
-                id="banner_image"
-                placeholder="https://..."
-                {...register("banner_image")}
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-foreground">
+                Banner Image{" "}
+                <span className="text-xs text-muted-foreground">
+                  (optional)
+                </span>
+              </p>
+              <ImageUpload
+                value={bannerImageFile}
+                onChange={setBannerImageFile}
+                currentUrl={watch("banner_image") ?? undefined}
               />
             </div>
           </section>
 
           <section className="space-y-3 rounded-lg border p-4">
-            <h3 className="font-semibold">Registration</h3>
-            <Input
-              placeholder="Registration URL"
-              {...register("registration_url")}
-            />
+            <h3 className="mb-3 text-sm font-semibold text-foreground">
+              Registration
+            </h3>
+            <div className="space-y-1">
+              <label
+                htmlFor="registration_url"
+                className="text-sm font-medium text-foreground"
+              >
+                Registration URL{" "}
+                <span className="text-xs text-muted-foreground">
+                  (optional)
+                </span>
+              </label>
+              <Input
+                id="registration_url"
+                placeholder="Registration URL"
+                {...register("registration_url")}
+              />
+            </div>
             <div className="space-y-1">
               <label
                 htmlFor="registration_deadline"
-                className="text-sm font-medium text-gray-700"
+                className="text-sm font-medium text-foreground"
               >
-                Registration deadline
+                Registration deadline{" "}
+                <span className="text-xs text-muted-foreground">
+                  (optional)
+                </span>
               </label>
               <Input
                 id="registration_deadline"
@@ -546,28 +737,48 @@ export default function EventModal({
               control={control}
               name="min_karma"
               render={({ field }) => (
-                <Input
-                  type="number"
-                  min={0}
-                  value={field.value ?? ""}
-                  onChange={(e) =>
-                    field.onChange(
-                      e.target.value ? Number(e.target.value) : null,
-                    )
-                  }
-                  placeholder="Minimum karma"
-                />
+                <div className="space-y-1">
+                  <label
+                    htmlFor="min_karma"
+                    className="text-sm font-medium text-foreground"
+                  >
+                    Minimum karma{" "}
+                    <span className="text-xs text-muted-foreground">
+                      (optional)
+                    </span>
+                  </label>
+                  <Input
+                    id="min_karma"
+                    type="number"
+                    min={0}
+                    value={field.value ?? ""}
+                    onChange={(e) =>
+                      field.onChange(
+                        e.target.value ? Number(e.target.value) : null,
+                      )
+                    }
+                    placeholder="Minimum karma"
+                  />
+                </div>
               )}
             />
           </section>
 
           <section className="space-y-3 rounded-lg border p-4">
-            <h3 className="font-semibold">Tags &amp; Collaboration</h3>
+            <h3 className="mb-3 text-sm font-semibold text-foreground">
+              Tags &amp; Collaboration
+            </h3>
             <Controller
               control={control}
               name="tags"
               render={({ field }) => (
                 <div className="space-y-2">
+                  <p className="text-sm font-medium text-foreground">
+                    Tags{" "}
+                    <span className="text-xs text-muted-foreground">
+                      (optional)
+                    </span>
+                  </p>
                   <Input
                     placeholder="Type a tag and press Enter"
                     value={tagInput}
@@ -587,7 +798,7 @@ export default function EventModal({
                       }
                     }}
                   />
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1.5">
                     {(field.value ?? []).map((tag) => (
                       <Badge
                         key={tag}
@@ -609,7 +820,10 @@ export default function EventModal({
 
             <div className="flex items-center justify-between">
               <label htmlFor="is_collaboration" className="text-sm">
-                This is a collaboration event
+                This is a collaboration event{" "}
+                <span className="text-xs text-muted-foreground">
+                  (optional)
+                </span>
               </label>
               <Controller
                 control={control}
@@ -619,6 +833,26 @@ export default function EventModal({
                     checked={field.value}
                     onCheckedChange={field.onChange}
                     id="is_collaboration"
+                  />
+                )}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <label htmlFor="is_featured" className="text-sm">
+                Feature this event{" "}
+                <span className="text-xs text-muted-foreground">
+                  (optional)
+                </span>
+              </label>
+              <Controller
+                control={control}
+                name="is_featured"
+                render={({ field }) => (
+                  <Switch
+                    checked={Boolean(field.value)}
+                    onCheckedChange={field.onChange}
+                    id="is_featured"
                   />
                 )}
               />
@@ -637,11 +871,18 @@ export default function EventModal({
 
             <div className="rounded-md border border-dashed p-3">
               <p className="text-sm font-medium">Linked tasks</p>
-              <p className="text-xs text-muted-foreground">Coming soon</p>
+              <p className="text-xs text-muted-foreground">
+                Coming soon (optional)
+              </p>
             </div>
 
             <div className="space-y-2">
-              <p className="text-sm font-medium">Co-owners</p>
+              <p className="text-sm font-medium">
+                Co-owners{" "}
+                <span className="text-xs text-muted-foreground">
+                  (optional)
+                </span>
+              </p>
               <UserSearchInput
                 onSelect={(user) => {
                   if (
@@ -675,21 +916,21 @@ export default function EventModal({
             </div>
           </section>
 
-          <div className="flex justify-end gap-2">
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
             <Button
               type="button"
               variant="outline"
-              disabled={isPending}
+              disabled={disableSaveActions}
               onClick={handleSubmit((values) => onSubmit(values, "draft"))}
             >
               Save as Draft
             </Button>
             <Button
               type="button"
-              disabled={isPending}
+              disabled={disableSaveActions}
               onClick={handleSubmit((values) => onSubmit(values, "publish"))}
             >
               Save and Publish

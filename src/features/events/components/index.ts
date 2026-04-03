@@ -1,6 +1,7 @@
 export * from "./co-owners-panel";
 export * from "./collaborator-search-input";
 export * from "./collaborators-panel";
+export * from "./entity-search-select";
 export * from "./event-card";
 export * from "./event-detail-view";
 export { default as EventModal } from "./event-modal";

@@ -4,16 +4,17 @@
 // The manage endpoint likely requires staff/organiser permissions server-side.
 // If the current user doesn't have those permissions, the API returns an empty list or 403.
 
-import { useQueries } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { apiClient, endpoints } from "@/api";
 import { ApiError } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 import { eventsApi } from "../api";
-import { useManageEventsList } from "../hooks";
 import { eventKeys } from "../hooks/query-keys";
 import type { EventListItem, EventStatus } from "../types";
 import EventModal from "./event-modal";
@@ -37,52 +38,112 @@ export default function ManageEventsDashboard() {
   const [statusFilter, setStatusFilter] = useState<EventStatus | "all">("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<EventListItem | null>(null);
+  const [adminView, setAdminView] = useState(false);
+
+  const { data: userInfo } = useQuery({
+    queryKey: ["user", "info", "events-manage"],
+    queryFn: () => apiClient.get<Record<string, unknown>>(endpoints.user.info),
+  });
+
+  const canAdminView = Boolean(
+    (userInfo?.is_staff as boolean | undefined) ||
+      (Array.isArray(userInfo?.roles) &&
+        (userInfo.roles as string[]).some((role) =>
+          role.toLowerCase().includes("admin"),
+        )),
+  );
+
+  const useAdminView = canAdminView && adminView;
+
+  const listParams = {
+    page,
+    search: search || undefined,
+    status: statusFilter === "all" ? undefined : statusFilter,
+    perPage: 12,
+  };
 
   const statsQueries = useQueries({
     queries: [
       {
-        queryKey: eventKeys.manageList({ page: 1, perPage: 1 }),
-        queryFn: () => eventsApi.manageList({ page: 1, perPage: 1 }),
+        queryKey: useAdminView
+          ? eventKeys.adminList({ page: 1, perPage: 1 })
+          : eventKeys.manageList({ page: 1, perPage: 1 }),
+        queryFn: () =>
+          useAdminView
+            ? eventsApi.adminList({ page: 1, perPage: 1 })
+            : eventsApi.manageList({ page: 1, perPage: 1 }),
       },
       {
-        queryKey: eventKeys.manageList({
-          page: 1,
-          perPage: 1,
-          status: "published",
-        }),
+        queryKey: useAdminView
+          ? eventKeys.adminList({ page: 1, perPage: 1, status: "published" })
+          : eventKeys.manageList({
+              page: 1,
+              perPage: 1,
+              status: "published",
+            }),
         queryFn: () =>
-          eventsApi.manageList({ page: 1, perPage: 1, status: "published" }),
+          useAdminView
+            ? eventsApi.adminList({ page: 1, perPage: 1, status: "published" })
+            : eventsApi.manageList({
+                page: 1,
+                perPage: 1,
+                status: "published",
+              }),
       },
       {
-        queryKey: eventKeys.manageList({
-          page: 1,
-          perPage: 1,
-          status: "pending_approval",
-        }),
+        queryKey: useAdminView
+          ? eventKeys.adminList({
+              page: 1,
+              perPage: 1,
+              status: "pending_approval",
+            })
+          : eventKeys.manageList({
+              page: 1,
+              perPage: 1,
+              status: "pending_approval",
+            }),
         queryFn: () =>
-          eventsApi.manageList({
-            page: 1,
-            perPage: 1,
-            status: "pending_approval",
-          }),
+          useAdminView
+            ? eventsApi.adminList({
+                page: 1,
+                perPage: 1,
+                status: "pending_approval",
+              })
+            : eventsApi.manageList({
+                page: 1,
+                perPage: 1,
+                status: "pending_approval",
+              }),
       },
       {
-        queryKey: eventKeys.manageList({
-          page: 1,
-          perPage: 1,
-          status: "draft",
-        }),
+        queryKey: useAdminView
+          ? eventKeys.adminList({ page: 1, perPage: 1, status: "draft" })
+          : eventKeys.manageList({
+              page: 1,
+              perPage: 1,
+              status: "draft",
+            }),
         queryFn: () =>
-          eventsApi.manageList({ page: 1, perPage: 1, status: "draft" }),
+          useAdminView
+            ? eventsApi.adminList({ page: 1, perPage: 1, status: "draft" })
+            : eventsApi.manageList({ page: 1, perPage: 1, status: "draft" }),
       },
       {
-        queryKey: eventKeys.manageList({
-          page: 1,
-          perPage: 1,
-          status: "completed",
-        }),
+        queryKey: useAdminView
+          ? eventKeys.adminList({ page: 1, perPage: 1, status: "completed" })
+          : eventKeys.manageList({
+              page: 1,
+              perPage: 1,
+              status: "completed",
+            }),
         queryFn: () =>
-          eventsApi.manageList({ page: 1, perPage: 1, status: "completed" }),
+          useAdminView
+            ? eventsApi.adminList({ page: 1, perPage: 1, status: "completed" })
+            : eventsApi.manageList({
+                page: 1,
+                perPage: 1,
+                status: "completed",
+              }),
       },
     ],
   });
@@ -93,11 +154,14 @@ export default function ManageEventsDashboard() {
   const pendingCount = statsQueries[2].data?.pagination.count ?? 0;
   const draftCount = statsQueries[3].data?.pagination.count ?? 0;
 
-  const { data, isLoading, isError, error, refetch } = useManageEventsList({
-    page,
-    search: search || undefined,
-    status: statusFilter === "all" ? undefined : statusFilter,
-    perPage: 12,
+  const { data, isLoading, isError, error, refetch } = useQuery({
+    queryKey: useAdminView
+      ? eventKeys.adminList(listParams)
+      : eventKeys.manageList(listParams),
+    queryFn: () =>
+      useAdminView
+        ? eventsApi.adminList(listParams)
+        : eventsApi.manageList(listParams),
   });
 
   const events = data?.data ?? [];
@@ -179,6 +243,19 @@ export default function ManageEventsDashboard() {
           }}
         />
 
+        {canAdminView ? (
+          <div className="flex items-center gap-2 rounded-md border px-3 py-2">
+            <span className="text-sm font-medium">Admin View</span>
+            <Switch
+              checked={adminView}
+              onCheckedChange={(checked) => {
+                setAdminView(checked);
+                setPage(1);
+              }}
+            />
+          </div>
+        ) : null}
+
         <Button
           onClick={() => {
             setEditingEvent(null);
@@ -207,6 +284,13 @@ export default function ManageEventsDashboard() {
         </p>
       ) : (
         <>
+          {canAdminView && events.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No events found. If you expected to see events created by other
+              admins, ensure you have been added as a co-owner or contact a
+              platform admin.
+            </p>
+          ) : null}
           <EventsGrid
             events={events}
             isManageView

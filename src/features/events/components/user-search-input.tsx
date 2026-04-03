@@ -28,8 +28,14 @@ export function UserSearchInput({
   const { data, isLoading } = useUserSearch(query);
 
   const users = useMemo(() => {
-    if (!Array.isArray(data)) return [];
-    return data;
+    if (Array.isArray(data)) return data;
+    if (data && typeof data === "object" && "data" in data) {
+      const maybeData = (data as { data?: unknown }).data;
+      if (Array.isArray(maybeData)) {
+        return maybeData as MinimalUser[];
+      }
+    }
+    return [];
   }, [data]);
 
   return (

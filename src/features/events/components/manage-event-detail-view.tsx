@@ -184,31 +184,67 @@ export function ManageEventDetailView({
                     </CardHeader>
                     <CardContent>
                       <div className="overflow-x-auto">
-                        <table className="w-full text-left text-sm">
+                        <table className="w-full border-collapse text-left text-sm">
                           <thead>
-                            <tr className="border-b">
-                              <th className="p-2">edited_by</th>
-                              <th className="p-2">changed_fields</th>
-                              <th className="p-2">when</th>
+                            <tr className="border-b bg-muted/50">
+                              <th className="px-3 py-2 font-semibold text-foreground">
+                                Editor
+                              </th>
+                              <th className="px-3 py-2 font-semibold text-foreground">
+                                Fields Changed
+                              </th>
+                              <th className="px-3 py-2 font-semibold text-foreground">
+                                Date &amp; Time
+                              </th>
                             </tr>
                           </thead>
                           <tbody>
-                            {sortedHistory.map((entry) => (
+                            {sortedHistory.map((entry, idx) => (
                               <tr
                                 key={entry.edited_at + entry.edited_by.id}
-                                className="border-b"
+                                className={idx % 2 === 0 ? "bg-muted/20" : ""}
                               >
-                                <td className="p-2">
-                                  {entry.edited_by.full_name}
+                                <td className="px-3 py-2">
+                                  <div className="font-medium">
+                                    {entry.edited_by.full_name}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {entry.edited_by.muid}
+                                  </div>
                                 </td>
-                                <td className="p-2">
-                                  {entry.changed_fields.join(", ")}
+                                <td className="px-3 py-2">
+                                  <div className="flex flex-wrap gap-1">
+                                    {entry.changed_fields.map((field) => (
+                                      <span
+                                        key={field}
+                                        className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono"
+                                      >
+                                        {field.replace(/_/g, " ")}
+                                      </span>
+                                    ))}
+                                  </div>
                                 </td>
-                                <td className="p-2">
-                                  {new Date(entry.edited_at).toLocaleString()}
+                                <td className="whitespace-nowrap px-3 py-2 text-muted-foreground">
+                                  {new Date(entry.edited_at).toLocaleString(
+                                    undefined,
+                                    {
+                                      dateStyle: "medium",
+                                      timeStyle: "short",
+                                    },
+                                  )}
                                 </td>
                               </tr>
                             ))}
+                            {sortedHistory.length === 0 ? (
+                              <tr>
+                                <td
+                                  colSpan={3}
+                                  className="px-3 py-6 text-center text-sm text-muted-foreground"
+                                >
+                                  No edit history yet
+                                </td>
+                              </tr>
+                            ) : null}
                           </tbody>
                         </table>
                       </div>
@@ -282,29 +318,67 @@ export function ManageEventDetailView({
                 </CardHeader>
                 <CardContent>
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
+                    <table className="w-full border-collapse text-left text-sm">
                       <thead>
-                        <tr className="border-b">
-                          <th className="p-2">edited_by</th>
-                          <th className="p-2">changed_fields</th>
-                          <th className="p-2">when</th>
+                        <tr className="border-b bg-muted/50">
+                          <th className="px-3 py-2 font-semibold text-foreground">
+                            Editor
+                          </th>
+                          <th className="px-3 py-2 font-semibold text-foreground">
+                            Fields Changed
+                          </th>
+                          <th className="px-3 py-2 font-semibold text-foreground">
+                            Date &amp; Time
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
-                        {sortedHistory.map((entry) => (
+                        {sortedHistory.map((entry, idx) => (
                           <tr
                             key={entry.edited_at + entry.edited_by.id}
-                            className="border-b"
+                            className={idx % 2 === 0 ? "bg-muted/20" : ""}
                           >
-                            <td className="p-2">{entry.edited_by.full_name}</td>
-                            <td className="p-2">
-                              {entry.changed_fields.join(", ")}
+                            <td className="px-3 py-2">
+                              <div className="font-medium">
+                                {entry.edited_by.full_name}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {entry.edited_by.muid}
+                              </div>
                             </td>
-                            <td className="p-2">
-                              {new Date(entry.edited_at).toLocaleString()}
+                            <td className="px-3 py-2">
+                              <div className="flex flex-wrap gap-1">
+                                {entry.changed_fields.map((field) => (
+                                  <span
+                                    key={field}
+                                    className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono"
+                                  >
+                                    {field.replace(/_/g, " ")}
+                                  </span>
+                                ))}
+                              </div>
+                            </td>
+                            <td className="whitespace-nowrap px-3 py-2 text-muted-foreground">
+                              {new Date(entry.edited_at).toLocaleString(
+                                undefined,
+                                {
+                                  dateStyle: "medium",
+                                  timeStyle: "short",
+                                },
+                              )}
                             </td>
                           </tr>
                         ))}
+                        {sortedHistory.length === 0 ? (
+                          <tr>
+                            <td
+                              colSpan={3}
+                              className="px-3 py-6 text-center text-sm text-muted-foreground"
+                            >
+                              No edit history yet
+                            </td>
+                          </tr>
+                        ) : null}
                       </tbody>
                     </table>
                   </div>

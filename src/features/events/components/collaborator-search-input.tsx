@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCollaborationTargets, useInviteCollaborator } from "../hooks";
-import type { CollaboratorType } from "../types";
+import type { CollaborationTarget, CollaboratorType } from "../types";
 
 interface CollaboratorSearchInputProps {
   eventId: string;
@@ -49,8 +49,14 @@ export function CollaboratorSearchInput({
   const inviteCollaborator = useInviteCollaborator(eventId);
 
   const targets = useMemo(() => {
-    if (!Array.isArray(data)) return [];
-    return data;
+    if (Array.isArray(data)) return data;
+    if (data && typeof data === "object" && "data" in data) {
+      const maybeData = (data as { data?: unknown }).data;
+      if (Array.isArray(maybeData)) {
+        return maybeData as CollaborationTarget[];
+      }
+    }
+    return [];
   }, [data]);
 
   return (
