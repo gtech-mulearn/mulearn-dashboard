@@ -308,6 +308,22 @@ export default function EventModal({
     }
   }, [initialData, organizerOptions]);
 
+  useEffect(() => {
+    const d = initialData as Partial<EventDetailManage> | null | undefined;
+    // If admin is editing an event without an organizer, auto-select "Admin" organizer
+    if (
+      isEdit &&
+      isAdminUser &&
+      (!d?.organizer || !selectedOrganiserId) &&
+      organizerOptions.length > 0
+    ) {
+      const adminOption = organizerOptions.find((opt) => opt.type === "admin");
+      if (adminOption && !selectedOrganiserId) {
+        setSelectedOrganiserId(`${adminOption.type}:${adminOption.id}`);
+      }
+    }
+  }, [isEdit, isAdminUser, organizerOptions, selectedOrganiserId, initialData]);
+
   const scope = watch("scope");
 
   const selectedOrganizer = organizerOptions.find(
@@ -318,10 +334,14 @@ export default function EventModal({
   const hasOrganizerPermission = organizerOptions.length > 0;
   const requiresOrganizerSelection = organizerOptions.length > 1;
   const missingOrganizerSelection = !selectedOrganizer;
+  const isEditingAsAdmin = isEdit && isAdminUser;
+  const shouldRequireOrganizer = !isEditingAsAdmin;
   const disableSaveActions =
     isPending ||
-    !hasOrganizerPermission ||
-    (requiresOrganizerSelection && missingOrganizerSelection);
+    (!hasOrganizerPermission && shouldRequireOrganizer) ||
+    (requiresOrganizerSelection &&
+      missingOrganizerSelection &&
+      shouldRequireOrganizer);
 
   const toBase64 = (file: File): Promise<string> =>
     new Promise((resolve, reject) => {
@@ -366,7 +386,7 @@ export default function EventModal({
     if (hasDateError) return;
 
     const selectedOrganiser = selectedOrganizer;
-    if (!selectedOrganiser) {
+    if (!selectedOrganiser && shouldRequireOrganizer) {
       setError("title", {
         type: "manual",
         message: "Select an organiser before saving",
@@ -380,6 +400,15 @@ export default function EventModal({
     const bannerBase64 = bannerImageFile
       ? await toBase64(bannerImageFile)
       : (values.banner_image ?? null);
+
+    if (!selectedOrganiser) {
+      // This should not happen if validation works, but type guard for safety
+      setError("title", {
+        type: "manual",
+        message: "Organizer selection is required",
+      });
+      return;
+    }
 
     const payload: EventWriteBody = {
       ...values,
