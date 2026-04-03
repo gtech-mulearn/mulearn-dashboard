@@ -84,14 +84,17 @@ export function EventDetailView({
 
   const organizerName =
     event.organizer.ig?.name ??
-    event.organizer.campus_ig?.ig.name ??
+    (event.organizer.ig && event.organizer.campus
+      ? `${event.organizer.ig.name} @ ${event.organizer.campus.name}`
+      : null) ??
     event.organizer.campus?.name ??
     event.organizer.company?.name ??
     "muLearn";
 
   const organizerLogo =
     event.organizer.ig?.logo ??
-    event.organizer.campus_ig?.ig.logo ??
+    event.organizer.ig?.logo ??
+    event.organizer.campus?.logo ??
     event.organizer.campus?.logo ??
     event.organizer.company?.logo ??
     null;
@@ -356,7 +359,9 @@ export function EventDetailView({
                     const name =
                       collab.ig?.name ??
                       collab.campus?.name ??
-                      collab.campus_ig?.ig.name ??
+                      (collab.ig?.name && collab.campus?.name
+                        ? `${collab.ig.name} @ ${collab.campus.name}`
+                        : null) ??
                       collab.company?.name ??
                       "Collaborator";
                     return (

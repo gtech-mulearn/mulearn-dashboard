@@ -21,7 +21,10 @@ function getOrganizerName(organizer: OrganizerInfo): string {
     return organizer.ig?.name ?? "Global IG";
   }
   if (organizer.type === "campus_ig") {
-    return organizer.campus_ig?.ig.name ?? "Campus IG";
+    if (organizer.ig?.name && organizer.campus?.name) {
+      return `${organizer.ig.name} @ ${organizer.campus.name}`;
+    }
+    return organizer.campus_ig?.name ?? "Campus IG";
   }
   if (organizer.type === "campus") {
     return organizer.campus?.name ?? "Campus";

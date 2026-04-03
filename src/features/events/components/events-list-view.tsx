@@ -20,7 +20,7 @@ export function EventsListView() {
 
   const params = useMemo(
     () => ({
-      page,
+      pageIndex: page,
       perPage: 8,
       search: debouncedSearch || undefined,
       cluster: cluster === "all" ? undefined : cluster,

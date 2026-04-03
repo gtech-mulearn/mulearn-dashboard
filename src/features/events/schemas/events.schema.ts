@@ -198,7 +198,7 @@ export const updateEventSchema = createEventBaseSchema.partial();
 // ─── EVENT LIST PARAMS SCHEMA ──────────────────────────────────────────────
 
 export const eventListParamsSchema = z.object({
-  page: z.number().min(1).optional(),
+  pageIndex: z.number().min(1).optional(),
   perPage: z.number().min(1).max(100).optional(),
   search: z.string().optional(),
   event_type: z

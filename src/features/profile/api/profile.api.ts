@@ -66,7 +66,7 @@ export async function getEditableUserProfile(): Promise<EditableProfile> {
     endpoints.user.updateProfile,
     EditableProfileResponseSchema,
   );
-  return response.response!;
+  return response.response;
 }
 
 /** Get public user profile by muid */
@@ -134,7 +134,7 @@ export async function getSocials(): Promise<Socials> {
     endpoints.user.socials,
     SocialsResponseSchema,
   );
-  return response.response!;
+  return response.response;
 }
 
 /** Update user's social links */
@@ -159,7 +159,7 @@ export async function getUserPreferences(): Promise<UserPreferences> {
     endpoints.user.preferences,
     UserPreferencesResponseSchema,
   );
-  return response.response!;
+  return response.response;
 }
 
 /** Update user preferences */

@@ -5,7 +5,9 @@ import { toast } from "sonner";
 import { ApiError } from "@/api/errors";
 import { useDebounce } from "@/hooks/use-debounce";
 import { eventsApi } from "../api";
+import { COLLABORATOR_INVITE_TYPE_MAP } from "../constants";
 import type {
+  CollaboratorEntityType,
   CollaboratorInviteBody,
   CollaboratorType,
   EventDetailData,
@@ -94,9 +96,16 @@ export function useCollaborationTargets(
   type?: CollaboratorType,
 ) {
   const debouncedSearch = useDebounce(search, 300);
+  const entityType = type
+    ? (COLLABORATOR_INVITE_TYPE_MAP[type] as CollaboratorEntityType)
+    : undefined;
   return useQuery({
-    queryKey: eventKeys.collaborationTargets({ search: debouncedSearch, type }),
-    queryFn: () => eventsApi.searchCollaborationTargets(debouncedSearch, type),
+    queryKey: eventKeys.collaborationTargets({
+      search: debouncedSearch,
+      type: entityType,
+    }),
+    queryFn: () =>
+      eventsApi.searchCollaborationTargets(debouncedSearch, entityType),
     enabled: debouncedSearch.length >= 2,
   });
 }
@@ -165,10 +174,11 @@ export function useCreateEvent() {
 
   return useMutation({
     mutationFn: (body: EventWriteBody) => eventsApi.create(body),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Event created");
-      queryClient.invalidateQueries({ queryKey: eventKeys.all });
-      queryClient.invalidateQueries({ queryKey: eventKeys.manage() });
+      await queryClient.invalidateQueries({ queryKey: eventKeys.all });
+      await queryClient.invalidateQueries({ queryKey: eventKeys.manage() });
+      await queryClient.refetchQueries({ queryKey: eventKeys.manageLists() });
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error, "Failed to create event"));
@@ -181,12 +191,18 @@ export function useUpdateEvent(eventId: string) {
 
   return useMutation({
     mutationFn: (body: EventWriteBody) => eventsApi.update(eventId, body),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Event updated");
-      queryClient.invalidateQueries({ queryKey: eventKeys.all });
-      queryClient.invalidateQueries({ queryKey: eventKeys.manage() });
-      queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({ queryKey: eventKeys.all });
+      await queryClient.invalidateQueries({ queryKey: eventKeys.manage() });
+      await queryClient.invalidateQueries({
+        queryKey: eventKeys.detail(eventId),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: eventKeys.manageDetail(eventId),
+      });
+      await queryClient.refetchQueries({ queryKey: eventKeys.manageLists() });
+      await queryClient.refetchQueries({
         queryKey: eventKeys.manageDetail(eventId),
       });
     },
@@ -201,12 +217,18 @@ export function usePatchEvent(eventId: string) {
 
   return useMutation({
     mutationFn: (body: EventPatchBody) => eventsApi.patch(eventId, body),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Event updated");
-      queryClient.invalidateQueries({ queryKey: eventKeys.all });
-      queryClient.invalidateQueries({ queryKey: eventKeys.manage() });
-      queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({ queryKey: eventKeys.all });
+      await queryClient.invalidateQueries({ queryKey: eventKeys.manage() });
+      await queryClient.invalidateQueries({
+        queryKey: eventKeys.detail(eventId),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: eventKeys.manageDetail(eventId),
+      });
+      await queryClient.refetchQueries({ queryKey: eventKeys.manageLists() });
+      await queryClient.refetchQueries({
         queryKey: eventKeys.manageDetail(eventId),
       });
     },
@@ -237,12 +259,18 @@ export function usePublishEvent(eventId: string) {
 
   return useMutation({
     mutationFn: () => eventsApi.publish(eventId),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Event submitted");
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         queryKey: eventKeys.manageDetail(eventId),
       });
-      queryClient.invalidateQueries({ queryKey: eventKeys.manageLists() });
+      await queryClient.invalidateQueries({
+        queryKey: eventKeys.manageLists(),
+      });
+      await queryClient.refetchQueries({
+        queryKey: eventKeys.manageDetail(eventId),
+      });
+      await queryClient.refetchQueries({ queryKey: eventKeys.manageLists() });
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error, "Failed to publish event"));
@@ -443,12 +471,17 @@ export function useAdminApprove(eventId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (note?: string) => eventsApi.adminApprove(eventId, note),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Event approved");
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         queryKey: eventKeys.manageDetail(eventId),
       });
-      queryClient.invalidateQueries({ queryKey: eventKeys.manageLists() });
+      await queryClient.invalidateQueries({
+        queryKey: eventKeys.manageLists(),
+      });
+      await queryClient.refetchQueries({
+        queryKey: eventKeys.manageDetail(eventId),
+      });
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error, "Failed to approve event"));
@@ -460,12 +493,17 @@ export function useAdminReject(eventId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (reason: string) => eventsApi.adminReject(eventId, reason),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Event returned to draft");
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         queryKey: eventKeys.manageDetail(eventId),
       });
-      queryClient.invalidateQueries({ queryKey: eventKeys.manageLists() });
+      await queryClient.invalidateQueries({
+        queryKey: eventKeys.manageLists(),
+      });
+      await queryClient.refetchQueries({
+        queryKey: eventKeys.manageDetail(eventId),
+      });
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error, "Failed to reject event"));
@@ -478,13 +516,16 @@ export function useAdminFeature(eventId: string) {
   return useMutation({
     mutationFn: (isFeatured: boolean) =>
       eventsApi.adminFeature(eventId, isFeatured),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Featured status updated");
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         queryKey: eventKeys.manageDetail(eventId),
       });
-      queryClient.invalidateQueries({ queryKey: eventKeys.featured() });
-      queryClient.invalidateQueries({ queryKey: eventKeys.lists() });
+      await queryClient.invalidateQueries({ queryKey: eventKeys.featured() });
+      await queryClient.invalidateQueries({ queryKey: eventKeys.lists() });
+      await queryClient.refetchQueries({
+        queryKey: eventKeys.manageDetail(eventId),
+      });
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error, "Failed to update featured status"));

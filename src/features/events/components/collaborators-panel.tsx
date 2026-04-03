@@ -23,7 +23,9 @@ function getCollabName(collab: EventCollaborator): string {
   return (
     collab.ig?.name ??
     collab.campus?.name ??
-    collab.campus_ig?.ig.name ??
+    (collab.ig?.name && collab.campus?.name
+      ? `${collab.ig.name} @ ${collab.campus.name}`
+      : null) ??
     collab.company?.name ??
     "Collaborator"
   );

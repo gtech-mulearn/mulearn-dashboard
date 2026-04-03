@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, PanelRight, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { apiClient, endpoints } from "@/api";
@@ -22,10 +22,21 @@ import {
   useDeleteEvent,
   useManageEventDetail,
 } from "../hooks";
+import type { EventLog } from "../types";
 import { CoOwnersPanel } from "./co-owners-panel";
 import { CollaboratorsPanel } from "./collaborators-panel";
 import { EventDetailView } from "./event-detail-view";
 import { PublishFlowPanel } from "./publish-flow-panel";
+
+function getChangedFields(changedFields: EventLog["changed_fields"]): string[] {
+  if (Array.isArray(changedFields)) {
+    return changedFields;
+  }
+  if (changedFields && typeof changedFields === "object") {
+    return Object.keys(changedFields);
+  }
+  return [];
+}
 
 interface ManageEventDetailViewProps {
   eventId: string;
@@ -199,42 +210,47 @@ export function ManageEventDetailView({
                         </tr>
                       </thead>
                       <tbody>
-                        {sortedHistory.map((entry, idx) => (
-                          <tr
-                            key={entry.edited_at + entry.edited_by.id}
-                            className={idx % 2 === 0 ? "bg-muted/20" : ""}
-                          >
-                            <td className="px-3 py-2">
-                              <div className="font-medium">
-                                {entry.edited_by.full_name}
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                {entry.edited_by.muid}
-                              </div>
-                            </td>
-                            <td className="px-3 py-2">
-                              <div className="flex flex-wrap gap-1">
-                                {entry.changed_fields.map((field) => (
-                                  <span
-                                    key={field}
-                                    className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono"
-                                  >
-                                    {field.replace(/_/g, " ")}
-                                  </span>
-                                ))}
-                              </div>
-                            </td>
-                            <td className="px-3 py-2 text-muted-foreground">
-                              {new Date(entry.edited_at).toLocaleString(
-                                undefined,
-                                {
-                                  dateStyle: "medium",
-                                  timeStyle: "short",
-                                },
-                              )}
-                            </td>
-                          </tr>
-                        ))}
+                        {sortedHistory.map((entry, idx) => {
+                          const changedFieldsList = getChangedFields(
+                            entry.changed_fields,
+                          );
+                          return (
+                            <tr
+                              key={entry.edited_at + entry.edited_by.id}
+                              className={idx % 2 === 0 ? "bg-muted/20" : ""}
+                            >
+                              <td className="px-3 py-2">
+                                <div className="font-medium">
+                                  {entry.edited_by.full_name}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  {entry.edited_by.muid}
+                                </div>
+                              </td>
+                              <td className="px-3 py-2">
+                                <div className="flex flex-wrap gap-1">
+                                  {changedFieldsList.map((field) => (
+                                    <span
+                                      key={field}
+                                      className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono"
+                                    >
+                                      {field.replace(/_/g, " ")}
+                                    </span>
+                                  ))}
+                                </div>
+                              </td>
+                              <td className="px-3 py-2 text-muted-foreground">
+                                {new Date(entry.edited_at).toLocaleString(
+                                  undefined,
+                                  {
+                                    dateStyle: "medium",
+                                    timeStyle: "short",
+                                  },
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
                         {sortedHistory.length === 0 ? (
                           <tr>
                             <td
@@ -343,38 +359,43 @@ export function ManageEventDetailView({
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
-                      {sortedHistory.map((entry) => (
-                        <div
-                          key={entry.edited_at + entry.edited_by.id}
-                          className="rounded-lg border p-3"
-                        >
-                          <p className="font-medium">
-                            {entry.edited_by.full_name}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {entry.edited_by.muid}
-                          </p>
-                          <div className="mt-2 flex flex-wrap gap-1">
-                            {entry.changed_fields.map((field) => (
-                              <span
-                                key={field}
-                                className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono"
-                              >
-                                {field.replace(/_/g, " ")}
-                              </span>
-                            ))}
+                      {sortedHistory.map((entry) => {
+                        const changedFieldsList = getChangedFields(
+                          entry.changed_fields,
+                        );
+                        return (
+                          <div
+                            key={entry.edited_at + entry.edited_by.id}
+                            className="rounded-lg border p-3"
+                          >
+                            <p className="font-medium">
+                              {entry.edited_by.full_name}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {entry.edited_by.muid}
+                            </p>
+                            <div className="mt-2 flex flex-wrap gap-1">
+                              {changedFieldsList.map((field) => (
+                                <span
+                                  key={field}
+                                  className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono"
+                                >
+                                  {field.replace(/_/g, " ")}
+                                </span>
+                              ))}
+                            </div>
+                            <p className="mt-2 text-xs text-muted-foreground">
+                              {new Date(entry.edited_at).toLocaleString(
+                                undefined,
+                                {
+                                  dateStyle: "medium",
+                                  timeStyle: "short",
+                                },
+                              )}
+                            </p>
                           </div>
-                          <p className="mt-2 text-xs text-muted-foreground">
-                            {new Date(entry.edited_at).toLocaleString(
-                              undefined,
-                              {
-                                dateStyle: "medium",
-                                timeStyle: "short",
-                              },
-                            )}
-                          </p>
-                        </div>
-                      ))}
+                        );
+                      })}
                       {sortedHistory.length === 0 ? (
                         <p className="py-4 text-center text-sm text-muted-foreground">
                           No edit history yet

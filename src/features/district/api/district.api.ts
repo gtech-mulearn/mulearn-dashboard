@@ -1,16 +1,16 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
-  DistrictCollegeDetailsResponseSchema,
-  DistrictDetailsResponseSchema,
-  DistrictStudentDetailsResponseSchema,
-  DistrictStudentLevelResponseSchema,
-  DistrictTopCampusResponseSchema,
   type DistrictCollegeDetailsData,
+  DistrictCollegeDetailsResponseSchema,
   type DistrictDetails,
+  DistrictDetailsResponseSchema,
   type DistrictStudentDetailsData,
+  DistrictStudentDetailsResponseSchema,
   type DistrictStudentLevelItem,
+  DistrictStudentLevelResponseSchema,
   type DistrictTopCampusItem,
+  DistrictTopCampusResponseSchema,
 } from "../schemas";
 
 // ============================================

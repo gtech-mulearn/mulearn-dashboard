@@ -1,10 +1,11 @@
 import { apiClient, endpoints } from "@/api";
 import type {
   CollaborationTarget,
+  CollaboratorEntityType,
   CollaboratorInviteBody,
   CollaboratorsListData,
-  CollaboratorType,
   CoOwnersListData,
+  EventCollaborator,
   EventCoOwner,
   EventCoOwnerInput,
   EventDeleteData,
@@ -27,7 +28,7 @@ function buildQueryString(params?: EventListQueryParams): string {
   if (!params) return "";
 
   const searchParams = new URLSearchParams();
-  if (params.page) searchParams.set("page", String(params.page));
+  if (params.pageIndex) searchParams.set("pageIndex", String(params.pageIndex));
   if (params.perPage) searchParams.set("perPage", String(params.perPage));
   if (params.search) searchParams.set("search", params.search);
   if (params.event_type) searchParams.set("event_type", params.event_type);
@@ -35,9 +36,6 @@ function buildQueryString(params?: EventListQueryParams): string {
   if (params.status) searchParams.set("status", params.status);
   if (params.ig_id) searchParams.set("ig_id", params.ig_id);
   if (params.campus_id) searchParams.set("campus_id", params.campus_id);
-  if (params.company_id) searchParams.set("company_id", params.company_id);
-  if (params.campus_ig_id)
-    searchParams.set("campus_ig_id", params.campus_ig_id);
   if (params.cluster) searchParams.set("cluster", params.cluster);
   if (params.is_featured !== undefined)
     searchParams.set("is_featured", String(params.is_featured));
@@ -47,6 +45,9 @@ function buildQueryString(params?: EventListQueryParams): string {
   if (params.start_date) searchParams.set("start_date", params.start_date);
   if (params.end_date) searchParams.set("end_date", params.end_date);
   if (params.sortBy) searchParams.set("sortBy", params.sortBy);
+  if (params.organiser_type)
+    searchParams.set("organiser_type", params.organiser_type);
+  if (params.created_by) searchParams.set("created_by", params.created_by);
 
   const qs = searchParams.toString();
   return qs ? `?${qs}` : "";
@@ -169,8 +170,8 @@ export const eventsApi = {
   inviteCollaborator: async (
     id: string,
     body: CollaboratorInviteBody,
-  ): Promise<EventDeleteData> => {
-    return apiClient.post<EventDeleteData>(
+  ): Promise<EventCollaborator> => {
+    return apiClient.post<EventCollaborator>(
       `${endpoints.events.manage}${id}/collaborators/`,
       body,
     );
@@ -179,8 +180,8 @@ export const eventsApi = {
   acceptCollaborator: async (
     id: string,
     cId: string,
-  ): Promise<EventDeleteData> => {
-    return apiClient.post<EventDeleteData>(
+  ): Promise<EventCollaborator> => {
+    return apiClient.post<EventCollaborator>(
       `${endpoints.events.manage}${id}/collaborators/${cId}/accept/`,
       {},
     );
@@ -190,8 +191,8 @@ export const eventsApi = {
     id: string,
     cId: string,
     reason?: string,
-  ): Promise<EventDeleteData> => {
-    return apiClient.post<EventDeleteData>(
+  ): Promise<EventCollaborator> => {
+    return apiClient.post<EventCollaborator>(
       `${endpoints.events.manage}${id}/collaborators/${cId}/reject/`,
       { reason },
     );
@@ -208,7 +209,7 @@ export const eventsApi = {
 
   searchCollaborationTargets: async (
     search: string,
-    type?: CollaboratorType,
+    type?: CollaboratorEntityType,
   ): Promise<CollaborationTarget[]> => {
     const searchParams = new URLSearchParams({ search });
     if (type) {

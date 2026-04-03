@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCollaborationTargets } from "../hooks";
 import type { CollaborationTarget, CollaboratorType } from "../types";
+import { normalizeCollaborationTargets } from "./collaboration-targets";
 
 interface EntitySearchSelectProps {
   type: CollaboratorType;
@@ -53,28 +54,7 @@ export function EntitySearchSelect({
   const { data, isLoading } = useCollaborationTargets(query, type);
 
   const targets = useMemo(() => {
-    if (Array.isArray(data)) return data as CollaborationTarget[];
-    if (data && typeof data === "object") {
-      const shaped = data as {
-        data?: unknown;
-        response?: unknown;
-        results?: unknown;
-      };
-      if (Array.isArray(shaped.data)) {
-        return shaped.data as CollaborationTarget[];
-      }
-      if (Array.isArray(shaped.results)) {
-        return shaped.results as CollaborationTarget[];
-      }
-      if (
-        shaped.response &&
-        typeof shaped.response === "object" &&
-        Array.isArray((shaped.response as { data?: unknown }).data)
-      ) {
-        return (shaped.response as { data: CollaborationTarget[] }).data;
-      }
-    }
-    return [];
+    return normalizeCollaborationTargets(data);
   }, [data]);
 
   const selectedId = value ?? "";
@@ -142,7 +122,7 @@ export function EntitySearchSelect({
                 >
                   <p className="font-medium">{label}</p>
                   <p className="text-xs capitalize text-muted-foreground">
-                    {target.collaborator_type.replace(/_/g, " ")}
+                    {(target.collaborator_type ?? "ig").replace(/_/g, " ")}
                   </p>
                 </button>
               );

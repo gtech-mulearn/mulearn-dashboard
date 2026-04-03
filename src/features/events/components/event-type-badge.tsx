@@ -11,13 +11,13 @@ import { EVENT_TYPE_BADGE_CONFIG } from "../constants";
 import type { EventType } from "../types";
 
 interface EventTypeBadgeProps {
-  eventType: EventType;
+  eventType: EventType | undefined;
   className?: string;
 }
 
 export function EventTypeBadge({ eventType, className }: EventTypeBadgeProps) {
-  const config =
-    EVENT_TYPE_BADGE_CONFIG[eventType] ?? EVENT_TYPE_BADGE_CONFIG.other;
+  const type = eventType ?? "other";
+  const config = EVENT_TYPE_BADGE_CONFIG[type] ?? EVENT_TYPE_BADGE_CONFIG.other;
   const Icon = config.icon;
 
   return (

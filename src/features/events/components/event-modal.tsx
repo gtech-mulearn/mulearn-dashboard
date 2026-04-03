@@ -33,6 +33,9 @@ import type {
   EventListItem,
   EventPatchBody,
   EventWriteBody,
+  MinimalCampus,
+  MinimalCompany,
+  MinimalIG,
   OrganizerOptionsResponse,
   OrganizerType,
 } from "../types";
@@ -146,18 +149,18 @@ export default function EventModal({
 
     const options = (raw.response ?? raw) as OrganizerOptionsLike;
 
-    const igs = safeArray<OrganizerOptionsResponse["can_create_as_ig"][number]>(
+    const igs = safeArray<MinimalIG>(
       options.can_create_as_ig ?? options.canCreateAsIg,
     );
-    const campusIgs = safeArray<
-      OrganizerOptionsResponse["can_create_as_campus_ig"][number]
-    >(options.can_create_as_campus_ig ?? options.canCreateAsCampusIg);
-    const campuses = safeArray<
-      OrganizerOptionsResponse["can_create_as_campus"][number]
-    >(options.can_create_as_campus ?? options.canCreateAsCampus);
-    const companies = safeArray<
-      OrganizerOptionsResponse["can_create_as_company"][number]
-    >(options.can_create_as_company ?? options.canCreateAsCompany);
+    const campusIgs = safeArray<MinimalIG>(
+      options.can_create_as_campus_ig ?? options.canCreateAsCampusIg,
+    );
+    const campuses = safeArray<MinimalCampus>(
+      options.can_create_as_campus ?? options.canCreateAsCampus,
+    );
+    const companies = safeArray<MinimalCompany>(
+      options.can_create_as_company ?? options.canCreateAsCompany,
+    );
     const canCreateAsAdmin = Boolean(
       options.can_create_as_admin ?? options.canCreateAsAdmin,
     );
@@ -170,18 +173,26 @@ export default function EventModal({
 
     for (const campusIg of campusIgs) {
       all.push({
-        label: `${campusIg.ig.name} - ${campusIg.campus.name}`,
+        label: campusIg.name,
         type: "campus_ig",
         id: campusIg.id,
       });
     }
 
     for (const campus of campuses) {
-      all.push({ label: campus.name, type: "campus", id: campus.id });
+      all.push({
+        label: campus.name ?? campus.title ?? "Campus",
+        type: "campus",
+        id: campus.id,
+      });
     }
 
     for (const company of companies) {
-      all.push({ label: company.name, type: "company", id: company.id });
+      all.push({
+        label: company.name ?? company.title ?? "Company",
+        type: "company",
+        id: company.id,
+      });
     }
 
     if (canCreateAsAdmin) {
@@ -235,12 +246,23 @@ export default function EventModal({
   useEffect(() => {
     if (!open) return;
     const d = initialData as Partial<EventDetailManage> | null | undefined;
+    const validScopes: Array<"global" | "campus" | "ig" | "campus_ig"> = [
+      "global",
+      "campus",
+      "ig",
+      "campus_ig",
+    ];
+    const scope = (
+      d?.scope && (validScopes as string[]).includes(d.scope)
+        ? d.scope
+        : "global"
+    ) as "global" | "campus" | "ig" | "campus_ig";
     reset({
       ...defaultValues,
       title: d?.title ?? "",
       description: d?.description ?? "",
       event_type: d?.event_type,
-      scope: d?.scope ?? "global",
+      scope,
       start_datetime: toDatetimeLocal(d?.start_datetime),
       end_datetime: toDatetimeLocal(d?.end_datetime),
       venue_type:
@@ -262,7 +284,11 @@ export default function EventModal({
       target_campus_id: d?.target_campus?.id ?? null,
       target_ig_id: d?.target_ig?.id ?? null,
       target_campus_ig_id: d?.target_campus_ig?.id ?? null,
-      tags: d?.tags ?? [],
+      tags: d?.tags
+        ? Array.isArray(d.tags)
+          ? d.tags
+          : Object.keys(d.tags)
+        : [],
       is_featured: d?.is_featured ?? false,
     });
     setSelectedCoOwners(
@@ -276,9 +302,9 @@ export default function EventModal({
     setSelectedCampusName(d?.target_campus?.name ?? "");
     setSelectedIgName(d?.target_ig?.name ?? "");
     setSelectedCampusIgName(
-      d?.target_campus_ig
-        ? `${d.target_campus_ig.ig.name} @ ${d.target_campus_ig.campus.name}`
-        : "",
+      d?.target_ig?.name && d?.target_campus?.name
+        ? `${d.target_ig.name} @ ${d.target_campus.name}`
+        : (d?.target_campus_ig?.name ?? ""),
     );
   }, [initialData, open, reset]);
 
@@ -348,6 +374,10 @@ export default function EventModal({
   const eventStatus =
     isEdit && (initialData as Partial<EventDetailManage>)?.status;
   const canPublish = !eventStatus || eventStatus === "draft";
+  const saveButtonLabel =
+    isEdit && eventStatus && eventStatus !== "draft"
+      ? "Save Changes"
+      : "Save as Draft";
 
   const toBase64 = (file: File): Promise<string> =>
     new Promise((resolve, reject) => {
@@ -407,36 +437,55 @@ export default function EventModal({
       ? await toBase64(bannerImageFile)
       : (values.banner_image ?? null);
 
+    // Convert tags array to Record format (or null if empty)
+    const tagsRecord: Record<string, unknown> | null =
+      values.tags && values.tags.length > 0
+        ? Object.fromEntries(values.tags.map((tag) => [tag, true]))
+        : null;
+
     const basePayload = {
-      ...values,
-      start_datetime: start as string,
-      end_datetime: end as string,
-      registration_deadline: deadline,
+      title: values.title,
+      description: values.description,
       cover_image: coverBase64,
       banner_image: bannerBase64,
-      co_owners: selectedCoOwners,
+      category: null,
+      start_datetime: start as string,
+      end_datetime: end as string,
+      registration_url: values.registration_url,
+      registration_deadline: deadline,
+      min_karma: values.min_karma,
+      venue_type: values.venue_type,
+      venue_address: values.address,
+      venue_city: values.city,
+      venue_maps_url: values.maps_url,
+      venue_online_link: values.online_link,
+      venue_platform: values.platform,
+      scope: values.scope,
+      scope_org: values.scope === "campus" ? values.target_campus_id : null,
+      scope_ig: values.scope === "ig" ? values.target_ig_id : null,
+      scope_ci_id:
+        values.scope === "campus_ig" ? values.target_campus_ig_id : null,
+      is_collaboration: values.is_collaboration,
+      is_featured: values.is_featured,
+      tags: tagsRecord,
+      user_limit: undefined,
     };
 
     const organizerPayload = selectedOrganiser
-      ? {
+      ? ({
           organiser_type: selectedOrganiser.type,
-          organiser_ig_id:
+          organiser_ig:
             selectedOrganiser.type === "global_ig"
               ? selectedOrganiser.id
-              : undefined,
-          organiser_campus_id:
-            selectedOrganiser.type === "campus"
-              ? selectedOrganiser.id
-              : undefined,
-          organiser_campus_ig_id:
+              : null,
+          organiser_org:
+            selectedOrganiser.type === "campus" ? selectedOrganiser.id : null,
+          organiser_ci_id:
             selectedOrganiser.type === "campus_ig"
               ? selectedOrganiser.id
-              : undefined,
-          organiser_company_id:
-            selectedOrganiser.type === "company"
-              ? selectedOrganiser.id
-              : undefined,
-        }
+              : null,
+          co_owners: selectedCoOwners,
+        } as Partial<EventWriteBody>)
       : {};
 
     try {
@@ -446,7 +495,7 @@ export default function EventModal({
         const payload: EventPatchBody = {
           ...basePayload,
           ...organizerPayload,
-        };
+        } as EventPatchBody;
         const updated = await patchEvent.mutateAsync(payload);
         savedEventId = updated.id;
       } else if (!isEdit) {
@@ -460,28 +509,23 @@ export default function EventModal({
 
         const createOrganizerPayload = {
           organiser_type: selectedOrganiser.type,
-          organiser_ig_id:
+          organiser_ig:
             selectedOrganiser.type === "global_ig"
               ? selectedOrganiser.id
-              : undefined,
-          organiser_campus_id:
-            selectedOrganiser.type === "campus"
-              ? selectedOrganiser.id
-              : undefined,
-          organiser_campus_ig_id:
+              : null,
+          organiser_org:
+            selectedOrganiser.type === "campus" ? selectedOrganiser.id : null,
+          organiser_ci_id:
             selectedOrganiser.type === "campus_ig"
               ? selectedOrganiser.id
-              : undefined,
-          organiser_company_id:
-            selectedOrganiser.type === "company"
-              ? selectedOrganiser.id
-              : undefined,
+              : null,
+          co_owners: selectedCoOwners,
         };
 
         const payload: EventWriteBody = {
           ...basePayload,
           ...createOrganizerPayload,
-        };
+        } as EventWriteBody;
 
         const created = await createEvent.mutateAsync(payload);
         savedEventId = created.id;
@@ -1052,7 +1096,7 @@ export default function EventModal({
               disabled={disableSaveActions}
               onClick={handleSubmit((values) => onSubmit(values, "draft"))}
             >
-              Save as Draft
+              {saveButtonLabel}
             </Button>
             <Button
               type="button"

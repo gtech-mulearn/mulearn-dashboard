@@ -89,7 +89,10 @@ export function CoOwnersPanel({ eventId }: CoOwnersPanelProps) {
 
       <UserSearchInput
         placeholder="Search by name or muid..."
-        onSelect={(user) => addCoOwner.mutate({ user_id: user.id })}
+        onSelect={(user) => {
+          if (!user.id) return;
+          addCoOwner.mutate({ user_id: user.id });
+        }}
       />
 
       <ConfirmDialog

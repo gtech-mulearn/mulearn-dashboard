@@ -13,6 +13,14 @@ interface UserSearchInputProps {
   placeholder?: string;
 }
 
+interface RawUserSearchResult {
+  id?: string | number | null;
+  user_id?: string | number | null;
+  muid?: string;
+  full_name?: string;
+  profile_pic?: string | null;
+}
+
 function getInitials(name: string): string {
   const parts = name.trim().split(" ").filter(Boolean);
   if (parts.length === 0) return "U";
@@ -22,6 +30,18 @@ function getInitials(name: string): string {
 
 function getUserKey(user: MinimalUser): string {
   return user.id || user.muid;
+}
+
+function normalizeUser(user: RawUserSearchResult): MinimalUser | null {
+  const id = user.id ?? user.user_id;
+  if (!id) return null;
+
+  return {
+    id: String(id),
+    full_name: user.full_name ?? "Unknown user",
+    muid: user.muid ?? "",
+    profile_pic: user.profile_pic ?? null,
+  };
 }
 
 export function UserSearchInput({
@@ -34,17 +54,30 @@ export function UserSearchInput({
   const users = useMemo(() => {
     if (Array.isArray(data)) {
       return Array.from(
-        new Map(data.map((user) => [getUserKey(user), user] as const)).values(),
+        new Map(
+          data
+            .map((user) => normalizeUser(user as RawUserSearchResult))
+            .filter((user): user is MinimalUser => Boolean(user))
+            .map((user) => [getUserKey(user), user] as const),
+        ).values(),
       );
     }
-    if (data && typeof data === "object" && "data" in data) {
-      const maybeData = (data as { data?: unknown }).data;
+    if (data && typeof data === "object") {
+      const shaped = data as { data?: unknown; response?: unknown };
+      const maybeData = Array.isArray(shaped.data)
+        ? shaped.data
+        : shaped.response &&
+            typeof shaped.response === "object" &&
+            Array.isArray((shaped.response as { data?: unknown }).data)
+          ? (shaped.response as { data: unknown[] }).data
+          : [];
       if (Array.isArray(maybeData)) {
         return Array.from(
           new Map(
-            (maybeData as MinimalUser[]).map(
-              (user) => [getUserKey(user), user] as const,
-            ),
+            maybeData
+              .map((user) => normalizeUser(user as RawUserSearchResult))
+              .filter((user): user is MinimalUser => Boolean(user))
+              .map((user) => [getUserKey(user), user] as const),
           ).values(),
         );
       }

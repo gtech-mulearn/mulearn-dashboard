@@ -1,5 +1,5 @@
 import type {
-  CollaboratorInviteBody,
+  CollaboratorEntityType,
   CollaboratorType,
   EventScope,
   EventStatus,
@@ -61,7 +61,7 @@ export const COLLABORATOR_TYPE_OPTIONS: Array<
 
 export const COLLABORATOR_INVITE_TYPE_MAP: Record<
   CollaboratorType,
-  CollaboratorInviteBody["entity_type"]
+  CollaboratorEntityType
 > = {
   ig: "collab_ig",
   campus: "collab_campus",

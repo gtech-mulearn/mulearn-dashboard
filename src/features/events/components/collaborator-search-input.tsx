@@ -10,65 +10,16 @@ import {
   COLLABORATOR_TYPE_OPTIONS,
 } from "../constants";
 import { useCollaborationTargets, useInviteCollaborator } from "../hooks";
-import type { CollaborationTarget, CollaboratorType } from "../types";
+import type { CollaboratorType } from "../types";
+import { normalizeCollaborationTargets } from "./collaboration-targets";
 
 interface CollaboratorSearchInputProps {
   eventId: string;
   onInvited?: () => void;
 }
 
-function normalizeTargets(data: unknown): CollaborationTarget[] {
-  const source = (() => {
-    if (Array.isArray(data)) return data;
-    if (data && typeof data === "object") {
-      const shaped = data as {
-        data?: unknown;
-        response?: unknown;
-        results?: unknown;
-      };
-      if (Array.isArray(shaped.data)) return shaped.data;
-      if (Array.isArray(shaped.results)) return shaped.results;
-      if (
-        shaped.response &&
-        typeof shaped.response === "object" &&
-        Array.isArray((shaped.response as { data?: unknown }).data)
-      ) {
-        return (shaped.response as { data: unknown[] }).data;
-      }
-    }
-    return [] as unknown[];
-  })();
-
-  return source
-    .map((item): CollaborationTarget | null => {
-      if (!item || typeof item !== "object") return null;
-      const value = item as Record<string, unknown>;
-      const id =
-        (value.id as string | undefined) ??
-        (value.ig_id as string | undefined) ??
-        (value.org_id as string | undefined) ??
-        (value.company_id as string | undefined);
-      const collaboratorType =
-        (value.collaborator_type as CollaboratorType | undefined) ?? "ig";
-      const name =
-        (value.name as string | undefined) ??
-        (value.ig_name as string | undefined) ??
-        (value.org_name as string | undefined) ??
-        (value.company_name as string | undefined);
-
-      if (!id || !name) return null;
-      return {
-        id,
-        name,
-        collaborator_type: collaboratorType,
-        logo: (value.logo as string | null | undefined) ?? null,
-      };
-    })
-    .filter((item): item is CollaborationTarget => Boolean(item));
-}
-
-function toInviteType(type: CollaboratorType) {
-  return COLLABORATOR_INVITE_TYPE_MAP[type];
+function toInviteType(type: CollaboratorType | undefined) {
+  return COLLABORATOR_INVITE_TYPE_MAP[type ?? "ig"];
 }
 
 export function CollaboratorSearchInput({
@@ -92,7 +43,7 @@ export function CollaboratorSearchInput({
   const inviteCollaborator = useInviteCollaborator(eventId);
 
   const targets = useMemo(() => {
-    return normalizeTargets(data);
+    return normalizeCollaborationTargets(data);
   }, [data]);
 
   return (
@@ -149,7 +100,7 @@ export function CollaboratorSearchInput({
                         {target.name}
                       </p>
                       <Badge variant="outline" className="mt-1 capitalize">
-                        {target.collaborator_type.replace(/_/g, " ")}
+                        {(target.collaborator_type ?? "ig").replace(/_/g, " ")}
                       </Badge>
                     </div>
                     <Button

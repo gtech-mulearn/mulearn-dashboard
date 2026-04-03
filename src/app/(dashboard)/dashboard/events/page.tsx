@@ -24,7 +24,7 @@ export default function EventsPage() {
   );
 
   const { data, isLoading } = useEventsList({
-    page: currentPage,
+    pageIndex: currentPage,
     search: search || undefined,
     cluster: selectedCluster === "all" ? undefined : selectedCluster,
     event_type: selectedEventType === "all" ? undefined : selectedEventType,

@@ -45,7 +45,7 @@ export default function ManageEventsDashboard() {
   const useAdminView = canAdminView;
 
   const listParams = {
-    page,
+    pageIndex: page,
     search: search || undefined,
     status: statusFilter === "all" ? undefined : statusFilter,
     perPage: 12,
@@ -55,26 +55,34 @@ export default function ManageEventsDashboard() {
     queries: [
       {
         queryKey: useAdminView
-          ? eventKeys.adminList({ page: 1, perPage: 1 })
-          : eventKeys.manageList({ page: 1, perPage: 1 }),
+          ? eventKeys.adminList({ pageIndex: 1, perPage: 1 })
+          : eventKeys.manageList({ pageIndex: 1, perPage: 1 }),
         queryFn: () =>
           useAdminView
-            ? eventsApi.adminList({ page: 1, perPage: 1 })
-            : eventsApi.manageList({ page: 1, perPage: 1 }),
+            ? eventsApi.adminList({ pageIndex: 1, perPage: 1 })
+            : eventsApi.manageList({ pageIndex: 1, perPage: 1 }),
       },
       {
         queryKey: useAdminView
-          ? eventKeys.adminList({ page: 1, perPage: 1, status: "published" })
+          ? eventKeys.adminList({
+              pageIndex: 1,
+              perPage: 1,
+              status: "published",
+            })
           : eventKeys.manageList({
-              page: 1,
+              pageIndex: 1,
               perPage: 1,
               status: "published",
             }),
         queryFn: () =>
           useAdminView
-            ? eventsApi.adminList({ page: 1, perPage: 1, status: "published" })
+            ? eventsApi.adminList({
+                pageIndex: 1,
+                perPage: 1,
+                status: "published",
+              })
             : eventsApi.manageList({
-                page: 1,
+                pageIndex: 1,
                 perPage: 1,
                 status: "published",
               }),
@@ -82,54 +90,66 @@ export default function ManageEventsDashboard() {
       {
         queryKey: useAdminView
           ? eventKeys.adminList({
-              page: 1,
+              pageIndex: 1,
               perPage: 1,
               status: "pending_approval",
             })
           : eventKeys.manageList({
-              page: 1,
+              pageIndex: 1,
               perPage: 1,
               status: "pending_approval",
             }),
         queryFn: () =>
           useAdminView
             ? eventsApi.adminList({
-                page: 1,
+                pageIndex: 1,
                 perPage: 1,
                 status: "pending_approval",
               })
             : eventsApi.manageList({
-                page: 1,
+                pageIndex: 1,
                 perPage: 1,
                 status: "pending_approval",
               }),
       },
       {
         queryKey: useAdminView
-          ? eventKeys.adminList({ page: 1, perPage: 1, status: "draft" })
+          ? eventKeys.adminList({ pageIndex: 1, perPage: 1, status: "draft" })
           : eventKeys.manageList({
-              page: 1,
+              pageIndex: 1,
               perPage: 1,
               status: "draft",
             }),
         queryFn: () =>
           useAdminView
-            ? eventsApi.adminList({ page: 1, perPage: 1, status: "draft" })
-            : eventsApi.manageList({ page: 1, perPage: 1, status: "draft" }),
+            ? eventsApi.adminList({ pageIndex: 1, perPage: 1, status: "draft" })
+            : eventsApi.manageList({
+                pageIndex: 1,
+                perPage: 1,
+                status: "draft",
+              }),
       },
       {
         queryKey: useAdminView
-          ? eventKeys.adminList({ page: 1, perPage: 1, status: "completed" })
+          ? eventKeys.adminList({
+              pageIndex: 1,
+              perPage: 1,
+              status: "completed",
+            })
           : eventKeys.manageList({
-              page: 1,
+              pageIndex: 1,
               perPage: 1,
               status: "completed",
             }),
         queryFn: () =>
           useAdminView
-            ? eventsApi.adminList({ page: 1, perPage: 1, status: "completed" })
+            ? eventsApi.adminList({
+                pageIndex: 1,
+                perPage: 1,
+                status: "completed",
+              })
             : eventsApi.manageList({
-                page: 1,
+                pageIndex: 1,
                 perPage: 1,
                 status: "completed",
               }),
