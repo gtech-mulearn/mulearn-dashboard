@@ -3,6 +3,7 @@
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { EVENT_CLUSTER_OPTIONS, EVENT_TYPE_OPTIONS } from "../constants";
 import type { EventType, IGCluster } from "../types";
 
 interface EventsFiltersProps {
@@ -16,25 +17,6 @@ interface EventsFiltersProps {
   onCategoryChange?: (category: string) => void;
   selectedCategory?: string;
 }
-
-const clusters: Array<{ label: string; value: IGCluster | "all" }> = [
-  { label: "All", value: "all" },
-  { label: "Coder", value: "coder" },
-  { label: "Maker", value: "maker" },
-  { label: "Manager", value: "manager" },
-  { label: "Creative", value: "creative" },
-];
-
-const eventTypes: Array<{ label: string; value: EventType | "all" }> = [
-  { label: "All Types", value: "all" },
-  { label: "Workshop", value: "workshop" },
-  { label: "Webinar", value: "webinar" },
-  { label: "Hackathon", value: "hackathon" },
-  { label: "Meetup", value: "meetup" },
-  { label: "Competition", value: "competition" },
-  { label: "Social Gathering", value: "social_gathering" },
-  { label: "Other", value: "other" },
-];
 
 export function EventsFilters({
   onSearch,
@@ -61,7 +43,7 @@ export function EventsFilters({
             onEventTypeChange?.(e.target.value as EventType | "all")
           }
         >
-          {eventTypes.map((item) => (
+          {EVENT_TYPE_OPTIONS.map((item) => (
             <option key={item.value} value={item.value}>
               {item.label}
             </option>
@@ -70,7 +52,7 @@ export function EventsFilters({
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {clusters.map((cluster) => {
+        {EVENT_CLUSTER_OPTIONS.map((cluster) => {
           const active = selectedCluster === cluster.value;
           return (
             <Button

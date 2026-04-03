@@ -13,7 +13,6 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
@@ -118,187 +117,6 @@ export function ManageEventDetailView({
             <Trash2 className="mr-2 h-4 w-4" /> Cancel Event
           </Button>
         </div>
-
-        <Sheet open={panelOpen} onOpenChange={setPanelOpen}>
-          <SheetTrigger asChild>
-            <Button variant="outline" className="sm:hidden">
-              <PanelRight className="mr-2 h-4 w-4" /> Manage Panel
-            </Button>
-          </SheetTrigger>
-          <SheetContent
-            side="right"
-            className="w-full max-w-full overflow-y-auto sm:max-w-md"
-          >
-            <SheetHeader>
-              <SheetTitle>Event Management</SheetTitle>
-            </SheetHeader>
-            <div className="mt-4">
-              <Tabs
-                value={activeTab}
-                onValueChange={setActiveTab}
-                className="w-full"
-              >
-                <TabsList className="grid h-auto w-full grid-cols-2 gap-1 rounded-xl bg-muted p-1 sm:grid-cols-4">
-                  <TabsTrigger value="publishing">Publishing</TabsTrigger>
-                  <TabsTrigger value="co-owners">Co-owners</TabsTrigger>
-                  <TabsTrigger value="collaborators">Collaborators</TabsTrigger>
-                  <TabsTrigger value="history">History</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="publishing" className="space-y-3 pt-3">
-                  <PublishFlowPanel
-                    event={event}
-                    canApprove={canApprove}
-                    canSelfPublish={canSelfPublish}
-                  />
-                  {canAdmin ? (
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-base">
-                          Feature on homepage
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="flex items-center justify-between">
-                        <p className="text-sm text-muted-foreground">
-                          Toggle featured visibility
-                        </p>
-                        <Switch
-                          checked={event.is_featured}
-                          onCheckedChange={(checked) =>
-                            adminFeature.mutate(checked)
-                          }
-                          disabled={adminFeature.isPending}
-                        />
-                      </CardContent>
-                    </Card>
-                  ) : null}
-                </TabsContent>
-
-                <TabsContent value="co-owners" className="pt-3">
-                  <CoOwnersPanel eventId={eventId} />
-                </TabsContent>
-
-                <TabsContent value="collaborators" className="pt-3">
-                  <CollaboratorsPanel eventId={eventId} isManageView />
-                </TabsContent>
-
-                <TabsContent value="history" className="pt-3">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Edit History</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2 sm:hidden">
-                        {sortedHistory.map((entry) => (
-                          <div
-                            key={entry.edited_at + entry.edited_by.id}
-                            className="rounded-lg border p-3"
-                          >
-                            <p className="font-medium">
-                              {entry.edited_by.full_name}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {entry.edited_by.muid}
-                            </p>
-                            <div className="mt-2 flex flex-wrap gap-1">
-                              {entry.changed_fields.map((field) => (
-                                <span
-                                  key={field}
-                                  className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono"
-                                >
-                                  {field.replace(/_/g, " ")}
-                                </span>
-                              ))}
-                            </div>
-                            <p className="mt-2 text-xs text-muted-foreground">
-                              {new Date(entry.edited_at).toLocaleString(
-                                undefined,
-                                {
-                                  dateStyle: "medium",
-                                  timeStyle: "short",
-                                },
-                              )}
-                            </p>
-                          </div>
-                        ))}
-                        {sortedHistory.length === 0 ? (
-                          <p className="py-4 text-center text-sm text-muted-foreground">
-                            No edit history yet
-                          </p>
-                        ) : null}
-                      </div>
-                      <div className="hidden overflow-x-auto sm:block">
-                        <table className="w-full border-collapse text-left text-sm">
-                          <thead>
-                            <tr className="border-b bg-muted/50">
-                              <th className="px-3 py-2 font-semibold text-foreground">
-                                Editor
-                              </th>
-                              <th className="px-3 py-2 font-semibold text-foreground">
-                                Fields Changed
-                              </th>
-                              <th className="px-3 py-2 font-semibold text-foreground">
-                                Date &amp; Time
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {sortedHistory.map((entry, idx) => (
-                              <tr
-                                key={entry.edited_at + entry.edited_by.id}
-                                className={idx % 2 === 0 ? "bg-muted/20" : ""}
-                              >
-                                <td className="px-3 py-2">
-                                  <div className="font-medium">
-                                    {entry.edited_by.full_name}
-                                  </div>
-                                  <div className="text-xs text-muted-foreground">
-                                    {entry.edited_by.muid}
-                                  </div>
-                                </td>
-                                <td className="px-3 py-2">
-                                  <div className="flex flex-wrap gap-1">
-                                    {entry.changed_fields.map((field) => (
-                                      <span
-                                        key={field}
-                                        className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono"
-                                      >
-                                        {field.replace(/_/g, " ")}
-                                      </span>
-                                    ))}
-                                  </div>
-                                </td>
-                                <td className="px-3 py-2 text-muted-foreground">
-                                  {new Date(entry.edited_at).toLocaleString(
-                                    undefined,
-                                    {
-                                      dateStyle: "medium",
-                                      timeStyle: "short",
-                                    },
-                                  )}
-                                </td>
-                              </tr>
-                            ))}
-                            {sortedHistory.length === 0 ? (
-                              <tr>
-                                <td
-                                  colSpan={3}
-                                  className="px-3 py-6 text-center text-sm text-muted-foreground"
-                                >
-                                  No edit history yet
-                                </td>
-                              </tr>
-                            ) : null}
-                          </tbody>
-                        </table>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              </Tabs>
-            </div>
-          </SheetContent>
-        </Sheet>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -458,6 +276,118 @@ export function ManageEventDetailView({
           </Button>
         </div>
       </div>
+
+      <Sheet open={panelOpen} onOpenChange={setPanelOpen}>
+        <SheetContent
+          side="bottom"
+          className="h-[85vh] overflow-y-auto rounded-t-2xl sm:hidden"
+        >
+          <SheetHeader>
+            <SheetTitle>Manage Panels</SheetTitle>
+          </SheetHeader>
+
+          <div className="mt-4">
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="w-full"
+            >
+              <TabsList className="grid w-full grid-cols-2 auto-rows-fr gap-1 rounded-xl bg-muted p-1 group-data-[orientation=horizontal]/tabs:!h-auto [&>*]:min-h-9 [&>*]:w-full [&>*]:flex-none [&>*]:px-2 [&>*]:text-xs">
+                <TabsTrigger value="publishing">Publishing</TabsTrigger>
+                <TabsTrigger value="co-owners">Co-owners</TabsTrigger>
+                <TabsTrigger value="collaborators">Collaborators</TabsTrigger>
+                <TabsTrigger value="history">History</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="publishing" className="space-y-3 pt-3">
+                <PublishFlowPanel
+                  event={event}
+                  canApprove={canApprove}
+                  canSelfPublish={canSelfPublish}
+                />
+                {canAdmin ? (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">
+                        Feature on homepage
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex items-center justify-between">
+                      <p className="text-sm text-muted-foreground">
+                        Toggle featured visibility
+                      </p>
+                      <Switch
+                        checked={event.is_featured}
+                        onCheckedChange={(checked) =>
+                          adminFeature.mutate(checked)
+                        }
+                        disabled={adminFeature.isPending}
+                      />
+                    </CardContent>
+                  </Card>
+                ) : null}
+              </TabsContent>
+
+              <TabsContent value="co-owners" className="pt-3">
+                <CoOwnersPanel eventId={eventId} />
+              </TabsContent>
+
+              <TabsContent value="collaborators" className="pt-3">
+                <CollaboratorsPanel eventId={eventId} isManageView />
+              </TabsContent>
+
+              <TabsContent value="history" className="pt-3">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Edit History</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {sortedHistory.map((entry) => (
+                        <div
+                          key={entry.edited_at + entry.edited_by.id}
+                          className="rounded-lg border p-3"
+                        >
+                          <p className="font-medium">
+                            {entry.edited_by.full_name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {entry.edited_by.muid}
+                          </p>
+                          <div className="mt-2 flex flex-wrap gap-1">
+                            {entry.changed_fields.map((field) => (
+                              <span
+                                key={field}
+                                className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono"
+                              >
+                                {field.replace(/_/g, " ")}
+                              </span>
+                            ))}
+                          </div>
+                          <p className="mt-2 text-xs text-muted-foreground">
+                            {new Date(entry.edited_at).toLocaleString(
+                              undefined,
+                              {
+                                dateStyle: "medium",
+                                timeStyle: "short",
+                              },
+                            )}
+                          </p>
+                        </div>
+                      ))}
+                      {sortedHistory.length === 0 ? (
+                        <p className="py-4 text-center text-sm text-muted-foreground">
+                          No edit history yet
+                        </p>
+                      ) : null}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </SheetContent>
+      </Sheet>
 
       <ConfirmDialog
         open={confirmCancelOpen}

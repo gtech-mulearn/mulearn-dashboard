@@ -59,9 +59,9 @@ export function UserSearchInput({
           <p className="p-3 text-xs text-muted-foreground">No results</p>
         ) : (
           <div className="max-h-64 space-y-1 overflow-y-auto p-2">
-            {users.map((user, index) => (
+            {users.map((user) => (
               <div
-                key={user.id || `user-${index}`}
+                key={user.id}
                 className="flex items-center justify-between gap-3 rounded-md border p-2"
               >
                 <div className="flex min-w-0 items-center gap-2">

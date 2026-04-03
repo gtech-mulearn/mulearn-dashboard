@@ -216,7 +216,7 @@ export function EventDetailView({
             </Card>
           ) : null}
 
-          {event.tags.length > 0 ? (
+          {Array.isArray(event.tags) && event.tags.length > 0 ? (
             <div className="flex flex-wrap gap-2">
               {event.tags.map((tag) => (
                 <Badge key={tag} variant="outline">

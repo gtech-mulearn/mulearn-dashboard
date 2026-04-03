@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { eventsApi } from "../api";
+import { EVENT_SCOPE_OPTIONS, EVENT_TYPE_SELECT_OPTIONS } from "../constants";
 import { useCreateEvent, useOrganizerOptions, usePatchEvent } from "../hooks";
 import {
   type CreateEventSchema,
@@ -343,6 +344,11 @@ export default function EventModal({
       missingOrganizerSelection &&
       shouldRequireOrganizer);
 
+  // Check if we can publish this event
+  const eventStatus =
+    isEdit && (initialData as Partial<EventDetailManage>)?.status;
+  const canPublish = !eventStatus || eventStatus === "draft";
+
   const toBase64 = (file: File): Promise<string> =>
     new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -386,7 +392,7 @@ export default function EventModal({
     if (hasDateError) return;
 
     const selectedOrganiser = selectedOrganizer;
-    if (!selectedOrganiser && shouldRequireOrganizer) {
+    if (!selectedOrganiser && !isEdit) {
       setError("title", {
         type: "manual",
         message: "Select an organiser before saving",
@@ -401,55 +407,103 @@ export default function EventModal({
       ? await toBase64(bannerImageFile)
       : (values.banner_image ?? null);
 
-    if (!selectedOrganiser) {
-      // This should not happen if validation works, but type guard for safety
-      setError("title", {
-        type: "manual",
-        message: "Organizer selection is required",
-      });
-      return;
-    }
-
-    const payload: EventWriteBody = {
+    const basePayload = {
       ...values,
       start_datetime: start as string,
       end_datetime: end as string,
       registration_deadline: deadline,
       cover_image: coverBase64,
       banner_image: bannerBase64,
-      organiser_type: selectedOrganiser.type,
-      organiser_ig_id:
-        selectedOrganiser.type === "global_ig"
-          ? selectedOrganiser.id
-          : undefined,
-      organiser_campus_id:
-        selectedOrganiser.type === "campus" ? selectedOrganiser.id : undefined,
-      organiser_campus_ig_id:
-        selectedOrganiser.type === "campus_ig"
-          ? selectedOrganiser.id
-          : undefined,
-      organiser_company_id:
-        selectedOrganiser.type === "company" ? selectedOrganiser.id : undefined,
       co_owners: selectedCoOwners,
     };
+
+    const organizerPayload = selectedOrganiser
+      ? {
+          organiser_type: selectedOrganiser.type,
+          organiser_ig_id:
+            selectedOrganiser.type === "global_ig"
+              ? selectedOrganiser.id
+              : undefined,
+          organiser_campus_id:
+            selectedOrganiser.type === "campus"
+              ? selectedOrganiser.id
+              : undefined,
+          organiser_campus_ig_id:
+            selectedOrganiser.type === "campus_ig"
+              ? selectedOrganiser.id
+              : undefined,
+          organiser_company_id:
+            selectedOrganiser.type === "company"
+              ? selectedOrganiser.id
+              : undefined,
+        }
+      : {};
 
     try {
       let savedEventId = initialData?.id;
 
       if (isEdit && initialData?.id) {
-        const updated = await patchEvent.mutateAsync(payload as EventPatchBody);
+        const payload: EventPatchBody = {
+          ...basePayload,
+          ...organizerPayload,
+        };
+        const updated = await patchEvent.mutateAsync(payload);
         savedEventId = updated.id;
       } else if (!isEdit) {
-        const created = await createEvent.mutateAsync(
-          payload as EventWriteBody,
-        );
+        if (!selectedOrganiser) {
+          setError("title", {
+            type: "manual",
+            message: "Select an organiser before saving",
+          });
+          return;
+        }
+
+        const createOrganizerPayload = {
+          organiser_type: selectedOrganiser.type,
+          organiser_ig_id:
+            selectedOrganiser.type === "global_ig"
+              ? selectedOrganiser.id
+              : undefined,
+          organiser_campus_id:
+            selectedOrganiser.type === "campus"
+              ? selectedOrganiser.id
+              : undefined,
+          organiser_campus_ig_id:
+            selectedOrganiser.type === "campus_ig"
+              ? selectedOrganiser.id
+              : undefined,
+          organiser_company_id:
+            selectedOrganiser.type === "company"
+              ? selectedOrganiser.id
+              : undefined,
+        };
+
+        const payload: EventWriteBody = {
+          ...basePayload,
+          ...createOrganizerPayload,
+        };
+
+        const created = await createEvent.mutateAsync(payload);
         savedEventId = created.id;
       }
 
       if (action === "publish" && savedEventId) {
+        const eventStatus = isEdit
+          ? (initialData as Partial<EventDetailManage> | null)?.status
+          : "draft";
+
+        // Only allow publishing if it's a new event (create) or draft status
+        if (eventStatus && eventStatus !== "draft") {
+          toast.error(
+            `Cannot publish events with status "${eventStatus}". Save as draft and update from the manage page.`,
+          );
+          return;
+        }
+
         try {
           await eventsApi.publish(savedEventId);
-        } catch {
+        } catch (error) {
+          console.error("Failed to publish event after saving draft", error);
           toast.error("Event saved as draft, but publish failed");
           return;
         }
@@ -524,13 +578,11 @@ export default function EventModal({
                   {...register("event_type")}
                 >
                   <option value="">Select event type</option>
-                  <option value="workshop">Workshop</option>
-                  <option value="webinar">Webinar</option>
-                  <option value="hackathon">Hackathon</option>
-                  <option value="meetup">Meetup</option>
-                  <option value="competition">Competition</option>
-                  <option value="social_gathering">Social Gathering</option>
-                  <option value="other">Other</option>
+                  {EVENT_TYPE_SELECT_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="space-y-1">
@@ -545,10 +597,11 @@ export default function EventModal({
                   className="h-10 w-full rounded-md border px-3 text-sm"
                   {...register("scope")}
                 >
-                  <option value="global">Global</option>
-                  <option value="campus">Campus</option>
-                  <option value="ig">IG</option>
-                  <option value="campus_ig">Campus IG</option>
+                  {EVENT_SCOPE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -1003,7 +1056,12 @@ export default function EventModal({
             </Button>
             <Button
               type="button"
-              disabled={disableSaveActions}
+              disabled={disableSaveActions || !canPublish}
+              title={
+                !canPublish
+                  ? `Cannot publish events with status "${eventStatus}". Save as draft and update from the manage page.`
+                  : ""
+              }
               onClick={handleSubmit((values) => onSubmit(values, "publish"))}
             >
               Save and Publish

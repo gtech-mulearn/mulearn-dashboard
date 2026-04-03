@@ -17,7 +17,12 @@ export function CoOwnersPanel({ eventId }: CoOwnersPanelProps) {
   const [selectedCoOwner, setSelectedCoOwner] = useState<EventCoOwner | null>(
     null,
   );
-  const { data: coOwners } = useEventCoOwners(eventId);
+  const {
+    data: coOwners,
+    isLoading,
+    isError,
+    error,
+  } = useEventCoOwners(eventId);
   const addCoOwner = useAddCoOwner(eventId);
   const removeCoOwner = useRemoveCoOwner(eventId);
 
@@ -29,9 +34,27 @@ export function CoOwnersPanel({ eventId }: CoOwnersPanelProps) {
         : []
       : [];
 
+  const errorMessage =
+    error instanceof Error ? error.message : "Failed to load co-owners";
+  const isPermissionDenied = errorMessage
+    .toLowerCase()
+    .includes("permission denied");
+
   return (
     <section className="space-y-3 rounded-lg border p-4">
       <h3 className="font-semibold">Co-Owners</h3>
+
+      {isLoading ? (
+        <p className="text-sm text-muted-foreground">Loading co-owners...</p>
+      ) : null}
+
+      {isError ? (
+        <p className="text-sm text-destructive">
+          {isPermissionDenied
+            ? "Unable to read co-owners for this event due to permissions. You can still try adding a co-owner below."
+            : errorMessage}
+        </p>
+      ) : null}
 
       <div className="space-y-2">
         {coOwnersList.map((coOwner) => (

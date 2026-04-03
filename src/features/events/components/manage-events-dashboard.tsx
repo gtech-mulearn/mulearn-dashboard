@@ -14,21 +14,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { eventsApi } from "../api";
+import { MANAGE_EVENT_STATUS_PILLS } from "../constants";
 import { eventKeys } from "../hooks/query-keys";
 import type { EventListItem, EventStatus } from "../types";
 import EventModal from "./event-modal";
 import { EventsGrid } from "./events-grid";
 import { EventsPagination } from "./events-pagination";
-
-const statusPills: Array<{ label: string; value: EventStatus | "all" }> = [
-  { label: "All", value: "all" },
-  { label: "Draft", value: "draft" },
-  { label: "Pending", value: "pending_approval" },
-  { label: "Published", value: "published" },
-  { label: "Ongoing", value: "ongoing" },
-  { label: "Completed", value: "completed" },
-  { label: "Cancelled", value: "cancelled" },
-];
 
 export default function ManageEventsDashboard() {
   const router = useRouter();
@@ -209,7 +200,7 @@ export default function ManageEventsDashboard() {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {statusPills.map((pill) => {
+        {MANAGE_EVENT_STATUS_PILLS.map((pill) => {
           const active = statusFilter === pill.value;
           return (
             <Button

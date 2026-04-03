@@ -5,6 +5,10 @@ import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  COLLABORATOR_INVITE_TYPE_MAP,
+  COLLABORATOR_TYPE_OPTIONS,
+} from "../constants";
 import { useCollaborationTargets, useInviteCollaborator } from "../hooks";
 import type { CollaborationTarget, CollaboratorType } from "../types";
 
@@ -63,19 +67,8 @@ function normalizeTargets(data: unknown): CollaborationTarget[] {
     .filter((item): item is CollaborationTarget => Boolean(item));
 }
 
-const typeOptions: Array<{ label: string; value: CollaboratorType | "all" }> = [
-  { label: "All", value: "all" },
-  { label: "IG", value: "ig" },
-  { label: "Campus", value: "campus" },
-  { label: "Campus IG", value: "campus_ig" },
-  { label: "Company", value: "company" },
-];
-
 function toInviteType(type: CollaboratorType) {
-  if (type === "ig") return "collab_ig" as const;
-  if (type === "campus") return "collab_campus" as const;
-  if (type === "campus_ig") return "collab_campus_ig" as const;
-  return "collab_company" as const;
+  return COLLABORATOR_INVITE_TYPE_MAP[type];
 }
 
 export function CollaboratorSearchInput({
@@ -105,7 +98,7 @@ export function CollaboratorSearchInput({
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap gap-2">
-        {typeOptions.map((option) => {
+        {COLLABORATOR_TYPE_OPTIONS.map((option) => {
           const isActive = selectedType === option.value;
           return (
             <Button
