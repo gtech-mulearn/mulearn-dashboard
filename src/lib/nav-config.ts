@@ -197,7 +197,6 @@ export const NAV_ITEMS: readonly NavItem[] = [
         icon: MapPin,
         section: "management",
         roles: DISTRICT_ROLES,
-        isUnderConstruction: true,
       },
       {
         id: "campus-manage",

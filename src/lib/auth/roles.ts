@@ -87,6 +87,7 @@ export const CAMPUS_MANAGEMENT_ROLES = [
 /** Roles that can view zonal dashboards */
 export const ZONAL_ROLES = [
   ROLES.ADMIN,
+  ROLES.ASSOCIATE,
   ROLES.FELLOW,
   ROLES.ZONAL_CAMPUS_LEAD,
 ] as const;
@@ -94,6 +95,7 @@ export const ZONAL_ROLES = [
 /** Roles that can view district dashboards */
 export const DISTRICT_ROLES = [
   ROLES.ADMIN,
+  ROLES.ASSOCIATE,
   ROLES.FELLOW,
   ROLES.DISTRICT_CAMPUS_LEAD,
 ] as const;

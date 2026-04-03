@@ -768,8 +768,8 @@ export function CampusManageDashboard() {
                               data={trend}
                               margin={{
                                 top: 4,
-                                right: 30,
-                                left: 30,
+                                right: 10,
+                                left: 0,
                                 bottom: 0,
                               }}
                             >
@@ -811,7 +811,7 @@ export function CampusManageDashboard() {
                                 tick={{ fontSize: 10 }}
                                 tickLine={false}
                                 axisLine={false}
-                                width={44}
+                                width={28}
                               />
                               <Tooltip
                                 cursor={{
@@ -1007,8 +1007,8 @@ export function CampusManageDashboard() {
                                   barSize={20}
                                   margin={{
                                     top: 10,
-                                    right: 35,
-                                    left: 35,
+                                    right: 15,
+                                    left: 0,
                                     bottom: 5,
                                   }}
                                 >
