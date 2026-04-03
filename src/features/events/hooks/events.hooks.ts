@@ -7,6 +7,7 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { eventsApi } from "../api";
 import { COLLABORATOR_INVITE_TYPE_MAP } from "../constants";
 import type {
+  CollaborationTarget,
   CollaboratorEntityType,
   CollaboratorInviteBody,
   CollaboratorType,
@@ -21,6 +22,17 @@ import type {
 } from "../types";
 import { eventKeys } from "./query-keys";
 
+type CollaborationTargetBucketKey = "ig" | "campus" | "company" | "campus_ig";
+
+interface CollaborationTargetSourceShape {
+  data?: unknown;
+  response?: unknown;
+  ig?: unknown;
+  campus?: unknown;
+  company?: unknown;
+  campus_ig?: unknown;
+}
+
 function getErrorMessage(error: unknown, fallback: string): string {
   if (error instanceof ApiError && error.message) {
     return error.message;
@@ -29,6 +41,116 @@ function getErrorMessage(error: unknown, fallback: string): string {
     return error.message;
   }
   return fallback;
+}
+
+// Convert a datetime-local string (e.g. "2026-03-22T10:00") to a full ISO string in UTC.
+export function toISOWithOffset(
+  value: string | null | undefined,
+): string | null {
+  if (!value) return null;
+  if (value.includes("+") || value.includes("Z")) return value;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toISOString();
+}
+
+// Convert an API ISO string back to "YYYY-MM-DDTHH:mm" for datetime-local inputs.
+export function toDatetimeLocal(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  const pad = (num: number) => num.toString().padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function extractTargetArray(value: unknown): unknown[] {
+  if (Array.isArray(value)) return value;
+  if (!value || typeof value !== "object") return [];
+
+  const shaped = value as CollaborationTargetSourceShape;
+  if (Array.isArray(shaped.data)) return shaped.data;
+
+  if (shaped.response && typeof shaped.response === "object") {
+    const response = shaped.response as CollaborationTargetSourceShape;
+    if (Array.isArray(response.data)) return response.data;
+  }
+
+  return [];
+}
+
+function normalizeTarget(
+  item: unknown,
+  collaboratorType?: CollaboratorType,
+): CollaborationTarget | null {
+  if (!item || typeof item !== "object") return null;
+
+  const value = item as Record<string, unknown>;
+  const id =
+    (value.id as string | undefined) ??
+    (value.ig_id as string | undefined) ??
+    (value.org_id as string | undefined) ??
+    (value.company_id as string | undefined) ??
+    (value.campus_id as string | undefined) ??
+    (value.campus_ig_id as string | undefined);
+  const name =
+    (value.name as string | undefined) ??
+    (value.title as string | undefined) ??
+    (value.ig_name as string | undefined) ??
+    (value.org_name as string | undefined) ??
+    (value.company_name as string | undefined);
+
+  const targetType =
+    (value.collaborator_type as CollaboratorType | undefined) ??
+    collaboratorType ??
+    "ig";
+
+  if (!id || !name) return null;
+
+  return {
+    id,
+    name,
+    collaborator_type: targetType,
+    logo: (value.logo as string | null | undefined) ?? null,
+  };
+}
+
+export function normalizeCollaborationTargets(
+  data: unknown,
+): CollaborationTarget[] {
+  if (Array.isArray(data)) {
+    return data
+      .map((item) => normalizeTarget(item))
+      .filter((item): item is CollaborationTarget => Boolean(item));
+  }
+
+  if (!data || typeof data !== "object") {
+    return [];
+  }
+
+  const shaped = data as CollaborationTargetSourceShape;
+  const hasBuckets = ["ig", "campus", "company", "campus_ig"].some((key) =>
+    Array.isArray(shaped[key as CollaborationTargetBucketKey]),
+  );
+
+  if (hasBuckets) {
+    const buckets: Array<[CollaborationTargetBucketKey, unknown[]]> = [
+      ["ig", Array.isArray(shaped.ig) ? shaped.ig : []],
+      ["campus", Array.isArray(shaped.campus) ? shaped.campus : []],
+      ["company", Array.isArray(shaped.company) ? shaped.company : []],
+      ["campus_ig", Array.isArray(shaped.campus_ig) ? shaped.campus_ig : []],
+    ];
+
+    return buckets.flatMap(([type, items]) =>
+      items
+        .map((item) => normalizeTarget(item, type))
+        .filter((item): item is CollaborationTarget => Boolean(item)),
+    );
+  }
+
+  const source = extractTargetArray(data);
+  return source
+    .map((item) => normalizeTarget(item))
+    .filter((item): item is CollaborationTarget => Boolean(item));
 }
 
 export function useEventsList(params?: EventListQueryParams) {
@@ -114,8 +236,29 @@ export function useUserSearch(query: string) {
   const debouncedQuery = useDebounce(query, 300);
   return useQuery({
     queryKey: eventKeys.userSearch(debouncedQuery),
-    queryFn: () => eventsApi.searchUsers(debouncedQuery),
+    queryFn: async () => {
+      const result = await eventsApi.searchUsers(debouncedQuery);
+      return result.data;
+    },
     enabled: debouncedQuery.length >= 2,
+  });
+}
+
+export function useCampusSearch(search: string) {
+  const debouncedSearch = useDebounce(search, 300);
+  return useQuery({
+    queryKey: [...eventKeys.meta(), "campus-search", debouncedSearch],
+    queryFn: () => eventsApi.searchCampusTargets(debouncedSearch),
+    enabled: debouncedSearch.length >= 2,
+  });
+}
+
+export function useIGSearch(search: string) {
+  const debouncedSearch = useDebounce(search, 300);
+  return useQuery({
+    queryKey: [...eventKeys.meta(), "ig-search", debouncedSearch],
+    queryFn: () => eventsApi.searchIGTargets(debouncedSearch),
+    enabled: debouncedSearch.length >= 2,
   });
 }
 
@@ -205,6 +348,7 @@ export function useUpdateEvent(eventId: string) {
       await queryClient.refetchQueries({
         queryKey: eventKeys.manageDetail(eventId),
       });
+      await queryClient.refetchQueries({ queryKey: eventKeys.all });
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error, "Failed to update event"));
@@ -231,6 +375,7 @@ export function usePatchEvent(eventId: string) {
       await queryClient.refetchQueries({
         queryKey: eventKeys.manageDetail(eventId),
       });
+      await queryClient.refetchQueries({ queryKey: eventKeys.all });
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error, "Failed to update event"));
@@ -284,9 +429,17 @@ export function useAddCoOwner(eventId: string) {
   return useMutation({
     mutationFn: (body: { user_id: string }) =>
       eventsApi.addCoOwner(eventId, body),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Co-owner added");
-      queryClient.invalidateQueries({ queryKey: eventKeys.coOwners(eventId) });
+      await queryClient.invalidateQueries({
+        queryKey: eventKeys.coOwners(eventId),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: eventKeys.manageDetail(eventId),
+      });
+      await queryClient.refetchQueries({
+        queryKey: eventKeys.coOwners(eventId),
+      });
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error, "Failed to add co-owner"));
@@ -300,9 +453,14 @@ export function useRemoveCoOwner(eventId: string) {
   return useMutation({
     mutationFn: (coOwnerId: string) =>
       eventsApi.removeCoOwner(eventId, coOwnerId),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Co-owner removed");
-      queryClient.invalidateQueries({ queryKey: eventKeys.coOwners(eventId) });
+      await queryClient.invalidateQueries({
+        queryKey: eventKeys.coOwners(eventId),
+      });
+      await queryClient.refetchQueries({
+        queryKey: eventKeys.coOwners(eventId),
+      });
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error, "Failed to remove co-owner"));

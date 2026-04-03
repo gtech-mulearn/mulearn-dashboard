@@ -19,8 +19,18 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { eventsApi } from "../api";
-import { EVENT_SCOPE_OPTIONS, EVENT_TYPE_SELECT_OPTIONS } from "../constants";
-import { useCreateEvent, useOrganizerOptions, usePatchEvent } from "../hooks";
+import {
+  EVENT_FORM_DEFAULT_VALUES,
+  EVENT_SCOPE_OPTIONS,
+  EVENT_TYPE_SELECT_OPTIONS,
+} from "../constants";
+import {
+  toDatetimeLocal,
+  toISOWithOffset,
+  useCreateEvent,
+  useOrganizerOptions,
+  usePatchEvent,
+} from "../hooks";
 import {
   type CreateEventSchema,
   createEventSchema,
@@ -39,29 +49,9 @@ import type {
   OrganizerOptionsResponse,
   OrganizerType,
 } from "../types";
-import { CollaboratorSearchInput } from "./collaborator-search-input";
-import { EntitySearchSelect } from "./entity-search-select";
+import { EventSearch } from "./event-search";
 import { UserSearchInput } from "./user-search-input";
 import { VenueSection } from "./venue-section";
-
-// Convert a datetime-local string (e.g. "2026-03-22T10:00") to a full ISO string
-// in UTC (ending in 'Z') for the backend.
-function toISOWithOffset(value: string | null | undefined): string | null {
-  if (!value) return null;
-  if (value.includes("+") || value.includes("Z")) return value;
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return null;
-  return d.toISOString();
-}
-
-// Convert a full ISO string from the API back to "YYYY-MM-DDTHH:mm" for datetime-local inputs.
-function toDatetimeLocal(iso: string | null | undefined): string {
-  if (!iso) return "";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  const pad = (n: number) => n.toString().padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
 
 interface EventModalProps {
   open: boolean;
@@ -92,34 +82,6 @@ type OrganizerOptionsLike = Partial<OrganizerOptionsResponse> & {
 function safeArray<T>(value: unknown): T[] {
   return Array.isArray(value) ? (value as T[]) : [];
 }
-
-const defaultValues: CreateEventSchema = {
-  title: "",
-  description: "",
-  event_type: undefined,
-  scope: "global",
-  start_datetime: "",
-  end_datetime: "",
-  venue_type: "online",
-  address: "",
-  city: "",
-  maps_url: "",
-  online_link: "",
-  platform: "",
-  cover_image: "",
-  banner_image: "",
-  registration_url: "",
-  registration_deadline: null,
-  min_karma: null,
-  linked_tasks: [],
-  co_owners: [],
-  is_collaboration: false,
-  target_campus_id: null,
-  target_ig_id: null,
-  target_campus_ig_id: null,
-  tags: [],
-  is_featured: false,
-};
 
 export default function EventModal({
   open,
@@ -240,7 +202,7 @@ export default function EventModal({
     resolver: zodResolver(
       isEdit ? updateEventSchema : createEventSchema,
     ) as Resolver<CreateEventSchema>,
-    defaultValues,
+    defaultValues: EVENT_FORM_DEFAULT_VALUES,
   });
 
   useEffect(() => {
@@ -258,10 +220,11 @@ export default function EventModal({
         : "global"
     ) as "global" | "campus" | "ig" | "campus_ig";
     reset({
-      ...defaultValues,
+      ...EVENT_FORM_DEFAULT_VALUES,
       title: d?.title ?? "",
       description: d?.description ?? "",
-      event_type: d?.event_type,
+      event_type:
+        d?.event_type ?? (initialData as Partial<EventListItem>)?.event_type,
       scope,
       start_datetime: toDatetimeLocal(d?.start_datetime),
       end_datetime: toDatetimeLocal(d?.end_datetime),
@@ -471,6 +434,8 @@ export default function EventModal({
       user_limit: undefined,
     };
 
+    const existingOrganizer = (initialData as EventDetail | EventDetailManage)
+      ?.organizer;
     const organizerPayload = selectedOrganiser
       ? ({
           organiser_type: selectedOrganiser.type,
@@ -479,14 +444,28 @@ export default function EventModal({
               ? selectedOrganiser.id
               : null,
           organiser_org:
-            selectedOrganiser.type === "campus" ? selectedOrganiser.id : null,
+            selectedOrganiser.type === "campus" ||
+            selectedOrganiser.type === "company"
+              ? selectedOrganiser.id
+              : null,
           organiser_ci_id:
             selectedOrganiser.type === "campus_ig"
               ? selectedOrganiser.id
               : null,
           co_owners: selectedCoOwners,
         } as Partial<EventWriteBody>)
-      : {};
+      : isEdit
+        ? ({
+            organiser_type: existingOrganizer?.type ?? "admin",
+            organiser_ig: existingOrganizer?.ig?.id ?? null,
+            organiser_org:
+              existingOrganizer?.campus?.id ??
+              existingOrganizer?.company?.id ??
+              null,
+            organiser_ci_id: existingOrganizer?.campus_ig?.id ?? null,
+            co_owners: selectedCoOwners,
+          } as Partial<EventWriteBody>)
+        : {};
 
     try {
       let savedEventId = initialData?.id;
@@ -655,7 +634,8 @@ export default function EventModal({
                 <p className="text-sm font-medium text-foreground">
                   Target campus <span className="text-red-500">*</span>
                 </p>
-                <EntitySearchSelect
+                <EventSearch
+                  mode="select"
                   type="campus"
                   value={watch("target_campus_id") ?? null}
                   selectedName={selectedCampusName}
@@ -674,7 +654,8 @@ export default function EventModal({
                 <p className="text-sm font-medium text-foreground">
                   Target IG <span className="text-red-500">*</span>
                 </p>
-                <EntitySearchSelect
+                <EventSearch
+                  mode="select"
                   type="ig"
                   value={watch("target_ig_id") ?? null}
                   selectedName={selectedIgName}
@@ -693,7 +674,8 @@ export default function EventModal({
                 <p className="text-sm font-medium text-foreground">
                   Target campus IG <span className="text-red-500">*</span>
                 </p>
-                <EntitySearchSelect
+                <EventSearch
+                  mode="select"
                   type="campus_ig"
                   value={watch("target_campus_ig_id") ?? null}
                   selectedName={selectedCampusIgName}
@@ -1030,7 +1012,7 @@ export default function EventModal({
 
             {watch("is_collaboration") ? (
               isEdit && initialData?.id ? (
-                <CollaboratorSearchInput eventId={initialData.id} />
+                <EventSearch mode="invite" eventId={initialData.id} />
               ) : (
                 <p className="text-xs text-muted-foreground">
                   You can add collaborators after creating the event from the

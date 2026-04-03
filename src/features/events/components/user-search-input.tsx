@@ -15,7 +15,6 @@ interface UserSearchInputProps {
 
 interface RawUserSearchResult {
   id?: string | number | null;
-  user_id?: string | number | null;
   muid?: string;
   full_name?: string;
   profile_pic?: string | null;
@@ -33,7 +32,7 @@ function getUserKey(user: MinimalUser): string {
 }
 
 function normalizeUser(user: RawUserSearchResult): MinimalUser | null {
-  const id = user.id ?? user.user_id;
+  const id = user.id;
   if (!id) return null;
 
   return {
@@ -61,26 +60,6 @@ export function UserSearchInput({
             .map((user) => [getUserKey(user), user] as const),
         ).values(),
       );
-    }
-    if (data && typeof data === "object") {
-      const shaped = data as { data?: unknown; response?: unknown };
-      const maybeData = Array.isArray(shaped.data)
-        ? shaped.data
-        : shaped.response &&
-            typeof shaped.response === "object" &&
-            Array.isArray((shaped.response as { data?: unknown }).data)
-          ? (shaped.response as { data: unknown[] }).data
-          : [];
-      if (Array.isArray(maybeData)) {
-        return Array.from(
-          new Map(
-            maybeData
-              .map((user) => normalizeUser(user as RawUserSearchResult))
-              .filter((user): user is MinimalUser => Boolean(user))
-              .map((user) => [getUserKey(user), user] as const),
-          ).values(),
-        );
-      }
     }
     return [];
   }, [data]);

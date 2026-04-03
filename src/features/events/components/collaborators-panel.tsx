@@ -12,7 +12,7 @@ import {
   useRemoveCollaborator,
 } from "../hooks";
 import type { EventCollaborator } from "../types";
-import { CollaboratorSearchInput } from "./collaborator-search-input";
+import { EventSearch } from "./event-search";
 
 interface CollaboratorsPanelProps {
   eventId: string;
@@ -130,7 +130,7 @@ export function CollaboratorsPanel({
         ))}
       </div>
 
-      {isManageView ? <CollaboratorSearchInput eventId={eventId} /> : null}
+      {isManageView ? <EventSearch mode="invite" eventId={eventId} /> : null}
 
       <ConfirmDialog
         open={!!selectedCollaborator}

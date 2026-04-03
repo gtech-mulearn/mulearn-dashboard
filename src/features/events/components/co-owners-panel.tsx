@@ -22,6 +22,7 @@ export function CoOwnersPanel({ eventId }: CoOwnersPanelProps) {
     isLoading,
     isError,
     error,
+    isFetching,
   } = useEventCoOwners(eventId);
   const addCoOwner = useAddCoOwner(eventId);
   const removeCoOwner = useRemoveCoOwner(eventId);
@@ -48,6 +49,10 @@ export function CoOwnersPanel({ eventId }: CoOwnersPanelProps) {
         <p className="text-sm text-muted-foreground">Loading co-owners...</p>
       ) : null}
 
+      {!isLoading && isFetching ? (
+        <p className="text-xs text-muted-foreground">Refreshing co-owners...</p>
+      ) : null}
+
       {isError ? (
         <p className="text-sm text-destructive">
           {isPermissionDenied
@@ -56,7 +61,7 @@ export function CoOwnersPanel({ eventId }: CoOwnersPanelProps) {
         </p>
       ) : null}
 
-      <div className="space-y-2">
+      <div className={`space-y-2 ${isFetching ? "opacity-75" : ""}`}>
         {coOwnersList.map((coOwner) => (
           <div
             key={coOwner.id}
@@ -74,7 +79,7 @@ export function CoOwnersPanel({ eventId }: CoOwnersPanelProps) {
               </p>
               <p className="text-xs text-gray-500">{coOwner.user.muid}</p>
             </div>
-            <Badge variant="outline">{coOwner.role}</Badge>
+            <Badge variant="outline">{coOwner.role ?? "co_owner"}</Badge>
             <Button
               type="button"
               size="sm"

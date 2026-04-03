@@ -18,8 +18,11 @@ import type {
   EventPatchBody,
   EventWriteBody,
   IGCluster,
+  MinimalCampus,
+  MinimalIG,
   MinimalUser,
   OrganizerOptionsResponse,
+  PaginatedData,
 } from "../types";
 
 // ─── HELPERS ────────────────────────────────────────────────────────────────
@@ -220,11 +223,33 @@ export const eventsApi = {
     );
   },
 
-  searchUsers: async (query: string): Promise<MinimalUser[]> => {
+  searchUsers: async (query: string): Promise<PaginatedData<MinimalUser>> => {
     const searchParams = new URLSearchParams({ search: query });
-    return apiClient.get<MinimalUser[]>(
-      `${endpoints.search.students}?${searchParams.toString()}`,
+    return apiClient.get<PaginatedData<MinimalUser>>(
+      `${endpoints.search.users}?${searchParams.toString()}`,
     );
+  },
+
+  searchCampusTargets: async (
+    query: string,
+  ): Promise<PaginatedData<MinimalCampus>> => {
+    const searchParams = new URLSearchParams({ search: query });
+    return apiClient.get<PaginatedData<MinimalCampus>>(
+      `${endpoints.search.colleges}?${searchParams.toString()}`,
+    );
+  },
+
+  searchIGTargets: async (query: string): Promise<PaginatedData<MinimalIG>> => {
+    const searchParams = new URLSearchParams({ search: query });
+    return apiClient.get<PaginatedData<MinimalIG>>(
+      `${endpoints.dashboard.interestGroups}?${searchParams.toString()}`,
+    );
+  },
+
+  searchCampusIGTargets: async (
+    query: string,
+  ): Promise<CollaborationTarget[]> => {
+    return eventsApi.searchCollaborationTargets(query, "collab_campus_ig");
   },
 
   // ─── SCOPED FEEDS ───────────────────────────────────────────────────────

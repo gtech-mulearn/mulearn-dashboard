@@ -193,77 +193,64 @@ export function ManageEventDetailView({
                 <CardHeader>
                   <CardTitle>Edit History</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="overflow-x-auto">
-                    <table className="w-full border-collapse text-left text-sm">
-                      <thead>
-                        <tr className="border-b bg-muted/50">
-                          <th className="px-3 py-2 font-semibold text-foreground">
-                            Editor
-                          </th>
-                          <th className="px-3 py-2 font-semibold text-foreground">
-                            Fields Changed
-                          </th>
-                          <th className="px-3 py-2 font-semibold text-foreground">
-                            Date &amp; Time
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {sortedHistory.map((entry, idx) => {
-                          const changedFieldsList = getChangedFields(
-                            entry.changed_fields,
-                          );
-                          return (
-                            <tr
-                              key={entry.edited_at + entry.edited_by.id}
-                              className={idx % 2 === 0 ? "bg-muted/20" : ""}
+                <CardContent className="max-h-[500px] space-y-3 overflow-y-auto">
+                  {sortedHistory.map((entry) => {
+                    const changedFieldsList = getChangedFields(
+                      entry.changed_fields,
+                    );
+                    return (
+                      <div
+                        key={entry.edited_at + entry.edited_by.id}
+                        className="space-y-2 rounded-lg border bg-muted/30 p-3"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-medium">
+                              {entry.edited_by.full_name}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {entry.edited_by.muid}
+                            </p>
+                          </div>
+                          <p className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
+                            {new Date(entry.edited_at).toLocaleDateString(
+                              undefined,
+                              {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              },
+                            )}
+                            <br />
+                            <span className="text-xs">
+                              {new Date(entry.edited_at).toLocaleTimeString(
+                                undefined,
+                                {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                },
+                              )}
+                            </span>
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {changedFieldsList.map((field) => (
+                            <span
+                              key={field}
+                              className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono"
                             >
-                              <td className="px-3 py-2">
-                                <div className="font-medium">
-                                  {entry.edited_by.full_name}
-                                </div>
-                                <div className="text-xs text-muted-foreground">
-                                  {entry.edited_by.muid}
-                                </div>
-                              </td>
-                              <td className="px-3 py-2">
-                                <div className="flex flex-wrap gap-1">
-                                  {changedFieldsList.map((field) => (
-                                    <span
-                                      key={field}
-                                      className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono"
-                                    >
-                                      {field.replace(/_/g, " ")}
-                                    </span>
-                                  ))}
-                                </div>
-                              </td>
-                              <td className="px-3 py-2 text-muted-foreground">
-                                {new Date(entry.edited_at).toLocaleString(
-                                  undefined,
-                                  {
-                                    dateStyle: "medium",
-                                    timeStyle: "short",
-                                  },
-                                )}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                        {sortedHistory.length === 0 ? (
-                          <tr>
-                            <td
-                              colSpan={3}
-                              className="px-3 py-6 text-center text-sm text-muted-foreground"
-                            >
-                              No edit history yet
-                            </td>
-                          </tr>
-                        ) : null}
-                      </tbody>
-                    </table>
-                  </div>
+                              {field.replace(/_/g, " ")}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {sortedHistory.length === 0 ? (
+                    <p className="py-4 text-center text-sm text-muted-foreground">
+                      No edit history yet
+                    </p>
+                  ) : null}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -357,51 +344,64 @@ export function ManageEventDetailView({
                   <CardHeader>
                     <CardTitle>Edit History</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {sortedHistory.map((entry) => {
-                        const changedFieldsList = getChangedFields(
-                          entry.changed_fields,
-                        );
-                        return (
-                          <div
-                            key={entry.edited_at + entry.edited_by.id}
-                            className="rounded-lg border p-3"
-                          >
-                            <p className="font-medium">
-                              {entry.edited_by.full_name}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {entry.edited_by.muid}
-                            </p>
-                            <div className="mt-2 flex flex-wrap gap-1">
-                              {changedFieldsList.map((field) => (
-                                <span
-                                  key={field}
-                                  className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono"
-                                >
-                                  {field.replace(/_/g, " ")}
-                                </span>
-                              ))}
+                  <CardContent className="max-h-[500px] space-y-3 overflow-y-auto">
+                    {sortedHistory.map((entry) => {
+                      const changedFieldsList = getChangedFields(
+                        entry.changed_fields,
+                      );
+                      return (
+                        <div
+                          key={entry.edited_at + entry.edited_by.id}
+                          className="space-y-2 rounded-lg border bg-muted/30 p-3"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-medium">
+                                {entry.edited_by.full_name}
+                              </p>
+                              <p className="truncate text-xs text-muted-foreground">
+                                {entry.edited_by.muid}
+                              </p>
                             </div>
-                            <p className="mt-2 text-xs text-muted-foreground">
-                              {new Date(entry.edited_at).toLocaleString(
+                            <p className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
+                              {new Date(entry.edited_at).toLocaleDateString(
                                 undefined,
                                 {
-                                  dateStyle: "medium",
-                                  timeStyle: "short",
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
                                 },
                               )}
+                              <br />
+                              <span className="text-xs">
+                                {new Date(entry.edited_at).toLocaleTimeString(
+                                  undefined,
+                                  {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  },
+                                )}
+                              </span>
                             </p>
                           </div>
-                        );
-                      })}
-                      {sortedHistory.length === 0 ? (
-                        <p className="py-4 text-center text-sm text-muted-foreground">
-                          No edit history yet
-                        </p>
-                      ) : null}
-                    </div>
+                          <div className="flex flex-wrap gap-1">
+                            {changedFieldsList.map((field) => (
+                              <span
+                                key={field}
+                                className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono"
+                              >
+                                {field.replace(/_/g, " ")}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {sortedHistory.length === 0 ? (
+                      <p className="py-4 text-center text-sm text-muted-foreground">
+                        No edit history yet
+                      </p>
+                    ) : null}
                   </CardContent>
                 </Card>
               </TabsContent>
