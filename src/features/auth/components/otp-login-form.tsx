@@ -158,22 +158,22 @@ export function OTPLoginForm({
             onSubmit={requestForm.handleSubmit(handleRequestOTP)}
             className="space-y-4"
           >
-              <div className="space-y-2 pb-2">
-                <Label htmlFor="emailOrMuid">Email or MuID</Label>
-                <Input
-                  id="emailOrMuid"
-                  type="text"
-                  placeholder="email@example.com or muid"
-                  disabled={isRequestingOTP}
-                  className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
-                  {...requestForm.register("emailOrMuid")}
-                />
-                {requestForm.formState.errors.emailOrMuid && (
-                  <p className="text-sm font-medium text-destructive">
-                    {requestForm.formState.errors.emailOrMuid.message}
-                  </p>
-                )}
-              </div>
+            <div className="space-y-2 pb-2">
+              <Label htmlFor="emailOrMuid">Email or MuID</Label>
+              <Input
+                id="emailOrMuid"
+                type="text"
+                placeholder="email@example.com or muid"
+                disabled={isRequestingOTP}
+                className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
+                {...requestForm.register("emailOrMuid")}
+              />
+              {requestForm.formState.errors.emailOrMuid && (
+                <p className="text-sm font-medium text-destructive">
+                  {requestForm.formState.errors.emailOrMuid.message}
+                </p>
+              )}
+            </div>
 
             {onSwitchToPassword && (
               <div className="text-right text-sm">

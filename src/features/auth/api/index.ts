@@ -12,6 +12,8 @@ export {
   fetchUserProfile,
   loginWithOTP,
   loginWithPassword,
+  loginWithGoogle,
+  loginWithApple,
   refreshAccessToken,
   requestLoginOTP,
   requestPasswordReset,

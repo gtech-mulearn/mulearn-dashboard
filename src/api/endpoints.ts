@@ -17,9 +17,13 @@ export const endpoints = {
     /** POST - Request OTP for login */
     requestOTP: "/api/v1/auth/request-otp/",
     /** POST - Get new access token using refresh token */
-    refreshToken: "/api/v1/auth/get-access-token/",
+    refreshToken: "/api/v1/auth/refresh-token/",
     /** POST - Verify OTP token */
     verifyToken: "/api/v1/auth/token-verification/",
+    /** POST - Google Mobile Login */
+    googleMobile: "/api/v1/auth/google-mobile/",
+    /** POST - Apple Mobile Login */
+    appleMobile: "/api/v1/auth/apple-mobile/",
   },
 
   // ============================================

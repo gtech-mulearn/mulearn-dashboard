@@ -10,7 +10,12 @@ export { authKeys } from "./query-keys";
 // Password reset hooks
 export { useForgotPassword } from "./use-forgot-password";
 // Login hooks
-export { useLoginWithOTP, useLoginWithPassword } from "./use-login";
+export {
+  useLoginWithOTP,
+  useLoginWithPassword,
+  useLoginWithGoogle,
+  useLoginWithApple,
+} from "./use-login";
 
 // Registration hooks
 export { useRegister } from "./use-register";

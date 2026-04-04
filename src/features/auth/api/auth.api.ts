@@ -61,6 +61,34 @@ export async function loginWithOTP(
 }
 
 /**
+ * Login with Google Mobile
+ */
+export async function loginWithGoogle(
+  payload: Record<string, any>,
+): Promise<LoginResponseData> {
+  const response = await apiClient.post(
+    endpoints.auth.googleMobile,
+    payload,
+    LoginResponseSchema,
+  );
+  return response.response;
+}
+
+/**
+ * Login with Apple Mobile
+ */
+export async function loginWithApple(
+  payload: Record<string, any>,
+): Promise<LoginResponseData> {
+  const response = await apiClient.post(
+    endpoints.auth.appleMobile,
+    payload,
+    LoginResponseSchema,
+  );
+  return response.response;
+}
+
+/**
  * Request OTP for login
  */
 export async function requestLoginOTP(emailOrMuid: string): Promise<void> {
