@@ -19,7 +19,7 @@ export function CampusSearchCard({ campus }: CampusSearchCardProps) {
         {/* Top Header: Title and Rank Badge */}
         <div className="flex items-start justify-between gap-4">
           <div className="flex flex-col">
-            <h3 className="font-display text-2xl font-bold leading-tight text-foreground transition-colors group-hover:text-primary line-clamp-2 min-h-[60px]">
+            <h3 className="text-2xl font-bold leading-tight text-foreground transition-colors group-hover:text-primary line-clamp-2 min-h-[60px]">
               {campus.title}
             </h3>
             <p className="mt-1 font-mono text-xs font-semibold tracking-widest text-muted-foreground">

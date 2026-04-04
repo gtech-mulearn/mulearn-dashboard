@@ -5,13 +5,13 @@ import { Providers } from "./providers";
 import "./globals.css";
 
 const bricolage = Bricolage_Grotesque({
-  variable: "--font-bricolage",
+  variable: "--font-display",
   subsets: ["latin"],
   display: "swap",
 });
 
 const geist = Geist({
-  variable: "--font-geist-sans",
+  variable: "--font-sans",
   subsets: ["latin"],
   display: "swap",
 });

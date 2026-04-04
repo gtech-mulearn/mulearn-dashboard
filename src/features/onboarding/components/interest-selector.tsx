@@ -107,7 +107,7 @@ export function InterestSelector({
           <p className="text-sm text-muted-foreground mb-2">
             Lets bring out the true YOU
           </p>
-          <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground leading-tight">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground leading-tight">
             What's your long-
             <br />
             term tech goal?
@@ -161,7 +161,7 @@ export function InterestSelector({
         <p className="text-sm text-muted-foreground mb-2">
           Lets bring out the true YOU
         </p>
-        <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground leading-tight">
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground leading-tight">
           Which one feels
           <br />
           like you?

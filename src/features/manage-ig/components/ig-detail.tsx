@@ -145,7 +145,7 @@ export function IGDetail() {
             </div>
 
             <div className="space-y-4">
-              <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl text-white">
+              <h1 className="text-3xl font-bold tracking-tight md:text-6xl text-white">
                 {group.name}
               </h1>
               {group.about && (

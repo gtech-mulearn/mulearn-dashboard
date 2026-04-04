@@ -106,7 +106,7 @@ export function PathwayQuiz({
         <div className="text-6xl">🎉</div>
 
         <div className="space-y-3">
-          <h1 className="text-3xl font-display font-bold text-foreground">
+          <h1 className="text-3xl font-bold text-foreground">
             Welcome to the
             <br />
             community!
@@ -185,7 +185,7 @@ export function PathwayQuiz({
         <p className="text-sm text-muted-foreground mb-2">
           Lets bring out the true YOU
         </p>
-        <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground leading-tight">
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground leading-tight">
           {question.question}
         </h1>
       </div>

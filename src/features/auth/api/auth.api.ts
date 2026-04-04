@@ -10,7 +10,7 @@
  * Pattern: Validate full response, extract and return inner data.
  */
 
-import { apiClient } from "@/api/client";
+import { apiClient, publicApiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
   ForgotPasswordResponseSchema,
@@ -81,7 +81,7 @@ export async function requestLoginOTP(emailOrMuid: string): Promise<void> {
 export async function refreshAccessToken(
   refreshToken: string,
 ): Promise<{ accessToken: string }> {
-  const response = await apiClient.post(
+  const response = await publicApiClient.post(
     endpoints.auth.refreshToken,
     { refreshToken },
     RefreshTokenResponseSchema,
