@@ -21,6 +21,7 @@ import type {
   MinimalUser,
   OrganizerOptionsResponse,
   PaginatedData,
+  PendingInvitesData,
 } from "../types";
 
 type EventShape = {
@@ -386,6 +387,10 @@ export const eventsApi = {
   },
 
   // ─── COLLABORATORS ──────────────────────────────────────────────────────
+  getMyInvites: async (): Promise<PendingInvitesData> => {
+    return apiClient.get<PendingInvitesData>(endpoints.events.myInvites);
+  },
+
   getCollaborators: async (id: string): Promise<CollaboratorsListData> => {
     return apiClient.get<CollaboratorsListData>(
       `${endpoints.events.manage}${id}/collaborators/`,

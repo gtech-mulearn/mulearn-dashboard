@@ -28,12 +28,6 @@ import { CollaboratorsPanel } from "./collaborators-panel";
 import { EventDetailView } from "./event-detail-view";
 import { PublishFlowPanel } from "./publish-flow-panel";
 
-function getHistoryActor(entry: EventLog): string {
-  const actor = entry.performed_by ?? entry.actor ?? entry.edited_by;
-  if (!actor) return "System";
-  return `${actor.full_name} (${actor.muid})`;
-}
-
 function getHistoryTimestamp(entry: EventLog): string {
   return entry.timestamp ?? entry.edited_at ?? new Date().toISOString();
 }

@@ -156,6 +156,7 @@ export const endpoints = {
     base: "/api/v1/dashboard/events/",
     featured: "/api/v1/dashboard/events/featured/",
     manage: "/api/v1/dashboard/events/manage/",
+    myInvites: "/api/v1/dashboard/events/my-invites/",
     admin: "/api/v1/dashboard/events/admin/",
     ig: "/api/v1/dashboard/events/ig/",
     campus: "/api/v1/dashboard/events/campus/",

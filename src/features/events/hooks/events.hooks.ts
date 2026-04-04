@@ -9,6 +9,7 @@ import type {
   CollaborationTarget,
   CollaboratorInviteBody,
   CollaboratorType,
+  EventCollaborator,
   EventDetailData,
   EventListData,
   EventListQueryParams,
@@ -47,7 +48,7 @@ function isForbiddenPermissionError(error: unknown, message?: string): boolean {
     return true;
   }
 
-  return Boolean(message && message.toLowerCase().includes("permission"));
+  return Boolean(message?.toLowerCase().includes("permission"));
 }
 
 export function resolveEventTypeValue(
@@ -252,6 +253,53 @@ export function useEventCollaborators(eventId?: string) {
   });
 }
 
+export interface PendingCollaboratorInvite {
+  eventId: string;
+  eventTitle: string;
+  eventStartDatetime: string | null;
+  eventCoverImage: string | null;
+  collaborator: EventCollaborator;
+}
+export function usePendingCollaboratorInvites() {
+  const invitesQuery = useQuery({
+    queryKey: eventKeys.pendingCollaboratorInvites("global"),
+    queryFn: () => eventsApi.getMyInvites(),
+  });
+
+  const pendingInvites: PendingCollaboratorInvite[] = (invitesQuery.data ?? [])
+    .filter((invite) => invite.invite_status === "pending")
+    .map((invite) => ({
+      eventId: invite.event_id,
+      eventTitle: invite.event_title,
+      eventStartDatetime: invite.event_start_datetime,
+      eventCoverImage: invite.event_cover_image,
+      collaborator: {
+        id: invite.id,
+        entity_type: invite.entity_type,
+        entity_id: invite.entity_id,
+        entity_detail: invite.entity_detail,
+        role_label: invite.role_label,
+        invite_status: invite.invite_status,
+        rejection_reason: invite.rejection_reason,
+        responded_at: invite.responded_at,
+        created_at: invite.created_at,
+      },
+    }))
+    .sort((a, b) => {
+      const left = new Date(a.collaborator.created_at ?? 0).getTime();
+      const right = new Date(b.collaborator.created_at ?? 0).getTime();
+      return right - left;
+    });
+
+  return {
+    pendingInvites,
+    pendingCount: pendingInvites.length,
+    isLoading: invitesQuery.isLoading,
+    isError: invitesQuery.isError,
+    error: invitesQuery.error,
+  };
+}
+
 export function useOrganizerOptions() {
   return useQuery<OrganizerOptionsResponse>({
     queryKey: eventKeys.organizerOptions(),
@@ -347,7 +395,7 @@ export function useCreateEvent() {
 
   return useMutation({
     mutationFn: (body: EventWriteBody) => eventsApi.create(body),
-    onSuccess: async (data) => {
+    onSuccess: async (_data) => {
       toast.success("Event created");
       await queryClient.invalidateQueries({ queryKey: eventKeys.all });
       await queryClient.refetchQueries({ queryKey: eventKeys.manageLists() });
@@ -560,6 +608,42 @@ export function useAcceptCollaborator(eventId: string) {
   });
 }
 
+export function useAcceptCollaboratorInvite() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      eventId,
+      collabId,
+    }: {
+      eventId: string;
+      collabId: string;
+    }) => eventsApi.acceptCollaborator(eventId, collabId),
+    onSuccess: async (_data, variables) => {
+      toast.success("Collaborator accepted");
+      await queryClient.invalidateQueries({ queryKey: eventKeys.manage() });
+      await queryClient.invalidateQueries({ queryKey: eventKeys.admin() });
+      await queryClient.invalidateQueries({
+        queryKey: eventKeys.collaborators(variables.eventId),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: eventKeys.manageDetail(variables.eventId),
+      });
+    },
+    onError: (error: unknown) => {
+      const message = getErrorMessage(error, "Failed to accept collaborator");
+      if (isForbiddenPermissionError(error, message)) {
+        toast.error(
+          "Only the lead of the invited entity can accept this invitation.",
+        );
+        return;
+      }
+
+      toast.error(message);
+    },
+  });
+}
+
 export function useRejectCollaborator(eventId: string) {
   const queryClient = useQueryClient();
 
@@ -579,6 +663,44 @@ export function useRejectCollaborator(eventId: string) {
       });
       await queryClient.refetchQueries({
         queryKey: eventKeys.manageDetail(eventId),
+      });
+    },
+    onError: (error: unknown) => {
+      const message = getErrorMessage(error, "Failed to reject collaborator");
+      if (error instanceof ApiError && error.status === 403) {
+        toast.error(
+          "Only the lead of the invited entity can reject this invitation.",
+        );
+        return;
+      }
+
+      toast.error(message);
+    },
+  });
+}
+
+export function useRejectCollaboratorInvite() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      eventId,
+      collabId,
+      reason,
+    }: {
+      eventId: string;
+      collabId: string;
+      reason?: string;
+    }) => eventsApi.rejectCollaborator(eventId, collabId, reason),
+    onSuccess: async (_data, variables) => {
+      toast.success("Collaborator rejected");
+      await queryClient.invalidateQueries({ queryKey: eventKeys.manage() });
+      await queryClient.invalidateQueries({ queryKey: eventKeys.admin() });
+      await queryClient.invalidateQueries({
+        queryKey: eventKeys.collaborators(variables.eventId),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: eventKeys.manageDetail(variables.eventId),
       });
     },
     onError: (error: unknown) => {

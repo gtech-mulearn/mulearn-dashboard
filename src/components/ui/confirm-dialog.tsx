@@ -20,6 +20,7 @@ interface ConfirmDialogProps {
   isPending?: boolean;
   variant?: "destructive" | "warning";
   confirmLabel?: string;
+  cancelLabel?: string;
 }
 
 export function ConfirmDialog({
@@ -31,6 +32,7 @@ export function ConfirmDialog({
   isPending = false,
   variant = "destructive",
   confirmLabel,
+  cancelLabel,
 }: ConfirmDialogProps) {
   const isDestructive = variant === "destructive";
 
@@ -63,7 +65,7 @@ export function ConfirmDialog({
             disabled={isPending}
             data-testid="confirm-dialog-cancel"
           >
-            Cancel
+            {cancelLabel ?? "Cancel"}
           </Button>
           <Button
             variant={isDestructive ? "destructive" : "default"}
