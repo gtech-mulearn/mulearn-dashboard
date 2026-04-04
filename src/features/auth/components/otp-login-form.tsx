@@ -34,6 +34,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 
 const requestOTPSchema = z.object({
@@ -114,23 +115,24 @@ export function OTPLoginForm({
               onSubmit={verifyForm.handleSubmit(handleVerifyOTP)}
               className="space-y-4"
             >
-              <FormField
-                control={verifyForm.control}
-                name="otp"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>OTP</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Enter OTP"
-                        disabled={isVerifying}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+              <div className="space-y-2 pb-2">
+                <Label htmlFor="otp">OTP</Label>
+                <input
+                  id="otp"
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  placeholder="Enter OTP"
+                  disabled={isVerifying}
+                  className="flex w-full text-foreground text-center text-lg tracking-widest h-12 rounded-xl border border-gray-200 bg-gray-50/50 outline-none focus:ring-2 focus:ring-primary/50"
+                  {...verifyForm.register("otp")}
+                />
+                {verifyForm.formState.errors.otp && (
+                  <p className="text-sm font-medium text-destructive">
+                    {verifyForm.formState.errors.otp.message}
+                  </p>
                 )}
-              />
+              </div>
               <Button type="submit" className="w-full" disabled={isVerifying}>
                 {isVerifying && <Spinner className="mr-2 h-4 w-4" />}
                 Verify OTP
@@ -156,23 +158,22 @@ export function OTPLoginForm({
             onSubmit={requestForm.handleSubmit(handleRequestOTP)}
             className="space-y-4"
           >
-            <FormField
-              control={requestForm.control}
-              name="emailOrMuid"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email or MuID</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="email@example.com or muid"
-                      disabled={isRequestingOTP}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <div className="space-y-2 pb-2">
+                <Label htmlFor="emailOrMuid">Email or MuID</Label>
+                <Input
+                  id="emailOrMuid"
+                  type="text"
+                  placeholder="email@example.com or muid"
+                  disabled={isRequestingOTP}
+                  className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
+                  {...requestForm.register("emailOrMuid")}
+                />
+                {requestForm.formState.errors.emailOrMuid && (
+                  <p className="text-sm font-medium text-destructive">
+                    {requestForm.formState.errors.emailOrMuid.message}
+                  </p>
+                )}
+              </div>
 
             {onSwitchToPassword && (
               <div className="text-right text-sm">
