@@ -34,8 +34,12 @@ function getInitials(name: string): string {
   return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
 }
 
+// Stable reference — prevents useSearch's useEffect from re-running on every
+// render when no `value` prop is passed (new `[]` literal each time).
+const EMPTY_MUIDS: string[] = [];
+
 export function MuidSearchInput({
-  value = [],
+  value = EMPTY_MUIDS,
   onChange,
   onSelectUser,
   placeholder = "Search by muid…",

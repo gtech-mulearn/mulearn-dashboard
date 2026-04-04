@@ -359,12 +359,27 @@ export function EventDetailView({
                 </CardHeader>
                 <CardContent className="flex flex-wrap gap-2">
                   {acceptedCollaborators.map((collab) => {
+                    const entityName =
+                      collab.entity_detail &&
+                      typeof collab.entity_detail === "object"
+                        ? "name" in collab.entity_detail &&
+                          typeof collab.entity_detail.name === "string"
+                          ? collab.entity_detail.name
+                          : "title" in collab.entity_detail &&
+                              typeof collab.entity_detail.title === "string"
+                            ? collab.entity_detail.title
+                            : null
+                        : null;
+
                     const name =
+                      entityName ??
                       collab.ig?.name ??
+                      collab.campus?.title ??
                       collab.campus?.name ??
-                      (collab.ig?.name && collab.campus?.name
-                        ? `${collab.ig.name} @ ${collab.campus.name}`
+                      (collab.ig?.name && collab.campus_ig?.name
+                        ? `${collab.ig.name} @ ${collab.campus_ig.name}`
                         : null) ??
+                      collab.company?.title ??
                       collab.company?.name ??
                       "Collaborator";
                     return (

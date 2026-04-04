@@ -28,6 +28,12 @@ import { CollaboratorsPanel } from "./collaborators-panel";
 import { EventDetailView } from "./event-detail-view";
 import { PublishFlowPanel } from "./publish-flow-panel";
 
+function getHistoryActor(entry: EventLog): string {
+  const actor = entry.performed_by ?? entry.actor ?? entry.edited_by;
+  if (!actor) return "System";
+  return `${actor.full_name} (${actor.muid})`;
+}
+
 function getHistoryTimestamp(entry: EventLog): string {
   return entry.timestamp ?? entry.edited_at ?? new Date().toISOString();
 }
@@ -53,6 +59,101 @@ function getHistoryTarget(entry: EventLog): string | null {
     return entry.target_type.replace(/_/g, " ");
   }
   return null;
+}
+
+function HistoryLogEntry({ entry }: { entry: EventLog }) {
+  const actor = entry.performed_by ?? entry.actor ?? entry.edited_by;
+
+  const changesEntries = entry.changes ? Object.entries(entry.changes) : [];
+
+  const changedFieldsLegacy = Array.isArray(entry.changed_fields)
+    ? entry.changed_fields
+    : entry.changed_fields && typeof entry.changed_fields === "object"
+      ? Object.keys(entry.changed_fields)
+      : [];
+
+  const hasChanges =
+    changesEntries.length > 0 || changedFieldsLegacy.length > 0;
+
+  return (
+    <div className="space-y-3 rounded-lg border bg-muted/30 p-3">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium">
+            {actor ? `${actor.full_name} (${actor.muid})` : "System"}
+          </p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {entry.summary ?? getHistoryAction(entry)}
+            {getHistoryTarget(entry) && !entry.summary
+              ? ` · ${getHistoryTarget(entry)}`
+              : ""}
+          </p>
+        </div>
+        <p className="shrink-0 text-right text-xs text-muted-foreground">
+          {new Date(getHistoryTimestamp(entry)).toLocaleDateString(undefined, {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          })}
+          <br />
+          <span className="text-[10px]">
+            {new Date(getHistoryTimestamp(entry)).toLocaleTimeString(
+              undefined,
+              {
+                hour: "2-digit",
+                minute: "2-digit",
+              },
+            )}
+          </span>
+        </p>
+      </div>
+
+      {hasChanges ? (
+        <div className="mt-2 space-y-2">
+          {changesEntries.length > 0 ? (
+            <div className="grid gap-2">
+              {changesEntries.map(([field, details]) => (
+                <div
+                  key={field}
+                  className="overflow-hidden rounded-md border text-xs"
+                >
+                  <div className="bg-muted px-2 py-1 font-medium">
+                    {field.replace(/_/g, " ")}
+                  </div>
+                  <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 bg-background p-2">
+                    <span
+                      className="truncate text-muted-foreground line-through"
+                      title={String(details.from ?? "None")}
+                    >
+                      {String(details.from ?? "None")}
+                    </span>
+                    <span className="text-muted-foreground">➔</span>
+                    <span
+                      className="truncate font-medium text-foreground"
+                      title={String(details.to ?? "None")}
+                    >
+                      {String(details.to ?? "None")}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-1">
+              {changedFieldsLegacy.map((field) => (
+                <span
+                  key={field}
+                  className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-muted-foreground"
+                >
+                  {field.replace(/_/g, " ")}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 interface ManageEventDetailViewProps {
@@ -213,69 +314,9 @@ export function ManageEventDetailView({
                 </CardHeader>
                 <CardContent className="max-h-[500px] space-y-3 overflow-y-auto">
                   {sortedHistory.length > 0 ? (
-                    sortedHistory.map((entry) => {
-                      const actor =
-                        entry.performed_by ?? entry.actor ?? entry.edited_by;
-                      const changedFields = Array.isArray(entry.changed_fields)
-                        ? entry.changed_fields
-                        : entry.changed_fields &&
-                            typeof entry.changed_fields === "object"
-                          ? Object.keys(entry.changed_fields)
-                          : [];
-
-                      return (
-                        <div
-                          key={entry.id}
-                          className="space-y-2 rounded-lg border bg-muted/30 p-3"
-                        >
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="min-w-0">
-                              <p className="truncate text-sm font-medium">
-                                {actor
-                                  ? `${actor.full_name} (${actor.muid})`
-                                  : "System"}
-                              </p>
-                              <p className="truncate text-xs text-muted-foreground">
-                                {getHistoryAction(entry)}
-                                {getHistoryTarget(entry)
-                                  ? ` · ${getHistoryTarget(entry)}`
-                                  : ""}
-                              </p>
-                            </div>
-                            <p className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
-                              {new Date(
-                                getHistoryTimestamp(entry),
-                              ).toLocaleDateString(undefined, {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              })}
-                              <br />
-                              <span className="text-xs">
-                                {new Date(
-                                  getHistoryTimestamp(entry),
-                                ).toLocaleTimeString(undefined, {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })}
-                              </span>
-                            </p>
-                          </div>
-                          {changedFields.length > 0 ? (
-                            <div className="flex flex-wrap gap-1">
-                              {changedFields.map((field) => (
-                                <span
-                                  key={field}
-                                  className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono"
-                                >
-                                  {field.replace(/_/g, " ")}
-                                </span>
-                              ))}
-                            </div>
-                          ) : null}
-                        </div>
-                      );
-                    })
+                    sortedHistory.map((entry) => (
+                      <HistoryLogEntry key={entry.id} entry={entry} />
+                    ))
                   ) : (
                     <p className="py-4 text-center text-sm text-muted-foreground">
                       No edit history yet
@@ -376,71 +417,9 @@ export function ManageEventDetailView({
                   </CardHeader>
                   <CardContent className="max-h-[500px] space-y-3 overflow-y-auto">
                     {sortedHistory.length > 0 ? (
-                      sortedHistory.map((entry) => {
-                        const actor =
-                          entry.performed_by ?? entry.actor ?? entry.edited_by;
-                        const changedFields = Array.isArray(
-                          entry.changed_fields,
-                        )
-                          ? entry.changed_fields
-                          : entry.changed_fields &&
-                              typeof entry.changed_fields === "object"
-                            ? Object.keys(entry.changed_fields)
-                            : [];
-
-                        return (
-                          <div
-                            key={entry.id}
-                            className="space-y-2 rounded-lg border bg-muted/30 p-3"
-                          >
-                            <div className="flex items-center justify-between gap-2">
-                              <div className="min-w-0">
-                                <p className="truncate text-sm font-medium">
-                                  {actor
-                                    ? `${actor.full_name} (${actor.muid})`
-                                    : "System"}
-                                </p>
-                                <p className="truncate text-xs text-muted-foreground">
-                                  {getHistoryAction(entry)}
-                                  {getHistoryTarget(entry)
-                                    ? ` · ${getHistoryTarget(entry)}`
-                                    : ""}
-                                </p>
-                              </div>
-                              <p className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
-                                {new Date(
-                                  getHistoryTimestamp(entry),
-                                ).toLocaleDateString(undefined, {
-                                  month: "short",
-                                  day: "numeric",
-                                  year: "numeric",
-                                })}
-                                <br />
-                                <span className="text-xs">
-                                  {new Date(
-                                    getHistoryTimestamp(entry),
-                                  ).toLocaleTimeString(undefined, {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  })}
-                                </span>
-                              </p>
-                            </div>
-                            {changedFields.length > 0 ? (
-                              <div className="flex flex-wrap gap-1">
-                                {changedFields.map((field) => (
-                                  <span
-                                    key={field}
-                                    className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono"
-                                  >
-                                    {field.replace(/_/g, " ")}
-                                  </span>
-                                ))}
-                              </div>
-                            ) : null}
-                          </div>
-                        );
-                      })
+                      sortedHistory.map((entry) => (
+                        <HistoryLogEntry key={entry.id} entry={entry} />
+                      ))
                     ) : (
                       <p className="py-4 text-center text-sm text-muted-foreground">
                         No edit history yet
@@ -463,7 +442,7 @@ export function ManageEventDetailView({
           deleteEvent.mutate(undefined, {
             onSuccess: () => {
               setConfirmCancelOpen(false);
-              router.push("/dashboard/manage-events?status=cancelled");
+              router.push("/dashboard/manage-events");
             },
           })
         }

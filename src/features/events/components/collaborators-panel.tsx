@@ -4,13 +4,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Input } from "@/components/ui/input";
-import {
-  useAcceptCollaborator,
-  useEventCollaborators,
-  useRejectCollaborator,
-  useRemoveCollaborator,
-} from "../hooks";
+import { useEventCollaborators, useRemoveCollaborator } from "../hooks";
 import type { EventCollaborator } from "../types";
 import { EventSearch } from "./event-search";
 
@@ -25,9 +19,29 @@ interface CollaboratorsPanelProps {
 }
 
 function getCollabName(collab: EventCollaborator): string {
+  const entityName =
+    collab.entity_detail && typeof collab.entity_detail === "object"
+      ? "name" in collab.entity_detail &&
+        typeof collab.entity_detail.name === "string"
+        ? collab.entity_detail.name
+        : "title" in collab.entity_detail &&
+            typeof collab.entity_detail.title === "string"
+          ? collab.entity_detail.title
+          : null
+      : null;
+
+  const campusIgName =
+    collab.campus_ig?.name && collab.ig?.name
+      ? `${collab.ig.name} @ ${collab.campus_ig.name}`
+      : (collab.campus_ig?.name ?? null);
+
   return (
+    entityName ??
     collab.ig?.name ??
+    collab.campus?.title ??
     collab.campus?.name ??
+    campusIgName ??
+    collab.company?.title ??
     collab.company?.name ??
     "Collaborator"
   );
@@ -40,11 +54,8 @@ export function CollaboratorsPanel({
 }: CollaboratorsPanelProps) {
   const [selectedCollaborator, setSelectedCollaborator] =
     useState<EventCollaborator | null>(null);
-  const [rejectReason, setRejectReason] = useState<Record<string, string>>({});
 
   const { data: collaborators } = useEventCollaborators(eventId);
-  const acceptMutation = useAcceptCollaborator(eventId);
-  const rejectMutation = useRejectCollaborator(eventId);
   const removeMutation = useRemoveCollaborator(eventId);
 
   const collaboratorsList = Array.isArray(collaborators)
@@ -84,40 +95,6 @@ export function CollaboratorsPanel({
 
             {isManageView && collab.rejection_reason ? (
               <p className="text-xs text-red-600">{collab.rejection_reason}</p>
-            ) : null}
-
-            {isManageView && collab.invite_status === "pending" ? (
-              <div className="flex flex-wrap items-center gap-2">
-                <Button
-                  size="sm"
-                  onClick={() => acceptMutation.mutate(collab.id)}
-                >
-                  Accept
-                </Button>
-                <Input
-                  placeholder="Reject reason"
-                  value={rejectReason[collab.id] ?? ""}
-                  onChange={(e) =>
-                    setRejectReason((prev) => ({
-                      ...prev,
-                      [collab.id]: e.target.value,
-                    }))
-                  }
-                  className="h-8 max-w-xs"
-                />
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() =>
-                    rejectMutation.mutate({
-                      collabId: collab.id,
-                      reason: rejectReason[collab.id] ?? "Not a fit",
-                    })
-                  }
-                >
-                  Reject
-                </Button>
-              </div>
             ) : null}
 
             {isManageView ? (

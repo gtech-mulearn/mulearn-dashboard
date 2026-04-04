@@ -234,6 +234,7 @@ export interface LinkedTaskInput {
 export interface EventLog {
   id: UUID;
   action?:
+    | "event_updated"
     | "co_owner_added"
     | "co_owner_removed"
     | "collaborator_invited"
@@ -247,8 +248,12 @@ export interface EventLog {
   target_id?: UUID | null;
   target_name?: string | null;
   timestamp?: ISODateTime | null;
-  // Backward compatibility with the old edit_history payload.
+  // History specifics
   edited_by?: MinimalUser;
+  summary?: string | null;
+  changes?: Record<string, { from?: unknown; to?: unknown }> | null;
+  details?: string | null;
+  // Backward compatibility with older edit_history payloads.
   changed_fields?: string[] | Record<string, unknown>;
   edited_at?: ISODateTime;
 }
