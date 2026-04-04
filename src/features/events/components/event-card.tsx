@@ -22,18 +22,23 @@ function getOrganizerName(organizer: OrganizerInfo): string {
     return organizer.ig?.name ?? "Global IG";
   }
   if (organizer.type === "campus_ig") {
-    if (organizer.ig?.name && organizer.campus?.name) {
-      return `${organizer.ig.name} @ ${organizer.campus.name}`;
+    const igName = organizer.ig?.name;
+    const campusName = organizer.campus?.title ?? organizer.campus?.name;
+    if (igName && campusName) {
+      return `${igName} @ ${campusName}`;
     }
     return organizer.campus_ig?.name ?? "Campus IG";
   }
   if (organizer.type === "campus") {
-    return organizer.campus?.name ?? "Campus";
+    return organizer.campus?.title ?? organizer.campus?.name ?? "Campus";
   }
   if (organizer.type === "company") {
-    return organizer.company?.name ?? "Company";
+    return organizer.company?.title ?? organizer.company?.name ?? "Company";
   }
-  return "muLearn";
+  if (organizer.type === "admin") {
+    return "MuLearn";
+  }
+  return "MuLearn";
 }
 
 export function EventCard({ event, isManageView, onView }: EventCardProps) {

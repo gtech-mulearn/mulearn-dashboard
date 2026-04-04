@@ -9,7 +9,6 @@ import {
   MapPin,
   Monitor,
   Star,
-  Users,
 } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -128,19 +127,22 @@ export function EventDetailView({
     );
   }
 
-  const organizerName =
-    event.organizer.ig?.name ??
-    (event.organizer.ig && event.organizer.campus
-      ? `${event.organizer.ig.name} @ ${event.organizer.campus.name}`
-      : null) ??
-    event.organizer.campus?.name ??
-    event.organizer.company?.name ??
-    "muLearn";
+  const organizerName = (() => {
+    const { type, ig, campus, company, campus_ig } = event.organizer;
+    if (type === "global_ig") return ig?.name ?? "Global IG";
+    if (type === "campus_ig") {
+      const igName = ig?.name;
+      const campusName = campus?.title ?? campus?.name;
+      if (igName && campusName) return `${igName} @ ${campusName}`;
+      return campus_ig?.name ?? "Campus IG";
+    }
+    if (type === "campus") return campus?.title ?? campus?.name ?? "Campus";
+    if (type === "company") return company?.title ?? company?.name ?? "Company";
+    return "MuLearn";
+  })();
 
   const organizerLogo =
     event.organizer.ig?.logo ??
-    event.organizer.ig?.logo ??
-    event.organizer.campus?.logo ??
     event.organizer.campus?.logo ??
     event.organizer.company?.logo ??
     null;
@@ -198,17 +200,25 @@ export function EventDetailView({
                 {event.title}
               </h1>
 
-              <div className="flex flex-wrap items-center gap-3 text-sm text-white/90">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-white/90">
                 <span className="inline-flex items-center gap-1">
                   <CalendarDays className="h-4 w-4" />
                   {formatDateRange(event.start_datetime, event.end_datetime)}
                 </span>
-                {event.venue.city ? (
-                  <span className="inline-flex items-center gap-1">
-                    <MapPin className="h-4 w-4" />
-                    {event.venue.city}
-                  </span>
-                ) : null}
+                <span className="inline-flex items-center gap-1">
+                  <Clock className="h-4 w-4" />
+                  {formatTime(event.start_datetime)} onwards
+                </span>
+                <span className="inline-flex items-center gap-1 capitalize">
+                  <Monitor className="h-4 w-4" />
+                  {event.venue.type} · {event.scope.replace(/_/g, " ")}
+                </span>
+                <span className="inline-flex items-center gap-1">
+                  <MapPin className="h-4 w-4" />
+                  {event.venue.address
+                    ? `${event.venue.address}${event.venue.city ? `, ${event.venue.city}` : ""}`
+                    : (event.venue.city ?? "Address not provided")}
+                </span>
                 <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-2 py-1">
                   {organizerLogo ? (
                     <Image
@@ -284,28 +294,6 @@ export function EventDetailView({
             </div>
           </div>
         ) : null}
-
-        <Card className="rounded-2xl">
-          <CardContent className="grid grid-cols-1 gap-3 p-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
-            <p className="inline-flex items-center gap-2 text-muted-foreground">
-              <CalendarDays className="h-4 w-4" />
-              {formatDateRange(event.start_datetime, event.end_datetime)}
-            </p>
-            <p className="inline-flex items-center gap-2 text-muted-foreground">
-              <MapPin className="h-4 w-4" />
-              {event.venue.address ?? "Address not provided"}
-              {event.venue.city ? `, ${event.venue.city}` : ""}
-            </p>
-            <p className="inline-flex items-center gap-2 text-muted-foreground capitalize">
-              <Users className="h-4 w-4" />
-              {event.venue.type} - {event.scope.replace(/_/g, " ")}
-            </p>
-            <p className="inline-flex items-center gap-2 text-muted-foreground">
-              <Clock className="h-4 w-4" />
-              {formatTime(event.start_datetime)} onwards
-            </p>
-          </CardContent>
-        </Card>
 
         <div
           className={

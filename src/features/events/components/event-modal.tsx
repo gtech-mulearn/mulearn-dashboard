@@ -897,20 +897,21 @@ export default function EventModal({
               ) : null}
             </section>
 
-            {!hasOrganizerPermission ? (
-              <section className="space-y-3 rounded-lg border p-4">
-                <h3 className="mb-3 text-sm font-semibold text-foreground">
-                  Organizer
-                </h3>
+            <section className="space-y-3 rounded-lg border p-4">
+              <h3 className="mb-3 text-sm font-semibold text-foreground">
+                Create as
+              </h3>
+              {organizerOptionsQuery.isLoading ? (
+                <div className="h-10 w-full animate-pulse rounded-md bg-muted" />
+              ) : !hasOrganizerPermission ? (
                 <p className="text-sm text-destructive">
                   You do not have permission to create events. Contact an admin.
                 </p>
-              </section>
-            ) : organizerOptions.length > 1 ? (
-              <section className="space-y-3 rounded-lg border p-4">
-                <h3 className="mb-3 text-sm font-semibold text-foreground">
-                  Create as
-                </h3>
+              ) : organizerOptions.length === 1 ? (
+                <div className="rounded-md border bg-muted/40 px-3 py-2 text-sm">
+                  {organizerOptions[0].label}
+                </div>
+              ) : (
                 <select
                   className="h-10 w-full rounded-md border px-3 text-sm"
                   value={selectedOrganiserId}
@@ -926,17 +927,8 @@ export default function EventModal({
                     </option>
                   ))}
                 </select>
-              </section>
-            ) : (
-              <section className="space-y-3 rounded-lg border p-4">
-                <h3 className="mb-3 text-sm font-semibold text-foreground">
-                  Create as
-                </h3>
-                <div className="rounded-md border bg-muted/40 px-3 py-2 text-sm">
-                  {selectedOrganizer?.label ?? "Organizer unavailable"}
-                </div>
-              </section>
-            )}
+              )}
+            </section>
 
             <section className="space-y-3 rounded-lg border p-4">
               <h3 className="mb-3 text-sm font-semibold text-foreground">
