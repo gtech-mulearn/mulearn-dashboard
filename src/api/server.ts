@@ -8,6 +8,7 @@
 
 import { cookies } from "next/headers";
 import type { z } from "zod";
+import { refreshAccessToken } from "@/features/auth/api/auth.api";
 import { env } from "../../config/env";
 import { ApiError, extractDjangoMessage } from "./errors";
 
@@ -25,12 +26,32 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
   const headers: Record<string, string> = { ...BASE_HEADERS };
 
   const cookieStore = await cookies();
-  const token = cookieStore.get("accessToken")?.value;
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
+  const accessToken = cookieStore.get("accessToken")?.value;
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
   }
 
   return headers;
+}
+
+async function refreshAndSetToken(): Promise<string | null> {
+  const cookieStore = await cookies();
+  const refreshToken = cookieStore.get("refreshToken")?.value;
+
+  if (!refreshToken) return null;
+
+  try {
+    const result = await refreshAccessToken(refreshToken);
+    const newAccessToken = result.accessToken;
+
+    if (newAccessToken) {
+      return newAccessToken;
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 // ─── Request options ────────────────────────────────────────────────────────
@@ -67,6 +88,48 @@ async function request<T>(
   const rawData = await res.json().catch(() => null);
 
   if (!res.ok) {
+    if ((res.status === 401 || res.status === 403) && options.authenticated) {
+      const newAccessToken = await refreshAndSetToken();
+
+      if (newAccessToken) {
+        const retryRes = await fetch(`${getBaseUrl()}${endpoint}`, {
+          method: options.method,
+          headers: {
+            ...(options.authenticated ? await getAuthHeaders() : BASE_HEADERS),
+            Authorization: `Bearer ${newAccessToken}`,
+            ...options.headers,
+          },
+          body: options.body ? JSON.stringify(options.body) : undefined,
+          next: options.next,
+        });
+
+        if (retryRes.ok) {
+          const retryData = await retryRes.json().catch(() => null);
+
+          if (options.schema) {
+            const parsed = options.schema.safeParse(retryData);
+            if (!parsed.success) {
+              console.error(
+                `⚠️ API schema mismatch (server) [${endpoint}]`,
+                parsed.error.issues,
+              );
+              return retryData as T;
+            }
+            return parsed.data;
+          }
+
+          const data =
+            retryData &&
+            typeof retryData === "object" &&
+            "response" in retryData
+              ? retryData.response
+              : retryData;
+
+          return data as T;
+        }
+      }
+    }
+
     const backendMsg = extractDjangoMessage(rawData);
     throw new ApiError(
       res.status,
