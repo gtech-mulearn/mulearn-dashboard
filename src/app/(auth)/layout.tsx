@@ -23,7 +23,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
             />
           </Link>
           <div className="mt-16 space-y-4">
-            <h1 className="text-5xl font-display font-bold leading-tight">
+            <h1 className="text-5xl font-bold leading-tight">
               We Grow As A<br />
               Community
             </h1>

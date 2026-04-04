@@ -26,7 +26,7 @@ export function InterestGroupsClient() {
             <Sparkles className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <h1 className="font-display text-4xl font-black text-foreground">
+            <h1 className="text-4xl font-black text-foreground">
               Discover Interest Groups
             </h1>
           </div>

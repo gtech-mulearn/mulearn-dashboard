@@ -96,7 +96,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   {
     id: "interest-groups",
     title: "Interest Groups",
-    href: "/dashboard/ig",
+    href: "/dashboard/interest-groups",
     icon: Users,
     section: "main",
   },
@@ -171,7 +171,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   {
     id: "interest-groups",
     title: "Interest Groups",
-    href: "/dashboard/interest-groups",
+    href: "/dashboard/edit-ig",
     icon: Users,
     section: "management",
     roles: IG_ROLES,

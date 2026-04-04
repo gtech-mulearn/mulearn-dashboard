@@ -56,7 +56,7 @@ export function UserSearchCard({ user }: UserSearchCardProps) {
 
         {/* Name block */}
         <div className="mt-6">
-          <h3 className="font-display text-2xl font-bold leading-tight text-foreground transition-colors group-hover:text-primary">
+          <h3 className="text-2xl font-bold leading-tight text-foreground transition-colors group-hover:text-primary">
             {user.full_name}
           </h3>
           <p className="mt-1 font-mono text-xs font-semibold tracking-widest text-muted-foreground">
