@@ -1,7 +1,7 @@
 /**
  * Interest Group Detail Page
  *
- * 📍 src/app/(dashboard)/dashboard/ig/[id]/page.tsx
+ * 📍 src/app/(dashboard)/dashboard/interest-groups/[id]/page.tsx
  *
  * Detailed view of a specific interest group.
  */
