@@ -92,18 +92,6 @@ export function LoginClient({ redirectUri }: LoginClientProps) {
     }
   };
 
-  if (loginMode === "otp") {
-    return (
-      <OTPLoginForm
-        onRequestOTP={handleRequestOTP}
-        onVerifyOTP={handleVerifyOTP}
-        isRequestingOTP={requestOTP.isPending}
-        isVerifying={loginWithOTP.isPending}
-        onSwitchToPassword={() => setLoginMode("password")}
-      />
-    );
-  }
-
   const googleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
@@ -160,6 +148,18 @@ export function LoginClient({ redirectUri }: LoginClientProps) {
       }
     }
   };
+
+  if (loginMode === "otp") {
+    return (
+      <OTPLoginForm
+        onRequestOTP={handleRequestOTP}
+        onVerifyOTP={handleVerifyOTP}
+        isRequestingOTP={requestOTP.isPending}
+        isVerifying={loginWithOTP.isPending}
+        onSwitchToPassword={() => setLoginMode("password")}
+      />
+    );
+  }
 
   return (
     <>
