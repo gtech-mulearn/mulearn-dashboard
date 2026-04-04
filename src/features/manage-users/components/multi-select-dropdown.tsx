@@ -6,7 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import type { UiOption } from "../schemas";
 
 interface MultiSelectDropdownProps {
-  label: string;
+  label?: string;
   options: UiOption[];
   selectedValues: string[];
   onToggle: (value: string, checked: boolean) => void;
@@ -37,9 +37,11 @@ export function MultiSelectDropdown({
 
   return (
     <div className="space-y-2" ref={containerRef}>
-      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        {label}
-      </p>
+      {label && (
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          {label}
+        </p>
+      )}
       <div className="relative">
         <button
           type="button"
@@ -84,7 +86,7 @@ export function MultiSelectDropdown({
                     </span>
                   </span>
                 ))
-              : `Select ${label.toLowerCase()}`}
+              : `Select ${(label ?? "").toLowerCase()}`}
           </span>
           <span className="flex shrink-0 items-center gap-1">
             {selectedOptions.length > 0 && (
