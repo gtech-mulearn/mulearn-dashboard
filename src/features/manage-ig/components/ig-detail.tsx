@@ -391,6 +391,11 @@ export function IGDetail() {
                           LinkedIn Profile
                         </a>
                       )}
+                      {mentor.muid && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          MUID: {mentor.muid}
+                        </p>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -507,6 +512,11 @@ export function IGDetail() {
                               <Mail className="h-3 w-3" />
                               {lead.email}
                             </a>
+                          )}
+                          {lead.muid && (
+                            <p className="text-xs text-muted-foreground">
+                              MUID: {lead.muid}
+                            </p>
                           )}
                         </div>
                       </div>

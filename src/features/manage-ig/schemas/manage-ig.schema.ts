@@ -39,8 +39,9 @@ export const InterestGroupSchema = z.object({
     .union([
       z.array(
         z.object({
-          name: z.string(),
+          name: z.string().optional().nullable(),
           email: z.string().optional().nullable(),
+          muid: z.string().optional().nullable(),
         }),
       ),
       z.array(z.string()),
@@ -52,9 +53,10 @@ export const InterestGroupSchema = z.object({
     .union([
       z.array(
         z.object({
-          name: z.string(),
+          name: z.string().optional().nullable(),
           expertise: z.string().optional().nullable(),
           linkedin: z.string().optional().nullable(),
+          muid: z.string().optional().nullable(),
         }),
       ),
       z.array(z.string()),
