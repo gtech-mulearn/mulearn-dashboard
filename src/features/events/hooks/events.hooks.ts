@@ -5,16 +5,15 @@ import { toast } from "sonner";
 import { ApiError } from "@/api/errors";
 import { useDebounce } from "@/hooks/use-debounce";
 import { eventsApi } from "../api";
-import { COLLABORATOR_INVITE_TYPE_MAP } from "../constants";
 import type {
   CollaborationTarget,
-  CollaboratorEntityType,
   CollaboratorInviteBody,
   CollaboratorType,
   EventDetailData,
   EventListData,
   EventListQueryParams,
   EventPatchBody,
+  EventType,
   EventWriteBody,
   IGCluster,
   OrganizerOptionsResponse,
@@ -43,6 +42,37 @@ function getErrorMessage(error: unknown, fallback: string): string {
   return fallback;
 }
 
+function isForbiddenPermissionError(error: unknown, message?: string): boolean {
+  if (error instanceof ApiError && error.status === 403) {
+    return true;
+  }
+
+  return Boolean(message?.toLowerCase().includes("permission"));
+}
+
+export function resolveEventTypeValue(
+  eventType?: string | null,
+  categoryName?: string | null,
+): EventType | undefined {
+  if (eventType) {
+    return eventType as EventType;
+  }
+
+  const normalized = categoryName?.trim().toLowerCase().replace(/\s+/g, "_");
+  switch (normalized) {
+    case "workshop":
+    case "webinar":
+    case "hackathon":
+    case "meetup":
+    case "competition":
+    case "social_gathering":
+    case "other":
+      return normalized as EventType;
+    default:
+      return undefined;
+  }
+}
+
 // Convert a datetime-local string (e.g. "2026-03-22T10:00") to a full ISO string in UTC.
 export function toISOWithOffset(
   value: string | null | undefined,
@@ -61,21 +91,6 @@ export function toDatetimeLocal(iso: string | null | undefined): string {
   if (Number.isNaN(date.getTime())) return "";
   const pad = (num: number) => num.toString().padStart(2, "0");
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-}
-
-function extractTargetArray(value: unknown): unknown[] {
-  if (Array.isArray(value)) return value;
-  if (!value || typeof value !== "object") return [];
-
-  const shaped = value as CollaborationTargetSourceShape;
-  if (Array.isArray(shaped.data)) return shaped.data;
-
-  if (shaped.response && typeof shaped.response === "object") {
-    const response = shaped.response as CollaborationTargetSourceShape;
-    if (Array.isArray(response.data)) return response.data;
-  }
-
-  return [];
 }
 
 function normalizeTarget(
@@ -111,46 +126,77 @@ function normalizeTarget(
     name,
     collaborator_type: targetType,
     logo: (value.logo as string | null | undefined) ?? null,
+    icon: (value.icon as string | undefined) ?? undefined,
+    code: (value.code as string | undefined) ?? undefined,
+    title: (value.title as string | undefined) ?? undefined,
+    org_type: (value.org_type as "College" | "School" | undefined) ?? undefined,
   };
+}
+
+function dedupeTargets(targets: CollaborationTarget[]): CollaborationTarget[] {
+  const uniqueTargets = new Map<string, CollaborationTarget>();
+
+  for (const target of targets) {
+    if (!uniqueTargets.has(target.id)) {
+      uniqueTargets.set(target.id, target);
+    }
+  }
+
+  return Array.from(uniqueTargets.values());
 }
 
 export function normalizeCollaborationTargets(
   data: unknown,
 ): CollaborationTarget[] {
-  if (Array.isArray(data)) {
-    return data
-      .map((item) => normalizeTarget(item))
-      .filter((item): item is CollaborationTarget => Boolean(item));
-  }
-
   if (!data || typeof data !== "object") {
     return [];
   }
 
   const shaped = data as CollaborationTargetSourceShape;
-  const hasBuckets = ["ig", "campus", "company", "campus_ig"].some((key) =>
-    Array.isArray(shaped[key as CollaborationTargetBucketKey]),
-  );
+  const bucketKeys: CollaborationTargetBucketKey[] = [
+    "ig",
+    "campus",
+    "campus_ig",
+    "company",
+  ];
+  const hasBuckets = bucketKeys.some((key) => Array.isArray(shaped[key]));
 
   if (hasBuckets) {
-    const buckets: Array<[CollaborationTargetBucketKey, unknown[]]> = [
-      ["ig", Array.isArray(shaped.ig) ? shaped.ig : []],
-      ["campus", Array.isArray(shaped.campus) ? shaped.campus : []],
-      ["company", Array.isArray(shaped.company) ? shaped.company : []],
-      ["campus_ig", Array.isArray(shaped.campus_ig) ? shaped.campus_ig : []],
-    ];
+    return dedupeTargets(
+      bucketKeys.flatMap((type) => {
+        const items = Array.isArray(shaped[type])
+          ? (shaped[type] as unknown[])
+          : [];
+        return items
+          .map((item) => normalizeTarget(item, type))
+          .filter((item): item is CollaborationTarget => Boolean(item));
+      }),
+    );
+  }
 
-    return buckets.flatMap(([type, items]) =>
-      items
-        .map((item) => normalizeTarget(item, type))
+  if (Array.isArray(data)) {
+    return dedupeTargets(
+      data
+        .map((item) => {
+          if (!item || typeof item !== "object") return null;
+          const value = item as Record<string, unknown>;
+          const type =
+            (value.collaborator_type as CollaboratorType | undefined) ?? "ig";
+          return normalizeTarget(item, type);
+        })
         .filter((item): item is CollaborationTarget => Boolean(item)),
     );
   }
 
-  const source = extractTargetArray(data);
-  return source
-    .map((item) => normalizeTarget(item))
-    .filter((item): item is CollaborationTarget => Boolean(item));
+  if (shaped.response && typeof shaped.response === "object") {
+    return normalizeCollaborationTargets(shaped.response);
+  }
+
+  if (Array.isArray(shaped.data)) {
+    return normalizeCollaborationTargets(shaped.data);
+  }
+
+  return [];
 }
 
 export function useEventsList(params?: EventListQueryParams) {
@@ -218,29 +264,13 @@ export function useCollaborationTargets(
   type?: CollaboratorType,
 ) {
   const debouncedSearch = useDebounce(search, 300);
-  const entityType = type
-    ? (COLLABORATOR_INVITE_TYPE_MAP[type] as CollaboratorEntityType)
-    : undefined;
   return useQuery({
     queryKey: eventKeys.collaborationTargets({
       search: debouncedSearch,
-      type: entityType,
+      type,
     }),
-    queryFn: () =>
-      eventsApi.searchCollaborationTargets(debouncedSearch, entityType),
+    queryFn: () => eventsApi.searchCollaborationTargets(debouncedSearch, type),
     enabled: debouncedSearch.length >= 2,
-  });
-}
-
-export function useUserSearch(query: string) {
-  const debouncedQuery = useDebounce(query, 300);
-  return useQuery({
-    queryKey: eventKeys.userSearch(debouncedQuery),
-    queryFn: async () => {
-      const result = await eventsApi.searchUsers(debouncedQuery);
-      return result.data;
-    },
-    enabled: debouncedQuery.length >= 2,
   });
 }
 
@@ -317,10 +347,9 @@ export function useCreateEvent() {
 
   return useMutation({
     mutationFn: (body: EventWriteBody) => eventsApi.create(body),
-    onSuccess: async () => {
+    onSuccess: async (_data) => {
       toast.success("Event created");
       await queryClient.invalidateQueries({ queryKey: eventKeys.all });
-      await queryClient.invalidateQueries({ queryKey: eventKeys.manage() });
       await queryClient.refetchQueries({ queryKey: eventKeys.manageLists() });
     },
     onError: (error: unknown) => {
@@ -361,21 +390,13 @@ export function usePatchEvent(eventId: string) {
 
   return useMutation({
     mutationFn: (body: EventPatchBody) => eventsApi.patch(eventId, body),
-    onSuccess: async () => {
+    onSuccess: async (_data, _vars, _context) => {
       toast.success("Event updated");
       await queryClient.invalidateQueries({ queryKey: eventKeys.all });
-      await queryClient.invalidateQueries({ queryKey: eventKeys.manage() });
-      await queryClient.invalidateQueries({
-        queryKey: eventKeys.detail(eventId),
-      });
-      await queryClient.invalidateQueries({
-        queryKey: eventKeys.manageDetail(eventId),
-      });
-      await queryClient.refetchQueries({ queryKey: eventKeys.manageLists() });
       await queryClient.refetchQueries({
         queryKey: eventKeys.manageDetail(eventId),
       });
-      await queryClient.refetchQueries({ queryKey: eventKeys.all });
+      await queryClient.refetchQueries({ queryKey: eventKeys.detail(eventId) });
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error, "Failed to update event"));
@@ -440,6 +461,9 @@ export function useAddCoOwner(eventId: string) {
       await queryClient.refetchQueries({
         queryKey: eventKeys.coOwners(eventId),
       });
+      await queryClient.refetchQueries({
+        queryKey: eventKeys.manageDetail(eventId),
+      });
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error, "Failed to add co-owner"));
@@ -458,8 +482,14 @@ export function useRemoveCoOwner(eventId: string) {
       await queryClient.invalidateQueries({
         queryKey: eventKeys.coOwners(eventId),
       });
+      await queryClient.invalidateQueries({
+        queryKey: eventKeys.manageDetail(eventId),
+      });
       await queryClient.refetchQueries({
         queryKey: eventKeys.coOwners(eventId),
+      });
+      await queryClient.refetchQueries({
+        queryKey: eventKeys.manageDetail(eventId),
       });
     },
     onError: (error: unknown) => {
@@ -474,12 +504,18 @@ export function useInviteCollaborator(eventId: string) {
   return useMutation({
     mutationFn: (body: CollaboratorInviteBody) =>
       eventsApi.inviteCollaborator(eventId, body),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Collaborator invited");
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         queryKey: eventKeys.collaborators(eventId),
       });
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
+        queryKey: eventKeys.manageDetail(eventId),
+      });
+      await queryClient.refetchQueries({
+        queryKey: eventKeys.collaborators(eventId),
+      });
+      await queryClient.refetchQueries({
         queryKey: eventKeys.manageDetail(eventId),
       });
     },
@@ -495,14 +531,31 @@ export function useAcceptCollaborator(eventId: string) {
   return useMutation({
     mutationFn: (collabId: string) =>
       eventsApi.acceptCollaborator(eventId, collabId),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Collaborator accepted");
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         queryKey: eventKeys.collaborators(eventId),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: eventKeys.manageDetail(eventId),
+      });
+      await queryClient.refetchQueries({
+        queryKey: eventKeys.collaborators(eventId),
+      });
+      await queryClient.refetchQueries({
+        queryKey: eventKeys.manageDetail(eventId),
       });
     },
     onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to accept collaborator"));
+      const message = getErrorMessage(error, "Failed to accept collaborator");
+      if (isForbiddenPermissionError(error, message)) {
+        toast.error(
+          "Only the lead of the invited entity can accept this invitation.",
+        );
+        return;
+      }
+
+      toast.error(message);
     },
   });
 }
@@ -513,14 +566,31 @@ export function useRejectCollaborator(eventId: string) {
   return useMutation({
     mutationFn: ({ collabId, reason }: { collabId: string; reason: string }) =>
       eventsApi.rejectCollaborator(eventId, collabId, reason),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Collaborator rejected");
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         queryKey: eventKeys.collaborators(eventId),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: eventKeys.manageDetail(eventId),
+      });
+      await queryClient.refetchQueries({
+        queryKey: eventKeys.collaborators(eventId),
+      });
+      await queryClient.refetchQueries({
+        queryKey: eventKeys.manageDetail(eventId),
       });
     },
     onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to reject collaborator"));
+      const message = getErrorMessage(error, "Failed to reject collaborator");
+      if (error instanceof ApiError && error.status === 403) {
+        toast.error(
+          "Only the lead of the invited entity can reject this invitation.",
+        );
+        return;
+      }
+
+      toast.error(message);
     },
   });
 }
@@ -531,10 +601,19 @@ export function useRemoveCollaborator(eventId: string) {
   return useMutation({
     mutationFn: (collabId: string) =>
       eventsApi.removeCollaborator(eventId, collabId),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Collaborator removed");
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         queryKey: eventKeys.collaborators(eventId),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: eventKeys.manageDetail(eventId),
+      });
+      await queryClient.refetchQueries({
+        queryKey: eventKeys.collaborators(eventId),
+      });
+      await queryClient.refetchQueries({
+        queryKey: eventKeys.manageDetail(eventId),
       });
     },
     onError: (error: unknown) => {

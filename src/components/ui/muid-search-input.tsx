@@ -1,9 +1,11 @@
 "use client";
 
-import { Loader2, Search, X } from "lucide-react";
+import { Loader2, Plus, Search, X } from "lucide-react";
 import * as React from "react";
 import { type UserResult, useSearch } from "@/hooks/use-search";
+import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 import { Badge } from "./badge";
+import { Button } from "./button";
 import {
   Command,
   CommandEmpty,
@@ -15,15 +17,27 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "./popover";
 
 interface MuidSearchInputProps {
-  value: string[];
-  onChange: (muids: string[]) => void;
+  /** Selected muid strings — for multi-select tag mode */
+  value?: string[];
+  /** Called with updated muid array in multi-select mode */
+  onChange?: (muids: string[]) => void;
+  /** Called with the full UserResult — for single-select / callback mode */
+  onSelectUser?: (user: UserResult) => void;
   placeholder?: string;
   disabled?: boolean;
 }
 
+function getInitials(name: string): string {
+  const parts = name.trim().split(" ").filter(Boolean);
+  if (parts.length === 0) return "U";
+  if (parts.length === 1) return parts[0].slice(0, 1).toUpperCase();
+  return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+}
+
 export function MuidSearchInput({
-  value,
+  value = [],
   onChange,
+  onSelectUser,
   placeholder = "Search by muid…",
   disabled = false,
 }: MuidSearchInputProps) {
@@ -32,7 +46,14 @@ export function MuidSearchInput({
     useSearch(value);
 
   const selectUser = (user: UserResult) => {
-    if (!value.includes(user.muid)) {
+    if (onSelectUser) {
+      onSelectUser(user);
+      clearResults();
+      setOpen(false);
+      return;
+    }
+    // multi-select tag mode
+    if (onChange && !value.includes(user.muid)) {
       onChange([...value, user.muid]);
     }
     clearResults();
@@ -40,13 +61,13 @@ export function MuidSearchInput({
   };
 
   const removeTag = (index: number) => {
-    onChange(value.filter((_, i) => i !== index));
+    onChange?.(value.filter((_, i) => i !== index));
   };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <div className="space-y-1.5">
-        {/* Selected tags */}
+        {/* Selected tags (multi-select mode) */}
         {value.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {value.map((muid, i) => (
@@ -94,13 +115,25 @@ export function MuidSearchInput({
               value={query}
               onValueChange={handleSearch}
             />
-            <CommandList className="max-h-[180px]">
-              {isLoading && (
-                <div className="flex items-center justify-center py-4">
-                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            <CommandList className="max-h-[260px]">
+              {/* 2-character minimum hint */}
+              {!query && (
+                <p className="p-3 text-xs text-muted-foreground">
+                  Type at least 2 characters
+                </p>
+              )}
+              {query && query.length < 2 && (
+                <p className="p-3 text-xs text-muted-foreground">
+                  Type at least 2 characters
+                </p>
+              )}
+              {isLoading && query.length >= 2 && (
+                <div className="flex items-center gap-2 p-3 text-xs text-muted-foreground">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading
+                  users...
                 </div>
               )}
-              {!isLoading && query && results.length === 0 && (
+              {!isLoading && query.length >= 2 && results.length === 0 && (
                 <CommandEmpty>No users found.</CommandEmpty>
               )}
               {!isLoading && results.length > 0 && (
@@ -110,12 +143,35 @@ export function MuidSearchInput({
                       key={user.id}
                       value={user.muid}
                       onSelect={() => selectUser(user)}
-                      className="flex items-center justify-between cursor-pointer"
+                      className="flex items-center justify-between gap-3 cursor-pointer p-2"
                     >
-                      <span className="font-medium">{user.full_name}</span>
-                      <span className="text-xs text-muted-foreground font-mono">
-                        {user.muid}
-                      </span>
+                      <div className="flex min-w-0 items-center gap-2">
+                        <Avatar className="h-8 w-8 shrink-0">
+                          <AvatarImage src={user.profile_pic ?? undefined} />
+                          <AvatarFallback>
+                            {getInitials(user.full_name)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium">
+                            {user.full_name}
+                          </p>
+                          <p className="text-xs text-muted-foreground font-mono">
+                            {user.muid}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          selectUser(user);
+                        }}
+                      >
+                        <Plus className="mr-1 h-3.5 w-3.5" /> Add
+                      </Button>
                     </CommandItem>
                   ))}
                 </CommandGroup>

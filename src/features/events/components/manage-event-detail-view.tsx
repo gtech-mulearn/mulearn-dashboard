@@ -28,14 +28,31 @@ import { CollaboratorsPanel } from "./collaborators-panel";
 import { EventDetailView } from "./event-detail-view";
 import { PublishFlowPanel } from "./publish-flow-panel";
 
-function getChangedFields(changedFields: EventLog["changed_fields"]): string[] {
-  if (Array.isArray(changedFields)) {
-    return changedFields;
+function getHistoryTimestamp(entry: EventLog): string {
+  return entry.timestamp ?? entry.edited_at ?? new Date().toISOString();
+}
+
+function getHistoryAction(entry: EventLog): string {
+  if (entry.action) {
+    return entry.action.replace(/_/g, " ");
   }
-  if (changedFields && typeof changedFields === "object") {
-    return Object.keys(changedFields);
+  if (entry.changed_fields) {
+    return "edited";
   }
-  return [];
+  return "updated";
+}
+
+function getHistoryTarget(entry: EventLog): string | null {
+  if (entry.target_name && entry.target_type) {
+    return `${entry.target_type.replace(/_/g, " ")} · ${entry.target_name}`;
+  }
+  if (entry.target_name) {
+    return entry.target_name;
+  }
+  if (entry.target_type) {
+    return entry.target_type.replace(/_/g, " ");
+  }
+  return null;
 }
 
 interface ManageEventDetailViewProps {
@@ -81,7 +98,8 @@ export function ManageEventDetailView({
     if (!event) return [];
     return [...event.edit_history].sort(
       (a, b) =>
-        new Date(b.edited_at).getTime() - new Date(a.edited_at).getTime(),
+        new Date(getHistoryTimestamp(b)).getTime() -
+        new Date(getHistoryTimestamp(a)).getTime(),
     );
   }, [event]);
 
@@ -194,63 +212,75 @@ export function ManageEventDetailView({
                   <CardTitle>Edit History</CardTitle>
                 </CardHeader>
                 <CardContent className="max-h-[500px] space-y-3 overflow-y-auto">
-                  {sortedHistory.map((entry) => {
-                    const changedFieldsList = getChangedFields(
-                      entry.changed_fields,
-                    );
-                    return (
-                      <div
-                        key={entry.edited_at + entry.edited_by.id}
-                        className="space-y-2 rounded-lg border bg-muted/30 p-3"
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-medium">
-                              {entry.edited_by.full_name}
-                            </p>
-                            <p className="truncate text-xs text-muted-foreground">
-                              {entry.edited_by.muid}
-                            </p>
-                          </div>
-                          <p className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
-                            {new Date(entry.edited_at).toLocaleDateString(
-                              undefined,
-                              {
+                  {sortedHistory.length > 0 ? (
+                    sortedHistory.map((entry) => {
+                      const actor =
+                        entry.performed_by ?? entry.actor ?? entry.edited_by;
+                      const changedFields = Array.isArray(entry.changed_fields)
+                        ? entry.changed_fields
+                        : entry.changed_fields &&
+                            typeof entry.changed_fields === "object"
+                          ? Object.keys(entry.changed_fields)
+                          : [];
+
+                      return (
+                        <div
+                          key={entry.id}
+                          className="space-y-2 rounded-lg border bg-muted/30 p-3"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-medium">
+                                {actor
+                                  ? `${actor.full_name} (${actor.muid})`
+                                  : "System"}
+                              </p>
+                              <p className="truncate text-xs text-muted-foreground">
+                                {getHistoryAction(entry)}
+                                {getHistoryTarget(entry)
+                                  ? ` · ${getHistoryTarget(entry)}`
+                                  : ""}
+                              </p>
+                            </div>
+                            <p className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
+                              {new Date(
+                                getHistoryTimestamp(entry),
+                              ).toLocaleDateString(undefined, {
                                 month: "short",
                                 day: "numeric",
                                 year: "numeric",
-                              },
-                            )}
-                            <br />
-                            <span className="text-xs">
-                              {new Date(entry.edited_at).toLocaleTimeString(
-                                undefined,
-                                {
+                              })}
+                              <br />
+                              <span className="text-xs">
+                                {new Date(
+                                  getHistoryTimestamp(entry),
+                                ).toLocaleTimeString(undefined, {
                                   hour: "2-digit",
                                   minute: "2-digit",
-                                },
-                              )}
-                            </span>
-                          </p>
+                                })}
+                              </span>
+                            </p>
+                          </div>
+                          {changedFields.length > 0 ? (
+                            <div className="flex flex-wrap gap-1">
+                              {changedFields.map((field) => (
+                                <span
+                                  key={field}
+                                  className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono"
+                                >
+                                  {field.replace(/_/g, " ")}
+                                </span>
+                              ))}
+                            </div>
+                          ) : null}
                         </div>
-                        <div className="flex flex-wrap gap-1">
-                          {changedFieldsList.map((field) => (
-                            <span
-                              key={field}
-                              className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono"
-                            >
-                              {field.replace(/_/g, " ")}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
-                  {sortedHistory.length === 0 ? (
+                      );
+                    })
+                  ) : (
                     <p className="py-4 text-center text-sm text-muted-foreground">
                       No edit history yet
                     </p>
-                  ) : null}
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -345,63 +375,77 @@ export function ManageEventDetailView({
                     <CardTitle>Edit History</CardTitle>
                   </CardHeader>
                   <CardContent className="max-h-[500px] space-y-3 overflow-y-auto">
-                    {sortedHistory.map((entry) => {
-                      const changedFieldsList = getChangedFields(
-                        entry.changed_fields,
-                      );
-                      return (
-                        <div
-                          key={entry.edited_at + entry.edited_by.id}
-                          className="space-y-2 rounded-lg border bg-muted/30 p-3"
-                        >
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="min-w-0">
-                              <p className="truncate text-sm font-medium">
-                                {entry.edited_by.full_name}
-                              </p>
-                              <p className="truncate text-xs text-muted-foreground">
-                                {entry.edited_by.muid}
-                              </p>
-                            </div>
-                            <p className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
-                              {new Date(entry.edited_at).toLocaleDateString(
-                                undefined,
-                                {
+                    {sortedHistory.length > 0 ? (
+                      sortedHistory.map((entry) => {
+                        const actor =
+                          entry.performed_by ?? entry.actor ?? entry.edited_by;
+                        const changedFields = Array.isArray(
+                          entry.changed_fields,
+                        )
+                          ? entry.changed_fields
+                          : entry.changed_fields &&
+                              typeof entry.changed_fields === "object"
+                            ? Object.keys(entry.changed_fields)
+                            : [];
+
+                        return (
+                          <div
+                            key={entry.id}
+                            className="space-y-2 rounded-lg border bg-muted/30 p-3"
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-medium">
+                                  {actor
+                                    ? `${actor.full_name} (${actor.muid})`
+                                    : "System"}
+                                </p>
+                                <p className="truncate text-xs text-muted-foreground">
+                                  {getHistoryAction(entry)}
+                                  {getHistoryTarget(entry)
+                                    ? ` · ${getHistoryTarget(entry)}`
+                                    : ""}
+                                </p>
+                              </div>
+                              <p className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
+                                {new Date(
+                                  getHistoryTimestamp(entry),
+                                ).toLocaleDateString(undefined, {
                                   month: "short",
                                   day: "numeric",
                                   year: "numeric",
-                                },
-                              )}
-                              <br />
-                              <span className="text-xs">
-                                {new Date(entry.edited_at).toLocaleTimeString(
-                                  undefined,
-                                  {
+                                })}
+                                <br />
+                                <span className="text-xs">
+                                  {new Date(
+                                    getHistoryTimestamp(entry),
+                                  ).toLocaleTimeString(undefined, {
                                     hour: "2-digit",
                                     minute: "2-digit",
-                                  },
-                                )}
-                              </span>
-                            </p>
+                                  })}
+                                </span>
+                              </p>
+                            </div>
+                            {changedFields.length > 0 ? (
+                              <div className="flex flex-wrap gap-1">
+                                {changedFields.map((field) => (
+                                  <span
+                                    key={field}
+                                    className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono"
+                                  >
+                                    {field.replace(/_/g, " ")}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : null}
                           </div>
-                          <div className="flex flex-wrap gap-1">
-                            {changedFieldsList.map((field) => (
-                              <span
-                                key={field}
-                                className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono"
-                              >
-                                {field.replace(/_/g, " ")}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
-                    {sortedHistory.length === 0 ? (
+                        );
+                      })
+                    ) : (
                       <p className="py-4 text-center text-sm text-muted-foreground">
                         No edit history yet
                       </p>
-                    ) : null}
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -419,7 +463,7 @@ export function ManageEventDetailView({
           deleteEvent.mutate(undefined, {
             onSuccess: () => {
               setConfirmCancelOpen(false);
-              router.push("/dashboard/manage-events");
+              router.push("/dashboard/manage-events?status=cancelled");
             },
           })
         }

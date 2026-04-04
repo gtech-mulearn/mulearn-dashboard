@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useFeaturedEvents } from "../hooks";
+import { resolveEventTypeValue, useFeaturedEvents } from "../hooks";
 import { InterestButton } from "./interest-button";
 
 export function FeaturedEventsCarousel() {
@@ -90,7 +90,10 @@ export function FeaturedEventsCarousel() {
 
             <div className="space-y-2 p-4">
               <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                {(event.event_type ?? "other").replace(/_/g, " ")}
+                {resolveEventTypeValue(
+                  event.event_type,
+                  event.category_name,
+                )?.replace(/_/g, " ") ?? "Other"}
               </p>
               <h3 className="line-clamp-2 text-base font-semibold">
                 {event.title}

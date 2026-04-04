@@ -17,15 +17,17 @@ import { EventSearch } from "./event-search";
 interface CollaboratorsPanelProps {
   eventId: string;
   isManageView?: boolean;
+  onActivity?: (activity: {
+    type: "collaborator";
+    action: string;
+    label: string;
+  }) => void;
 }
 
 function getCollabName(collab: EventCollaborator): string {
   return (
     collab.ig?.name ??
     collab.campus?.name ??
-    (collab.ig?.name && collab.campus?.name
-      ? `${collab.ig.name} @ ${collab.campus.name}`
-      : null) ??
     collab.company?.name ??
     "Collaborator"
   );
@@ -34,6 +36,7 @@ function getCollabName(collab: EventCollaborator): string {
 export function CollaboratorsPanel({
   eventId,
   isManageView,
+  onActivity,
 }: CollaboratorsPanelProps) {
   const [selectedCollaborator, setSelectedCollaborator] =
     useState<EventCollaborator | null>(null);
@@ -143,8 +146,25 @@ export function CollaboratorsPanel({
         description="This collaborator will be removed from the event."
         onConfirm={() => {
           if (selectedCollaborator) {
+            const removedLabel = `${getCollabName(selectedCollaborator)} removed from collaborators`;
             removeMutation.mutate(selectedCollaborator.id, {
-              onSuccess: () => setSelectedCollaborator(null),
+              onSuccess: () => {
+                setSelectedCollaborator(null);
+                window.dispatchEvent(
+                  new CustomEvent("events:activity", {
+                    detail: {
+                      type: "collaborator",
+                      action: "removed",
+                      label: removedLabel,
+                    },
+                  }),
+                );
+                onActivity?.({
+                  type: "collaborator",
+                  action: "removed",
+                  label: removedLabel,
+                });
+              },
             });
           }
         }}

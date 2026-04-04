@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
+import { MuidSearchInput } from "@/components/ui/muid-search-input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { eventsApi } from "../api";
@@ -23,8 +24,9 @@ import {
   EVENT_FORM_DEFAULT_VALUES,
   EVENT_SCOPE_OPTIONS,
   EVENT_TYPE_SELECT_OPTIONS,
-} from "../constants";
+} from "../constants/events.constants";
 import {
+  resolveEventTypeValue,
   toDatetimeLocal,
   toISOWithOffset,
   useCreateEvent,
@@ -37,7 +39,6 @@ import {
   updateEventSchema,
 } from "../schemas";
 import type {
-  EventCoOwnerInput,
   EventDetail,
   EventDetailManage,
   EventListItem,
@@ -50,7 +51,6 @@ import type {
   OrganizerType,
 } from "../types";
 import { EventSearch } from "./event-search";
-import { UserSearchInput } from "./user-search-input";
 import { VenueSection } from "./venue-section";
 
 interface EventModalProps {
@@ -69,6 +69,15 @@ interface SelectedOrganiser {
   type: OrganizerType;
   id: string;
 }
+
+interface CoOwnerDisplay {
+  user_id: string;
+  role?: "co_owner" | "admin";
+  full_name: string;
+  muid: string;
+}
+
+type ComparablePatchPayload = Partial<EventPatchBody>;
 
 type OrganizerOptionsLike = Partial<OrganizerOptionsResponse> & {
   canCreateAsIg?: OrganizerOptionsResponse["can_create_as_ig"];
@@ -179,7 +188,7 @@ export default function EventModal({
   }, [organizerOptionsQuery.data, isAdminUser]);
 
   const [selectedOrganiserId, setSelectedOrganiserId] = useState<string>("");
-  const [selectedCoOwners, setSelectedCoOwners] = useState<EventCoOwnerInput[]>(
+  const [selectedCoOwners, setSelectedCoOwners] = useState<CoOwnerDisplay[]>(
     [],
   );
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
@@ -223,8 +232,7 @@ export default function EventModal({
       ...EVENT_FORM_DEFAULT_VALUES,
       title: d?.title ?? "",
       description: d?.description ?? "",
-      event_type:
-        d?.event_type ?? (initialData as Partial<EventListItem>)?.event_type,
+      event_type: resolveEventTypeValue(d?.event_type, d?.category_name),
       scope,
       start_datetime: toDatetimeLocal(d?.start_datetime),
       end_datetime: toDatetimeLocal(d?.end_datetime),
@@ -244,9 +252,16 @@ export default function EventModal({
         ) || "",
       min_karma: d?.min_karma ?? null,
       is_collaboration: d?.is_collaboration ?? false,
-      target_campus_id: d?.target_campus?.id ?? null,
-      target_ig_id: d?.target_ig?.id ?? null,
-      target_campus_ig_id: d?.target_campus_ig?.id ?? null,
+      target_campus_id:
+        (d as Partial<EventDetail>)?.scope_org?.id ??
+        d?.target_campus?.id ??
+        null,
+      target_ig_id:
+        (d as Partial<EventDetail>)?.scope_ig?.id ?? d?.target_ig?.id ?? null,
+      target_campus_ig_id:
+        (d as Partial<EventDetail>)?.scope_ci_id ??
+        d?.target_campus_ig?.id ??
+        null,
       tags: d?.tags
         ? Array.isArray(d.tags)
           ? d.tags
@@ -257,16 +272,24 @@ export default function EventModal({
     setSelectedCoOwners(
       d?.co_owners?.map((owner) => ({
         user_id: owner.user.id,
-        role: owner.role,
+        role: owner.role ?? "co_owner",
+        full_name: owner.user.full_name,
+        muid: owner.user.muid,
       })) ?? [],
     );
     setCoverImageFile(null);
     setBannerImageFile(null);
-    setSelectedCampusName(d?.target_campus?.name ?? "");
-    setSelectedIgName(d?.target_ig?.name ?? "");
+    setSelectedCampusName(
+      (d as Partial<EventDetail>)?.scope_org?.title ??
+        d?.target_campus?.name ??
+        "",
+    );
+    setSelectedIgName(
+      (d as Partial<EventDetail>)?.scope_ig?.name ?? d?.target_ig?.name ?? "",
+    );
     setSelectedCampusIgName(
-      d?.target_ig?.name && d?.target_campus?.name
-        ? `${d.target_ig.name} @ ${d.target_campus.name}`
+      (d as Partial<EventDetail>)?.scope_ci_id
+        ? `${(d as Partial<EventDetail>)?.scope_ig?.name ?? d?.target_ig?.name ?? ""} @ ${(d as Partial<EventDetail>)?.scope_org?.title ?? d?.target_campus?.name ?? ""}`
         : (d?.target_campus_ig?.name ?? ""),
     );
   }, [initialData, open, reset]);
@@ -350,6 +373,138 @@ export default function EventModal({
       reader.readAsDataURL(file);
     });
 
+  const normalizeCoOwners = (
+    coOwners:
+      | Array<{ user_id: string; role?: "co_owner" | "admin" }>
+      | undefined,
+  ): Array<{ user_id: string; role: "co_owner" | "admin" }> =>
+    (coOwners ?? [])
+      .map((owner) => ({
+        user_id: owner.user_id,
+        role: owner.role ?? "co_owner",
+      }))
+      .sort((a, b) => a.user_id.localeCompare(b.user_id));
+
+  const normalizeTags = (
+    tags: string[] | Record<string, unknown> | null | undefined,
+  ): string[] | null => {
+    if (!tags) return null;
+    if (Array.isArray(tags)) {
+      return tags.length > 0 ? [...tags].sort() : null;
+    }
+    const keys = Object.keys(tags);
+    return keys.length > 0 ? keys.sort() : null;
+  };
+
+  const normalizeDateValue = (value: unknown): number | null => {
+    if (typeof value !== "string") return null;
+    const parsed = Date.parse(value);
+    return Number.isNaN(parsed) ? null : parsed;
+  };
+
+  const valuesAreEqual = (left: unknown, right: unknown): boolean => {
+    if (left === right) return true;
+
+    const leftDate = normalizeDateValue(left);
+    const rightDate = normalizeDateValue(right);
+    if (leftDate !== null && rightDate !== null) {
+      return leftDate === rightDate;
+    }
+
+    if (Array.isArray(left) && Array.isArray(right)) {
+      return JSON.stringify(left) === JSON.stringify(right);
+    }
+
+    if (
+      left &&
+      right &&
+      typeof left === "object" &&
+      typeof right === "object"
+    ) {
+      return JSON.stringify(left) === JSON.stringify(right);
+    }
+
+    return false;
+  };
+
+  const buildComparableInitialPayload = (
+    event: EventDetail | EventDetailManage,
+  ): ComparablePatchPayload => {
+    const organizer = event.organizer;
+    const organizerType = organizer?.type ?? "admin";
+
+    const organizerIg =
+      organizerType === "global_ig" ? (organizer?.ig?.id ?? null) : null;
+    const organizerOrg =
+      organizerType === "campus"
+        ? (organizer?.campus?.id ?? null)
+        : organizerType === "company"
+          ? (organizer?.company?.id ?? null)
+          : null;
+    const organizerCi =
+      organizerType === "campus_ig"
+        ? ((organizer?.campus_ig?.id ?? organizer?.campus_ig_id ?? null) as
+            | string
+            | null)
+        : null;
+
+    return {
+      title: event.title,
+      description: event.description,
+      cover_image: event.cover_image,
+      banner_image: event.banner_image,
+      start_datetime: event.start_datetime,
+      end_datetime: event.end_datetime,
+      registration_url: event.registration_url,
+      registration_deadline: event.registration_deadline,
+      min_karma: event.min_karma,
+      venue_type: event.venue.type,
+      venue_address: event.venue.address,
+      venue_city: event.venue.city,
+      venue_maps_url: event.venue.maps_url,
+      venue_online_link: event.venue.online_link,
+      venue_platform: event.venue.platform,
+      scope: event.scope,
+      scope_org:
+        event.scope === "campus" ? (event.scope_org?.id ?? null) : null,
+      scope_ig: event.scope === "ig" ? (event.scope_ig?.id ?? null) : null,
+      scope_ci_id:
+        event.scope === "campus_ig" ? (event.scope_ci_id ?? null) : null,
+      is_collaboration: event.is_collaboration,
+      is_featured: event.is_featured,
+      tags: normalizeTags(event.tags),
+      organiser_type: organizerType,
+      organiser_ig: organizerIg,
+      organiser_org: organizerOrg,
+      organiser_ci_id: organizerCi,
+      event_type: resolveEventTypeValue(event.event_type, event.category_name),
+      co_owners: normalizeCoOwners(
+        event.co_owners?.map((owner) => ({
+          user_id: owner.user.id,
+          role: owner.role,
+        })),
+      ),
+    } as ComparablePatchPayload;
+  };
+
+  const buildChangedPatchPayload = (
+    nextPayload: ComparablePatchPayload,
+    currentEvent: EventDetail | EventDetailManage,
+  ): EventPatchBody => {
+    const previousPayload = buildComparableInitialPayload(currentEvent);
+    const changedPayload: Record<string, unknown> = {};
+
+    for (const [key, nextValue] of Object.entries(nextPayload)) {
+      const previousValue =
+        previousPayload[key as keyof ComparablePatchPayload];
+      if (!valuesAreEqual(nextValue, previousValue)) {
+        changedPayload[key] = nextValue;
+      }
+    }
+
+    return changedPayload as EventPatchBody;
+  };
+
   const onSubmit = async (
     values: CreateEventSchema,
     action: "draft" | "publish",
@@ -400,18 +555,15 @@ export default function EventModal({
       ? await toBase64(bannerImageFile)
       : (values.banner_image ?? null);
 
-    // Convert tags array to Record format (or null if empty)
-    const tagsRecord: Record<string, unknown> | null =
-      values.tags && values.tags.length > 0
-        ? Object.fromEntries(values.tags.map((tag) => [tag, true]))
-        : null;
+    const tagsValue =
+      values.tags && values.tags.length > 0 ? values.tags : null;
 
-    const basePayload = {
+    const basePayload: ComparablePatchPayload = {
       title: values.title,
       description: values.description,
+      event_type: values.event_type,
       cover_image: coverBase64,
       banner_image: bannerBase64,
-      category: null,
       start_datetime: start as string,
       end_datetime: end as string,
       registration_url: values.registration_url,
@@ -430,14 +582,13 @@ export default function EventModal({
         values.scope === "campus_ig" ? values.target_campus_ig_id : null,
       is_collaboration: values.is_collaboration,
       is_featured: values.is_featured,
-      tags: tagsRecord,
-      user_limit: undefined,
+      tags: tagsValue,
     };
 
     const existingOrganizer = (initialData as EventDetail | EventDetailManage)
       ?.organizer;
-    const organizerPayload = selectedOrganiser
-      ? ({
+    const organizerPayload: Partial<EventWriteBody> = selectedOrganiser
+      ? {
           organiser_type: selectedOrganiser.type,
           organiser_ig:
             selectedOrganiser.type === "global_ig"
@@ -452,29 +603,57 @@ export default function EventModal({
             selectedOrganiser.type === "campus_ig"
               ? selectedOrganiser.id
               : null,
-          co_owners: selectedCoOwners,
-        } as Partial<EventWriteBody>)
+          co_owners: selectedCoOwners.map(({ user_id, role }) => ({
+            user_id,
+            role,
+          })),
+        }
       : isEdit
-        ? ({
-            organiser_type: existingOrganizer?.type ?? "admin",
-            organiser_ig: existingOrganizer?.ig?.id ?? null,
+        ? {
+            organiser_type:
+              (initialData as Partial<EventDetail>)?.organizer?.type ??
+              existingOrganizer?.type ??
+              "admin",
+            organiser_ig:
+              (initialData as Partial<EventDetail>)?.organizer?.ig?.id ??
+              existingOrganizer?.ig?.id ??
+              null,
             organiser_org:
+              (initialData as Partial<EventDetail>)?.organizer?.campus?.id ??
+              (initialData as Partial<EventDetail>)?.organizer?.company?.id ??
               existingOrganizer?.campus?.id ??
               existingOrganizer?.company?.id ??
               null,
-            organiser_ci_id: existingOrganizer?.campus_ig?.id ?? null,
-            co_owners: selectedCoOwners,
-          } as Partial<EventWriteBody>)
+            organiser_ci_id:
+              (initialData as Partial<EventDetail>)?.organizer?.campus_ig?.id ??
+              existingOrganizer?.campus_ig?.id ??
+              null,
+            co_owners: selectedCoOwners.map(({ user_id, role }) => ({
+              user_id,
+              role,
+            })),
+          }
         : {};
 
     try {
       let savedEventId = initialData?.id;
 
       if (isEdit && initialData?.id) {
-        const payload: EventPatchBody = {
+        const fullPayload: ComparablePatchPayload = {
           ...basePayload,
           ...organizerPayload,
-        } as EventPatchBody;
+        };
+        const payload = buildChangedPatchPayload(
+          fullPayload,
+          initialData as EventDetail | EventDetailManage,
+        );
+
+        if (Object.keys(payload).length === 0) {
+          toast.info("No changes detected");
+          onClose();
+          return;
+        }
+
         const updated = await patchEvent.mutateAsync(payload);
         savedEventId = updated.id;
       } else if (!isEdit) {
@@ -498,7 +677,10 @@ export default function EventModal({
             selectedOrganiser.type === "campus_ig"
               ? selectedOrganiser.id
               : null,
-          co_owners: selectedCoOwners,
+          co_owners: selectedCoOwners.map(({ user_id, role }) => ({
+            user_id,
+            role,
+          })),
         };
 
         const payload: EventWriteBody = {
@@ -587,46 +769,43 @@ export default function EventModal({
             <h3 className="mb-3 text-sm font-semibold text-foreground">
               Type &amp; Scope
             </h3>
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-              <div className="space-y-1">
-                <label
-                  htmlFor="event_type"
-                  className="text-sm font-medium text-foreground"
-                >
-                  Event type <span className="text-red-500">*</span>
-                </label>
-                <select
-                  id="event_type"
-                  className="h-10 w-full rounded-md border px-3 text-sm"
-                  {...register("event_type")}
-                >
-                  <option value="">Select event type</option>
-                  {EVENT_TYPE_SELECT_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-1">
-                <label
-                  htmlFor="scope"
-                  className="text-sm font-medium text-foreground"
-                >
-                  Scope <span className="text-red-500">*</span>
-                </label>
-                <select
-                  id="scope"
-                  className="h-10 w-full rounded-md border px-3 text-sm"
-                  {...register("scope")}
-                >
-                  {EVENT_SCOPE_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+            <div className="space-y-1">
+              <label
+                htmlFor="event_type"
+                className="text-sm font-medium text-foreground"
+              >
+                Event type
+              </label>
+              <select
+                id="event_type"
+                className="h-10 w-full rounded-md border px-3 text-sm"
+                {...register("event_type")}
+              >
+                {EVENT_TYPE_SELECT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label
+                htmlFor="scope"
+                className="text-sm font-medium text-foreground"
+              >
+                Scope <span className="text-red-500">*</span>
+              </label>
+              <select
+                id="scope"
+                className="h-10 w-full rounded-md border px-3 text-sm"
+                {...register("scope")}
+              >
+                {EVENT_SCOPE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {scope === "campus" ? (
@@ -1035,8 +1214,8 @@ export default function EventModal({
                   (optional)
                 </span>
               </p>
-              <UserSearchInput
-                onSelect={(user) => {
+              <MuidSearchInput
+                onSelectUser={(user) => {
                   if (
                     selectedCoOwners.some((owner) => owner.user_id === user.id)
                   ) {
@@ -1044,7 +1223,12 @@ export default function EventModal({
                   }
                   setSelectedCoOwners((prev) => [
                     ...prev,
-                    { user_id: user.id, role: "co_owner" },
+                    {
+                      user_id: user.id,
+                      role: "co_owner",
+                      full_name: user.full_name,
+                      muid: user.muid,
+                    },
                   ]);
                 }}
                 placeholder="Search by name or muid..."
@@ -1054,14 +1238,18 @@ export default function EventModal({
                   <Badge
                     key={owner.user_id}
                     variant="outline"
-                    className="cursor-pointer"
+                    className="cursor-pointer gap-1"
                     onClick={() =>
                       setSelectedCoOwners((prev) =>
                         prev.filter((item) => item.user_id !== owner.user_id),
                       )
                     }
                   >
-                    {owner.user_id}
+                    {owner.full_name}
+                    <span className="text-muted-foreground text-xs">
+                      ({owner.muid})
+                    </span>
+                    ✕
                   </Badge>
                 ))}
               </div>

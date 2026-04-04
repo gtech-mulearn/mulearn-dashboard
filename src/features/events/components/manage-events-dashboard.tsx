@@ -6,15 +6,15 @@
 
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { apiClient, endpoints } from "@/api";
 import { ApiError } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { eventsApi } from "../api";
-import { MANAGE_EVENT_STATUS_PILLS } from "../constants";
+import { MANAGE_EVENT_STATUS_PILLS } from "../constants/events.constants";
 import { eventKeys } from "../hooks/query-keys";
 import type { EventListItem, EventStatus } from "../types";
 import EventModal from "./event-modal";
@@ -23,6 +23,7 @@ import { EventsPagination } from "./events-pagination";
 
 export default function ManageEventsDashboard() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<EventStatus | "all">("all");
@@ -43,6 +44,25 @@ export default function ManageEventsDashboard() {
   );
 
   const useAdminView = canAdminView;
+
+  useEffect(() => {
+    const statusFromUrl = searchParams.get("status");
+    if (!statusFromUrl) return;
+
+    if (
+      statusFromUrl === "draft" ||
+      statusFromUrl === "pending_campus_approval" ||
+      statusFromUrl === "pending_approval" ||
+      statusFromUrl === "pending_mentor_approval" ||
+      statusFromUrl === "published" ||
+      statusFromUrl === "ongoing" ||
+      statusFromUrl === "completed" ||
+      statusFromUrl === "cancelled"
+    ) {
+      setStatusFilter(statusFromUrl);
+      setPage(1);
+    }
+  }, [searchParams]);
 
   const listParams = {
     pageIndex: page,

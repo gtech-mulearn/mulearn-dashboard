@@ -3,7 +3,10 @@
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { EVENT_CLUSTER_OPTIONS, EVENT_TYPE_OPTIONS } from "../constants";
+import {
+  EVENT_CLUSTER_OPTIONS,
+  EVENT_TYPE_OPTIONS,
+} from "../constants/events.constants";
 import type { EventType, IGCluster } from "../types";
 
 interface EventsFiltersProps {

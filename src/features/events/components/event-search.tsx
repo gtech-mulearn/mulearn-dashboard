@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import {
   COLLABORATOR_INVITE_TYPE_MAP,
   COLLABORATOR_TYPE_OPTIONS,
-} from "../constants";
+} from "../constants/events.constants";
 import {
   normalizeCollaborationTargets,
   useCampusSearch,
@@ -31,7 +31,7 @@ interface EventSearchSelectProps {
 interface EventSearchInviteProps {
   mode: "invite";
   eventId: string;
-  onInvited?: () => void;
+  onInvited?: (target: CollaborationTarget) => void;
 }
 
 type EventSearchProps = EventSearchSelectProps | EventSearchInviteProps;
@@ -68,7 +68,9 @@ function normalizeScopeTargets(
       ? data
       : [];
 
-  return items
+  const uniqueTargets = new Map<string, CollaborationTarget>();
+
+  items
     .map((item) => {
       if (!item || typeof item !== "object") return null;
       const value = item as Record<string, unknown>;
@@ -88,7 +90,14 @@ function normalizeScopeTargets(
           null,
       } as CollaborationTarget;
     })
-    .filter((target): target is CollaborationTarget => Boolean(target));
+    .filter((target): target is CollaborationTarget => Boolean(target))
+    .forEach((target) => {
+      if (!uniqueTargets.has(target.id)) {
+        uniqueTargets.set(target.id, target);
+      }
+    });
+
+  return Array.from(uniqueTargets.values());
 }
 
 function SelectMode(props: EventSearchSelectProps) {
@@ -316,7 +325,7 @@ function InviteMode(props: EventSearchInviteProps) {
                             ...prev,
                             [target.id]: "",
                           }));
-                          onInvited?.();
+                          onInvited?.(target);
                         }}
                         disabled={inviteCollaborator.isPending}
                       >

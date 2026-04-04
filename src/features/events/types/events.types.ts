@@ -233,9 +233,24 @@ export interface LinkedTaskInput {
 
 export interface EventLog {
   id: UUID;
-  edited_by: MinimalUser;
-  changed_fields: string[] | Record<string, unknown>;
-  edited_at: ISODateTime;
+  action?:
+    | "co_owner_added"
+    | "co_owner_removed"
+    | "collaborator_invited"
+    | "collaborator_accepted"
+    | "collaborator_rejected"
+    | "collaborator_removed"
+    | string;
+  actor?: MinimalUser | null;
+  performed_by?: MinimalUser | null;
+  target_type?: string | null;
+  target_id?: UUID | null;
+  target_name?: string | null;
+  timestamp?: ISODateTime | null;
+  // Backward compatibility with the old edit_history payload.
+  edited_by?: MinimalUser;
+  changed_fields?: string[] | Record<string, unknown>;
+  edited_at?: ISODateTime;
 }
 
 // ─── VENUE ──────────────────────────────────────────────────────────────────
@@ -350,6 +365,7 @@ export interface EventWriteBody {
   cover_image: string | null;
   banner_image: string | null;
   category: UUID | null;
+  event_type?: EventType;
   start_datetime: ISODateTime;
   end_datetime: ISODateTime;
   registration_url: string | null;
@@ -369,9 +385,10 @@ export interface EventWriteBody {
   organiser_ig: UUID | null;
   organiser_org: UUID | null;
   organiser_ci_id: UUID | null;
+  co_owners?: EventCoOwnerInput[];
   is_collaboration?: boolean;
   is_featured?: boolean;
-  tags: Record<string, unknown> | null;
+  tags: string[] | null;
   user_limit?: number;
 }
 

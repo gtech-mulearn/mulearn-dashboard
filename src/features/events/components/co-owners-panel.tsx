@@ -5,15 +5,20 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { MuidSearchInput } from "@/components/ui/muid-search-input";
 import { useAddCoOwner, useEventCoOwners, useRemoveCoOwner } from "../hooks";
 import type { EventCoOwner } from "../types";
-import { UserSearchInput } from "./user-search-input";
 
 interface CoOwnersPanelProps {
   eventId: string;
+  onActivity?: (activity: {
+    type: "co-owner";
+    action: string;
+    label: string;
+  }) => void;
 }
 
-export function CoOwnersPanel({ eventId }: CoOwnersPanelProps) {
+export function CoOwnersPanel({ eventId, onActivity }: CoOwnersPanelProps) {
   const [selectedCoOwner, setSelectedCoOwner] = useState<EventCoOwner | null>(
     null,
   );
@@ -92,11 +97,22 @@ export function CoOwnersPanel({ eventId }: CoOwnersPanelProps) {
         ))}
       </div>
 
-      <UserSearchInput
+      <MuidSearchInput
         placeholder="Search by name or muid..."
-        onSelect={(user) => {
+        onSelectUser={(user) => {
           if (!user.id) return;
-          addCoOwner.mutate({ user_id: user.id });
+          addCoOwner.mutate(
+            { user_id: user.id },
+            {
+              onSuccess: () => {
+                onActivity?.({
+                  type: "co-owner",
+                  action: "added",
+                  label: `${user.full_name} (${user.muid}) added as co-owner`,
+                });
+              },
+            },
+          );
         }}
       />
 
@@ -111,8 +127,16 @@ export function CoOwnersPanel({ eventId }: CoOwnersPanelProps) {
         description="This user will lose co-owner permissions for this event."
         onConfirm={() => {
           if (selectedCoOwner) {
+            const removedLabel = `${selectedCoOwner.user.full_name} (${selectedCoOwner.user.muid}) removed from co-owners`;
             removeCoOwner.mutate(selectedCoOwner.id, {
-              onSuccess: () => setSelectedCoOwner(null),
+              onSuccess: () => {
+                setSelectedCoOwner(null);
+                onActivity?.({
+                  type: "co-owner",
+                  action: "removed",
+                  label: removedLabel,
+                });
+              },
             });
           }
         }}

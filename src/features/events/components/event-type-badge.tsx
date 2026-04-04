@@ -7,7 +7,7 @@
  */
 
 import { Badge } from "@/components/ui/badge";
-import { EVENT_TYPE_BADGE_CONFIG } from "../constants";
+import { EVENT_TYPE_BADGE_CONFIG } from "../constants/events.constants";
 import type { EventType } from "../types";
 
 interface EventTypeBadgeProps {

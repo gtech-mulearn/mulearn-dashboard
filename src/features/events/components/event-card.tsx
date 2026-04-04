@@ -3,6 +3,7 @@
 import { Lock, MapPin } from "lucide-react";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
+import { resolveEventTypeValue } from "../hooks";
 import type { EventListItem, OrganizerInfo } from "../types";
 import { EventStatusBadge } from "./event-status-badge";
 import { EventTypeBadge } from "./event-type-badge";
@@ -64,7 +65,12 @@ export function EventCard({ event, isManageView, onView }: EventCardProps) {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent" />
         <div className="absolute bottom-3 left-3">
-          <EventTypeBadge eventType={event.event_type} />
+          <EventTypeBadge
+            eventType={resolveEventTypeValue(
+              event.event_type,
+              event.category_name,
+            )}
+          />
         </div>
         {isManageView ? (
           <div className="absolute right-3 top-3">

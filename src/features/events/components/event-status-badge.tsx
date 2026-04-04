@@ -1,7 +1,7 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import { EVENT_STATUS_MAP } from "../constants";
+import { EVENT_STATUS_MAP } from "../constants/events.constants";
 import type { EventStatus } from "../types";
 
 interface EventStatusBadgeProps {

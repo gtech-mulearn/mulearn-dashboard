@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useEventDetail } from "../hooks";
+import { resolveEventTypeValue, useEventDetail } from "../hooks";
 import { EventStatusBadge } from "./event-status-badge";
 import { InterestButton } from "./interest-button";
 
@@ -152,7 +152,10 @@ export function EventDetailView({
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <EventStatusBadge status={event.status} />
               <Badge variant="secondary" className="capitalize">
-                {event.event_type?.replace(/_/g, " ")}
+                {resolveEventTypeValue(
+                  event.event_type,
+                  event.category_name,
+                )?.replace(/_/g, " ") ?? "Other"}
               </Badge>
               {event.is_featured ? (
                 <Badge className="bg-amber-100 text-amber-800">

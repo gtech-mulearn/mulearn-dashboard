@@ -15,5 +15,4 @@ export * from "./interest-button";
 export * from "./manage-event-detail-view";
 export { default as ManageEventsDashboard } from "./manage-events-dashboard";
 export * from "./publish-flow-panel";
-export * from "./user-search-input";
 export * from "./venue-section";
