@@ -7,6 +7,7 @@ export interface UserResult {
   id: string;
   full_name: string;
   muid: string;
+  profile_pic?: string | null;
 }
 
 export function useSearch(excludedMuids: string[] = []) {

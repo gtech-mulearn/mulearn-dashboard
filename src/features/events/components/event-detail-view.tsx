@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useEventDetail } from "../hooks";
+import { resolveEventTypeValue, useEventDetail } from "../hooks";
 import { EventStatusBadge } from "./event-status-badge";
 import { InterestButton } from "./interest-button";
 
@@ -84,14 +84,17 @@ export function EventDetailView({
 
   const organizerName =
     event.organizer.ig?.name ??
-    event.organizer.campus_ig?.ig.name ??
+    (event.organizer.ig && event.organizer.campus
+      ? `${event.organizer.ig.name} @ ${event.organizer.campus.name}`
+      : null) ??
     event.organizer.campus?.name ??
     event.organizer.company?.name ??
     "muLearn";
 
   const organizerLogo =
     event.organizer.ig?.logo ??
-    event.organizer.campus_ig?.ig.logo ??
+    event.organizer.ig?.logo ??
+    event.organizer.campus?.logo ??
     event.organizer.campus?.logo ??
     event.organizer.company?.logo ??
     null;
@@ -149,7 +152,10 @@ export function EventDetailView({
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <EventStatusBadge status={event.status} />
               <Badge variant="secondary" className="capitalize">
-                {event.event_type?.replace(/_/g, " ")}
+                {resolveEventTypeValue(
+                  event.event_type,
+                  event.category_name,
+                )?.replace(/_/g, " ") ?? "Other"}
               </Badge>
               {event.is_featured ? (
                 <Badge className="bg-amber-100 text-amber-800">
@@ -216,7 +222,7 @@ export function EventDetailView({
             </Card>
           ) : null}
 
-          {event.tags.length > 0 ? (
+          {Array.isArray(event.tags) && event.tags.length > 0 ? (
             <div className="flex flex-wrap gap-2">
               {event.tags.map((tag) => (
                 <Badge key={tag} variant="outline">
@@ -356,7 +362,9 @@ export function EventDetailView({
                     const name =
                       collab.ig?.name ??
                       collab.campus?.name ??
-                      collab.campus_ig?.ig.name ??
+                      (collab.ig?.name && collab.campus?.name
+                        ? `${collab.ig.name} @ ${collab.campus.name}`
+                        : null) ??
                       collab.company?.name ??
                       "Collaborator";
                     return (

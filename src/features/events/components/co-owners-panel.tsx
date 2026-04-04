@@ -5,28 +5,69 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { MuidSearchInput } from "@/components/ui/muid-search-input";
 import { useAddCoOwner, useEventCoOwners, useRemoveCoOwner } from "../hooks";
 import type { EventCoOwner } from "../types";
-import { UserSearchInput } from "./user-search-input";
 
 interface CoOwnersPanelProps {
   eventId: string;
+  onActivity?: (activity: {
+    type: "co-owner";
+    action: string;
+    label: string;
+  }) => void;
 }
 
-export function CoOwnersPanel({ eventId }: CoOwnersPanelProps) {
+export function CoOwnersPanel({ eventId, onActivity }: CoOwnersPanelProps) {
   const [selectedCoOwner, setSelectedCoOwner] = useState<EventCoOwner | null>(
     null,
   );
-  const { data: coOwners } = useEventCoOwners(eventId);
+  const {
+    data: coOwners,
+    isLoading,
+    isError,
+    error,
+    isFetching,
+  } = useEventCoOwners(eventId);
   const addCoOwner = useAddCoOwner(eventId);
   const removeCoOwner = useRemoveCoOwner(eventId);
+
+  const coOwnersList = Array.isArray(coOwners)
+    ? coOwners
+    : coOwners && typeof coOwners === "object" && "data" in coOwners
+      ? Array.isArray((coOwners as { data?: unknown }).data)
+        ? ((coOwners as { data?: EventCoOwner[] }).data ?? [])
+        : []
+      : [];
+
+  const errorMessage =
+    error instanceof Error ? error.message : "Failed to load co-owners";
+  const isPermissionDenied = errorMessage
+    .toLowerCase()
+    .includes("permission denied");
 
   return (
     <section className="space-y-3 rounded-lg border p-4">
       <h3 className="font-semibold">Co-Owners</h3>
 
-      <div className="space-y-2">
-        {(coOwners ?? []).map((coOwner) => (
+      {isLoading ? (
+        <p className="text-sm text-muted-foreground">Loading co-owners...</p>
+      ) : null}
+
+      {!isLoading && isFetching ? (
+        <p className="text-xs text-muted-foreground">Refreshing co-owners...</p>
+      ) : null}
+
+      {isError ? (
+        <p className="text-sm text-destructive">
+          {isPermissionDenied
+            ? "Unable to read co-owners for this event due to permissions. You can still try adding a co-owner below."
+            : errorMessage}
+        </p>
+      ) : null}
+
+      <div className={`space-y-2 ${isFetching ? "opacity-75" : ""}`}>
+        {coOwnersList.map((coOwner) => (
           <div
             key={coOwner.id}
             className="flex items-center gap-3 rounded border p-2"
@@ -43,7 +84,7 @@ export function CoOwnersPanel({ eventId }: CoOwnersPanelProps) {
               </p>
               <p className="text-xs text-gray-500">{coOwner.user.muid}</p>
             </div>
-            <Badge variant="outline">{coOwner.role}</Badge>
+            <Badge variant="outline">{coOwner.role ?? "co_owner"}</Badge>
             <Button
               type="button"
               size="sm"
@@ -56,9 +97,23 @@ export function CoOwnersPanel({ eventId }: CoOwnersPanelProps) {
         ))}
       </div>
 
-      <UserSearchInput
+      <MuidSearchInput
         placeholder="Search by name or muid..."
-        onSelect={(user) => addCoOwner.mutate({ user_id: user.id })}
+        onSelectUser={(user) => {
+          if (!user.id) return;
+          addCoOwner.mutate(
+            { user_id: user.id },
+            {
+              onSuccess: () => {
+                onActivity?.({
+                  type: "co-owner",
+                  action: "added",
+                  label: `${user.full_name} (${user.muid}) added as co-owner`,
+                });
+              },
+            },
+          );
+        }}
       />
 
       <ConfirmDialog
@@ -72,8 +127,16 @@ export function CoOwnersPanel({ eventId }: CoOwnersPanelProps) {
         description="This user will lose co-owner permissions for this event."
         onConfirm={() => {
           if (selectedCoOwner) {
+            const removedLabel = `${selectedCoOwner.user.full_name} (${selectedCoOwner.user.muid}) removed from co-owners`;
             removeCoOwner.mutate(selectedCoOwner.id, {
-              onSuccess: () => setSelectedCoOwner(null),
+              onSuccess: () => {
+                setSelectedCoOwner(null);
+                onActivity?.({
+                  type: "co-owner",
+                  action: "removed",
+                  label: removedLabel,
+                });
+              },
             });
           }
         }}

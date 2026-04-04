@@ -1,9 +1,9 @@
 export * from "./co-owners-panel";
-export * from "./collaborator-search-input";
 export * from "./collaborators-panel";
 export * from "./event-card";
 export * from "./event-detail-view";
 export { default as EventModal } from "./event-modal";
+export * from "./event-search";
 export * from "./event-status-badge";
 export * from "./event-type-badge";
 export * from "./events-filters";
@@ -15,5 +15,4 @@ export * from "./interest-button";
 export * from "./manage-event-detail-view";
 export { default as ManageEventsDashboard } from "./manage-events-dashboard";
 export * from "./publish-flow-panel";
-export * from "./user-search-input";
 export * from "./venue-section";

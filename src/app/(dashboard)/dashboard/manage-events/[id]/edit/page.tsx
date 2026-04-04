@@ -43,7 +43,7 @@ export default function EditEventPage(props: EditEventPageProps) {
     <EventModal
       open
       onClose={() => {
-        router.push("/dashboard/manage-events");
+        router.push(`/dashboard/manage-events/${id}`);
       }}
       initialData={event}
       isEdit

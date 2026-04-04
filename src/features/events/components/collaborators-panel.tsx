@@ -12,18 +12,22 @@ import {
   useRemoveCollaborator,
 } from "../hooks";
 import type { EventCollaborator } from "../types";
-import { CollaboratorSearchInput } from "./collaborator-search-input";
+import { EventSearch } from "./event-search";
 
 interface CollaboratorsPanelProps {
   eventId: string;
   isManageView?: boolean;
+  onActivity?: (activity: {
+    type: "collaborator";
+    action: string;
+    label: string;
+  }) => void;
 }
 
 function getCollabName(collab: EventCollaborator): string {
   return (
     collab.ig?.name ??
     collab.campus?.name ??
-    collab.campus_ig?.ig.name ??
     collab.company?.name ??
     "Collaborator"
   );
@@ -32,6 +36,7 @@ function getCollabName(collab: EventCollaborator): string {
 export function CollaboratorsPanel({
   eventId,
   isManageView,
+  onActivity,
 }: CollaboratorsPanelProps) {
   const [selectedCollaborator, setSelectedCollaborator] =
     useState<EventCollaborator | null>(null);
@@ -42,7 +47,17 @@ export function CollaboratorsPanel({
   const rejectMutation = useRejectCollaborator(eventId);
   const removeMutation = useRemoveCollaborator(eventId);
 
-  const visible = (collaborators ?? []).filter((collab) =>
+  const collaboratorsList = Array.isArray(collaborators)
+    ? collaborators
+    : collaborators &&
+        typeof collaborators === "object" &&
+        "data" in collaborators
+      ? Array.isArray((collaborators as { data?: unknown }).data)
+        ? ((collaborators as { data?: EventCollaborator[] }).data ?? [])
+        : []
+      : [];
+
+  const visible = collaboratorsList.filter((collab) =>
     isManageView ? true : collab.invite_status === "accepted",
   );
 
@@ -118,7 +133,7 @@ export function CollaboratorsPanel({
         ))}
       </div>
 
-      {isManageView ? <CollaboratorSearchInput eventId={eventId} /> : null}
+      {isManageView ? <EventSearch mode="invite" eventId={eventId} /> : null}
 
       <ConfirmDialog
         open={!!selectedCollaborator}
@@ -131,8 +146,25 @@ export function CollaboratorsPanel({
         description="This collaborator will be removed from the event."
         onConfirm={() => {
           if (selectedCollaborator) {
+            const removedLabel = `${getCollabName(selectedCollaborator)} removed from collaborators`;
             removeMutation.mutate(selectedCollaborator.id, {
-              onSuccess: () => setSelectedCollaborator(null),
+              onSuccess: () => {
+                setSelectedCollaborator(null);
+                window.dispatchEvent(
+                  new CustomEvent("events:activity", {
+                    detail: {
+                      type: "collaborator",
+                      action: "removed",
+                      label: removedLabel,
+                    },
+                  }),
+                );
+                onActivity?.({
+                  type: "collaborator",
+                  action: "removed",
+                  label: removedLabel,
+                });
+              },
             });
           }
         }}

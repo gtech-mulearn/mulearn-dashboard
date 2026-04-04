@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, PanelRight, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { apiClient, endpoints } from "@/api";
@@ -13,7 +13,6 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
@@ -23,10 +22,38 @@ import {
   useDeleteEvent,
   useManageEventDetail,
 } from "../hooks";
+import type { EventLog } from "../types";
 import { CoOwnersPanel } from "./co-owners-panel";
 import { CollaboratorsPanel } from "./collaborators-panel";
 import { EventDetailView } from "./event-detail-view";
 import { PublishFlowPanel } from "./publish-flow-panel";
+
+function getHistoryTimestamp(entry: EventLog): string {
+  return entry.timestamp ?? entry.edited_at ?? new Date().toISOString();
+}
+
+function getHistoryAction(entry: EventLog): string {
+  if (entry.action) {
+    return entry.action.replace(/_/g, " ");
+  }
+  if (entry.changed_fields) {
+    return "edited";
+  }
+  return "updated";
+}
+
+function getHistoryTarget(entry: EventLog): string | null {
+  if (entry.target_name && entry.target_type) {
+    return `${entry.target_type.replace(/_/g, " ")} · ${entry.target_name}`;
+  }
+  if (entry.target_name) {
+    return entry.target_name;
+  }
+  if (entry.target_type) {
+    return entry.target_type.replace(/_/g, " ");
+  }
+  return null;
+}
 
 interface ManageEventDetailViewProps {
   eventId: string;
@@ -62,6 +89,7 @@ export function ManageEventDetailView({
         )),
   );
   const canAdmin = canApprove;
+  const canSelfPublish = canApprove || event?.organizer.type === "company";
 
   const deleteEvent = useDeleteEvent(eventId);
   const adminFeature = useAdminFeature(eventId);
@@ -70,7 +98,8 @@ export function ManageEventDetailView({
     if (!event) return [];
     return [...event.edit_history].sort(
       (a, b) =>
-        new Date(b.edited_at).getTime() - new Date(a.edited_at).getTime(),
+        new Date(getHistoryTimestamp(b)).getTime() -
+        new Date(getHistoryTimestamp(a)).getTime(),
     );
   }, [event]);
 
@@ -87,7 +116,7 @@ export function ManageEventDetailView({
   }
 
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-6 px-1">
+    <div className="mx-auto w-full max-w-7xl space-y-6 px-1 pb-24 sm:pb-0">
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-card p-3 shadow-sm">
         <Button
           variant="ghost"
@@ -117,108 +146,6 @@ export function ManageEventDetailView({
             <Trash2 className="mr-2 h-4 w-4" /> Cancel Event
           </Button>
         </div>
-
-        <Sheet open={panelOpen} onOpenChange={setPanelOpen}>
-          <SheetTrigger asChild>
-            <Button variant="outline" className="sm:hidden">
-              <PanelRight className="mr-2 h-4 w-4" /> Manage Panel
-            </Button>
-          </SheetTrigger>
-          <SheetContent
-            side="right"
-            className="w-full max-w-md overflow-y-auto"
-          >
-            <SheetHeader>
-              <SheetTitle>Event Management</SheetTitle>
-            </SheetHeader>
-            <div className="mt-4">
-              <Tabs
-                value={activeTab}
-                onValueChange={setActiveTab}
-                className="w-full"
-              >
-                <TabsList className="grid h-auto w-full grid-cols-2 gap-1 rounded-xl bg-muted p-1 sm:grid-cols-4">
-                  <TabsTrigger value="publishing">Publishing</TabsTrigger>
-                  <TabsTrigger value="co-owners">Co-owners</TabsTrigger>
-                  <TabsTrigger value="collaborators">Collaborators</TabsTrigger>
-                  <TabsTrigger value="history">History</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="publishing" className="space-y-3 pt-3">
-                  <PublishFlowPanel event={event} canApprove={canApprove} />
-                  {canAdmin ? (
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-base">
-                          Feature on homepage
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="flex items-center justify-between">
-                        <p className="text-sm text-muted-foreground">
-                          Toggle featured visibility
-                        </p>
-                        <Switch
-                          checked={event.is_featured}
-                          onCheckedChange={(checked) =>
-                            adminFeature.mutate(checked)
-                          }
-                          disabled={adminFeature.isPending}
-                        />
-                      </CardContent>
-                    </Card>
-                  ) : null}
-                </TabsContent>
-
-                <TabsContent value="co-owners" className="pt-3">
-                  <CoOwnersPanel eventId={eventId} />
-                </TabsContent>
-
-                <TabsContent value="collaborators" className="pt-3">
-                  <CollaboratorsPanel eventId={eventId} isManageView />
-                </TabsContent>
-
-                <TabsContent value="history" className="pt-3">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Edit History</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-left text-sm">
-                          <thead>
-                            <tr className="border-b">
-                              <th className="p-2">edited_by</th>
-                              <th className="p-2">changed_fields</th>
-                              <th className="p-2">when</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {sortedHistory.map((entry) => (
-                              <tr
-                                key={entry.edited_at + entry.edited_by.id}
-                                className="border-b"
-                              >
-                                <td className="p-2">
-                                  {entry.edited_by.full_name}
-                                </td>
-                                <td className="p-2">
-                                  {entry.changed_fields.join(", ")}
-                                </td>
-                                <td className="p-2">
-                                  {new Date(entry.edited_at).toLocaleString()}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              </Tabs>
-            </div>
-          </SheetContent>
-        </Sheet>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -243,7 +170,11 @@ export function ManageEventDetailView({
             </TabsList>
 
             <TabsContent value="publishing" className="space-y-3 pt-3">
-              <PublishFlowPanel event={event} canApprove={canApprove} />
+              <PublishFlowPanel
+                event={event}
+                canApprove={canApprove}
+                canSelfPublish={canSelfPublish}
+              />
               {canAdmin ? (
                 <Card>
                   <CardHeader>
@@ -280,34 +211,76 @@ export function ManageEventDetailView({
                 <CardHeader>
                   <CardTitle>Edit History</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                      <thead>
-                        <tr className="border-b">
-                          <th className="p-2">edited_by</th>
-                          <th className="p-2">changed_fields</th>
-                          <th className="p-2">when</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {sortedHistory.map((entry) => (
-                          <tr
-                            key={entry.edited_at + entry.edited_by.id}
-                            className="border-b"
-                          >
-                            <td className="p-2">{entry.edited_by.full_name}</td>
-                            <td className="p-2">
-                              {entry.changed_fields.join(", ")}
-                            </td>
-                            <td className="p-2">
-                              {new Date(entry.edited_at).toLocaleString()}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                <CardContent className="max-h-[500px] space-y-3 overflow-y-auto">
+                  {sortedHistory.length > 0 ? (
+                    sortedHistory.map((entry) => {
+                      const actor =
+                        entry.performed_by ?? entry.actor ?? entry.edited_by;
+                      const changedFields = Array.isArray(entry.changed_fields)
+                        ? entry.changed_fields
+                        : entry.changed_fields &&
+                            typeof entry.changed_fields === "object"
+                          ? Object.keys(entry.changed_fields)
+                          : [];
+
+                      return (
+                        <div
+                          key={entry.id}
+                          className="space-y-2 rounded-lg border bg-muted/30 p-3"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-medium">
+                                {actor
+                                  ? `${actor.full_name} (${actor.muid})`
+                                  : "System"}
+                              </p>
+                              <p className="truncate text-xs text-muted-foreground">
+                                {getHistoryAction(entry)}
+                                {getHistoryTarget(entry)
+                                  ? ` · ${getHistoryTarget(entry)}`
+                                  : ""}
+                              </p>
+                            </div>
+                            <p className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
+                              {new Date(
+                                getHistoryTimestamp(entry),
+                              ).toLocaleDateString(undefined, {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              })}
+                              <br />
+                              <span className="text-xs">
+                                {new Date(
+                                  getHistoryTimestamp(entry),
+                                ).toLocaleTimeString(undefined, {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </span>
+                            </p>
+                          </div>
+                          {changedFields.length > 0 ? (
+                            <div className="flex flex-wrap gap-1">
+                              {changedFields.map((field) => (
+                                <span
+                                  key={field}
+                                  className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono"
+                                >
+                                  {field.replace(/_/g, " ")}
+                                </span>
+                              ))}
+                            </div>
+                          ) : null}
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <p className="py-4 text-center text-sm text-muted-foreground">
+                      No edit history yet
+                    </p>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -316,7 +289,7 @@ export function ManageEventDetailView({
       </div>
 
       <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 p-3 backdrop-blur sm:hidden">
-        <div className="mx-auto grid max-w-7xl grid-cols-3 gap-2">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-2">
           <Button
             variant="outline"
             onClick={() =>
@@ -337,6 +310,150 @@ export function ManageEventDetailView({
         </div>
       </div>
 
+      <Sheet open={panelOpen} onOpenChange={setPanelOpen}>
+        <SheetContent
+          side="bottom"
+          className="h-[85vh] overflow-y-auto rounded-t-2xl sm:hidden"
+        >
+          <SheetHeader>
+            <SheetTitle>Manage Panels</SheetTitle>
+          </SheetHeader>
+
+          <div className="mt-4">
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="w-full"
+            >
+              <TabsList className="grid w-full grid-cols-2 auto-rows-fr gap-1 rounded-xl bg-muted p-1 group-data-[orientation=horizontal]/tabs:!h-auto [&>*]:min-h-9 [&>*]:w-full [&>*]:flex-none [&>*]:px-2 [&>*]:text-xs">
+                <TabsTrigger value="publishing">Publishing</TabsTrigger>
+                <TabsTrigger value="co-owners">Co-owners</TabsTrigger>
+                <TabsTrigger value="collaborators">Collaborators</TabsTrigger>
+                <TabsTrigger value="history">History</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="publishing" className="space-y-3 pt-3">
+                <PublishFlowPanel
+                  event={event}
+                  canApprove={canApprove}
+                  canSelfPublish={canSelfPublish}
+                />
+                {canAdmin ? (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">
+                        Feature on homepage
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex items-center justify-between">
+                      <p className="text-sm text-muted-foreground">
+                        Toggle featured visibility
+                      </p>
+                      <Switch
+                        checked={event.is_featured}
+                        onCheckedChange={(checked) =>
+                          adminFeature.mutate(checked)
+                        }
+                        disabled={adminFeature.isPending}
+                      />
+                    </CardContent>
+                  </Card>
+                ) : null}
+              </TabsContent>
+
+              <TabsContent value="co-owners" className="pt-3">
+                <CoOwnersPanel eventId={eventId} />
+              </TabsContent>
+
+              <TabsContent value="collaborators" className="pt-3">
+                <CollaboratorsPanel eventId={eventId} isManageView />
+              </TabsContent>
+
+              <TabsContent value="history" className="pt-3">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Edit History</CardTitle>
+                  </CardHeader>
+                  <CardContent className="max-h-[500px] space-y-3 overflow-y-auto">
+                    {sortedHistory.length > 0 ? (
+                      sortedHistory.map((entry) => {
+                        const actor =
+                          entry.performed_by ?? entry.actor ?? entry.edited_by;
+                        const changedFields = Array.isArray(
+                          entry.changed_fields,
+                        )
+                          ? entry.changed_fields
+                          : entry.changed_fields &&
+                              typeof entry.changed_fields === "object"
+                            ? Object.keys(entry.changed_fields)
+                            : [];
+
+                        return (
+                          <div
+                            key={entry.id}
+                            className="space-y-2 rounded-lg border bg-muted/30 p-3"
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-medium">
+                                  {actor
+                                    ? `${actor.full_name} (${actor.muid})`
+                                    : "System"}
+                                </p>
+                                <p className="truncate text-xs text-muted-foreground">
+                                  {getHistoryAction(entry)}
+                                  {getHistoryTarget(entry)
+                                    ? ` · ${getHistoryTarget(entry)}`
+                                    : ""}
+                                </p>
+                              </div>
+                              <p className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
+                                {new Date(
+                                  getHistoryTimestamp(entry),
+                                ).toLocaleDateString(undefined, {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                })}
+                                <br />
+                                <span className="text-xs">
+                                  {new Date(
+                                    getHistoryTimestamp(entry),
+                                  ).toLocaleTimeString(undefined, {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}
+                                </span>
+                              </p>
+                            </div>
+                            {changedFields.length > 0 ? (
+                              <div className="flex flex-wrap gap-1">
+                                {changedFields.map((field) => (
+                                  <span
+                                    key={field}
+                                    className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono"
+                                  >
+                                    {field.replace(/_/g, " ")}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : null}
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <p className="py-4 text-center text-sm text-muted-foreground">
+                        No edit history yet
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </SheetContent>
+      </Sheet>
+
       <ConfirmDialog
         open={confirmCancelOpen}
         onOpenChange={setConfirmCancelOpen}
@@ -346,7 +463,7 @@ export function ManageEventDetailView({
           deleteEvent.mutate(undefined, {
             onSuccess: () => {
               setConfirmCancelOpen(false);
-              router.push("/dashboard/manage-events");
+              router.push("/dashboard/manage-events?status=cancelled");
             },
           })
         }

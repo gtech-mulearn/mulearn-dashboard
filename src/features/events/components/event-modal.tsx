@@ -1,9 +1,11 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Controller, type Resolver, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { apiClient, endpoints } from "@/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,48 +14,44 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
+import { MuidSearchInput } from "@/components/ui/muid-search-input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { eventsApi } from "../api";
-import { useCreateEvent, useOrganizerOptions, usePatchEvent } from "../hooks";
+import {
+  EVENT_FORM_DEFAULT_VALUES,
+  EVENT_SCOPE_OPTIONS,
+  EVENT_TYPE_SELECT_OPTIONS,
+} from "../constants/events.constants";
+import {
+  resolveEventTypeValue,
+  toDatetimeLocal,
+  toISOWithOffset,
+  useCreateEvent,
+  useOrganizerOptions,
+  usePatchEvent,
+} from "../hooks";
 import {
   type CreateEventSchema,
   createEventSchema,
   updateEventSchema,
 } from "../schemas";
 import type {
-  EventCoOwnerInput,
   EventDetail,
   EventDetailManage,
   EventListItem,
   EventPatchBody,
   EventWriteBody,
+  MinimalCampus,
+  MinimalCompany,
+  MinimalIG,
   OrganizerOptionsResponse,
   OrganizerType,
 } from "../types";
-import { CollaboratorSearchInput } from "./collaborator-search-input";
-import { UserSearchInput } from "./user-search-input";
+import { EventSearch } from "./event-search";
 import { VenueSection } from "./venue-section";
-
-// Convert a datetime-local string (e.g. "2026-03-22T10:00") to a full ISO string
-// in UTC (ending in 'Z') for the backend.
-function toISOWithOffset(value: string | null | undefined): string | null {
-  if (!value) return null;
-  if (value.includes("+") || value.includes("Z")) return value;
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return null;
-  return d.toISOString();
-}
-
-// Convert a full ISO string from the API back to "YYYY-MM-DDTHH:mm" for datetime-local inputs.
-function toDatetimeLocal(iso: string | null | undefined): string {
-  if (!iso) return "";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  const pad = (n: number) => n.toString().padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
 
 interface EventModalProps {
   open: boolean;
@@ -72,6 +70,15 @@ interface SelectedOrganiser {
   id: string;
 }
 
+interface CoOwnerDisplay {
+  user_id: string;
+  role?: "co_owner" | "admin";
+  full_name: string;
+  muid: string;
+}
+
+type ComparablePatchPayload = Partial<EventPatchBody>;
+
 type OrganizerOptionsLike = Partial<OrganizerOptionsResponse> & {
   canCreateAsIg?: OrganizerOptionsResponse["can_create_as_ig"];
   canCreateAsCampusIg?: OrganizerOptionsResponse["can_create_as_campus_ig"];
@@ -85,34 +92,6 @@ function safeArray<T>(value: unknown): T[] {
   return Array.isArray(value) ? (value as T[]) : [];
 }
 
-const defaultValues: CreateEventSchema = {
-  title: "",
-  description: "",
-  event_type: undefined,
-  scope: "global",
-  start_datetime: "",
-  end_datetime: "",
-  venue_type: "online",
-  address: "",
-  city: "",
-  maps_url: "",
-  online_link: "",
-  platform: "",
-  cover_image: "",
-  banner_image: "",
-  registration_url: "",
-  registration_deadline: null,
-  min_karma: null,
-  linked_tasks: [],
-  co_owners: [],
-  is_collaboration: false,
-  target_campus_id: null,
-  target_ig_id: null,
-  target_campus_ig_id: null,
-  tags: [],
-  is_featured: false,
-};
-
 export default function EventModal({
   open,
   onClose,
@@ -122,6 +101,18 @@ export default function EventModal({
   const createEvent = useCreateEvent();
   const patchEvent = usePatchEvent(initialData?.id ?? "");
   const organizerOptionsQuery = useOrganizerOptions();
+  const { data: userInfo } = useQuery({
+    queryKey: ["user", "info", "events-modal"],
+    queryFn: () => apiClient.get<Record<string, unknown>>(endpoints.user.info),
+  });
+
+  const isAdminUser = Boolean(
+    (userInfo?.is_staff as boolean | undefined) ||
+      (Array.isArray(userInfo?.roles) &&
+        (userInfo.roles as string[]).some((role) =>
+          role.toLowerCase().includes("admin"),
+        )),
+  );
 
   const organizerOptions = useMemo<SelectedOrganiser[]>(() => {
     const raw = organizerOptionsQuery.data as OrganizerOptionsLike | undefined;
@@ -129,18 +120,18 @@ export default function EventModal({
 
     const options = (raw.response ?? raw) as OrganizerOptionsLike;
 
-    const igs = safeArray<OrganizerOptionsResponse["can_create_as_ig"][number]>(
+    const igs = safeArray<MinimalIG>(
       options.can_create_as_ig ?? options.canCreateAsIg,
     );
-    const campusIgs = safeArray<
-      OrganizerOptionsResponse["can_create_as_campus_ig"][number]
-    >(options.can_create_as_campus_ig ?? options.canCreateAsCampusIg);
-    const campuses = safeArray<
-      OrganizerOptionsResponse["can_create_as_campus"][number]
-    >(options.can_create_as_campus ?? options.canCreateAsCampus);
-    const companies = safeArray<
-      OrganizerOptionsResponse["can_create_as_company"][number]
-    >(options.can_create_as_company ?? options.canCreateAsCompany);
+    const campusIgs = safeArray<MinimalIG>(
+      options.can_create_as_campus_ig ?? options.canCreateAsCampusIg,
+    );
+    const campuses = safeArray<MinimalCampus>(
+      options.can_create_as_campus ?? options.canCreateAsCampus,
+    );
+    const companies = safeArray<MinimalCompany>(
+      options.can_create_as_company ?? options.canCreateAsCompany,
+    );
     const canCreateAsAdmin = Boolean(
       options.can_create_as_admin ?? options.canCreateAsAdmin,
     );
@@ -153,37 +144,65 @@ export default function EventModal({
 
     for (const campusIg of campusIgs) {
       all.push({
-        label: `${campusIg.ig.name} - ${campusIg.campus.name}`,
+        label: campusIg.name,
         type: "campus_ig",
         id: campusIg.id,
       });
     }
 
     for (const campus of campuses) {
-      all.push({ label: campus.name, type: "campus", id: campus.id });
+      all.push({
+        label: campus.name ?? campus.title ?? "Campus",
+        type: "campus",
+        id: campus.id,
+      });
     }
 
     for (const company of companies) {
-      all.push({ label: company.name, type: "company", id: company.id });
+      all.push({
+        label: company.name ?? company.title ?? "Company",
+        type: "company",
+        id: company.id,
+      });
     }
 
     if (canCreateAsAdmin) {
       all.push({ label: "Admin", type: "admin", id: "" });
     }
 
+    if (all.length === 0 && isAdminUser) {
+      all.push({ label: "Admin", type: "admin", id: "" });
+    }
+
+    if (
+      all.length === 0 &&
+      (Object.keys(raw).length > 0 || Object.keys(options).length > 0)
+    ) {
+      console.warn("[events] organizer options returned empty", {
+        raw,
+        options,
+      });
+    }
+
     return all;
-  }, [organizerOptionsQuery.data]);
+  }, [organizerOptionsQuery.data, isAdminUser]);
 
   const [selectedOrganiserId, setSelectedOrganiserId] = useState<string>("");
-  const [selectedCoOwners, setSelectedCoOwners] = useState<EventCoOwnerInput[]>(
+  const [selectedCoOwners, setSelectedCoOwners] = useState<CoOwnerDisplay[]>(
     [],
   );
+  const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
+  const [bannerImageFile, setBannerImageFile] = useState<File | null>(null);
+  const [selectedCampusName, setSelectedCampusName] = useState<string>("");
+  const [selectedIgName, setSelectedIgName] = useState<string>("");
+  const [selectedCampusIgName, setSelectedCampusIgName] = useState<string>("");
   const [tagInput, setTagInput] = useState("");
 
   const {
     control,
     register,
     watch,
+    setValue,
     handleSubmit,
     reset,
     setError,
@@ -192,18 +211,29 @@ export default function EventModal({
     resolver: zodResolver(
       isEdit ? updateEventSchema : createEventSchema,
     ) as Resolver<CreateEventSchema>,
-    defaultValues,
+    defaultValues: EVENT_FORM_DEFAULT_VALUES,
   });
 
   useEffect(() => {
     if (!open) return;
     const d = initialData as Partial<EventDetailManage> | null | undefined;
+    const validScopes: Array<"global" | "campus" | "ig" | "campus_ig"> = [
+      "global",
+      "campus",
+      "ig",
+      "campus_ig",
+    ];
+    const scope = (
+      d?.scope && (validScopes as string[]).includes(d.scope)
+        ? d.scope
+        : "global"
+    ) as "global" | "campus" | "ig" | "campus_ig";
     reset({
-      ...defaultValues,
+      ...EVENT_FORM_DEFAULT_VALUES,
       title: d?.title ?? "",
       description: d?.description ?? "",
-      event_type: d?.event_type,
-      scope: d?.scope ?? "global",
+      event_type: resolveEventTypeValue(d?.event_type, d?.category_name),
+      scope,
       start_datetime: toDatetimeLocal(d?.start_datetime),
       end_datetime: toDatetimeLocal(d?.end_datetime),
       venue_type:
@@ -222,17 +252,45 @@ export default function EventModal({
         ) || "",
       min_karma: d?.min_karma ?? null,
       is_collaboration: d?.is_collaboration ?? false,
-      target_campus_id: d?.target_campus?.id ?? null,
-      target_ig_id: d?.target_ig?.id ?? null,
-      target_campus_ig_id: d?.target_campus_ig?.id ?? null,
-      tags: d?.tags ?? [],
+      target_campus_id:
+        (d as Partial<EventDetail>)?.scope_org?.id ??
+        d?.target_campus?.id ??
+        null,
+      target_ig_id:
+        (d as Partial<EventDetail>)?.scope_ig?.id ?? d?.target_ig?.id ?? null,
+      target_campus_ig_id:
+        (d as Partial<EventDetail>)?.scope_ci_id ??
+        d?.target_campus_ig?.id ??
+        null,
+      tags: d?.tags
+        ? Array.isArray(d.tags)
+          ? d.tags
+          : Object.keys(d.tags)
+        : [],
       is_featured: d?.is_featured ?? false,
     });
     setSelectedCoOwners(
       d?.co_owners?.map((owner) => ({
         user_id: owner.user.id,
-        role: owner.role,
+        role: owner.role ?? "co_owner",
+        full_name: owner.user.full_name,
+        muid: owner.user.muid,
       })) ?? [],
+    );
+    setCoverImageFile(null);
+    setBannerImageFile(null);
+    setSelectedCampusName(
+      (d as Partial<EventDetail>)?.scope_org?.title ??
+        d?.target_campus?.name ??
+        "",
+    );
+    setSelectedIgName(
+      (d as Partial<EventDetail>)?.scope_ig?.name ?? d?.target_ig?.name ?? "",
+    );
+    setSelectedCampusIgName(
+      (d as Partial<EventDetail>)?.scope_ci_id
+        ? `${(d as Partial<EventDetail>)?.scope_ig?.name ?? d?.target_ig?.name ?? ""} @ ${(d as Partial<EventDetail>)?.scope_org?.title ?? d?.target_campus?.name ?? ""}`
+        : (d?.target_campus_ig?.name ?? ""),
     );
   }, [initialData, open, reset]);
 
@@ -263,10 +321,189 @@ export default function EventModal({
     }
   }, [initialData, organizerOptions]);
 
+  useEffect(() => {
+    const d = initialData as Partial<EventDetailManage> | null | undefined;
+    // If admin is editing an event without an organizer, auto-select "Admin" organizer
+    if (
+      isEdit &&
+      isAdminUser &&
+      (!d?.organizer || !selectedOrganiserId) &&
+      organizerOptions.length > 0
+    ) {
+      const adminOption = organizerOptions.find((opt) => opt.type === "admin");
+      if (adminOption && !selectedOrganiserId) {
+        setSelectedOrganiserId(`${adminOption.type}:${adminOption.id}`);
+      }
+    }
+  }, [isEdit, isAdminUser, organizerOptions, selectedOrganiserId, initialData]);
+
   const scope = watch("scope");
 
+  const selectedOrganizer = organizerOptions.find(
+    (option) => `${option.type}:${option.id}` === selectedOrganiserId,
+  );
   const isPending =
     createEvent.isPending || patchEvent.isPending || isSubmitting;
+  const hasOrganizerPermission = organizerOptions.length > 0;
+  const requiresOrganizerSelection = organizerOptions.length > 1;
+  const missingOrganizerSelection = !selectedOrganizer;
+  const isEditingAsAdmin = isEdit && isAdminUser;
+  const shouldRequireOrganizer = !isEditingAsAdmin;
+  const disableSaveActions =
+    isPending ||
+    (!hasOrganizerPermission && shouldRequireOrganizer) ||
+    (requiresOrganizerSelection &&
+      missingOrganizerSelection &&
+      shouldRequireOrganizer);
+
+  // Check if we can publish this event
+  const eventStatus =
+    isEdit && (initialData as Partial<EventDetailManage>)?.status;
+  const canPublish = !eventStatus || eventStatus === "draft";
+  const saveButtonLabel =
+    isEdit && eventStatus && eventStatus !== "draft"
+      ? "Save Changes"
+      : "Save as Draft";
+
+  const toBase64 = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+  const normalizeCoOwners = (
+    coOwners:
+      | Array<{ user_id: string; role?: "co_owner" | "admin" }>
+      | undefined,
+  ): Array<{ user_id: string; role: "co_owner" | "admin" }> =>
+    (coOwners ?? [])
+      .map((owner) => ({
+        user_id: owner.user_id,
+        role: owner.role ?? "co_owner",
+      }))
+      .sort((a, b) => a.user_id.localeCompare(b.user_id));
+
+  const normalizeTags = (
+    tags: string[] | Record<string, unknown> | null | undefined,
+  ): string[] | null => {
+    if (!tags) return null;
+    if (Array.isArray(tags)) {
+      return tags.length > 0 ? [...tags].sort() : null;
+    }
+    const keys = Object.keys(tags);
+    return keys.length > 0 ? keys.sort() : null;
+  };
+
+  const normalizeDateValue = (value: unknown): number | null => {
+    if (typeof value !== "string") return null;
+    const parsed = Date.parse(value);
+    return Number.isNaN(parsed) ? null : parsed;
+  };
+
+  const valuesAreEqual = (left: unknown, right: unknown): boolean => {
+    if (left === right) return true;
+
+    const leftDate = normalizeDateValue(left);
+    const rightDate = normalizeDateValue(right);
+    if (leftDate !== null && rightDate !== null) {
+      return leftDate === rightDate;
+    }
+
+    if (Array.isArray(left) && Array.isArray(right)) {
+      return JSON.stringify(left) === JSON.stringify(right);
+    }
+
+    if (
+      left &&
+      right &&
+      typeof left === "object" &&
+      typeof right === "object"
+    ) {
+      return JSON.stringify(left) === JSON.stringify(right);
+    }
+
+    return false;
+  };
+
+  const buildComparableInitialPayload = (
+    event: EventDetail | EventDetailManage,
+  ): ComparablePatchPayload => {
+    const organizer = event.organizer;
+    const organizerType = organizer?.type ?? "admin";
+
+    const organizerIg =
+      organizerType === "global_ig" ? (organizer?.ig?.id ?? null) : null;
+    const organizerOrg =
+      organizerType === "campus"
+        ? (organizer?.campus?.id ?? null)
+        : organizerType === "company"
+          ? (organizer?.company?.id ?? null)
+          : null;
+    const organizerCi =
+      organizerType === "campus_ig"
+        ? ((organizer?.campus_ig?.id ?? organizer?.campus_ig_id ?? null) as
+            | string
+            | null)
+        : null;
+
+    return {
+      title: event.title,
+      description: event.description,
+      cover_image: event.cover_image,
+      banner_image: event.banner_image,
+      start_datetime: event.start_datetime,
+      end_datetime: event.end_datetime,
+      registration_url: event.registration_url,
+      registration_deadline: event.registration_deadline,
+      min_karma: event.min_karma,
+      venue_type: event.venue.type,
+      venue_address: event.venue.address,
+      venue_city: event.venue.city,
+      venue_maps_url: event.venue.maps_url,
+      venue_online_link: event.venue.online_link,
+      venue_platform: event.venue.platform,
+      scope: event.scope,
+      scope_org:
+        event.scope === "campus" ? (event.scope_org?.id ?? null) : null,
+      scope_ig: event.scope === "ig" ? (event.scope_ig?.id ?? null) : null,
+      scope_ci_id:
+        event.scope === "campus_ig" ? (event.scope_ci_id ?? null) : null,
+      is_collaboration: event.is_collaboration,
+      is_featured: event.is_featured,
+      tags: normalizeTags(event.tags),
+      organiser_type: organizerType,
+      organiser_ig: organizerIg,
+      organiser_org: organizerOrg,
+      organiser_ci_id: organizerCi,
+      event_type: resolveEventTypeValue(event.event_type, event.category_name),
+      co_owners: normalizeCoOwners(
+        event.co_owners?.map((owner) => ({
+          user_id: owner.user.id,
+          role: owner.role,
+        })),
+      ),
+    } as ComparablePatchPayload;
+  };
+
+  const buildChangedPatchPayload = (
+    nextPayload: ComparablePatchPayload,
+    currentEvent: EventDetail | EventDetailManage,
+  ): EventPatchBody => {
+    const previousPayload = buildComparableInitialPayload(currentEvent);
+    const changedPayload: Record<string, unknown> = {};
+
+    for (const [key, nextValue] of Object.entries(nextPayload)) {
+      const previousValue =
+        previousPayload[key as keyof ComparablePatchPayload];
+      if (!valuesAreEqual(nextValue, previousValue)) {
+        changedPayload[key] = nextValue;
+      }
+    }
+
+    return changedPayload as EventPatchBody;
+  };
 
   const onSubmit = async (
     values: CreateEventSchema,
@@ -302,10 +539,8 @@ export default function EventModal({
     }
     if (hasDateError) return;
 
-    const selectedOrganiser = organizerOptions.find(
-      (option) => `${option.type}:${option.id}` === selectedOrganiserId,
-    );
-    if (!selectedOrganiser) {
+    const selectedOrganiser = selectedOrganizer;
+    if (!selectedOrganiser && !isEdit) {
       setError("title", {
         type: "manual",
         message: "Select an organiser before saving",
@@ -313,44 +548,167 @@ export default function EventModal({
       return;
     }
 
-    const payload: EventWriteBody = {
-      ...values,
+    const coverBase64 = coverImageFile
+      ? await toBase64(coverImageFile)
+      : (values.cover_image ?? null);
+    const bannerBase64 = bannerImageFile
+      ? await toBase64(bannerImageFile)
+      : (values.banner_image ?? null);
+
+    const tagsValue =
+      values.tags && values.tags.length > 0 ? values.tags : null;
+
+    const basePayload: ComparablePatchPayload = {
+      title: values.title,
+      description: values.description,
+      event_type: values.event_type,
+      cover_image: coverBase64,
+      banner_image: bannerBase64,
       start_datetime: start as string,
       end_datetime: end as string,
+      registration_url: values.registration_url,
       registration_deadline: deadline,
-      organiser_type: selectedOrganiser.type,
-      organiser_ig_id:
-        selectedOrganiser.type === "global_ig"
-          ? selectedOrganiser.id
-          : undefined,
-      organiser_campus_id:
-        selectedOrganiser.type === "campus" ? selectedOrganiser.id : undefined,
-      organiser_campus_ig_id:
-        selectedOrganiser.type === "campus_ig"
-          ? selectedOrganiser.id
-          : undefined,
-      organiser_company_id:
-        selectedOrganiser.type === "company" ? selectedOrganiser.id : undefined,
-      co_owners: selectedCoOwners,
+      min_karma: values.min_karma,
+      venue_type: values.venue_type,
+      venue_address: values.address,
+      venue_city: values.city,
+      venue_maps_url: values.maps_url,
+      venue_online_link: values.online_link,
+      venue_platform: values.platform,
+      scope: values.scope,
+      scope_org: values.scope === "campus" ? values.target_campus_id : null,
+      scope_ig: values.scope === "ig" ? values.target_ig_id : null,
+      scope_ci_id:
+        values.scope === "campus_ig" ? values.target_campus_ig_id : null,
+      is_collaboration: values.is_collaboration,
+      is_featured: values.is_featured,
+      tags: tagsValue,
     };
+
+    const existingOrganizer = (initialData as EventDetail | EventDetailManage)
+      ?.organizer;
+    const organizerPayload: Partial<EventWriteBody> = selectedOrganiser
+      ? {
+          organiser_type: selectedOrganiser.type,
+          organiser_ig:
+            selectedOrganiser.type === "global_ig"
+              ? selectedOrganiser.id
+              : null,
+          organiser_org:
+            selectedOrganiser.type === "campus" ||
+            selectedOrganiser.type === "company"
+              ? selectedOrganiser.id
+              : null,
+          organiser_ci_id:
+            selectedOrganiser.type === "campus_ig"
+              ? selectedOrganiser.id
+              : null,
+          co_owners: selectedCoOwners.map(({ user_id, role }) => ({
+            user_id,
+            role,
+          })),
+        }
+      : isEdit
+        ? {
+            organiser_type:
+              (initialData as Partial<EventDetail>)?.organizer?.type ??
+              existingOrganizer?.type ??
+              "admin",
+            organiser_ig:
+              (initialData as Partial<EventDetail>)?.organizer?.ig?.id ??
+              existingOrganizer?.ig?.id ??
+              null,
+            organiser_org:
+              (initialData as Partial<EventDetail>)?.organizer?.campus?.id ??
+              (initialData as Partial<EventDetail>)?.organizer?.company?.id ??
+              existingOrganizer?.campus?.id ??
+              existingOrganizer?.company?.id ??
+              null,
+            organiser_ci_id:
+              (initialData as Partial<EventDetail>)?.organizer?.campus_ig?.id ??
+              existingOrganizer?.campus_ig?.id ??
+              null,
+            co_owners: selectedCoOwners.map(({ user_id, role }) => ({
+              user_id,
+              role,
+            })),
+          }
+        : {};
 
     try {
       let savedEventId = initialData?.id;
 
       if (isEdit && initialData?.id) {
-        const updated = await patchEvent.mutateAsync(payload as EventPatchBody);
+        const fullPayload: ComparablePatchPayload = {
+          ...basePayload,
+          ...organizerPayload,
+        };
+        const payload = buildChangedPatchPayload(
+          fullPayload,
+          initialData as EventDetail | EventDetailManage,
+        );
+
+        if (Object.keys(payload).length === 0) {
+          toast.info("No changes detected");
+          onClose();
+          return;
+        }
+
+        const updated = await patchEvent.mutateAsync(payload);
         savedEventId = updated.id;
       } else if (!isEdit) {
-        const created = await createEvent.mutateAsync(
-          payload as EventWriteBody,
-        );
+        if (!selectedOrganiser) {
+          setError("title", {
+            type: "manual",
+            message: "Select an organiser before saving",
+          });
+          return;
+        }
+
+        const createOrganizerPayload = {
+          organiser_type: selectedOrganiser.type,
+          organiser_ig:
+            selectedOrganiser.type === "global_ig"
+              ? selectedOrganiser.id
+              : null,
+          organiser_org:
+            selectedOrganiser.type === "campus" ? selectedOrganiser.id : null,
+          organiser_ci_id:
+            selectedOrganiser.type === "campus_ig"
+              ? selectedOrganiser.id
+              : null,
+          co_owners: selectedCoOwners.map(({ user_id, role }) => ({
+            user_id,
+            role,
+          })),
+        };
+
+        const payload: EventWriteBody = {
+          ...basePayload,
+          ...createOrganizerPayload,
+        } as EventWriteBody;
+
+        const created = await createEvent.mutateAsync(payload);
         savedEventId = created.id;
       }
 
       if (action === "publish" && savedEventId) {
+        const eventStatus = isEdit
+          ? (initialData as Partial<EventDetailManage> | null)?.status
+          : "draft";
+
+        // Only allow publishing if it's a new event (create) or draft status
+        if (eventStatus && eventStatus !== "draft") {
+          toast.error(
+            `Cannot publish events with status "${eventStatus}". Save as draft and update from the manage page.`,
+          );
+          return;
+        }
+
         try {
           await eventsApi.publish(savedEventId);
-        } catch {
+        } catch (error) {
+          console.error("Failed to publish event after saving draft", error);
           toast.error("Event saved as draft, but publish failed");
           return;
         }
@@ -365,19 +723,41 @@ export default function EventModal({
 
   return (
     <Dialog open={open} onOpenChange={(state) => !state && onClose()}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
+      <DialogContent className="max-h-[90vh] w-full overflow-y-auto p-4 sm:max-w-3xl sm:p-6">
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit Event" : "Create Event"}</DialogTitle>
         </DialogHeader>
 
         <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
           <section className="space-y-3 rounded-lg border p-4">
-            <h3 className="font-semibold">Basic Info</h3>
-            <Input placeholder="Title" {...register("title")} />
+            <h3 className="mb-3 text-sm font-semibold text-foreground">
+              Basic Info
+            </h3>
+            <div className="space-y-1">
+              <label
+                htmlFor="title"
+                className="text-sm font-medium text-foreground"
+              >
+                Title <span className="text-red-500">*</span>
+              </label>
+              <Input id="title" placeholder="Title" {...register("title")} />
+            </div>
             {errors.title?.message ? (
               <p className="text-xs text-red-600">{errors.title.message}</p>
             ) : null}
-            <Textarea placeholder="Description" {...register("description")} />
+            <div className="space-y-1">
+              <label
+                htmlFor="description"
+                className="text-sm font-medium text-foreground"
+              >
+                Description <span className="text-red-500">*</span>
+              </label>
+              <Textarea
+                id="description"
+                placeholder="Description"
+                {...register("description")}
+              />
+            </div>
             {errors.description?.message ? (
               <p className="text-xs text-red-600">
                 {errors.description.message}
@@ -386,53 +766,139 @@ export default function EventModal({
           </section>
 
           <section className="space-y-3 rounded-lg border p-4">
-            <h3 className="font-semibold">Type &amp; Scope</h3>
-            <select
-              className="h-10 w-full rounded-md border px-3 text-sm"
-              {...register("event_type")}
-            >
-              <option value="">Select event type</option>
-              <option value="workshop">Workshop</option>
-              <option value="webinar">Webinar</option>
-              <option value="hackathon">Hackathon</option>
-              <option value="meetup">Meetup</option>
-              <option value="competition">Competition</option>
-              <option value="social_gathering">Social Gathering</option>
-              <option value="other">Other</option>
-            </select>
-            <select
-              className="h-10 w-full rounded-md border px-3 text-sm"
-              {...register("scope")}
-            >
-              <option value="global">Global</option>
-              <option value="campus">Campus</option>
-              <option value="ig">IG</option>
-              <option value="campus_ig">Campus IG</option>
-            </select>
+            <h3 className="mb-3 text-sm font-semibold text-foreground">
+              Type &amp; Scope
+            </h3>
+            <div className="space-y-1">
+              <label
+                htmlFor="event_type"
+                className="text-sm font-medium text-foreground"
+              >
+                Event type
+              </label>
+              <select
+                id="event_type"
+                className="h-10 w-full rounded-md border px-3 text-sm"
+                {...register("event_type")}
+              >
+                {EVENT_TYPE_SELECT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label
+                htmlFor="scope"
+                className="text-sm font-medium text-foreground"
+              >
+                Scope <span className="text-red-500">*</span>
+              </label>
+              <select
+                id="scope"
+                className="h-10 w-full rounded-md border px-3 text-sm"
+                {...register("scope")}
+              >
+                {EVENT_SCOPE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
 
             {scope === "campus" ? (
-              <Input
-                placeholder="Target campus UUID"
-                {...register("target_campus_id")}
-              />
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-foreground">
+                  Target campus <span className="text-red-500">*</span>
+                </p>
+                <EventSearch
+                  mode="select"
+                  type="campus"
+                  value={watch("target_campus_id") ?? null}
+                  selectedName={selectedCampusName}
+                  placeholder="Search campus"
+                  onChange={(id, name) => {
+                    setValue("target_campus_id", id || null, {
+                      shouldValidate: true,
+                    });
+                    setSelectedCampusName(name);
+                  }}
+                />
+              </div>
             ) : null}
             {scope === "ig" ? (
-              <Input
-                placeholder="Target IG UUID"
-                {...register("target_ig_id")}
-              />
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-foreground">
+                  Target IG <span className="text-red-500">*</span>
+                </p>
+                <EventSearch
+                  mode="select"
+                  type="ig"
+                  value={watch("target_ig_id") ?? null}
+                  selectedName={selectedIgName}
+                  placeholder="Search interest group"
+                  onChange={(id, name) => {
+                    setValue("target_ig_id", id || null, {
+                      shouldValidate: true,
+                    });
+                    setSelectedIgName(name);
+                  }}
+                />
+              </div>
             ) : null}
             {scope === "campus_ig" ? (
-              <Input
-                placeholder="Target campus IG UUID"
-                {...register("target_campus_ig_id")}
-              />
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-foreground">
+                  Target campus IG <span className="text-red-500">*</span>
+                </p>
+                <EventSearch
+                  mode="select"
+                  type="campus_ig"
+                  value={watch("target_campus_ig_id") ?? null}
+                  selectedName={selectedCampusIgName}
+                  placeholder="Search campus IG"
+                  onChange={(id, name) => {
+                    setValue("target_campus_ig_id", id || null, {
+                      shouldValidate: true,
+                    });
+                    setSelectedCampusIgName(name);
+                  }}
+                />
+              </div>
+            ) : null}
+            {errors.target_campus_id?.message ? (
+              <p className="text-xs text-red-600">
+                {errors.target_campus_id.message}
+              </p>
+            ) : null}
+            {errors.target_ig_id?.message ? (
+              <p className="text-xs text-red-600">
+                {errors.target_ig_id.message}
+              </p>
+            ) : null}
+            {errors.target_campus_ig_id?.message ? (
+              <p className="text-xs text-red-600">
+                {errors.target_campus_ig_id.message}
+              </p>
             ) : null}
           </section>
 
-          {organizerOptions.length > 1 ? (
+          {!hasOrganizerPermission ? (
             <section className="space-y-3 rounded-lg border p-4">
-              <h3 className="font-semibold">Create as...</h3>
+              <h3 className="mb-3 text-sm font-semibold text-foreground">
+                Organizer
+              </h3>
+              <p className="text-sm text-destructive">
+                You do not have permission to create events. Contact an admin.
+              </p>
+            </section>
+          ) : organizerOptions.length > 1 ? (
+            <section className="space-y-3 rounded-lg border p-4">
+              <h3 className="mb-3 text-sm font-semibold text-foreground">
+                Create as
+              </h3>
               <select
                 className="h-10 w-full rounded-md border px-3 text-sm"
                 value={selectedOrganiserId}
@@ -449,14 +915,25 @@ export default function EventModal({
                 ))}
               </select>
             </section>
-          ) : null}
+          ) : (
+            <section className="space-y-3 rounded-lg border p-4">
+              <h3 className="mb-3 text-sm font-semibold text-foreground">
+                Create as
+              </h3>
+              <div className="rounded-md border bg-muted/40 px-3 py-2 text-sm">
+                {selectedOrganizer?.label ?? "Organizer unavailable"}
+              </div>
+            </section>
+          )}
 
           <section className="space-y-3 rounded-lg border p-4">
-            <h3 className="font-semibold">Dates</h3>
+            <h3 className="mb-3 text-sm font-semibold text-foreground">
+              Dates
+            </h3>
             <div className="space-y-1">
               <label
                 htmlFor="start_datetime"
-                className="text-sm font-medium text-gray-700"
+                className="text-sm font-medium text-foreground"
               >
                 Start date &amp; time <span className="text-red-500">*</span>
               </label>
@@ -474,7 +951,7 @@ export default function EventModal({
             <div className="space-y-1">
               <label
                 htmlFor="end_datetime"
-                className="text-sm font-medium text-gray-700"
+                className="text-sm font-medium text-foreground"
               >
                 End date &amp; time <span className="text-red-500">*</span>
               </label>
@@ -494,47 +971,92 @@ export default function EventModal({
           <VenueSection control={control} watch={watch} errors={errors} />
 
           <section className="space-y-3 rounded-lg border p-4">
-            <h3 className="font-semibold">Images</h3>
-            <div className="space-y-1">
-              <label
-                htmlFor="cover_image"
-                className="text-sm font-medium text-gray-700"
-              >
-                Cover image URL
-              </label>
-              <Input
-                id="cover_image"
-                placeholder="https://..."
-                {...register("cover_image")}
+            <h3 className="mb-3 text-sm font-semibold text-foreground">
+              Images
+            </h3>
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-foreground">
+                Cover Image{" "}
+                <span className="text-xs text-muted-foreground">
+                  (optional)
+                </span>
+              </p>
+              <ImageUpload
+                value={coverImageFile}
+                onChange={setCoverImageFile}
+                currentUrl={watch("cover_image") ?? undefined}
               />
+              <div className="space-y-1">
+                <label
+                  htmlFor="cover_image"
+                  className="text-xs text-muted-foreground"
+                >
+                  Or paste image URL
+                </label>
+                <Input
+                  id="cover_image"
+                  placeholder="https://example.com/cover.jpg"
+                  {...register("cover_image")}
+                />
+              </div>
             </div>
-            <div className="space-y-1">
-              <label
-                htmlFor="banner_image"
-                className="text-sm font-medium text-gray-700"
-              >
-                Banner image URL
-              </label>
-              <Input
-                id="banner_image"
-                placeholder="https://..."
-                {...register("banner_image")}
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-foreground">
+                Banner Image{" "}
+                <span className="text-xs text-muted-foreground">
+                  (optional)
+                </span>
+              </p>
+              <ImageUpload
+                value={bannerImageFile}
+                onChange={setBannerImageFile}
+                currentUrl={watch("banner_image") ?? undefined}
               />
+              <div className="space-y-1">
+                <label
+                  htmlFor="banner_image"
+                  className="text-xs text-muted-foreground"
+                >
+                  Or paste image URL
+                </label>
+                <Input
+                  id="banner_image"
+                  placeholder="https://example.com/banner.jpg"
+                  {...register("banner_image")}
+                />
+              </div>
             </div>
           </section>
 
           <section className="space-y-3 rounded-lg border p-4">
-            <h3 className="font-semibold">Registration</h3>
-            <Input
-              placeholder="Registration URL"
-              {...register("registration_url")}
-            />
+            <h3 className="mb-3 text-sm font-semibold text-foreground">
+              Registration
+            </h3>
+            <div className="space-y-1">
+              <label
+                htmlFor="registration_url"
+                className="text-sm font-medium text-foreground"
+              >
+                Registration URL{" "}
+                <span className="text-xs text-muted-foreground">
+                  (optional)
+                </span>
+              </label>
+              <Input
+                id="registration_url"
+                placeholder="Registration URL"
+                {...register("registration_url")}
+              />
+            </div>
             <div className="space-y-1">
               <label
                 htmlFor="registration_deadline"
-                className="text-sm font-medium text-gray-700"
+                className="text-sm font-medium text-foreground"
               >
-                Registration deadline
+                Registration deadline{" "}
+                <span className="text-xs text-muted-foreground">
+                  (optional)
+                </span>
               </label>
               <Input
                 id="registration_deadline"
@@ -546,28 +1068,48 @@ export default function EventModal({
               control={control}
               name="min_karma"
               render={({ field }) => (
-                <Input
-                  type="number"
-                  min={0}
-                  value={field.value ?? ""}
-                  onChange={(e) =>
-                    field.onChange(
-                      e.target.value ? Number(e.target.value) : null,
-                    )
-                  }
-                  placeholder="Minimum karma"
-                />
+                <div className="space-y-1">
+                  <label
+                    htmlFor="min_karma"
+                    className="text-sm font-medium text-foreground"
+                  >
+                    Minimum karma{" "}
+                    <span className="text-xs text-muted-foreground">
+                      (optional)
+                    </span>
+                  </label>
+                  <Input
+                    id="min_karma"
+                    type="number"
+                    min={0}
+                    value={field.value ?? ""}
+                    onChange={(e) =>
+                      field.onChange(
+                        e.target.value ? Number(e.target.value) : null,
+                      )
+                    }
+                    placeholder="Minimum karma"
+                  />
+                </div>
               )}
             />
           </section>
 
           <section className="space-y-3 rounded-lg border p-4">
-            <h3 className="font-semibold">Tags &amp; Collaboration</h3>
+            <h3 className="mb-3 text-sm font-semibold text-foreground">
+              Tags &amp; Collaboration
+            </h3>
             <Controller
               control={control}
               name="tags"
               render={({ field }) => (
                 <div className="space-y-2">
+                  <p className="text-sm font-medium text-foreground">
+                    Tags{" "}
+                    <span className="text-xs text-muted-foreground">
+                      (optional)
+                    </span>
+                  </p>
                   <Input
                     placeholder="Type a tag and press Enter"
                     value={tagInput}
@@ -587,7 +1129,7 @@ export default function EventModal({
                       }
                     }}
                   />
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1.5">
                     {(field.value ?? []).map((tag) => (
                       <Badge
                         key={tag}
@@ -609,7 +1151,10 @@ export default function EventModal({
 
             <div className="flex items-center justify-between">
               <label htmlFor="is_collaboration" className="text-sm">
-                This is a collaboration event
+                This is a collaboration event{" "}
+                <span className="text-xs text-muted-foreground">
+                  (optional)
+                </span>
               </label>
               <Controller
                 control={control}
@@ -624,9 +1169,29 @@ export default function EventModal({
               />
             </div>
 
+            <div className="flex items-center justify-between">
+              <label htmlFor="is_featured" className="text-sm">
+                Feature this event{" "}
+                <span className="text-xs text-muted-foreground">
+                  (optional)
+                </span>
+              </label>
+              <Controller
+                control={control}
+                name="is_featured"
+                render={({ field }) => (
+                  <Switch
+                    checked={Boolean(field.value)}
+                    onCheckedChange={field.onChange}
+                    id="is_featured"
+                  />
+                )}
+              />
+            </div>
+
             {watch("is_collaboration") ? (
               isEdit && initialData?.id ? (
-                <CollaboratorSearchInput eventId={initialData.id} />
+                <EventSearch mode="invite" eventId={initialData.id} />
               ) : (
                 <p className="text-xs text-muted-foreground">
                   You can add collaborators after creating the event from the
@@ -637,13 +1202,20 @@ export default function EventModal({
 
             <div className="rounded-md border border-dashed p-3">
               <p className="text-sm font-medium">Linked tasks</p>
-              <p className="text-xs text-muted-foreground">Coming soon</p>
+              <p className="text-xs text-muted-foreground">
+                Coming soon (optional)
+              </p>
             </div>
 
             <div className="space-y-2">
-              <p className="text-sm font-medium">Co-owners</p>
-              <UserSearchInput
-                onSelect={(user) => {
+              <p className="text-sm font-medium">
+                Co-owners{" "}
+                <span className="text-xs text-muted-foreground">
+                  (optional)
+                </span>
+              </p>
+              <MuidSearchInput
+                onSelectUser={(user) => {
                   if (
                     selectedCoOwners.some((owner) => owner.user_id === user.id)
                   ) {
@@ -651,7 +1223,12 @@ export default function EventModal({
                   }
                   setSelectedCoOwners((prev) => [
                     ...prev,
-                    { user_id: user.id, role: "co_owner" },
+                    {
+                      user_id: user.id,
+                      role: "co_owner",
+                      full_name: user.full_name,
+                      muid: user.muid,
+                    },
                   ]);
                 }}
                 placeholder="Search by name or muid..."
@@ -661,35 +1238,44 @@ export default function EventModal({
                   <Badge
                     key={owner.user_id}
                     variant="outline"
-                    className="cursor-pointer"
+                    className="cursor-pointer gap-1"
                     onClick={() =>
                       setSelectedCoOwners((prev) =>
                         prev.filter((item) => item.user_id !== owner.user_id),
                       )
                     }
                   >
-                    {owner.user_id}
+                    {owner.full_name}
+                    <span className="text-muted-foreground text-xs">
+                      ({owner.muid})
+                    </span>
+                    ✕
                   </Badge>
                 ))}
               </div>
             </div>
           </section>
 
-          <div className="flex justify-end gap-2">
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
             <Button
               type="button"
               variant="outline"
-              disabled={isPending}
+              disabled={disableSaveActions}
               onClick={handleSubmit((values) => onSubmit(values, "draft"))}
             >
-              Save as Draft
+              {saveButtonLabel}
             </Button>
             <Button
               type="button"
-              disabled={isPending}
+              disabled={disableSaveActions || !canPublish}
+              title={
+                !canPublish
+                  ? `Cannot publish events with status "${eventStatus}". Save as draft and update from the manage page.`
+                  : ""
+              }
               onClick={handleSubmit((values) => onSubmit(values, "publish"))}
             >
               Save and Publish
