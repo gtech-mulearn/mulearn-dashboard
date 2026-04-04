@@ -24,9 +24,21 @@ import type {
 } from "../types";
 
 type EventShape = {
+  id?: string;
+  status?: string | null;
+  start_datetime?: string;
+  end_datetime?: string;
   event_type?: string | null;
   category_name?: string | null;
 };
+
+const PENDING_STATUS_GROUP = [
+  "pending_approval",
+  "pending_campus_approval",
+  "pending_mentor_approval",
+] as const;
+
+const TEMPORAL_STATUS_FALLBACK_LIMIT = 200;
 
 // Compatibility shim:
 // If the backend returns event_type but omits category_name, mirror it here so
@@ -122,6 +134,134 @@ function buildQueryStringWithStatusOverride(
   return `?${searchParams.toString()}`;
 }
 
+function paginateItems<T>(
+  items: T[],
+  pageIndex: number,
+  perPage: number,
+): PaginatedData<T> {
+  const start = (pageIndex - 1) * perPage;
+  const data = items.slice(start, start + perPage);
+  const count = items.length;
+  const totalPages = Math.max(1, Math.ceil(count / perPage));
+
+  return {
+    data,
+    pagination: {
+      count,
+      totalPages,
+      isNext: pageIndex < totalPages,
+      isPrev: pageIndex > 1,
+      nextPage: pageIndex < totalPages ? pageIndex + 1 : null,
+    },
+  };
+}
+
+function dedupeById<T extends { id?: string }>(items: T[]): T[] {
+  const unique = new Map<string, T>();
+
+  for (const item of items) {
+    if (!item?.id) continue;
+    if (!unique.has(item.id)) {
+      unique.set(item.id, item);
+    }
+  }
+
+  return Array.from(unique.values());
+}
+
+function isOngoingByTime(event: EventShape): boolean {
+  if (!event.start_datetime || !event.end_datetime) return false;
+  const start = new Date(event.start_datetime).getTime();
+  const end = new Date(event.end_datetime).getTime();
+  if (Number.isNaN(start) || Number.isNaN(end)) return false;
+
+  const now = Date.now();
+  return start <= now && now < end;
+}
+
+function isCompletedByTime(event: EventShape): boolean {
+  if (!event.end_datetime) return false;
+  const end = new Date(event.end_datetime).getTime();
+  if (Number.isNaN(end)) return false;
+  return end <= Date.now();
+}
+
+async function fetchListWithStatusFallback(
+  endpoint: string,
+  params?: EventListQueryParams,
+): Promise<EventListData> {
+  const qs = buildQueryString(params);
+  let response = await apiClient.get<EventListData>(`${endpoint}${qs}`);
+  response = mirrorEventTypeToCategoryList(response);
+
+  const status = params?.status;
+  if (!status) {
+    return response;
+  }
+
+  const pageIndex = params?.pageIndex ?? 1;
+  const perPage = params?.perPage ?? 12;
+
+  // Pending tab should include all pending states used across approval flows.
+  if (status === "pending_approval") {
+    const fallbackParams = {
+      ...params,
+      pageIndex: 1,
+      perPage: TEMPORAL_STATUS_FALLBACK_LIMIT,
+    };
+
+    const groupedResponses = await Promise.all(
+      PENDING_STATUS_GROUP.map((pendingStatus) =>
+        apiClient
+          .get<EventListData>(
+            `${endpoint}${buildQueryStringWithStatusOverride(fallbackParams, pendingStatus)}`,
+          )
+          .then((data) => mirrorEventTypeToCategoryList(data)),
+      ),
+    );
+
+    const merged = dedupeById(groupedResponses.flatMap((item) => item.data));
+    return paginateItems(merged, pageIndex, perPage);
+  }
+
+  // Some deployments use American spelling in query parsing (`canceled`).
+  if (status === "cancelled" && response.data.length === 0) {
+    const fallbackQs = buildQueryStringWithStatusOverride(params, "canceled");
+    const fallbackResponse = await apiClient.get<EventListData>(
+      `${endpoint}${fallbackQs}`,
+    );
+    return mirrorEventTypeToCategoryList(fallbackResponse);
+  }
+
+  // Some environments may not auto-transition published events to ongoing/completed.
+  if (
+    (status === "ongoing" || status === "completed") &&
+    response.data.length === 0
+  ) {
+    const publishedFallbackParams: EventListQueryParams = {
+      ...params,
+      status: "published",
+      pageIndex: 1,
+      perPage: TEMPORAL_STATUS_FALLBACK_LIMIT,
+      sortBy: "-start_datetime",
+    };
+
+    const publishedResponse = await apiClient.get<EventListData>(
+      `${endpoint}${buildQueryString(publishedFallbackParams)}`,
+    );
+    const normalizedPublished =
+      mirrorEventTypeToCategoryList(publishedResponse);
+
+    const filtered = normalizedPublished.data.filter((event) =>
+      status === "ongoing" ? isOngoingByTime(event) : isCompletedByTime(event),
+    );
+
+    return paginateItems(filtered, pageIndex, perPage);
+  }
+
+  return response;
+}
+
 // ─── EVENTS API ────────────────────────────────────────────────────────────
 
 export const eventsApi = {
@@ -165,22 +305,7 @@ export const eventsApi = {
 
   // ─── MANAGE: LIST & CRUD ─────────────────────────────────────────────────
   manageList: async (params?: EventListQueryParams): Promise<EventListData> => {
-    const qs = buildQueryString(params);
-    let response = await apiClient.get<EventListData>(
-      `${endpoints.events.manage}${qs}`,
-    );
-    response = mirrorEventTypeToCategoryList(response);
-
-    // Some deployments use American spelling in query parsing (`canceled`).
-    if (params?.status === "cancelled" && response.data.length === 0) {
-      const fallbackQs = buildQueryStringWithStatusOverride(params, "canceled");
-      const fallbackResponse = await apiClient.get<EventListData>(
-        `${endpoints.events.manage}${fallbackQs}`,
-      );
-      return mirrorEventTypeToCategoryList(fallbackResponse);
-    }
-
-    return response;
+    return fetchListWithStatusFallback(endpoints.events.manage, params);
   },
 
   create: async (body: EventWriteBody): Promise<EventMutationData> => {
@@ -401,21 +526,7 @@ export const eventsApi = {
 
   // ─── ADMIN ENDPOINTS ─────────────────────────────────────────────────────
   adminList: async (params?: EventListQueryParams): Promise<EventListData> => {
-    const qs = buildQueryString(params);
-    let response = await apiClient.get<EventListData>(
-      `${endpoints.events.admin}${qs}`,
-    );
-    response = mirrorEventTypeToCategoryList(response);
-
-    if (params?.status === "cancelled" && response.data.length === 0) {
-      const fallbackQs = buildQueryStringWithStatusOverride(params, "canceled");
-      const fallbackResponse = await apiClient.get<EventListData>(
-        `${endpoints.events.admin}${fallbackQs}`,
-      );
-      return mirrorEventTypeToCategoryList(fallbackResponse);
-    }
-
-    return response;
+    return fetchListWithStatusFallback(endpoints.events.admin, params);
   },
 
   adminApprove: async (

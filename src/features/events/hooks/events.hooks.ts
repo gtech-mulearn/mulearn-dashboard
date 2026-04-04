@@ -47,7 +47,7 @@ function isForbiddenPermissionError(error: unknown, message?: string): boolean {
     return true;
   }
 
-  return Boolean(message?.toLowerCase().includes("permission"));
+  return Boolean(message && message.toLowerCase().includes("permission"));
 }
 
 export function resolveEventTypeValue(
@@ -347,7 +347,7 @@ export function useCreateEvent() {
 
   return useMutation({
     mutationFn: (body: EventWriteBody) => eventsApi.create(body),
-    onSuccess: async (_data) => {
+    onSuccess: async (data) => {
       toast.success("Event created");
       await queryClient.invalidateQueries({ queryKey: eventKeys.all });
       await queryClient.refetchQueries({ queryKey: eventKeys.manageLists() });
