@@ -394,7 +394,7 @@ export function useCreateEvent() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (body: EventWriteBody) => eventsApi.create(body),
+    mutationFn: (body: EventWriteBody | FormData) => eventsApi.create(body),
     onSuccess: async (_data) => {
       toast.success("Event created");
       await queryClient.invalidateQueries({ queryKey: eventKeys.all });
@@ -437,7 +437,8 @@ export function usePatchEvent(eventId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (body: EventPatchBody) => eventsApi.patch(eventId, body),
+    mutationFn: (body: EventPatchBody | FormData) =>
+      eventsApi.patch(eventId, body),
     onSuccess: async (_data, _vars, _context) => {
       toast.success("Event updated");
       await queryClient.invalidateQueries({ queryKey: eventKeys.all });

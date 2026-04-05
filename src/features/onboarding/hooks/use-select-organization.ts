@@ -8,9 +8,8 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { authKeys } from "@/features/auth/hooks/query-keys";
-import { createCompany, createOrganization, selectOrganization } from "../api";
+import { createOrganization, selectOrganization } from "../api";
 import type {
-  CreateCompanyRequest,
   CreateOrganizationRequest,
   SelectOrganizationRequest,
 } from "../schemas";
@@ -41,23 +40,6 @@ export function useCreateOrganization() {
   return useMutation({
     mutationFn: async (data: CreateOrganizationRequest) => {
       const response = await createOrganization(data);
-      return response;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: authKeys.userInfo() });
-    },
-  });
-}
-
-/**
- * Hook for creating a new company
- */
-export function useCreateCompany() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (data: CreateCompanyRequest) => {
-      const response = await createCompany(data);
       return response;
     },
     onSuccess: () => {

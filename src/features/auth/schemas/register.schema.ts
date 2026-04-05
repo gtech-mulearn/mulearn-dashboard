@@ -14,7 +14,9 @@ import { ApiResponseSchema } from "./auth.schema";
 // ============================================
 
 /**
- * User data within registration request
+ * User data within registration request.
+ * `role` is the DB UUID of the role (from GET /api/v1/register/role/list/).
+ * Not required for company signups (those use a separate endpoint).
  */
 export const RegisterUserDataSchema = z.object({
   full_name: z
@@ -26,6 +28,8 @@ export const RegisterUserDataSchema = z.object({
     .string()
     .min(8, "Password must be at least 8 characters")
     .max(100, "Password must be at most 100 characters"),
+  /** DB UUID of the role (Student / Mentor / Enabler) */
+  role: z.string().optional(),
 });
 
 /**
@@ -54,7 +58,9 @@ export const IntegrationDataSchema = z.object({
 });
 
 /**
- * Full registration request
+ * Full registration request for Student / Mentor / Enabler.
+ * `user.role` must be the DB UUID fetched from GET /api/v1/register/role/list/.
+ * Company signup uses a separate schema (CompanySignupRequestSchema).
  */
 export const RegisterRequestSchema = z.object({
   user: RegisterUserDataSchema,
@@ -64,7 +70,6 @@ export const RegisterRequestSchema = z.object({
   dob: z.string().optional(),
   communities: z.array(z.string()).optional(),
   integration: IntegrationDataSchema.optional(),
-  role: z.string().optional(),
   organization: z.string().optional(),
   department: z.string().optional(),
   graduation_year: z.number().optional(),
@@ -81,6 +86,101 @@ export const RegisterResponseDataSchema = z.object({
 export const RegisterResponseSchema = ApiResponseSchema(
   RegisterResponseDataSchema,
 );
+
+// ============================================
+// Company Signup Schemas
+// POST /api/v1/dashboard/company/create/
+// ============================================
+
+/**
+ * Request body for company-specific signup endpoint.
+ * POC (point of contact) = the person filling in the form.
+ * Their email/name/password become the user account credentials.
+ */
+export const CompanySignupRequestSchema = z.object({
+  /** Company's display name (max 75 chars) */
+  name: z
+    .string()
+    .min(1, "Company name is required")
+    .max(75, "Company name must be at most 75 characters"),
+  /** Full name of the point of contact */
+  poc_name: z
+    .string()
+    .min(1, "Contact name is required")
+    .max(150, "Contact name must be at most 150 characters"),
+  /** POC email — becomes the login email */
+  poc_email: z.string().email("Invalid email address"),
+  /** Login password */
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .max(100, "Password must be at most 100 characters"),
+  /** Optional contact phone: +? followed by 8–15 digits */
+  poc_phone: z
+    .string()
+    .regex(/^\+?[0-9]{8,15}$/, "Enter a valid phone number")
+    .optional()
+    .or(z.literal("")),
+  website_link: z
+    .string()
+    .url("Enter a valid URL")
+    .optional()
+    .or(z.literal("")),
+  description: z.string().optional(),
+  industry_sector: z.string().optional(),
+  location: z.string().optional(),
+  /** Required by the backend when no matching company org exists in the DB */
+  district_id: z
+    .string()
+    .uuid("Invalid district ID")
+    .optional()
+    .or(z.literal("")),
+  legal_name: z.string().optional(),
+  registration_number: z.string().optional(),
+  tax_id: z.string().optional(),
+  company_size: z.string().optional(),
+  linkedin_url: z
+    .string()
+    .url("Enter a valid LinkedIn URL")
+    .optional()
+    .or(z.literal("")),
+  verification_document_url: z
+    .string()
+    .url("Enter a valid URL")
+    .optional()
+    .or(z.literal("")),
+});
+
+/**
+ * Auth tokens nested inside the company signup response.
+ * The backend may return camelCase (accessToken/refreshToken) or
+ * snake_case (access/refresh) — accept both.
+ */
+export const CompanySignupAuthSchema = z
+  .object({
+    accessToken: z.string().optional(),
+    refreshToken: z.string().optional(),
+    access: z.string().optional(),
+    refresh: z.string().optional(),
+  })
+  .passthrough();
+
+export const CompanySignupResponseDataSchema = z.object({
+  company_id: z.string(),
+  slug: z.string(),
+  muid: z.string(),
+  status: z.string(),
+  auth: CompanySignupAuthSchema,
+});
+
+export const CompanySignupResponseSchema = z
+  .object({
+    hasError: z.boolean(),
+    statusCode: z.number(),
+    message: z.record(z.string(), z.unknown()).optional(),
+    response: CompanySignupResponseDataSchema,
+  })
+  .passthrough();
 
 // ============================================
 // Email Verification Schemas
@@ -109,6 +209,12 @@ export type IntegrationData = z.infer<typeof IntegrationDataSchema>;
 export type RegisterRequest = z.infer<typeof RegisterRequestSchema>;
 export type RegisterResponse = z.infer<typeof RegisterResponseSchema>;
 export type RegisterResponseData = z.infer<typeof RegisterResponseDataSchema>;
+
+export type CompanySignupRequest = z.infer<typeof CompanySignupRequestSchema>;
+export type CompanySignupResponse = z.infer<typeof CompanySignupResponseSchema>;
+export type CompanySignupResponseData = z.infer<
+  typeof CompanySignupResponseDataSchema
+>;
 
 export type EmailVerificationRequest = z.infer<
   typeof EmailVerificationRequestSchema

@@ -376,13 +376,28 @@ export default function EventModal({
       ? "Save Changes"
       : "Save as Draft";
 
-  const toBase64 = (file: File): Promise<string> =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
+  const toFormData = (
+    payload: Record<string, unknown>,
+    coverFile: File | null,
+    bannerFile: File | null,
+  ): FormData => {
+    const fd = new FormData();
+    for (const [key, value] of Object.entries(payload)) {
+      if (value === null || value === undefined) continue;
+      if (Array.isArray(value)) {
+        fd.append(key, JSON.stringify(value));
+      } else if (typeof value === "boolean") {
+        fd.append(key, value ? "true" : "false");
+      } else if (typeof value === "object") {
+        fd.append(key, JSON.stringify(value));
+      } else {
+        fd.append(key, String(value));
+      }
+    }
+    if (coverFile) fd.append("cover_image", coverFile);
+    if (bannerFile) fd.append("banner_image", bannerFile);
+    return fd;
+  };
 
   const normalizeCoOwners = (
     coOwners:
@@ -462,8 +477,6 @@ export default function EventModal({
     return {
       title: event.title,
       description: event.description,
-      cover_image: event.cover_image,
-      banner_image: event.banner_image,
       start_datetime: event.start_datetime,
       end_datetime: event.end_datetime,
       registration_url: event.registration_url,
@@ -559,13 +572,6 @@ export default function EventModal({
       return;
     }
 
-    const coverBase64 = coverImageFile
-      ? await toBase64(coverImageFile)
-      : (values.cover_image ?? null);
-    const bannerBase64 = bannerImageFile
-      ? await toBase64(bannerImageFile)
-      : (values.banner_image ?? null);
-
     const tagsValue =
       values.tags && values.tags.length > 0 ? values.tags : null;
 
@@ -573,8 +579,6 @@ export default function EventModal({
       title: values.title,
       description: values.description,
       event_type: values.event_type,
-      cover_image: coverBase64,
-      banner_image: bannerBase64,
       start_datetime: start as string,
       end_datetime: end as string,
       registration_url: values.registration_url,
@@ -659,13 +663,19 @@ export default function EventModal({
           initialData as EventDetail | EventDetailManage,
         );
 
-        if (Object.keys(payload).length === 0) {
+        const hasImageChange = Boolean(coverImageFile || bannerImageFile);
+        if (Object.keys(payload).length === 0 && !hasImageChange) {
           toast.info("No changes detected");
           onClose();
           return;
         }
 
-        const updated = await patchEvent.mutateAsync(payload);
+        const patchFd = toFormData(
+          payload as Record<string, unknown>,
+          coverImageFile,
+          bannerImageFile,
+        );
+        const updated = await patchEvent.mutateAsync(patchFd);
         savedEventId = updated.id;
       } else if (!isEdit) {
         if (!selectedOrganiser) {
@@ -694,12 +704,17 @@ export default function EventModal({
           })),
         };
 
-        const payload: EventWriteBody = {
+        const rawPayload = {
           ...basePayload,
           ...createOrganizerPayload,
-        } as EventWriteBody;
+        };
 
-        const created = await createEvent.mutateAsync(payload);
+        const createFd = toFormData(
+          rawPayload as Record<string, unknown>,
+          coverImageFile,
+          bannerImageFile,
+        );
+        const created = await createEvent.mutateAsync(createFd);
         savedEventId = created.id;
       }
 
@@ -990,19 +1005,6 @@ export default function EventModal({
                   onChange={setCoverImageFile}
                   currentUrl={watch("cover_image") ?? undefined}
                 />
-                <div className="space-y-1">
-                  <label
-                    htmlFor="cover_image"
-                    className="text-xs text-muted-foreground"
-                  >
-                    Or paste image URL
-                  </label>
-                  <Input
-                    id="cover_image"
-                    placeholder="https://example.com/cover.jpg"
-                    {...register("cover_image")}
-                  />
-                </div>
               </div>
               <div className="space-y-2">
                 <p className="text-sm font-medium text-foreground">
@@ -1016,19 +1018,6 @@ export default function EventModal({
                   onChange={setBannerImageFile}
                   currentUrl={watch("banner_image") ?? undefined}
                 />
-                <div className="space-y-1">
-                  <label
-                    htmlFor="banner_image"
-                    className="text-xs text-muted-foreground"
-                  >
-                    Or paste image URL
-                  </label>
-                  <Input
-                    id="banner_image"
-                    placeholder="https://example.com/banner.jpg"
-                    {...register("banner_image")}
-                  />
-                </div>
               </div>
             </section>
 

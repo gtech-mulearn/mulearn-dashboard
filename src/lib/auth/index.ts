@@ -19,6 +19,8 @@ export {
   PERMISSIONS,
   type Permission,
 } from "./permissions";
+// Role-Based Routing
+export { getRoleHomePath } from "./role-routing";
 // Roles
 export {
   ADMIN_ROLES,
@@ -33,7 +35,6 @@ export {
   TECH_ROLES,
   ZONAL_ROLES,
 } from "./roles";
-
 // Route Access (used by middleware)
 export {
   findRouteConfig,
