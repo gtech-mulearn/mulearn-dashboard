@@ -66,14 +66,17 @@ export const zonedetails = z.object({
   total_members: z.number().int(),
   active_members: z.number().int(),
 });
+export const ZoneShema = ApiResponseSchema(zonedetails);
 
 export const TopDistrict = z.object({
   district: z.string(),
   rank: z.number().int(),
   karma: z.number().int(),
 });
+export const TopDistrictSchema = ApiResponseSchema(TopDistrict);
 
 export const StudentLevel = z.object({
   level_order: z.number().int(),
   students_count: z.number().int(),
 });
+export const StudentLevelSchema = ApiResponseSchema(StudentLevel);
