@@ -35,7 +35,7 @@ export function TransferLeadModal({
   const transferLead = useTransferLead(circleId);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
 
-  const candidates = members?.filter((m) => !m.is_leader) ?? [];
+  const candidates = members?.members?.filter((m) => !m.is_leader) ?? [];
 
   const handleTransfer = () => {
     if (!selectedMemberId) return;
@@ -110,7 +110,7 @@ export function TransferLeadModal({
                     {member.full_name}
                   </p>
                   <p className="truncate text-[11px] text-[#9CA3AF]">
-                    {member.ig_karma.toLocaleString()} karma
+                    {(member.ig_karma ?? 0).toLocaleString()} karma
                   </p>
                 </div>
                 {selectedMemberId === member.id && (

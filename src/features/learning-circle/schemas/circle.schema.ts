@@ -74,8 +74,8 @@ export const CircleMemberSchema = z.object({
   full_name: z.string(),
   profile_pic: z.string().nullable(),
   muid: z.string(),
-  ig_karma: z.number(),
-  is_leader: z.boolean(),
+  ig_karma: z.number().optional(),
+  is_leader: z.boolean().optional(),
 });
 
 export type CircleMember = z.infer<typeof CircleMemberSchema>;
@@ -192,7 +192,10 @@ export const CircleDetailResponseSchema = ApiResponseSchema(
 );
 
 export const CircleMembersResponseSchema = ApiResponseSchema(
-  z.array(CircleMemberSchema),
+  z.object({
+    owner: UserBasicSchema.nullable(),
+    members: z.array(CircleMemberSchema),
+  }),
 );
 
 export const CreateCircleResponseSchema = ApiResponseSchema(

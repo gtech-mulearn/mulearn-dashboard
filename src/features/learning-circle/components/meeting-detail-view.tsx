@@ -146,8 +146,9 @@ export function MeetingDetailView({
   );
 
   const isCreator = meeting?.created_by_id
-    ? members?.some((m) => m.muid === meeting.created_by_id && m.is_leader) ||
-      permissions.role === "owner"
+    ? members?.members?.some(
+        (m) => m.muid === meeting.created_by_id && m.is_leader,
+      ) || permissions.role === "owner"
     : false;
 
   const canJoin =
