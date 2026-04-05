@@ -120,6 +120,9 @@ export const routeAccessMap: Record<string, RouteConfig> = {
   "/dashboard/management/manage-launchpad": {
     roles: [ROLES.ADMIN],
   },
+  "/dashboard/management/manage-companies": {
+    roles: [ROLES.ADMIN],
+  },
   "/dashboard/management/manage-departments": {
     roles: [ROLES.ADMIN],
   },
@@ -143,6 +146,11 @@ export const routeAccessMap: Record<string, RouteConfig> = {
   // ── Events Management ────────────────────────────────────
   "/dashboard/manage-events": {
     roles: [ROLES.ADMIN, ROLES.FELLOW],
+  },
+
+  // ── Company Dashboard ───────────────────────────────────
+  "/dashboard/company": {
+    roles: [ROLES.COMPANY],
   },
 };
 

@@ -15,6 +15,7 @@
 import type { LucideIcon } from "lucide-react";
 import {
   BookOpen,
+  Briefcase,
   Calendar,
   Globe,
   GraduationCap,
@@ -144,6 +145,14 @@ export const NAV_ITEMS: readonly NavItem[] = [
   },
 
   // ── Management Section (role-gated) ───────────────────────
+  {
+    id: "company-jobs",
+    title: "Company",
+    href: "/dashboard/company/jobs",
+    icon: Briefcase,
+    section: "management",
+    roles: [ROLES.COMPANY],
+  },
   {
     id: "campus-manage",
     title: "Campus",
