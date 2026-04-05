@@ -56,14 +56,8 @@ const createEventBaseSchema = z.object({
     .union([z.string(), z.literal("")])
     .optional()
     .transform((v) => (v === "" ? null : v)),
-  cover_image: z
-    .union([z.string().url("Invalid URL"), z.literal("")])
-    .optional()
-    .transform((v) => (v === "" ? null : v)),
-  banner_image: z
-    .union([z.string().url("Invalid URL"), z.literal("")])
-    .optional()
-    .transform((v) => (v === "" ? null : v)),
+  cover_image: z.string().optional().nullable(),
+  banner_image: z.string().optional().nullable(),
   registration_url: z
     .union([z.string().url("Invalid URL"), z.literal("")])
     .optional()

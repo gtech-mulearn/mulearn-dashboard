@@ -11,7 +11,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -27,12 +27,26 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import {
+  useCountries,
+  useDistricts,
+  useStates,
+} from "@/features/onboarding/hooks";
 import type {
   College,
   Company,
   Department,
 } from "@/features/onboarding/schemas";
 import type { Role } from "./register-role-selection";
+
+const COMPANY_SIZE_OPTIONS = [
+  { id: "1-10", title: "1–10 employees" },
+  { id: "11-50", title: "11–50 employees" },
+  { id: "51-200", title: "51–200 employees" },
+  { id: "201-500", title: "201–500 employees" },
+  { id: "501-1000", title: "501–1,000 employees" },
+  { id: "1000+", title: "1,000+ employees" },
+];
 
 // Schema for Student
 const studentDetailsSchema = z
@@ -135,19 +149,46 @@ const mentorDetailsSchema = z
   );
 
 // Schema for Company
+// Note: poc_name and poc_email come from Step 1 (basicData); they are NOT
+// collected here. This form only collects company-level details.
 const companyDetailsSchema = z.object({
-  companyName: z.string().min(3, "Company name must be at least 3 characters"),
-  companyDescription: z
+  // Basic Info
+  companyName: z
     .string()
-    .min(10, "Description must be at least 10 characters"),
-  industrySector: z.string().min(1, "Please enter the industry sector"),
+    .min(1, "Company name is required")
+    .max(75, "Max 75 characters"),
+  companyDescription: z.string().optional(),
+  industrySector: z.string().optional(),
+  companySize: z.string().optional(),
+  // Contact & Online Presence
   websiteLink: z
     .string()
     .url("Please enter a valid URL")
     .or(z.literal(""))
     .optional(),
-  companyEmail: z.string().email("Please enter a valid email address"),
-  companyLocation: z.string().min(3, "Location must be at least 3 characters"),
+  linkedinUrl: z
+    .string()
+    .url("Please enter a valid LinkedIn URL")
+    .or(z.literal(""))
+    .optional(),
+  pocPhone: z
+    .string()
+    .regex(/^\+?[0-9]{8,15}$/, "Enter a valid phone number (8–15 digits)")
+    .or(z.literal(""))
+    .optional(),
+  // Location (Country → State → District cascade; only districtId sent to API)
+  countryId: z.string().optional(),
+  stateId: z.string().optional(),
+  districtId: z.string().optional(),
+  // Legal Information
+  legalName: z.string().optional(),
+  registrationNumber: z.string().optional(),
+  taxId: z.string().optional(),
+  verificationDocumentUrl: z
+    .string()
+    .url("Please enter a valid URL")
+    .or(z.literal(""))
+    .optional(),
 });
 
 type RoleDetailsValues =
@@ -156,23 +197,36 @@ type RoleDetailsValues =
   | z.infer<typeof mentorDetailsSchema>
   | z.infer<typeof companyDetailsSchema>;
 
+export interface CompanyDetailsValues {
+  companyName?: string;
+  companyDescription?: string;
+  industrySector?: string;
+  companySize?: string;
+  websiteLink?: string;
+  linkedinUrl?: string;
+  pocPhone?: string;
+  countryId?: string;
+  stateId?: string;
+  districtId?: string;
+  legalName?: string;
+  registrationNumber?: string;
+  taxId?: string;
+  verificationDocumentUrl?: string;
+}
+
 interface RegisterRoleDetailsProps {
   role: Role;
-  onSubmit: (values: {
-    college?: string;
-    customCollege?: string;
-    department?: string;
-    graduationYear?: number;
-    organization?: string;
-    customOrganization?: string;
-    organizationType?: "College" | "Company";
-    companyName?: string;
-    companyDescription?: string;
-    industrySector?: string;
-    websiteLink?: string;
-    companyEmail?: string;
-    companyLocation?: string;
-  }) => void;
+  onSubmit: (
+    values: {
+      college?: string;
+      customCollege?: string;
+      department?: string;
+      graduationYear?: number;
+      organization?: string;
+      customOrganization?: string;
+      organizationType?: "College" | "Company";
+    } & CompanyDetailsValues,
+  ) => void;
   onBack?: () => void;
   isLoading?: boolean;
   colleges?: College[];
@@ -232,9 +286,17 @@ export function RegisterRoleDetails({
       companyName: "",
       companyDescription: "",
       industrySector: "",
+      companySize: "",
       websiteLink: "",
-      companyEmail: "",
-      companyLocation: "",
+      linkedinUrl: "",
+      pocPhone: "",
+      countryId: "",
+      stateId: "",
+      districtId: "",
+      legalName: "",
+      registrationNumber: "",
+      taxId: "",
+      verificationDocumentUrl: "",
     };
   };
 
@@ -248,6 +310,36 @@ export function RegisterRoleDetails({
   const [showCustomOrganization, setShowCustomOrganization] = useState(false);
   const [mentorOrgType, setMentorOrgType] = useState<"College" | "Company">(
     "Company",
+  );
+
+  // Company stepper state
+  const [companyStep, setCompanyStep] = useState(1);
+  const COMPANY_STEPS = ["Basic Info", "Contact", "Location", "Legal"];
+
+  // Location cascading state (company form only)
+  const [selectedCountryId, setSelectedCountryId] = useState<
+    string | undefined
+  >();
+  const [selectedStateId, setSelectedStateId] = useState<string | undefined>();
+
+  const countries = useCountries();
+  const states = useStates(role === "company" ? selectedCountryId : undefined);
+  const districts = useDistricts(
+    role === "company" ? selectedStateId : undefined,
+  );
+
+  // Map { id, name } → { id, title } for Combobox
+  const countryOptions = useMemo(
+    () => countries.data?.map((c) => ({ id: c.id, title: c.name })) ?? [],
+    [countries.data],
+  );
+  const stateOptions = useMemo(
+    () => states.data?.map((s) => ({ id: s.id, title: s.name })) ?? [],
+    [states.data],
+  );
+  const districtOptions = useMemo(
+    () => districts.data?.map((d) => ({ id: d.id, title: d.name })) ?? [],
+    [districts.data],
   );
 
   // Track if we've already set the organization from URL (to prevent re-setting)
@@ -276,6 +368,12 @@ export function RegisterRoleDetails({
   }, [orgParam, role, router, form.setValue]);
 
   const handleSubmit = (values: RoleDetailsValues) => {
+    // For company, only submit on the final step — pressing Enter on earlier
+    // steps should advance to the next step, not submit the form.
+    if (role === "company" && companyStep < 4) {
+      void handleCompanyNext();
+      return;
+    }
     onSubmit(values as Parameters<RegisterRoleDetailsProps["onSubmit"]>[0]);
   };
 
@@ -290,6 +388,17 @@ export function RegisterRoleDetails({
       case "company":
         return "Company";
     }
+  };
+
+  const handleCompanyNext = async () => {
+    // Only companyName is required — validate it on step 1 before advancing
+    if (companyStep === 1) {
+      const valid = await form.trigger(
+        "companyName" as keyof RoleDetailsValues,
+      );
+      if (!valid) return;
+    }
+    setCompanyStep((s) => Math.min(s + 1, 4));
   };
 
   return (
@@ -672,149 +781,459 @@ export function RegisterRoleDetails({
             </>
           )}
 
-          {/* Company Fields */}
+          {/* Company Fields — Stepper */}
           {role === "company" && (
             <>
-              <FormField
-                control={form.control}
-                name="companyName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-medium">
-                      Company Name
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Enter your company name"
-                        className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
-                        disabled={isLoading}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Step indicator */}
+              <div className="flex items-center gap-0 mb-2">
+                {COMPANY_STEPS.map((label, i) => {
+                  const stepNum = i + 1;
+                  const isActive = companyStep === stepNum;
+                  const isDone = companyStep > stepNum;
+                  return (
+                    <div
+                      key={label}
+                      className="flex items-center flex-1 last:flex-none"
+                    >
+                      <div className="flex flex-col items-center gap-1">
+                        <div
+                          className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
+                            isDone
+                              ? "bg-primary text-primary-foreground"
+                              : isActive
+                                ? "bg-primary text-primary-foreground ring-2 ring-primary/30"
+                                : "bg-gray-100 text-gray-400"
+                          }`}
+                        >
+                          {isDone ? "✓" : stepNum}
+                        </div>
+                        <span
+                          className={`text-[10px] whitespace-nowrap ${isActive ? "text-primary font-medium" : "text-gray-400"}`}
+                        >
+                          {label}
+                        </span>
+                      </div>
+                      {i < COMPANY_STEPS.length - 1 && (
+                        <div
+                          className={`h-px flex-1 mx-1 mb-4 transition-colors ${isDone ? "bg-primary" : "bg-gray-200"}`}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
 
-              <FormField
-                control={form.control}
-                name="companyDescription"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-medium">
-                      Description
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Brief description of your company"
-                        className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
-                        disabled={isLoading}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Step 1: Basic Info */}
+              {companyStep === 1 && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="companyName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          Company Name
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Enter your company name"
+                            className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
+                            disabled={isLoading}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <FormField
-                control={form.control}
-                name="industrySector"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-medium">
-                      Industry Sector
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="e.g., Technology, Healthcare, Finance"
-                        className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
-                        disabled={isLoading}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  <FormField
+                    control={form.control}
+                    name="companyDescription"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          Description{" "}
+                          <span className="text-gray-400">(optional)</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Brief description of your company"
+                            className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
+                            disabled={isLoading}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <FormField
-                control={form.control}
-                name="websiteLink"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-medium">
-                      Website Link{" "}
-                      <span className="text-gray-400">(optional)</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="https://www.example.com"
-                        className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
-                        disabled={isLoading}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  <FormField
+                    control={form.control}
+                    name="industrySector"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          Industry Sector{" "}
+                          <span className="text-gray-400">(optional)</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="e.g., Technology, Healthcare, Finance"
+                            className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
+                            disabled={isLoading}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <FormField
-                control={form.control}
-                name="companyEmail"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-medium">
-                      Company Email
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="contact@company.com"
-                        className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
-                        disabled={isLoading}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  <FormField
+                    control={form.control}
+                    name="companySize"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          Company Size{" "}
+                          <span className="text-gray-400">(optional)</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Combobox
+                            options={COMPANY_SIZE_OPTIONS}
+                            value={field.value || ""}
+                            onValueChange={field.onChange}
+                            placeholder="Select company size"
+                            searchPlaceholder="Search..."
+                            disabled={isLoading}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
 
-              <FormField
-                control={form.control}
-                name="companyLocation"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-medium">
-                      Location
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="e.g., Kochi, Kerala"
-                        className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
-                        disabled={isLoading}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Step 2: Contact & Online Presence */}
+              {companyStep === 2 && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="pocPhone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          Contact Phone{" "}
+                          <span className="text-gray-400">(optional)</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="tel"
+                            placeholder="+91 98765 43210"
+                            className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
+                            disabled={isLoading}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="websiteLink"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          Website{" "}
+                          <span className="text-gray-400">(optional)</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="https://example.com"
+                            className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
+                            disabled={isLoading}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="linkedinUrl"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          LinkedIn{" "}
+                          <span className="text-gray-400">(optional)</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="https://linkedin.com/company/..."
+                            className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
+                            disabled={isLoading}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
+
+              {/* Step 3: Location */}
+              {companyStep === 3 && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="countryId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          Country{" "}
+                          <span className="text-gray-400">(optional)</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Combobox
+                            options={countryOptions}
+                            value={field.value || ""}
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                              setSelectedCountryId(value || undefined);
+                              form.setValue("stateId", "");
+                              form.setValue("districtId", "");
+                              setSelectedStateId(undefined);
+                            }}
+                            placeholder="Select country"
+                            searchPlaceholder="Search countries..."
+                            disabled={isLoading || countries.isLoading}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="stateId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          State{" "}
+                          <span className="text-gray-400">(optional)</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Combobox
+                            options={stateOptions}
+                            value={field.value || ""}
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                              setSelectedStateId(value || undefined);
+                              form.setValue("districtId", "");
+                            }}
+                            placeholder={
+                              selectedCountryId
+                                ? "Select state"
+                                : "Select country first"
+                            }
+                            searchPlaceholder="Search states..."
+                            disabled={
+                              isLoading ||
+                              !selectedCountryId ||
+                              states.isLoading
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="districtId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          District{" "}
+                          <span className="text-gray-400">(optional)</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Combobox
+                            options={districtOptions}
+                            value={field.value || ""}
+                            onValueChange={field.onChange}
+                            placeholder={
+                              selectedStateId
+                                ? "Select district"
+                                : "Select state first"
+                            }
+                            searchPlaceholder="Search districts..."
+                            disabled={
+                              isLoading ||
+                              !selectedStateId ||
+                              districts.isLoading
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
+
+              {/* Step 4: Legal Information */}
+              {companyStep === 4 && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="legalName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          Legal Name{" "}
+                          <span className="text-gray-400">(optional)</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Official registered legal name"
+                            className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
+                            disabled={isLoading}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="registrationNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          Registration Number{" "}
+                          <span className="text-gray-400">(optional)</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="e.g., CIN / RoC number"
+                            className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
+                            disabled={isLoading}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="taxId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          Tax ID / GSTIN{" "}
+                          <span className="text-gray-400">(optional)</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="e.g., GSTIN / PAN"
+                            className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
+                            disabled={isLoading}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="verificationDocumentUrl"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          Verification Document URL{" "}
+                          <span className="text-gray-400">(optional)</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="https://drive.google.com/..."
+                            className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
+                            disabled={isLoading}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
             </>
           )}
 
-          {/* Submit Button */}
-          <Button
-            type="submit"
-            variant="default"
-            className="w-full mt-6"
-            disabled={isLoading}
-          >
-            {isLoading && <Spinner className="mr-2 h-4 w-4" />}
-            Complete Registration
-          </Button>
+          {/* Navigation Buttons */}
+          {role === "company" ? (
+            <div className="flex gap-3 mt-6">
+              {companyStep > 1 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  disabled={isLoading}
+                  onClick={() => setCompanyStep((s) => s - 1)}
+                >
+                  Back
+                </Button>
+              )}
+              {companyStep < 4 ? (
+                <Button
+                  type="button"
+                  variant="default"
+                  className="flex-1"
+                  disabled={isLoading}
+                  onClick={handleCompanyNext}
+                >
+                  Next
+                </Button>
+              ) : (
+                <Button
+                  type="submit"
+                  variant="default"
+                  className="flex-1"
+                  disabled={isLoading}
+                >
+                  {isLoading && <Spinner className="mr-2 h-4 w-4" />}
+                  Complete Registration
+                </Button>
+              )}
+            </div>
+          ) : (
+            <Button
+              type="submit"
+              variant="default"
+              className="w-full mt-6"
+              disabled={isLoading}
+            >
+              {isLoading && <Spinner className="mr-2 h-4 w-4" />}
+              Complete Registration
+            </Button>
+          )}
         </form>
       </Form>
     </div>

@@ -13,6 +13,7 @@
 import { apiClient, publicApiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
+  CompanyOnboardingStatusResponseSchema,
   ForgotPasswordResponseSchema,
   type LoginResponseData,
   LoginResponseSchema,
@@ -167,6 +168,17 @@ export async function fetchPublicUserProfile(
   const response = await apiClient.get(
     endpoints.user.publicProfile(muid),
     UserProfileResponseSchema,
+  );
+  return response.response;
+}
+
+/**
+ * Get company onboarding / verification status for the logged-in company user
+ */
+export async function fetchCompanyOnboardingStatus() {
+  const response = await apiClient.get(
+    endpoints.company.onboardingStatus,
+    CompanyOnboardingStatusResponseSchema,
   );
   return response.response;
 }

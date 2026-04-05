@@ -205,6 +205,15 @@ export interface EventCollaborator {
   invited_at?: ISODateTime;
 }
 
+export interface PendingInviteItem extends EventCollaborator {
+  event_id: UUID;
+  event_title: string;
+  event_start_datetime: ISODateTime | null;
+  event_cover_image: string | null;
+}
+
+export type PendingInvitesData = PendingInviteItem[];
+
 export interface CollaboratorInviteBody {
   entity_type: CollaboratorEntityType;
   entity_id: UUID;

@@ -1,4 +1,5 @@
 export * from "./co-owners-panel";
+export * from "./collaborator-invites-sheet";
 export * from "./collaborators-panel";
 export * from "./event-card";
 export * from "./event-detail-view";

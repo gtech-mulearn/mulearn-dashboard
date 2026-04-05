@@ -40,6 +40,8 @@ export const eventKeys = {
   // ── Collaborators ──────────────────────────────────────────
   collaborators: (eventId: string) =>
     [...eventKeys.manage(), "collaborators", eventId] as const,
+  pendingCollaboratorInvites: (scope: "global") =>
+    [...eventKeys.manage(), "pending-collaborator-invites", scope] as const,
 
   // ── Admin ──────────────────────────────────────────────────
   admin: () => [...eventKeys.all, "admin"] as const,

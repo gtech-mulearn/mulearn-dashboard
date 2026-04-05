@@ -21,6 +21,7 @@ import {
   useSelectDomains,
   useSelectEndgoals,
 } from "@/features/onboarding";
+import { getRoleHomePath } from "@/lib/auth";
 
 interface InterestsClientProps {
   redirectUri?: string;
@@ -40,7 +41,7 @@ export function InterestsClient({ redirectUri, mode }: InterestsClientProps) {
   // Redirect if user already has domains selected
   useEffect(() => {
     if (!isLoadingUser && user?.user_domains && user.user_domains.length > 0) {
-      router.replace("/dashboard");
+      router.replace(getRoleHomePath(user.roles));
     }
   }, [user, isLoadingUser, router]);
 
@@ -48,7 +49,9 @@ export function InterestsClient({ redirectUri, mode }: InterestsClientProps) {
     if (redirectUri && redirectUri !== "noredirect") {
       return `/${redirectUri}`;
     }
-    return "/dashboard";
+    // Route to the role-specific home dashboard after onboarding completes.
+    // Falls back to "/dashboard" for standard member roles.
+    return getRoleHomePath(user?.roles ?? []);
   };
 
   const handleQuizComplete = async (pathways: string[]) => {

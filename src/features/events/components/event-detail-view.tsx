@@ -4,18 +4,25 @@ import {
   AlertTriangle,
   CalendarDays,
   Clock,
+  ExternalLink,
+  Info,
   MapPin,
   Monitor,
   Star,
 } from "lucide-react";
 import Image from "next/image";
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { resolveEventTypeValue, useEventDetail } from "../hooks";
-import { EventStatusBadge } from "./event-status-badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useEventDetail } from "../hooks";
 import { InterestButton } from "./interest-button";
 
 interface EventDetailViewProps {
@@ -28,27 +35,57 @@ function organizerLabel(type: string): string {
   return type.replace(/_/g, " ");
 }
 
+function formatTime(iso: string): string {
+  return new Date(iso).toLocaleString("en-IN", {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function formatDateRange(startIso: string, endIso: string): string {
+  const start = new Date(startIso);
+  const end = new Date(endIso);
+
+  const sameYear = start.getFullYear() === end.getFullYear();
+  const sameMonth = sameYear && start.getMonth() === end.getMonth();
+
+  const month = start.toLocaleString("en-IN", { month: "short" });
+
+  if (sameMonth) {
+    return `${month} ${start.getDate()}-${end.getDate()}, ${start.getFullYear()}`;
+  }
+
+  return `${start.toLocaleString("en-IN", { month: "short", day: "numeric" })} - ${end.toLocaleString("en-IN", { month: "short", day: "numeric" })}, ${sameYear ? start.getFullYear() : `${start.getFullYear()}-${end.getFullYear()}`}`;
+}
+
+function mapEmbedUrl(query: string): string {
+  return `https://maps.google.com/maps?q=${encodeURIComponent(query)}&z=13&output=embed`;
+}
+
 function countdownLabel(
   deadline: string | null,
+  nowTs: number,
 ): { label: string; urgent: boolean } | null {
   if (!deadline) return null;
   const target = new Date(deadline).getTime();
-  const now = Date.now();
-  const diff = target - now;
+  const diff = target - nowTs;
   if (diff <= 0) return { label: "Registration closed", urgent: true };
 
-  const hours = Math.floor(diff / (1000 * 60 * 60));
-  if (hours < 24) {
+  const totalMinutes = Math.floor(diff / (1000 * 60));
+  const days = Math.floor(totalMinutes / (60 * 24));
+  const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
+  const minutes = totalMinutes % 60;
+
+  if (days > 0) {
     return {
-      label: `Registration closes in ${hours}h`,
-      urgent: true,
+      label: `Registration closes in ${days}d ${hours}h ${minutes}m`,
+      urgent: days < 3,
     };
   }
 
-  const days = Math.floor(hours / 24);
   return {
-    label: `Registration closes in ${days} days`,
-    urgent: days < 3,
+    label: `Registration closes in ${hours}h ${minutes}m`,
+    urgent: true,
   };
 }
 
@@ -58,11 +95,19 @@ export function EventDetailView({
   layout = "full",
 }: EventDetailViewProps) {
   const { data: event, isLoading, isError, error } = useEventDetail(eventId);
+  const [nowTs, setNowTs] = useState(() => Date.now());
 
-  const countdown = useMemo(
-    () => (event ? countdownLabel(event.registration_deadline) : null),
-    [event],
-  );
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setNowTs(Date.now());
+    }, 1000 * 30);
+
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const countdown = event
+    ? countdownLabel(event.registration_deadline, nowTs)
+    : null;
 
   if (isLoading) {
     return (
@@ -82,19 +127,22 @@ export function EventDetailView({
     );
   }
 
-  const organizerName =
-    event.organizer.ig?.name ??
-    (event.organizer.ig && event.organizer.campus
-      ? `${event.organizer.ig.name} @ ${event.organizer.campus.name}`
-      : null) ??
-    event.organizer.campus?.name ??
-    event.organizer.company?.name ??
-    "muLearn";
+  const organizerName = (() => {
+    const { type, ig, campus, company, campus_ig } = event.organizer;
+    if (type === "global_ig") return ig?.name ?? "Global IG";
+    if (type === "campus_ig") {
+      const igName = ig?.name;
+      const campusName = campus?.title ?? campus?.name;
+      if (igName && campusName) return `${igName} @ ${campusName}`;
+      return campus_ig?.name ?? "Campus IG";
+    }
+    if (type === "campus") return campus?.title ?? campus?.name ?? "Campus";
+    if (type === "company") return company?.title ?? company?.name ?? "Company";
+    return "MuLearn";
+  })();
 
   const organizerLogo =
     event.organizer.ig?.logo ??
-    event.organizer.ig?.logo ??
-    event.organizer.campus?.logo ??
     event.organizer.campus?.logo ??
     event.organizer.company?.logo ??
     null;
@@ -103,192 +151,99 @@ export function EventDetailView({
     (collab) => collab.invite_status === "accepted",
   );
 
-  return (
-    <div className="mx-auto w-full max-w-7xl space-y-8">
-      <div
-        className="relative w-full overflow-hidden rounded-2xl shadow-sm"
-        style={{ aspectRatio: "16/5" }}
-      >
-        {event.banner_image || event.cover_image ? (
-          <Image
-            src={
-              event.banner_image ?? event.cover_image ?? "/images/fallback.webp"
-            }
-            alt={event.title}
-            fill
-            className="object-cover"
-          />
-        ) : null}
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-900/70 to-slate-700/40" />
-      </div>
+  const mapQuery =
+    `${event.venue.address ?? ""} ${event.venue.city ?? ""}`.trim();
 
-      <div
-        className={
-          layout === "full"
-            ? "grid grid-cols-1 gap-8 lg:grid-cols-3"
-            : "grid grid-cols-1"
-        }
-      >
+  return (
+    <TooltipProvider>
+      <div className="mx-auto w-full max-w-7xl space-y-6 pb-24 lg:pb-6">
         <div
-          className={
-            layout === "full" ? "space-y-6 lg:col-span-2" : "space-y-6"
-          }
+          className="relative w-full overflow-hidden rounded-2xl shadow-sm"
+          style={{ aspectRatio: "16/5" }}
         >
-          <div>
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-              <h1 className="text-3xl font-bold tracking-tight">
+          {event.banner_image || event.cover_image ? (
+            <Image
+              src={
+                event.banner_image ??
+                event.cover_image ??
+                "/images/fallback.webp"
+              }
+              alt={event.title}
+              fill
+              className="object-cover"
+            />
+          ) : null}
+          <div className="absolute inset-0 bg-linear-to-t from-slate-950/85 via-slate-900/55 to-transparent" />
+
+          <div className="absolute inset-x-0 bottom-0 p-4 text-white sm:p-6">
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center gap-2">
+                {event.is_featured ? (
+                  <Badge className="bg-amber-200 text-amber-900">
+                    <Star className="mr-1 h-3.5 w-3.5" /> Featured
+                  </Badge>
+                ) : null}
+                {Array.isArray(event.tags)
+                  ? event.tags.slice(0, 3).map((tag) => (
+                      <Badge
+                        key={tag}
+                        variant="secondary"
+                        className="capitalize"
+                      >
+                        {tag}
+                      </Badge>
+                    ))
+                  : null}
+              </div>
+
+              <h1 className="max-w-4xl text-2xl font-bold tracking-tight sm:text-3xl">
                 {event.title}
               </h1>
-              {showInterestButton ? (
-                <div className="shrink-0">
-                  <InterestButton
-                    eventId={event.id}
-                    status={event.viewer_interest_status}
-                    count={event.interest_count}
-                  />
-                </div>
-              ) : null}
-            </div>
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              <EventStatusBadge status={event.status} />
-              <Badge variant="secondary" className="capitalize">
-                {resolveEventTypeValue(
-                  event.event_type,
-                  event.category_name,
-                )?.replace(/_/g, " ") ?? "Other"}
-              </Badge>
-              {event.is_featured ? (
-                <Badge className="bg-amber-100 text-amber-800">
-                  <Star className="mr-1 h-3.5 w-3.5" /> Featured
-                </Badge>
-              ) : null}
-            </div>
 
-            <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-gray-600">
-              <Clock className="h-4 w-4" />
-              <span>{new Date(event.start_datetime).toLocaleString()}</span>
-              <span>to</span>
-              <span>{new Date(event.end_datetime).toLocaleString()}</span>
-            </div>
-
-            <div className="mt-3 flex flex-wrap gap-2 text-xs">
-              <Badge variant="outline" className="gap-1">
-                <CalendarDays className="h-3.5 w-3.5" />{" "}
-                {event.scope.replace(/_/g, " ")}
-              </Badge>
-              <Badge variant="outline" className="capitalize">
-                Venue: {event.venue.type}
-              </Badge>
-              <Badge variant="outline">{event.interest_count} interested</Badge>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-white/90">
+                <span className="inline-flex items-center gap-1">
+                  <CalendarDays className="h-4 w-4" />
+                  {formatDateRange(event.start_datetime, event.end_datetime)}
+                </span>
+                <span className="inline-flex items-center gap-1">
+                  <Clock className="h-4 w-4" />
+                  {formatTime(event.start_datetime)} onwards
+                </span>
+                <span className="inline-flex items-center gap-1 capitalize">
+                  <Monitor className="h-4 w-4" />
+                  {event.venue.type} · {event.scope.replace(/_/g, " ")}
+                </span>
+                <span className="inline-flex items-center gap-1">
+                  <MapPin className="h-4 w-4" />
+                  {event.venue.address
+                    ? `${event.venue.address}${event.venue.city ? `, ${event.venue.city}` : ""}`
+                    : (event.venue.city ?? "Address not provided")}
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-2 py-1">
+                  {organizerLogo ? (
+                    <Image
+                      src={organizerLogo}
+                      alt={organizerName}
+                      width={18}
+                      height={18}
+                      className="rounded-full object-cover"
+                    />
+                  ) : (
+                    <span className="inline-flex h-4.5 w-4.5 items-center justify-center rounded-full bg-white/30 text-[10px] font-semibold">
+                      {organizerName.charAt(0)}
+                    </span>
+                  )}
+                  {organizerName}
+                </span>
+              </div>
             </div>
           </div>
-
-          <section className="prose max-w-none text-sm leading-6 text-gray-700">
-            <p className="whitespace-pre-wrap">{event.description}</p>
-          </section>
-
-          {event.linked_tasks.length > 0 ? (
-            <Card className="rounded-2xl shadow-sm">
-              <CardHeader>
-                <CardTitle>Linked Tasks</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {event.linked_tasks.map((task) => (
-                  <div key={task.id} className="rounded-md border p-3">
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <p className="font-medium">{task.title}</p>
-                      <Badge variant="secondary">{task.karma} karma</Badge>
-                    </div>
-                    <p className="font-mono text-xs text-gray-500">
-                      #{task.hashtag}
-                    </p>
-                    {task.ig ? (
-                      <p className="text-xs text-gray-500">{task.ig.name}</p>
-                    ) : null}
-                    {task.bonus_time ? (
-                      <p className="text-xs text-green-700">
-                        Bonus: +{task.bonus_karma} karma before{" "}
-                        {new Date(task.bonus_time).toLocaleString()}
-                      </p>
-                    ) : null}
-                    {!task.active ? (
-                      <Badge variant="destructive" className="mt-1">
-                        Task closed
-                      </Badge>
-                    ) : null}
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          ) : null}
-
-          {Array.isArray(event.tags) && event.tags.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {event.tags.map((tag) => (
-                <Badge key={tag} variant="outline">
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          ) : null}
-
-          <Card className="rounded-2xl shadow-sm">
-            <CardHeader>
-              <CardTitle>Venue</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              {(event.venue.type === "physical" ||
-                event.venue.type === "hybrid") && (
-                <p className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4" />
-                  {event.venue.address ?? "Address not provided"}
-                  {event.venue.city ? `, ${event.venue.city}` : ""}
-                </p>
-              )}
-              {(event.venue.type === "online" ||
-                event.venue.type === "hybrid") && (
-                <p className="flex items-center gap-2">
-                  <Monitor className="h-4 w-4" />
-                  {event.venue.platform ?? "Online"}
-                </p>
-              )}
-              {event.venue.maps_url ? (
-                <Button variant="outline" asChild>
-                  <a
-                    href={event.venue.maps_url}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Open in Maps
-                  </a>
-                </Button>
-              ) : null}
-            </CardContent>
-          </Card>
         </div>
 
         {layout === "full" ? (
-          <div className="space-y-4 lg:col-span-1 lg:sticky lg:top-6 lg:self-start">
-            <Card className="rounded-2xl shadow-sm">
-              <CardHeader>
-                <CardTitle>Registration</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {countdown ? (
-                  <p
-                    className={
-                      countdown.urgent
-                        ? "flex items-center gap-1 text-amber-600 font-semibold"
-                        : "text-xs text-gray-500"
-                    }
-                  >
-                    {countdown.urgent ? (
-                      <AlertTriangle className="h-3.5 w-3.5" />
-                    ) : null}
-                    {countdown.label}
-                  </p>
-                ) : null}
-
+          <div className="sticky top-3 z-30 rounded-xl border bg-background/95 p-3 shadow-sm backdrop-blur">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2">
                 {event.registration_url ? (
                   <Button
                     asChild
@@ -303,59 +258,68 @@ export function EventDetailView({
                     </a>
                   </Button>
                 ) : (
-                  <p className="text-sm text-gray-500">
-                    Registration link unavailable
-                  </p>
+                  <Button disabled>Registration Unavailable</Button>
                 )}
 
-                {!event.viewer_can_access_registration &&
-                event.viewer_access_blocked_reason ? (
-                  <p className="text-xs text-red-600">
-                    {event.viewer_access_blocked_reason}
+                {countdown ? (
+                  <p className="inline-flex items-center gap-1 text-xs text-amber-700">
+                    <AlertTriangle className="h-3.5 w-3.5" />
+                    {countdown.label}
                   </p>
                 ) : null}
 
                 {event.min_karma != null ? (
-                  <p className="text-xs text-gray-600">
-                    Minimum karma required: {event.min_karma.toLocaleString()}
+                  <p className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                    Minimum karma: {event.min_karma.toLocaleString()}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="h-3.5 w-3.5 cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        Earn karma by completing tasks and activities in
+                        muLearn.
+                      </TooltipContent>
+                    </Tooltip>
                   </p>
                 ) : null}
-              </CardContent>
-            </Card>
+              </div>
 
-            <Card className="rounded-2xl shadow-sm">
+              {showInterestButton ? (
+                <InterestButton
+                  eventId={event.id}
+                  status={event.viewer_interest_status}
+                  count={event.interest_count}
+                />
+              ) : null}
+            </div>
+          </div>
+        ) : null}
+
+        <div
+          className={
+            layout === "full"
+              ? "grid grid-cols-1 gap-8 lg:grid-cols-3"
+              : "grid grid-cols-1"
+          }
+        >
+          <div
+            className={
+              layout === "full" ? "space-y-6 lg:col-span-2" : "space-y-6"
+            }
+          >
+            <Card className="rounded-2xl">
               <CardHeader>
-                <CardTitle>Organizer</CardTitle>
+                <CardTitle>About This Event</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-3">
-                  {organizerLogo ? (
-                    <Image
-                      src={organizerLogo}
-                      alt={organizerName}
-                      width={36}
-                      height={36}
-                      className="rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-200 text-sm font-semibold">
-                      {organizerName.charAt(0)}
-                    </div>
-                  )}
-                  <div>
-                    <p className="font-medium">{organizerName}</p>
-                    <p className="text-xs capitalize text-gray-500">
-                      {organizerLabel(event.organizer.type)}
-                    </p>
-                  </div>
-                </div>
+              <CardContent className="text-base leading-8 text-gray-700">
+                <p className="whitespace-pre-wrap">{event.description}</p>
               </CardContent>
             </Card>
 
             {acceptedCollaborators.length > 0 ? (
               <Card className="rounded-2xl shadow-sm">
                 <CardHeader>
-                  <CardTitle>Accepted collaborators</CardTitle>
+                  <CardTitle>Partnering Organizations</CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-wrap gap-2">
                   {acceptedCollaborators.map((collab) => {
@@ -382,11 +346,12 @@ export function EventDetailView({
                       collab.company?.title ??
                       collab.company?.name ??
                       "Collaborator";
+
                     return (
                       <Badge
                         key={collab.id}
                         variant="outline"
-                        className="capitalize"
+                        className="px-3 py-1 text-sm"
                       >
                         {name}
                       </Badge>
@@ -395,9 +360,193 @@ export function EventDetailView({
                 </CardContent>
               </Card>
             ) : null}
+
+            {event.linked_tasks.length > 0 ? (
+              <Card className="rounded-2xl shadow-sm">
+                <CardHeader>
+                  <CardTitle>Linked Tasks</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {event.linked_tasks.map((task) => (
+                    <div key={task.id} className="rounded-md border p-3">
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <p className="font-medium">{task.title}</p>
+                        <Badge variant="secondary">{task.karma} karma</Badge>
+                      </div>
+                      <p className="font-mono text-xs text-gray-500">
+                        #{task.hashtag}
+                      </p>
+                      {task.ig ? (
+                        <p className="text-xs text-gray-500">{task.ig.name}</p>
+                      ) : null}
+                      {task.bonus_time ? (
+                        <p className="text-xs text-green-700">
+                          Bonus: +{task.bonus_karma} karma before{" "}
+                          {new Date(task.bonus_time).toLocaleString()}
+                        </p>
+                      ) : null}
+                      {!task.active ? (
+                        <Badge variant="destructive" className="mt-1">
+                          Task closed
+                        </Badge>
+                      ) : null}
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            ) : null}
+
+            <Card className="rounded-2xl shadow-sm">
+              <CardHeader>
+                <CardTitle>Venue & Map</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm">
+                {(event.venue.type === "physical" ||
+                  event.venue.type === "hybrid") && (
+                  <p className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    {event.venue.address ?? "Address not provided"}
+                    {event.venue.city ? `, ${event.venue.city}` : ""}
+                  </p>
+                )}
+                {(event.venue.type === "online" ||
+                  event.venue.type === "hybrid") && (
+                  <p className="flex items-center gap-2">
+                    <Monitor className="h-4 w-4" />
+                    {event.venue.platform ?? "Online"}
+                  </p>
+                )}
+
+                {mapQuery ? (
+                  <div className="overflow-hidden rounded-lg border">
+                    <iframe
+                      title="Event venue map"
+                      src={mapEmbedUrl(mapQuery)}
+                      className="h-64 w-full"
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                    />
+                  </div>
+                ) : null}
+
+                {event.venue.maps_url ? (
+                  <Button variant="ghost" size="sm" asChild className="w-fit">
+                    <a
+                      href={event.venue.maps_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1"
+                    >
+                      Open in Maps <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  </Button>
+                ) : null}
+              </CardContent>
+            </Card>
+          </div>
+
+          {layout === "full" ? (
+            <div className="space-y-4 lg:col-span-1 lg:sticky lg:top-6 lg:self-start">
+              <Card className="rounded-2xl shadow-sm">
+                <CardHeader>
+                  <CardTitle>Organizer</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-3">
+                    {organizerLogo ? (
+                      <Image
+                        src={organizerLogo}
+                        alt={organizerName}
+                        width={36}
+                        height={36}
+                        className="rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-200 text-sm font-semibold">
+                        {organizerName.charAt(0)}
+                      </div>
+                    )}
+                    <div>
+                      <p className="font-medium">{organizerName}</p>
+                      <p className="text-xs capitalize text-gray-500">
+                        {organizerLabel(event.organizer.type)}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {event.interest_count > 0 ? (
+                <Card className="rounded-2xl shadow-sm">
+                  <CardHeader>
+                    <CardTitle>Social Proof</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground">
+                      {event.interest_count} people marked this event as going.
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : null}
+
+              {!event.viewer_can_access_registration &&
+              event.viewer_access_blocked_reason ? (
+                <Card className="rounded-2xl border-red-200 shadow-sm">
+                  <CardHeader>
+                    <CardTitle className="text-red-700">
+                      Registration Blocked
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-red-600">
+                      {event.viewer_access_blocked_reason}
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+
+        {layout === "full" ? (
+          <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 p-3 backdrop-blur lg:hidden">
+            <div className="flex items-center gap-2">
+              {event.registration_url ? (
+                <Button
+                  asChild
+                  className="flex-1"
+                  disabled={!event.viewer_can_access_registration}
+                >
+                  <a
+                    href={event.registration_url}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Register Now
+                  </a>
+                </Button>
+              ) : (
+                <Button className="flex-1" disabled>
+                  Registration Unavailable
+                </Button>
+              )}
+              {showInterestButton ? (
+                <InterestButton
+                  eventId={event.id}
+                  status={event.viewer_interest_status}
+                  count={event.interest_count}
+                />
+              ) : null}
+            </div>
+            {countdown ? (
+              <p className="mt-2 inline-flex items-center gap-1 text-xs text-amber-700">
+                <AlertTriangle className="h-3.5 w-3.5" />
+                {countdown.label}
+              </p>
+            ) : null}
           </div>
         ) : null}
       </div>
-    </div>
+    </TooltipProvider>
   );
 }

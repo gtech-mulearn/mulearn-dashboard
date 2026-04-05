@@ -6,9 +6,11 @@
  * All registration-related API calls.
  */
 
-import { apiClient } from "@/api/client";
+import { apiClient, publicApiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
+  type CompanySignupRequest,
+  CompanySignupResponseSchema,
   EmailVerificationResponseSchema,
   type RegisterRequest,
   RegisterResponseSchema,
@@ -48,6 +50,30 @@ export function registerUser(data: RegisterRequest) {
     endpoints.register.create,
     data,
     RegisterResponseSchema,
+  );
+}
+
+/**
+ * Company-specific signup.
+ * Endpoint: POST /api/v1/dashboard/company/create/
+ * Auth: AllowAny (no token needed).
+ *
+ * Creates a POC user account + company record in pending_verification status.
+ * Returns auth tokens inside response.auth.
+ */
+export function companySignup(data: CompanySignupRequest) {
+  // Strip blank optional strings before sending so the backend doesn't
+  // receive empty-string values for optional fields.
+  const payload = Object.fromEntries(
+    Object.entries(data).filter(
+      ([, value]) => value !== undefined && value !== "",
+    ),
+  ) as CompanySignupRequest;
+
+  return publicApiClient.post(
+    endpoints.company.create,
+    payload,
+    CompanySignupResponseSchema,
   );
 }
 

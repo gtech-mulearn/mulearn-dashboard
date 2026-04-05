@@ -78,11 +78,17 @@ export function useExecomMembers() {
 export function useAddExecomMember() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (muid: string) => campusManageApi.addExecomMember(muid),
+    mutationFn: (data: { muid: string; roleTitle: string }) =>
+      campusManageApi.addExecomMember(data),
     onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: campusManageKeys.execom(),
-      });
+      void Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: campusManageKeys.execom(),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: campusManageKeys.overview(),
+        }),
+      ]);
     },
   });
 }
@@ -90,8 +96,8 @@ export function useAddExecomMember() {
 export function useRemoveExecomMember() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (memberId: string) =>
-      campusManageApi.removeExecomMember(memberId),
+    mutationFn: (memberIds: string | string[]) =>
+      campusManageApi.removeExecomMember(memberIds),
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: campusManageKeys.execom(),
@@ -101,14 +107,32 @@ export function useRemoveExecomMember() {
 }
 
 export function useTransferLeadRole() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (muid: string) => campusManageApi.transferLeadRole(muid),
+    onSuccess: () => {
+      void Promise.all([
+        queryClient.invalidateQueries({ queryKey: campusManageKeys.execom() }),
+        queryClient.invalidateQueries({
+          queryKey: campusManageKeys.overview(),
+        }),
+      ]);
+    },
   });
 }
 
 export function useTransferEnablerRole() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (muid: string) => campusManageApi.transferEnablerRole(muid),
+    onSuccess: () => {
+      void Promise.all([
+        queryClient.invalidateQueries({ queryKey: campusManageKeys.execom() }),
+        queryClient.invalidateQueries({
+          queryKey: campusManageKeys.overview(),
+        }),
+      ]);
+    },
   });
 }
 

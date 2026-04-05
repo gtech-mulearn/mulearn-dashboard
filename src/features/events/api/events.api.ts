@@ -21,6 +21,7 @@ import type {
   MinimalUser,
   OrganizerOptionsResponse,
   PaginatedData,
+  PendingInvitesData,
 } from "../types";
 
 type EventShape = {
@@ -308,10 +309,15 @@ export const eventsApi = {
     return fetchListWithStatusFallback(endpoints.events.manage, params);
   },
 
-  create: async (body: EventWriteBody): Promise<EventMutationData> => {
+  create: async (
+    body: EventWriteBody | FormData,
+  ): Promise<EventMutationData> => {
+    const isFormData = body instanceof FormData;
     const response = await apiClient.post<EventMutationData>(
       endpoints.events.manage,
       body,
+      undefined,
+      { isFormData },
     );
     return mirrorEventTypeToCategory(response);
   },
@@ -336,11 +342,14 @@ export const eventsApi = {
 
   patch: async (
     id: string,
-    body: EventPatchBody,
+    body: EventPatchBody | FormData,
   ): Promise<EventMutationData> => {
+    const isFormData = body instanceof FormData;
     const response = await apiClient.patch<EventMutationData>(
       `${endpoints.events.manage}${id}/`,
       body,
+      undefined,
+      { isFormData },
     );
     return mirrorEventTypeToCategory(response);
   },
@@ -386,6 +395,10 @@ export const eventsApi = {
   },
 
   // ─── COLLABORATORS ──────────────────────────────────────────────────────
+  getMyInvites: async (): Promise<PendingInvitesData> => {
+    return apiClient.get<PendingInvitesData>(endpoints.events.myInvites);
+  },
+
   getCollaborators: async (id: string): Promise<CollaboratorsListData> => {
     return apiClient.get<CollaboratorsListData>(
       `${endpoints.events.manage}${id}/collaborators/`,

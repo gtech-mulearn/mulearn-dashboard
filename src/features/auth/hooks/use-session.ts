@@ -10,6 +10,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import {
+  fetchCompanyOnboardingStatus,
   fetchPublicUserProfile,
   fetchUserInfo,
   fetchUserProfile,
@@ -50,5 +51,19 @@ export function usePublicUserProfile(muid: string) {
     queryFn: () => fetchPublicUserProfile(muid),
     enabled: !!muid,
     staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+}
+
+/**
+ * Hook for fetching the company onboarding/verification status.
+ * Only fires when the user has the Company role.
+ */
+export function useCompanyOnboardingStatus(enabled: boolean) {
+  return useQuery({
+    queryKey: authKeys.companyOnboardingStatus(),
+    queryFn: fetchCompanyOnboardingStatus,
+    enabled,
+    staleTime: 2 * 60 * 1000, // 2 minutes — verification can change
+    retry: 1,
   });
 }

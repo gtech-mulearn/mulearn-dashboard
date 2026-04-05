@@ -15,8 +15,10 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { eventsApi } from "../api";
 import { MANAGE_EVENT_STATUS_PILLS } from "../constants/events.constants";
+import { usePendingCollaboratorInvites } from "../hooks";
 import { eventKeys } from "../hooks/query-keys";
 import type { EventListItem, EventStatus } from "../types";
+import { CollaboratorInvitesSheet } from "./collaborator-invites-sheet";
 import EventModal from "./event-modal";
 import { EventsGrid } from "./events-grid";
 import { EventsPagination } from "./events-pagination";
@@ -29,6 +31,7 @@ export default function ManageEventsDashboard() {
   const [statusFilter, setStatusFilter] = useState<EventStatus | "all">("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<EventListItem | null>(null);
+  const [invitesOpen, setInvitesOpen] = useState(false);
 
   const { data: userInfo } = useQuery({
     queryKey: ["user", "info", "events-manage"],
@@ -44,6 +47,13 @@ export default function ManageEventsDashboard() {
   );
 
   const useAdminView = canAdminView;
+
+  const {
+    pendingInvites,
+    pendingCount: pendingInviteCount,
+    isLoading: isInvitesLoading,
+    isError: isInvitesError,
+  } = usePendingCollaboratorInvites();
 
   useEffect(() => {
     const statusFromUrl = searchParams.get("status");
@@ -180,7 +190,7 @@ export default function ManageEventsDashboard() {
   const statsLoading = statsQueries.some((query) => query.isLoading);
   const totalCount = statsQueries[0].data?.pagination.count ?? 0;
   const publishedCount = statsQueries[1].data?.pagination.count ?? 0;
-  const pendingCount = statsQueries[2].data?.pagination.count ?? 0;
+  const pendingApprovalCount = statsQueries[2].data?.pagination.count ?? 0;
   const draftCount = statsQueries[3].data?.pagination.count ?? 0;
 
   const { data, isLoading, isError, error, refetch } = useQuery({
@@ -207,6 +217,17 @@ export default function ManageEventsDashboard() {
     <div className="space-y-6 p-4 sm:p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Manage Events</h1>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => setInvitesOpen(true)}
+          className="gap-2"
+        >
+          Invites
+          <span className="inline-flex min-w-6 items-center justify-center rounded-full bg-pink-600 px-2 py-0.5 text-xs font-semibold text-white">
+            {pendingInviteCount}
+          </span>
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -229,7 +250,9 @@ export default function ManageEventsDashboard() {
             </div>
             <div className="rounded-lg border bg-card p-4">
               <p className="text-xs text-muted-foreground">Pending Approval</p>
-              <p className="mt-1 text-2xl font-semibold">{pendingCount}</p>
+              <p className="mt-1 text-2xl font-semibold">
+                {pendingApprovalCount}
+              </p>
             </div>
             <div className="rounded-lg border bg-card p-4">
               <p className="text-xs text-muted-foreground">Drafts</p>
@@ -333,6 +356,18 @@ export default function ManageEventsDashboard() {
         onClose={handleModalClose}
         initialData={editingEvent}
         isEdit={!!editingEvent}
+      />
+
+      <CollaboratorInvitesSheet
+        open={invitesOpen}
+        onOpenChange={setInvitesOpen}
+        invites={pendingInvites}
+        isLoading={isInvitesLoading}
+        isError={isInvitesError}
+        onOpenEvent={(eventId) => {
+          setInvitesOpen(false);
+          router.push(`/dashboard/manage-events/${eventId}`);
+        }}
       />
     </div>
   );

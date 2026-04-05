@@ -47,6 +47,16 @@ export const endpoints = {
     validate: "/api/v1/register/validate/",
     /** POST - Verify email doesn't exist */
     emailVerification: "/api/v1/register/email-verification/",
+    /** POST - Validate Learning Circle user before registration */
+    lcUserValidation: "/api/v1/register/lc/user-validation/",
+    /** GET - Initiate Discord connection during registration */
+    connectDiscord: "/api/v1/register/connect-discord/",
+    /** GET - Detect user's country from IP */
+    userCountry: "/api/v1/register/user-country/",
+    /** GET - Detect user's state from IP */
+    userState: "/api/v1/register/user-state/",
+    /** GET - Detect user's zone from IP */
+    userZone: "/api/v1/register/user-zone/",
   },
 
   // ============================================
@@ -69,10 +79,8 @@ export const endpoints = {
     location: (query: string) => `/api/v1/register/location/?q=${query}`,
     /** POST - Select organization (college/company) after registration */
     selectOrganization: "/api/v1/dashboard/user/organization/",
-    /** POST - Create new organization if not in list */
+    /** POST - Create new organization if not in list (use org_type: "Company" for companies) */
     createOrganization: "/api/v1/register/organization/create/",
-    /** POST - Create new company */
-    createCompany: "/api/v1/register/company/create/",
     /** POST - Select learning domains/pathways */
     selectDomains: "/api/v1/register/select-domains/",
     /** POST - Select end goals */
@@ -93,6 +101,48 @@ export const endpoints = {
     collegesInDistrict: "/api/v1/register/college/list/",
     /** GET - List of schools */
     schools: "/api/v1/register/schools/list/",
+  },
+
+  // ============================================
+  // Company Endpoints
+  // ============================================
+  company: {
+    /** POST - Company signup (AllowAny). Creates POC user + company record in pending_verification */
+    create: "/api/v1/dashboard/company/create/",
+    /** GET - Fetch own company onboarding/verification status (JWT required) */
+    onboardingStatus: "/api/v1/dashboard/company/onboarding/status/",
+    /** POST - Resubmit verification after rejection (JWT required) */
+    verificationResubmit: "/api/v1/dashboard/company/verification/resubmit/",
+    /** GET - Own company profile (JWT required) */
+    profile: "/api/v1/dashboard/company/profile/",
+    /** GET - Public profile by slug (AllowAny) */
+    publicProfile: (slug: string) =>
+      `/api/v1/dashboard/company/profile/public/${slug}/`,
+    /** GET/POST/PATCH - Admin verification queue (JWT + Admin) */
+    verificationRequests: "/api/v1/dashboard/company/verification/requests/",
+    /** PATCH - Admin approve/reject a company (JWT + Admin) */
+    verificationAction: (companyId: string) =>
+      `/api/v1/dashboard/company/verification/requests/${companyId}/`,
+    /** GET - List jobs for authenticated company (JWT required) */
+    jobs: "/api/v1/dashboard/company/jobs/",
+    /** POST - Create job (JWT required, active company only) */
+    createJob: "/api/v1/dashboard/company/jobs/create/",
+    /** GET - Job details (JWT required) */
+    jobDetails: (jobId: string) =>
+      `/api/v1/dashboard/company/jobs/${jobId}/details/`,
+    /** PATCH - Update job (JWT required) */
+    updateJob: (jobId: string) => `/api/v1/dashboard/company/jobs/${jobId}/`,
+    /** DELETE - Soft delete job (JWT required) */
+    deleteJob: (jobId: string) => `/api/v1/dashboard/company/jobs/${jobId}/`,
+    /** POST - Add eligibility rule to job (JWT required) */
+    createJobRule: (jobId: string) =>
+      `/api/v1/dashboard/company/jobs/${jobId}/rules/create/`,
+    /** PATCH - Update eligibility rule (JWT required) */
+    updateJobRule: (jobId: string, ruleId: string) =>
+      `/api/v1/dashboard/company/jobs/${jobId}/rules/${ruleId}/`,
+    /** DELETE - Hard delete eligibility rule (JWT required) */
+    deleteJobRule: (jobId: string, ruleId: string) =>
+      `/api/v1/dashboard/company/jobs/${jobId}/rules/${ruleId}/delete/`,
   },
 
   // ============================================
@@ -156,6 +206,7 @@ export const endpoints = {
     base: "/api/v1/dashboard/events/",
     featured: "/api/v1/dashboard/events/featured/",
     manage: "/api/v1/dashboard/events/manage/",
+    myInvites: "/api/v1/dashboard/events/my-invites/",
     admin: "/api/v1/dashboard/events/admin/",
     ig: "/api/v1/dashboard/events/ig/",
     campus: "/api/v1/dashboard/events/campus/",
