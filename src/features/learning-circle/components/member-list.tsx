@@ -77,7 +77,8 @@ export function MemberList({
   permissions,
   onInviteClick,
 }: MemberListProps) {
-  const { data: members, isLoading } = useCircleMembers(circleId);
+  const { data: membersData, isLoading } = useCircleMembers(circleId);
+  const members = membersData?.members ?? [];
   const approveMember = useApproveMember(circleId);
 
   const handleApprove = (muid: string) => {
@@ -99,7 +100,7 @@ export function MemberList({
     );
   }
 
-  if (!members || members.length === 0) {
+  if (!membersData || members.length === 0) {
     return (
       <div className="lc-fade-in flex flex-col items-center justify-center rounded-[16px] bg-linear-to-br from-[#F9FAFB] to-[#F3F4F6] px-8 py-14">
         <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-md">

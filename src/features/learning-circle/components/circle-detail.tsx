@@ -72,10 +72,7 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
   const rsvpMeeting = useRsvpMeeting();
   const joinCircle = useJoinCircle();
 
-  const permissions = useCirclePermissions(
-    circle ?? undefined,
-    members ?? undefined,
-  );
+  const permissions = useCirclePermissions(circle ?? undefined, members);
 
   const handleJoin = () => joinCircle.mutate(circleId);
   const handleRsvp = (meetingId: string) => rsvpMeeting.mutate(meetingId);

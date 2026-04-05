@@ -17,7 +17,7 @@
 
 import { useMemo } from "react";
 import { useUserProfile } from "@/features/profile";
-import type { CircleMember, LearningCircleDetail } from "../schemas";
+import type { CircleMember, LearningCircleDetail, UserBasic } from "../schemas";
 
 export type CircleRole = "owner" | "lead" | "member" | null;
 
@@ -39,6 +39,10 @@ export interface CirclePermissions {
   canViewAttendeeReport: boolean;
 }
 
+type CircleMembersData =
+  | { owner: UserBasic | null; members: CircleMember[] }
+  | undefined;
+
 /**
  * Derives the current user's role in a circle.
  *
@@ -47,7 +51,7 @@ export interface CirclePermissions {
  */
 function deriveRole(
   circle: LearningCircleDetail | undefined,
-  members: CircleMember[] | undefined,
+  membersData: CircleMembersData,
   userMuid: string | undefined,
 ): CircleRole {
   if (!circle || !userMuid) return null;
@@ -56,7 +60,10 @@ function deriveRole(
   if (circle.created_by?.muid === userMuid) return "owner";
 
   // Check if user is in members list
+  if (!membersData) return null;
+  const members = membersData.members;
   if (!members) return null;
+
   const memberEntry = members.find((m) => m.muid === userMuid);
   if (!memberEntry) return null;
 
@@ -80,12 +87,12 @@ function deriveRole(
  */
 export function useCirclePermissions(
   circle: LearningCircleDetail | undefined,
-  members: CircleMember[] | undefined,
+  membersData: CircleMembersData,
 ): CirclePermissions {
   const { data: userProfile } = useUserProfile();
 
   return useMemo(() => {
-    const role = deriveRole(circle, members, userProfile?.muid);
+    const role = deriveRole(circle, membersData, userProfile?.muid);
     const isOwner = role === "owner";
     const isLead = role === "lead";
     const isOwnerOrLead = isOwner || isLead;
@@ -107,5 +114,5 @@ export function useCirclePermissions(
       canSubmitReport: isOwnerOrLead,
       canViewAttendeeReport: isOwnerOrLead,
     };
-  }, [circle, members, userProfile?.muid]);
+  }, [circle, membersData, userProfile?.muid]);
 }

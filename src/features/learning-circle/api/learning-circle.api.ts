@@ -40,6 +40,7 @@ import {
   PublicMeetingListResponseSchema,
   type SendInviteRequest,
   type TransferLeadRequest,
+  type UserBasic,
 } from "../schemas";
 
 // ============================================
@@ -91,7 +92,7 @@ export async function getCircleDetail(
 /** Get circle members */
 export async function getCircleMembers(
   circleId: string,
-): Promise<CircleMember[]> {
+): Promise<{ owner: UserBasic | null; members: CircleMember[] }> {
   const response = await apiClient.get(
     endpoints.learningCircle.members(circleId),
     CircleMembersResponseSchema,
