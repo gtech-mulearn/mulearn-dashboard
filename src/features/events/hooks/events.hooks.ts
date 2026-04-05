@@ -347,7 +347,7 @@ export function useCreateEvent() {
 
   return useMutation({
     mutationFn: (body: EventWriteBody) => eventsApi.create(body),
-    onSuccess: async (data) => {
+    onSuccess: async () => {
       toast.success("Event created");
       await queryClient.invalidateQueries({ queryKey: eventKeys.all });
       await queryClient.refetchQueries({ queryKey: eventKeys.manageLists() });
