@@ -394,7 +394,7 @@ export function useCreateEvent() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (body: EventWriteBody) => eventsApi.create(body),
+    mutationFn: (body: EventWriteBody | FormData) => eventsApi.create(body),
     onSuccess: async () => {
       toast.success("Event created");
       await queryClient.invalidateQueries({ queryKey: eventKeys.all });
