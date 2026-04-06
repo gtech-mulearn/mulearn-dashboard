@@ -10,7 +10,6 @@ import {
   ArrowLeft,
   BookOpen,
   Briefcase,
-  Calendar,
   Clock,
   ExternalLink,
   FileText,
