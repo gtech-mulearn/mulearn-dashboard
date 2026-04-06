@@ -83,7 +83,9 @@ export function CollaboratorsPanel({
               <div>
                 <p className="font-medium">{getCollabName(collab)}</p>
                 {collab.role_label ? (
-                  <p className="text-xs text-gray-500">{collab.role_label}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {collab.role_label}
+                  </p>
                 ) : null}
               </div>
               {isManageView ? (

@@ -82,7 +82,9 @@ export function CoOwnersPanel({ eventId, onActivity }: CoOwnersPanelProps) {
               <p className="truncate text-sm font-medium">
                 {coOwner.user.full_name}
               </p>
-              <p className="text-xs text-gray-500">{coOwner.user.muid}</p>
+              <p className="text-xs text-muted-foreground">
+                {coOwner.user.muid}
+              </p>
             </div>
             <Badge variant="outline">{coOwner.role ?? "co_owner"}</Badge>
             <Button

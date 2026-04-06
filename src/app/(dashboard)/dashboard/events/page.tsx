@@ -56,10 +56,12 @@ export default function EventsPage() {
   };
 
   return (
-    <main className="flex-1 p-6 md:p-8">
+    <main className="flex-1 p-6 md:p-8 lc-fade-in">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Events</h1>
+          <h1 className="text-2xl font-bold text-foreground md:text-3xl">
+            Events
+          </h1>
         </div>
       </div>
 

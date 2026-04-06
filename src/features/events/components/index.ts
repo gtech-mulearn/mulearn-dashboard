@@ -1,8 +1,11 @@
 export * from "./co-owners-panel";
 export * from "./collaborator-invites-sheet";
 export * from "./collaborators-panel";
+export * from "./event-analytics-panel";
 export * from "./event-card";
+export * from "./event-create-wizard";
 export * from "./event-detail-view";
+export * from "./event-inline-edit-form";
 export { default as EventModal } from "./event-modal";
 export * from "./event-search";
 export * from "./event-status-badge";

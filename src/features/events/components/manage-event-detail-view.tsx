@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { apiClient, endpoints } from "@/api";
@@ -17,6 +17,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useNavigationGuard } from "@/hooks/use-navigation-guard";
 import {
   useAdminFeature,
   useDeleteEvent,
@@ -25,7 +26,9 @@ import {
 import type { EventLog } from "../types";
 import { CoOwnersPanel } from "./co-owners-panel";
 import { CollaboratorsPanel } from "./collaborators-panel";
+import { EventAnalyticsPanel } from "./event-analytics-panel";
 import { EventDetailView } from "./event-detail-view";
+import { EventInlineEditForm } from "./event-inline-edit-form";
 import { PublishFlowPanel } from "./publish-flow-panel";
 
 function getHistoryTimestamp(entry: EventLog): string {
@@ -160,15 +163,26 @@ export function ManageEventDetailView({
   onBack,
 }: ManageEventDetailViewProps) {
   const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
+  const [confirmDiscardOpen, setConfirmDiscardOpen] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("publishing");
+  const [isEditing, setIsEditing] = useState(false);
+  const [formIsDirty, setFormIsDirty] = useState(false);
+  const [pendingBackAfterConfirm, setPendingBackAfterConfirm] = useState(false);
+  const [inlineFormKey, setInlineFormKey] = useState(0);
   const router = useRouter();
+
+  useNavigationGuard(
+    isEditing && formIsDirty,
+    "You have unsaved changes. Are you sure you want to leave?",
+  );
 
   const {
     data: event,
     isLoading,
     isError,
     error,
+    refetch,
   } = useManageEventDetail(eventId);
 
   const { data: userInfo } = useQuery({
@@ -204,64 +218,158 @@ export function ManageEventDetailView({
 
   if (isError || !event) {
     return (
-      <p className="text-sm text-red-600">
+      <p className="text-sm text-destructive">
         {error instanceof Error ? error.message : "Failed to load event"}
       </p>
     );
   }
 
+  const mapQuery = [event.venue.address, event.venue.city]
+    .filter(Boolean)
+    .join(", ");
+  const mapsUrl = event.venue.maps_url;
+  const venueName = event.venue.address ?? event.venue.city ?? null;
+
+  const requestBack = () => {
+    if (isEditing && formIsDirty) {
+      setPendingBackAfterConfirm(true);
+      setConfirmDiscardOpen(true);
+      return;
+    }
+
+    if (onBack) {
+      onBack();
+      return;
+    }
+    router.push("/dashboard/manage-events");
+  };
+
+  const handleDiscard = () => {
+    if (formIsDirty) {
+      setPendingBackAfterConfirm(false);
+      setConfirmDiscardOpen(true);
+      return;
+    }
+    setIsEditing(false);
+    setFormIsDirty(false);
+    setInlineFormKey((value) => value + 1);
+  };
+
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6 px-1 pb-24 sm:pb-0">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-card p-3 shadow-sm">
-        <Button
-          variant="ghost"
-          onClick={() => {
-            if (onBack) {
-              onBack();
-              return;
-            }
-            router.push("/dashboard/manage-events");
-          }}
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back
-        </Button>
-        <div className="hidden flex-wrap gap-2 sm:flex">
+      <div className="rounded-2xl border border-border bg-card p-3 lc-card-shadow">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <Button
-            variant="outline"
-            onClick={() =>
-              router.push(`/dashboard/manage-events/${event.id}/edit`)
-            }
+            variant="ghost"
+            className="text-muted-foreground hover:text-foreground"
+            onClick={requestBack}
           >
-            <Pencil className="mr-2 h-4 w-4" /> Edit
+            <ArrowLeft className="mr-2 h-4 w-4" /> Back
           </Button>
-          <Button
-            variant="destructive"
-            onClick={() => setConfirmCancelOpen(true)}
-          >
-            <Trash2 className="mr-2 h-4 w-4" /> Cancel Event
-          </Button>
+
+          <div className="hidden flex-wrap gap-2 sm:flex">
+            {!isEditing ? (
+              <>
+                <Button
+                  variant="outline"
+                  className="border-border text-foreground hover:border-primary hover:text-primary"
+                  onClick={() => setIsEditing(true)}
+                >
+                  Edit
+                </Button>
+                <Button
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  onClick={() => setConfirmCancelOpen(true)}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" /> Cancel Event
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  type="submit"
+                  form={`event-inline-edit-form-${event.id}`}
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  Save Changes
+                </Button>
+                <Button
+                  variant="outline"
+                  className="border-border text-foreground"
+                  onClick={handleDiscard}
+                >
+                  Discard
+                </Button>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
-          <EventDetailView
-            eventId={eventId}
-            showInterestButton={false}
-            layout="content-only"
-          />
+          {isEditing ? (
+            <EventInlineEditForm
+              key={inlineFormKey}
+              event={event}
+              onSave={() => {
+                setIsEditing(false);
+                setFormIsDirty(false);
+                refetch();
+              }}
+              onDiscard={() => {
+                setIsEditing(false);
+                setFormIsDirty(false);
+              }}
+              onDirtyChange={setFormIsDirty}
+            />
+          ) : (
+            <EventDetailView
+              eventId={eventId}
+              showInterestButton={false}
+              layout="content-only"
+            />
+          )}
         </div>
+
         <div className="hidden space-y-4 lg:col-span-1 lg:sticky lg:top-6 lg:block lg:self-start">
+          <EventAnalyticsPanel
+            interestCount={event.interest_count}
+            venueName={venueName}
+            mapsUrl={mapsUrl}
+            mapQuery={mapQuery}
+          />
+
           <Tabs
             value={activeTab}
             onValueChange={setActiveTab}
             className="w-full"
           >
             <TabsList className="grid h-auto w-full grid-cols-2 gap-1 rounded-xl bg-muted p-1 sm:grid-cols-4">
-              <TabsTrigger value="publishing">Publishing</TabsTrigger>
-              <TabsTrigger value="co-owners">Co-owners</TabsTrigger>
-              <TabsTrigger value="collaborators">Collaborators</TabsTrigger>
-              <TabsTrigger value="history">History</TabsTrigger>
+              <TabsTrigger
+                value="publishing"
+                className="data-[state=active]:rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground"
+              >
+                Publishing
+              </TabsTrigger>
+              <TabsTrigger
+                value="co-owners"
+                className="data-[state=active]:rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground"
+              >
+                Co-owners
+              </TabsTrigger>
+              <TabsTrigger
+                value="collaborators"
+                className="data-[state=active]:rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground"
+              >
+                Collaborators
+              </TabsTrigger>
+              <TabsTrigger
+                value="history"
+                className="data-[state=active]:rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground"
+              >
+                History
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="publishing" className="space-y-3 pt-3">
@@ -271,7 +379,7 @@ export function ManageEventDetailView({
                 canSelfPublish={canSelfPublish}
               />
               {canAdmin ? (
-                <Card>
+                <Card className="rounded-2xl border-border bg-card lc-card-shadow">
                   <CardHeader>
                     <CardTitle className="text-base">
                       Feature on homepage
@@ -302,7 +410,7 @@ export function ManageEventDetailView({
             </TabsContent>
 
             <TabsContent value="history" className="pt-3">
-              <Card>
+              <Card className="rounded-2xl border-border bg-card lc-card-shadow">
                 <CardHeader>
                   <CardTitle>Edit History</CardTitle>
                 </CardHeader>
@@ -323,21 +431,39 @@ export function ManageEventDetailView({
         </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 p-3 backdrop-blur sm:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 p-3 backdrop-blur sm:hidden">
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-2">
-          <Button
-            variant="outline"
-            onClick={() =>
-              router.push(`/dashboard/manage-events/${event.id}/edit`)
-            }
-          >
-            Edit
-          </Button>
+          {!isEditing ? (
+            <Button
+              variant="outline"
+              className="border-border text-foreground"
+              onClick={() => setIsEditing(true)}
+            >
+              Edit
+            </Button>
+          ) : (
+            <>
+              <Button
+                type="submit"
+                form={`event-inline-edit-form-${event.id}`}
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                Save Changes
+              </Button>
+              <Button
+                variant="outline"
+                className="border-border text-foreground"
+                onClick={handleDiscard}
+              >
+                Discard
+              </Button>
+            </>
+          )}
           <Button variant="outline" onClick={() => setPanelOpen(true)}>
             Panels
           </Button>
           <Button
-            variant="destructive"
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             onClick={() => setConfirmCancelOpen(true)}
           >
             Cancel
@@ -354,7 +480,14 @@ export function ManageEventDetailView({
             <SheetTitle>Manage Panels</SheetTitle>
           </SheetHeader>
 
-          <div className="mt-4">
+          <div className="mt-4 space-y-4">
+            <EventAnalyticsPanel
+              interestCount={event.interest_count}
+              venueName={venueName}
+              mapsUrl={mapsUrl}
+              mapQuery={mapQuery}
+            />
+
             <Tabs
               value={activeTab}
               onValueChange={setActiveTab}
@@ -442,6 +575,29 @@ export function ManageEventDetailView({
         }
         isPending={deleteEvent.isPending}
         confirmLabel="Cancel Event"
+      />
+
+      <ConfirmDialog
+        open={confirmDiscardOpen}
+        onOpenChange={setConfirmDiscardOpen}
+        title="Discard unsaved changes?"
+        description="All unsaved changes will be lost."
+        confirmLabel="Discard"
+        onConfirm={() => {
+          setConfirmDiscardOpen(false);
+          setIsEditing(false);
+          setFormIsDirty(false);
+          setInlineFormKey((value) => value + 1);
+
+          if (pendingBackAfterConfirm) {
+            setPendingBackAfterConfirm(false);
+            if (onBack) {
+              onBack();
+            } else {
+              router.push("/dashboard/manage-events");
+            }
+          }
+        }}
       />
     </div>
   );

@@ -51,8 +51,15 @@ export function EventCard({ event, isManageView, onView }: EventCardProps) {
     },
   );
 
+  const venueDisplay =
+    event.venue_type === "online"
+      ? "Online Event"
+      : event.venue_city
+        ? event.venue_city
+        : "Venue TBA";
+
   return (
-    <article className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card lc-card-shadow transition-all duration-300 hover:-translate-y-1 lc-card-shadow-hover cursor-pointer lc-slide-up">
       {onView ? (
         <button
           type="button"
@@ -61,15 +68,27 @@ export function EventCard({ event, isManageView, onView }: EventCardProps) {
           aria-label="View event details"
         />
       ) : null}
-      <div className="relative aspect-video w-full overflow-hidden">
+
+      {/* Image Area */}
+      <div className="relative aspect-[4/3] w-full overflow-hidden">
         <Image
           src={event.cover_image ?? "/images/fallback.webp"}
           alt={event.title}
           fill
           className="object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent" />
-        <div className="absolute bottom-3 left-3">
+
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-foreground/20 to-transparent" />
+
+        {/* Hover Preview Overlay */}
+        <div className="absolute inset-0 bg-foreground/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center gap-2 text-primary-foreground text-sm font-medium">
+          <span>{formattedDate}</span>
+          <span className="text-xs opacity-90">{venueDisplay}</span>
+        </div>
+
+        {/* Event Type Badge - Bottom Left */}
+        <div className="absolute bottom-3 left-3 z-20">
           <EventTypeBadge
             eventType={resolveEventTypeValue(
               event.event_type,
@@ -77,35 +96,49 @@ export function EventCard({ event, isManageView, onView }: EventCardProps) {
             )}
           />
         </div>
+
+        {/* Status Badge - Top Right (Manage View Only) */}
         {isManageView ? (
-          <div className="absolute right-3 top-3">
+          <div className="absolute right-3 top-3 z-20">
             <EventStatusBadge status={event.status} />
           </div>
         ) : null}
       </div>
 
+      {/* Content Area */}
       <div className="relative z-20 p-4 flex-1 flex flex-col">
-        <p className="text-xs text-gray-500">{formattedDate}</p>
-        <h3 className="mt-1 line-clamp-2 text-sm font-semibold text-gray-900">
+        {/* Date */}
+        <p className="text-xs text-muted-foreground">{formattedDate}</p>
+
+        {/* Title */}
+        <h3 className="mt-1 line-clamp-2 text-sm font-bold text-foreground">
           {event.title}
         </h3>
-        <p className="mt-1 text-xs text-gray-600">
+
+        {/* Organizer */}
+        <p className="mt-1 text-xs text-muted-foreground">
           By {getOrganizerName(event.organizer)}
         </p>
-        <p className="mt-1 flex items-center gap-1 text-xs text-gray-600">
-          <MapPin className="h-3.5 w-3.5" />
+
+        {/* Location */}
+        <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+          <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
           <span className="capitalize">
             {event.venue_type}
             {event.venue_city ? ` · ${event.venue_city}` : ""}
           </span>
         </p>
 
-        <div className="mt-4 flex items-center justify-between mt-auto">
+        {/* Bottom Row - Interest Button & Karma Badge */}
+        <div className="mt-auto pt-3 flex items-center justify-between">
           {isManageView ? (
-            <div className="flex items-center gap-2 text-xs text-gray-500">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span>{event.interest_count} interested</span>
               {event.is_collaboration && (
-                <Badge variant="outline" className="text-xs">
+                <Badge
+                  variant="outline"
+                  className="text-xs border-border text-muted-foreground"
+                >
                   Collab
                 </Badge>
               )}
@@ -119,10 +152,10 @@ export function EventCard({ event, isManageView, onView }: EventCardProps) {
           )}
 
           {event.min_karma != null ? (
-            <p className="bg-gray-100 text-gray-700 rounded px-2 py-0.5 text-xs flex items-center gap-1">
+            <div className="bg-muted text-muted-foreground rounded px-2 py-0.5 text-xs flex items-center gap-1">
               <Lock className="h-3 w-3" />
-              {event.min_karma.toLocaleString()} karma
-            </p>
+              <span>{event.min_karma.toLocaleString()} karma</span>
+            </div>
           ) : null}
         </div>
       </div>

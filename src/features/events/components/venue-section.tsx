@@ -42,7 +42,7 @@ export function VenueSection({ control, watch, errors }: VenueSectionProps) {
                     key={item.value}
                     type="button"
                     className={`rounded-md border px-3 py-1.5 text-sm ${
-                      active ? "border-pink-500 bg-pink-50 text-pink-700" : ""
+                      active ? "border-primary bg-primary/10 text-primary" : ""
                     }`}
                     onClick={() => field.onChange(item.value)}
                   >

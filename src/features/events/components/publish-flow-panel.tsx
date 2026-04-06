@@ -56,7 +56,9 @@ export function PublishFlowPanel({
     <section className="space-y-3 rounded-lg border p-4">
       <h3 className="font-semibold">Publishing</h3>
       <EventStatusBadge status={event.status} />
-      <p className="text-sm text-gray-600">{statusDescription(event.status)}</p>
+      <p className="text-sm text-muted-foreground">
+        {statusDescription(event.status)}
+      </p>
 
       {event.status === "draft" ? (
         <div className="flex flex-wrap gap-2">

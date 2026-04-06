@@ -27,7 +27,7 @@ export function EventsPagination({
 
   return (
     <div className="flex items-center justify-between">
-      <div className="text-sm text-gray-600">
+      <div className="text-sm text-muted-foreground">
         Showing{" "}
         <span className="font-medium">{currentCount ?? pagination.count}</span>{" "}
         out of <span className="font-medium">{pagination.count}</span>
@@ -36,11 +36,11 @@ export function EventsPagination({
       {pagination.totalPages > 1 && (
         <div className="flex gap-1">
           <Button
-            variant="ghost"
+            variant="outline"
             size="icon"
             onClick={() => onPageChange(currentPage - 1)}
             disabled={!pagination.isPrev}
-            className="rounded-lg"
+            className="h-8 w-8 rounded-full border-border bg-background text-foreground hover:border-primary hover:text-primary disabled:opacity-40"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -48,13 +48,13 @@ export function EventsPagination({
           {visiblePages.map((page) => (
             <Button
               key={page}
-              variant={page === currentPage ? "default" : "ghost"}
-              size="sm"
+              variant={page === currentPage ? "default" : "outline"}
+              size="icon"
               onClick={() => onPageChange(page)}
-              className={`rounded-lg ${
+              className={`h-8 w-8 rounded-full ${
                 page === currentPage
-                  ? "bg-pink-500 hover:bg-pink-600 text-white"
-                  : ""
+                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                  : "border-border bg-background text-foreground hover:border-primary hover:text-primary"
               }`}
             >
               {page}
@@ -67,21 +67,21 @@ export function EventsPagination({
 
           {pagination.totalPages > currentPage + 2 && (
             <Button
-              variant="ghost"
-              size="sm"
+              variant="outline"
+              size="icon"
               onClick={() => onPageChange(pagination.totalPages)}
-              className="rounded-lg"
+              className="h-8 w-8 rounded-full border-border bg-background text-foreground hover:border-primary hover:text-primary"
             >
               {pagination.totalPages}
             </Button>
           )}
 
           <Button
-            variant="ghost"
+            variant="outline"
             size="icon"
             onClick={() => onPageChange(currentPage + 1)}
             disabled={!pagination.isNext}
-            className="rounded-lg"
+            className="h-8 w-8 rounded-full border-border bg-background text-foreground hover:border-primary hover:text-primary disabled:opacity-40"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>

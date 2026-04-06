@@ -156,11 +156,8 @@ export function EventDetailView({
 
   return (
     <TooltipProvider>
-      <div className="mx-auto w-full max-w-7xl space-y-6 pb-24 lg:pb-6">
-        <div
-          className="relative w-full overflow-hidden rounded-2xl shadow-sm"
-          style={{ aspectRatio: "16/5" }}
-        >
+      <div className="mx-auto w-full max-w-7xl space-y-6 pb-24 lg:pb-6 lc-fade-in">
+        <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl md:aspect-[21/9]">
           {event.banner_image || event.cover_image ? (
             <Image
               src={
@@ -173,13 +170,13 @@ export function EventDetailView({
               className="object-cover"
             />
           ) : null}
-          <div className="absolute inset-0 bg-linear-to-t from-slate-950/85 via-slate-900/55 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-foreground/85 via-foreground/50 to-transparent" />
 
           <div className="absolute inset-x-0 bottom-0 p-4 text-white sm:p-6">
             <div className="space-y-3">
               <div className="flex flex-wrap items-center gap-2">
                 {event.is_featured ? (
-                  <Badge className="bg-amber-200 text-amber-900">
+                  <Badge className="bg-[color-mix(in_srgb,var(--chart-4)_80%,white)] text-foreground">
                     <Star className="mr-1 h-3.5 w-3.5" /> Featured
                   </Badge>
                 ) : null}
@@ -187,8 +184,7 @@ export function EventDetailView({
                   ? event.tags.slice(0, 3).map((tag) => (
                       <Badge
                         key={tag}
-                        variant="secondary"
-                        className="capitalize"
+                        className="border border-primary-foreground/20 bg-primary-foreground/20 capitalize text-primary-foreground backdrop-blur-sm"
                       >
                         {tag}
                       </Badge>
@@ -196,7 +192,7 @@ export function EventDetailView({
                   : null}
               </div>
 
-              <h1 className="max-w-4xl text-2xl font-bold tracking-tight sm:text-3xl">
+              <h1 className="max-w-4xl text-2xl font-bold tracking-tight text-primary-foreground md:text-3xl">
                 {event.title}
               </h1>
 
@@ -241,13 +237,14 @@ export function EventDetailView({
         </div>
 
         {layout === "full" ? (
-          <div className="sticky top-3 z-30 rounded-xl border bg-background/95 p-3 shadow-sm backdrop-blur">
+          <div className="sticky top-3 z-30 rounded-xl border-b border-border bg-background/80 p-3 shadow-sm backdrop-blur-sm">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex flex-wrap items-center gap-2">
                 {event.registration_url ? (
                   <Button
                     asChild
                     disabled={!event.viewer_can_access_registration}
+                    className="bg-primary text-primary-foreground hover:bg-primary/90"
                   >
                     <a
                       href={event.registration_url}
@@ -262,7 +259,7 @@ export function EventDetailView({
                 )}
 
                 {countdown ? (
-                  <p className="inline-flex items-center gap-1 text-xs text-amber-700">
+                  <p className="inline-flex items-center gap-1 text-xs text-[var(--chart-1)]">
                     <AlertTriangle className="h-3.5 w-3.5" />
                     {countdown.label}
                   </p>
@@ -307,17 +304,17 @@ export function EventDetailView({
               layout === "full" ? "space-y-6 lg:col-span-2" : "space-y-6"
             }
           >
-            <Card className="rounded-2xl">
+            <Card className="rounded-2xl border border-border bg-card p-2 lc-card-shadow">
               <CardHeader>
                 <CardTitle>About This Event</CardTitle>
               </CardHeader>
-              <CardContent className="text-base leading-8 text-gray-700">
+              <CardContent className="text-base leading-relaxed text-muted-foreground">
                 <p className="whitespace-pre-wrap">{event.description}</p>
               </CardContent>
             </Card>
 
             {acceptedCollaborators.length > 0 ? (
-              <Card className="rounded-2xl shadow-sm">
+              <Card className="rounded-2xl border border-border bg-card lc-card-shadow">
                 <CardHeader>
                   <CardTitle>Partnering Organizations</CardTitle>
                 </CardHeader>
@@ -351,7 +348,7 @@ export function EventDetailView({
                       <Badge
                         key={collab.id}
                         variant="outline"
-                        className="px-3 py-1 text-sm"
+                        className="rounded-full border border-border px-3 py-1 text-sm text-foreground"
                       >
                         {name}
                       </Badge>
@@ -362,7 +359,7 @@ export function EventDetailView({
             ) : null}
 
             {event.linked_tasks.length > 0 ? (
-              <Card className="rounded-2xl shadow-sm">
+              <Card className="rounded-2xl border border-border bg-card lc-card-shadow">
                 <CardHeader>
                   <CardTitle>Linked Tasks</CardTitle>
                 </CardHeader>
@@ -373,11 +370,13 @@ export function EventDetailView({
                         <p className="font-medium">{task.title}</p>
                         <Badge variant="secondary">{task.karma} karma</Badge>
                       </div>
-                      <p className="font-mono text-xs text-gray-500">
+                      <p className="font-mono text-xs text-muted-foreground">
                         #{task.hashtag}
                       </p>
                       {task.ig ? (
-                        <p className="text-xs text-gray-500">{task.ig.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {task.ig.name}
+                        </p>
                       ) : null}
                       {task.bonus_time ? (
                         <p className="text-xs text-green-700">
@@ -396,7 +395,7 @@ export function EventDetailView({
               </Card>
             ) : null}
 
-            <Card className="rounded-2xl shadow-sm">
+            <Card className="rounded-2xl border border-border bg-card lc-card-shadow">
               <CardHeader>
                 <CardTitle>Venue & Map</CardTitle>
               </CardHeader>
@@ -418,7 +417,7 @@ export function EventDetailView({
                 )}
 
                 {mapQuery ? (
-                  <div className="overflow-hidden rounded-lg border">
+                  <div className="h-64 w-full overflow-hidden rounded-xl border border-border">
                     <iframe
                       title="Event venue map"
                       src={mapEmbedUrl(mapQuery)}
@@ -447,7 +446,7 @@ export function EventDetailView({
 
           {layout === "full" ? (
             <div className="space-y-4 lg:col-span-1 lg:sticky lg:top-6 lg:self-start">
-              <Card className="rounded-2xl shadow-sm">
+              <Card className="rounded-2xl border border-border bg-card lc-card-shadow">
                 <CardHeader>
                   <CardTitle>Organizer</CardTitle>
                 </CardHeader>
@@ -462,13 +461,15 @@ export function EventDetailView({
                         className="rounded-full object-cover"
                       />
                     ) : (
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-200 text-sm font-semibold">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-lg font-semibold text-foreground">
                         {organizerName.charAt(0)}
                       </div>
                     )}
                     <div>
-                      <p className="font-medium">{organizerName}</p>
-                      <p className="text-xs capitalize text-gray-500">
+                      <p className="font-semibold text-foreground">
+                        {organizerName}
+                      </p>
+                      <p className="text-xs capitalize text-muted-foreground">
                         {organizerLabel(event.organizer.type)}
                       </p>
                     </div>
@@ -477,7 +478,7 @@ export function EventDetailView({
               </Card>
 
               {event.interest_count > 0 ? (
-                <Card className="rounded-2xl shadow-sm">
+                <Card className="rounded-2xl border border-border bg-card lc-card-shadow">
                   <CardHeader>
                     <CardTitle>Social Proof</CardTitle>
                   </CardHeader>
@@ -491,14 +492,14 @@ export function EventDetailView({
 
               {!event.viewer_can_access_registration &&
               event.viewer_access_blocked_reason ? (
-                <Card className="rounded-2xl border-red-200 shadow-sm">
+                <Card className="rounded-2xl border-destructive/30 bg-[color-mix(in_srgb,var(--destructive)_8%,var(--background))]">
                   <CardHeader>
-                    <CardTitle className="text-red-700">
+                    <CardTitle className="text-destructive">
                       Registration Blocked
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-red-600">
+                    <p className="text-sm text-destructive/80">
                       {event.viewer_access_blocked_reason}
                     </p>
                   </CardContent>
