@@ -27,42 +27,49 @@ export const EVENT_STATUS_MAP: Record<
   EventStatus,
   { label: string; className: string }
 > = {
-  draft: { label: "Draft", className: "bg-muted text-muted-foreground" },
+  draft: { label: "Draft", className: "ig-cat-others" },
   pending_campus_approval: {
     label: "Pending Campus Approval",
-    className:
-      "bg-[color-mix(in_srgb,var(--chart-4)_18%,var(--background))] text-[var(--chart-5)]",
+    className: "ig-status-requested",
   },
   pending_approval: {
     label: "Pending Approval",
-    className:
-      "bg-[color-mix(in_srgb,var(--chart-4)_18%,var(--background))] text-[var(--chart-5)]",
+    className: "ig-status-requested",
   },
   pending_mentor_approval: {
     label: "Pending Mentor Approval",
-    className:
-      "bg-[color-mix(in_srgb,var(--chart-4)_18%,var(--background))] text-[var(--chart-5)]",
+    className: "ig-status-requested",
   },
   published: {
     label: "Published",
-    className:
-      "bg-[color-mix(in_srgb,var(--chart-2)_18%,var(--background))] text-[var(--chart-2)]",
+    className: "ig-status-active",
   },
   ongoing: {
     label: "Ongoing",
-    className:
-      "bg-[color-mix(in_srgb,var(--primary)_16%,var(--background))] text-primary",
+    className: "ig-cat-coder",
   },
   completed: {
     label: "Completed",
-    className: "bg-muted text-muted-foreground",
+    className: "ig-cat-others",
   },
   cancelled: {
     label: "Cancelled",
-    className:
-      "bg-[color-mix(in_srgb,var(--destructive)_12%,var(--background))] text-destructive",
+    className: "ig-status-cancelled",
   },
 };
+
+export const EVENT_STATUS_DOT_STYLES: Record<string, string> = {
+  draft: "bg-muted-foreground",
+  pending_campus_approval: "bg-[var(--chart-5)]",
+  pending_approval: "bg-[var(--chart-5)]",
+  pending_mentor_approval: "bg-[var(--chart-5)]",
+  published: "bg-[var(--chart-2)]",
+  ongoing: "bg-primary",
+  completed: "bg-muted-foreground",
+  cancelled: "bg-destructive",
+};
+
+export * from "./events.ui.constants";
 
 export const EVENT_TYPE_BADGE_CONFIG: Record<
   EventType,
@@ -91,14 +98,12 @@ export const EVENT_TYPE_BADGE_CONFIG: Record<
   competition: {
     label: "Competition",
     icon: Trophy,
-    className:
-      "bg-[color-mix(in_srgb,var(--chart-1)_18%,var(--background))] text-[var(--chart-1)]",
+    className: "ig-cat-manager",
   },
   social_gathering: {
     label: "Social",
     icon: Gamepad2,
-    className:
-      "bg-[color-mix(in_srgb,var(--chart-5)_18%,var(--background))] text-[var(--chart-5)]",
+    className: "ig-cat-maker",
   },
   other: {
     label: "Other",

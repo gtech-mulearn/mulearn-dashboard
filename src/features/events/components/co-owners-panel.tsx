@@ -47,8 +47,10 @@ export function CoOwnersPanel({ eventId, onActivity }: CoOwnersPanelProps) {
     .includes("permission denied");
 
   return (
-    <section className="space-y-3 rounded-lg border p-4">
-      <h3 className="font-semibold">Co-Owners</h3>
+    <section className="space-y-3 rounded-lg border border-border bg-card/60 p-4">
+      <h3 className="text-base font-semibold tracking-tight text-foreground">
+        Co-Owners
+      </h3>
 
       {isLoading ? (
         <p className="text-sm text-muted-foreground">Loading co-owners...</p>
@@ -66,7 +68,9 @@ export function CoOwnersPanel({ eventId, onActivity }: CoOwnersPanelProps) {
         </p>
       ) : null}
 
-      <div className={`space-y-2 ${isFetching ? "opacity-75" : ""}`}>
+      <div
+        className={`max-h-[280px] space-y-2 overflow-y-auto pr-1 sm:max-h-[360px] ${isFetching ? "opacity-75" : ""}`}
+      >
         {coOwnersList.map((coOwner) => (
           <div
             key={coOwner.id}
@@ -97,6 +101,11 @@ export function CoOwnersPanel({ eventId, onActivity }: CoOwnersPanelProps) {
             </Button>
           </div>
         ))}
+        {coOwnersList.length === 0 && !isLoading ? (
+          <p className="text-sm text-muted-foreground">
+            No co-owners added yet.
+          </p>
+        ) : null}
       </div>
 
       <MuidSearchInput

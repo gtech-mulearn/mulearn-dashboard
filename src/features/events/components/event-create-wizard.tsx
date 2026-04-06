@@ -21,65 +21,25 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { eventsApi } from "../api";
 import {
+  EVENT_CREATE_WIZARD_STEPS,
   EVENT_FORM_DEFAULT_VALUES,
   EVENT_SCOPE_OPTIONS,
   EVENT_TYPE_SELECT_OPTIONS,
 } from "../constants/events.constants";
-import { toISOWithOffset, useCreateEvent, useOrganizerOptions } from "../hooks";
+import {
+  toEventFormData,
+  toISOWithOffset,
+  useCreateEvent,
+  useOrganizerOptions,
+} from "../hooks";
 import { type CreateEventSchema, updateEventSchema } from "../schemas";
-import type { OrganizerType } from "../types";
+import type {
+  CoOwnerDisplay,
+  EventCreateWizardProps,
+  SelectedOrganiser,
+} from "../types";
 import { EventSearch } from "./event-search";
 import { VenueSection } from "./venue-section";
-
-interface EventCreateWizardProps {
-  open: boolean;
-  onClose: () => void;
-}
-
-interface CoOwnerDisplay {
-  user_id: string;
-  role?: "co_owner" | "admin";
-  full_name: string;
-  muid: string;
-}
-
-interface SelectedOrganiser {
-  label: string;
-  type: OrganizerType;
-  id: string;
-}
-
-const STEP_LABELS = [
-  "Basic Info",
-  "Organiser & Scope",
-  "Date & Venue",
-  "Media",
-  "Registration & Settings",
-  "Review",
-];
-
-function toFormData(
-  payload: Record<string, unknown>,
-  coverFile: File | null,
-  bannerFile: File | null,
-): FormData {
-  const fd = new FormData();
-  for (const [key, value] of Object.entries(payload)) {
-    if (value === null || value === undefined) continue;
-    if (Array.isArray(value)) {
-      fd.append(key, JSON.stringify(value));
-    } else if (typeof value === "boolean") {
-      fd.append(key, value ? "true" : "false");
-    } else if (typeof value === "object") {
-      fd.append(key, JSON.stringify(value));
-    } else {
-      fd.append(key, String(value));
-    }
-  }
-  if (coverFile) fd.append("cover_image", coverFile);
-  if (bannerFile) fd.append("banner_image", bannerFile);
-  return fd;
-}
 
 export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
   const createEvent = useCreateEvent();
@@ -287,7 +247,7 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
       tags: values.tags && values.tags.length > 0 ? values.tags : null,
     };
 
-    const fd = toFormData(payload, coverImageFile, bannerImageFile);
+    const fd = toEventFormData(payload, coverImageFile, bannerImageFile);
     const created = await createEvent.mutateAsync(fd as never);
 
     if (action === "publish") {
@@ -307,13 +267,13 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
         open={open}
         onOpenChange={(next) => (!next ? requestClose() : null)}
       >
-        <DialogContent className="flex h-[100dvh] w-full max-w-4xl flex-col overflow-hidden rounded-none sm:h-[90vh] sm:rounded-2xl">
+        <DialogContent className="flex h-[100dvh] w-screen max-w-none flex-col overflow-hidden rounded-none border-0 sm:h-[96dvh] sm:w-[96vw] sm:max-w-[1600px] sm:rounded-2xl sm:border">
           <DialogHeader className="pb-2">
             <DialogTitle>Create Event</DialogTitle>
           </DialogHeader>
 
           <div className="hidden items-start gap-3 px-1 pb-2 sm:flex">
-            {STEP_LABELS.map((label, index) => {
+            {EVENT_CREATE_WIZARD_STEPS.map((label, index) => {
               const stepIndex = index + 1;
               const isActive = stepIndex === currentStep;
               const isCompleted = stepIndex < currentStep;
@@ -338,7 +298,7 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                     >
                       {label}
                     </p>
-                    {index < STEP_LABELS.length - 1 ? (
+                    {index < EVENT_CREATE_WIZARD_STEPS.length - 1 ? (
                       <div
                         className={`mt-2 h-0.5 w-full ${isCompleted ? "bg-primary" : "bg-border"}`}
                       />
@@ -351,14 +311,14 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
 
           <div className="px-1 pb-2 sm:hidden">
             <p className="text-sm font-medium text-foreground">
-              Step {currentStep} of {STEP_LABELS.length} -{" "}
-              {STEP_LABELS[currentStep - 1]}
+              Step {currentStep} of {EVENT_CREATE_WIZARD_STEPS.length} -{" "}
+              {EVENT_CREATE_WIZARD_STEPS[currentStep - 1]}
             </p>
             <div className="mt-2 h-1 w-full rounded-full bg-border">
               <div
                 className="h-1 rounded-full bg-primary transition-all"
                 style={{
-                  width: `${(currentStep / STEP_LABELS.length) * 100}%`,
+                  width: `${(currentStep / EVENT_CREATE_WIZARD_STEPS.length) * 100}%`,
                 }}
               />
             </div>

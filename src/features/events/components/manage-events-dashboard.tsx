@@ -254,7 +254,7 @@ export default function ManageEventsDashboard() {
           </>
         ) : (
           <>
-            <div className="rounded-2xl border border-border border-l-4 border-l-border bg-card p-5 lc-card-shadow">
+            <div className="rounded-2xl border border-border bg-card p-5 lc-card-shadow">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 Total Events
               </p>
@@ -262,7 +262,7 @@ export default function ManageEventsDashboard() {
                 {totalCount}
               </p>
             </div>
-            <div className="rounded-2xl border border-border border-l-4 border-l-[var(--chart-2)] bg-card p-5 lc-card-shadow">
+            <div className="rounded-2xl border border-border bg-card p-5 lc-card-shadow">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 Published
               </p>
@@ -270,7 +270,7 @@ export default function ManageEventsDashboard() {
                 {publishedCount}
               </p>
             </div>
-            <div className="rounded-2xl border border-border border-l-4 border-l-[var(--chart-4)] bg-card p-5 lc-card-shadow">
+            <div className="rounded-2xl border border-border bg-card p-5 lc-card-shadow">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 Pending Approval
               </p>
@@ -278,7 +278,7 @@ export default function ManageEventsDashboard() {
                 {pendingApprovalCount}
               </p>
             </div>
-            <div className="rounded-2xl border border-border border-l-4 border-l-muted-foreground/40 bg-card p-5 lc-card-shadow">
+            <div className="rounded-2xl border border-border bg-card p-5 lc-card-shadow">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 Drafts
               </p>

@@ -1,9 +1,9 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { apiClient, endpoints } from "@/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,12 +18,20 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigationGuard } from "@/hooks/use-navigation-guard";
+import type { ManagePanelSectionValue } from "../constants";
+import { MANAGE_PANEL_SECTIONS } from "../constants";
 import {
+  historyAction,
+  historyTarget,
+  historyTimestamp,
   useAdminFeature,
   useDeleteEvent,
   useManageEventDetail,
 } from "../hooks";
-import type { EventLog } from "../types";
+import type {
+  HistoryLogEntryProps,
+  ManageEventDetailViewProps,
+} from "../types";
 import { CoOwnersPanel } from "./co-owners-panel";
 import { CollaboratorsPanel } from "./collaborators-panel";
 import { EventAnalyticsPanel } from "./event-analytics-panel";
@@ -31,34 +39,7 @@ import { EventDetailView } from "./event-detail-view";
 import { EventInlineEditForm } from "./event-inline-edit-form";
 import { PublishFlowPanel } from "./publish-flow-panel";
 
-function getHistoryTimestamp(entry: EventLog): string {
-  return entry.timestamp ?? entry.edited_at ?? new Date().toISOString();
-}
-
-function getHistoryAction(entry: EventLog): string {
-  if (entry.action) {
-    return entry.action.replace(/_/g, " ");
-  }
-  if (entry.changed_fields) {
-    return "edited";
-  }
-  return "updated";
-}
-
-function getHistoryTarget(entry: EventLog): string | null {
-  if (entry.target_name && entry.target_type) {
-    return `${entry.target_type.replace(/_/g, " ")} · ${entry.target_name}`;
-  }
-  if (entry.target_name) {
-    return entry.target_name;
-  }
-  if (entry.target_type) {
-    return entry.target_type.replace(/_/g, " ");
-  }
-  return null;
-}
-
-function HistoryLogEntry({ entry }: { entry: EventLog }) {
+function HistoryLogEntry({ entry }: HistoryLogEntryProps) {
   const actor = entry.performed_by ?? entry.actor ?? entry.edited_by;
 
   const changesEntries = entry.changes ? Object.entries(entry.changes) : [];
@@ -80,27 +61,24 @@ function HistoryLogEntry({ entry }: { entry: EventLog }) {
             {actor ? `${actor.full_name} (${actor.muid})` : "System"}
           </p>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            {entry.summary ?? getHistoryAction(entry)}
-            {getHistoryTarget(entry) && !entry.summary
-              ? ` · ${getHistoryTarget(entry)}`
+            {entry.summary ?? historyAction(entry)}
+            {historyTarget(entry) && !entry.summary
+              ? ` · ${historyTarget(entry)}`
               : ""}
           </p>
         </div>
         <p className="shrink-0 text-right text-xs text-muted-foreground">
-          {new Date(getHistoryTimestamp(entry)).toLocaleDateString(undefined, {
+          {new Date(historyTimestamp(entry)).toLocaleDateString(undefined, {
             month: "short",
             day: "numeric",
             year: "numeric",
           })}
           <br />
           <span className="text-[10px]">
-            {new Date(getHistoryTimestamp(entry)).toLocaleTimeString(
-              undefined,
-              {
-                hour: "2-digit",
-                minute: "2-digit",
-              },
-            )}
+            {new Date(historyTimestamp(entry)).toLocaleTimeString(undefined, {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
           </span>
         </p>
       </div>
@@ -153,11 +131,6 @@ function HistoryLogEntry({ entry }: { entry: EventLog }) {
   );
 }
 
-interface ManageEventDetailViewProps {
-  eventId: string;
-  onBack?: () => void;
-}
-
 export function ManageEventDetailView({
   eventId,
   onBack,
@@ -165,8 +138,10 @@ export function ManageEventDetailView({
   const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
   const [confirmDiscardOpen, setConfirmDiscardOpen] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("publishing");
+  const [activeTab, setActiveTab] =
+    useState<ManagePanelSectionValue>("publishing");
   const [isEditing, setIsEditing] = useState(false);
+  const [isEditSaveArmed, setIsEditSaveArmed] = useState(false);
   const [formIsDirty, setFormIsDirty] = useState(false);
   const [pendingBackAfterConfirm, setPendingBackAfterConfirm] = useState(false);
   const [inlineFormKey, setInlineFormKey] = useState(0);
@@ -207,10 +182,19 @@ export function ManageEventDetailView({
     if (!event) return [];
     return [...event.edit_history].sort(
       (a, b) =>
-        new Date(getHistoryTimestamp(b)).getTime() -
-        new Date(getHistoryTimestamp(a)).getTime(),
+        new Date(historyTimestamp(b)).getTime() -
+        new Date(historyTimestamp(a)).getTime(),
     );
   }, [event]);
+
+  useEffect(() => {
+    if (!isEditing) return;
+    const timer = window.setTimeout(() => {
+      setIsEditSaveArmed(true);
+    }, 450);
+
+    return () => window.clearTimeout(timer);
+  }, [isEditing]);
 
   if (isLoading) {
     return <Skeleton className="h-48 w-full" />;
@@ -251,12 +235,86 @@ export function ManageEventDetailView({
       return;
     }
     setIsEditing(false);
+    setIsEditSaveArmed(false);
     setFormIsDirty(false);
     setInlineFormKey((value) => value + 1);
   };
 
+  const enterEditMode = () => {
+    setIsEditing(true);
+    setIsEditSaveArmed(false);
+  };
+
+  const renderPanelSection = (panel: ManagePanelSectionValue) => {
+    if (panel === "publishing") {
+      return (
+        <div className="space-y-3 pt-3">
+          <PublishFlowPanel
+            event={event}
+            canApprove={canApprove}
+            canSelfPublish={canSelfPublish}
+          />
+          {canAdmin ? (
+            <Card className="rounded-2xl border-border bg-card lc-card-shadow">
+              <CardHeader>
+                <CardTitle className="text-base">Feature on homepage</CardTitle>
+              </CardHeader>
+              <CardContent className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">
+                  Toggle featured visibility
+                </p>
+                <Switch
+                  checked={event.is_featured}
+                  onCheckedChange={(checked) => adminFeature.mutate(checked)}
+                  disabled={adminFeature.isPending}
+                />
+              </CardContent>
+            </Card>
+          ) : null}
+        </div>
+      );
+    }
+
+    if (panel === "co-owners") {
+      return (
+        <div className="pt-3">
+          <CoOwnersPanel eventId={eventId} />
+        </div>
+      );
+    }
+
+    if (panel === "collaborators") {
+      return (
+        <div className="pt-3">
+          <CollaboratorsPanel eventId={eventId} isManageView />
+        </div>
+      );
+    }
+
+    return (
+      <div className="pt-3">
+        <Card className="rounded-2xl border-border bg-card lc-card-shadow">
+          <CardHeader>
+            <CardTitle className="text-base">Edit History</CardTitle>
+          </CardHeader>
+          <CardContent className="max-h-[280px] space-y-3 overflow-y-auto pr-1 sm:max-h-[360px] lg:max-h-[420px]">
+            {sortedHistory.length > 0 ? (
+              sortedHistory.map((entry) => (
+                <HistoryLogEntry key={entry.id} entry={entry} />
+              ))
+            ) : (
+              <p className="py-4 text-center text-sm text-muted-foreground">
+                No edit history yet
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
+
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-6 px-1 pb-24 sm:pb-0">
+    <div className="mx-auto w-full max-w-7xl space-y-6 px-1 pb-24 sm:pb-0 lc-fade-in">
       <div className="rounded-2xl border border-border bg-card p-3 lc-card-shadow">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Button
@@ -271,11 +329,12 @@ export function ManageEventDetailView({
             {!isEditing ? (
               <>
                 <Button
+                  type="button"
                   variant="outline"
                   className="border-border text-foreground hover:border-primary hover:text-primary"
-                  onClick={() => setIsEditing(true)}
+                  onClick={enterEditMode}
                 >
-                  Edit
+                  <Pencil className="mr-2 h-4 w-4" /> Edit
                 </Button>
                 <Button
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
@@ -289,6 +348,7 @@ export function ManageEventDetailView({
                 <Button
                   type="submit"
                   form={`event-inline-edit-form-${event.id}`}
+                  disabled={!isEditSaveArmed}
                   className="bg-primary text-primary-foreground hover:bg-primary/90"
                 >
                   Save Changes
@@ -314,11 +374,13 @@ export function ManageEventDetailView({
               event={event}
               onSave={() => {
                 setIsEditing(false);
+                setIsEditSaveArmed(false);
                 setFormIsDirty(false);
                 refetch();
               }}
               onDiscard={() => {
                 setIsEditing(false);
+                setIsEditSaveArmed(false);
                 setFormIsDirty(false);
               }}
               onDirtyChange={setFormIsDirty}
@@ -328,11 +390,15 @@ export function ManageEventDetailView({
               eventId={eventId}
               showInterestButton={false}
               layout="content-only"
+              showVenue={false}
             />
           )}
         </div>
 
-        <div className="hidden space-y-4 lg:col-span-1 lg:sticky lg:top-6 lg:block lg:self-start">
+        <div
+          className="hidden space-y-4 lg:col-span-1 lg:sticky lg:top-6 lg:block lg:self-start lc-slide-up"
+          style={{ animationDelay: "100ms" }}
+        >
           <EventAnalyticsPanel
             interestCount={event.interest_count}
             venueName={venueName}
@@ -340,94 +406,35 @@ export function ManageEventDetailView({
             mapQuery={mapQuery}
           />
 
-          <Tabs
-            value={activeTab}
-            onValueChange={setActiveTab}
-            className="w-full"
-          >
-            <TabsList className="grid h-auto w-full grid-cols-2 gap-1 rounded-xl bg-muted p-1 sm:grid-cols-4">
-              <TabsTrigger
-                value="publishing"
-                className="data-[state=active]:rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground"
-              >
-                Publishing
-              </TabsTrigger>
-              <TabsTrigger
-                value="co-owners"
-                className="data-[state=active]:rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground"
-              >
-                Co-owners
-              </TabsTrigger>
-              <TabsTrigger
-                value="collaborators"
-                className="data-[state=active]:rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground"
-              >
-                Collaborators
-              </TabsTrigger>
-              <TabsTrigger
-                value="history"
-                className="data-[state=active]:rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground"
-              >
-                History
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="publishing" className="space-y-3 pt-3">
-              <PublishFlowPanel
-                event={event}
-                canApprove={canApprove}
-                canSelfPublish={canSelfPublish}
-              />
-              {canAdmin ? (
-                <Card className="rounded-2xl border-border bg-card lc-card-shadow">
-                  <CardHeader>
-                    <CardTitle className="text-base">
-                      Feature on homepage
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="flex items-center justify-between">
-                    <p className="text-sm text-muted-foreground">
-                      Toggle featured visibility
-                    </p>
-                    <Switch
-                      checked={event.is_featured}
-                      onCheckedChange={(checked) =>
-                        adminFeature.mutate(checked)
-                      }
-                      disabled={adminFeature.isPending}
-                    />
-                  </CardContent>
-                </Card>
-              ) : null}
-            </TabsContent>
-
-            <TabsContent value="co-owners" className="pt-3">
-              <CoOwnersPanel eventId={eventId} />
-            </TabsContent>
-
-            <TabsContent value="collaborators" className="pt-3">
-              <CollaboratorsPanel eventId={eventId} isManageView />
-            </TabsContent>
-
-            <TabsContent value="history" className="pt-3">
-              <Card className="rounded-2xl border-border bg-card lc-card-shadow">
-                <CardHeader>
-                  <CardTitle>Edit History</CardTitle>
-                </CardHeader>
-                <CardContent className="max-h-[500px] space-y-3 overflow-y-auto">
-                  {sortedHistory.length > 0 ? (
-                    sortedHistory.map((entry) => (
-                      <HistoryLogEntry key={entry.id} entry={entry} />
-                    ))
-                  ) : (
-                    <p className="py-4 text-center text-sm text-muted-foreground">
-                      No edit history yet
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+          <div className="overflow-hidden rounded-2xl border border-border bg-card lc-card-shadow">
+            <Tabs
+              value={activeTab}
+              onValueChange={(value) =>
+                setActiveTab(value as ManagePanelSectionValue)
+              }
+            >
+              <TabsList className="grid h-auto w-full grid-cols-4 rounded-none border-b border-border bg-muted p-0">
+                {MANAGE_PANEL_SECTIONS.map((panel) => (
+                  <TabsTrigger
+                    key={panel.value}
+                    value={panel.value}
+                    className="rounded-none border-b-2 border-transparent text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary"
+                  >
+                    {panel.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+              {MANAGE_PANEL_SECTIONS.map((panel) => (
+                <TabsContent
+                  key={panel.value}
+                  value={panel.value}
+                  className="m-0 p-4"
+                >
+                  {renderPanelSection(panel.value)}
+                </TabsContent>
+              ))}
+            </Tabs>
+          </div>
         </div>
       </div>
 
@@ -435,17 +442,19 @@ export function ManageEventDetailView({
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-2">
           {!isEditing ? (
             <Button
+              type="button"
               variant="outline"
               className="border-border text-foreground"
-              onClick={() => setIsEditing(true)}
+              onClick={enterEditMode}
             >
-              Edit
+              <Pencil className="mr-2 h-4 w-4" /> Edit
             </Button>
           ) : (
             <>
               <Button
                 type="submit"
                 form={`event-inline-edit-form-${event.id}`}
+                disabled={!isEditSaveArmed}
                 className="bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 Save Changes
@@ -488,74 +497,35 @@ export function ManageEventDetailView({
               mapQuery={mapQuery}
             />
 
-            <Tabs
-              value={activeTab}
-              onValueChange={setActiveTab}
-              className="w-full"
-            >
-              <TabsList className="grid w-full grid-cols-2 auto-rows-fr gap-1 rounded-xl bg-muted p-1 group-data-[orientation=horizontal]/tabs:!h-auto [&>*]:min-h-9 [&>*]:w-full [&>*]:flex-none [&>*]:px-2 [&>*]:text-xs">
-                <TabsTrigger value="publishing">Publishing</TabsTrigger>
-                <TabsTrigger value="co-owners">Co-owners</TabsTrigger>
-                <TabsTrigger value="collaborators">Collaborators</TabsTrigger>
-                <TabsTrigger value="history">History</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="publishing" className="space-y-3 pt-3">
-                <PublishFlowPanel
-                  event={event}
-                  canApprove={canApprove}
-                  canSelfPublish={canSelfPublish}
-                />
-                {canAdmin ? (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-base">
-                        Feature on homepage
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex items-center justify-between">
-                      <p className="text-sm text-muted-foreground">
-                        Toggle featured visibility
-                      </p>
-                      <Switch
-                        checked={event.is_featured}
-                        onCheckedChange={(checked) =>
-                          adminFeature.mutate(checked)
-                        }
-                        disabled={adminFeature.isPending}
-                      />
-                    </CardContent>
-                  </Card>
-                ) : null}
-              </TabsContent>
-
-              <TabsContent value="co-owners" className="pt-3">
-                <CoOwnersPanel eventId={eventId} />
-              </TabsContent>
-
-              <TabsContent value="collaborators" className="pt-3">
-                <CollaboratorsPanel eventId={eventId} isManageView />
-              </TabsContent>
-
-              <TabsContent value="history" className="pt-3">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Edit History</CardTitle>
-                  </CardHeader>
-                  <CardContent className="max-h-[500px] space-y-3 overflow-y-auto">
-                    {sortedHistory.length > 0 ? (
-                      sortedHistory.map((entry) => (
-                        <HistoryLogEntry key={entry.id} entry={entry} />
-                      ))
-                    ) : (
-                      <p className="py-4 text-center text-sm text-muted-foreground">
-                        No edit history yet
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
+            <div className="overflow-hidden rounded-2xl border border-border bg-card lc-card-shadow">
+              <Tabs
+                value={activeTab}
+                onValueChange={(value) =>
+                  setActiveTab(value as ManagePanelSectionValue)
+                }
+              >
+                <TabsList className="grid h-auto w-full grid-cols-2 rounded-none border-b border-border bg-muted p-0">
+                  {MANAGE_PANEL_SECTIONS.map((panel) => (
+                    <TabsTrigger
+                      key={panel.value}
+                      value={panel.value}
+                      className="rounded-none border-b-2 border-transparent text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary"
+                    >
+                      {panel.label}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+                {MANAGE_PANEL_SECTIONS.map((panel) => (
+                  <TabsContent
+                    key={panel.value}
+                    value={panel.value}
+                    className="m-0 p-4"
+                  >
+                    {renderPanelSection(panel.value)}
+                  </TabsContent>
+                ))}
+              </Tabs>
+            </div>
           </div>
         </SheetContent>
       </Sheet>
@@ -586,6 +556,7 @@ export function ManageEventDetailView({
         onConfirm={() => {
           setConfirmDiscardOpen(false);
           setIsEditing(false);
+          setIsEditSaveArmed(false);
           setFormIsDirty(false);
           setInlineFormKey((value) => value + 1);
 

@@ -73,10 +73,12 @@ export function CollaboratorsPanel({
   );
 
   return (
-    <section className="space-y-3 rounded-lg border p-4">
-      <h3 className="font-semibold">Collaborators</h3>
+    <section className="space-y-3 rounded-lg border border-border bg-card/60 p-4">
+      <h3 className="text-base font-semibold tracking-tight text-foreground">
+        Collaborators
+      </h3>
 
-      <div className="space-y-2">
+      <div className="max-h-[300px] space-y-2 overflow-y-auto pr-1 sm:max-h-[380px]">
         {visible.map((collab) => (
           <div key={collab.id} className="space-y-2 rounded border p-3 text-sm">
             <div className="flex items-center justify-between gap-2">
@@ -110,6 +112,11 @@ export function CollaboratorsPanel({
             ) : null}
           </div>
         ))}
+        {visible.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No collaborators found.
+          </p>
+        ) : null}
       </div>
 
       {isManageView ? <EventSearch mode="invite" eventId={eventId} /> : null}

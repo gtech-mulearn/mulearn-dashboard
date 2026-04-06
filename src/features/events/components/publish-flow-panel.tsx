@@ -53,8 +53,10 @@ export function PublishFlowPanel({
     event.status === "pending_mentor_approval";
 
   return (
-    <section className="space-y-3 rounded-lg border p-4">
-      <h3 className="font-semibold">Publishing</h3>
+    <section className="space-y-3 rounded-lg border border-border bg-card/60 p-4">
+      <h3 className="text-base font-semibold tracking-tight text-foreground">
+        Publishing
+      </h3>
       <EventStatusBadge status={event.status} />
       <p className="text-sm text-muted-foreground">
         {statusDescription(event.status)}

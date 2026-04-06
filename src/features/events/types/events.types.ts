@@ -441,3 +441,53 @@ export type EventDeleteData = Record<string, unknown>;
 export type EventInterestData = EventInterestResponse;
 export type CoOwnersListData = EventCoOwner[];
 export type CollaboratorsListData = EventCollaborator[];
+
+// ─── UI / COMPONENT PROPS ──────────────────────────────────────────────────
+
+export interface EventAnalyticsPanelProps {
+  interestCount: number;
+  venueName: string | null;
+  mapsUrl: string | null;
+  mapQuery: string;
+}
+
+export interface EventDetailViewProps {
+  eventId: string;
+  showInterestButton?: boolean;
+  layout?: "full" | "content-only";
+  showVenue?: boolean;
+}
+
+export interface ManageEventDetailViewProps {
+  eventId: string;
+  onBack?: () => void;
+}
+
+export interface HistoryLogEntryProps {
+  entry: EventLog;
+}
+
+export interface EventInlineEditFormProps {
+  event: EventDetailManage;
+  onSave: () => void;
+  onDiscard: () => void;
+  onDirtyChange: (isDirty: boolean) => void;
+}
+
+export interface EventCreateWizardProps {
+  open: boolean;
+  onClose: () => void;
+}
+
+export interface CoOwnerDisplay {
+  user_id: string;
+  role?: "co_owner" | "admin";
+  full_name: string;
+  muid: string;
+}
+
+export interface SelectedOrganiser {
+  label: string;
+  type: OrganizerType;
+  id: string;
+}

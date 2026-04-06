@@ -14,6 +14,7 @@ export * from "./events-filters";
 export * from "./events-grid";
 export * from "./events-list-view";
 export * from "./events-pagination";
+export * from "./expandable-map-dialog";
 export * from "./featured-events-carousel";
 export * from "./interest-button";
 export * from "./manage-event-detail-view";

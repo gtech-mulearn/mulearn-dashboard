@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Lock, Plus, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Controller, type Resolver, useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ImageUpload } from "@/components/ui/image-upload";
@@ -17,99 +18,22 @@ import {
   EVENT_TYPE_SELECT_OPTIONS,
 } from "../constants/events.constants";
 import {
+  buildChangedPatchPayload,
+  buildEventPatchPayload,
+  eventEditSectionClassName,
   resolveEventTypeValue,
   toDatetimeLocal,
-  toISOWithOffset,
+  toEventFormData,
   usePatchEvent,
 } from "../hooks";
 import { type CreateEventSchema, updateEventSchema } from "../schemas";
 import type {
-  EventDetailManage,
-  EventPatchBody,
+  CoOwnerDisplay,
+  EventInlineEditFormProps,
   EventWriteBody,
 } from "../types";
 import { EventSearch } from "./event-search";
 import { VenueSection } from "./venue-section";
-
-interface EventInlineEditFormProps {
-  event: EventDetailManage;
-  onSave: () => void;
-  onDiscard: () => void;
-  onDirtyChange: (isDirty: boolean) => void;
-}
-
-type ComparablePatchPayload = Partial<EventPatchBody>;
-
-interface CoOwnerDisplay {
-  user_id: string;
-  role?: "co_owner" | "admin";
-  full_name: string;
-  muid: string;
-}
-
-function sectionClassName() {
-  return "space-y-4 rounded-2xl border border-border bg-card p-6 lc-card-shadow";
-}
-
-function normalizeTags(
-  tags: string[] | Record<string, unknown> | null | undefined,
-): string[] | null {
-  if (!tags) return null;
-  if (Array.isArray(tags)) {
-    return tags.length > 0 ? [...tags].sort() : null;
-  }
-  const keys = Object.keys(tags);
-  return keys.length > 0 ? keys.sort() : null;
-}
-
-function normalizeDateValue(value: unknown): number | null {
-  if (typeof value !== "string") return null;
-  const parsed = Date.parse(value);
-  return Number.isNaN(parsed) ? null : parsed;
-}
-
-function valuesAreEqual(left: unknown, right: unknown): boolean {
-  if (left === right) return true;
-
-  const leftDate = normalizeDateValue(left);
-  const rightDate = normalizeDateValue(right);
-  if (leftDate !== null && rightDate !== null) {
-    return leftDate === rightDate;
-  }
-
-  if (Array.isArray(left) && Array.isArray(right)) {
-    return JSON.stringify(left) === JSON.stringify(right);
-  }
-
-  if (left && right && typeof left === "object" && typeof right === "object") {
-    return JSON.stringify(left) === JSON.stringify(right);
-  }
-
-  return false;
-}
-
-function toFormData(
-  payload: Record<string, unknown>,
-  coverFile: File | null,
-  bannerFile: File | null,
-): FormData {
-  const fd = new FormData();
-  for (const [key, value] of Object.entries(payload)) {
-    if (value === null || value === undefined) continue;
-    if (Array.isArray(value)) {
-      fd.append(key, JSON.stringify(value));
-    } else if (typeof value === "boolean") {
-      fd.append(key, value ? "true" : "false");
-    } else if (typeof value === "object") {
-      fd.append(key, JSON.stringify(value));
-    } else {
-      fd.append(key, String(value));
-    }
-  }
-  if (coverFile) fd.append("cover_image", coverFile);
-  if (bannerFile) fd.append("banner_image", bannerFile);
-  return fd;
-}
 
 export function EventInlineEditForm({
   event,
@@ -231,88 +155,6 @@ export function EventInlineEditForm({
     return "MuLearn";
   }, [event.organizer]);
 
-  const buildComparableInitialPayload = (
-    currentEvent: EventDetailManage,
-  ): ComparablePatchPayload => {
-    const organizer = currentEvent.organizer;
-    const organizerType = organizer?.type ?? "admin";
-
-    return {
-      title: currentEvent.title,
-      description: currentEvent.description,
-      start_datetime: currentEvent.start_datetime,
-      end_datetime: currentEvent.end_datetime,
-      registration_url: currentEvent.registration_url,
-      registration_deadline: currentEvent.registration_deadline,
-      min_karma: currentEvent.min_karma,
-      venue_type: currentEvent.venue.type,
-      venue_address: currentEvent.venue.address,
-      venue_city: currentEvent.venue.city,
-      venue_maps_url: currentEvent.venue.maps_url,
-      venue_online_link: currentEvent.venue.online_link,
-      venue_platform: currentEvent.venue.platform,
-      scope: currentEvent.scope,
-      scope_org:
-        currentEvent.scope === "campus"
-          ? (currentEvent.scope_org?.id ?? null)
-          : null,
-      scope_ig:
-        currentEvent.scope === "ig"
-          ? (currentEvent.scope_ig?.id ?? null)
-          : null,
-      scope_ci_id:
-        currentEvent.scope === "campus_ig"
-          ? (currentEvent.scope_ci_id ?? null)
-          : null,
-      is_collaboration: currentEvent.is_collaboration,
-      is_featured: currentEvent.is_featured,
-      tags: normalizeTags(currentEvent.tags),
-      organiser_type: organizerType,
-      organiser_ig:
-        organizerType === "global_ig" ? (organizer?.ig?.id ?? null) : null,
-      organiser_org:
-        organizerType === "campus"
-          ? (organizer?.campus?.id ?? null)
-          : organizerType === "company"
-            ? (organizer?.company?.id ?? null)
-            : null,
-      organiser_ci_id:
-        organizerType === "campus_ig"
-          ? ((organizer?.campus_ig?.id ?? organizer?.campus_ig_id ?? null) as
-              | string
-              | null)
-          : null,
-      event_type: resolveEventTypeValue(
-        currentEvent.event_type,
-        currentEvent.category_name,
-      ),
-      co_owners: (currentEvent.co_owners ?? [])
-        .map((owner) => ({
-          user_id: owner.user.id,
-          role: owner.role ?? "co_owner",
-        }))
-        .sort((a, b) => a.user_id.localeCompare(b.user_id)),
-    } as ComparablePatchPayload;
-  };
-
-  const buildChangedPatchPayload = (
-    nextPayload: ComparablePatchPayload,
-    currentEvent: EventDetailManage,
-  ): EventPatchBody => {
-    const previousPayload = buildComparableInitialPayload(currentEvent);
-    const changedPayload: Record<string, unknown> = {};
-
-    for (const [key, nextValue] of Object.entries(nextPayload)) {
-      const previousValue =
-        previousPayload[key as keyof ComparablePatchPayload];
-      if (!valuesAreEqual(nextValue, previousValue)) {
-        changedPayload[key] = nextValue;
-      }
-    }
-
-    return changedPayload as EventPatchBody;
-  };
-
   const handleValidSubmit = async (values: CreateEventSchema) => {
     let hasRequiredError = false;
 
@@ -351,11 +193,7 @@ export function EventInlineEditForm({
 
     if (hasRequiredError) return;
 
-    const start = toISOWithOffset(values.start_datetime);
-    const end = toISOWithOffset(values.end_datetime);
-    const deadline = values.registration_deadline
-      ? toISOWithOffset(values.registration_deadline as unknown as string)
-      : null;
+    const { start, end, patchPayload } = buildEventPatchPayload(values);
 
     if (!start || !end) {
       if (!start) {
@@ -373,43 +211,19 @@ export function EventInlineEditForm({
       return;
     }
 
-    const patchPayload: ComparablePatchPayload = {
-      title: values.title,
-      description: values.description,
-      event_type: values.event_type,
-      start_datetime: start,
-      end_datetime: end,
-      registration_url: values.registration_url,
-      registration_deadline: deadline,
-      min_karma: values.min_karma,
-      venue_type: values.venue_type,
-      venue_address: values.address,
-      venue_city: values.city,
-      venue_maps_url: values.maps_url,
-      venue_online_link: values.online_link,
-      venue_platform: values.platform,
-      scope: values.scope,
-      scope_org: values.scope === "campus" ? values.target_campus_id : null,
-      scope_ig: values.scope === "ig" ? values.target_ig_id : null,
-      scope_ci_id:
-        values.scope === "campus_ig" ? values.target_campus_ig_id : null,
-      is_collaboration: values.is_collaboration,
-      is_featured: values.is_featured,
-      tags: values.tags && values.tags.length > 0 ? values.tags : null,
-      co_owners: selectedCoOwners.map(({ user_id, role }) => ({
-        user_id,
-        role,
-      })),
-    };
+    patchPayload.co_owners = selectedCoOwners.map(({ user_id, role }) => ({
+      user_id,
+      role,
+    }));
 
     const changedPayload = buildChangedPatchPayload(patchPayload, event);
     const hasImageChange = Boolean(coverImageFile || bannerImageFile);
     if (Object.keys(changedPayload).length === 0 && !hasImageChange) {
-      onSave();
+      toast.info("No changes to save");
       return;
     }
 
-    const fd = toFormData(
+    const fd = toEventFormData(
       changedPayload as Record<string, unknown>,
       coverImageFile,
       bannerImageFile,
@@ -425,8 +239,8 @@ export function EventInlineEditForm({
       className="space-y-4"
       onSubmit={handleSubmit(handleValidSubmit)}
     >
-      <section className={sectionClassName()}>
-        <h3 className="mb-4 text-sm font-semibold text-foreground">
+      <section className={eventEditSectionClassName()}>
+        <h3 className="mb-4 text-base font-semibold tracking-tight text-foreground">
           Basic Info
         </h3>
         <div className="space-y-1">
@@ -467,8 +281,8 @@ export function EventInlineEditForm({
         </div>
       </section>
 
-      <section className={sectionClassName()}>
-        <h3 className="mb-4 text-sm font-semibold text-foreground">
+      <section className={eventEditSectionClassName()}>
+        <h3 className="mb-4 text-base font-semibold tracking-tight text-foreground">
           Type & Scope
         </h3>
 
@@ -584,8 +398,8 @@ export function EventInlineEditForm({
         ) : null}
       </section>
 
-      <section className={sectionClassName()}>
-        <h3 className="mb-4 text-sm font-semibold text-foreground">
+      <section className={eventEditSectionClassName()}>
+        <h3 className="mb-4 text-base font-semibold tracking-tight text-foreground">
           Date & Time
         </h3>
         <div className="grid gap-4 md:grid-cols-2">
@@ -624,8 +438,10 @@ export function EventInlineEditForm({
 
       <VenueSection control={control} watch={watch} errors={errors} />
 
-      <section className={sectionClassName()}>
-        <h3 className="mb-4 text-sm font-semibold text-foreground">Media</h3>
+      <section className={eventEditSectionClassName()}>
+        <h3 className="mb-4 text-base font-semibold tracking-tight text-foreground">
+          Media
+        </h3>
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
             <p className="text-sm font-medium text-foreground">Cover image</p>
@@ -646,8 +462,8 @@ export function EventInlineEditForm({
         </div>
       </section>
 
-      <section className={sectionClassName()}>
-        <h3 className="mb-4 text-sm font-semibold text-foreground">
+      <section className={eventEditSectionClassName()}>
+        <h3 className="mb-4 text-base font-semibold tracking-tight text-foreground">
           Registration & Settings
         </h3>
         <div className="grid gap-4 md:grid-cols-2">
@@ -717,8 +533,8 @@ export function EventInlineEditForm({
         </div>
       </section>
 
-      <section className={sectionClassName()}>
-        <h3 className="mb-4 text-sm font-semibold text-foreground">
+      <section className={eventEditSectionClassName()}>
+        <h3 className="mb-4 text-base font-semibold tracking-tight text-foreground">
           Tags & Co-owners
         </h3>
 

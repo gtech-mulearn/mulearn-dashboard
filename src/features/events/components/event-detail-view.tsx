@@ -22,77 +22,21 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useEventDetail } from "../hooks";
+import {
+  countdownLabel,
+  formatEventDateRange,
+  formatEventTime,
+  organizerTypeLabel,
+  useEventDetail,
+} from "../hooks";
+import type { EventDetailViewProps } from "../types";
 import { InterestButton } from "./interest-button";
-
-interface EventDetailViewProps {
-  eventId: string;
-  showInterestButton?: boolean;
-  layout?: "full" | "content-only";
-}
-
-function organizerLabel(type: string): string {
-  return type.replace(/_/g, " ");
-}
-
-function formatTime(iso: string): string {
-  return new Date(iso).toLocaleString("en-IN", {
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
-
-function formatDateRange(startIso: string, endIso: string): string {
-  const start = new Date(startIso);
-  const end = new Date(endIso);
-
-  const sameYear = start.getFullYear() === end.getFullYear();
-  const sameMonth = sameYear && start.getMonth() === end.getMonth();
-
-  const month = start.toLocaleString("en-IN", { month: "short" });
-
-  if (sameMonth) {
-    return `${month} ${start.getDate()}-${end.getDate()}, ${start.getFullYear()}`;
-  }
-
-  return `${start.toLocaleString("en-IN", { month: "short", day: "numeric" })} - ${end.toLocaleString("en-IN", { month: "short", day: "numeric" })}, ${sameYear ? start.getFullYear() : `${start.getFullYear()}-${end.getFullYear()}`}`;
-}
-
-function mapEmbedUrl(query: string): string {
-  return `https://maps.google.com/maps?q=${encodeURIComponent(query)}&z=13&output=embed`;
-}
-
-function countdownLabel(
-  deadline: string | null,
-  nowTs: number,
-): { label: string; urgent: boolean } | null {
-  if (!deadline) return null;
-  const target = new Date(deadline).getTime();
-  const diff = target - nowTs;
-  if (diff <= 0) return { label: "Registration closed", urgent: true };
-
-  const totalMinutes = Math.floor(diff / (1000 * 60));
-  const days = Math.floor(totalMinutes / (60 * 24));
-  const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
-  const minutes = totalMinutes % 60;
-
-  if (days > 0) {
-    return {
-      label: `Registration closes in ${days}d ${hours}h ${minutes}m`,
-      urgent: days < 3,
-    };
-  }
-
-  return {
-    label: `Registration closes in ${hours}h ${minutes}m`,
-    urgent: true,
-  };
-}
 
 export function EventDetailView({
   eventId,
   showInterestButton = true,
   layout = "full",
+  showVenue = true,
 }: EventDetailViewProps) {
   const { data: event, isLoading, isError, error } = useEventDetail(eventId);
   const [nowTs, setNowTs] = useState(() => Date.now());
@@ -151,9 +95,6 @@ export function EventDetailView({
     (collab) => collab.invite_status === "accepted",
   );
 
-  const mapQuery =
-    `${event.venue.address ?? ""} ${event.venue.city ?? ""}`.trim();
-
   return (
     <TooltipProvider>
       <div className="mx-auto w-full max-w-7xl space-y-6 pb-24 lg:pb-6 lc-fade-in">
@@ -176,7 +117,7 @@ export function EventDetailView({
             <div className="space-y-3">
               <div className="flex flex-wrap items-center gap-2">
                 {event.is_featured ? (
-                  <Badge className="bg-[color-mix(in_srgb,var(--chart-4)_80%,white)] text-foreground">
+                  <Badge className="ig-status-requested border-0">
                     <Star className="mr-1 h-3.5 w-3.5" /> Featured
                   </Badge>
                 ) : null}
@@ -199,11 +140,14 @@ export function EventDetailView({
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-white/90">
                 <span className="inline-flex items-center gap-1">
                   <CalendarDays className="h-4 w-4" />
-                  {formatDateRange(event.start_datetime, event.end_datetime)}
+                  {formatEventDateRange(
+                    event.start_datetime,
+                    event.end_datetime,
+                  )}
                 </span>
                 <span className="inline-flex items-center gap-1">
                   <Clock className="h-4 w-4" />
-                  {formatTime(event.start_datetime)} onwards
+                  {formatEventTime(event.start_datetime)} onwards
                 </span>
                 <span className="inline-flex items-center gap-1 capitalize">
                   <Monitor className="h-4 w-4" />
@@ -306,7 +250,7 @@ export function EventDetailView({
           >
             <Card className="rounded-2xl border border-border bg-card p-2 lc-card-shadow">
               <CardHeader>
-                <CardTitle>About This Event</CardTitle>
+                <CardTitle className="text-base">About This Event</CardTitle>
               </CardHeader>
               <CardContent className="text-base leading-relaxed text-muted-foreground">
                 <p className="whitespace-pre-wrap">{event.description}</p>
@@ -316,7 +260,9 @@ export function EventDetailView({
             {acceptedCollaborators.length > 0 ? (
               <Card className="rounded-2xl border border-border bg-card lc-card-shadow">
                 <CardHeader>
-                  <CardTitle>Partnering Organizations</CardTitle>
+                  <CardTitle className="text-base">
+                    Partnering Organizations
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-wrap gap-2">
                   {acceptedCollaborators.map((collab) => {
@@ -345,13 +291,12 @@ export function EventDetailView({
                       "Collaborator";
 
                     return (
-                      <Badge
+                      <span
                         key={collab.id}
-                        variant="outline"
-                        className="rounded-full border border-border px-3 py-1 text-sm text-foreground"
+                        className="inline-flex items-center rounded-full border border-border bg-muted/50 px-3 py-1 text-sm text-foreground"
                       >
                         {name}
-                      </Badge>
+                      </span>
                     );
                   })}
                 </CardContent>
@@ -361,7 +306,7 @@ export function EventDetailView({
             {event.linked_tasks.length > 0 ? (
               <Card className="rounded-2xl border border-border bg-card lc-card-shadow">
                 <CardHeader>
-                  <CardTitle>Linked Tasks</CardTitle>
+                  <CardTitle className="text-base">Linked Tasks</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {event.linked_tasks.map((task) => (
@@ -395,60 +340,50 @@ export function EventDetailView({
               </Card>
             ) : null}
 
-            <Card className="rounded-2xl border border-border bg-card lc-card-shadow">
-              <CardHeader>
-                <CardTitle>Venue & Map</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm">
-                {(event.venue.type === "physical" ||
-                  event.venue.type === "hybrid") && (
-                  <p className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
-                    {event.venue.address ?? "Address not provided"}
-                    {event.venue.city ? `, ${event.venue.city}` : ""}
-                  </p>
-                )}
-                {(event.venue.type === "online" ||
-                  event.venue.type === "hybrid") && (
-                  <p className="flex items-center gap-2">
-                    <Monitor className="h-4 w-4" />
-                    {event.venue.platform ?? "Online"}
-                  </p>
-                )}
+            {showVenue ? (
+              <Card className="rounded-2xl border border-border bg-card lc-card-shadow">
+                <CardHeader>
+                  <CardTitle className="text-base">Venue</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 text-sm">
+                  {(event.venue.type === "physical" ||
+                    event.venue.type === "hybrid") && (
+                    <p className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4" />
+                      {event.venue.address ?? "Address not provided"}
+                      {event.venue.city ? `, ${event.venue.city}` : ""}
+                    </p>
+                  )}
+                  {(event.venue.type === "online" ||
+                    event.venue.type === "hybrid") && (
+                    <p className="flex items-center gap-2">
+                      <Monitor className="h-4 w-4" />
+                      {event.venue.platform ?? "Online"}
+                    </p>
+                  )}
 
-                {mapQuery ? (
-                  <div className="h-64 w-full overflow-hidden rounded-xl border border-border">
-                    <iframe
-                      title="Event venue map"
-                      src={mapEmbedUrl(mapQuery)}
-                      className="h-64 w-full"
-                      loading="lazy"
-                      referrerPolicy="no-referrer-when-downgrade"
-                    />
-                  </div>
-                ) : null}
-
-                {event.venue.maps_url ? (
-                  <Button variant="ghost" size="sm" asChild className="w-fit">
-                    <a
-                      href={event.venue.maps_url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1"
-                    >
-                      Open in Maps <ExternalLink className="h-3.5 w-3.5" />
-                    </a>
-                  </Button>
-                ) : null}
-              </CardContent>
-            </Card>
+                  {event.venue.maps_url ? (
+                    <Button variant="ghost" size="sm" asChild className="w-fit">
+                      <a
+                        href={event.venue.maps_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1"
+                      >
+                        Open in Maps <ExternalLink className="h-3.5 w-3.5" />
+                      </a>
+                    </Button>
+                  ) : null}
+                </CardContent>
+              </Card>
+            ) : null}
           </div>
 
           {layout === "full" ? (
             <div className="space-y-4 lg:col-span-1 lg:sticky lg:top-6 lg:self-start">
               <Card className="rounded-2xl border border-border bg-card lc-card-shadow">
                 <CardHeader>
-                  <CardTitle>Organizer</CardTitle>
+                  <CardTitle className="text-base">Organizer</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center gap-3">
@@ -470,7 +405,7 @@ export function EventDetailView({
                         {organizerName}
                       </p>
                       <p className="text-xs capitalize text-muted-foreground">
-                        {organizerLabel(event.organizer.type)}
+                        {organizerTypeLabel(event.organizer.type)}
                       </p>
                     </div>
                   </div>
@@ -480,7 +415,7 @@ export function EventDetailView({
               {event.interest_count > 0 ? (
                 <Card className="rounded-2xl border border-border bg-card lc-card-shadow">
                   <CardHeader>
-                    <CardTitle>Social Proof</CardTitle>
+                    <CardTitle className="text-base">Social Proof</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-sm text-muted-foreground">

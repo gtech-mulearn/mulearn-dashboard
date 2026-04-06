@@ -5,18 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useFeaturedEvents } from "../hooks";
+import { FEATURED_SLIDE_INTERVAL } from "../constants";
+import { formatEventDate, useFeaturedEvents } from "../hooks";
 import { InterestButton } from "./interest-button";
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
-const SLIDE_INTERVAL = 5000;
 
 export function FeaturedEventsCarousel() {
   const { data, isLoading } = useFeaturedEvents({ pageIndex: 1, perPage: 10 });
@@ -41,7 +32,7 @@ export function FeaturedEventsCarousel() {
 
   useEffect(() => {
     if (paused || featuredEvents.length <= 1) return;
-    timerRef.current = setTimeout(goNext, SLIDE_INTERVAL);
+    timerRef.current = setTimeout(goNext, FEATURED_SLIDE_INTERVAL);
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
@@ -85,12 +76,21 @@ export function FeaturedEventsCarousel() {
       {/* Gradient overlay */}
       <div className="absolute inset-0 z-10 bg-gradient-to-t from-foreground/85 via-foreground/50 to-transparent" />
 
+      <Link
+        aria-label={`Open ${event.title}`}
+        href={`/dashboard/events/${event.id}`}
+        className="absolute inset-0 z-[15]"
+      />
+
       {/* Content overlay */}
       <div className="absolute inset-x-0 bottom-0 z-20 p-5 text-primary-foreground sm:p-8 lc-slide-up">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0 space-y-2">
             {/* Title */}
-            <Link href={`/dashboard/events/${event.id}`}>
+            <Link
+              href={`/dashboard/events/${event.id}`}
+              className="relative z-20"
+            >
               <h2 className="line-clamp-2 text-xl font-bold tracking-tight drop-shadow sm:text-3xl hover:underline underline-offset-2 text-primary-foreground">
                 {event.title}
               </h2>
@@ -99,14 +99,14 @@ export function FeaturedEventsCarousel() {
             {/* Frosted glass info pill */}
             <div className="inline-flex items-center gap-2 rounded-full bg-primary-foreground/15 backdrop-blur-sm border border-primary-foreground/20 px-3 py-1 text-xs text-primary-foreground/90">
               <CalendarDays className="h-3.5 w-3.5" />
-              <span>{formatDate(event.start_datetime)}</span>
+              <span>{formatEventDate(event.start_datetime)}</span>
               <span>|</span>
               <MapPin className="h-3.5 w-3.5" />
               <span>{event.venue_city ?? "Venue TBA"}</span>
             </div>
           </div>
 
-          <div className="shrink-0">
+          <div className="relative z-20 shrink-0">
             <InterestButton
               eventId={event.id}
               status={event.viewer_interest_status}
@@ -117,7 +117,7 @@ export function FeaturedEventsCarousel() {
 
         {/* Dots */}
         {featuredEvents.length > 1 ? (
-          <div className="mt-4 flex items-center gap-1.5">
+          <div className="relative z-20 mt-4 flex items-center gap-1.5">
             {featuredEvents.map((ev, i) => (
               <button
                 key={ev.id}
