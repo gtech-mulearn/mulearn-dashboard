@@ -201,16 +201,7 @@ export default function EventModal({
   const [exitConfirmOpen, setExitConfirmOpen] = useState(false);
 
   const requestClose = () => {
-    const hasChanges =
-      isDirty ||
-      coverImageFile !== null ||
-      bannerImageFile !== null ||
-      selectedCoOwners.length > 0;
-    if (hasChanges) {
-      setExitConfirmOpen(true);
-    } else {
-      onClose();
-    }
+    setExitConfirmOpen(true);
   };
 
   const confirmExit = () => {
@@ -226,7 +217,7 @@ export default function EventModal({
     handleSubmit,
     reset,
     setError,
-    formState: { errors, isSubmitting, isDirty },
+    formState: { errors, isSubmitting },
   } = useForm<CreateEventSchema>({
     resolver: zodResolver(
       isEdit ? updateEventSchema : createEventSchema,
@@ -759,50 +750,13 @@ export default function EventModal({
   return (
     <>
       <Dialog open={open} onOpenChange={(state) => !state && requestClose()}>
-        <DialogContent className="max-h-[90vh] w-[95vw] overflow-y-auto p-4 sm:max-w-3xl sm:p-6">
+        <DialogContent className="max-h-[90vh] w-full overflow-y-auto p-4 sm:max-w-3xl sm:p-6">
           <DialogHeader>
             <DialogTitle>{isEdit ? "Edit Event" : "Create Event"}</DialogTitle>
           </DialogHeader>
 
-          <form
-            className="space-y-4 relative"
-            onSubmit={(e) => e.preventDefault()}
-          >
-            <div className="sticky top-0 z-10 flex flex-nowrap gap-2 overflow-x-auto bg-background/95 py-2 backdrop-blur scrollbar-none border-b shadow-sm mb-4">
-              {[
-                { id: "sec-basic", label: "Basic Info" },
-                { id: "sec-scope", label: "Type & Scope" },
-                { id: "sec-create-as", label: "Create as" },
-                { id: "sec-dates", label: "Dates" },
-                { id: "sec-venue", label: "Venue" },
-                { id: "sec-images", label: "Images" },
-                { id: "sec-registration", label: "Registration" },
-                { id: "sec-tags", label: "Tags & Collab" },
-              ].map((step, idx) => (
-                <Button
-                  key={step.id}
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="shrink-0 text-xs text-muted-foreground hover:text-primary rounded-full"
-                  onClick={() => {
-                    document
-                      .getElementById(step.id)
-                      ?.scrollIntoView({ behavior: "smooth", block: "start" });
-                  }}
-                >
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-muted mr-1.5">
-                    {idx + 1}
-                  </span>
-                  {step.label}
-                </Button>
-              ))}
-            </div>
-
-            <section
-              id="sec-basic"
-              className="space-y-3 rounded-lg border p-4 scroll-m-20"
-            >
+          <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+            <section className="space-y-3 rounded-lg border p-4">
               <h3 className="mb-3 text-sm font-semibold text-foreground">
                 Basic Info
               </h3>
@@ -838,10 +792,7 @@ export default function EventModal({
               ) : null}
             </section>
 
-            <section
-              id="sec-scope"
-              className="space-y-3 rounded-lg border p-4 scroll-m-20"
-            >
+            <section className="space-y-3 rounded-lg border p-4">
               <h3 className="mb-3 text-sm font-semibold text-foreground">
                 Type &amp; Scope
               </h3>
@@ -961,10 +912,7 @@ export default function EventModal({
               ) : null}
             </section>
 
-            <section
-              id="sec-create-as"
-              className="space-y-3 rounded-lg border p-4 scroll-m-20"
-            >
+            <section className="space-y-3 rounded-lg border p-4">
               <h3 className="mb-3 text-sm font-semibold text-foreground">
                 Create as
               </h3>
@@ -997,10 +945,7 @@ export default function EventModal({
               )}
             </section>
 
-            <section
-              id="sec-dates"
-              className="space-y-3 rounded-lg border p-4 scroll-m-20"
-            >
+            <section className="space-y-3 rounded-lg border p-4">
               <h3 className="mb-3 text-sm font-semibold text-foreground">
                 Dates
               </h3>
@@ -1042,14 +987,9 @@ export default function EventModal({
               </div>
             </section>
 
-            <div id="sec-venue" className="scroll-m-20">
-              <VenueSection control={control} watch={watch} errors={errors} />
-            </div>
+            <VenueSection control={control} watch={watch} errors={errors} />
 
-            <section
-              id="sec-images"
-              className="space-y-3 rounded-lg border p-4 scroll-m-20"
-            >
+            <section className="space-y-3 rounded-lg border p-4">
               <h3 className="mb-3 text-sm font-semibold text-foreground">
                 Images
               </h3>
@@ -1081,10 +1021,7 @@ export default function EventModal({
               </div>
             </section>
 
-            <section
-              id="sec-registration"
-              className="space-y-3 rounded-lg border p-4 scroll-m-20"
-            >
+            <section className="space-y-3 rounded-lg border p-4">
               <h3 className="mb-3 text-sm font-semibold text-foreground">
                 Registration
               </h3>
@@ -1151,10 +1088,7 @@ export default function EventModal({
               />
             </section>
 
-            <section
-              id="sec-tags"
-              className="space-y-3 rounded-lg border p-4 scroll-m-20"
-            >
+            <section className="space-y-3 rounded-lg border p-4">
               <h3 className="mb-3 text-sm font-semibold text-foreground">
                 Tags &amp; Collaboration
               </h3>
@@ -1248,17 +1182,6 @@ export default function EventModal({
                 />
               </div>
 
-              {watch("is_collaboration") ? (
-                isEdit && initialData?.id ? (
-                  <EventSearch mode="invite" eventId={initialData.id} />
-                ) : (
-                  <p className="text-xs text-muted-foreground">
-                    You can add collaborators after creating the event from the
-                    manage screen.
-                  </p>
-                )
-              ) : null}
-
               <div className="rounded-md border border-dashed p-3">
                 <p className="text-sm font-medium">Linked tasks</p>
                 <p className="text-xs text-muted-foreground">
@@ -1266,53 +1189,99 @@ export default function EventModal({
                 </p>
               </div>
 
-              <div className="space-y-2">
-                <p className="text-sm font-medium">
-                  Co-owners{" "}
-                  <span className="text-xs text-muted-foreground">
-                    (optional)
-                  </span>
-                </p>
-                <MuidSearchInput
-                  onSelectUser={(user) => {
-                    if (
-                      selectedCoOwners.some(
-                        (owner) => owner.user_id === user.id,
-                      )
-                    ) {
-                      return;
-                    }
-                    setSelectedCoOwners((prev) => [
-                      ...prev,
-                      {
-                        user_id: user.id,
-                        role: "co_owner",
-                        full_name: user.full_name,
-                        muid: user.muid,
-                      },
-                    ]);
-                  }}
-                  placeholder="Search by name or muid..."
-                />
-                <div className="flex flex-wrap gap-2">
-                  {selectedCoOwners.map((owner) => (
-                    <Badge
-                      key={owner.user_id}
-                      variant="outline"
-                      className="cursor-pointer gap-1"
-                      onClick={() =>
-                        setSelectedCoOwners((prev) =>
-                          prev.filter((item) => item.user_id !== owner.user_id),
-                        )
-                      }
-                    >
-                      {owner.full_name}
-                      <span className="text-muted-foreground text-xs">
-                        ({owner.muid})
-                      </span>
-                      ✕
-                    </Badge>
-                  ))}
+              <div className="space-y-4 rounded-xl border border-border bg-muted/20 p-3">
+                <div>
+                  <p className="text-sm font-semibold">People Access</p>
+                  <p className="text-xs text-muted-foreground">
+                    Add co-owners and collaborators without crowding the main
+                    form.
+                  </p>
+                </div>
+
+                {watch("is_collaboration") ? (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">Collaborators</p>
+                    {isEdit && initialData?.id ? (
+                      <div className="rounded-md border border-dashed p-2">
+                        <EventSearch mode="invite" eventId={initialData.id} />
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        You can invite collaborators after creating the event
+                        from the manage screen.
+                      </p>
+                    )}
+                  </div>
+                ) : null}
+
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">
+                    Co-owners{" "}
+                    <span className="text-xs text-muted-foreground">
+                      (optional)
+                    </span>
+                  </p>
+
+                  <div className="rounded-md border border-dashed p-2">
+                    <MuidSearchInput
+                      onSelectUser={(user) => {
+                        if (
+                          selectedCoOwners.some(
+                            (owner) => owner.user_id === user.id,
+                          )
+                        ) {
+                          return;
+                        }
+                        setSelectedCoOwners((prev) => [
+                          ...prev,
+                          {
+                            user_id: user.id,
+                            role: "co_owner",
+                            full_name: user.full_name,
+                            muid: user.muid,
+                          },
+                        ]);
+                      }}
+                      placeholder="Search by name or muid..."
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    {selectedCoOwners.map((owner) => (
+                      <div
+                        key={owner.user_id}
+                        className="flex items-center justify-between gap-2 rounded-md border bg-background p-2"
+                      >
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium">
+                            {owner.full_name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {owner.muid}
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            setSelectedCoOwners((prev) =>
+                              prev.filter(
+                                (item) => item.user_id !== owner.user_id,
+                              ),
+                            )
+                          }
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    ))}
+                    {selectedCoOwners.length === 0 ? (
+                      <p className="text-xs text-muted-foreground">
+                        No co-owners selected yet.
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
               </div>
             </section>

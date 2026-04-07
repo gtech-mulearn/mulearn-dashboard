@@ -12,15 +12,7 @@ export const EVENT_CREATE_WIZARD_STEPS = [
 export const MANAGE_PANEL_SECTIONS = [
   {
     value: "publishing",
-    label: "Publish",
-  },
-  {
-    value: "co-owners",
-    label: "Owners",
-  },
-  {
-    value: "collaborators",
-    label: "Collabs",
+    label: "Publishing",
   },
   {
     value: "history",
