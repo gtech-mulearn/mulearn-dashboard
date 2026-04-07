@@ -3,6 +3,7 @@
 import { ExternalLink, MapPin, Users } from "lucide-react";
 import { buildGoogleMapEmbedUrl } from "../hooks";
 import type { EventAnalyticsPanelProps } from "../types";
+import { ExpandableMapDialog } from "./expandable-map-dialog";
 
 export function EventAnalyticsPanel({
   interestCount,
@@ -53,6 +54,11 @@ export function EventAnalyticsPanel({
                 <ExternalLink className="h-3 w-3" />
               </a>
             ) : null}
+            <ExpandableMapDialog
+              mapQuery={mapQuery}
+              mapsUrl={mapsUrl}
+              venueName={venueName}
+            />
           </div>
         </section>
       ) : null}

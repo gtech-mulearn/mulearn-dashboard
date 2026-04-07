@@ -5,16 +5,14 @@
 // If the current user doesn't have those permissions, the API returns an empty list or 403.
 
 import { useQueries, useQuery } from "@tanstack/react-query";
-import { Plus, Search } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { apiClient, endpoints } from "@/api";
 import { ApiError } from "@/api/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { eventsApi } from "../api";
-import { MANAGE_EVENT_STATUS_PILLS } from "../constants/events.constants";
 import { usePendingCollaboratorInvites } from "../hooks";
 import { eventKeys } from "../hooks/query-keys";
 import type { EventListItem, EventStatus } from "../types";
@@ -23,6 +21,7 @@ import { EventCreateWizard } from "./event-create-wizard";
 import EventModal from "./event-modal";
 import { EventsGrid } from "./events-grid";
 import { EventsPagination } from "./events-pagination";
+import { ManageEventsFilters } from "./manage-events-filters";
 
 export default function ManageEventsDashboard() {
   const router = useRouter();
@@ -227,9 +226,11 @@ export default function ManageEventsDashboard() {
             className="gap-2 border-border text-foreground hover:border-primary hover:text-primary"
           >
             Invites
-            <span className="inline-flex min-w-6 items-center justify-center rounded-full bg-primary px-2 py-0.5 text-xs font-semibold text-primary-foreground">
-              {pendingInviteCount}
-            </span>
+            {pendingInviteCount > 0 ? (
+              <span className="inline-flex min-w-6 items-center justify-center rounded-full bg-primary px-2 py-0.5 text-xs font-semibold text-primary-foreground">
+                {pendingInviteCount}
+              </span>
+            ) : null}
           </Button>
           <Button
             className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
@@ -290,44 +291,18 @@ export default function ManageEventsDashboard() {
         )}
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {MANAGE_EVENT_STATUS_PILLS.map((pill) => {
-          const active = statusFilter === pill.value;
-          return (
-            <Button
-              key={pill.value}
-              variant="outline"
-              size="sm"
-              className={`rounded-full border border-border bg-background px-4 py-1.5 text-sm text-muted-foreground hover:border-primary hover:text-primary ${
-                active
-                  ? "border-primary bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground"
-                  : ""
-              }`}
-              onClick={() => {
-                setStatusFilter(pill.value);
-                setPage(1);
-              }}
-            >
-              {pill.label}
-            </Button>
-          );
-        })}
-      </div>
-
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="relative w-full md:max-w-md">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            className="rounded-xl border-border bg-background pl-9"
-            placeholder="Search events"
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-          />
-        </div>
-      </div>
+      <ManageEventsFilters
+        searchValue={search}
+        onSearch={(value) => {
+          setSearch(value);
+          setPage(1);
+        }}
+        selectedStatus={statusFilter}
+        onStatusChange={(status) => {
+          setStatusFilter(status);
+          setPage(1);
+        }}
+      />
 
       {isLoading ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

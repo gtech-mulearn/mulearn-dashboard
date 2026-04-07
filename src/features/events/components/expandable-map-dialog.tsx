@@ -121,7 +121,7 @@ export function ExpandableMapDialog(props: ExpandableMapDialogProps) {
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="w-[min(97vw,1320px)] max-w-none border-border p-5">
+        <DialogContent className="w-[min(98vw,1600px)] max-w-none border-border p-5">
           <DialogHeader>
             <DialogTitle>Event Location</DialogTitle>
           </DialogHeader>

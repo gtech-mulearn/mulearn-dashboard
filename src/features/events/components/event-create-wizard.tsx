@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Check, Loader2, Plus, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { Controller, type Resolver, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -41,6 +41,140 @@ import type {
 import { EventSearch } from "./event-search";
 import { VenueSection } from "./venue-section";
 
+const MAX_WIZARD_UPLOAD_BYTES = 900 * 1024;
+const MAX_SINGLE_IMAGE_BYTES = 450 * 1024;
+const MAX_IMAGE_DIMENSION = 1600;
+
+function formatReviewEnum(value: unknown): string {
+  if (typeof value !== "string") return "Not set";
+
+  const normalized = value.trim();
+  if (!normalized) return "Not set";
+
+  return normalized
+    .split(/[_\s-]+/)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(" ");
+}
+
+function formatReviewDateTime(value: unknown): string {
+  if (typeof value !== "string") return "Not set";
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "Not set";
+
+  return parsed.toLocaleString();
+}
+
+async function readImageDimensions(
+  file: File,
+): Promise<{ width: number; height: number; dataUrl: string }> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = String(reader.result ?? "");
+      const image = new Image();
+      image.onload = () => {
+        resolve({
+          width: image.naturalWidth,
+          height: image.naturalHeight,
+          dataUrl,
+        });
+      };
+      image.onerror = () => reject(new Error("Unable to load image"));
+      image.src = dataUrl;
+    };
+    reader.onerror = () => reject(new Error("Unable to read image"));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function canvasToFile(
+  canvas: HTMLCanvasElement,
+  fileName: string,
+  mimeType: string,
+  quality: number,
+): Promise<File> {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          reject(new Error("Unable to compress image"));
+          return;
+        }
+        resolve(new File([blob], fileName, { type: mimeType }));
+      },
+      mimeType,
+      quality,
+    );
+  });
+}
+
+async function compressImageForUpload(
+  file: File,
+  maxBytes: number,
+): Promise<File> {
+  if (file.size <= maxBytes) return file;
+  if (file.type === "image/gif") return file;
+
+  try {
+    const { width, height, dataUrl } = await readImageDimensions(file);
+    const maxSide = Math.max(width, height);
+    const initialScale =
+      maxSide > MAX_IMAGE_DIMENSION ? MAX_IMAGE_DIMENSION / maxSide : 1;
+
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    if (!context) return file;
+
+    let targetWidth = Math.max(1, Math.round(width * initialScale));
+    let targetHeight = Math.max(1, Math.round(height * initialScale));
+    const image = new Image();
+
+    await new Promise<void>((resolve, reject) => {
+      image.onload = () => resolve();
+      image.onerror = () => reject(new Error("Unable to decode image"));
+      image.src = dataUrl;
+    });
+
+    const outputType =
+      file.type === "image/png" || file.type === "image/webp"
+        ? "image/webp"
+        : "image/jpeg";
+
+    let quality = 0.9;
+    let attempts = 0;
+    let compressed = file;
+
+    while (attempts < 8) {
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+      context.clearRect(0, 0, targetWidth, targetHeight);
+      context.drawImage(image, 0, 0, targetWidth, targetHeight);
+
+      compressed = await canvasToFile(
+        canvas,
+        file.name.replace(/\.(png|jpe?g|webp)$/i, ".webp"),
+        outputType,
+        quality,
+      );
+
+      if (compressed.size <= maxBytes) {
+        return compressed;
+      }
+
+      quality = Math.max(0.55, quality - 0.1);
+      targetWidth = Math.max(1, Math.round(targetWidth * 0.9));
+      targetHeight = Math.max(1, Math.round(targetHeight * 0.9));
+      attempts += 1;
+    }
+
+    return compressed;
+  } catch {
+    return file;
+  }
+}
+
 export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
   const createEvent = useCreateEvent();
   const organizerOptionsQuery = useOrganizerOptions();
@@ -57,6 +191,7 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
   );
   const [tagInput, setTagInput] = useState("");
   const [confirmCloseOpen, setConfirmCloseOpen] = useState(false);
+  const [organiserError, setOrganiserError] = useState("");
 
   const {
     control,
@@ -113,6 +248,20 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
     (item) => `${item.type}:${item.id}` === selectedOrganiserId,
   );
 
+  const updateSelectedOrganiserId = useCallback((nextId: string) => {
+    setSelectedOrganiserId(nextId);
+    setOrganiserError("");
+  }, []);
+
+  useEffect(() => {
+    if (organizerOptions.length !== 1) return;
+    const onlyOption = organizerOptions[0];
+    const nextId = `${onlyOption.type}:${onlyOption.id}`;
+    if (selectedOrganiserId !== nextId) {
+      updateSelectedOrganiserId(nextId);
+    }
+  }, [organizerOptions, selectedOrganiserId, updateSelectedOrganiserId]);
+
   const scope = watch("scope");
 
   const resetWizard = () => {
@@ -120,12 +269,13 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
     setCurrentStep(1);
     setCoverImageFile(null);
     setBannerImageFile(null);
-    setSelectedOrganiserId("");
+    updateSelectedOrganiserId("");
     setSelectedCampusName("");
     setSelectedIgName("");
     setSelectedCampusIgName("");
     setSelectedCoOwners([]);
     setTagInput("");
+    setOrganiserError("");
   };
 
   const requestClose = () => {
@@ -144,10 +294,7 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
 
     if (currentStep === 2) {
       if (!selectedOrganiser) {
-        setError("title", {
-          type: "manual",
-          message: "Select an organiser before proceeding",
-        });
+        setOrganiserError("Select an organiser before proceeding");
         return false;
       }
 
@@ -170,16 +317,93 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
         "venue_type",
       ];
 
+      let hasStepError = false;
+      const startDatetime = watch("start_datetime");
+      const endDatetime = watch("end_datetime");
       const venueType = watch("venue_type");
+
+      if (!startDatetime) {
+        setError("start_datetime", {
+          type: "manual",
+          message: "Start datetime is required",
+        });
+        hasStepError = true;
+      }
+      if (!endDatetime) {
+        setError("end_datetime", {
+          type: "manual",
+          message: "End datetime is required",
+        });
+        hasStepError = true;
+      }
+
       if (venueType === "physical") {
+        if (!watch("address")) {
+          setError("address", {
+            type: "manual",
+            message: "Address is required for physical venues",
+          });
+          hasStepError = true;
+        }
+        if (!watch("city")) {
+          setError("city", {
+            type: "manual",
+            message: "City is required for physical venues",
+          });
+          hasStepError = true;
+        }
         fields.push("address", "city");
       }
       if (venueType === "online") {
+        if (!watch("online_link")) {
+          setError("online_link", {
+            type: "manual",
+            message: "Online link is required for online venues",
+          });
+          hasStepError = true;
+        }
+        if (!watch("platform")) {
+          setError("platform", {
+            type: "manual",
+            message: "Platform is required for online venues",
+          });
+          hasStepError = true;
+        }
         fields.push("online_link", "platform");
       }
       if (venueType === "hybrid") {
+        if (!watch("address")) {
+          setError("address", {
+            type: "manual",
+            message: "Address is required for physical venues",
+          });
+          hasStepError = true;
+        }
+        if (!watch("city")) {
+          setError("city", {
+            type: "manual",
+            message: "City is required for physical venues",
+          });
+          hasStepError = true;
+        }
+        if (!watch("online_link")) {
+          setError("online_link", {
+            type: "manual",
+            message: "Online link is required for online venues",
+          });
+          hasStepError = true;
+        }
+        if (!watch("platform")) {
+          setError("platform", {
+            type: "manual",
+            message: "Platform is required for online venues",
+          });
+          hasStepError = true;
+        }
         fields.push("address", "city", "online_link", "platform");
       }
+
+      if (hasStepError) return false;
 
       return trigger(fields);
     }
@@ -187,12 +411,25 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
     return true;
   };
 
+  const addTag = () => {
+    const normalized = tagInput.trim().replace(/,$/, "").toLowerCase();
+    if (!normalized) return;
+
+    const current = watch("tags") ?? [];
+    if (current.includes(normalized)) {
+      setTagInput("");
+      return;
+    }
+
+    setValue("tags", [...current, normalized], {
+      shouldDirty: true,
+    });
+    setTagInput("");
+  };
+
   const submitWizard = async (action: "draft" | "publish") => {
     if (!selectedOrganiser) {
-      setError("title", {
-        type: "manual",
-        message: "Select an organiser before saving",
-      });
+      setOrganiserError("Select an organiser before saving");
       return;
     }
 
@@ -247,18 +484,48 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
       tags: values.tags && values.tags.length > 0 ? values.tags : null,
     };
 
-    const fd = toEventFormData(payload, coverImageFile, bannerImageFile);
-    const created = await createEvent.mutateAsync(fd as never);
+    const compressedCoverImage = coverImageFile
+      ? await compressImageForUpload(coverImageFile, MAX_SINGLE_IMAGE_BYTES)
+      : null;
+    const compressedBannerImage = bannerImageFile
+      ? await compressImageForUpload(bannerImageFile, MAX_SINGLE_IMAGE_BYTES)
+      : null;
 
-    if (action === "publish") {
-      await eventsApi.publish(created.id);
+    const totalUploadBytes =
+      (compressedCoverImage?.size ?? 0) + (compressedBannerImage?.size ?? 0);
+    if (totalUploadBytes > MAX_WIZARD_UPLOAD_BYTES) {
+      const currentSizeMB = (totalUploadBytes / (1024 * 1024)).toFixed(2);
+      const maxSizeMB = (MAX_WIZARD_UPLOAD_BYTES / (1024 * 1024)).toFixed(2);
+      toast.error(
+        `Total image upload is ${currentSizeMB}MB. Please keep cover + banner under ${maxSizeMB}MB.`,
+      );
+      return;
     }
 
-    toast.success(
-      action === "publish" ? "Event published" : "Event saved as draft",
-    );
-    resetWizard();
-    onClose();
+    try {
+      const requestBody =
+        compressedCoverImage || compressedBannerImage
+          ? toEventFormData(
+              payload,
+              compressedCoverImage,
+              compressedBannerImage,
+            )
+          : payload;
+
+      const created = await createEvent.mutateAsync(requestBody as never);
+
+      if (action === "publish") {
+        await eventsApi.publish(created.id);
+      }
+
+      toast.success(
+        action === "publish" ? "Event published" : "Event saved as draft",
+      );
+      resetWizard();
+      onClose();
+    } catch {
+      // Error toast is handled by mutation onError; avoid surfacing runtime overlay.
+    }
   };
 
   return (
@@ -267,49 +534,53 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
         open={open}
         onOpenChange={(next) => (!next ? requestClose() : null)}
       >
-        <DialogContent className="flex h-[100dvh] w-screen max-w-none flex-col overflow-hidden rounded-none border-0 sm:h-[96dvh] sm:w-[96vw] sm:max-w-[1600px] sm:rounded-2xl sm:border">
+        <DialogContent className="flex h-[100dvh] w-screen max-w-none flex-col overflow-hidden rounded-none border-0 sm:h-[92dvh] sm:w-[94vw] sm:max-w-[1400px] sm:rounded-2xl sm:border">
           <DialogHeader className="pb-2">
             <DialogTitle>Create Event</DialogTitle>
           </DialogHeader>
 
-          <div className="hidden items-start gap-3 px-1 pb-2 sm:flex">
+          <div className="mx-auto hidden w-full max-w-6xl items-center gap-4 px-4 pb-2 sm:flex">
             {EVENT_CREATE_WIZARD_STEPS.map((label, index) => {
               const stepIndex = index + 1;
               const isActive = stepIndex === currentStep;
               const isCompleted = stepIndex < currentStep;
 
               return (
-                <div key={label} className="flex flex-1 items-start gap-2">
-                  <button
-                    type="button"
-                    disabled={!isCompleted}
-                    onClick={() => isCompleted && setCurrentStep(stepIndex)}
-                    className={`flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-semibold transition-colors ${
-                      isActive || isCompleted
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-border bg-background text-muted-foreground"
-                    }`}
-                  >
-                    {isCompleted ? <Check className="h-4 w-4" /> : stepIndex}
-                  </button>
-                  <div className="min-w-0 pt-1">
-                    <p
-                      className={`text-xs ${isActive ? "font-medium text-primary" : "text-muted-foreground"}`}
+                <Fragment key={label}>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      disabled={!isCompleted}
+                      onClick={() => isCompleted && setCurrentStep(stepIndex)}
+                      className={`flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-semibold transition-colors ${
+                        isActive
+                          ? "border-primary bg-primary text-primary-foreground ring-2 ring-primary ring-offset-2"
+                          : isCompleted
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-border bg-background text-muted-foreground"
+                      }`}
                     >
-                      {label}
-                    </p>
-                    {index < EVENT_CREATE_WIZARD_STEPS.length - 1 ? (
-                      <div
-                        className={`mt-2 h-0.5 w-full ${isCompleted ? "bg-primary" : "bg-border"}`}
-                      />
-                    ) : null}
+                      {isCompleted ? <Check className="h-4 w-4" /> : stepIndex}
+                    </button>
+                    <div className="min-w-0 pt-1">
+                      <p
+                        className={`text-xs whitespace-nowrap leading-none ${isActive ? "font-medium text-primary" : "text-muted-foreground"}`}
+                      >
+                        {label}
+                      </p>
+                    </div>
                   </div>
-                </div>
+                  {index < EVENT_CREATE_WIZARD_STEPS.length - 1 ? (
+                    <div
+                      className={`h-0.5 flex-1 self-center ${isCompleted ? "bg-primary" : "bg-border"}`}
+                    />
+                  ) : null}
+                </Fragment>
               );
             })}
           </div>
 
-          <div className="px-1 pb-2 sm:hidden">
+          <div className="mx-auto w-full max-w-5xl px-1 pb-2 sm:hidden">
             <p className="text-sm font-medium text-foreground">
               Step {currentStep} of {EVENT_CREATE_WIZARD_STEPS.length} -{" "}
               {EVENT_CREATE_WIZARD_STEPS[currentStep - 1]}
@@ -325,517 +596,558 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
           </div>
 
           <div className="flex-1 overflow-y-auto p-6">
-            {currentStep === 1 ? (
-              <section className="space-y-6">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-foreground">
-                    Title <span className="text-destructive">*</span>
-                  </p>
-                  <Input
-                    className="rounded-xl border-border bg-background"
-                    {...register("title")}
-                  />
-                  {errors.title?.message ? (
-                    <p className="text-xs text-destructive">
-                      {errors.title.message}
+            <div className="mx-auto w-full max-w-5xl">
+              {currentStep === 1 ? (
+                <section className="space-y-6">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-foreground">
+                      Title <span className="text-destructive">*</span>
                     </p>
-                  ) : null}
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-foreground">
-                    Description <span className="text-destructive">*</span>
-                  </p>
-                  <Textarea
-                    className="rounded-xl border-border bg-background"
-                    {...register("description")}
-                  />
-                  {errors.description?.message ? (
-                    <p className="text-xs text-destructive">
-                      {errors.description.message}
-                    </p>
-                  ) : null}
-                </div>
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-foreground">
-                    Event type
-                  </p>
-                  <Controller
-                    control={control}
-                    name="event_type"
-                    render={({ field }) => (
-                      <div className="flex flex-wrap gap-2">
-                        {EVENT_TYPE_SELECT_OPTIONS.map((item) => {
-                          const active = field.value === item.value;
-                          return (
-                            <button
-                              key={item.value}
-                              type="button"
-                              className={`rounded-full border px-4 py-1.5 text-sm transition-colors ${
-                                active
-                                  ? "border-primary bg-primary text-primary-foreground"
-                                  : "border-border bg-background text-muted-foreground hover:border-primary hover:text-primary"
-                              }`}
-                              onClick={() => field.onChange(item.value)}
-                            >
-                              {item.label}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-foreground">Tags</p>
-                  <div className="flex gap-2">
                     <Input
-                      value={tagInput}
-                      onChange={(e) => setTagInput(e.target.value)}
+                      className="rounded-xl border-border bg-background"
+                      {...register("title")}
                     />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        const normalized = tagInput
-                          .trim()
-                          .toLowerCase()
-                          .replace(/\s+/g, "-");
-                        if (!normalized) return;
-                        const current = watch("tags") ?? [];
-                        if (current.includes(normalized)) {
-                          setTagInput("");
-                          return;
-                        }
-                        setValue("tags", [...current, normalized], {
-                          shouldDirty: true,
-                        });
-                        setTagInput("");
-                      }}
-                    >
-                      <Plus className="mr-1 h-4 w-4" /> Add
-                    </Button>
+                    {errors.title?.message ? (
+                      <p className="text-xs text-destructive">
+                        {errors.title.message}
+                      </p>
+                    ) : null}
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {(watch("tags") ?? []).map((tag) => (
-                      <Badge key={tag} variant="outline" className="gap-1">
-                        {tag}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const next = (watch("tags") ?? []).filter(
-                              (value) => value !== tag,
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-foreground">
+                      Description <span className="text-destructive">*</span>
+                    </p>
+                    <Textarea
+                      rows={4}
+                      className="rounded-xl border-border bg-background"
+                      {...register("description")}
+                    />
+                    {errors.description?.message ? (
+                      <p className="text-xs text-destructive">
+                        {errors.description.message}
+                      </p>
+                    ) : null}
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-foreground">
+                      Event type
+                    </p>
+                    <Controller
+                      control={control}
+                      name="event_type"
+                      render={({ field }) => (
+                        <div className="flex flex-wrap gap-2">
+                          {EVENT_TYPE_SELECT_OPTIONS.map((item) => {
+                            const active = field.value === item.value;
+                            return (
+                              <button
+                                key={item.value}
+                                type="button"
+                                className={`rounded-full border px-4 py-1.5 text-sm transition-colors ${
+                                  active
+                                    ? "border-primary bg-primary text-primary-foreground"
+                                    : "border-border bg-background text-muted-foreground hover:border-primary hover:text-primary"
+                                }`}
+                                onClick={() => field.onChange(item.value)}
+                              >
+                                {item.label}
+                              </button>
                             );
-                            setValue("tags", next, { shouldDirty: true });
-                          }}
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </Badge>
-                    ))}
+                          })}
+                        </div>
+                      )}
+                    />
                   </div>
-                </div>
-              </section>
-            ) : null}
-
-            {currentStep === 2 ? (
-              <section className="space-y-6">
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-foreground">
-                    Organiser <span className="text-destructive">*</span>
-                  </p>
-                  {organizerOptionsQuery.isLoading ? (
-                    <div className="h-10 animate-pulse rounded-xl bg-muted" />
-                  ) : organizerOptions.length === 1 ? (
-                    <div className="rounded-xl border border-border bg-muted px-3 py-2 text-sm">
-                      {organizerOptions[0].label}
-                    </div>
-                  ) : (
-                    <select
-                      className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm"
-                      value={selectedOrganiserId}
-                      onChange={(e) => setSelectedOrganiserId(e.target.value)}
-                    >
-                      <option value="">Select organiser</option>
-                      {organizerOptions.map((item) => (
-                        <option
-                          key={`${item.type}:${item.id}`}
-                          value={`${item.type}:${item.id}`}
-                        >
-                          {item.label}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-foreground">
-                    Scope <span className="text-destructive">*</span>
-                  </p>
-                  <Controller
-                    control={control}
-                    name="scope"
-                    render={({ field }) => (
-                      <div className="flex flex-wrap gap-2">
-                        {EVENT_SCOPE_OPTIONS.map((item) => {
-                          const active = field.value === item.value;
-                          return (
-                            <button
-                              key={item.value}
-                              type="button"
-                              className={`rounded-full border px-4 py-1.5 text-sm transition-colors ${
-                                active
-                                  ? "border-primary bg-primary text-primary-foreground"
-                                  : "border-border bg-background text-muted-foreground hover:border-primary hover:text-primary"
-                              }`}
-                              onClick={() => field.onChange(item.value)}
-                            >
-                              {item.label}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                  />
-                </div>
-
-                {scope === "campus" ? (
-                  <EventSearch
-                    mode="select"
-                    type="campus"
-                    value={watch("target_campus_id") ?? null}
-                    selectedName={selectedCampusName}
-                    placeholder="Search campus"
-                    onChange={(id, name) => {
-                      setValue("target_campus_id", id || null, {
-                        shouldValidate: true,
-                      });
-                      setSelectedCampusName(name);
-                    }}
-                  />
-                ) : null}
-
-                {scope === "ig" ? (
-                  <EventSearch
-                    mode="select"
-                    type="ig"
-                    value={watch("target_ig_id") ?? null}
-                    selectedName={selectedIgName}
-                    placeholder="Search IG"
-                    onChange={(id, name) => {
-                      setValue("target_ig_id", id || null, {
-                        shouldValidate: true,
-                      });
-                      setSelectedIgName(name);
-                    }}
-                  />
-                ) : null}
-
-                {scope === "campus_ig" ? (
-                  <EventSearch
-                    mode="select"
-                    type="campus_ig"
-                    value={watch("target_campus_ig_id") ?? null}
-                    selectedName={selectedCampusIgName}
-                    placeholder="Search campus IG"
-                    onChange={(id, name) => {
-                      setValue("target_campus_ig_id", id || null, {
-                        shouldValidate: true,
-                      });
-                      setSelectedCampusIgName(name);
-                    }}
-                  />
-                ) : null}
-
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-foreground">
-                    Co-owners
-                  </p>
-                  <MuidSearchInput
-                    placeholder="Search by name or muid"
-                    onSelectUser={(user) => {
-                      if (!user.id) return;
-                      setSelectedCoOwners((previous) => {
-                        if (previous.some((item) => item.user_id === user.id))
-                          return previous;
-                        return [
-                          ...previous,
-                          {
-                            user_id: user.id,
-                            role: "co_owner",
-                            full_name: user.full_name,
-                            muid: user.muid,
-                          },
-                        ];
-                      });
-                    }}
-                  />
-                  <div className="flex flex-wrap gap-2">
-                    {selectedCoOwners.map((owner) => (
-                      <Badge
-                        key={owner.user_id}
-                        variant="secondary"
-                        className="gap-1"
-                      >
-                        {owner.full_name} ({owner.muid})
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setSelectedCoOwners((previous) =>
-                              previous.filter(
-                                (item) => item.user_id !== owner.user_id,
-                              ),
-                            )
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-foreground">Tags</p>
+                    <div className="flex gap-2">
+                      <Input
+                        value={tagInput}
+                        onChange={(e) => setTagInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === ",") {
+                            e.preventDefault();
+                            addTag();
                           }
+                        }}
+                      />
+                      <Button type="button" variant="outline" onClick={addTag}>
+                        <Plus className="mr-1 h-4 w-4" /> Add
+                      </Button>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {(watch("tags") ?? []).map((tag) => (
+                        <Badge key={tag} variant="outline" className="gap-1">
+                          {tag}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const next = (watch("tags") ?? []).filter(
+                                (value) => value !== tag,
+                              );
+                              setValue("tags", next, { shouldDirty: true });
+                            }}
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              ) : null}
+
+              {currentStep === 2 ? (
+                <section className="space-y-6">
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-foreground">
+                      Organiser <span className="text-destructive">*</span>
+                    </p>
+                    {organizerOptionsQuery.isLoading ? (
+                      <div className="h-10 animate-pulse rounded-xl bg-muted" />
+                    ) : organizerOptions.length === 1 ? (
+                      <div className="rounded-xl border border-border bg-muted px-3 py-2 text-sm">
+                        {organizerOptions[0].label}
+                      </div>
+                    ) : !organizerOptionsQuery.isLoading &&
+                      organizerOptions.length === 0 ? (
+                      <p className="text-sm text-destructive">
+                        You don't have permission to create events. Contact an
+                        admin.
+                      </p>
+                    ) : (
+                      <select
+                        className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm"
+                        value={selectedOrganiserId}
+                        onChange={(e) =>
+                          updateSelectedOrganiserId(e.target.value)
+                        }
+                      >
+                        <option value="">Select organiser</option>
+                        {organizerOptions.map((item) => (
+                          <option
+                            key={`${item.type}:${item.id}`}
+                            value={`${item.type}:${item.id}`}
+                          >
+                            {item.label}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                    {organiserError ? (
+                      <p className="text-xs text-destructive">
+                        {organiserError}
+                      </p>
+                    ) : null}
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-foreground">
+                      Scope <span className="text-destructive">*</span>
+                    </p>
+                    <Controller
+                      control={control}
+                      name="scope"
+                      render={({ field }) => (
+                        <div className="flex flex-wrap gap-2">
+                          {EVENT_SCOPE_OPTIONS.map((item) => {
+                            const active = field.value === item.value;
+                            return (
+                              <button
+                                key={item.value}
+                                type="button"
+                                className={`rounded-full border px-4 py-1.5 text-sm transition-colors ${
+                                  active
+                                    ? "border-primary bg-primary text-primary-foreground"
+                                    : "border-border bg-background text-muted-foreground hover:border-primary hover:text-primary"
+                                }`}
+                                onClick={() => field.onChange(item.value)}
+                              >
+                                {item.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    />
+                  </div>
+
+                  {scope === "campus" ? (
+                    <EventSearch
+                      mode="select"
+                      type="campus"
+                      value={watch("target_campus_id") ?? null}
+                      selectedName={selectedCampusName}
+                      placeholder="Search campus"
+                      onChange={(id, name) => {
+                        setValue("target_campus_id", id || null, {
+                          shouldValidate: true,
+                        });
+                        setSelectedCampusName(name);
+                      }}
+                    />
+                  ) : null}
+
+                  {scope === "ig" ? (
+                    <EventSearch
+                      mode="select"
+                      type="ig"
+                      value={watch("target_ig_id") ?? null}
+                      selectedName={selectedIgName}
+                      placeholder="Search IG"
+                      onChange={(id, name) => {
+                        setValue("target_ig_id", id || null, {
+                          shouldValidate: true,
+                        });
+                        setSelectedIgName(name);
+                      }}
+                    />
+                  ) : null}
+
+                  {scope === "campus_ig" ? (
+                    <EventSearch
+                      mode="select"
+                      type="campus_ig"
+                      value={watch("target_campus_ig_id") ?? null}
+                      selectedName={selectedCampusIgName}
+                      placeholder="Search campus IG"
+                      onChange={(id, name) => {
+                        setValue("target_campus_ig_id", id || null, {
+                          shouldValidate: true,
+                        });
+                        setSelectedCampusIgName(name);
+                      }}
+                    />
+                  ) : null}
+
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-foreground">
+                      Co-owners
+                    </p>
+                    <MuidSearchInput
+                      placeholder="Search by name or muid"
+                      onSelectUser={(user) => {
+                        if (!user.id) return;
+                        setSelectedCoOwners((previous) => {
+                          if (previous.some((item) => item.user_id === user.id))
+                            return previous;
+                          return [
+                            ...previous,
+                            {
+                              user_id: user.id,
+                              role: "co_owner",
+                              full_name: user.full_name,
+                              muid: user.muid,
+                            },
+                          ];
+                        });
+                      }}
+                    />
+                    <div className="flex flex-wrap gap-2">
+                      {selectedCoOwners.map((owner) => (
+                        <Badge
+                          key={owner.user_id}
+                          variant="secondary"
+                          className="gap-1"
                         >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </Badge>
+                          {owner.full_name} ({owner.muid})
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setSelectedCoOwners((previous) =>
+                                previous.filter(
+                                  (item) => item.user_id !== owner.user_id,
+                                ),
+                              )
+                            }
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              ) : null}
+
+              {currentStep === 3 ? (
+                <section className="space-y-6">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-foreground">
+                        Start datetime{" "}
+                        <span className="text-destructive">*</span>
+                      </p>
+                      <Input
+                        type="datetime-local"
+                        {...register("start_datetime")}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-foreground">
+                        End datetime <span className="text-destructive">*</span>
+                      </p>
+                      <Input
+                        type="datetime-local"
+                        {...register("end_datetime")}
+                      />
+                    </div>
+                  </div>
+
+                  <VenueSection
+                    control={control}
+                    watch={watch}
+                    errors={errors}
+                    variant="plain"
+                  />
+                </section>
+              ) : null}
+
+              {currentStep === 4 ? (
+                <section className="space-y-6">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-foreground">
+                        Cover image
+                      </p>
+                      <ImageUpload
+                        value={coverImageFile}
+                        onChange={setCoverImageFile}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-foreground">
+                        Banner image
+                      </p>
+                      <ImageUpload
+                        value={bannerImageFile}
+                        onChange={setBannerImageFile}
+                      />
+                    </div>
+                  </div>
+                  <div className="rounded-xl border border-border bg-muted p-4 text-sm text-muted-foreground">
+                    You can add or change images at any time after creating the
+                    event.
+                  </div>
+                </section>
+              ) : null}
+
+              {currentStep === 5 ? (
+                <section className="space-y-6">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-1 md:col-span-2">
+                      <p className="text-sm font-medium text-foreground">
+                        Registration URL
+                      </p>
+                      <Input {...register("registration_url")} />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-foreground">
+                        Registration deadline
+                      </p>
+                      <Input
+                        type="datetime-local"
+                        {...register("registration_deadline")}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-foreground">
+                        Minimum karma
+                      </p>
+                      <Controller
+                        control={control}
+                        name="min_karma"
+                        render={({ field }) => (
+                          <Input
+                            type="number"
+                            value={field.value ?? ""}
+                            onChange={(e) => {
+                              const raw = e.target.value;
+                              field.onChange(raw === "" ? null : Number(raw));
+                            }}
+                          />
+                        )}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between rounded-xl border border-border p-3">
+                      <p className="text-sm text-foreground">
+                        Enable collaboration
+                      </p>
+                      <Controller
+                        control={control}
+                        name="is_collaboration"
+                        render={({ field }) => (
+                          <Switch
+                            checked={Boolean(field.value)}
+                            onCheckedChange={field.onChange}
+                          />
+                        )}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between rounded-xl border border-border p-3">
+                      <p className="text-sm text-foreground">Featured event</p>
+                      <Controller
+                        control={control}
+                        name="is_featured"
+                        render={({ field }) => (
+                          <Switch
+                            checked={Boolean(field.value)}
+                            onCheckedChange={field.onChange}
+                          />
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  {watch("is_collaboration") ? (
+                    <div className="rounded-xl border border-border bg-muted p-3 text-sm text-muted-foreground">
+                      You can invite collaborators after creating the event from
+                      the manage screen.
+                    </div>
+                  ) : null}
+                </section>
+              ) : null}
+
+              {currentStep === 6 ? (
+                <section className="space-y-4">
+                  <h3 className="text-lg font-bold text-foreground">
+                    Review your event
+                  </h3>
+                  <div className="rounded-2xl border border-border bg-card lc-card-shadow divide-y divide-border">
+                    {[
+                      ["Title", watch("title") || "Not set", true],
+                      [
+                        "Description",
+                        watch("description")
+                          ? `${watch("description").slice(0, 100)}${watch("description").length > 100 ? "..." : ""}`
+                          : "Not set",
+                        true,
+                      ],
+                      [
+                        "Event type",
+                        formatReviewEnum(watch("event_type")),
+                        false,
+                      ],
+                      [
+                        "Organizer",
+                        selectedOrganiser?.label || "Not set",
+                        false,
+                      ],
+                      ["Scope", formatReviewEnum(watch("scope")), false],
+                      [
+                        "Start",
+                        formatReviewDateTime(watch("start_datetime")),
+                        true,
+                      ],
+                      [
+                        "End",
+                        formatReviewDateTime(watch("end_datetime")),
+                        true,
+                      ],
+                      ["Venue", formatReviewEnum(watch("venue_type")), true],
+                      [
+                        "Tags",
+                        (watch("tags") ?? []).join(", ") || "Not set",
+                        false,
+                      ],
+                      [
+                        "Collaboration",
+                        watch("is_collaboration") ? "Yes" : "No",
+                        false,
+                      ],
+                      ["Featured", watch("is_featured") ? "Yes" : "No", false],
+                      ["Min karma", watch("min_karma") ?? "Not set", false],
+                      [
+                        "Registration URL",
+                        watch("registration_url") || "Not set",
+                        false,
+                      ],
+                    ].map(([label, value, required]) => (
+                      <div
+                        key={String(label)}
+                        className="flex items-start justify-between gap-4 px-4 py-3"
+                      >
+                        <p className="w-28 shrink-0 text-xs font-medium text-muted-foreground">
+                          {label}
+                        </p>
+                        <p
+                          className={`text-right text-sm ${String(value) === "Not set" ? (required ? "text-destructive" : "text-muted-foreground") : "text-foreground"}`}
+                        >
+                          {String(value)}
+                        </p>
+                      </div>
                     ))}
                   </div>
-                </div>
-              </section>
-            ) : null}
-
-            {currentStep === 3 ? (
-              <section className="space-y-6">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium text-foreground">
-                      Start datetime <span className="text-destructive">*</span>
-                    </p>
-                    <Input
-                      type="datetime-local"
-                      {...register("start_datetime")}
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium text-foreground">
-                      End datetime <span className="text-destructive">*</span>
-                    </p>
-                    <Input
-                      type="datetime-local"
-                      {...register("end_datetime")}
-                    />
-                  </div>
-                </div>
-
-                <VenueSection control={control} watch={watch} errors={errors} />
-              </section>
-            ) : null}
-
-            {currentStep === 4 ? (
-              <section className="space-y-6">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-foreground">
-                      Cover image
-                    </p>
-                    <ImageUpload
-                      value={coverImageFile}
-                      onChange={setCoverImageFile}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-foreground">
-                      Banner image
-                    </p>
-                    <ImageUpload
-                      value={bannerImageFile}
-                      onChange={setBannerImageFile}
-                    />
-                  </div>
-                </div>
-                <div className="rounded-xl border border-border bg-muted p-4 text-sm text-muted-foreground">
-                  You can add or change images at any time after creating the
-                  event.
-                </div>
-              </section>
-            ) : null}
-
-            {currentStep === 5 ? (
-              <section className="space-y-6">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-1 md:col-span-2">
-                    <p className="text-sm font-medium text-foreground">
-                      Registration URL
-                    </p>
-                    <Input {...register("registration_url")} />
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium text-foreground">
-                      Registration deadline
-                    </p>
-                    <Input
-                      type="datetime-local"
-                      {...register("registration_deadline")}
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium text-foreground">
-                      Minimum karma
-                    </p>
-                    <Controller
-                      control={control}
-                      name="min_karma"
-                      render={({ field }) => (
-                        <Input
-                          type="number"
-                          value={field.value ?? ""}
-                          onChange={(e) => {
-                            const raw = e.target.value;
-                            field.onChange(raw === "" ? null : Number(raw));
-                          }}
-                        />
-                      )}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between rounded-xl border border-border p-3">
-                    <p className="text-sm text-foreground">
-                      Enable collaboration
-                    </p>
-                    <Controller
-                      control={control}
-                      name="is_collaboration"
-                      render={({ field }) => (
-                        <Switch
-                          checked={Boolean(field.value)}
-                          onCheckedChange={field.onChange}
-                        />
-                      )}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between rounded-xl border border-border p-3">
-                    <p className="text-sm text-foreground">Featured event</p>
-                    <Controller
-                      control={control}
-                      name="is_featured"
-                      render={({ field }) => (
-                        <Switch
-                          checked={Boolean(field.value)}
-                          onCheckedChange={field.onChange}
-                        />
-                      )}
-                    />
-                  </div>
-                </div>
-
-                {watch("is_collaboration") ? (
-                  <div className="rounded-xl border border-border bg-muted p-3 text-sm text-muted-foreground">
-                    You can invite collaborators after creating the event from
-                    the manage screen.
-                  </div>
-                ) : null}
-              </section>
-            ) : null}
-
-            {currentStep === 6 ? (
-              <section className="space-y-4">
-                <h3 className="text-lg font-bold text-foreground">
-                  Review your event
-                </h3>
-                <div className="rounded-2xl border border-border bg-card lc-card-shadow divide-y divide-border">
-                  {[
-                    ["Title", watch("title") || "Not set"],
-                    [
-                      "Description",
-                      watch("description")
-                        ? `${watch("description").slice(0, 100)}${watch("description").length > 100 ? "..." : ""}`
-                        : "Not set",
-                    ],
-                    ["Event Type", watch("event_type") || "Not set"],
-                    ["Organizer", selectedOrganiser?.label || "Not set"],
-                    ["Scope", watch("scope") || "Not set"],
-                    ["Start", watch("start_datetime") || "Not set"],
-                    ["End", watch("end_datetime") || "Not set"],
-                    ["Venue", watch("venue_type") || "Not set"],
-                    ["Tags", (watch("tags") ?? []).join(", ") || "Not set"],
-                    ["Collaboration", watch("is_collaboration") ? "Yes" : "No"],
-                    ["Featured", watch("is_featured") ? "Yes" : "No"],
-                    ["Min karma", watch("min_karma") ?? "Not set"],
-                    [
-                      "Registration URL",
-                      watch("registration_url") || "Not set",
-                    ],
-                  ].map(([label, value]) => (
-                    <div
-                      key={String(label)}
-                      className="flex items-start justify-between gap-4 px-4 py-3"
-                    >
-                      <p className="w-28 shrink-0 text-xs uppercase tracking-wide text-muted-foreground">
-                        {label}
-                      </p>
-                      <p
-                        className={`text-right text-sm ${value === "Not set" ? "italic text-muted-foreground" : "text-foreground"}`}
-                      >
-                        {String(value)}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            ) : null}
+                </section>
+              ) : null}
+            </div>
           </div>
 
           <div className="flex items-center justify-between border-t border-border bg-card/80 p-4 backdrop-blur-sm">
-            <Button
-              variant="ghost"
-              className="text-muted-foreground hover:text-foreground"
-              onClick={requestClose}
-            >
-              Cancel
-            </Button>
+            <div className="mx-auto flex w-full max-w-5xl items-center justify-between">
+              <Button
+                variant="ghost"
+                className="text-muted-foreground hover:text-foreground"
+                onClick={requestClose}
+              >
+                Cancel
+              </Button>
 
-            <div className="flex items-center gap-2">
-              {currentStep > 1 ? (
-                <Button
-                  variant="outline"
-                  className="border-border"
-                  onClick={() =>
-                    setCurrentStep((value) => Math.max(1, value - 1))
-                  }
-                >
-                  Back
-                </Button>
-              ) : null}
-
-              {currentStep < 6 ? (
-                <Button
-                  className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
-                  onClick={async () => {
-                    const ok = await validateCurrentStep();
-                    if (!ok) return;
-                    setCurrentStep((value) => Math.min(6, value + 1));
-                  }}
-                >
-                  Next
-                </Button>
-              ) : (
-                <>
+              <div className="flex items-center gap-2">
+                {currentStep > 1 ? (
                   <Button
                     variant="outline"
                     className="border-border"
-                    disabled={createEvent.isPending}
-                    onClick={() => submitWizard("draft")}
+                    onClick={() =>
+                      setCurrentStep((value) => Math.max(1, value - 1))
+                    }
                   >
-                    {createEvent.isPending ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : null}
-                    Save as Draft
+                    Back
                   </Button>
+                ) : null}
+
+                {currentStep < 6 ? (
                   <Button
                     className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
-                    disabled={createEvent.isPending}
-                    onClick={() => submitWizard("publish")}
+                    onClick={async () => {
+                      const ok = await validateCurrentStep();
+                      if (!ok) return;
+                      setCurrentStep((value) => Math.min(6, value + 1));
+                    }}
                   >
-                    {createEvent.isPending ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : null}
-                    Save and Publish
+                    Next
                   </Button>
-                </>
-              )}
+                ) : (
+                  <>
+                    <Button
+                      variant="outline"
+                      className="border-border"
+                      disabled={createEvent.isPending}
+                      onClick={() => submitWizard("draft")}
+                    >
+                      {createEvent.isPending ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : null}
+                      Save as Draft
+                    </Button>
+                    <Button
+                      className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+                      disabled={
+                        createEvent.isPending ||
+                        !watch("start_datetime") ||
+                        !watch("end_datetime")
+                      }
+                      onClick={() => submitWizard("publish")}
+                    >
+                      {createEvent.isPending ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : null}
+                      Save and Publish
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </DialogContent>

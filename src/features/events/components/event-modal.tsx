@@ -201,7 +201,16 @@ export default function EventModal({
   const [exitConfirmOpen, setExitConfirmOpen] = useState(false);
 
   const requestClose = () => {
-    setExitConfirmOpen(true);
+    const hasChanges =
+      isDirty ||
+      coverImageFile !== null ||
+      bannerImageFile !== null ||
+      selectedCoOwners.length > 0;
+    if (hasChanges) {
+      setExitConfirmOpen(true);
+    } else {
+      onClose();
+    }
   };
 
   const confirmExit = () => {
@@ -217,7 +226,7 @@ export default function EventModal({
     handleSubmit,
     reset,
     setError,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty },
   } = useForm<CreateEventSchema>({
     resolver: zodResolver(
       isEdit ? updateEventSchema : createEventSchema,
@@ -750,13 +759,50 @@ export default function EventModal({
   return (
     <>
       <Dialog open={open} onOpenChange={(state) => !state && requestClose()}>
-        <DialogContent className="max-h-[90vh] w-full overflow-y-auto p-4 sm:max-w-3xl sm:p-6">
+        <DialogContent className="max-h-[90vh] w-[95vw] overflow-y-auto p-4 sm:max-w-3xl sm:p-6">
           <DialogHeader>
             <DialogTitle>{isEdit ? "Edit Event" : "Create Event"}</DialogTitle>
           </DialogHeader>
 
-          <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-            <section className="space-y-3 rounded-lg border p-4">
+          <form
+            className="space-y-4 relative"
+            onSubmit={(e) => e.preventDefault()}
+          >
+            <div className="sticky top-0 z-10 flex flex-nowrap gap-2 overflow-x-auto bg-background/95 py-2 backdrop-blur scrollbar-none border-b shadow-sm mb-4">
+              {[
+                { id: "sec-basic", label: "Basic Info" },
+                { id: "sec-scope", label: "Type & Scope" },
+                { id: "sec-create-as", label: "Create as" },
+                { id: "sec-dates", label: "Dates" },
+                { id: "sec-venue", label: "Venue" },
+                { id: "sec-images", label: "Images" },
+                { id: "sec-registration", label: "Registration" },
+                { id: "sec-tags", label: "Tags & Collab" },
+              ].map((step, idx) => (
+                <Button
+                  key={step.id}
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="shrink-0 text-xs text-muted-foreground hover:text-primary rounded-full"
+                  onClick={() => {
+                    document
+                      .getElementById(step.id)
+                      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }}
+                >
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-muted mr-1.5">
+                    {idx + 1}
+                  </span>
+                  {step.label}
+                </Button>
+              ))}
+            </div>
+
+            <section
+              id="sec-basic"
+              className="space-y-3 rounded-lg border p-4 scroll-m-20"
+            >
               <h3 className="mb-3 text-sm font-semibold text-foreground">
                 Basic Info
               </h3>
@@ -792,7 +838,10 @@ export default function EventModal({
               ) : null}
             </section>
 
-            <section className="space-y-3 rounded-lg border p-4">
+            <section
+              id="sec-scope"
+              className="space-y-3 rounded-lg border p-4 scroll-m-20"
+            >
               <h3 className="mb-3 text-sm font-semibold text-foreground">
                 Type &amp; Scope
               </h3>
@@ -912,7 +961,10 @@ export default function EventModal({
               ) : null}
             </section>
 
-            <section className="space-y-3 rounded-lg border p-4">
+            <section
+              id="sec-create-as"
+              className="space-y-3 rounded-lg border p-4 scroll-m-20"
+            >
               <h3 className="mb-3 text-sm font-semibold text-foreground">
                 Create as
               </h3>
@@ -945,7 +997,10 @@ export default function EventModal({
               )}
             </section>
 
-            <section className="space-y-3 rounded-lg border p-4">
+            <section
+              id="sec-dates"
+              className="space-y-3 rounded-lg border p-4 scroll-m-20"
+            >
               <h3 className="mb-3 text-sm font-semibold text-foreground">
                 Dates
               </h3>
@@ -987,9 +1042,14 @@ export default function EventModal({
               </div>
             </section>
 
-            <VenueSection control={control} watch={watch} errors={errors} />
+            <div id="sec-venue" className="scroll-m-20">
+              <VenueSection control={control} watch={watch} errors={errors} />
+            </div>
 
-            <section className="space-y-3 rounded-lg border p-4">
+            <section
+              id="sec-images"
+              className="space-y-3 rounded-lg border p-4 scroll-m-20"
+            >
               <h3 className="mb-3 text-sm font-semibold text-foreground">
                 Images
               </h3>
@@ -1021,7 +1081,10 @@ export default function EventModal({
               </div>
             </section>
 
-            <section className="space-y-3 rounded-lg border p-4">
+            <section
+              id="sec-registration"
+              className="space-y-3 rounded-lg border p-4 scroll-m-20"
+            >
               <h3 className="mb-3 text-sm font-semibold text-foreground">
                 Registration
               </h3>
@@ -1088,7 +1151,10 @@ export default function EventModal({
               />
             </section>
 
-            <section className="space-y-3 rounded-lg border p-4">
+            <section
+              id="sec-tags"
+              className="space-y-3 rounded-lg border p-4 scroll-m-20"
+            >
               <h3 className="mb-3 text-sm font-semibold text-foreground">
                 Tags &amp; Collaboration
               </h3>

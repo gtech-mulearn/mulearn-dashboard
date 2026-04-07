@@ -47,10 +47,36 @@ export function CoOwnersPanel({ eventId, onActivity }: CoOwnersPanelProps) {
     .includes("permission denied");
 
   return (
-    <section className="space-y-3 rounded-lg border border-border bg-card/60 p-4">
-      <h3 className="text-base font-semibold tracking-tight text-foreground">
-        Co-Owners
-      </h3>
+    <section className="space-y-4 rounded-2xl border border-border bg-card/60 p-4 sm:p-5">
+      <div className="space-y-1">
+        <h3 className="text-base font-semibold tracking-tight text-foreground">
+          Co-Owners
+        </h3>
+        <p className="text-sm text-muted-foreground">
+          Search first, then review the current co-owners below.
+        </p>
+      </div>
+
+      <div className="rounded-xl border border-dashed border-border/70 bg-background/60 p-3">
+        <MuidSearchInput
+          placeholder="Search by name or muid..."
+          onSelectUser={(user) => {
+            if (!user.id) return;
+            addCoOwner.mutate(
+              { user_id: user.id },
+              {
+                onSuccess: () => {
+                  onActivity?.({
+                    type: "co-owner",
+                    action: "added",
+                    label: `${user.full_name} (${user.muid}) added as co-owner`,
+                  });
+                },
+              },
+            );
+          }}
+        />
+      </div>
 
       {isLoading ? (
         <p className="text-sm text-muted-foreground">Loading co-owners...</p>
@@ -69,36 +95,42 @@ export function CoOwnersPanel({ eventId, onActivity }: CoOwnersPanelProps) {
       ) : null}
 
       <div
-        className={`max-h-[280px] space-y-2 overflow-y-auto pr-1 sm:max-h-[360px] ${isFetching ? "opacity-75" : ""}`}
+        className={`max-h-[320px] space-y-3 overflow-y-auto pr-1 sm:max-h-[380px] ${isFetching ? "opacity-75" : ""}`}
       >
         {coOwnersList.map((coOwner) => (
           <div
             key={coOwner.id}
-            className="flex items-center gap-3 rounded border p-2"
+            className="flex flex-col gap-3 rounded-xl border border-border bg-background p-3 shadow-sm sm:flex-row sm:items-center sm:gap-4"
           >
-            <Avatar className="h-8 w-8">
-              <AvatarImage src={coOwner.user.profile_pic ?? undefined} />
-              <AvatarFallback>
-                {coOwner.user.full_name.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">
-                {coOwner.user.full_name}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {coOwner.user.muid}
-              </p>
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              <Avatar className="h-9 w-9 shrink-0">
+                <AvatarImage src={coOwner.user.profile_pic ?? undefined} />
+                <AvatarFallback>
+                  {coOwner.user.full_name.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold">
+                  {coOwner.user.full_name}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {coOwner.user.muid}
+                </p>
+              </div>
             </div>
-            <Badge variant="outline">{coOwner.role ?? "co_owner"}</Badge>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => setSelectedCoOwner(coOwner)}
-            >
-              Remove
-            </Button>
+            <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+              <Badge variant="outline" className="capitalize">
+                {coOwner.role ?? "co_owner"}
+              </Badge>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => setSelectedCoOwner(coOwner)}
+              >
+                Remove
+              </Button>
+            </div>
           </div>
         ))}
         {coOwnersList.length === 0 && !isLoading ? (
@@ -107,25 +139,6 @@ export function CoOwnersPanel({ eventId, onActivity }: CoOwnersPanelProps) {
           </p>
         ) : null}
       </div>
-
-      <MuidSearchInput
-        placeholder="Search by name or muid..."
-        onSelectUser={(user) => {
-          if (!user.id) return;
-          addCoOwner.mutate(
-            { user_id: user.id },
-            {
-              onSuccess: () => {
-                onActivity?.({
-                  type: "co-owner",
-                  action: "added",
-                  label: `${user.full_name} (${user.muid}) added as co-owner`,
-                });
-              },
-            },
-          );
-        }}
-      />
 
       <ConfirmDialog
         open={!!selectedCoOwner}

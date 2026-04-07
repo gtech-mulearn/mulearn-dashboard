@@ -469,7 +469,7 @@ export function ManageEventDetailView({
             </>
           )}
           <Button variant="outline" onClick={() => setPanelOpen(true)}>
-            Panels
+            More Options
           </Button>
           <Button
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
@@ -486,7 +486,7 @@ export function ManageEventDetailView({
           className="h-[85vh] overflow-y-auto rounded-t-2xl sm:hidden"
         >
           <SheetHeader>
-            <SheetTitle>Manage Panels</SheetTitle>
+            <SheetTitle>Event Management</SheetTitle>
           </SheetHeader>
 
           <div className="mt-4 space-y-4">
