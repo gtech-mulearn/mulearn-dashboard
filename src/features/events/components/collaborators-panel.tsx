@@ -11,6 +11,7 @@ import { EventSearch } from "./event-search";
 interface CollaboratorsPanelProps {
   eventId: string;
   isManageView?: boolean;
+  collaborationEnabled?: boolean;
   onActivity?: (activity: {
     type: "collaborator";
     action: string;
@@ -50,6 +51,7 @@ function getCollabName(collab: EventCollaborator): string {
 export function CollaboratorsPanel({
   eventId,
   isManageView,
+  collaborationEnabled = true,
   onActivity,
 }: CollaboratorsPanelProps) {
   const [selectedCollaborator, setSelectedCollaborator] =
@@ -73,7 +75,7 @@ export function CollaboratorsPanel({
   );
 
   return (
-    <section className="space-y-4 rounded-2xl border border-border bg-card/60 p-4 sm:p-5">
+    <section className="space-y-5 rounded-xl border border-border/70 bg-background p-4 sm:p-5">
       <div className="space-y-1">
         <h3 className="text-base font-semibold tracking-tight text-foreground">
           Collaborators
@@ -84,16 +86,24 @@ export function CollaboratorsPanel({
       </div>
 
       {isManageView ? (
-        <div className="rounded-xl border border-dashed border-border/70 bg-background/60 p-3">
-          <EventSearch mode="invite" eventId={eventId} />
+        <div className="space-y-3 rounded-xl border border-dashed border-border/70 bg-muted/30 p-3">
+          {collaborationEnabled ? (
+            <EventSearch mode="invite" eventId={eventId} />
+          ) : (
+            <div className="rounded-lg border border-border bg-background/70 p-3">
+              <p className="text-sm text-muted-foreground">
+                Enable collaboration in the event form to add new collaborators.
+              </p>
+            </div>
+          )}
         </div>
       ) : null}
 
-      <div className="max-h-[320px] space-y-3 overflow-y-auto pr-1 sm:max-h-[400px]">
+      <div className="max-h-[340px] space-y-2.5 overflow-y-auto pr-1 sm:max-h-[400px]">
         {visible.map((collab) => (
           <div
             key={collab.id}
-            className="space-y-2 rounded-xl border border-border bg-background p-3 text-sm shadow-sm"
+            className="space-y-2 rounded-xl border border-border bg-card p-3 text-sm"
           >
             <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">

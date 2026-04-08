@@ -138,7 +138,7 @@ export function ManageEventDetailView({
   const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
   const [confirmDiscardOpen, setConfirmDiscardOpen] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
-  const [peopleOpen, setPeopleOpen] = useState(false);
+  const [peoplePanelOpen, setPeoplePanelOpen] = useState(false);
   const [peopleTab, setPeopleTab] = useState<"co-owners" | "collaborators">(
     "co-owners",
   );
@@ -320,9 +320,9 @@ export function ManageEventDetailView({
                   type="button"
                   variant="outline"
                   className="border-border text-foreground hover:border-primary hover:text-primary"
-                  onClick={() => setPeopleOpen(true)}
+                  onClick={() => setPeoplePanelOpen((value) => !value)}
                 >
-                  People
+                  {peoplePanelOpen ? "Hide People" : "People"}
                 </Button>
                 <Button
                   type="button"
@@ -361,6 +361,50 @@ export function ManageEventDetailView({
           </div>
         </div>
       </div>
+
+      {peoplePanelOpen ? (
+        <Card className="rounded-2xl border border-border bg-card lc-card-shadow">
+          <CardHeader className="flex flex-row items-center justify-between gap-3 pb-3">
+            <CardTitle className="text-lg leading-none">
+              People Access
+            </CardTitle>
+            <Button
+              type="button"
+              variant="ghost"
+              className="text-muted-foreground hover:text-foreground"
+              onClick={() => setPeoplePanelOpen(false)}
+            >
+              Close
+            </Button>
+          </CardHeader>
+
+          <CardContent className="pt-0">
+            <Tabs
+              value={peopleTab}
+              onValueChange={(value) =>
+                setPeopleTab(value as "co-owners" | "collaborators")
+              }
+            >
+              <TabsList className="grid h-auto w-full max-w-md grid-cols-2">
+                <TabsTrigger value="co-owners">Co-owners</TabsTrigger>
+                <TabsTrigger value="collaborators">Collaborators</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="co-owners" className="mt-4">
+                <CoOwnersPanel eventId={eventId} />
+              </TabsContent>
+
+              <TabsContent value="collaborators" className="mt-4">
+                <CollaboratorsPanel
+                  eventId={eventId}
+                  isManageView
+                  collaborationEnabled={Boolean(event.is_collaboration)}
+                />
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+      ) : null}
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
@@ -464,8 +508,11 @@ export function ManageEventDetailView({
               </Button>
             </>
           )}
-          <Button variant="outline" onClick={() => setPeopleOpen(true)}>
-            People
+          <Button
+            variant="outline"
+            onClick={() => setPeoplePanelOpen((value) => !value)}
+          >
+            {peoplePanelOpen ? "Hide People" : "People"}
           </Button>
           <Button variant="outline" onClick={() => setPanelOpen(true)}>
             Panels
@@ -525,39 +572,6 @@ export function ManageEventDetailView({
                 ))}
               </Tabs>
             </div>
-          </div>
-        </SheetContent>
-      </Sheet>
-
-      <Sheet open={peopleOpen} onOpenChange={setPeopleOpen}>
-        <SheetContent
-          side="right"
-          className="w-[min(96vw,860px)] overflow-y-auto p-0"
-        >
-          <SheetHeader className="border-b border-border px-5 py-4">
-            <SheetTitle>People Access</SheetTitle>
-          </SheetHeader>
-
-          <div className="p-5">
-            <Tabs
-              value={peopleTab}
-              onValueChange={(value) =>
-                setPeopleTab(value as "co-owners" | "collaborators")
-              }
-            >
-              <TabsList className="grid h-auto w-full grid-cols-2">
-                <TabsTrigger value="co-owners">Co-owners</TabsTrigger>
-                <TabsTrigger value="collaborators">Collaborators</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="co-owners" className="mt-4">
-                <CoOwnersPanel eventId={eventId} />
-              </TabsContent>
-
-              <TabsContent value="collaborators" className="mt-4">
-                <CollaboratorsPanel eventId={eventId} isManageView />
-              </TabsContent>
-            </Tabs>
           </div>
         </SheetContent>
       </Sheet>

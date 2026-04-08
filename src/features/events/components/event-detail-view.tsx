@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  AlertTriangle,
   CalendarDays,
   Clock,
   ExternalLink,
@@ -23,7 +22,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
-  countdownLabel,
   formatEventDateRange,
   formatEventTime,
   organizerTypeLabel,
@@ -50,9 +48,9 @@ export function EventDetailView({
     return () => window.clearInterval(timer);
   }, []);
 
-  const countdown = event
-    ? countdownLabel(event.registration_deadline, nowTs)
-    : null;
+  const registrationClosed =
+    !!event?.registration_deadline &&
+    new Date(event.registration_deadline).getTime() <= nowTs;
 
   if (isLoading) {
     return (
@@ -195,8 +193,8 @@ export function EventDetailView({
               </div>
 
               <Card className="rounded-2xl border border-border bg-card lc-card-shadow">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base leading-none">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg leading-none">
                     About This Event
                   </CardTitle>
                 </CardHeader>
@@ -207,12 +205,12 @@ export function EventDetailView({
 
               {acceptedCollaborators.length > 0 ? (
                 <Card className="rounded-2xl border border-border bg-card lc-card-shadow">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base leading-none">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg leading-none">
                       Partnering Organizations
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="grid gap-2 pt-0 sm:grid-cols-2">
+                  <CardContent className="grid gap-1.5 pt-0 sm:grid-cols-2">
                     {acceptedCollaborators.map((collab) => {
                       const entityName =
                         collab.entity_detail &&
@@ -334,26 +332,35 @@ export function EventDetailView({
           </div>
 
           {layout === "full" ? (
-            <aside className="space-y-5 lg:sticky lg:top-6 lg:self-start">
+            <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
               <Card className="rounded-2xl border border-border bg-card lc-card-shadow">
                 <CardHeader>
                   <CardTitle className="text-base">Quick Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {event.registration_url ? (
-                    <Button
-                      asChild
-                      disabled={!event.viewer_can_access_registration}
-                      className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-                    >
-                      <a
-                        href={event.registration_url}
-                        target="_blank"
-                        rel="noreferrer"
+                    registrationClosed ? (
+                      <Button
+                        disabled
+                        className="w-full bg-muted text-muted-foreground hover:bg-muted"
                       >
-                        Register Now
-                      </a>
-                    </Button>
+                        Registration Closed
+                      </Button>
+                    ) : (
+                      <Button
+                        asChild
+                        disabled={!event.viewer_can_access_registration}
+                        className="w-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
+                      >
+                        <a
+                          href={event.registration_url}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Register Now
+                        </a>
+                      </Button>
+                    )
                   ) : (
                     <Button disabled className="w-full">
                       Registration Unavailable
@@ -366,15 +373,6 @@ export function EventDetailView({
                       status={event.viewer_interest_status}
                       count={event.interest_count}
                     />
-                  ) : null}
-
-                  {countdown ? (
-                    <p
-                      className={`flex items-center gap-1 text-xs ${countdown.urgent ? "text-[var(--chart-1)]" : "text-muted-foreground"}`}
-                    >
-                      <AlertTriangle className="h-3.5 w-3.5" />
-                      {countdown.label}
-                    </p>
                   ) : null}
 
                   {event.min_karma != null ? (
@@ -470,19 +468,28 @@ export function EventDetailView({
           <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 p-3 backdrop-blur lg:hidden">
             <div className="flex items-center gap-2">
               {event.registration_url ? (
-                <Button
-                  asChild
-                  className="flex-1"
-                  disabled={!event.viewer_can_access_registration}
-                >
-                  <a
-                    href={event.registration_url}
-                    target="_blank"
-                    rel="noreferrer"
+                registrationClosed ? (
+                  <Button
+                    className="flex-1 bg-muted text-muted-foreground hover:bg-muted"
+                    disabled
                   >
-                    Register Now
-                  </a>
-                </Button>
+                    Registration Closed
+                  </Button>
+                ) : (
+                  <Button
+                    asChild
+                    className="flex-1"
+                    disabled={!event.viewer_can_access_registration}
+                  >
+                    <a
+                      href={event.registration_url}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Register Now
+                    </a>
+                  </Button>
+                )
               ) : (
                 <Button className="flex-1" disabled>
                   Registration Unavailable
@@ -496,12 +503,6 @@ export function EventDetailView({
                 />
               ) : null}
             </div>
-            {countdown ? (
-              <p className="mt-2 inline-flex items-center gap-1 text-xs text-amber-700">
-                <AlertTriangle className="h-3.5 w-3.5" />
-                {countdown.label}
-              </p>
-            ) : null}
           </div>
         ) : null}
       </div>

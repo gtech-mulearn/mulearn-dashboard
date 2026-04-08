@@ -31,7 +31,6 @@ export default function ManageEventsDashboard() {
   const [statusFilter, setStatusFilter] = useState<EventStatus | "all">("all");
   const [showWizard, setShowWizard] = useState(false);
   const [invitesOpen, setInvitesOpen] = useState(false);
-  const [showStats, setShowStats] = useState(false);
 
   const { data: userInfo } = useQuery({
     queryKey: ["user", "info", "events-manage"],
@@ -91,7 +90,6 @@ export default function ManageEventsDashboard() {
           useAdminView
             ? eventsApi.adminList({ pageIndex: 1, perPage: 1 })
             : eventsApi.manageList({ pageIndex: 1, perPage: 1 }),
-        enabled: showStats,
       },
       {
         queryKey: useAdminView
@@ -117,7 +115,6 @@ export default function ManageEventsDashboard() {
                 perPage: 1,
                 status: "published",
               }),
-        enabled: showStats,
       },
       {
         queryKey: useAdminView
@@ -143,7 +140,6 @@ export default function ManageEventsDashboard() {
                 perPage: 1,
                 status: "pending_approval",
               }),
-        enabled: showStats,
       },
       {
         queryKey: useAdminView
@@ -161,7 +157,6 @@ export default function ManageEventsDashboard() {
                 perPage: 1,
                 status: "draft",
               }),
-        enabled: showStats,
       },
       {
         queryKey: useAdminView
@@ -187,13 +182,11 @@ export default function ManageEventsDashboard() {
                 perPage: 1,
                 status: "completed",
               }),
-        enabled: showStats,
       },
     ],
   });
 
-  const statsLoading =
-    showStats && statsQueries.some((query) => query.isLoading);
+  const statsLoading = statsQueries.some((query) => query.isLoading);
   const totalCount = statsQueries[0].data?.pagination.count ?? 0;
   const publishedCount = statsQueries[1].data?.pagination.count ?? 0;
   const pendingApprovalCount = statsQueries[2].data?.pagination.count ?? 0;
@@ -218,17 +211,19 @@ export default function ManageEventsDashboard() {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-bold text-foreground">Manage Events</h1>
         <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setInvitesOpen(true)}
-            className="gap-2 border-border text-foreground hover:border-primary hover:text-primary"
-          >
-            Invites
-            <span className="inline-flex min-w-6 items-center justify-center rounded-full bg-primary px-2 py-0.5 text-xs font-semibold text-primary-foreground">
-              {pendingInviteCount}
-            </span>
-          </Button>
+          {pendingInviteCount > 0 ? (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setInvitesOpen(true)}
+              className="gap-2 border-border text-foreground hover:border-primary hover:text-primary"
+            >
+              Invites
+              <span className="inline-flex min-w-6 items-center justify-center rounded-full bg-primary px-2 py-0.5 text-xs font-semibold text-primary-foreground">
+                {pendingInviteCount}
+              </span>
+            </Button>
+          ) : null}
           <Button
             className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
             onClick={() => {
@@ -241,63 +236,50 @@ export default function ManageEventsDashboard() {
         </div>
       </div>
 
-      <div className="space-y-3">
-        {!showStats ? (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setShowStats(true)}
-            className="border-border text-foreground hover:border-primary hover:text-primary"
-          >
-            Load overview stats
-          </Button>
-        ) : null}
-
-        <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-          {statsLoading ? (
-            <>
-              <Skeleton className="h-20" />
-              <Skeleton className="h-20" />
-              <Skeleton className="h-20" />
-              <Skeleton className="h-20" />
-            </>
-          ) : (
-            <>
-              <div className="rounded-2xl border border-border bg-card p-5 lc-card-shadow">
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Total Events
-                </p>
-                <p className="mt-1 text-3xl font-bold text-foreground">
-                  {totalCount}
-                </p>
-              </div>
-              <div className="rounded-2xl border border-border bg-card p-5 lc-card-shadow">
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Published
-                </p>
-                <p className="mt-1 text-3xl font-bold text-foreground">
-                  {publishedCount}
-                </p>
-              </div>
-              <div className="rounded-2xl border border-border bg-card p-5 lc-card-shadow">
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Pending Approval
-                </p>
-                <p className="mt-1 text-3xl font-bold text-foreground">
-                  {pendingApprovalCount}
-                </p>
-              </div>
-              <div className="rounded-2xl border border-border bg-card p-5 lc-card-shadow">
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Drafts
-                </p>
-                <p className="mt-1 text-3xl font-bold text-foreground">
-                  {draftCount}
-                </p>
-              </div>
-            </>
-          )}
-        </div>
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+        {statsLoading ? (
+          <>
+            <Skeleton className="h-20" />
+            <Skeleton className="h-20" />
+            <Skeleton className="h-20" />
+            <Skeleton className="h-20" />
+          </>
+        ) : (
+          <>
+            <div className="rounded-2xl border border-border bg-card p-5 lc-card-shadow">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Total Events
+              </p>
+              <p className="mt-1 text-3xl font-bold text-foreground">
+                {totalCount}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-border bg-card p-5 lc-card-shadow">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Published
+              </p>
+              <p className="mt-1 text-3xl font-bold text-foreground">
+                {publishedCount}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-border bg-card p-5 lc-card-shadow">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Pending Approval
+              </p>
+              <p className="mt-1 text-3xl font-bold text-foreground">
+                {pendingApprovalCount}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-border bg-card p-5 lc-card-shadow">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Drafts
+              </p>
+              <p className="mt-1 text-3xl font-bold text-foreground">
+                {draftCount}
+              </p>
+            </div>
+          </>
+        )}
       </div>
 
       <div className="flex flex-wrap gap-2">

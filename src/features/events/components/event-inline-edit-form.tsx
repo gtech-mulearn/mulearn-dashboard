@@ -530,6 +530,10 @@ export function EventInlineEditForm({
               )}
             />
           </div>
+          <p className="md:col-span-2 text-xs text-muted-foreground">
+            To add or invite collaborators in People Access, enable
+            collaboration here.
+          </p>
         </div>
       </section>
 

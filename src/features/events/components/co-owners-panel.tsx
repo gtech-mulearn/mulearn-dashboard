@@ -47,7 +47,7 @@ export function CoOwnersPanel({ eventId, onActivity }: CoOwnersPanelProps) {
     .includes("permission denied");
 
   return (
-    <section className="space-y-4 rounded-2xl border border-border bg-card/60 p-4 sm:p-5">
+    <section className="space-y-5 rounded-xl border border-border/70 bg-background p-4 sm:p-5">
       <div className="space-y-1">
         <h3 className="text-base font-semibold tracking-tight text-foreground">
           Co-Owners
@@ -57,7 +57,7 @@ export function CoOwnersPanel({ eventId, onActivity }: CoOwnersPanelProps) {
         </p>
       </div>
 
-      <div className="rounded-xl border border-dashed border-border/70 bg-background/60 p-3">
+      <div className="rounded-xl border border-dashed border-border/70 bg-muted/30 p-3">
         <MuidSearchInput
           placeholder="Search by name or muid..."
           onSelectUser={(user) => {
@@ -95,12 +95,12 @@ export function CoOwnersPanel({ eventId, onActivity }: CoOwnersPanelProps) {
       ) : null}
 
       <div
-        className={`max-h-[320px] space-y-3 overflow-y-auto pr-1 sm:max-h-[380px] ${isFetching ? "opacity-75" : ""}`}
+        className={`max-h-[340px] space-y-2.5 overflow-y-auto pr-1 sm:max-h-[380px] ${isFetching ? "opacity-75" : ""}`}
       >
         {coOwnersList.map((coOwner) => (
           <div
             key={coOwner.id}
-            className="flex flex-col gap-3 rounded-xl border border-border bg-background p-3 shadow-sm sm:flex-row sm:items-center sm:gap-4"
+            className="flex flex-col gap-3 rounded-xl border border-border bg-card p-3 sm:flex-row sm:items-center sm:gap-4"
           >
             <div className="flex min-w-0 flex-1 items-center gap-3">
               <Avatar className="h-9 w-9 shrink-0">

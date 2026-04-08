@@ -12,7 +12,7 @@ export function EventAnalyticsPanel({
   mapQuery,
 }: EventAnalyticsPanelProps) {
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <section className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 lc-card-shadow lc-fade-in">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--primary)_12%,var(--background))] text-primary">
           <Users className="h-5 w-5" />
