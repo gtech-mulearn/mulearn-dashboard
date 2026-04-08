@@ -63,6 +63,10 @@ export interface PaginationMeta {
   isNext: boolean;
   isPrev: boolean;
   nextPage: number | null;
+  pageSize?: number;
+  perPage?: number;
+  page_size?: number;
+  per_page?: number;
 }
 
 export interface PaginatedData<T> {

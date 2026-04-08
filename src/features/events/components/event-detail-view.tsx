@@ -194,23 +194,25 @@ export function EventDetailView({
                 </div>
               </div>
 
-              <Card className="rounded-2xl border border-border bg-card p-2 lc-card-shadow">
-                <CardHeader>
-                  <CardTitle className="text-base">About This Event</CardTitle>
+              <Card className="rounded-2xl border border-border bg-card lc-card-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base leading-none">
+                    About This Event
+                  </CardTitle>
                 </CardHeader>
-                <CardContent className="text-base leading-relaxed text-muted-foreground">
+                <CardContent className="pt-0 text-base leading-relaxed text-muted-foreground">
                   <p className="whitespace-pre-wrap">{event.description}</p>
                 </CardContent>
               </Card>
 
               {acceptedCollaborators.length > 0 ? (
                 <Card className="rounded-2xl border border-border bg-card lc-card-shadow">
-                  <CardHeader>
-                    <CardTitle className="text-base">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base leading-none">
                       Partnering Organizations
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="flex flex-wrap gap-2">
+                  <CardContent className="grid gap-2 pt-0 sm:grid-cols-2">
                     {acceptedCollaborators.map((collab) => {
                       const entityName =
                         collab.entity_detail &&
@@ -239,7 +241,7 @@ export function EventDetailView({
                       return (
                         <span
                           key={collab.id}
-                          className="inline-flex items-center rounded-full border border-border bg-muted/50 px-3 py-1 text-sm text-foreground"
+                          className="inline-flex w-full items-center rounded-xl border border-border bg-muted/50 px-3 py-2 text-sm text-foreground"
                         >
                           {name}
                         </span>
@@ -332,12 +334,12 @@ export function EventDetailView({
           </div>
 
           {layout === "full" ? (
-            <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
+            <aside className="space-y-5 lg:sticky lg:top-6 lg:self-start">
               <Card className="rounded-2xl border border-border bg-card lc-card-shadow">
                 <CardHeader>
                   <CardTitle className="text-base">Quick Actions</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-4">
                   {event.registration_url ? (
                     <Button
                       asChild
@@ -368,7 +370,7 @@ export function EventDetailView({
 
                   {countdown ? (
                     <p
-                      className={`inline-flex items-center gap-1 text-xs ${countdown.urgent ? "text-[var(--chart-1)]" : "text-muted-foreground"}`}
+                      className={`flex items-center gap-1 text-xs ${countdown.urgent ? "text-[var(--chart-1)]" : "text-muted-foreground"}`}
                     >
                       <AlertTriangle className="h-3.5 w-3.5" />
                       {countdown.label}
@@ -376,7 +378,7 @@ export function EventDetailView({
                   ) : null}
 
                   {event.min_karma != null ? (
-                    <p className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                    <p className="flex items-center gap-1 text-xs text-muted-foreground">
                       Minimum karma: {event.min_karma.toLocaleString()}
                       <Tooltip>
                         <TooltipTrigger asChild>

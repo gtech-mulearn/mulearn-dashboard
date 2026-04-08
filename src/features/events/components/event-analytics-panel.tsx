@@ -12,16 +12,16 @@ export function EventAnalyticsPanel({
   mapQuery,
 }: EventAnalyticsPanelProps) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <section className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 lc-card-shadow lc-fade-in">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--primary)_12%,var(--background))] text-primary">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--primary)_12%,var(--background))] text-primary">
           <Users className="h-5 w-5" />
         </div>
-        <div>
+        <div className="flex min-w-0 flex-col justify-center">
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             People Going
           </p>
-          <p className="mt-1 text-3xl font-bold text-foreground">
+          <p className="text-3xl font-bold leading-tight tabular-nums text-foreground">
             {interestCount}
           </p>
         </div>

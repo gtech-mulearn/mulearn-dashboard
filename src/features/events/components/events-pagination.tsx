@@ -19,6 +19,19 @@ export function EventsPagination({
 }: EventsPaginationProps) {
   if (!pagination) return null;
 
+  const apiPageSize =
+    pagination.pageSize ??
+    pagination.perPage ??
+    pagination.page_size ??
+    pagination.per_page ??
+    null;
+
+  // Prefer server-provided current page count, then API page size.
+  // If neither exists, avoid guessing and fall back to the total count.
+  const shownCount =
+    currentCount ??
+    (typeof apiPageSize === "number" ? apiPageSize : pagination.count);
+
   const pages = Array.from({ length: pagination.totalPages }, (_, i) => i + 1);
   const visiblePages = pages.slice(
     Math.max(0, currentPage - 2),
@@ -28,9 +41,8 @@ export function EventsPagination({
   return (
     <div className="flex items-center justify-between">
       <div className="text-sm text-muted-foreground">
-        Showing{" "}
-        <span className="font-medium">{currentCount ?? pagination.count}</span>{" "}
-        out of <span className="font-medium">{pagination.count}</span>
+        Showing <span className="font-medium">{shownCount}</span> out of{" "}
+        <span className="font-medium">{pagination.count}</span>
       </div>
 
       {pagination.totalPages > 1 && (

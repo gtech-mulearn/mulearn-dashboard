@@ -17,10 +17,9 @@ import { eventsApi } from "../api";
 import { MANAGE_EVENT_STATUS_PILLS } from "../constants/events.constants";
 import { usePendingCollaboratorInvites } from "../hooks";
 import { eventKeys } from "../hooks/query-keys";
-import type { EventListItem, EventStatus } from "../types";
+import type { EventStatus } from "../types";
 import { CollaboratorInvitesSheet } from "./collaborator-invites-sheet";
 import { EventCreateWizard } from "./event-create-wizard";
-import EventModal from "./event-modal";
 import { EventsGrid } from "./events-grid";
 import { EventsPagination } from "./events-pagination";
 
@@ -30,10 +29,9 @@ export default function ManageEventsDashboard() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<EventStatus | "all">("all");
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
-  const [editingEvent, setEditingEvent] = useState<EventListItem | null>(null);
   const [invitesOpen, setInvitesOpen] = useState(false);
+  const [showStats, setShowStats] = useState(false);
 
   const { data: userInfo } = useQuery({
     queryKey: ["user", "info", "events-manage"],
@@ -93,6 +91,7 @@ export default function ManageEventsDashboard() {
           useAdminView
             ? eventsApi.adminList({ pageIndex: 1, perPage: 1 })
             : eventsApi.manageList({ pageIndex: 1, perPage: 1 }),
+        enabled: showStats,
       },
       {
         queryKey: useAdminView
@@ -118,6 +117,7 @@ export default function ManageEventsDashboard() {
                 perPage: 1,
                 status: "published",
               }),
+        enabled: showStats,
       },
       {
         queryKey: useAdminView
@@ -143,6 +143,7 @@ export default function ManageEventsDashboard() {
                 perPage: 1,
                 status: "pending_approval",
               }),
+        enabled: showStats,
       },
       {
         queryKey: useAdminView
@@ -160,6 +161,7 @@ export default function ManageEventsDashboard() {
                 perPage: 1,
                 status: "draft",
               }),
+        enabled: showStats,
       },
       {
         queryKey: useAdminView
@@ -185,11 +187,13 @@ export default function ManageEventsDashboard() {
                 perPage: 1,
                 status: "completed",
               }),
+        enabled: showStats,
       },
     ],
   });
 
-  const statsLoading = statsQueries.some((query) => query.isLoading);
+  const statsLoading =
+    showStats && statsQueries.some((query) => query.isLoading);
   const totalCount = statsQueries[0].data?.pagination.count ?? 0;
   const publishedCount = statsQueries[1].data?.pagination.count ?? 0;
   const pendingApprovalCount = statsQueries[2].data?.pagination.count ?? 0;
@@ -206,12 +210,6 @@ export default function ManageEventsDashboard() {
   });
 
   const events = data?.data ?? [];
-
-  const handleModalClose = () => {
-    setIsModalOpen(false);
-    setEditingEvent(null);
-    refetch();
-  };
 
   const is403 = error instanceof ApiError && error.status === 403;
 
@@ -234,7 +232,6 @@ export default function ManageEventsDashboard() {
           <Button
             className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
             onClick={() => {
-              setEditingEvent(null);
               setShowWizard(true);
             }}
           >
@@ -244,50 +241,63 @@ export default function ManageEventsDashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-        {statsLoading ? (
-          <>
-            <Skeleton className="h-20" />
-            <Skeleton className="h-20" />
-            <Skeleton className="h-20" />
-            <Skeleton className="h-20" />
-          </>
-        ) : (
-          <>
-            <div className="rounded-2xl border border-border bg-card p-5 lc-card-shadow">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Total Events
-              </p>
-              <p className="mt-1 text-3xl font-bold text-foreground">
-                {totalCount}
-              </p>
-            </div>
-            <div className="rounded-2xl border border-border bg-card p-5 lc-card-shadow">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Published
-              </p>
-              <p className="mt-1 text-3xl font-bold text-foreground">
-                {publishedCount}
-              </p>
-            </div>
-            <div className="rounded-2xl border border-border bg-card p-5 lc-card-shadow">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Pending Approval
-              </p>
-              <p className="mt-1 text-3xl font-bold text-foreground">
-                {pendingApprovalCount}
-              </p>
-            </div>
-            <div className="rounded-2xl border border-border bg-card p-5 lc-card-shadow">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Drafts
-              </p>
-              <p className="mt-1 text-3xl font-bold text-foreground">
-                {draftCount}
-              </p>
-            </div>
-          </>
-        )}
+      <div className="space-y-3">
+        {!showStats ? (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setShowStats(true)}
+            className="border-border text-foreground hover:border-primary hover:text-primary"
+          >
+            Load overview stats
+          </Button>
+        ) : null}
+
+        <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+          {statsLoading ? (
+            <>
+              <Skeleton className="h-20" />
+              <Skeleton className="h-20" />
+              <Skeleton className="h-20" />
+              <Skeleton className="h-20" />
+            </>
+          ) : (
+            <>
+              <div className="rounded-2xl border border-border bg-card p-5 lc-card-shadow">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Total Events
+                </p>
+                <p className="mt-1 text-3xl font-bold text-foreground">
+                  {totalCount}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-border bg-card p-5 lc-card-shadow">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Published
+                </p>
+                <p className="mt-1 text-3xl font-bold text-foreground">
+                  {publishedCount}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-border bg-card p-5 lc-card-shadow">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Pending Approval
+                </p>
+                <p className="mt-1 text-3xl font-bold text-foreground">
+                  {pendingApprovalCount}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-border bg-card p-5 lc-card-shadow">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Drafts
+                </p>
+                <p className="mt-1 text-3xl font-bold text-foreground">
+                  {draftCount}
+                </p>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -358,8 +368,7 @@ export default function ManageEventsDashboard() {
             isManageView
             onEventDeleted={() => refetch()}
             onCreateEvent={() => {
-              setEditingEvent(null);
-              setIsModalOpen(true);
+              setShowWizard(true);
             }}
             onEventView={(event) => {
               router.push(`/dashboard/manage-events/${event.id}`);
@@ -373,13 +382,6 @@ export default function ManageEventsDashboard() {
           />
         </>
       )}
-
-      <EventModal
-        open={isModalOpen}
-        onClose={handleModalClose}
-        initialData={editingEvent}
-        isEdit={!!editingEvent}
-      />
 
       <EventCreateWizard
         open={showWizard}
