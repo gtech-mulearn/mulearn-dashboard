@@ -17,13 +17,16 @@ export function useEditInterestGroup() {
       id: string;
       data: Partial<InterestGroupUpdate>;
     }) => partialUpdateInterestGroup(id, data),
-    onSuccess: (_, variables) => {
+    onSuccess: async (_, variables) => {
       toast.success("Interest group updated successfully");
       queryClient.invalidateQueries({
         queryKey: igKeys.detail(variables.id),
       });
       queryClient.invalidateQueries({
         queryKey: igKeys.all,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: igKeys.detail(variables.id),
       });
     },
   });
