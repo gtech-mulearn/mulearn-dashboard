@@ -395,11 +395,7 @@ export function ManageEventDetailView({
               </TabsContent>
 
               <TabsContent value="collaborators" className="mt-4">
-                <CollaboratorsPanel
-                  eventId={eventId}
-                  isManageView
-                  collaborationEnabled={Boolean(event.is_collaboration)}
-                />
+                <CollaboratorsPanel eventId={eventId} isManageView />
               </TabsContent>
             </Tabs>
           </CardContent>

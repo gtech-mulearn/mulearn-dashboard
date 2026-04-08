@@ -999,13 +999,6 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                       />
                     </div>
                   </div>
-
-                  {watch("is_collaboration") ? (
-                    <div className="rounded-xl border border-border bg-muted p-3 text-sm text-muted-foreground">
-                      You can invite collaborators after creating the event from
-                      the manage screen.
-                    </div>
-                  ) : null}
                 </section>
               ) : null}
 

@@ -11,7 +11,6 @@ import { EventSearch } from "./event-search";
 interface CollaboratorsPanelProps {
   eventId: string;
   isManageView?: boolean;
-  collaborationEnabled?: boolean;
   onActivity?: (activity: {
     type: "collaborator";
     action: string;
@@ -51,7 +50,6 @@ function getCollabName(collab: EventCollaborator): string {
 export function CollaboratorsPanel({
   eventId,
   isManageView,
-  collaborationEnabled = true,
   onActivity,
 }: CollaboratorsPanelProps) {
   const [selectedCollaborator, setSelectedCollaborator] =
@@ -87,15 +85,7 @@ export function CollaboratorsPanel({
 
       {isManageView ? (
         <div className="space-y-3 rounded-xl border border-dashed border-border/70 bg-muted/30 p-3">
-          {collaborationEnabled ? (
-            <EventSearch mode="invite" eventId={eventId} />
-          ) : (
-            <div className="rounded-lg border border-border bg-background/70 p-3">
-              <p className="text-sm text-muted-foreground">
-                Enable collaboration in the event form to add new collaborators.
-              </p>
-            </div>
-          )}
+          <EventSearch mode="invite" eventId={eventId} />
         </div>
       ) : null}
 
