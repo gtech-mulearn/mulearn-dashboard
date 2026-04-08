@@ -10,7 +10,6 @@ import {
   ArrowLeft,
   BookOpen,
   Briefcase,
-  Calendar,
   Clock,
   ExternalLink,
   FileText,
@@ -153,25 +152,6 @@ export function InterestGroupDetailClient() {
                   </div>
                 </div>
               )}
-              {group.created_at && (
-                <div className="flex items-center gap-3 rounded-2xl bg-white/10 px-5 py-3 backdrop-blur-md border border-white/10 transition-transform hover:scale-105">
-                  <div className="p-2 rounded-full bg-white/20">
-                    <Calendar className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold leading-none">
-                      {new Date(group.created_at).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </p>
-                    <p className="text-xs font-medium text-white/70 mt-1">
-                      Created on
-                    </p>
-                  </div>
-                </div>
-              )}
               {group.status && (
                 <div className="flex items-center gap-3 rounded-2xl bg-white/10 px-5 py-3 backdrop-blur-md border border-white/10 transition-transform hover:scale-105">
                   <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-white/20">
@@ -197,11 +177,6 @@ export function InterestGroupDetailClient() {
         {/* Main column */}
         <div className="space-y-8 lg:col-span-8">
           {/* About Card (only if distinct from header about) */}
-          {/* Note: Logic here depends on if you want it repeated. Usually 'about' in header is enough if short, but if long, maybe distinct. 
-              For now keeping it if it provides more detail or if header is just a summary. 
-              Given the schema only has one 'about', standard practice is header = summary, body = full. 
-              If they are same, maybe skip body about. Using the previous logic. */}
-
           {/* Prerequisites */}
           {group.prerequisites && group.prerequisites.length > 0 && (
             <div className="group rounded-3xl border border-border/50 bg-card p-8 shadow-sm transition-all hover:shadow-md hover:border-primary/20">
@@ -346,15 +321,17 @@ export function InterestGroupDetailClient() {
               <div className="grid gap-4 sm:grid-cols-2">
                 {group.mentors.map((mentor) => (
                   <div
-                    key={mentor.name}
+                    key={mentor.muid || mentor.name || Math.random()}
                     className="flex items-start gap-4 rounded-2xl border border-border/60 bg-muted/20 p-5 transition-all hover:border-border hover:bg-card hover:shadow-sm"
                   >
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-purple-500/20 to-purple-500/5 text-lg font-bold text-purple-600">
-                      {mentor.name.charAt(0).toUpperCase()}
+                      {mentor.name
+                        ? mentor.name.charAt(0).toUpperCase()
+                        : mentor.muid?.charAt(0).toUpperCase() || "?"}
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="font-bold text-foreground truncate">
-                        {mentor.name}
+                        {mentor.name || mentor.muid || "Mentor"}
                       </p>
                       {mentor.expertise && (
                         <p className="text-sm text-muted-foreground truncate">
@@ -475,15 +452,17 @@ export function InterestGroupDetailClient() {
                   <div className="space-y-4">
                     {group.leads.map((lead) => (
                       <div
-                        key={lead.email || lead.name}
+                        key={lead.muid || lead.name || Math.random()}
                         className="flex items-center gap-3 rounded-xl border border-transparent hover:border-border hover:bg-muted/40 p-2 transition-all -mx-2"
                       >
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-primary to-primary/60 text-sm font-bold text-white shadow-sm">
-                          {lead.name.charAt(0).toUpperCase()}
+                          {lead.name
+                            ? lead.name.charAt(0).toUpperCase()
+                            : lead.muid?.charAt(0).toUpperCase() || "?"}
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-bold text-foreground truncate">
-                            {lead.name}
+                            {lead.name || lead.muid || "Lead"}
                           </p>
                           {lead.email && (
                             <a
