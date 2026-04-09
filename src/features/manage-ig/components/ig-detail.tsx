@@ -474,28 +474,30 @@ export function IGDetail() {
                     {group.leads.map((lead) => (
                       <div
                         key={lead.muid || lead.name || Math.random()}
-                        className="mx-0 flex items-center gap-3 rounded-xl border border-transparent p-2 transition-all hover:border-border hover:bg-muted/40 sm:-mx-2"
+                        className="mx-0 flex items-start gap-3 rounded-xl border border-transparent p-2 transition-all hover:border-border hover:bg-muted/40 sm:-mx-2"
                       >
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-primary to-primary/60 text-sm font-bold text-white shadow-sm">
+                        <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-primary to-primary/60 text-xs sm:text-sm font-bold text-white shadow-sm">
                           {lead.name
                             ? lead.name.charAt(0).toUpperCase()
                             : lead.muid?.charAt(0).toUpperCase() || "?"}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-bold text-foreground truncate">
+                          <p className="text-sm font-bold text-foreground break-words whitespace-normal">
                             {lead.name || lead.muid || "Lead"}
                           </p>
                           {lead.email && (
                             <a
                               href={`mailto:${lead.email}`}
-                              className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-primary transition-colors truncate"
+                              className="flex w-full items-start gap-1 text-xs font-medium text-muted-foreground hover:text-primary transition-colors break-all"
                             >
-                              <Mail className="h-3 w-3" />
-                              {lead.email}
+                              <Mail className="h-3 w-3 shrink-0" />
+                              <span className="min-w-0 break-all">
+                                {lead.email}
+                              </span>
                             </a>
                           )}
                           {lead.muid && (
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-xs text-muted-foreground break-all">
                               MUID: {lead.muid}
                             </p>
                           )}
