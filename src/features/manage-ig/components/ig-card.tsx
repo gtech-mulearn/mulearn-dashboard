@@ -21,7 +21,7 @@ export function InterestGroupCard({ group }: InterestGroupCardProps) {
   return (
     <Link
       href={`/dashboard/edit-ig/${group.id}`}
-      className="group relative flex flex-col justify-between overflow-hidden rounded-xl border bg-card p-6 shadow-sm transition-all hover:shadow-md hover:ring-2 hover:ring-primary/20"
+      className="group relative flex flex-col justify-between overflow-hidden rounded-xl border bg-card p-4 sm:p-6 shadow-sm transition-all hover:shadow-md hover:ring-2 hover:ring-primary/20"
     >
       <div className="space-y-4">
         <div className="flex items-start justify-between">
