@@ -241,7 +241,9 @@ function InviteMode(props: EventSearchInviteProps) {
               size="sm"
               variant={isActive ? "default" : "outline"}
               className={
-                isActive ? "bg-pink-600 text-white hover:bg-pink-700" : ""
+                isActive
+                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                  : ""
               }
               onClick={() => setSelectedType(option.value)}
             >

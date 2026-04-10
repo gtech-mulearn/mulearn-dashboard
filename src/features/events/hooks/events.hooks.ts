@@ -222,13 +222,6 @@ export function useEventDetail(id?: string) {
   });
 }
 
-export function useManageEventsList(params?: EventListQueryParams) {
-  return useQuery({
-    queryKey: eventKeys.manageList(params ?? {}),
-    queryFn: () => eventsApi.manageList(params),
-  });
-}
-
 export function useManageEventDetail(id?: string) {
   return useQuery({
     queryKey: eventKeys.manageDetail(id as string),
@@ -341,7 +334,7 @@ export function useIGSearch(search: string) {
 }
 
 export function useIGEvents(igId?: string, params?: EventListQueryParams) {
-  // Ready to consume - pending IG detail page implementation.
+  // Ready to consume - pending IG detail page integration.
   return useQuery({
     queryKey: eventKeys.igFeed(igId as string, params ?? {}),
     queryFn: () => eventsApi.igEvents(igId as string, params),
@@ -364,7 +357,7 @@ export function useCampusEvents(
   campusId?: string,
   params?: EventListQueryParams,
 ) {
-  // Ready to consume - pending campus detail page implementation.
+  // Stub hook: ready for campus detail page integration.
   return useQuery({
     queryKey: eventKeys.campusFeed(campusId as string, params ?? {}),
     queryFn: () => eventsApi.campusEvents(campusId as string, params),
@@ -373,7 +366,7 @@ export function useCampusEvents(
 }
 
 export function useCampusIgEvents(id?: string, params?: EventListQueryParams) {
-  // Ready to consume - pending campus IG page implementation.
+  // Stub hook: ready for campus IG page integration.
   return useQuery({
     queryKey: eventKeys.campusIgFeed(id as string, params ?? {}),
     queryFn: () => eventsApi.campusIgEvents(id as string, params),
@@ -382,7 +375,7 @@ export function useCampusIgEvents(id?: string, params?: EventListQueryParams) {
 }
 
 export function useCompanyEvents(id?: string, params?: EventListQueryParams) {
-  // Ready to consume - pending company page implementation.
+  // Stub hook: ready for company page integration.
   return useQuery({
     queryKey: eventKeys.companyFeed(id as string, params ?? {}),
     queryFn: () => eventsApi.companyEvents(id as string, params),
@@ -398,37 +391,9 @@ export function useCreateEvent() {
     onSuccess: async () => {
       toast.success("Event created");
       await queryClient.invalidateQueries({ queryKey: eventKeys.all });
-      await queryClient.refetchQueries({ queryKey: eventKeys.manageLists() });
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error, "Failed to create event"));
-    },
-  });
-}
-
-export function useUpdateEvent(eventId: string) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (body: EventWriteBody) => eventsApi.update(eventId, body),
-    onSuccess: async () => {
-      toast.success("Event updated");
-      await queryClient.invalidateQueries({ queryKey: eventKeys.all });
-      await queryClient.invalidateQueries({ queryKey: eventKeys.manage() });
-      await queryClient.invalidateQueries({
-        queryKey: eventKeys.detail(eventId),
-      });
-      await queryClient.invalidateQueries({
-        queryKey: eventKeys.manageDetail(eventId),
-      });
-      await queryClient.refetchQueries({ queryKey: eventKeys.manageLists() });
-      await queryClient.refetchQueries({
-        queryKey: eventKeys.manageDetail(eventId),
-      });
-      await queryClient.refetchQueries({ queryKey: eventKeys.all });
-    },
-    onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to update event"));
     },
   });
 }
@@ -442,10 +407,6 @@ export function usePatchEvent(eventId: string) {
     onSuccess: async (_data, _vars, _context) => {
       toast.success("Event updated");
       await queryClient.invalidateQueries({ queryKey: eventKeys.all });
-      await queryClient.refetchQueries({
-        queryKey: eventKeys.manageDetail(eventId),
-      });
-      await queryClient.refetchQueries({ queryKey: eventKeys.detail(eventId) });
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error, "Failed to update event"));
@@ -479,13 +440,6 @@ export function usePublishEvent(eventId: string) {
       await queryClient.invalidateQueries({
         queryKey: eventKeys.manageDetail(eventId),
       });
-      await queryClient.invalidateQueries({
-        queryKey: eventKeys.manageLists(),
-      });
-      await queryClient.refetchQueries({
-        queryKey: eventKeys.manageDetail(eventId),
-      });
-      await queryClient.refetchQueries({ queryKey: eventKeys.manageLists() });
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error, "Failed to publish event"));
@@ -505,12 +459,6 @@ export function useAddCoOwner(eventId: string) {
         queryKey: eventKeys.coOwners(eventId),
       });
       await queryClient.invalidateQueries({
-        queryKey: eventKeys.manageDetail(eventId),
-      });
-      await queryClient.refetchQueries({
-        queryKey: eventKeys.coOwners(eventId),
-      });
-      await queryClient.refetchQueries({
         queryKey: eventKeys.manageDetail(eventId),
       });
     },
@@ -534,12 +482,6 @@ export function useRemoveCoOwner(eventId: string) {
       await queryClient.invalidateQueries({
         queryKey: eventKeys.manageDetail(eventId),
       });
-      await queryClient.refetchQueries({
-        queryKey: eventKeys.coOwners(eventId),
-      });
-      await queryClient.refetchQueries({
-        queryKey: eventKeys.manageDetail(eventId),
-      });
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error, "Failed to remove co-owner"));
@@ -561,12 +503,6 @@ export function useInviteCollaborator(eventId: string) {
       await queryClient.invalidateQueries({
         queryKey: eventKeys.manageDetail(eventId),
       });
-      await queryClient.refetchQueries({
-        queryKey: eventKeys.collaborators(eventId),
-      });
-      await queryClient.refetchQueries({
-        queryKey: eventKeys.manageDetail(eventId),
-      });
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error, "Failed to invite collaborator"));
@@ -586,12 +522,6 @@ export function useAcceptCollaborator(eventId: string) {
         queryKey: eventKeys.collaborators(eventId),
       });
       await queryClient.invalidateQueries({
-        queryKey: eventKeys.manageDetail(eventId),
-      });
-      await queryClient.refetchQueries({
-        queryKey: eventKeys.collaborators(eventId),
-      });
-      await queryClient.refetchQueries({
         queryKey: eventKeys.manageDetail(eventId),
       });
     },
@@ -659,12 +589,6 @@ export function useRejectCollaborator(eventId: string) {
       await queryClient.invalidateQueries({
         queryKey: eventKeys.manageDetail(eventId),
       });
-      await queryClient.refetchQueries({
-        queryKey: eventKeys.collaborators(eventId),
-      });
-      await queryClient.refetchQueries({
-        queryKey: eventKeys.manageDetail(eventId),
-      });
     },
     onError: (error: unknown) => {
       const message = getErrorMessage(error, "Failed to reject collaborator");
@@ -730,12 +654,6 @@ export function useRemoveCollaborator(eventId: string) {
         queryKey: eventKeys.collaborators(eventId),
       });
       await queryClient.invalidateQueries({
-        queryKey: eventKeys.manageDetail(eventId),
-      });
-      await queryClient.refetchQueries({
-        queryKey: eventKeys.collaborators(eventId),
-      });
-      await queryClient.refetchQueries({
         queryKey: eventKeys.manageDetail(eventId),
       });
     },
@@ -839,9 +757,6 @@ export function useAdminApprove(eventId: string) {
       await queryClient.invalidateQueries({
         queryKey: eventKeys.manageLists(),
       });
-      await queryClient.refetchQueries({
-        queryKey: eventKeys.manageDetail(eventId),
-      });
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error, "Failed to approve event"));
@@ -860,9 +775,6 @@ export function useAdminReject(eventId: string) {
       });
       await queryClient.invalidateQueries({
         queryKey: eventKeys.manageLists(),
-      });
-      await queryClient.refetchQueries({
-        queryKey: eventKeys.manageDetail(eventId),
       });
     },
     onError: (error: unknown) => {
@@ -883,9 +795,6 @@ export function useAdminFeature(eventId: string) {
       });
       await queryClient.invalidateQueries({ queryKey: eventKeys.featured() });
       await queryClient.invalidateQueries({ queryKey: eventKeys.lists() });
-      await queryClient.refetchQueries({
-        queryKey: eventKeys.manageDetail(eventId),
-      });
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error, "Failed to update featured status"));

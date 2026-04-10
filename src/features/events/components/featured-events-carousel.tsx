@@ -4,41 +4,10 @@ import { CalendarDays, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { resolveEventTypeValue, useFeaturedEvents } from "../hooks";
+import { FEATURED_SLIDE_INTERVAL } from "../constants";
+import { formatEventDate, useFeaturedEvents } from "../hooks";
 import { InterestButton } from "./interest-button";
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
-function getOrganizerName(organizer: {
-  type: string;
-  ig?: { name?: string } | null;
-  campus?: { title?: string; name?: string } | null;
-  company?: { title?: string; name?: string } | null;
-  campus_ig?: { name?: string } | null;
-}): string {
-  if (organizer.type === "global_ig") return organizer.ig?.name ?? "Global IG";
-  if (organizer.type === "campus_ig") {
-    const ig = organizer.ig?.name;
-    const campus = organizer.campus?.title ?? organizer.campus?.name;
-    if (ig && campus) return `${ig} @ ${campus}`;
-    return organizer.campus_ig?.name ?? "Campus IG";
-  }
-  if (organizer.type === "campus")
-    return organizer.campus?.title ?? organizer.campus?.name ?? "Campus";
-  if (organizer.type === "company")
-    return organizer.company?.title ?? organizer.company?.name ?? "Company";
-  return "MuLearn";
-}
-
-const SLIDE_INTERVAL = 5000;
 
 export function FeaturedEventsCarousel() {
   const { data, isLoading } = useFeaturedEvents({ pageIndex: 1, perPage: 10 });
@@ -63,7 +32,7 @@ export function FeaturedEventsCarousel() {
 
   useEffect(() => {
     if (paused || featuredEvents.length <= 1) return;
-    timerRef.current = setTimeout(goNext, SLIDE_INTERVAL);
+    timerRef.current = setTimeout(goNext, FEATURED_SLIDE_INTERVAL);
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
@@ -76,17 +45,10 @@ export function FeaturedEventsCarousel() {
   if (featuredEvents.length === 0) return null;
 
   const event = featuredEvents[activeIndex];
-  const eventType = resolveEventTypeValue(
-    event.event_type,
-    event.category_name,
-  );
-  const organizerName = getOrganizerName(event.organizer);
-
   return (
     <section
       aria-label="Featured events carousel"
-      className="group relative mb-8 w-full overflow-hidden rounded-2xl shadow-md"
-      style={{ aspectRatio: "16/6" }}
+      className="group relative mb-8 aspect-[4/3] w-full overflow-hidden rounded-2xl md:aspect-[16/7] lc-card-shadow lc-slide-up"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
@@ -112,40 +74,39 @@ export function FeaturedEventsCarousel() {
       ))}
 
       {/* Gradient overlay */}
-      <div className="absolute inset-0 z-10 bg-linear-to-t from-black/80 via-black/40 to-transparent" />
+      <div className="absolute inset-0 z-10 bg-gradient-to-t from-foreground/85 via-foreground/50 to-transparent" />
+
+      <Link
+        aria-label={`Open ${event.title}`}
+        href={`/dashboard/events/${event.id}`}
+        className="absolute inset-0 z-[15]"
+      />
 
       {/* Content overlay */}
-      <div className="absolute inset-x-0 bottom-0 z-20 p-5 text-white sm:p-8">
+      <div className="absolute inset-x-0 bottom-0 z-20 p-5 text-primary-foreground sm:p-8 lc-slide-up">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0 space-y-2">
-            {eventType ? (
-              <Badge className="bg-white/20 text-white capitalize backdrop-blur-sm">
-                {eventType.replace(/_/g, " ")}
-              </Badge>
-            ) : null}
-
-            <Link href={`/dashboard/events/${event.id}`}>
-              <h2 className="line-clamp-2 text-xl font-bold tracking-tight drop-shadow sm:text-2xl hover:underline underline-offset-2">
+            {/* Title */}
+            <Link
+              href={`/dashboard/events/${event.id}`}
+              className="relative z-20"
+            >
+              <h2 className="line-clamp-2 text-xl font-bold tracking-tight drop-shadow sm:text-3xl hover:underline underline-offset-2 text-primary-foreground">
                 {event.title}
               </h2>
             </Link>
 
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-white/85">
-              <span className="inline-flex items-center gap-1">
-                <CalendarDays className="h-3.5 w-3.5" />
-                {formatDate(event.start_datetime)}
-              </span>
-              {event.venue_city ? (
-                <span className="inline-flex items-center gap-1">
-                  <MapPin className="h-3.5 w-3.5" />
-                  {event.venue_city}
-                </span>
-              ) : null}
-              <span className="text-white/70">By {organizerName}</span>
+            {/* Frosted glass info pill */}
+            <div className="inline-flex items-center gap-2 rounded-full bg-primary-foreground/15 backdrop-blur-sm border border-primary-foreground/20 px-3 py-1 text-xs text-primary-foreground/90">
+              <CalendarDays className="h-3.5 w-3.5" />
+              <span>{formatEventDate(event.start_datetime)}</span>
+              <span>|</span>
+              <MapPin className="h-3.5 w-3.5" />
+              <span>{event.venue_city ?? "Venue TBA"}</span>
             </div>
           </div>
 
-          <div className="shrink-0">
+          <div className="relative z-20 shrink-0">
             <InterestButton
               eventId={event.id}
               status={event.viewer_interest_status}
@@ -156,17 +117,17 @@ export function FeaturedEventsCarousel() {
 
         {/* Dots */}
         {featuredEvents.length > 1 ? (
-          <div className="mt-4 flex items-center gap-1.5">
+          <div className="relative z-20 mt-4 flex items-center gap-1.5">
             {featuredEvents.map((ev, i) => (
               <button
                 key={ev.id}
                 type="button"
                 aria-label={`Go to slide ${i + 1}`}
                 onClick={() => goTo(i)}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
+                className={`h-1 rounded-full transition-all duration-300 ${
                   i === activeIndex
-                    ? "w-6 bg-white"
-                    : "w-1.5 bg-white/50 hover:bg-white/75"
+                    ? "w-8 bg-primary-foreground"
+                    : "w-2 bg-primary-foreground/40 hover:bg-primary-foreground/60"
                 }`}
               />
             ))}
@@ -181,7 +142,7 @@ export function FeaturedEventsCarousel() {
             type="button"
             aria-label="Previous slide"
             onClick={goPrev}
-            className="absolute left-3 top-1/2 z-20 -translate-y-1/2 rounded-full bg-black/30 p-2 text-white opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100 hover:bg-black/50"
+            className="absolute left-3 top-1/2 z-20 -translate-y-1/2 hidden md:flex rounded-full bg-primary-foreground/20 backdrop-blur-sm border border-primary-foreground/30 p-2 text-primary-foreground hover:bg-primary-foreground/40 transition-colors"
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
@@ -189,7 +150,7 @@ export function FeaturedEventsCarousel() {
             type="button"
             aria-label="Next slide"
             onClick={goNext}
-            className="absolute right-3 top-1/2 z-20 -translate-y-1/2 rounded-full bg-black/30 p-2 text-white opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100 hover:bg-black/50"
+            className="absolute right-3 top-1/2 z-20 -translate-y-1/2 hidden md:flex rounded-full bg-primary-foreground/20 backdrop-blur-sm border border-primary-foreground/30 p-2 text-primary-foreground hover:bg-primary-foreground/40 transition-colors"
           >
             <ChevronRight className="h-5 w-5" />
           </button>

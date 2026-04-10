@@ -73,18 +73,36 @@ export function CollaboratorsPanel({
   );
 
   return (
-    <section className="space-y-3 rounded-lg border p-4">
-      <h3 className="font-semibold">Collaborators</h3>
+    <section className="space-y-5 rounded-xl border border-border/70 bg-background p-4 sm:p-5">
+      <div className="space-y-1">
+        <h3 className="text-base font-semibold tracking-tight text-foreground">
+          Collaborators
+        </h3>
+        <p className="text-sm text-muted-foreground">
+          Invite or review collaborators from the section below.
+        </p>
+      </div>
 
-      <div className="space-y-2">
+      {isManageView ? (
+        <div className="space-y-3 rounded-xl border border-dashed border-border/70 bg-muted/30 p-3">
+          <EventSearch mode="invite" eventId={eventId} />
+        </div>
+      ) : null}
+
+      <div className="max-h-[340px] space-y-2.5 overflow-y-auto pr-1 sm:max-h-[400px]">
         {visible.map((collab) => (
-          <div key={collab.id} className="space-y-2 rounded border p-3 text-sm">
-            <div className="flex items-center justify-between gap-2">
-              <div>
-                <p className="font-medium">{getCollabName(collab)}</p>
-                {collab.role_label ? (
-                  <p className="text-xs text-gray-500">{collab.role_label}</p>
-                ) : null}
+          <div
+            key={collab.id}
+            className="space-y-2 rounded-xl border border-border bg-card p-3 text-sm"
+          >
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
+                <p className="truncate font-semibold">
+                  {getCollabName(collab)}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {collab.role_label ?? "Collaborator"}
+                </p>
               </div>
               {isManageView ? (
                 <Badge variant="outline" className="capitalize">
@@ -108,9 +126,12 @@ export function CollaboratorsPanel({
             ) : null}
           </div>
         ))}
+        {visible.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No collaborators found.
+          </p>
+        ) : null}
       </div>
-
-      {isManageView ? <EventSearch mode="invite" eventId={eventId} /> : null}
 
       <ConfirmDialog
         open={!!selectedCollaborator}

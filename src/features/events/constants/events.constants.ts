@@ -27,24 +27,49 @@ export const EVENT_STATUS_MAP: Record<
   EventStatus,
   { label: string; className: string }
 > = {
-  draft: { label: "Draft", className: "bg-gray-200 text-gray-800" },
+  draft: { label: "Draft", className: "ig-cat-others" },
   pending_campus_approval: {
     label: "Pending Campus Approval",
-    className: "bg-amber-100 text-amber-800",
+    className: "ig-status-requested",
   },
   pending_approval: {
     label: "Pending Approval",
-    className: "bg-amber-100 text-amber-800",
+    className: "ig-status-requested",
   },
   pending_mentor_approval: {
     label: "Pending Mentor Approval",
-    className: "bg-amber-100 text-amber-800",
+    className: "ig-status-requested",
   },
-  published: { label: "Published", className: "bg-green-100 text-green-800" },
-  ongoing: { label: "Ongoing", className: "bg-blue-100 text-blue-800" },
-  completed: { label: "Completed", className: "bg-gray-100 text-gray-700" },
-  cancelled: { label: "Cancelled", className: "bg-red-100 text-red-800" },
+  published: {
+    label: "Published",
+    className: "ig-status-active",
+  },
+  ongoing: {
+    label: "Ongoing",
+    className: "ig-cat-coder",
+  },
+  completed: {
+    label: "Completed",
+    className: "ig-cat-others",
+  },
+  cancelled: {
+    label: "Cancelled",
+    className: "ig-status-cancelled",
+  },
 };
+
+export const EVENT_STATUS_DOT_STYLES: Record<string, string> = {
+  draft: "bg-muted-foreground",
+  pending_campus_approval: "bg-[var(--chart-5)]",
+  pending_approval: "bg-[var(--chart-5)]",
+  pending_mentor_approval: "bg-[var(--chart-5)]",
+  published: "bg-[var(--chart-2)]",
+  ongoing: "bg-primary",
+  completed: "bg-muted-foreground",
+  cancelled: "bg-destructive",
+};
+
+export * from "./events.ui.constants";
 
 export const EVENT_TYPE_BADGE_CONFIG: Record<
   EventType,
@@ -53,42 +78,37 @@ export const EVENT_TYPE_BADGE_CONFIG: Record<
   workshop: {
     label: "Workshop",
     icon: BookOpen,
-    className:
-      "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400",
+    className: "ig-cat-manager",
   },
   webinar: {
     label: "Webinar",
     icon: Globe,
-    className: "bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400",
+    className: "ig-cat-coder",
   },
   hackathon: {
     label: "Hackathon",
     icon: Code,
-    className:
-      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+    className: "ig-cat-creative",
   },
   meetup: {
     label: "Meetup",
     icon: Users,
-    className:
-      "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400",
+    className: "ig-cat-maker",
   },
   competition: {
     label: "Competition",
     icon: Trophy,
-    className:
-      "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+    className: "ig-cat-manager",
   },
   social_gathering: {
     label: "Social",
     icon: Gamepad2,
-    className:
-      "bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400",
+    className: "ig-cat-maker",
   },
   other: {
     label: "Other",
     icon: Lightbulb,
-    className: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
+    className: "ig-cat-others",
   },
 };
 
