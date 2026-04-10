@@ -10,9 +10,10 @@
  * Pattern: Validate full response, extract and return inner data.
  */
 
-import { apiClient } from "@/api/client";
+import { apiClient, publicApiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
+  CompanyOnboardingStatusResponseSchema,
   ForgotPasswordResponseSchema,
   type LoginResponseData,
   LoginResponseSchema,
@@ -81,7 +82,7 @@ export async function requestLoginOTP(emailOrMuid: string): Promise<void> {
 export async function refreshAccessToken(
   refreshToken: string,
 ): Promise<{ accessToken: string }> {
-  const response = await apiClient.post(
+  const response = await publicApiClient.post(
     endpoints.auth.refreshToken,
     { refreshToken },
     RefreshTokenResponseSchema,
@@ -167,6 +168,17 @@ export async function fetchPublicUserProfile(
   const response = await apiClient.get(
     endpoints.user.publicProfile(muid),
     UserProfileResponseSchema,
+  );
+  return response.response;
+}
+
+/**
+ * Get company onboarding / verification status for the logged-in company user
+ */
+export async function fetchCompanyOnboardingStatus() {
+  const response = await apiClient.get(
+    endpoints.company.onboardingStatus,
+    CompanyOnboardingStatusResponseSchema,
   );
   return response.response;
 }

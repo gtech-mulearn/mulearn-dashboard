@@ -56,14 +56,8 @@ const createEventBaseSchema = z.object({
     .union([z.string(), z.literal("")])
     .optional()
     .transform((v) => (v === "" ? null : v)),
-  cover_image: z
-    .union([z.string().url("Invalid URL"), z.literal("")])
-    .optional()
-    .transform((v) => (v === "" ? null : v)),
-  banner_image: z
-    .union([z.string().url("Invalid URL"), z.literal("")])
-    .optional()
-    .transform((v) => (v === "" ? null : v)),
+  cover_image: z.string().optional().nullable(),
+  banner_image: z.string().optional().nullable(),
   registration_url: z
     .union([z.string().url("Invalid URL"), z.literal("")])
     .optional()
@@ -198,7 +192,7 @@ export const updateEventSchema = createEventBaseSchema.partial();
 // ─── EVENT LIST PARAMS SCHEMA ──────────────────────────────────────────────
 
 export const eventListParamsSchema = z.object({
-  page: z.number().min(1).optional(),
+  pageIndex: z.number().min(1).optional(),
   perPage: z.number().min(1).max(100).optional(),
   search: z.string().optional(),
   event_type: z

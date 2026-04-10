@@ -3,6 +3,8 @@
 import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
+  type DistrictCollegeDetailsParams,
+  type DistrictStudentDetailsParams,
   fetchDistrictCollegeDetails,
   fetchDistrictCollegeDetailsCsv,
   fetchDistrictDetails,
@@ -10,8 +12,6 @@ import {
   fetchDistrictStudentDetailsCsv,
   fetchDistrictStudentLevel,
   fetchDistrictTopCampus,
-  type DistrictCollegeDetailsParams,
-  type DistrictStudentDetailsParams,
 } from "../api";
 import { districtKeys } from "./query-keys";
 

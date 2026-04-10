@@ -60,9 +60,9 @@ export interface ServerUser {
  */
 export async function getServerUser(): Promise<ServerUser | null> {
   const cookieStore = await cookies();
-  const accessToken = cookieStore.get("accessToken")?.value;
+  const refreshToken = cookieStore.get("refreshToken")?.value;
 
-  if (!accessToken) return null;
+  if (!refreshToken) return null;
 
   try {
     return await serverApiClient.get<ServerUser>(
@@ -71,7 +71,6 @@ export async function getServerUser(): Promise<ServerUser | null> {
       { next: { revalidate: 60, tags: ["user-info"] } },
     );
   } catch (error) {
-    // Token expired, invalid, or network error — don't throw, just return null
     console.error("[auth/server] Failed to fetch user info:", error);
     return null;
   }

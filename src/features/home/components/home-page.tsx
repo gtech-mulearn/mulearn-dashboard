@@ -13,6 +13,7 @@ import { HeroCard } from "./hero-card";
 import { InterestGroupsCard } from "./interest-groups-card";
 import { KarmaEarnersCard } from "./karma-earners-card";
 import { LearningCirclesCard } from "./learning-circles-card";
+import { VerificationStatusBanner } from "./verification-status-banner";
 
 // Import role-specific components (commented out for now)
 // import {
@@ -109,11 +110,7 @@ export function HomePage() {
 
   return (
     <div className="space-y-8 p-1">
-      {/* 
-        To enable role-based content, uncomment the line below and 
-        comment out the grid div.
-        {renderHome()} 
-      */}
+      <VerificationStatusBanner roles={userInfo?.roles ?? []} />
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
         <div className="col-span-1 md:col-span-3">

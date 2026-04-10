@@ -384,7 +384,7 @@ export async function getUserAchievements(
     endpoints.achievements.userAchievements(muid),
     UserAchievementsResponseSchema,
   );
-  return response.response;
+  return response.response ?? { achievements: [] };
 }
 
 /** Get connected DIDs for user */
@@ -395,7 +395,7 @@ export async function getConnectedDIDs(
     endpoints.qseverse.connectedUsers(muid),
     ConnectedDIDsResponseSchema,
   );
-  return response.response;
+  return response.response ?? { connected_dids: [] };
 }
 
 /** Issue Verifiable Credential */

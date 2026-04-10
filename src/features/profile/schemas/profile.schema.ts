@@ -25,10 +25,12 @@ export const InterestGroupSchema = z.object({
   id: z.string().optional(),
   name: z.string(),
   karma: z.number().optional(),
-  level: z.object({
-    unit: z.string(),
-    count: z.number(),
-  }),
+  level: z
+    .object({
+      unit: z.string(),
+      count: z.number(),
+    })
+    .default({ unit: "level", count: 1 }),
 });
 export type InterestGroup = z.infer<typeof InterestGroupSchema>;
 

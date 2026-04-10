@@ -107,28 +107,34 @@ export const CreateOrganizationResponseSchema = ApiResponseSchema(
 );
 
 // ============================================
-// Create Company Request
+// Location Cascading Schemas
+// GET  /api/v1/register/country/list/
+// POST /api/v1/register/state/list/    { country: id }
+// POST /api/v1/register/district/list/ { state: id }
 // ============================================
 
-export const CreateCompanyRequestSchema = z.object({
-  name: z.string().min(3, "Company name must be at least 3 characters"),
-  description: z.string().min(10, "Description must be at least 10 characters"),
-  industry_sector: z.string().min(1, "Industry sector is required"),
-  website_link: z
-    .string()
-    .url("Please enter a valid URL")
-    .optional()
-    .or(z.literal("")),
-  email: z.string().email("Please enter a valid email"),
-  location: z.string().min(3, "Location must be at least 3 characters"),
-});
+export const CountrySchema = z
+  .object({ id: z.string(), name: z.string() })
+  .passthrough();
 
-export const CreateCompanyResponseSchema = ApiResponseSchema(
-  z
-    .object({
-      id: z.string().optional(),
-    })
-    .passthrough(),
+export const CountriesResponseSchema = ApiResponseSchema(
+  z.object({ countries: z.array(CountrySchema) }).passthrough(),
+);
+
+export const StateSchema = z
+  .object({ id: z.string(), name: z.string() })
+  .passthrough();
+
+export const StatesResponseSchema = ApiResponseSchema(
+  z.object({ states: z.array(StateSchema) }).passthrough(),
+);
+
+export const DistrictSchema = z
+  .object({ id: z.string(), name: z.string() })
+  .passthrough();
+
+export const DistrictsResponseSchema = ApiResponseSchema(
+  z.object({ districts: z.array(DistrictSchema) }).passthrough(),
 );
 
 // ============================================
@@ -156,4 +162,6 @@ export type CreateOrganizationRequest = z.infer<
   typeof CreateOrganizationRequestSchema
 >;
 
-export type CreateCompanyRequest = z.infer<typeof CreateCompanyRequestSchema>;
+export type Country = z.infer<typeof CountrySchema>;
+export type State = z.infer<typeof StateSchema>;
+export type District = z.infer<typeof DistrictSchema>;

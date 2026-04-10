@@ -1,10 +1,9 @@
 import { apiClient, endpoints } from "@/api";
 import type {
-  CollaborationTarget,
   CollaboratorInviteBody,
   CollaboratorsListData,
-  CollaboratorType,
   CoOwnersListData,
+  EventCollaborator,
   EventCoOwner,
   EventCoOwnerInput,
   EventDeleteData,
@@ -17,9 +16,60 @@ import type {
   EventPatchBody,
   EventWriteBody,
   IGCluster,
+  MinimalCampus,
+  MinimalIG,
   MinimalUser,
   OrganizerOptionsResponse,
+  PaginatedData,
+  PendingInvitesData,
 } from "../types";
+
+type EventShape = {
+  id?: string;
+  status?: string | null;
+  start_datetime?: string;
+  end_datetime?: string;
+  event_type?: string | null;
+  category_name?: string | null;
+};
+
+const PENDING_STATUS_GROUP = [
+  "pending_approval",
+  "pending_campus_approval",
+  "pending_mentor_approval",
+] as const;
+
+const TEMPORAL_STATUS_FALLBACK_LIMIT = 200;
+
+// Compatibility shim:
+// If the backend returns event_type but omits category_name, mirror it here so
+// existing event views keep showing the selected type after refresh.
+function mirrorEventTypeToCategory<T extends EventShape>(event: T): T {
+  if (!event || typeof event !== "object") {
+    return event;
+  }
+
+  const eventType = event.event_type ?? null;
+  const categoryName = event.category_name ?? null;
+
+  if (!eventType || categoryName) {
+    return event;
+  }
+
+  return {
+    ...event,
+    category_name: eventType,
+  };
+}
+
+function mirrorEventTypeToCategoryList<T extends EventShape>(
+  data: PaginatedData<T>,
+): PaginatedData<T> {
+  return {
+    ...data,
+    data: data.data.map((event) => mirrorEventTypeToCategory(event)),
+  };
+}
 
 // ─── HELPERS ────────────────────────────────────────────────────────────────
 
@@ -27,7 +77,7 @@ function buildQueryString(params?: EventListQueryParams): string {
   if (!params) return "";
 
   const searchParams = new URLSearchParams();
-  if (params.page) searchParams.set("page", String(params.page));
+  if (params.pageIndex) searchParams.set("pageIndex", String(params.pageIndex));
   if (params.perPage) searchParams.set("perPage", String(params.perPage));
   if (params.search) searchParams.set("search", params.search);
   if (params.event_type) searchParams.set("event_type", params.event_type);
@@ -35,9 +85,6 @@ function buildQueryString(params?: EventListQueryParams): string {
   if (params.status) searchParams.set("status", params.status);
   if (params.ig_id) searchParams.set("ig_id", params.ig_id);
   if (params.campus_id) searchParams.set("campus_id", params.campus_id);
-  if (params.company_id) searchParams.set("company_id", params.company_id);
-  if (params.campus_ig_id)
-    searchParams.set("campus_ig_id", params.campus_ig_id);
   if (params.cluster) searchParams.set("cluster", params.cluster);
   if (params.is_featured !== undefined)
     searchParams.set("is_featured", String(params.is_featured));
@@ -47,9 +94,173 @@ function buildQueryString(params?: EventListQueryParams): string {
   if (params.start_date) searchParams.set("start_date", params.start_date);
   if (params.end_date) searchParams.set("end_date", params.end_date);
   if (params.sortBy) searchParams.set("sortBy", params.sortBy);
+  if (params.organiser_type)
+    searchParams.set("organiser_type", params.organiser_type);
+  if (params.created_by) searchParams.set("created_by", params.created_by);
 
   const qs = searchParams.toString();
   return qs ? `?${qs}` : "";
+}
+
+function buildQueryStringWithStatusOverride(
+  params: EventListQueryParams | undefined,
+  status: string,
+): string {
+  if (!params) {
+    return `?status=${encodeURIComponent(status)}`;
+  }
+
+  const searchParams = new URLSearchParams();
+  if (params.pageIndex) searchParams.set("pageIndex", String(params.pageIndex));
+  if (params.perPage) searchParams.set("perPage", String(params.perPage));
+  if (params.search) searchParams.set("search", params.search);
+  if (params.event_type) searchParams.set("event_type", params.event_type);
+  if (params.scope) searchParams.set("scope", params.scope);
+  searchParams.set("status", status);
+  if (params.ig_id) searchParams.set("ig_id", params.ig_id);
+  if (params.campus_id) searchParams.set("campus_id", params.campus_id);
+  if (params.cluster) searchParams.set("cluster", params.cluster);
+  if (params.is_featured !== undefined)
+    searchParams.set("is_featured", String(params.is_featured));
+  if (params.tags) searchParams.set("tags", params.tags);
+  if (params.eligible_only !== undefined)
+    searchParams.set("eligible_only", String(params.eligible_only));
+  if (params.start_date) searchParams.set("start_date", params.start_date);
+  if (params.end_date) searchParams.set("end_date", params.end_date);
+  if (params.sortBy) searchParams.set("sortBy", params.sortBy);
+  if (params.organiser_type)
+    searchParams.set("organiser_type", params.organiser_type);
+  if (params.created_by) searchParams.set("created_by", params.created_by);
+
+  return `?${searchParams.toString()}`;
+}
+
+function paginateItems<T>(
+  items: T[],
+  pageIndex: number,
+  perPage: number,
+): PaginatedData<T> {
+  const start = (pageIndex - 1) * perPage;
+  const data = items.slice(start, start + perPage);
+  const count = items.length;
+  const totalPages = Math.max(1, Math.ceil(count / perPage));
+
+  return {
+    data,
+    pagination: {
+      count,
+      totalPages,
+      isNext: pageIndex < totalPages,
+      isPrev: pageIndex > 1,
+      nextPage: pageIndex < totalPages ? pageIndex + 1 : null,
+    },
+  };
+}
+
+function dedupeById<T extends { id?: string }>(items: T[]): T[] {
+  const unique = new Map<string, T>();
+
+  for (const item of items) {
+    if (!item?.id) continue;
+    if (!unique.has(item.id)) {
+      unique.set(item.id, item);
+    }
+  }
+
+  return Array.from(unique.values());
+}
+
+function isOngoingByTime(event: EventShape): boolean {
+  if (!event.start_datetime || !event.end_datetime) return false;
+  const start = new Date(event.start_datetime).getTime();
+  const end = new Date(event.end_datetime).getTime();
+  if (Number.isNaN(start) || Number.isNaN(end)) return false;
+
+  const now = Date.now();
+  return start <= now && now < end;
+}
+
+function isCompletedByTime(event: EventShape): boolean {
+  if (!event.end_datetime) return false;
+  const end = new Date(event.end_datetime).getTime();
+  if (Number.isNaN(end)) return false;
+  return end <= Date.now();
+}
+
+async function fetchListWithStatusFallback(
+  endpoint: string,
+  params?: EventListQueryParams,
+): Promise<EventListData> {
+  const qs = buildQueryString(params);
+  let response = await apiClient.get<EventListData>(`${endpoint}${qs}`);
+  response = mirrorEventTypeToCategoryList(response);
+
+  const status = params?.status;
+  if (!status) {
+    return response;
+  }
+
+  const pageIndex = params?.pageIndex ?? 1;
+  const perPage = params?.perPage ?? 12;
+
+  // Pending tab should include all pending states used across approval flows.
+  if (status === "pending_approval") {
+    const fallbackParams = {
+      ...params,
+      pageIndex: 1,
+      perPage: TEMPORAL_STATUS_FALLBACK_LIMIT,
+    };
+
+    const groupedResponses = await Promise.all(
+      PENDING_STATUS_GROUP.map((pendingStatus) =>
+        apiClient
+          .get<EventListData>(
+            `${endpoint}${buildQueryStringWithStatusOverride(fallbackParams, pendingStatus)}`,
+          )
+          .then((data) => mirrorEventTypeToCategoryList(data)),
+      ),
+    );
+
+    const merged = dedupeById(groupedResponses.flatMap((item) => item.data));
+    return paginateItems(merged, pageIndex, perPage);
+  }
+
+  // Some deployments use American spelling in query parsing (`canceled`).
+  if (status === "cancelled" && response.data.length === 0) {
+    const fallbackQs = buildQueryStringWithStatusOverride(params, "canceled");
+    const fallbackResponse = await apiClient.get<EventListData>(
+      `${endpoint}${fallbackQs}`,
+    );
+    return mirrorEventTypeToCategoryList(fallbackResponse);
+  }
+
+  // Some environments may not auto-transition published events to ongoing/completed.
+  if (
+    (status === "ongoing" || status === "completed") &&
+    response.data.length === 0
+  ) {
+    const publishedFallbackParams: EventListQueryParams = {
+      ...params,
+      status: "published",
+      pageIndex: 1,
+      perPage: TEMPORAL_STATUS_FALLBACK_LIMIT,
+      sortBy: "-start_datetime",
+    };
+
+    const publishedResponse = await apiClient.get<EventListData>(
+      `${endpoint}${buildQueryString(publishedFallbackParams)}`,
+    );
+    const normalizedPublished =
+      mirrorEventTypeToCategoryList(publishedResponse);
+
+    const filtered = normalizedPublished.data.filter((event) =>
+      status === "ongoing" ? isOngoingByTime(event) : isCompletedByTime(event),
+    );
+
+    return paginateItems(filtered, pageIndex, perPage);
+  }
+
+  return response;
 }
 
 // ─── EVENTS API ────────────────────────────────────────────────────────────
@@ -58,17 +269,26 @@ export const eventsApi = {
   // ─── PUBLIC LIST ENDPOINTS ───────────────────────────────────────────────
   list: async (params?: EventListQueryParams): Promise<EventListData> => {
     const qs = buildQueryString(params);
-    return apiClient.get<EventListData>(`${endpoints.events.base}${qs}`);
+    const response = await apiClient.get<EventListData>(
+      `${endpoints.events.base}${qs}`,
+    );
+    return mirrorEventTypeToCategoryList(response);
   },
 
   featured: async (params?: EventListQueryParams): Promise<EventListData> => {
     const qs = buildQueryString(params);
-    return apiClient.get<EventListData>(`${endpoints.events.featured}${qs}`);
+    const response = await apiClient.get<EventListData>(
+      `${endpoints.events.featured}${qs}`,
+    );
+    return mirrorEventTypeToCategoryList(response);
   },
 
   // ─── PUBLIC DETAIL & INTEREST ────────────────────────────────────────────
   detail: async (id: string): Promise<EventDetailData> => {
-    return apiClient.get<EventDetailData>(`${endpoints.events.base}${id}/`);
+    const response = await apiClient.get<EventDetailData>(
+      `${endpoints.events.base}${id}/`,
+    );
+    return mirrorEventTypeToCategory(response);
   },
 
   addInterest: async (id: string): Promise<EventInterestData> => {
@@ -86,38 +306,52 @@ export const eventsApi = {
 
   // ─── MANAGE: LIST & CRUD ─────────────────────────────────────────────────
   manageList: async (params?: EventListQueryParams): Promise<EventListData> => {
-    const qs = buildQueryString(params);
-    return apiClient.get<EventListData>(`${endpoints.events.manage}${qs}`);
+    return fetchListWithStatusFallback(endpoints.events.manage, params);
   },
 
-  create: async (body: EventWriteBody): Promise<EventMutationData> => {
-    return apiClient.post<EventMutationData>(endpoints.events.manage, body);
+  create: async (
+    body: EventWriteBody | FormData,
+  ): Promise<EventMutationData> => {
+    const isFormData = body instanceof FormData;
+    const response = await apiClient.post<EventMutationData>(
+      endpoints.events.manage,
+      body,
+      undefined,
+      { isFormData },
+    );
+    return mirrorEventTypeToCategory(response);
   },
 
   manageDetail: async (id: string): Promise<EventDetailManageData> => {
-    return apiClient.get<EventDetailManageData>(
+    const response = await apiClient.get<EventDetailManageData>(
       `${endpoints.events.manage}${id}/`,
     );
+    return mirrorEventTypeToCategory(response);
   },
 
   update: async (
     id: string,
     body: EventWriteBody,
   ): Promise<EventMutationData> => {
-    return apiClient.put<EventMutationData>(
+    const response = await apiClient.put<EventMutationData>(
       `${endpoints.events.manage}${id}/`,
       body,
     );
+    return mirrorEventTypeToCategory(response);
   },
 
   patch: async (
     id: string,
-    body: EventPatchBody,
+    body: EventPatchBody | FormData,
   ): Promise<EventMutationData> => {
-    return apiClient.patch<EventMutationData>(
+    const isFormData = body instanceof FormData;
+    const response = await apiClient.patch<EventMutationData>(
       `${endpoints.events.manage}${id}/`,
       body,
+      undefined,
+      { isFormData },
     );
+    return mirrorEventTypeToCategory(response);
   },
 
   delete: async (id: string): Promise<EventDeleteData> => {
@@ -127,10 +361,11 @@ export const eventsApi = {
   },
 
   publish: async (id: string): Promise<EventMutationData> => {
-    return apiClient.post<EventMutationData>(
+    const response = await apiClient.post<EventMutationData>(
       `${endpoints.events.manage}${id}/publish/`,
       {},
     );
+    return mirrorEventTypeToCategory(response);
   },
 
   // ─── CO-OWNERS ───────────────────────────────────────────────────────────
@@ -160,6 +395,10 @@ export const eventsApi = {
   },
 
   // ─── COLLABORATORS ──────────────────────────────────────────────────────
+  getMyInvites: async (): Promise<PendingInvitesData> => {
+    return apiClient.get<PendingInvitesData>(endpoints.events.myInvites);
+  },
+
   getCollaborators: async (id: string): Promise<CollaboratorsListData> => {
     return apiClient.get<CollaboratorsListData>(
       `${endpoints.events.manage}${id}/collaborators/`,
@@ -169,8 +408,8 @@ export const eventsApi = {
   inviteCollaborator: async (
     id: string,
     body: CollaboratorInviteBody,
-  ): Promise<EventDeleteData> => {
-    return apiClient.post<EventDeleteData>(
+  ): Promise<EventCollaborator> => {
+    return apiClient.post<EventCollaborator>(
       `${endpoints.events.manage}${id}/collaborators/`,
       body,
     );
@@ -179,8 +418,8 @@ export const eventsApi = {
   acceptCollaborator: async (
     id: string,
     cId: string,
-  ): Promise<EventDeleteData> => {
-    return apiClient.post<EventDeleteData>(
+  ): Promise<EventCollaborator> => {
+    return apiClient.post<EventCollaborator>(
       `${endpoints.events.manage}${id}/collaborators/${cId}/accept/`,
       {},
     );
@@ -190,8 +429,8 @@ export const eventsApi = {
     id: string,
     cId: string,
     reason?: string,
-  ): Promise<EventDeleteData> => {
-    return apiClient.post<EventDeleteData>(
+  ): Promise<EventCollaborator> => {
+    return apiClient.post<EventCollaborator>(
       `${endpoints.events.manage}${id}/collaborators/${cId}/reject/`,
       { reason },
     );
@@ -208,22 +447,45 @@ export const eventsApi = {
 
   searchCollaborationTargets: async (
     search: string,
-    type?: CollaboratorType,
-  ): Promise<CollaborationTarget[]> => {
-    const searchParams = new URLSearchParams({ search });
+    type?: "ig" | "campus" | "campus_ig" | "company",
+  ): Promise<unknown> => {
+    const searchParams = new URLSearchParams();
+    if (search) {
+      searchParams.set("search", search);
+    }
     if (type) {
       searchParams.set("type", type);
     }
-    return apiClient.get<CollaborationTarget[]>(
+    return apiClient.get(
       `${endpoints.events.meta.collaborationTargets}?${searchParams.toString()}`,
     );
   },
 
-  searchUsers: async (query: string): Promise<MinimalUser[]> => {
-    const searchParams = new URLSearchParams({ search: query });
-    return apiClient.get<MinimalUser[]>(
-      `${endpoints.search.students}?${searchParams.toString()}`,
+  searchUsers: async (query: string): Promise<PaginatedData<MinimalUser>> => {
+    const searchParams = new URLSearchParams({ search: query, perPage: "10" });
+    return apiClient.get<PaginatedData<MinimalUser>>(
+      `${endpoints.search.users}?${searchParams.toString()}`,
     );
+  },
+
+  searchCampusTargets: async (
+    query: string,
+  ): Promise<PaginatedData<MinimalCampus>> => {
+    const searchParams = new URLSearchParams({ search: query });
+    return apiClient.get<PaginatedData<MinimalCampus>>(
+      `${endpoints.search.colleges}?${searchParams.toString()}`,
+    );
+  },
+
+  searchIGTargets: async (query: string): Promise<PaginatedData<MinimalIG>> => {
+    const searchParams = new URLSearchParams({ search: query });
+    return apiClient.get<PaginatedData<MinimalIG>>(
+      `${endpoints.dashboard.interestGroups}?${searchParams.toString()}`,
+    );
+  },
+
+  searchCampusIGTargets: async (query: string): Promise<unknown> => {
+    return eventsApi.searchCollaborationTargets(query, "campus_ig");
   },
 
   // ─── SCOPED FEEDS ───────────────────────────────────────────────────────
@@ -277,8 +539,7 @@ export const eventsApi = {
 
   // ─── ADMIN ENDPOINTS ─────────────────────────────────────────────────────
   adminList: async (params?: EventListQueryParams): Promise<EventListData> => {
-    const qs = buildQueryString(params);
-    return apiClient.get<EventListData>(`${endpoints.events.admin}${qs}`);
+    return fetchListWithStatusFallback(endpoints.events.admin, params);
   },
 
   adminApprove: async (

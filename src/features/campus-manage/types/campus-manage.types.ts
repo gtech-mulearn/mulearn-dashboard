@@ -108,6 +108,8 @@ export interface IgChapter {
 
 export interface ExecomMember {
   id: string;
+  roleLinkId: string;
+  deleteCandidates: string[];
   name: string;
   muid: string;
   role: string;

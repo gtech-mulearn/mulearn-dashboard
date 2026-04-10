@@ -1,6 +1,6 @@
 // ============================================================================
 // Events Feature — Type Definitions
-// Sourced from: event requirements (1).md & Postman collection
+// API Specification: `/api/v1/dashboard/events/` (Full API)
 // ============================================================================
 
 // ─── PRIMITIVES ─────────────────────────────────────────────────────────────
@@ -10,18 +10,9 @@ export type ISODate = string;
 
 // ─── ENUMS ──────────────────────────────────────────────────────────────────
 
-export type EventType =
-  | "workshop"
-  | "webinar"
-  | "hackathon"
-  | "meetup"
-  | "competition"
-  | "social_gathering"
-  | "other";
-
 export type IGCluster = "coder" | "maker" | "manager" | "creative";
 
-export type EventScope = "global" | "campus" | "ig" | "campus_ig";
+export type EventScope = "global" | "campus" | "ig" | "campus_ig" | "company";
 
 export type VenueType = "physical" | "online" | "hybrid";
 
@@ -37,9 +28,25 @@ export type EventStatus =
 
 export type ViewerInterestStatus = "interested" | "none";
 
-export type EventCoOwnerRole = "co_owner" | "admin";
+/** Event type - kept for component backward compatibility */
+export type EventType =
+  | "workshop"
+  | "webinar"
+  | "hackathon"
+  | "meetup"
+  | "competition"
+  | "social_gathering"
+  | "other";
 
+/** Internal/component type without API prefix */
 export type CollaboratorType = "ig" | "campus" | "campus_ig" | "company";
+
+/** API request body entity type - has "collab_" prefix */
+export type CollaboratorEntityType =
+  | "collab_ig"
+  | "collab_campus"
+  | "collab_campus_ig"
+  | "collab_company";
 
 export type OrganizerType =
   | "global_ig"
@@ -56,6 +63,10 @@ export interface PaginationMeta {
   isNext: boolean;
   isPrev: boolean;
   nextPage: number | null;
+  pageSize?: number;
+  perPage?: number;
+  page_size?: number;
+  per_page?: number;
 }
 
 export interface PaginatedData<T> {
@@ -90,99 +101,125 @@ export type APIResponse<T = unknown> = SuccessResponse<T> | FailureResponse;
 export interface MinimalUser {
   id: UUID;
   full_name: string;
-  profile_pic: string | null;
   muid: string;
+  profile_pic: string | null;
 }
 
 export interface MinimalIG {
   id: UUID;
   name: string;
-  logo: string | null;
-  cluster: IGCluster;
+  icon: string;
+  code?: string;
+  logo?: string; // Backward compatibility
+  cluster?: IGCluster;
 }
 
 export interface MinimalCampus {
   id: UUID;
-  name: string;
-  logo: string | null;
+  title: string;
+  name?: string; // Backward compatibility
+  org_type?: "College" | "School";
+  logo?: string; // Backward compatibility
 }
 
 export interface MinimalCompany {
   id: UUID;
-  name: string;
-  logo: string | null;
+  title: string;
+  name?: string; // Backward compatibility
+  org_type?: "College" | "School";
+  logo?: string; // Backward compatibility
 }
 
-export interface MinimalCampusIG {
-  id: UUID;
-  ig: MinimalIG;
-  campus: MinimalCampus;
-}
+// ─── ORGANIZER INFO ─────────────────────────────────────────────────────────
 
 export interface OrganizerInfo {
   type: OrganizerType;
-  ig?: MinimalIG;
-  campus_ig?: MinimalCampusIG;
-  campus?: MinimalCampus;
-  company?: MinimalCompany;
+  ig?: MinimalIG | null;
+  campus?: MinimalCampus | null;
+  company?: MinimalCompany | null;
+  campus_ig_id?: UUID | null;
+  // Backward compatibility for old component usage
+  campus_ig?: { id: UUID; name: string; icon: string; code?: string } | null;
 }
+
+// ─── META / FORM OPTIONS ────────────────────────────────────────────────────
 
 export interface OrganizerOptionsResponse {
-  can_create_as_ig: MinimalIG[];
-  can_create_as_campus_ig: MinimalCampusIG[];
-  can_create_as_campus: MinimalCampus[];
-  can_create_as_company: MinimalCompany[];
-  can_create_as_admin: boolean;
+  global_ig?: MinimalIG[];
+  campus_ig?: MinimalIG[];
+  campus?: MinimalCampus[];
+  company?: MinimalCompany[];
+  admin?: boolean;
+  // Backward compatibility
+  can_create_as_ig?: MinimalIG[];
+  can_create_as_campus_ig?: MinimalIG[];
+  can_create_as_campus?: MinimalCampus[];
+  can_create_as_company?: MinimalCompany[];
+  can_create_as_admin?: boolean;
 }
 
+// ─── COLLABORATION TARGET ───────────────────────────────────────────────────
+
 export interface CollaborationTarget {
-  collaborator_type: CollaboratorType;
   id: UUID;
   name: string;
-  logo: string | null;
+  icon?: string;
+  logo?: string | null; // Backward compatibility
+  code?: string;
+  org_type?: "College" | "School";
+  title?: string;
+  collaborator_type?: CollaboratorType;
 }
 
 // ─── CO-OWNERS ──────────────────────────────────────────────────────────────
 
 export interface EventCoOwner {
   id: UUID;
+  entity_id: UUID;
   user: MinimalUser;
-  role: EventCoOwnerRole;
-  added_at: ISODateTime;
   added_by: MinimalUser;
+  added_at: ISODateTime;
+  role?: "co_owner" | "admin"; // Backward compatibility - may or may not be in API
 }
 
 export interface EventCoOwnerInput {
   user_id: UUID;
-  role?: EventCoOwnerRole;
 }
 
 // ─── COLLABORATORS ──────────────────────────────────────────────────────────
 
+export type EntityDetail = MinimalIG | MinimalCampus | MinimalCompany | null;
+
 export interface EventCollaborator {
   id: UUID;
-  collaborator_type: CollaboratorType;
-  ig?: MinimalIG;
-  campus?: MinimalCampus;
-  campus_ig?: MinimalCampusIG;
-  company?: MinimalCompany;
+  entity_type: CollaboratorEntityType;
+  entity_id: UUID;
+  entity_detail: EntityDetail;
   role_label: string | null;
-  invite_status: "pending" | "accepted" | "rejected";
-  invited_at: ISODateTime;
-  responded_at: ISODateTime | null;
+  invite_status: "pending" | "accepted" | "rejected" | null;
   rejection_reason: string | null;
+  responded_at: ISODateTime | null;
+  created_at: ISODateTime;
+  // Backward compatibility - components may use these nested properties
+  ig?: MinimalIG | null;
+  campus?: MinimalCampus | null;
+  campus_ig?: { id: UUID; name: string; icon: string; code?: string } | null;
+  company?: MinimalCompany | null;
+  collaborator_type?: CollaboratorType;
+  invited_at?: ISODateTime;
 }
 
-/**
- * Postman body uses "collab_" prefix for entity_type discriminator
- * This matches the actual API contract, not the spec
- */
+export interface PendingInviteItem extends EventCollaborator {
+  event_id: UUID;
+  event_title: string;
+  event_start_datetime: ISODateTime | null;
+  event_cover_image: string | null;
+}
+
+export type PendingInvitesData = PendingInviteItem[];
+
 export interface CollaboratorInviteBody {
-  entity_type:
-    | "collab_ig"
-    | "collab_campus"
-    | "collab_campus_ig"
-    | "collab_company";
+  entity_type: CollaboratorEntityType;
   entity_id: UUID;
   role_label?: string | null;
 }
@@ -192,17 +229,46 @@ export interface CollaboratorInviteBody {
 export interface LinkedTask {
   id: UUID;
   title: string;
-  description: string | null;
-  hashtag: string;
+  description: string;
+  hashtag: string | null;
   karma: number;
-  bonus_time: ISODateTime | null;
+  bonus_time: number;
   bonus_karma: number;
   active: boolean;
-  ig: MinimalIG | null;
+  ig: MinimalIG;
 }
 
 export interface LinkedTaskInput {
   task_id: UUID;
+}
+
+// ─── EVENT LOG ──────────────────────────────────────────────────────────────
+
+export interface EventLog {
+  id: UUID;
+  action?:
+    | "event_updated"
+    | "co_owner_added"
+    | "co_owner_removed"
+    | "collaborator_invited"
+    | "collaborator_accepted"
+    | "collaborator_rejected"
+    | "collaborator_removed"
+    | string;
+  actor?: MinimalUser | null;
+  performed_by?: MinimalUser | null;
+  target_type?: string | null;
+  target_id?: UUID | null;
+  target_name?: string | null;
+  timestamp?: ISODateTime | null;
+  // History specifics
+  edited_by?: MinimalUser;
+  summary?: string | null;
+  changes?: Record<string, { from?: unknown; to?: unknown }> | null;
+  details?: string | null;
+  // Backward compatibility with older edit_history payloads.
+  changed_fields?: string[] | Record<string, unknown>;
+  edited_at?: ISODateTime;
 }
 
 // ─── VENUE ──────────────────────────────────────────────────────────────────
@@ -218,117 +284,130 @@ export interface EventVenue {
 
 // ─── CORE EVENT MODELS ──────────────────────────────────────────────────────
 
-export interface EventDetail {
-  id: UUID;
-  title: string;
-  slug: string;
-  description: string;
-  cover_image: string | null;
-  banner_image: string | null;
-  event_type: EventType;
-  scope: EventScope;
-  status: EventStatus;
-  organizer: OrganizerInfo;
-  start_datetime: ISODateTime;
-  end_datetime: ISODateTime;
-  venue: EventVenue;
-  registration_url: string | null;
-  registration_deadline: ISODateTime | null;
-  min_karma: number | null;
-  linked_tasks: LinkedTask[];
-  co_owners: EventCoOwner[];
-  is_collaboration: boolean;
-  collaborators: EventCollaborator[];
-  target_campus: MinimalCampus | null;
-  target_ig: MinimalIG | null;
-  target_campus_ig: MinimalCampusIG | null;
-  is_featured: boolean;
-  tags: string[];
-  interest_count: number;
-  viewer_interest_status: ViewerInterestStatus | null;
-  viewer_can_access_registration: boolean;
-  viewer_access_blocked_reason: string | null;
-  created_by: MinimalUser;
-  created_at: ISODateTime;
-  updated_at: ISODateTime;
-}
-
-export interface EventDetailManage extends EventDetail {
-  edit_history: Array<{
-    edited_by: MinimalUser;
-    edited_at: ISODateTime;
-    changed_fields: string[];
-  }>;
-}
-
+/** EventListItem - returned from public/manage/admin list endpoints */
 export interface EventListItem {
   id: UUID;
   title: string;
   slug: string;
   cover_image: string | null;
-  event_type: EventType;
-  scope: EventScope;
   status: EventStatus;
+  scope: EventScope;
   start_datetime: ISODateTime;
   end_datetime: ISODateTime;
-  venue_type: VenueType;
-  venue_city: string | null;
+  venue: EventVenue;
   organizer: OrganizerInfo;
-  min_karma: number | null;
-  is_collaboration: boolean;
   is_featured: boolean;
-  tags: string[];
+  is_collaboration: boolean;
   interest_count: number;
+  min_karma: number;
+  tags: Record<string, unknown> | null;
+  user_limit: number;
+  category_name: string | null;
   viewer_interest_status: ViewerInterestStatus | null;
+  // Backward compatibility properties
+  event_type?: EventType;
+  venue_type?: VenueType;
+  venue_city?: string | null;
+}
+
+/** EventDetail - full event object from /manage/<id>/ and detail endpoints */
+export interface EventDetail {
+  id: UUID;
+  title: string;
+  slug: string;
+  description: string | null;
+  cover_image: string | null;
+  banner_image: string | null;
+  category_name: string | null;
+  status: EventStatus;
+  scope: EventScope;
+  scope_org: MinimalCampus | null;
+  scope_ig: MinimalIG | null;
+  scope_ci_id: UUID | null;
+  organizer: OrganizerInfo;
+  venue: EventVenue;
+  start_datetime: ISODateTime;
+  end_datetime: ISODateTime;
+  registration_url: string | null;
+  registration_deadline: ISODateTime | null;
+  min_karma: number;
+  is_featured: boolean;
+  is_collaboration: boolean;
+  interest_count: number;
+  tags: Record<string, unknown> | null;
+  user_limit: number;
+  linked_tasks: LinkedTask[];
+  co_owners: EventCoOwner[];
+  collaborators: EventCollaborator[];
+  viewer_interest_status: ViewerInterestStatus | null;
+  viewer_can_access_registration: boolean;
+  viewer_access_blocked_reason: string | null;
+  created_by: MinimalUser;
+  updated_by: MinimalUser;
+  created_at: ISODateTime;
+  updated_at: ISODateTime;
+  // Backward compatibility properties
+  event_type?: EventType;
+  target_campus?: MinimalCampus | null;
+  target_ig?: MinimalIG | null;
+  target_campus_ig?: {
+    id: UUID;
+    name: string;
+    icon: string;
+    code?: string;
+  } | null;
+}
+
+/** EventDetailManage - EventDetail with edit_history (only from manage endpoints) */
+export interface EventDetailManage extends EventDetail {
+  edit_history: EventLog[];
 }
 
 // ─── INTEREST SYSTEM ────────────────────────────────────────────────────────
 
-export interface EventInterest {
-  id: UUID;
-  event: { id: UUID; title: string; slug: string };
-  user: MinimalUser;
-  expressed_at: ISODateTime;
+export interface EventInterestResponse {
+  event_id: UUID;
+  user_id: UUID;
+  status: "interested";
 }
 
 // ─── REQUEST BODIES (Write Inputs) ──────────────────────────────────────────
 
 /**
- * Main request body for creating or updating an event.
- * Field names use British "organiser_" spelling (from Postman collection).
- * Venue fields are TOP-LEVEL (not nested object).
+ * EventWriteRequest - for creating/updating events
+ * Matches API spec exactly
  */
 export interface EventWriteBody {
   title: string;
-  description: string;
+  description: string | null;
+  cover_image: string | null;
+  banner_image: string | null;
+  category: UUID | null;
   event_type?: EventType;
-  scope: EventScope;
-  organiser_type: OrganizerType;
-  organiser_ig_id?: UUID;
-  organiser_campus_id?: UUID;
-  organiser_campus_ig_id?: UUID;
-  organiser_company_id?: UUID;
   start_datetime: ISODateTime;
   end_datetime: ISODateTime;
-  venue_type: VenueType;
-  address?: string | null;
-  city?: string | null;
-  maps_url?: string | null;
-  online_link?: string | null;
-  platform?: string | null;
-  cover_image?: string | null;
-  banner_image?: string | null;
-  registration_url?: string | null;
-  registration_deadline?: ISODateTime | null;
+  registration_url: string | null;
+  registration_deadline: ISODateTime | null;
   min_karma?: number | null;
-  linked_tasks?: LinkedTaskInput[];
+  venue_type: VenueType;
+  venue_address: string | null;
+  venue_city: string | null;
+  venue_maps_url: string | null;
+  venue_online_link: string | null;
+  venue_platform: string | null;
+  scope: EventScope;
+  scope_org: UUID | null;
+  scope_ig: UUID | null;
+  scope_ci_id: UUID | null;
+  organiser_type: OrganizerType;
+  organiser_ig: UUID | null;
+  organiser_org: UUID | null;
+  organiser_ci_id: UUID | null;
   co_owners?: EventCoOwnerInput[];
   is_collaboration?: boolean;
-  target_campus_id?: UUID | null;
-  target_ig_id?: UUID | null;
-  target_campus_ig_id?: UUID | null;
-  tags?: string[];
   is_featured?: boolean;
+  tags: string[] | null;
+  user_limit?: number;
 }
 
 export type EventPatchBody = Partial<EventWriteBody>;
@@ -336,29 +415,23 @@ export type EventPatchBody = Partial<EventWriteBody>;
 // ─── QUERY PARAMS ───────────────────────────────────────────────────────────
 
 export interface EventListQueryParams {
-  page?: number;
+  pageIndex?: number;
   perPage?: number;
   search?: string;
-  event_type?: EventType;
-  scope?: EventScope;
-  status?: EventStatus;
+  event_type?: string;
   ig_id?: UUID;
   campus_id?: UUID;
-  company_id?: UUID;
-  campus_ig_id?: UUID;
-  cluster?: IGCluster;
-  is_featured?: boolean;
-  tags?: string;
-  eligible_only?: boolean;
+  cluster?: string;
+  is_featured?: string;
   start_date?: ISODate;
   end_date?: ISODate;
-  sortBy?:
-    | "start_datetime"
-    | "-start_datetime"
-    | "created_at"
-    | "-created_at"
-    | "interest_count"
-    | "-interest_count";
+  tags?: string;
+  eligible_only?: string;
+  sortBy?: string;
+  status?: EventStatus;
+  organiser_type?: string;
+  created_by?: UUID;
+  scope?: EventScope;
 }
 
 // ─── UNWRAPPED DATA TYPES ───────────────────────────────────────────────────
@@ -368,7 +441,57 @@ export type EventListData = PaginatedData<EventListItem>;
 export type EventDetailData = EventDetail;
 export type EventDetailManageData = EventDetailManage;
 export type EventMutationData = EventDetail;
-export type EventDeleteData = { message: string };
-export type EventInterestData = EventInterest;
+export type EventDeleteData = Record<string, unknown>;
+export type EventInterestData = EventInterestResponse;
 export type CoOwnersListData = EventCoOwner[];
 export type CollaboratorsListData = EventCollaborator[];
+
+// ─── UI / COMPONENT PROPS ──────────────────────────────────────────────────
+
+export interface EventAnalyticsPanelProps {
+  interestCount: number;
+  venueName: string | null;
+  mapsUrl: string | null;
+  mapQuery: string;
+}
+
+export interface EventDetailViewProps {
+  eventId: string;
+  showInterestButton?: boolean;
+  layout?: "full" | "content-only";
+  showVenue?: boolean;
+}
+
+export interface ManageEventDetailViewProps {
+  eventId: string;
+  onBack?: () => void;
+}
+
+export interface HistoryLogEntryProps {
+  entry: EventLog;
+}
+
+export interface EventInlineEditFormProps {
+  event: EventDetailManage;
+  onSave: () => void;
+  onDiscard: () => void;
+  onDirtyChange: (isDirty: boolean) => void;
+}
+
+export interface EventCreateWizardProps {
+  open: boolean;
+  onClose: () => void;
+}
+
+export interface CoOwnerDisplay {
+  user_id: string;
+  role?: "co_owner" | "admin";
+  full_name: string;
+  muid: string;
+}
+
+export interface SelectedOrganiser {
+  label: string;
+  type: OrganizerType;
+  id: string;
+}

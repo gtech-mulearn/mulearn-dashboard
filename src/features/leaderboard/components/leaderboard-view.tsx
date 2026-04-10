@@ -34,10 +34,10 @@ export function LeaderboardView({
 
       {isLoading ? (
         <div className="space-y-4">
-          <div className="flex gap-4 items-end justify-center mb-8 md:mb-12 h-64">
-            <Skeleton className="h-48 w-24" />
-            <Skeleton className="h-64 w-24" />
-            <Skeleton className="h-40 w-24" />
+          <div className="flex gap-2 sm:gap-4 md:gap-16 items-end justify-center mb-8 md:mb-12 h-64 px-2">
+            <Skeleton className="h-48 flex-1 max-w-32" />
+            <Skeleton className="h-64 flex-1 max-w-32" />
+            <Skeleton className="h-40 flex-1 max-w-28" />
           </div>
           <div className="space-y-4">
             {Array.from({ length: 5 }).map((_, i) => (

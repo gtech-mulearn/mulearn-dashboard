@@ -11,16 +11,17 @@ import { endpoints } from "@/api/endpoints";
 import {
   CollegesResponseSchema,
   CompaniesResponseSchema,
-  type CreateCompanyRequest,
-  CreateCompanyResponseSchema,
+  CountriesResponseSchema,
   type CreateOrganizationRequest,
   CreateOrganizationResponseSchema,
   DepartmentsResponseSchema,
+  DistrictsResponseSchema,
   RolesResponseSchema,
   SelectDomainsResponseSchema,
   SelectEndgoalsResponseSchema,
   type SelectOrganizationRequest,
   SelectOrganizationResponseSchema,
+  StatesResponseSchema,
 } from "../schemas";
 
 // ============================================
@@ -89,21 +90,38 @@ export function createOrganization(data: CreateOrganizationRequest) {
   );
 }
 
-/**
- * Create a new company
- */
-export function createCompany(data: CreateCompanyRequest) {
-  // Remove empty string fields
-  const cleanedData = Object.fromEntries(
-    Object.entries(data).filter(
-      ([_, value]) => value !== undefined && value !== "",
-    ),
-  ) as CreateCompanyRequest;
+// ============================================
+// Location Cascading
+// ============================================
 
+/**
+ * Fetch list of countries (GET — no params)
+ */
+export function fetchCountries() {
+  return apiClient.get(endpoints.location.countries, CountriesResponseSchema);
+}
+
+/**
+ * Fetch states for a given country UUID
+ * POST /api/v1/register/state/list/ { country: countryId }
+ */
+export function fetchStates(countryId: string) {
   return apiClient.post(
-    endpoints.onboarding.createCompany,
-    cleanedData,
-    CreateCompanyResponseSchema,
+    endpoints.location.states,
+    { country: countryId },
+    StatesResponseSchema,
+  );
+}
+
+/**
+ * Fetch districts for a given state UUID
+ * POST /api/v1/register/district/list/ { state: stateId }
+ */
+export function fetchDistricts(stateId: string) {
+  return apiClient.post(
+    endpoints.location.districts,
+    { state: stateId },
+    DistrictsResponseSchema,
   );
 }
 

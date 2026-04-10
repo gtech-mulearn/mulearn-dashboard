@@ -37,7 +37,7 @@ export function HeroCard({ name, src, alt }: HeroCardProps) {
             </div>
 
             <div className="space-y-4">
-              <h1 className="font-display text-4xl font-bold tracking-tight text-foreground lg:text-5xl">
+              <h1 className="text-4xl font-bold tracking-tight text-foreground lg:text-5xl">
                 {getGreeting()} <span className="text-primary">{name}</span>
               </h1>
               <p className="max-w-xl text-lg text-muted-foreground leading-relaxed">

@@ -13,12 +13,13 @@ export { useForgotPassword } from "./use-forgot-password";
 export { useLoginWithOTP, useLoginWithPassword } from "./use-login";
 
 // Registration hooks
-export { useRegister } from "./use-register";
+export { useCompanyRegister, useRegister } from "./use-register";
 export { useRequestOTP } from "./use-request-otp";
 export { useResetPassword, useVerifyResetToken } from "./use-reset-password";
 
 // Session hooks
 export {
+  useCompanyOnboardingStatus,
   usePublicUserProfile,
   useUserInfo,
   useUserProfile,
