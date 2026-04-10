@@ -13,7 +13,7 @@ import { JOBS_KEYS } from "./use-jobs";
 export function useJobDetail(jobId: string | undefined) {
   return useQuery({
     queryKey: JOBS_KEYS.detail(jobId ?? ""),
-    queryFn: () => fetchJobDetail(jobId!),
+    queryFn: () => fetchJobDetail(jobId ?? ""),
     enabled: !!jobId,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,

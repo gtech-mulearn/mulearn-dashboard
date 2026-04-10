@@ -13,14 +13,15 @@ import {
   Clock,
   ExternalLink,
   FileText,
-  Linkedin,
-  Mail,
   Sparkles,
   Twitter,
   Users,
 } from "lucide-react";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useInterestGroupDetail } from "../hooks";
+import Loader from "@/app/loading";
+import { useInterestGroupDetail } from "@/features/interest-groups";
+import { PersonCard } from "./person-card";
 
 export function InterestGroupDetailClient() {
   const router = useRouter();
@@ -30,7 +31,6 @@ export function InterestGroupDetailClient() {
   const { data, isLoading, error } = useInterestGroupDetail(id || "");
   const group = data?.response?.interestGroup;
 
-  // ── Loading ──────────────────────────────────────────────
   if (isLoading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
@@ -48,7 +48,6 @@ export function InterestGroupDetailClient() {
     );
   }
 
-  // ── Error / Not found ─────────────────────────────────────
   if (error || !group) {
     const isServerError =
       error &&
@@ -106,9 +105,6 @@ export function InterestGroupDetailClient() {
 
       {/* ── Hero ── */}
       <div className="relative overflow-hidden rounded-[2rem] bg-linear-to-br from-primary/90 via-primary to-primary/80 p-8 sm:p-12 text-white shadow-xl shadow-primary/10">
-        <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
-        <div className="absolute -left-20 -bottom-20 h-96 w-96 rounded-full bg-black/10 blur-3xl" />
-
         <div className="relative z-10 flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
           <div className="space-y-6 max-w-3xl">
             <div className="flex flex-wrap items-center gap-3">
@@ -176,7 +172,6 @@ export function InterestGroupDetailClient() {
       <div className="grid gap-8 lg:grid-cols-12">
         {/* Main column */}
         <div className="space-y-8 lg:col-span-8">
-          {/* About Card (only if distinct from header about) */}
           {/* Prerequisites */}
           {group.prerequisites && group.prerequisites.length > 0 && (
             <div className="group rounded-3xl border border-border/50 bg-card p-8 shadow-sm transition-all hover:shadow-md hover:border-primary/20">
@@ -309,7 +304,7 @@ export function InterestGroupDetailClient() {
             </div>
           )}
 
-          {/* Mentors */}
+          {/* Mentors – full cards in main column */}
           {group.mentors && group.mentors.length > 0 && (
             <div className="group rounded-3xl border border-border/50 bg-card p-8 shadow-sm transition-all hover:shadow-md hover:border-primary/20">
               <div className="mb-6 flex items-center gap-3">
@@ -320,42 +315,16 @@ export function InterestGroupDetailClient() {
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 {group.mentors.map((mentor) => (
-                  <div
-                    key={mentor.muid || mentor.name || Math.random()}
-                    className="flex items-start gap-4 rounded-2xl border border-border/60 bg-muted/20 p-5 transition-all hover:border-border hover:bg-card hover:shadow-sm"
-                  >
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-purple-500/20 to-purple-500/5 text-lg font-bold text-purple-600">
-                      {mentor.name
-                        ? mentor.name.charAt(0).toUpperCase()
-                        : mentor.muid?.charAt(0).toUpperCase() || "?"}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-bold text-foreground truncate">
-                        {mentor.name || mentor.muid || "Mentor"}
-                      </p>
-                      {mentor.expertise && (
-                        <p className="text-sm text-muted-foreground truncate">
-                          {mentor.expertise}
-                        </p>
-                      )}
-                      {mentor.linkedin && (
-                        <a
-                          href={mentor.linkedin}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:underline hover:text-blue-700"
-                        >
-                          <Linkedin className="h-3 w-3" />
-                          LinkedIn Profile
-                        </a>
-                      )}
-                      {mentor.muid && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          MUID: {mentor.muid}
-                        </p>
-                      )}
-                    </div>
-                  </div>
+                  <PersonCard
+                    key={
+                      mentor.muid ??
+                      mentor.full_name ??
+                      Math.random().toString()
+                    }
+                    {...mentor}
+                    avatarBgClass="from-purple-500/20 to-purple-500/5"
+                    accentClass="text-purple-600"
+                  />
                 ))}
               </div>
             </div>
@@ -406,7 +375,6 @@ export function InterestGroupDetailClient() {
                   </div>
                 )}
 
-                {/* Thinktank */}
                 {group.thinktank && (
                   <div className="flex items-start gap-4">
                     <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
@@ -423,10 +391,9 @@ export function InterestGroupDetailClient() {
                   </div>
                 )}
 
-                {/* Resource Link */}
                 {group.resource && (
                   <div className="pt-2">
-                    <a
+                    <Link
                       href={group.resource}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -434,13 +401,12 @@ export function InterestGroupDetailClient() {
                     >
                       <ExternalLink className="h-4 w-4" />
                       Access Resources
-                    </a>
+                    </Link>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Leads */}
             {group.leads && group.leads.length > 0 && (
               <div className="overflow-hidden rounded-3xl border border-border/50 bg-card shadow-sm">
                 <div className="border-b border-border/50 bg-muted/30 px-6 py-4">
@@ -449,44 +415,23 @@ export function InterestGroupDetailClient() {
                   </h3>
                 </div>
                 <div className="p-6">
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {group.leads.map((lead) => (
-                      <div
-                        key={lead.muid || lead.name || Math.random()}
-                        className="flex items-center gap-3 rounded-xl border border-transparent hover:border-border hover:bg-muted/40 p-2 transition-all -mx-2"
-                      >
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-primary to-primary/60 text-sm font-bold text-white shadow-sm">
-                          {lead.name
-                            ? lead.name.charAt(0).toUpperCase()
-                            : lead.muid?.charAt(0).toUpperCase() || "?"}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-bold text-foreground truncate">
-                            {lead.name || lead.muid || "Lead"}
-                          </p>
-                          {lead.email && (
-                            <a
-                              href={`mailto:${lead.email}`}
-                              className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-primary transition-colors truncate"
-                            >
-                              <Mail className="h-3 w-3" />
-                              {lead.email}
-                            </a>
-                          )}
-                          {lead.muid && (
-                            <p className="text-xs text-muted-foreground">
-                              MUID: {lead.muid}
-                            </p>
-                          )}
-                        </div>
-                      </div>
+                      <PersonCard
+                        key={
+                          lead.muid ??
+                          lead.full_name ??
+                          Math.random().toString()
+                        }
+                        {...lead}
+                        avatarBgClass="from-purple-500/20 to-purple-500/5"
+                        accentClass="text-purple-600"
+                      />
                     ))}
                   </div>
                 </div>
               </div>
             )}
-
-            {/* Support / Help Box */}
             <div className="rounded-3xl bg-linear-to-br from-muted/50 to-muted/10 p-6 border border-border/50 text-center">
               <p className="text-sm font-medium text-muted-foreground">
                 Need help or have questions? Reach out to the leads or join the

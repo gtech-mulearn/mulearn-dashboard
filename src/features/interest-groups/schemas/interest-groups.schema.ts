@@ -101,27 +101,56 @@ export const InterestGroupDetailSchema = z.object({
     .nullable()
     .catch(undefined),
 
-  // Array of { muid } - API returns leads with only muid
+  // Socials sub-schema (shared by leads and mentors)
+  // Array of lead objects from the API
   leads: z
     .array(
       z.object({
         muid: z.string().optional().nullable(),
-        name: z.string().optional().nullable(),
+        full_name: z.string().optional().nullable(),
         email: z.string().optional().nullable(),
+        profile_pic: z.string().url().optional().nullable(),
+        socials: z
+          .object({
+            github: z.string().optional().nullable(),
+            facebook: z.string().optional().nullable(),
+            instagram: z.string().optional().nullable(),
+            linkedin: z.string().optional().nullable(),
+            dribble: z.string().optional().nullable(),
+            behance: z.string().optional().nullable(),
+            stackoverflow: z.string().optional().nullable(),
+            medium: z.string().optional().nullable(),
+            hackerrank: z.string().optional().nullable(),
+          })
+          .optional()
+          .nullable(),
       }),
     )
     .optional()
     .nullable()
     .catch(undefined),
 
-  // Array of { muid } - API returns mentors with only muid
+  // Array of mentor objects from the API
   mentors: z
     .array(
       z.object({
         muid: z.string().optional().nullable(),
-        name: z.string().optional().nullable(),
-        expertise: z.string().optional().nullable(),
-        linkedin: z.string().optional().nullable(),
+        full_name: z.string().optional().nullable(),
+        profile_pic: z.string().url().optional().nullable(),
+        socials: z
+          .object({
+            github: z.string().optional().nullable(),
+            facebook: z.string().optional().nullable(),
+            instagram: z.string().optional().nullable(),
+            linkedin: z.string().optional().nullable(),
+            dribble: z.string().optional().nullable(),
+            behance: z.string().optional().nullable(),
+            stackoverflow: z.string().optional().nullable(),
+            medium: z.string().optional().nullable(),
+            hackerrank: z.string().optional().nullable(),
+          })
+          .optional()
+          .nullable(),
       }),
     )
     .optional()

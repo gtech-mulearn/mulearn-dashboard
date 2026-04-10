@@ -39,9 +39,24 @@ export const InterestGroupSchema = z.object({
     .union([
       z.array(
         z.object({
-          name: z.string().optional().nullable(),
+          full_name: z.string().optional().nullable(),
           email: z.string().optional().nullable(),
           muid: z.string().optional().nullable(),
+          profile_pic: z.string().url().optional().nullable(),
+          socials: z
+            .object({
+              github: z.string().optional().nullable(),
+              facebook: z.string().optional().nullable(),
+              instagram: z.string().optional().nullable(),
+              linkedin: z.string().optional().nullable(),
+              dribble: z.string().optional().nullable(),
+              behance: z.string().optional().nullable(),
+              stackoverflow: z.string().optional().nullable(),
+              medium: z.string().optional().nullable(),
+              hackerrank: z.string().optional().nullable(),
+            })
+            .optional()
+            .nullable(),
         }),
       ),
       z.array(z.string()),
@@ -53,10 +68,23 @@ export const InterestGroupSchema = z.object({
     .union([
       z.array(
         z.object({
-          name: z.string().optional().nullable(),
-          expertise: z.string().optional().nullable(),
-          linkedin: z.string().optional().nullable(),
+          full_name: z.string().optional().nullable(),
           muid: z.string().optional().nullable(),
+          profile_pic: z.string().url().optional().nullable(),
+          socials: z
+            .object({
+              github: z.string().optional().nullable(),
+              facebook: z.string().optional().nullable(),
+              instagram: z.string().optional().nullable(),
+              linkedin: z.string().optional().nullable(),
+              dribble: z.string().optional().nullable(),
+              behance: z.string().optional().nullable(),
+              stackoverflow: z.string().optional().nullable(),
+              medium: z.string().optional().nullable(),
+              hackerrank: z.string().optional().nullable(),
+            })
+            .optional()
+            .nullable(),
         }),
       ),
       z.array(z.string()),
