@@ -63,7 +63,7 @@ export const textTestimonials: TextTestimonial[] = [
     role: "Jnr Software Test Engineer",
     company: "FAYA",
     muid: "ansanjohny@mulearn",
-    profileImage: "/images/dashboard/coder.webp",
+    profileImage: "/images/dashboard/dpm.webp",
     quote:
       "I was first drawn to µLearn seeing my seniors succeed during the pandemic, and my initial goal was simple: earn karma points. But it quickly became about so much more than points. The learning circles provided a collaborative space where I could consistently build real skills and develop a professional mindset. When I joined the Launchpad program, everything came together. The interview wasn't about what I knew, but what I had done. My 'proof of work, built entirely within the µLearn community, was the key that helped me land my current role. µLearn provided the ecosystem to turn learning into a career.",
     type: "learner",
@@ -77,7 +77,7 @@ export const textTestimonials: TextTestimonial[] = [
     role: "Jnr Software Engineer",
     company: "FAYA",
     muid: "aswanthvc@mulearn",
-    profileImage: "/images/dashboard/creative.webp",
+    profileImage: "/images/dashboard/dpm.webp",
     quote:
       "My µLearn journey began at the GTA Codestorm hackathon, where I first discovered the community and the concept of karma points. I quickly got immersed in the Discord server, not just for the tasks, but for the late-night tech discussions and the connections I made. It became a space where someone was always ready to help whenever I got stuck. After college, Launchpad provided the perfect next step, and I began focusing my efforts on its tasks. That focus paid off, leading directly to interviews where my skills and even my karma points were valued, guiding me to my current role as a Junior Software Engineer.",
     type: "learner",
@@ -91,7 +91,7 @@ export const textTestimonials: TextTestimonial[] = [
     role: "Minister for Finance",
     company: "Government of Kerala",
     muid: "",
-    profileImage: "/images/dashboard/dpm.webp",
+    profileImage: "/images/dashboard/testimonials/balagopal.webp",
     quote:
       "Reaching 16,000 students in its first year of operation demonstrates µLearn's influence and its potential for growth.",
     type: "partner",
@@ -105,7 +105,7 @@ export const textTestimonials: TextTestimonial[] = [
     role: "Syndicate Member",
     company: "APJ Abdul Kalam Technological University",
     muid: "",
-    profileImage: "/images/dashboard/maker.webp",
+    profileImage: "/images/dashboard/testimonials/biju.webp",
     quote:
       "Concentrating technology, not at a single spot but making it accessible to everyone is the speciality of GTech µLearn.",
     type: "partner",
@@ -119,7 +119,7 @@ export const textTestimonials: TextTestimonial[] = [
     role: "Chief Executive Officer",
     company: "Kerala Startup Mission",
     muid: "",
-    profileImage: "/images/dashboard/manager.webp",
+    profileImage: "/images/dashboard/testimonials/ksum.webp",
     quote:
       "µLearn helps to accelerate learning and discover the potential of every student so that they build their skills relevant to their passion and gain confidence and self efficacy.",
     type: "partner",
@@ -133,7 +133,7 @@ export const textTestimonials: TextTestimonial[] = [
     role: "Vice Chancellor",
     company: "Kerala Digital University",
     muid: "",
-    profileImage: "/images/dashboard/dpm.webp",
+    profileImage: "/images/dashboard/testimonials/kdu.webp",
     quote:
       "µLearn provides a revolutionalised way of learning in a very experienced manner.",
     type: "partner",
@@ -147,7 +147,7 @@ export const textTestimonials: TextTestimonial[] = [
     role: "Program Manager",
     company: "Google for Startups Accelerator",
     muid: "",
-    profileImage: "/images/dashboard/creative.webp",
+    profileImage: "/images/dashboard/testimonials/google.webp",
     quote:
       "Partnership with µLearn will strengthen our work in Kerala, especially in the space of educators and the student community.",
     type: "partner",
@@ -161,7 +161,7 @@ export const textTestimonials: TextTestimonial[] = [
     role: "Secretary, GTech & Center Head",
     company: "Tata Elxsi",
     muid: "",
-    profileImage: "/images/dashboard/manager.webp",
+    profileImage: "/images/dashboard/testimonials/tata.webp",
     quote:
       "There is no doubt that µLearn will play an important role in sustainable development, job security, and the formation and growth of new industries in Kerala. This can be witnessed in the coming years.",
     type: "partner",
@@ -175,7 +175,7 @@ export const textTestimonials: TextTestimonial[] = [
     role: "Co-founder & CTO",
     company: "Open Finance",
     muid: "",
-    profileImage: "/images/dashboard/coder.webp",
+    profileImage: "/images/dashboard/testimonials/cto.webp",
     quote:
       "I began my journey at an In50Hrs event, and it has played a pivotal role in shaping who I am today. At µLearn, I see everyone in capable hands, sharing similar exposure and experiences. Make the most of it.",
     type: "mentor",
@@ -189,7 +189,7 @@ export const textTestimonials: TextTestimonial[] = [
     role: "Growth Manager",
     company: "Pathway",
     muid: "",
-    profileImage: "/images/dashboard/maker.webp",
+    profileImage: "/images/dashboard/testimonials/pathway.webp",
     quote:
       "µLearn has been our first partner in India. We have also collaborated with IITs and other premier institutions in the country. The conversion rates we achieved with µLearn are the best. I am inspired by what µLearn does.",
     type: "partner",
