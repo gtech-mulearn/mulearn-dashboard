@@ -13,6 +13,7 @@ import { HeroCard } from "./hero-card";
 import { InterestGroupsCard } from "./interest-groups-card";
 import { KarmaEarnersCard } from "./karma-earners-card";
 import { LearningCirclesCard } from "./learning-circles-card";
+import { TestimonialsCard } from "./testimonials-card";
 import { VerificationStatusBanner } from "./verification-status-banner";
 
 // Import role-specific components (commented out for now)
@@ -139,6 +140,12 @@ export function HomePage() {
         </div>
         <div className="col-span-1 md:col-span-4">
           <EventsSliderCard events={events} isLoading={loadingEvents} />
+        </div>
+        <div className="col-span-1 mt-1 space-y-1 md:col-span-4 md:mt-2">
+          <h2 className="text-xl font-semibold text-foreground md:text-2xl">
+            What Our Community Says
+          </h2>
+          <TestimonialsCard />
         </div>
       </div>
     </div>

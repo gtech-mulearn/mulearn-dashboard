@@ -10,3 +10,4 @@ export * from "./learning-circles-card";
 export * from "./mentor-home";
 export * from "./mulearner-home";
 export * from "./student-home";
+export * from "./testimonials-card";
