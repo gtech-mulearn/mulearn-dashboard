@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import Loader from "@/app/loading";
 import { useInterestGroupDetail } from "@/features/interest-groups";
 import { PersonCard } from "./person-card";
 

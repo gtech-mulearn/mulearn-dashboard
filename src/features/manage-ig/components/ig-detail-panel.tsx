@@ -2,7 +2,6 @@
 
 import {
   BookOpen,
-  BookText,
   Briefcase,
   Calendar,
   Clock,
