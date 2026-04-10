@@ -286,10 +286,10 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
                     href={blog.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-sm text-primary hover:underline truncate"
+                    className="flex items-center gap-2 text-sm text-primary hover:underline"
                   >
                     <ExternalLink className="size-3.5 shrink-0" />
-                    <span className="truncate">{blog.title}</span>
+                    <span>{blog.title}</span>
                   </a>
                 ))}
               </div>
@@ -333,11 +333,6 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
                         <span className="font-medium text-foreground">
                           {lead.full_name || lead.muid || "Lead"}
                         </span>
-                        {lead.email && (
-                          <span className="text-muted-foreground text-xs break-all">
-                            ({lead.email})
-                          </span>
-                        )}
                         {lead.muid && (
                           <span className="text-muted-foreground text-xs">
                             MUID: {lead.muid}
@@ -383,10 +378,10 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
                       href={ig.resource}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline truncate max-w-full"
+                      className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline max-w-full"
                     >
                       <ExternalLink className="size-3.5 shrink-0" />
-                      <span className="truncate">{ig.resource}</span>
+                      <span>{ig.resource}</span>
                     </a>
                   </DetailSection>
                 )}

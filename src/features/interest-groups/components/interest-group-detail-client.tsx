@@ -281,11 +281,9 @@ export function InterestGroupDetailClient() {
                       {person.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="font-bold text-foreground truncate">
-                        {person.name}
-                      </p>
+                      <p className="font-bold text-foreground">{person.name}</p>
                       {person.designation && (
-                        <p className="text-sm text-muted-foreground truncate">
+                        <p className="text-sm text-muted-foreground">
                           {person.designation}
                         </p>
                       )}

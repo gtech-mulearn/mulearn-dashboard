@@ -98,7 +98,7 @@ export function PersonCard({
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <p className="font-bold text-foreground truncate">{displayName}</p>
+          <p className="font-bold text-foreground">{displayName}</p>
         </div>
       </div>
       {hasLinks && (
