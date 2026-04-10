@@ -1,116 +1,161 @@
 "use client";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRef } from "react";
-import { Button } from "@/components/ui/button";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useFeaturedEvents } from "../hooks";
+import { FEATURED_SLIDE_INTERVAL } from "../constants";
+import { formatEventDate, useFeaturedEvents } from "../hooks";
 import { InterestButton } from "./interest-button";
 
 export function FeaturedEventsCarousel() {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const { data, isLoading } = useFeaturedEvents({ page: 1, perPage: 10 });
-
+  const { data, isLoading } = useFeaturedEvents({ pageIndex: 1, perPage: 10 });
   const featuredEvents = data?.data ?? [];
 
-  const scrollByAmount = (direction: "left" | "right") => {
-    const container = containerRef.current;
-    if (!container) return;
-    container.scrollBy({
-      left: direction === "right" ? 360 : -360,
-      behavior: "smooth",
-    });
-  };
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const goTo = useCallback(
+    (index: number) => {
+      setActiveIndex(
+        ((index % featuredEvents.length) + featuredEvents.length) %
+          featuredEvents.length,
+      );
+    },
+    [featuredEvents.length],
+  );
+
+  const goNext = useCallback(() => goTo(activeIndex + 1), [activeIndex, goTo]);
+  const goPrev = useCallback(() => goTo(activeIndex - 1), [activeIndex, goTo]);
+
+  useEffect(() => {
+    if (paused || featuredEvents.length <= 1) return;
+    timerRef.current = setTimeout(goNext, FEATURED_SLIDE_INTERVAL);
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [paused, featuredEvents.length, goNext]);
 
   if (isLoading) {
-    return (
-      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Skeleton className="h-64 rounded-xl" />
-        <Skeleton className="h-64 rounded-xl" />
-        <Skeleton className="h-64 rounded-xl" />
-      </div>
-    );
+    return <Skeleton className="mb-8 h-85 w-full rounded-2xl sm:h-100" />;
   }
 
-  if (featuredEvents.length === 0) {
-    return null;
-  }
+  if (featuredEvents.length === 0) return null;
 
+  const event = featuredEvents[activeIndex];
   return (
-    <section className="group relative mb-8">
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Featured Events</h2>
-      </div>
+    <section
+      aria-label="Featured events carousel"
+      className="group relative mb-8 aspect-[4/3] w-full overflow-hidden rounded-2xl md:aspect-[16/7] lc-card-shadow lc-slide-up"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      {/* Slides */}
+      {featuredEvents.map((ev, i) => (
+        <div
+          key={ev.id}
+          className="absolute inset-0 transition-opacity duration-700"
+          style={{
+            opacity: i === activeIndex ? 1 : 0,
+            zIndex: i === activeIndex ? 1 : 0,
+          }}
+          aria-hidden={i !== activeIndex}
+        >
+          <Image
+            src={ev.cover_image ?? "/images/fallback.webp"}
+            alt={ev.title}
+            fill
+            className="object-cover"
+            priority={i === 0}
+          />
+        </div>
+      ))}
 
-      <Button
-        type="button"
-        variant="secondary"
-        size="icon"
-        className="absolute left-2 top-1/2 z-10 -translate-y-1/2 opacity-0 shadow transition-opacity group-hover:opacity-100"
-        onClick={() => scrollByAmount("left")}
-      >
-        <ChevronLeft className="h-4 w-4" />
-      </Button>
+      {/* Gradient overlay */}
+      <div className="absolute inset-0 z-10 bg-gradient-to-t from-foreground/85 via-foreground/50 to-transparent" />
 
-      <Button
-        type="button"
-        variant="secondary"
-        size="icon"
-        className="absolute right-2 top-1/2 z-10 -translate-y-1/2 opacity-0 shadow transition-opacity group-hover:opacity-100"
-        onClick={() => scrollByAmount("right")}
-      >
-        <ChevronRight className="h-4 w-4" />
-      </Button>
+      <Link
+        aria-label={`Open ${event.title}`}
+        href={`/dashboard/events/${event.id}`}
+        className="absolute inset-0 z-[15]"
+      />
 
-      <div
-        ref={containerRef}
-        className="flex gap-4 overflow-x-auto scroll-smooth pb-1"
-      >
-        {featuredEvents.map((event) => (
-          <article
-            key={event.id}
-            className="w-[320px] shrink-0 overflow-hidden rounded-xl border bg-card"
-          >
-            <Link href={`/dashboard/events/${event.id}`} className="block">
-              <div className="relative aspect-video">
-                {event.cover_image ? (
-                  <Image
-                    src={event.cover_image}
-                    alt={event.title}
-                    fill
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="h-full w-full bg-gradient-to-br from-pink-500/80 via-orange-500/70 to-yellow-400/70" />
-                )}
-              </div>
+      {/* Content overlay */}
+      <div className="absolute inset-x-0 bottom-0 z-20 p-5 text-primary-foreground sm:p-8 lc-slide-up">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div className="min-w-0 space-y-2">
+            {/* Title */}
+            <Link
+              href={`/dashboard/events/${event.id}`}
+              className="relative z-20"
+            >
+              <h2 className="line-clamp-2 text-xl font-bold tracking-tight drop-shadow sm:text-3xl hover:underline underline-offset-2 text-primary-foreground">
+                {event.title}
+              </h2>
             </Link>
 
-            <div className="space-y-2 p-4">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                {event.event_type.replace(/_/g, " ")}
-              </p>
-              <h3 className="line-clamp-2 text-base font-semibold">
-                {event.title}
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                {new Date(event.start_datetime).toLocaleDateString(undefined, {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </p>
-              <InterestButton
-                eventId={event.id}
-                status={event.viewer_interest_status}
-                count={event.interest_count}
-              />
+            {/* Frosted glass info pill */}
+            <div className="inline-flex items-center gap-2 rounded-full bg-primary-foreground/15 backdrop-blur-sm border border-primary-foreground/20 px-3 py-1 text-xs text-primary-foreground/90">
+              <CalendarDays className="h-3.5 w-3.5" />
+              <span>{formatEventDate(event.start_datetime)}</span>
+              <span>|</span>
+              <MapPin className="h-3.5 w-3.5" />
+              <span>{event.venue_city ?? "Venue TBA"}</span>
             </div>
-          </article>
-        ))}
+          </div>
+
+          <div className="relative z-20 shrink-0">
+            <InterestButton
+              eventId={event.id}
+              status={event.viewer_interest_status}
+              count={event.interest_count}
+            />
+          </div>
+        </div>
+
+        {/* Dots */}
+        {featuredEvents.length > 1 ? (
+          <div className="relative z-20 mt-4 flex items-center gap-1.5">
+            {featuredEvents.map((ev, i) => (
+              <button
+                key={ev.id}
+                type="button"
+                aria-label={`Go to slide ${i + 1}`}
+                onClick={() => goTo(i)}
+                className={`h-1 rounded-full transition-all duration-300 ${
+                  i === activeIndex
+                    ? "w-8 bg-primary-foreground"
+                    : "w-2 bg-primary-foreground/40 hover:bg-primary-foreground/60"
+                }`}
+              />
+            ))}
+          </div>
+        ) : null}
       </div>
+
+      {/* Prev / Next arrows */}
+      {featuredEvents.length > 1 ? (
+        <>
+          <button
+            type="button"
+            aria-label="Previous slide"
+            onClick={goPrev}
+            className="absolute left-3 top-1/2 z-20 -translate-y-1/2 hidden md:flex rounded-full bg-primary-foreground/20 backdrop-blur-sm border border-primary-foreground/30 p-2 text-primary-foreground hover:bg-primary-foreground/40 transition-colors"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            aria-label="Next slide"
+            onClick={goNext}
+            className="absolute right-3 top-1/2 z-20 -translate-y-1/2 hidden md:flex rounded-full bg-primary-foreground/20 backdrop-blur-sm border border-primary-foreground/30 p-2 text-primary-foreground hover:bg-primary-foreground/40 transition-colors"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </>
+      ) : null}
     </section>
   );
 }

@@ -4,85 +4,184 @@
 // The manage endpoint likely requires staff/organiser permissions server-side.
 // If the current user doesn't have those permissions, the API returns an empty list or 403.
 
-import { useQueries } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useQueries, useQuery } from "@tanstack/react-query";
+import { Plus, Search } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { apiClient, endpoints } from "@/api";
 import { ApiError } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { eventsApi } from "../api";
-import { useManageEventsList } from "../hooks";
+import { MANAGE_EVENT_STATUS_PILLS } from "../constants/events.constants";
+import { usePendingCollaboratorInvites } from "../hooks";
 import { eventKeys } from "../hooks/query-keys";
-import type { EventListItem, EventStatus } from "../types";
-import EventModal from "./event-modal";
+import type { EventStatus } from "../types";
+import { CollaboratorInvitesSheet } from "./collaborator-invites-sheet";
+import { EventCreateWizard } from "./event-create-wizard";
 import { EventsGrid } from "./events-grid";
 import { EventsPagination } from "./events-pagination";
 
-const statusPills: Array<{ label: string; value: EventStatus | "all" }> = [
-  { label: "All", value: "all" },
-  { label: "Draft", value: "draft" },
-  { label: "Pending", value: "pending_approval" },
-  { label: "Published", value: "published" },
-  { label: "Ongoing", value: "ongoing" },
-  { label: "Completed", value: "completed" },
-  { label: "Cancelled", value: "cancelled" },
-];
-
 export default function ManageEventsDashboard() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<EventStatus | "all">("all");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingEvent, setEditingEvent] = useState<EventListItem | null>(null);
+  const [showWizard, setShowWizard] = useState(false);
+  const [invitesOpen, setInvitesOpen] = useState(false);
+
+  const { data: userInfo } = useQuery({
+    queryKey: ["user", "info", "events-manage"],
+    queryFn: () => apiClient.get<Record<string, unknown>>(endpoints.user.info),
+  });
+
+  const canAdminView = Boolean(
+    (userInfo?.is_staff as boolean | undefined) ||
+      (Array.isArray(userInfo?.roles) &&
+        (userInfo.roles as string[]).some((role) =>
+          role.toLowerCase().includes("admin"),
+        )),
+  );
+
+  const useAdminView = canAdminView;
+
+  const {
+    pendingInvites,
+    pendingCount: pendingInviteCount,
+    isLoading: isInvitesLoading,
+    isError: isInvitesError,
+  } = usePendingCollaboratorInvites();
+
+  useEffect(() => {
+    const statusFromUrl = searchParams.get("status");
+    if (!statusFromUrl) return;
+
+    if (
+      statusFromUrl === "draft" ||
+      statusFromUrl === "pending_campus_approval" ||
+      statusFromUrl === "pending_approval" ||
+      statusFromUrl === "pending_mentor_approval" ||
+      statusFromUrl === "published" ||
+      statusFromUrl === "ongoing" ||
+      statusFromUrl === "completed" ||
+      statusFromUrl === "cancelled"
+    ) {
+      setStatusFilter(statusFromUrl);
+      setPage(1);
+    }
+  }, [searchParams]);
+
+  const listParams = {
+    pageIndex: page,
+    search: search || undefined,
+    status: statusFilter === "all" ? undefined : statusFilter,
+    perPage: 12,
+  };
 
   const statsQueries = useQueries({
     queries: [
       {
-        queryKey: eventKeys.manageList({ page: 1, perPage: 1 }),
-        queryFn: () => eventsApi.manageList({ page: 1, perPage: 1 }),
+        queryKey: useAdminView
+          ? eventKeys.adminList({ pageIndex: 1, perPage: 1 })
+          : eventKeys.manageList({ pageIndex: 1, perPage: 1 }),
+        queryFn: () =>
+          useAdminView
+            ? eventsApi.adminList({ pageIndex: 1, perPage: 1 })
+            : eventsApi.manageList({ pageIndex: 1, perPage: 1 }),
       },
       {
-        queryKey: eventKeys.manageList({
-          page: 1,
-          perPage: 1,
-          status: "published",
-        }),
+        queryKey: useAdminView
+          ? eventKeys.adminList({
+              pageIndex: 1,
+              perPage: 1,
+              status: "published",
+            })
+          : eventKeys.manageList({
+              pageIndex: 1,
+              perPage: 1,
+              status: "published",
+            }),
         queryFn: () =>
-          eventsApi.manageList({ page: 1, perPage: 1, status: "published" }),
+          useAdminView
+            ? eventsApi.adminList({
+                pageIndex: 1,
+                perPage: 1,
+                status: "published",
+              })
+            : eventsApi.manageList({
+                pageIndex: 1,
+                perPage: 1,
+                status: "published",
+              }),
       },
       {
-        queryKey: eventKeys.manageList({
-          page: 1,
-          perPage: 1,
-          status: "pending_approval",
-        }),
+        queryKey: useAdminView
+          ? eventKeys.adminList({
+              pageIndex: 1,
+              perPage: 1,
+              status: "pending_approval",
+            })
+          : eventKeys.manageList({
+              pageIndex: 1,
+              perPage: 1,
+              status: "pending_approval",
+            }),
         queryFn: () =>
-          eventsApi.manageList({
-            page: 1,
-            perPage: 1,
-            status: "pending_approval",
-          }),
+          useAdminView
+            ? eventsApi.adminList({
+                pageIndex: 1,
+                perPage: 1,
+                status: "pending_approval",
+              })
+            : eventsApi.manageList({
+                pageIndex: 1,
+                perPage: 1,
+                status: "pending_approval",
+              }),
       },
       {
-        queryKey: eventKeys.manageList({
-          page: 1,
-          perPage: 1,
-          status: "draft",
-        }),
+        queryKey: useAdminView
+          ? eventKeys.adminList({ pageIndex: 1, perPage: 1, status: "draft" })
+          : eventKeys.manageList({
+              pageIndex: 1,
+              perPage: 1,
+              status: "draft",
+            }),
         queryFn: () =>
-          eventsApi.manageList({ page: 1, perPage: 1, status: "draft" }),
+          useAdminView
+            ? eventsApi.adminList({ pageIndex: 1, perPage: 1, status: "draft" })
+            : eventsApi.manageList({
+                pageIndex: 1,
+                perPage: 1,
+                status: "draft",
+              }),
       },
       {
-        queryKey: eventKeys.manageList({
-          page: 1,
-          perPage: 1,
-          status: "completed",
-        }),
+        queryKey: useAdminView
+          ? eventKeys.adminList({
+              pageIndex: 1,
+              perPage: 1,
+              status: "completed",
+            })
+          : eventKeys.manageList({
+              pageIndex: 1,
+              perPage: 1,
+              status: "completed",
+            }),
         queryFn: () =>
-          eventsApi.manageList({ page: 1, perPage: 1, status: "completed" }),
+          useAdminView
+            ? eventsApi.adminList({
+                pageIndex: 1,
+                perPage: 1,
+                status: "completed",
+              })
+            : eventsApi.manageList({
+                pageIndex: 1,
+                perPage: 1,
+                status: "completed",
+              }),
       },
     ],
   });
@@ -90,33 +189,54 @@ export default function ManageEventsDashboard() {
   const statsLoading = statsQueries.some((query) => query.isLoading);
   const totalCount = statsQueries[0].data?.pagination.count ?? 0;
   const publishedCount = statsQueries[1].data?.pagination.count ?? 0;
-  const pendingCount = statsQueries[2].data?.pagination.count ?? 0;
+  const pendingApprovalCount = statsQueries[2].data?.pagination.count ?? 0;
   const draftCount = statsQueries[3].data?.pagination.count ?? 0;
 
-  const { data, isLoading, isError, error, refetch } = useManageEventsList({
-    page,
-    search: search || undefined,
-    status: statusFilter === "all" ? undefined : statusFilter,
-    perPage: 12,
+  const { data, isLoading, isError, error, refetch } = useQuery({
+    queryKey: useAdminView
+      ? eventKeys.adminList(listParams)
+      : eventKeys.manageList(listParams),
+    queryFn: () =>
+      useAdminView
+        ? eventsApi.adminList(listParams)
+        : eventsApi.manageList(listParams),
   });
 
   const events = data?.data ?? [];
 
-  const handleModalClose = () => {
-    setIsModalOpen(false);
-    setEditingEvent(null);
-    refetch();
-  };
-
   const is403 = error instanceof ApiError && error.status === 403;
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Manage Events</h1>
+    <div className="space-y-6 p-4 sm:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h1 className="text-2xl font-bold text-foreground">Manage Events</h1>
+        <div className="flex items-center gap-2">
+          {pendingInviteCount > 0 ? (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setInvitesOpen(true)}
+              className="gap-2 border-border text-foreground hover:border-primary hover:text-primary"
+            >
+              Invites
+              <span className="inline-flex min-w-6 items-center justify-center rounded-full bg-primary px-2 py-0.5 text-xs font-semibold text-primary-foreground">
+                {pendingInviteCount}
+              </span>
+            </Button>
+          ) : null}
+          <Button
+            className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+            onClick={() => {
+              setShowWizard(true);
+            }}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Create Event
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         {statsLoading ? (
           <>
             <Skeleton className="h-20" />
@@ -126,37 +246,55 @@ export default function ManageEventsDashboard() {
           </>
         ) : (
           <>
-            <div className="rounded-lg border bg-card p-4">
-              <p className="text-xs text-muted-foreground">Total Events</p>
-              <p className="mt-1 text-2xl font-semibold">{totalCount}</p>
+            <div className="rounded-2xl border border-border bg-card p-5 lc-card-shadow">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Total Events
+              </p>
+              <p className="mt-1 text-3xl font-bold text-foreground">
+                {totalCount}
+              </p>
             </div>
-            <div className="rounded-lg border bg-card p-4">
-              <p className="text-xs text-muted-foreground">Published</p>
-              <p className="mt-1 text-2xl font-semibold">{publishedCount}</p>
+            <div className="rounded-2xl border border-border bg-card p-5 lc-card-shadow">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Published
+              </p>
+              <p className="mt-1 text-3xl font-bold text-foreground">
+                {publishedCount}
+              </p>
             </div>
-            <div className="rounded-lg border bg-card p-4">
-              <p className="text-xs text-muted-foreground">Pending Approval</p>
-              <p className="mt-1 text-2xl font-semibold">{pendingCount}</p>
+            <div className="rounded-2xl border border-border bg-card p-5 lc-card-shadow">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Pending Approval
+              </p>
+              <p className="mt-1 text-3xl font-bold text-foreground">
+                {pendingApprovalCount}
+              </p>
             </div>
-            <div className="rounded-lg border bg-card p-4">
-              <p className="text-xs text-muted-foreground">Drafts</p>
-              <p className="mt-1 text-2xl font-semibold">{draftCount}</p>
+            <div className="rounded-2xl border border-border bg-card p-5 lc-card-shadow">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Drafts
+              </p>
+              <p className="mt-1 text-3xl font-bold text-foreground">
+                {draftCount}
+              </p>
             </div>
           </>
         )}
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {statusPills.map((pill) => {
+        {MANAGE_EVENT_STATUS_PILLS.map((pill) => {
           const active = statusFilter === pill.value;
           return (
             <Button
               key={pill.value}
-              variant={active ? "default" : "outline"}
+              variant="outline"
               size="sm"
-              className={
-                active ? "bg-pink-600 hover:bg-pink-700 text-white" : ""
-              }
+              className={`rounded-full border border-border bg-background px-4 py-1.5 text-sm text-muted-foreground hover:border-primary hover:text-primary ${
+                active
+                  ? "border-primary bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground"
+                  : ""
+              }`}
               onClick={() => {
                 setStatusFilter(pill.value);
                 setPage(1);
@@ -169,25 +307,18 @@ export default function ManageEventsDashboard() {
       </div>
 
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <Input
-          className="md:max-w-md"
-          placeholder="Search events"
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(1);
-          }}
-        />
-
-        <Button
-          onClick={() => {
-            setEditingEvent(null);
-            setIsModalOpen(true);
-          }}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Create Event
-        </Button>
+        <div className="relative w-full md:max-w-md">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            className="rounded-xl border-border bg-background pl-9"
+            placeholder="Search events"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+          />
+        </div>
       </div>
 
       {isLoading ? (
@@ -207,13 +338,19 @@ export default function ManageEventsDashboard() {
         </p>
       ) : (
         <>
+          {canAdminView && events.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No events found. If you expected to see events created by other
+              admins, ensure you have been added as a co-owner or contact a
+              platform admin.
+            </p>
+          ) : null}
           <EventsGrid
             events={events}
             isManageView
             onEventDeleted={() => refetch()}
             onCreateEvent={() => {
-              setEditingEvent(null);
-              setIsModalOpen(true);
+              setShowWizard(true);
             }}
             onEventView={(event) => {
               router.push(`/dashboard/manage-events/${event.id}`);
@@ -228,11 +365,24 @@ export default function ManageEventsDashboard() {
         </>
       )}
 
-      <EventModal
-        open={isModalOpen}
-        onClose={handleModalClose}
-        initialData={editingEvent}
-        isEdit={!!editingEvent}
+      <EventCreateWizard
+        open={showWizard}
+        onClose={() => {
+          setShowWizard(false);
+          refetch();
+        }}
+      />
+
+      <CollaboratorInvitesSheet
+        open={invitesOpen}
+        onOpenChange={setInvitesOpen}
+        invites={pendingInvites}
+        isLoading={isInvitesLoading}
+        isError={isInvitesError}
+        onOpenEvent={(eventId) => {
+          setInvitesOpen(false);
+          router.push(`/dashboard/manage-events/${eventId}`);
+        }}
       />
     </div>
   );

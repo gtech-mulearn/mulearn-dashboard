@@ -99,7 +99,7 @@ export function BecomeExpertTab({
   return (
     <div className="space-y-6">
       {/* Header with IG Selector */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-2xl font-bold">Advanced Interest Group Tasks</h2>
           <p className="text-muted-foreground mt-1">

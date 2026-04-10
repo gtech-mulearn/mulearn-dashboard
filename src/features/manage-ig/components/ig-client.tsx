@@ -10,7 +10,7 @@ export function IGClient() {
   const groups = data?.response?.interestGroup || [];
 
   return (
-    <div className="w-full space-y-8 px-4 py-8 md:px-6">
+    <div className="w-full max-w-7xl mx-auto space-y-8 px-4 py-8 md:px-6 lg:px-8">
       {/* Header Section */}
       <div className="space-y-4">
         <div className="flex items-center gap-3">
@@ -18,12 +18,12 @@ export function IGClient() {
             <Sparkles className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <h1 className="font-display text-4xl font-black text-foreground">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-foreground">
               Discover Interest Groups
             </h1>
           </div>
         </div>
-        <p className="max-w-2xl text-lg text-muted-foreground">
+        <p className="max-w-2xl text-base sm:text-lg text-muted-foreground">
           Join communities that share your passion. Connect, learn, and grow
           with like-minded individuals.
         </p>

@@ -30,7 +30,7 @@ export const routeAccessMap: Record<string, RouteConfig> = {
   "/dashboard/profile": { roles: [] },
   "/dashboard/leaderboard": { roles: [] },
   "/dashboard/learning-circles": { roles: [] },
-  "/dashboard/ig": { roles: [] },
+  "/dashboard/interest-groups": { roles: [] },
   "/dashboard/campus": { roles: [] },
   "/dashboard/search": { roles: [] },
   "/dashboard/settings": { roles: [] },
@@ -55,7 +55,7 @@ export const routeAccessMap: Record<string, RouteConfig> = {
   },
 
   // ── Interest Group Dashboard ─────────────────────────────
-  "/dashboard/interest-groups": {
+  "/dashboard/edit-ig": {
     roles: [ROLES.ADMIN, ROLES.FELLOW, ROLES.IG_LEAD],
   },
 
@@ -120,6 +120,9 @@ export const routeAccessMap: Record<string, RouteConfig> = {
   "/dashboard/management/manage-launchpad": {
     roles: [ROLES.ADMIN],
   },
+  "/dashboard/management/manage-companies": {
+    roles: [ROLES.ADMIN],
+  },
   "/dashboard/management/manage-departments": {
     roles: [ROLES.ADMIN],
   },
@@ -143,6 +146,11 @@ export const routeAccessMap: Record<string, RouteConfig> = {
   // ── Events Management ────────────────────────────────────
   "/dashboard/manage-events": {
     roles: [ROLES.ADMIN, ROLES.FELLOW],
+  },
+
+  // ── Company Dashboard ───────────────────────────────────
+  "/dashboard/company": {
+    roles: [ROLES.COMPANY],
   },
 };
 

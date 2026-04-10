@@ -10,6 +10,8 @@
 export {
   // Schemas
   ApiResponseSchema,
+  type CompanyOnboardingStatus,
+  CompanyOnboardingStatusResponseSchema,
   type ForgotPasswordRequest,
   ForgotPasswordRequestSchema,
   ForgotPasswordResponseSchema,
@@ -48,6 +50,12 @@ export {
 
 // Registration schemas and types
 export {
+  // Company signup
+  type CompanySignupRequest,
+  CompanySignupRequestSchema,
+  type CompanySignupResponse,
+  type CompanySignupResponseData,
+  CompanySignupResponseSchema,
   type EmailVerificationRequest,
   EmailVerificationRequestSchema,
   type EmailVerificationResponse,

@@ -1,6 +1,5 @@
 "use client";
 
-import { type ReactNode, useMemo, useState } from "react";
 import {
   BarChart3,
   GraduationCap,
@@ -9,16 +8,7 @@ import {
   UserCheck,
   Users,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Table, { type Data } from "@/components/dashboard/table/Table";
-import THead from "@/components/dashboard/table/Thead";
-import Pagination from "@/components/dashboard/table/pagination";
-import TableTop from "@/components/dashboard/table/TableTop";
-import { Blank } from "@/components/dashboard/table/Blank";
-import { cn } from "@/lib/utils";
+import { type ReactNode, useMemo, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -27,6 +17,16 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { Blank } from "@/components/dashboard/table/Blank";
+import Pagination from "@/components/dashboard/table/pagination";
+import Table, { type Data } from "@/components/dashboard/table/Table";
+import TableTop from "@/components/dashboard/table/TableTop";
+import THead from "@/components/dashboard/table/Thead";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 import {
   useDistrictCollegeDetails,
   useDistrictDetails,

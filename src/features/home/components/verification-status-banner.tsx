@@ -1,0 +1,95 @@
+"use client";
+
+/**
+ * Verification Status Banner
+ *
+ * 📍 src/features/home/components/verification-status-banner.tsx
+ *
+ * Shown on the dashboard home for unverified Company, Mentor, and Enabler users.
+ * - Company: fetches live verification status from the onboarding-status API.
+ * - Mentor / Enabler: shows a static pending banner (no user-facing status endpoint).
+ */
+
+import { AlertCircle, Clock, XCircle } from "lucide-react";
+import { useCompanyOnboardingStatus } from "@/features/auth/hooks";
+import { ROLES } from "@/lib/auth/roles";
+
+interface VerificationStatusBannerProps {
+  roles: string[];
+}
+
+export function VerificationStatusBanner({
+  roles,
+}: VerificationStatusBannerProps) {
+  const isCompany = roles.includes(ROLES.COMPANY);
+  const isMentor = roles.includes(ROLES.MENTOR);
+  const isEnabler = roles.includes(ROLES.ENABLER);
+
+  const companyStatus = useCompanyOnboardingStatus(isCompany);
+
+  // ── Company ─────────────────────────────────────────────────────
+  if (isCompany) {
+    if (companyStatus.isLoading) return null;
+
+    const data = companyStatus.data;
+    const verified = data?.is_verified ?? data?.verified;
+    const status = data?.status?.toLowerCase();
+    const rejectionReason = data?.rejection_reason;
+
+    // Already verified — no banner needed
+    if (verified === true || status === "approved") return null;
+
+    if (status === "rejected") {
+      return (
+        <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+          <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
+          <div>
+            <p className="font-semibold">Company profile rejected</p>
+            {rejectionReason && (
+              <p className="mt-0.5 text-red-700">{rejectionReason}</p>
+            )}
+            <p className="mt-1 text-red-700">
+              Please update your profile and resubmit for verification.
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    // Default: pending / unknown
+    return (
+      <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        <Clock className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+        <div>
+          <p className="font-semibold">Verification pending</p>
+          <p className="mt-0.5 text-amber-700">
+            Your company profile is under review. You will receive an email once
+            an admin approves your account. Some features may be limited until
+            then.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Mentor / Enabler ────────────────────────────────────────────
+  if (isMentor || isEnabler) {
+    const roleLabel = isMentor ? "Mentor" : "Enabler";
+    return (
+      <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+        <div>
+          <p className="font-semibold">
+            {roleLabel} account pending verification
+          </p>
+          <p className="mt-0.5 text-amber-700">
+            Your {roleLabel.toLowerCase()} profile is awaiting admin approval.
+            You will be notified once your account is verified.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+}

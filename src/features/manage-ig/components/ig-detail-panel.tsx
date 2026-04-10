@@ -133,7 +133,7 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
           typeof blog === "string" ? { title: blog, url: blog } : blog,
         )
         .filter((blog): blog is { title: string; url: string } =>
-          Boolean(blog?.url),
+          Boolean(blog?.url && blog?.title),
         )
     : [];
   const peopleToFollow = Array.isArray(ig.people_to_follow)
@@ -149,8 +149,14 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
   const leads = Array.isArray(ig.leads)
     ? ig.leads
         .map((lead) => (typeof lead === "string" ? { name: lead } : lead))
-        .filter((lead): lead is { name: string; email?: string | null } =>
-          Boolean(lead?.name),
+        .filter(
+          (
+            lead,
+          ): lead is {
+            name?: string | null;
+            email?: string | null;
+            muid?: string | null;
+          } => Boolean(lead?.name || lead?.muid),
         )
     : [];
   const mentors = Array.isArray(ig.mentors)
@@ -159,8 +165,13 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
           typeof mentor === "string" ? { name: mentor } : mentor,
         )
         .filter(
-          (mentor): mentor is { name: string; expertise?: string | null } =>
-            Boolean(mentor?.name),
+          (
+            mentor,
+          ): mentor is {
+            name?: string | null;
+            expertise?: string | null;
+            muid?: string | null;
+          } => Boolean(mentor?.name || mentor?.muid),
         )
     : [];
 
@@ -316,13 +327,21 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
                 <DetailSection icon={UserCheck} label="Leads">
                   <div className="space-y-1.5">
                     {leads.map((lead) => (
-                      <div key={lead.name} className="text-sm flex flex-col">
+                      <div
+                        key={lead.muid || lead.name || Math.random()}
+                        className="text-sm flex flex-col"
+                      >
                         <span className="font-medium text-foreground">
-                          {lead.name}
+                          {lead.name || lead.muid || "Lead"}
                         </span>
                         {lead.email && (
                           <span className="text-muted-foreground text-xs break-all">
                             ({lead.email})
+                          </span>
+                        )}
+                        {lead.muid && (
+                          <span className="text-muted-foreground text-xs">
+                            MUID: {lead.muid}
                           </span>
                         )}
                       </div>
@@ -334,13 +353,21 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
                 <DetailSection icon={Users} label="Mentors">
                   <div className="space-y-1.5">
                     {mentors.map((mentor) => (
-                      <div key={mentor.name} className="text-sm">
+                      <div
+                        key={mentor.muid || mentor.name || Math.random()}
+                        className="text-sm"
+                      >
                         <span className="font-medium text-foreground">
-                          {mentor.name}
+                          {mentor.name || mentor.muid || "Mentor"}
                         </span>
                         {mentor.expertise && (
                           <span className="text-muted-foreground text-xs ml-1">
                             ({mentor.expertise})
+                          </span>
+                        )}
+                        {mentor.muid && (
+                          <span className="text-muted-foreground text-xs block">
+                            MUID: {mentor.muid}
                           </span>
                         )}
                       </div>

@@ -26,8 +26,12 @@ export function JourneyHeader({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-4xl font-bold tracking-tight">{title}</h1>
-        <p className="text-lg text-muted-foreground mt-2">{subtitle}</p>
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
+          {title}
+        </h1>
+        <p className="text-base sm:text-lg text-muted-foreground mt-2">
+          {subtitle}
+        </p>
       </div>
 
       {showProgress &&

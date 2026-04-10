@@ -42,13 +42,13 @@ export function CampusesSearchClient() {
   return (
     <>
       {/* Search Section with Tabs */}
-      <div className="mb-6 flex flex-col lg:flex-row gap-4 items-start lg:items-center">
-        <div className="flex flex-1 gap-4 w-full">
-          <div className="flex-1">
+      <div className="mb-6 flex flex-col gap-4 items-start">
+        <div className="flex flex-col sm:flex-row flex-1 gap-2 sm:gap-4 w-full">
+          <div className="flex-1 w-full">
             <SearchInput
               value={searchQuery}
               onChange={setSearchQuery}
-              placeholder="Search public profiles by name, skill, or role..."
+              placeholder="Search campuses by name, code, or role..."
             />
           </div>
           <Select
@@ -59,7 +59,7 @@ export function CampusesSearchClient() {
               )
             }
           >
-            <SelectTrigger className="w-full sm:w-45">
+            <SelectTrigger className="w-full sm:w-48">
               <SelectValue placeholder="Filter by..." />
             </SelectTrigger>
             <SelectContent>
@@ -71,7 +71,7 @@ export function CampusesSearchClient() {
             </SelectContent>
           </Select>
         </div>
-        <div className="shrink-0">
+        <div className="w-full shrink-0">
           <SearchTabsClient tabs={searchTabs} />
         </div>
       </div>
@@ -94,7 +94,7 @@ export function CampusesSearchClient() {
         </div>
       ) : (
         <>
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {campuses.map((campus) => (
               <CampusSearchCard
                 key={campus.id || campus.code}

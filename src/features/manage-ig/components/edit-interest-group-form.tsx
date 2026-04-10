@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useCallback } from "react";
 import { Plus, Trash2, XCircle } from "lucide-react";
+import { useCallback, useState } from "react";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { TagInput } from "@/components/ui/tag-input";
+import { MuidSearchInput } from "@/components/ui/muid-search-input";
 import {
   Select,
   SelectContent,
@@ -15,14 +14,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  SheetHeader,
-  SheetTitle,
+  SheetClose,
   SheetDescription,
   SheetFooter,
-  SheetClose,
+  SheetHeader,
+  SheetTitle,
 } from "@/components/ui/sheet";
-import { useEditInterestGroup } from "../hooks/use-edit-interest-group";
+import { TagInput } from "@/components/ui/tag-input";
+import { Textarea } from "@/components/ui/textarea";
 import type { InterestGroupDetail } from "@/features/interest-groups/schemas";
+import { useEditInterestGroup } from "../hooks/use-edit-interest-group";
 
 // ─── Types ──────────────────────────────────────────────────
 
@@ -42,15 +43,24 @@ interface PersonToFollow {
   designation?: string | null;
 }
 
-interface Lead {
-  name: string;
-  email?: string | null;
-}
+// ─── Helpers ────────────────────────────────────────────────
 
-interface Mentor {
-  name: string;
-  expertise?: string | null;
-  linkedin?: string | null;
+/** Extract muid strings from the various API shapes */
+function toMuidArray(
+  raw: InterestGroupDetail["leads"] | InterestGroupDetail["mentors"],
+): string[] {
+  if (!raw) return [];
+  if (Array.isArray(raw)) {
+    return raw
+      .map((item) => {
+        if (typeof item === "string") return item;
+        if (item && typeof item === "object" && "muid" in item && item.muid)
+          return item.muid;
+        return null;
+      })
+      .filter(Boolean) as string[];
+  }
+  return [];
 }
 
 const CATEGORIES = [
@@ -93,8 +103,10 @@ export function EditInterestGroupForm({
   const [peopleToFollow, setPeopleToFollow] = useState<PersonToFollow[]>(
     group.people_to_follow || [],
   );
-  const [leads, setLeads] = useState<Lead[]>(group.leads || []);
-  const [mentors, setMentors] = useState<Mentor[]>(group.mentors || []);
+
+  // Leads & Mentors — plain arrays of muid strings
+  const [leads, setLeads] = useState<string[]>(toMuidArray(group.leads));
+  const [mentors, setMentors] = useState<string[]>(toMuidArray(group.mentors));
 
   // ── Helpers for complex arrays ─────────────────────────
 
@@ -135,46 +147,11 @@ export function EditInterestGroupForm({
     setPeopleToFollow((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
-  const addLead = useCallback(() => {
-    setLeads((prev) => [...prev, { name: "", email: "" }]);
-  }, []);
-
-  const updateLead = useCallback(
-    (index: number, field: keyof Lead, value: string) => {
-      setLeads((prev) =>
-        prev.map((l, i) => (i === index ? { ...l, [field]: value } : l)),
-      );
-    },
-    [],
-  );
-
-  const removeLead = useCallback((index: number) => {
-    setLeads((prev) => prev.filter((_, i) => i !== index));
-  }, []);
-
-  const addMentor = useCallback(() => {
-    setMentors((prev) => [...prev, { name: "", expertise: "", linkedin: "" }]);
-  }, []);
-
-  const updateMentor = useCallback(
-    (index: number, field: keyof Mentor, value: string) => {
-      setMentors((prev) =>
-        prev.map((m, i) => (i === index ? { ...m, [field]: value } : m)),
-      );
-    },
-    [],
-  );
-
-  const removeMentor = useCallback((index: number) => {
-    setMentors((prev) => prev.filter((_, i) => i !== index));
-  }, []);
-
   // ── Submit ─────────────────────────────────────────────
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Build payload with only changed fields
     const payload: Record<string, unknown> = {};
 
     if (name !== (group.name || "")) payload.name = name;
@@ -189,7 +166,6 @@ export function EditInterestGroupForm({
     if (code !== (group.code || "")) payload.code = code;
     if (category !== (group.category || "others")) payload.category = category;
 
-    // Compare arrays by JSON serialisation
     if (
       JSON.stringify(prerequisites) !==
       JSON.stringify(group.prerequisites || [])
@@ -207,10 +183,18 @@ export function EditInterestGroupForm({
       JSON.stringify(group.people_to_follow || [])
     )
       payload.people_to_follow = peopleToFollow;
-    if (JSON.stringify(leads) !== JSON.stringify(group.leads || []))
-      payload.leads = leads;
-    if (JSON.stringify(mentors) !== JSON.stringify(group.mentors || []))
-      payload.mentors = mentors;
+
+    // Leads/mentors — send as array of { muid } objects
+    const origLeadMuids = toMuidArray(group.leads);
+    if (JSON.stringify(leads) !== JSON.stringify(origLeadMuids)) {
+      payload.leads = leads.length > 0 ? leads.map((m) => ({ muid: m })) : [];
+    }
+
+    const origMentorMuids = toMuidArray(group.mentors);
+    if (JSON.stringify(mentors) !== JSON.stringify(origMentorMuids)) {
+      payload.mentors =
+        mentors.length > 0 ? mentors.map((m) => ({ muid: m })) : [];
+    }
 
     if (Object.keys(payload).length === 0) {
       onSuccess?.();
@@ -456,97 +440,30 @@ export function EditInterestGroupForm({
           ))}
         </fieldset>
 
-        {/* ── Leads ── */}
         <fieldset className="space-y-4">
-          <div className="flex items-center justify-between">
-            <legend className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-              Leads
-            </legend>
-            <button
-              type="button"
-              onClick={addLead}
-              className="inline-flex items-center gap-1 rounded-lg bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary hover:bg-primary/20 transition-colors"
-            >
-              <Plus className="h-3 w-3" /> Add
-            </button>
-          </div>
-          {leads.map((lead, i) => (
-            <div
-              key={lead.name}
-              className="flex gap-2 items-start rounded-xl border border-border/50 bg-muted/20 p-3"
-            >
-              <div className="flex-1 space-y-2">
-                <Input
-                  value={lead.name}
-                  onChange={(e) => updateLead(i, "name", e.target.value)}
-                  placeholder="Lead name"
-                />
-                <Input
-                  value={lead.email || ""}
-                  onChange={(e) => updateLead(i, "email", e.target.value)}
-                  placeholder="email@example.com"
-                />
-              </div>
-              <button
-                type="button"
-                onClick={() => removeLead(i)}
-                className="mt-1 rounded-lg p-1.5 text-destructive/60 hover:bg-destructive/10 hover:text-destructive transition-colors"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </div>
-          ))}
+          <legend className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+            Leads
+          </legend>
+          <MuidSearchInput
+            value={leads}
+            onChange={setLeads}
+            placeholder="Search users by muid…"
+          />
         </fieldset>
 
-        {/* ── Mentors ── */}
+        {/* ── Mentors (MUID only) ── */}
         <fieldset className="space-y-4">
-          <div className="flex items-center justify-between">
-            <legend className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-              Mentors
-            </legend>
-            <button
-              type="button"
-              onClick={addMentor}
-              className="inline-flex items-center gap-1 rounded-lg bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary hover:bg-primary/20 transition-colors"
-            >
-              <Plus className="h-3 w-3" /> Add
-            </button>
-          </div>
-          {mentors.map((mentor, i) => (
-            <div
-              key={mentor.name}
-              className="flex gap-2 items-start rounded-xl border border-border/50 bg-muted/20 p-3"
-            >
-              <div className="flex-1 space-y-2">
-                <Input
-                  value={mentor.name}
-                  onChange={(e) => updateMentor(i, "name", e.target.value)}
-                  placeholder="Mentor name"
-                />
-                <Input
-                  value={mentor.expertise || ""}
-                  onChange={(e) => updateMentor(i, "expertise", e.target.value)}
-                  placeholder="Area of expertise"
-                />
-                <Input
-                  value={mentor.linkedin || ""}
-                  onChange={(e) => updateMentor(i, "linkedin", e.target.value)}
-                  placeholder="LinkedIn profile URL"
-                />
-              </div>
-              <button
-                type="button"
-                onClick={() => removeMentor(i)}
-                className="mt-1 rounded-lg p-1.5 text-destructive/60 hover:bg-destructive/10 hover:text-destructive transition-colors"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </div>
-          ))}
+          <legend className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+            Mentors
+          </legend>
+          <MuidSearchInput
+            value={mentors}
+            onChange={setMentors}
+            placeholder="Search users by muid…"
+          />
         </fieldset>
       </div>
 
-      {/* ── Footer ── */}
       <SheetFooter className="border-t border-border/50 pt-4">
         <SheetClose asChild>
           <button

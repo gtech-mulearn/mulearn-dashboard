@@ -192,3 +192,26 @@ export type UserProfile = z.infer<typeof UserProfileSchema>;
 export type UserProfileResponse = z.infer<typeof UserProfileResponseSchema>;
 export type InterestGroup = z.infer<typeof InterestGroupSchema>;
 export type KarmaDistribution = z.infer<typeof KarmaDistributionSchema>;
+
+// ============================================
+// Company Onboarding / Verification Status
+// ============================================
+
+export const CompanyOnboardingStatusSchema = z
+  .object({
+    /** Whether the company has been approved by an admin */
+    is_verified: z.boolean().optional(),
+    verified: z.boolean().optional(),
+    /** e.g. "pending" | "approved" | "rejected" */
+    status: z.string().optional(),
+    rejection_reason: z.string().nullable().optional(),
+  })
+  .passthrough();
+
+export const CompanyOnboardingStatusResponseSchema = ApiResponseSchema(
+  CompanyOnboardingStatusSchema,
+);
+
+export type CompanyOnboardingStatus = z.infer<
+  typeof CompanyOnboardingStatusSchema
+>;

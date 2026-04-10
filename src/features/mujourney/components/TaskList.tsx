@@ -87,7 +87,7 @@ export function TaskList({
           return (
             <div
               key={uniqueKey}
-              className="flex-shrink-0 w-[350px] snap-start h-full"
+              className="shrink-0 w-[85vw] sm:w-[350px] snap-start h-full"
             >
               <TaskCard
                 task={task}

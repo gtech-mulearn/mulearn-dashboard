@@ -16,4 +16,6 @@ export const authKeys = {
   session: () => [...authKeys.all, "session"] as const,
   resetToken: (token: string) =>
     [...authKeys.all, "resetToken", token] as const,
+  companyOnboardingStatus: () =>
+    [...authKeys.all, "companyOnboardingStatus"] as const,
 };

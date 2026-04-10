@@ -53,7 +53,7 @@ export function InterestGroupsGrid({
       />
 
       {isLoading && (
-        <div className="flex flex-col items-center justify-center py-20">
+        <div className="flex flex-col items-center justify-center py-12 sm:py-20">
           <div className="flex gap-2">
             <div className="h-3 w-3 animate-bounce rounded-full bg-primary [animation-delay:-0.3s]" />
             <div className="h-3 w-3 animate-bounce rounded-full bg-primary [animation-delay:-0.15s]" />
@@ -66,9 +66,9 @@ export function InterestGroupsGrid({
       )}
 
       {!isLoading && filteredGroups.length === 0 && (
-        <div className="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-border bg-muted/30 py-20">
-          <div className="rounded-full bg-muted p-4">
-            <Sparkles className="h-8 w-8 text-muted-foreground" />
+        <div className="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-border bg-muted/30 py-12 sm:py-20 px-4">
+          <div className="rounded-full bg-muted p-3 sm:p-4">
+            <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground" />
           </div>
           <h3 className="mt-4 text-lg font-semibold text-foreground">
             No interest groups found
@@ -82,7 +82,7 @@ export function InterestGroupsGrid({
       )}
 
       {!isLoading && filteredGroups.length > 0 && (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredGroups.map((group, index) => (
             <InterestGroupCard
               key={group.id}

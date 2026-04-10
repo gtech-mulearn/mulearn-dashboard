@@ -1,6 +1,7 @@
 import {
   AlertTriangle,
   ArrowRight,
+  Briefcase,
   Building,
   Building2,
   CheckCircle,
@@ -71,6 +72,13 @@ const MANAGEMENT_ITEMS: ManagementItem[] = [
     description: "Create, edit, and configure user launchpad.",
     path: "/dashboard/management/manage-launchpad",
     color: "bg-chart-5/10 text-chart-5",
+  },
+  {
+    icon: Briefcase,
+    title: "Manage Companies",
+    description: "Review and verify company registration requests.",
+    path: "/dashboard/management/manage-companies",
+    color: "bg-chart-1/10 text-chart-1",
   },
   {
     icon: ListTodo,

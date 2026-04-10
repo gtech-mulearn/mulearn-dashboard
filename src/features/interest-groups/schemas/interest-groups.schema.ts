@@ -101,11 +101,12 @@ export const InterestGroupDetailSchema = z.object({
     .nullable()
     .catch(undefined),
 
-  // Array of { name, email }
+  // Array of { muid } - API returns leads with only muid
   leads: z
     .array(
       z.object({
-        name: z.string(),
+        muid: z.string().optional().nullable(),
+        name: z.string().optional().nullable(),
         email: z.string().optional().nullable(),
       }),
     )
@@ -113,11 +114,12 @@ export const InterestGroupDetailSchema = z.object({
     .nullable()
     .catch(undefined),
 
-  // Array of { name, expertise, linkedin }
+  // Array of { muid } - API returns mentors with only muid
   mentors: z
     .array(
       z.object({
-        name: z.string(),
+        muid: z.string().optional().nullable(),
+        name: z.string().optional().nullable(),
         expertise: z.string().optional().nullable(),
         linkedin: z.string().optional().nullable(),
       }),

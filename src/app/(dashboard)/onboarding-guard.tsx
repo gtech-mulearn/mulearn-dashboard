@@ -12,6 +12,7 @@
 import { useRouter } from "next/navigation";
 import { type ReactNode, useEffect } from "react";
 import { useUserInfo } from "@/features/auth";
+import { ROLES } from "@/lib/auth";
 import { useAuthStore } from "@/stores/auth-store";
 import Loader from "../loading";
 
@@ -40,28 +41,39 @@ export function OnboardingGuard({ children }: OnboardingGuardProps) {
       return;
     }
 
-    // If user has no domains selected, redirect to onboarding
-    if (user && (!user.user_domains || user.user_domains.length === 0)) {
+    if (!user) return;
+
+    // Company users have their own onboarding/verification flow —
+    // they skip the interests selection step entirely.
+    const isCompany = user.roles.includes(ROLES.COMPANY);
+    if (isCompany) return;
+
+    // All other roles: redirect to interests onboarding if no domains selected
+    if (!user.user_domains || user.user_domains.length === 0) {
       router.replace("/onboarding/interests");
-      return;
     }
   }, [user, isLoading, isError, router]);
 
-  // Show loading while checking
+  // Show loading while checking auth state
   if (isLoading) {
     return <Loader />;
   }
 
-  // Show loading while redirecting
-  if (
-    isError ||
-    !user ||
-    !user.user_domains ||
-    user.user_domains.length === 0
-  ) {
+  // Show loading while redirecting to login on error
+  if (isError || !user) {
     return <Loader />;
   }
 
-  // User has completed onboarding, render children
+  // Company users: always render (they manage onboarding on their own dashboard)
+  const isCompany = user.roles.includes(ROLES.COMPANY);
+  if (isCompany) {
+    return <>{children}</>;
+  }
+
+  // Non-company: block render until domains are selected
+  if (!user.user_domains || user.user_domains.length === 0) {
+    return <Loader />;
+  }
+
   return <>{children}</>;
 }

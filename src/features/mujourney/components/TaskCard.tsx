@@ -65,7 +65,7 @@ export function TaskCard({
         }
       }}
     >
-      <CardContent className="p-7 space-y-5 flex flex-col grow">
+      <CardContent className="p-5 sm:p-7 space-y-5 flex flex-col grow">
         {/* Status Badge */}
         <div>
           <span
@@ -94,7 +94,7 @@ export function TaskCard({
         )} */}
 
         {/* Metadata - Open Sans */}
-        <div className="space-y-3 text-base grow">
+        <div className="space-y-3 text-base grow min-w-0">
           <div className="flex items-start gap-1.5">
             <span className="font-bold text-card-foreground">
               Interest Group:
@@ -111,9 +111,14 @@ export function TaskCard({
             </span>
           </div>
 
-          <div className="flex items-start gap-1.5">
-            <span className="font-bold text-card-foreground">Hashtag:</span>
-            <span className="inline-block px-3 py-1 bg-muted text-muted-foreground rounded-full font-mono text-sm font-normal">
+          <div className="flex items-start gap-1.5 min-w-0">
+            <span className="font-bold text-card-foreground shrink-0">
+              Hashtag:
+            </span>
+            <span
+              className="inline-block px-3 py-1 bg-muted text-muted-foreground rounded-full font-mono text-sm font-normal truncate max-w-full"
+              title={task.hashtag}
+            >
               {task.hashtag}
             </span>
           </div>

@@ -445,7 +445,6 @@ export function EditProfileModal({
                     <FormItem>
                       <FormLabel>Community</FormLabel>
                       <MultiSelectDropdown
-                        label="Community"
                         options={communities}
                         selectedValues={field.value ?? []}
                         onToggle={(value, checked) => {

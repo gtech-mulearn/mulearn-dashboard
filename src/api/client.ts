@@ -6,6 +6,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { z } from "zod";
+import { refreshAccessToken } from "@/features/auth";
 import { env } from "../../config/env";
 import { authStore } from "../lib/auth";
 import { ApiError, extractDjangoMessage } from "./errors";
@@ -119,20 +120,92 @@ async function request<T>(
 
   const rawData = await res.json().catch(() => null);
 
-  // Token expiry handling only for authenticated calls
   if (options.authenticated) {
     handleTokenExpiry(rawData);
 
     if (res.status === 401 || res.status === 403) {
-      authStore.clearTokens();
-      if (typeof window !== "undefined") {
-        window.location.href = "/login";
+      const refreshToken = authStore.getRefreshToken();
+
+      if (!refreshToken) {
+        authStore.clearTokens();
+        if (typeof window !== "undefined") {
+          window.location.href = "/login";
+        }
+        throw new ApiError(
+          res.status,
+          "Unauthorized - redirecting to login",
+          rawData,
+        );
       }
-      throw new ApiError(
-        res.status,
-        "Unauthorized - redirecting to login",
-        rawData,
-      );
+
+      try {
+        const newToken = await refreshAccessToken(refreshToken);
+        const newAccessToken = newToken.accessToken;
+
+        if (!newAccessToken) {
+          authStore.clearTokens();
+          if (typeof window !== "undefined") {
+            window.location.href = "/login";
+          }
+          throw new ApiError(
+            res.status,
+            "Token refresh failed - no new token",
+            null,
+          );
+        }
+
+        authStore.setTokens(newAccessToken, refreshToken);
+
+        const retryRes = await fetch(
+          `${env.NEXT_PUBLIC_DJANGO_API_URL}${endpoint}`,
+          {
+            method: options.method,
+            headers: {
+              ...requestHeaders,
+              Authorization: `Bearer ${newAccessToken}`,
+              ...options.headers,
+            },
+            body: isFormData
+              ? (options.body as FormData)
+              : options.body
+                ? JSON.stringify(options.body)
+                : undefined,
+          },
+        );
+
+        if (retryRes.status === 401 || retryRes.status === 403) {
+          authStore.clearTokens();
+          if (typeof window !== "undefined") {
+            window.location.href = "/login";
+          }
+          throw new ApiError(retryRes.status, "Retry failed", null);
+        }
+
+        const retryData = await retryRes.json().catch(() => null);
+
+        if (options.schema) {
+          const parsed = options.schema.safeParse(retryData);
+          if (!parsed.success) {
+            console.error(
+              `⚠️ API schema mismatch [${endpoint}]`,
+              parsed.error.issues,
+            );
+            return retryData as T;
+          }
+          return parsed.data;
+        }
+        return retryData?.response ?? (retryData as T);
+      } catch {
+        authStore.clearTokens();
+        if (typeof window !== "undefined") {
+          window.location.href = "/login";
+        }
+        throw new ApiError(
+          res.status,
+          "Unauthorized - redirecting to login",
+          rawData,
+        );
+      }
     }
   }
 

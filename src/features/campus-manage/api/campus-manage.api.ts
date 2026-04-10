@@ -1,4 +1,4 @@
-import { apiClient } from "@/api/client";
+import { ApiError, apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import type {
   CampusEvent,
@@ -277,12 +277,13 @@ export const campusManageApi = {
     }
     if (filters.search) params.set("search", filters.search);
 
+    if (filters.ig) params.set("ig_id", filters.ig);
+    if (filters.cluster) params.set("cluster", filters.cluster);
+
     let endpoint: string;
 
     if (filters.orgId) {
       // Public org-scoped leaderboard (ranked by karma)
-      if (filters.ig) params.set("ig_id", filters.ig);
-      if (filters.cluster) params.set("cluster", filters.cluster);
       const suffix = params.toString();
       endpoint = suffix
         ? `${endpoints.campusManage.leaderboard(filters.orgId)}?${suffix}`
@@ -457,9 +458,40 @@ export const campusManageApi = {
 
     return unwrapDataArray(raw).map((item, index) => {
       const row = asRecord(item);
+      const roleLink = asRecord(row.role_link);
+      const roleObject = asRecord(row.role);
+      const deleteCandidates = [
+        safeToString(row.execom_id),
+        safeToString(row.role_link_id),
+        safeToString(row.role_id),
+        safeToString(row.campus_role_id),
+        safeToString(row.assignment_id),
+        safeToString(roleLink.id),
+        safeToString(roleLink.execom_id),
+        safeToString(roleObject.id),
+        safeToString(row.id),
+        safeToString(row.user_id),
+      ].filter(Boolean);
+
+      const uniqueDeleteCandidates = [...new Set(deleteCandidates)];
+      const roleLinkId = safeToString(
+        row.execom_id ??
+          row.role_link_id ??
+          row.role_id ??
+          row.campus_role_id ??
+          roleLink.id ??
+          row.assignment_id ??
+          row.id,
+        "",
+      );
       const rawId = safeToString(row.user_id ?? row.id ?? row.execom_id, "");
       return {
-        id: rawId || `execom-${index}`,
+        id: rawId || `execom-user-${index}`,
+        roleLinkId: roleLinkId || `execom-role-link-${index}`,
+        deleteCandidates:
+          uniqueDeleteCandidates.length > 0
+            ? uniqueDeleteCandidates
+            : [roleLinkId || rawId || `execom-role-link-${index}`],
         name: safeToString(row.full_name ?? row.name, "-"),
         muid: safeToString(row.muid, "-"),
         role: safeToString(row.role_title ?? row.role, "member"),
@@ -485,25 +517,58 @@ export const campusManageApi = {
     };
   },
 
-  async addExecomMember(muid: string): Promise<unknown> {
-    return apiClient.post<unknown>(endpoints.campusManage.execom, { muid });
+  async addExecomMember(data: {
+    muid: string;
+    roleTitle: string;
+  }): Promise<unknown> {
+    return apiClient.post<unknown>(endpoints.campusManage.execom, {
+      muid: data.muid,
+      role_title: data.roleTitle,
+    });
   },
 
-  async removeExecomMember(memberId: string): Promise<unknown> {
-    return apiClient.delete<unknown>(
-      endpoints.campusManage.execomDelete(memberId),
-    );
+  async removeExecomMember(memberIds: string | string[]): Promise<unknown> {
+    const idsToTry = Array.isArray(memberIds) ? memberIds : [memberIds];
+    let lastError: unknown = null;
+
+    for (const id of idsToTry) {
+      if (!id) continue;
+      try {
+        return await apiClient.delete<unknown>(
+          endpoints.campusManage.execomDelete(id),
+        );
+      } catch (error) {
+        lastError = error;
+        if (
+          error instanceof ApiError &&
+          error.message.toLowerCase().includes("role link not found")
+        ) {
+          continue;
+        }
+        throw error;
+      }
+    }
+
+    throw lastError instanceof Error
+      ? lastError
+      : new Error("Unable to remove role: no valid role link id found");
   },
 
   async transferLeadRole(muid: string): Promise<unknown> {
     return apiClient.post<unknown>(endpoints.campusManage.transferLeadRole, {
       muid,
+      new_muid: muid,
+      new_lead_muid: muid,
+      new_campus_lead_muid: muid,
     });
   },
 
   async transferEnablerRole(muid: string): Promise<unknown> {
     return apiClient.post<unknown>(endpoints.campusManage.transferEnablerRole, {
       muid,
+      new_muid: muid,
+      new_enabler_muid: muid,
+      new_lead_enabler_muid: muid,
     });
   },
 

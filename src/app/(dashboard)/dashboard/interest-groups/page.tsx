@@ -1,5 +1,13 @@
-import { IGClient } from "@/features/manage-ig";
+/**
+ * Interest Groups Page
+ *
+ *  src/app/(dashboard)/dashboard/interest-groups/page.tsx
+ *
+ * Discover and explore all available interest groups.
+ */
 
-export default function IGPage() {
-  return <IGClient />;
+import { InterestGroupsClient } from "@/features/interest-groups";
+
+export default function InterestGroupsPage() {
+  return <InterestGroupsClient />;
 }

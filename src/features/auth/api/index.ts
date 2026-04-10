@@ -7,6 +7,7 @@
  */
 
 export {
+  fetchCompanyOnboardingStatus,
   fetchPublicUserProfile,
   fetchUserInfo,
   fetchUserProfile,
@@ -21,6 +22,7 @@ export {
 
 export {
   checkEmailExists,
+  companySignup,
   registerUser,
   validateRegistrationData,
 } from "./register.api";

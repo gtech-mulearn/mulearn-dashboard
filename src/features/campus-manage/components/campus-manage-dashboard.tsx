@@ -31,6 +31,7 @@ import {
   Zap,
 } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { type ReactNode, useMemo, useState } from "react";
 import {
   Area,
@@ -39,6 +40,7 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
+  LabelList,
   Pie,
   PieChart,
   ResponsiveContainer,
@@ -46,12 +48,14 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { toast } from "sonner";
 import Pagination from "@/components/dashboard/table/pagination";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { MuidSearchInput } from "@/components/ui/muid-search-input";
 import {
   Popover,
   PopoverContent,
@@ -87,7 +91,6 @@ import {
   useKarmaByCluster,
   useRemoveExecomMember,
   useUpsertSocialLink,
-  useUserProfile,
 } from "../hooks";
 import type {
   CampusEventFilters,
@@ -99,6 +102,11 @@ import type {
 
 const PIE_COLORS = ["#16a34a", "#0ea5e9", "#f59e0b", "#ef4444", "#8b5cf6"];
 const PAGE_SIZE = 10;
+const EXECOM_ROLE_OPTIONS = [
+  { label: "Enabler", value: "enabler" },
+  { label: "Campus Lead", value: "campus-lead" },
+  { label: "Lead Enabler", value: "lead-enabler" },
+] as const;
 
 const SOCIAL_PLATFORMS = [
   {
@@ -346,7 +354,7 @@ function StatCard({
             </span>
           </div>
           <p
-            className="text-4xl font-bold tracking-tight"
+            className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight"
             style={{ color: accentText ?? accent }}
           >
             {value}
@@ -373,6 +381,8 @@ function StatCard({
 // ─── Main Dashboard ──────────────────────────────────────────────────────────
 
 export function CampusManageDashboard() {
+  const router = useRouter();
+
   // ── Leaderboard state ──
   const [leaderboardPage, setLeaderboardPage] = useState(1);
   const [leaderboardFilters, setLeaderboardFilters] =
@@ -393,7 +403,13 @@ export function CampusManageDashboard() {
   });
 
   // ── Execom admin state ──
-  const [newMuid, setNewMuid] = useState("");
+  const [selectedExecomUser, setSelectedExecomUser] = useState<{
+    muid: string;
+    name: string;
+    profilePic: string | null;
+  } | null>(null);
+  const [selectedExecomRole, setSelectedExecomRole] =
+    useState<(typeof EXECOM_ROLE_OPTIONS)[number]["value"]>("enabler");
 
   // ─── Queries ────────────────────────────────────────────────────────────
   const { data: overview, isLoading: isOverviewLoading } = useCampusOverview();
@@ -417,10 +433,6 @@ export function CampusManageDashboard() {
 
   const socialLinks = overview?.socialLinks;
 
-  // ─── Execom user verification ──
-  const { data: verifiedUser, isFetching: isVerifyingUser } =
-    useUserProfile(newMuid);
-
   // ─── Mutations ───────────────────────────────────────────────────────────
   const { mutate: upsertSocial, isPending: isUpsertingSocial } =
     useUpsertSocialLink();
@@ -435,59 +447,84 @@ export function CampusManageDashboard() {
   const [socialValue, setSocialValue] = useState("");
   const [isAddingNewSocial, setIsAddingNewSocial] = useState(false);
 
-  // ─── Derived leaderboard data ────────────────────────────────────────────
+  // ─── Derived data ────────────────────────────────────────────────────────
   const leaderboard = leaderboardData?.items ?? [];
   const leaderboardPagination = leaderboardData?.pagination;
-  const unfilteredEvents = eventsData?.items ?? [];
+  const events = eventsData?.items ?? [];
 
-  const events = useMemo(() => {
-    if (!eventFilters.date) return unfilteredEvents;
-    const filterDate = new Date(eventFilters.date);
-    filterDate.setHours(0, 0, 0, 0);
-
-    return unfilteredEvents.filter((event) => {
-      if (!event.date) return false;
-      const start = new Date(event.date);
-      start.setHours(0, 0, 0, 0);
-      const end = event.endDate ? new Date(event.endDate) : start;
-      end.setHours(0, 0, 0, 0);
-
-      return filterDate >= start && filterDate <= end;
-    });
-  }, [unfilteredEvents, eventFilters.date]);
-
-  const filteredLeaderboard = useMemo(() => {
-    const query = leaderboardFilters.search.trim().toLowerCase();
-    const filtered = leaderboard.filter((item) => {
-      if (query && !item.name.toLowerCase().includes(query)) return false;
-      return true;
-    });
-    // Explicitly ensure sorting by rank
-    return [...filtered].sort((a, b) => a.rank - b.rank);
-  }, [leaderboard, leaderboardFilters.search]);
+  // FIX: extracted from IIFE — computed above return
+  const karmaTrend = overview?.trend ?? [];
+  const isKarmaTrendEmpty =
+    karmaTrend.length === 0 || karmaTrend.every((p) => p.value === 0);
 
   const totalPages = Math.max(
     1,
-    Math.ceil(
-      (leaderboardPagination?.count ?? filteredLeaderboard.length) / PAGE_SIZE,
-    ),
+    Math.ceil((leaderboardPagination?.count ?? leaderboard.length) / PAGE_SIZE),
   );
 
   const igOptions = useMemo(
     () =>
-      Array.from(new Set(leaderboard.map((item) => item.ig)))
-        .filter(Boolean)
-        .map((ig) => ({ label: ig, value: ig })),
-    [leaderboard],
+      chapters
+        .map((ch) => ({ label: ch.name, value: ch.igId || ch.id }))
+        .sort((a, b) => a.label.localeCompare(b.label)),
+    [chapters],
   );
 
   const clusterOptions = useMemo(
     () =>
-      Array.from(new Set(leaderboard.map((item) => item.cluster)))
-        .filter(Boolean)
-        .map((cluster) => ({ label: cluster, value: cluster })),
-    [leaderboard],
+      clusterData
+        .map((cl) => ({ label: cl.cluster, value: cl.cluster }))
+        .sort((a, b) => a.label.localeCompare(b.label)),
+    [clusterData],
   );
+
+  const clusterChartHeight = useMemo(
+    () => Math.min(Math.max(clusterData.length * 42, 260), 420),
+    [clusterData.length],
+  );
+
+  const maxClusterKarma = useMemo(
+    () => Math.max(...clusterData.map((item) => item.karma), 0),
+    [clusterData],
+  );
+
+  const clusterAxisMax = useMemo(() => {
+    if (maxClusterKarma <= 0) return 100;
+    const magnitude = 10 ** Math.floor(Math.log10(maxClusterKarma));
+    const step = magnitude / 2;
+    return Math.ceil(maxClusterKarma / step) * step;
+  }, [maxClusterKarma]);
+
+  // FIX: explicit uniform ticks — prevents skipped axis values
+  const clusterAxisTicks = useMemo(() => {
+    const step = clusterAxisMax / 5;
+    return Array.from({ length: 6 }, (_, i) => Math.round(i * step));
+  }, [clusterAxisMax]);
+
+  // FIX: correct empty-state check for socialLinks object shape
+  const hasAnySocialLink = useMemo(() => {
+    if (!socialLinks) return false;
+    return SOCIAL_PLATFORMS.some((platform) => {
+      const link = socialLinks[platform.id as keyof SocialLinks] as
+        | SocialLink
+        | undefined;
+      return !!link?.url;
+    });
+  }, [socialLinks]);
+
+  const normalizeClusterLabel = (label: string) =>
+    label
+      .replace(/[_-]+/g, " ")
+      .trim()
+      .replace(/\s+/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+
+  const formatClusterTick = (label: string) => {
+    const normalized = normalizeClusterLabel(label);
+    return normalized.length > 14
+      ? `${normalized.slice(0, 14)}...`
+      : normalized;
+  };
 
   // ─── Handlers ────────────────────────────────────────────────────────────
   const handleLeaderboardFilterChange =
@@ -502,10 +539,41 @@ export function CampusManageDashboard() {
     };
 
   const handleAddExecom = () => {
-    const muid = newMuid.trim();
+    const muid = selectedExecomUser?.muid.trim();
     if (!muid) return;
-    addExecom(muid, { onSuccess: () => setNewMuid("") });
+
+    const existingRole = execom.find(
+      (member) => member.muid.toLowerCase() === muid.toLowerCase(),
+    );
+
+    if (existingRole) {
+      toast.error(
+        `${selectedExecomUser?.name || "This user"} already has a role (${existingRole.role}). Remove the current role before assigning a new one.`,
+      );
+      return;
+    }
+
+    const roleTitleByValue: Record<
+      (typeof EXECOM_ROLE_OPTIONS)[number]["value"],
+      string
+    > = {
+      enabler: "Enabler",
+      "campus-lead": "Campus Lead",
+      "lead-enabler": "Lead Enabler",
+    };
+
+    addExecom(
+      { muid, roleTitle: roleTitleByValue[selectedExecomRole] },
+      {
+        onSuccess: () => {
+          setSelectedExecomUser(null);
+          setSelectedExecomRole("enabler");
+        },
+      },
+    );
   };
+
+  const isAssigningExecomRole = isAdding;
 
   // ─── Render ───────────────────────────────────────────────────────────────
   return (
@@ -533,12 +601,10 @@ export function CampusManageDashboard() {
               </div>
             ) : (
               <>
-                {/* ── Glassmorphism Hero Header ── */}
+                {/* ── Hero Header ── */}
                 <div className="relative mb-6 overflow-hidden rounded-2xl border border-border/40">
-                  {/* gradient backdrop */}
                   <div className="absolute inset-0 bg-gradient-to-br from-teal-500/20 via-sky-500/10 to-violet-500/20" />
                   <div className="absolute inset-0 backdrop-blur-[2px]" />
-                  {/* subtle grid pattern */}
                   <div
                     className="absolute inset-0 opacity-[0.04]"
                     style={{
@@ -546,59 +612,55 @@ export function CampusManageDashboard() {
                         "repeating-linear-gradient(0deg,transparent,transparent 24px,currentColor 24px,currentColor 25px),repeating-linear-gradient(90deg,transparent,transparent 24px,currentColor 24px,currentColor 25px)",
                     }}
                   />
-                  <div className="relative flex flex-col gap-5 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
-                    {/* Left: avatar + college info */}
-                    <div className="flex items-center gap-4">
-                      {/* Initials avatar */}
-                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-sky-600 text-lg font-bold text-white shadow-lg">
+                  <div className="relative flex flex-col gap-5 px-4 py-6 sm:px-6 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-3 sm:gap-4 overflow-hidden">
+                      <div className="flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl bg-gradient-to-br from-teal-500 to-sky-600 text-base sm:text-lg font-bold text-white shadow-lg">
                         {(overview?.campusCode ?? overview?.collegeName ?? "C")
                           .slice(0, 2)
                           .toUpperCase()}
                       </div>
-                      <div>
-                        <h3 className="text-lg font-bold leading-snug tracking-tight text-foreground">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-base sm:text-lg font-bold leading-tight tracking-tight text-foreground truncate">
                           {overview?.collegeName ?? "-"}
                         </h3>
-                        <div className="mt-1.5 flex flex-wrap gap-2">
-                          <span className="inline-flex items-center rounded-lg bg-background/60 px-2.5 py-0.5 text-xs font-medium ring-1 ring-border/60">
+                        <div className="mt-1.5 flex flex-wrap gap-1.5">
+                          <span className="inline-flex items-center rounded-lg bg-background/60 px-2 py-0.5 text-[10px] sm:text-xs font-semibold ring-1 ring-border/40">
                             {overview?.campusCode ?? "-"}
                           </span>
-                          <span className="inline-flex items-center rounded-lg bg-background/60 px-2.5 py-0.5 text-xs font-medium ring-1 ring-border/60">
-                            Level {overview?.campusLevel ?? "-"}
+                          <span className="inline-flex items-center rounded-lg bg-background/60 px-2 py-0.5 text-[10px] sm:text-xs font-semibold ring-1 ring-border/40">
+                            Lvl {overview?.campusLevel ?? "-"}
                           </span>
                           {overview?.campusZone && (
-                            <span className="inline-flex items-center rounded-lg bg-background/60 px-2.5 py-0.5 text-xs font-medium ring-1 ring-border/60">
+                            <span className="max-w-[80px] truncate inline-flex items-center rounded-lg bg-background/60 px-2 py-0.5 text-[10px] sm:text-xs font-semibold ring-1 ring-border/40">
                               {overview.campusZone}
                             </span>
                           )}
                         </div>
                       </div>
                     </div>
-                    {/* Right: lead + enabler */}
-                    <div className="flex flex-col gap-1 text-sm sm:items-end">
-                      <span className="text-muted-foreground">
-                        Lead:{" "}
-                        <span className="font-semibold text-foreground">
+                    <div className="flex flex-col gap-1.5 text-xs sm:text-sm sm:items-end border-t border-border/10 pt-4 sm:border-0 sm:pt-0">
+                      <div className="flex items-center justify-between sm:justify-end gap-2">
+                        <span className="opacity-60 text-[10px] uppercase tracking-widest">
+                          Lead:
+                        </span>
+                        <span className="font-bold truncate max-w-[120px] sm:max-w-none">
                           {overview?.campusLead ?? "-"}
                         </span>
-                      </span>
-                      <span className="text-muted-foreground">
-                        Enabler:{" "}
-                        <span className="font-semibold text-foreground">
+                      </div>
+                      <div className="flex items-center justify-between sm:justify-end gap-2">
+                        <span className="opacity-60 text-[10px] uppercase tracking-widest">
+                          Enabler:
+                        </span>
+                        <span className="font-bold truncate max-w-[120px] sm:max-w-none">
                           {overview?.enabler ?? "Not assigned"}
                         </span>
-                      </span>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* ── Bento Grid Stats ── */}
-                <div
-                  className="grid grid-cols-2 gap-4 md:grid-cols-4"
-                  style={{ gridAutoRows: "88px" }}
-                >
-                  {/* ── Hero: Total Karma ── */}
-                  <div className="col-span-1 row-span-2 md:col-span-2">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
+                  <div className="sm:col-span-1 md:col-span-2">
                     <StatCard
                       title="Total Karma"
                       value={(overview?.totalKarma ?? 0).toLocaleString()}
@@ -607,8 +669,7 @@ export function CampusManageDashboard() {
                       accent="#0d9488"
                     />
                   </div>
-                  {/* ── Hero: Global Rank ── */}
-                  <div className="col-span-1 row-span-2 md:col-span-2">
+                  <div className="sm:col-span-1 md:col-span-2">
                     <StatCard
                       title="Global Rank"
                       value={overview?.rank ? `#${overview.rank}` : "-"}
@@ -620,7 +681,6 @@ export function CampusManageDashboard() {
                   </div>
                 </div>
 
-                {/* ── Secondary Stats — single row of 5 ── */}
                 <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
                   <StatCard
                     title="7-Day Karma"
@@ -649,7 +709,7 @@ export function CampusManageDashboard() {
                   />
                 </div>
 
-                {/* ── Karma Trend Chart — separated card ── */}
+                {/* ── Karma Trend Chart ── */}
                 <Card className="mt-4 border-border/60">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-semibold">
@@ -660,102 +720,93 @@ export function CampusManageDashboard() {
                     </p>
                   </CardHeader>
                   <CardContent className="pb-5">
-                    {/* Empty-state overlay when all values are zero */}
-                    {(() => {
-                      const trend = overview?.trend ?? [];
-                      const isEmpty =
-                        trend.length === 0 || trend.every((p) => p.value === 0);
-                      return (
-                        <div className="relative h-56 min-w-0">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart
-                              data={trend}
-                              margin={{ top: 4, right: 8, left: 0, bottom: 0 }}
+                    {/* FIX: no IIFE — variables extracted above return */}
+                    <div className="relative h-56 min-w-0">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart
+                          data={karmaTrend}
+                          margin={{ top: 4, right: 8, left: 0, bottom: 0 }}
+                        >
+                          <defs>
+                            <linearGradient
+                              id="karmaGradient"
+                              x1="0"
+                              y1="0"
+                              x2="0"
+                              y2="1"
                             >
-                              <defs>
-                                <linearGradient
-                                  id="karmaGradient"
-                                  x1="0"
-                                  y1="0"
-                                  x2="0"
-                                  y2="1"
-                                >
-                                  <stop
-                                    offset="5%"
-                                    stopColor="#0d9488"
-                                    stopOpacity={0.3}
-                                  />
-                                  <stop
-                                    offset="95%"
-                                    stopColor="#0d9488"
-                                    stopOpacity={0}
-                                  />
-                                </linearGradient>
-                              </defs>
-                              {/* Horizontal lines only */}
-                              <CartesianGrid
-                                horizontal
-                                vertical={false}
-                                stroke="currentColor"
-                                strokeOpacity={0.07}
+                              <stop
+                                offset="5%"
+                                stopColor="#0d9488"
+                                stopOpacity={0.3}
                               />
-                              <XAxis
-                                dataKey="label"
-                                tick={{ fontSize: 10 }}
-                                tickLine={false}
-                                axisLine={false}
+                              <stop
+                                offset="95%"
+                                stopColor="#0d9488"
+                                stopOpacity={0}
                               />
-                              <YAxis
-                                allowDecimals={false}
-                                tick={{ fontSize: 10 }}
-                                tickLine={false}
-                                axisLine={false}
-                                width={36}
-                              />
-                              <Tooltip
-                                cursor={{
-                                  stroke: "#0d9488",
-                                  strokeWidth: 1,
-                                  strokeDasharray: "4 4",
-                                }}
-                                contentStyle={{
-                                  borderRadius: "10px",
-                                  border: "1px solid hsl(var(--border))",
-                                  background: "hsl(var(--card))",
-                                  boxShadow: "0 8px 30px rgba(0,0,0,.14)",
-                                  fontSize: "12px",
-                                }}
-                              />
-                              <Area
-                                type="monotone"
-                                dataKey="value"
-                                stroke="#0d9488"
-                                strokeWidth={2}
-                                fill="url(#karmaGradient)"
-                                dot={false}
-                                activeDot={{
-                                  r: 4,
-                                  fill: "#0d9488",
-                                  strokeWidth: 2,
-                                  stroke: "#fff",
-                                }}
-                              />
-                            </AreaChart>
-                          </ResponsiveContainer>
-                          {/* Empty-state overlay */}
-                          {isEmpty && (
-                            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1.5">
-                              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
-                                <Zap className="h-4 w-4 text-muted-foreground/50" />
-                              </div>
-                              <p className="text-xs font-medium text-muted-foreground">
-                                No activity recorded this period
-                              </p>
-                            </div>
-                          )}
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid
+                            horizontal
+                            vertical={false}
+                            stroke="currentColor"
+                            strokeOpacity={0.07}
+                          />
+                          <XAxis
+                            dataKey="label"
+                            tick={{ fontSize: 10 }}
+                            tickLine={false}
+                            axisLine={false}
+                          />
+                          <YAxis
+                            allowDecimals={false}
+                            tick={{ fontSize: 10 }}
+                            tickLine={false}
+                            axisLine={false}
+                            width={36}
+                          />
+                          <Tooltip
+                            cursor={{
+                              stroke: "#0d9488",
+                              strokeWidth: 1,
+                              strokeDasharray: "4 4",
+                            }}
+                            contentStyle={{
+                              borderRadius: "10px",
+                              border: "1px solid hsl(var(--border))",
+                              background: "hsl(var(--card))",
+                              boxShadow: "0 8px 30px rgba(0,0,0,.14)",
+                              fontSize: "12px",
+                            }}
+                          />
+                          <Area
+                            type="monotone"
+                            dataKey="value"
+                            stroke="#0d9488"
+                            strokeWidth={2}
+                            fill="url(#karmaGradient)"
+                            dot={false}
+                            activeDot={{
+                              r: 4,
+                              fill: "#0d9488",
+                              strokeWidth: 2,
+                              stroke: "#fff",
+                            }}
+                          />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                      {isKarmaTrendEmpty && (
+                        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1.5">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
+                            <Zap className="h-4 w-4 text-muted-foreground/50" />
+                          </div>
+                          <p className="text-xs font-medium text-muted-foreground">
+                            No activity recorded this period
+                          </p>
                         </div>
-                      );
-                    })()}
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               </>
@@ -815,91 +866,95 @@ export function CampusManageDashboard() {
             ) : (
               <Card className="overflow-hidden border-border/60 shadow-md">
                 <CardContent className="p-0">
-                  <Table>
-                    <TableHeader className="bg-muted/30">
-                      <TableRow className="hover:bg-transparent">
-                        <TableHead className="w-24 text-center">Rank</TableHead>
-                        <TableHead>Student</TableHead>
-                        <TableHead>Karma</TableHead>
-                        <TableHead>Level</TableHead>
-                        <TableHead>Department / Cluster</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredLeaderboard.map((student) => (
-                        <TableRow
-                          key={student.id}
-                          className="group transition-colors hover:bg-muted/50"
-                        >
-                          <TableCell className="text-center font-bold">
-                            <div
-                              className={`mx-auto flex h-9 w-9 items-center justify-center rounded-full text-xs font-black shadow-sm transition-all duration-300 ${
-                                student.rank === 1
-                                  ? "bg-amber-100 text-amber-600 ring-2 ring-amber-400/50 shadow-[0_0_15px_rgba(251,191,36,0.25)] dark:bg-amber-900/40 dark:text-amber-400"
-                                  : student.rank === 2
-                                    ? "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
-                                    : student.rank === 3
-                                      ? "bg-orange-100 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400"
-                                      : "bg-background text-muted-foreground border border-border/50"
-                              }`}
-                            >
-                              #{student.rank}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-col">
-                              <span className="text-sm font-semibold tracking-tight transition-colors group-hover:text-primary">
-                                {student.name}
-                              </span>
-                              <span className="text-[11px] text-muted-foreground">
-                                @{student.muid.split("@")[0]}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <span className="text-lg font-black tracking-tighter text-emerald-600 dark:text-emerald-500">
-                              {student.karma.toLocaleString()}
-                            </span>
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              className={`h-6 px-2.5 font-bold uppercase tracking-wider text-[10px] shadow-sm ${
-                                student.level?.includes("7")
-                                  ? "bg-purple-600 hover:bg-purple-700"
-                                  : student.level?.includes("6")
-                                    ? "bg-blue-600 hover:bg-blue-700"
-                                    : student.level?.includes("5")
-                                      ? "bg-indigo-600 hover:bg-indigo-700 font-black"
-                                      : student.level?.includes("4")
-                                        ? "bg-teal-600 hover:bg-teal-700 font-black"
-                                        : "bg-slate-500/80 hover:bg-slate-500 font-black"
-                              }`}
-                            >
-                              {student.level}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="max-w-[200px] truncate text-xs text-muted-foreground">
-                            {student.cluster}
-                          </TableCell>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader className="bg-muted/30">
+                        <TableRow className="hover:bg-transparent">
+                          <TableHead className="w-24 text-center">
+                            Rank
+                          </TableHead>
+                          <TableHead>Student</TableHead>
+                          <TableHead>Karma</TableHead>
+                          <TableHead>Level</TableHead>
+                          <TableHead>Department / Cluster</TableHead>
                         </TableRow>
-                      ))}
-                      {filteredLeaderboard.length === 0 && (
-                        <TableRow>
-                          <TableCell
-                            colSpan={5}
-                            className="py-12 text-center text-muted-foreground"
+                      </TableHeader>
+                      <TableBody>
+                        {leaderboard.map((student) => (
+                          <TableRow
+                            key={student.id}
+                            className="group transition-colors hover:bg-muted/50"
                           >
-                            <div className="flex flex-col items-center gap-2 opacity-50">
-                              <Users className="h-10 w-10" />
-                              <p className="text-sm">
-                                No students found matching your filters.
-                              </p>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
+                            <TableCell className="text-center font-bold">
+                              <div
+                                className={`mx-auto flex h-9 w-9 items-center justify-center rounded-full text-xs font-black shadow-sm transition-all duration-300 ${
+                                  student.rank === 1
+                                    ? "bg-amber-100 text-amber-600 ring-2 ring-amber-400/50 shadow-[0_0_15px_rgba(251,191,36,0.25)] dark:bg-amber-900/40 dark:text-amber-400"
+                                    : student.rank === 2
+                                      ? "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                                      : student.rank === 3
+                                        ? "bg-orange-100 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400"
+                                        : "bg-background text-muted-foreground border border-border/50"
+                                }`}
+                              >
+                                #{student.rank}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex flex-col">
+                                <span className="text-sm font-semibold tracking-tight transition-colors group-hover:text-primary">
+                                  {student.name}
+                                </span>
+                                <span className="text-[11px] text-muted-foreground">
+                                  @{student.muid.split("@")[0]}
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <span className="text-lg font-black tracking-tighter text-emerald-600 dark:text-emerald-500">
+                                {student.karma.toLocaleString()}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                className={`h-6 px-2.5 font-bold uppercase tracking-wider text-[10px] shadow-sm ${
+                                  student.level?.includes("7")
+                                    ? "bg-purple-600 hover:bg-purple-700"
+                                    : student.level?.includes("6")
+                                      ? "bg-blue-600 hover:bg-blue-700"
+                                      : student.level?.includes("5")
+                                        ? "bg-indigo-600 hover:bg-indigo-700 font-black"
+                                        : student.level?.includes("4")
+                                          ? "bg-teal-600 hover:bg-teal-700 font-black"
+                                          : "bg-slate-500/80 hover:bg-slate-500 font-black"
+                                }`}
+                              >
+                                {student.level}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="max-w-[200px] truncate text-xs text-muted-foreground">
+                              {student.cluster}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                        {leaderboard.length === 0 && (
+                          <TableRow>
+                            <TableCell
+                              colSpan={5}
+                              className="py-12 text-center text-muted-foreground"
+                            >
+                              <div className="flex flex-col items-center gap-2 opacity-50">
+                                <Users className="h-10 w-10" />
+                                <p className="text-sm">
+                                  No students found matching your filters.
+                                </p>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
                   <div className="p-4">
                     <Pagination
                       currentPage={leaderboardPage}
@@ -919,8 +974,7 @@ export function CampusManageDashboard() {
                       }}
                       perPage={PAGE_SIZE}
                       totalCount={
-                        leaderboardPagination?.count ??
-                        filteredLeaderboard.length
+                        leaderboardPagination?.count ?? leaderboard.length
                       }
                     />
                   </div>
@@ -930,17 +984,17 @@ export function CampusManageDashboard() {
           </section>
 
           {/* ── Dashboard Content Area ── */}
-          <section className="p-6">
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-stretch">
-              {/* Left Column: Content (75%) */}
-              <div className="w-full lg:w-3/4">
+          <section className="px-3 py-4 sm:px-4 lg:px-6">
+            <div className="flex flex-col gap-6 xl:flex-row xl:items-start">
+              {/* Main Column */}
+              <div className="min-w-0 flex-1">
                 <Tabs defaultValue="analytics" className="w-full">
-                  <TabsList className="mb-6 h-auto w-full justify-start gap-4 rounded-none border-b bg-transparent p-0">
+                  <TabsList className="mb-6 flex h-auto w-full items-center justify-start gap-3 overflow-x-auto whitespace-nowrap no-scrollbar rounded-none border-b border-border/40 bg-transparent p-0 px-1 pb-1 sm:gap-5 sm:px-3 md:justify-center md:gap-6 md:px-4">
                     {["analytics", "events", "execom", "ig"].map((tab) => (
                       <TabsTrigger
                         key={tab}
                         value={tab}
-                        className="rounded-none border-b-2 border-transparent px-2 pb-3 pt-0 text-sm font-semibold capitalize tracking-tight transition-all data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary/70"
+                        className="relative h-10 shrink-0 rounded-none border-b-2 border-transparent bg-transparent px-1 pb-3 pt-2 text-sm font-bold capitalize tracking-tight text-muted-foreground transition-all data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary/70"
                       >
                         {tab === "ig" ? "IG Chapters" : tab}
                       </TabsTrigger>
@@ -948,89 +1002,177 @@ export function CampusManageDashboard() {
                   </TabsList>
 
                   {/* ── Analytics Tab ── */}
-                  <TabsContent value="analytics">
-                    <div className="grid gap-4 lg:grid-cols-2">
+                  <TabsContent value="analytics" className="mt-0 min-w-0">
+                    <div className="grid gap-4 xl:grid-cols-2">
                       {/* Card 1: Karma by Cluster */}
-                      <Card className="border-border/60 shadow-sm transition-shadow hover:shadow-md">
+                      <Card className="min-w-0 overflow-hidden border-border/60 shadow-sm transition-shadow hover:shadow-md">
                         <CardHeader className="pb-2">
-                          <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                          <CardTitle className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/70">
                             Karma by Cluster
                           </CardTitle>
+                          <p className="text-xs text-muted-foreground">
+                            Cluster-wise karma contribution
+                          </p>
                         </CardHeader>
-                        <CardContent className="h-80 p-0">
+                        <CardContent className="overflow-hidden p-2">
                           {isClusterLoading ? (
-                            <Skeleton className="m-6 h-64 w-full rounded-xl" />
+                            <Skeleton className="m-4 h-56 w-full rounded-xl" />
                           ) : clusterData.length > 0 ? (
-                            <div className="h-full w-full p-4">
-                              <ResponsiveContainer width="100%" height="100%">
-                                <BarChart
-                                  data={clusterData}
-                                  layout="vertical"
-                                  margin={{
-                                    top: 5,
-                                    right: 30,
-                                    left: 40,
-                                    bottom: 5,
-                                  }}
-                                >
-                                  <CartesianGrid
-                                    strokeDasharray="3 3"
-                                    horizontal={false}
-                                    strokeOpacity={0.1}
-                                  />
-                                  <XAxis type="number" hide />
-                                  <YAxis
-                                    dataKey="cluster"
-                                    type="category"
-                                    tick={{ fontSize: 10, fontWeight: 600 }}
-                                    width={80}
-                                    axisLine={false}
-                                    tickLine={false}
-                                  />
-                                  <Tooltip
-                                    cursor={{ fill: "transparent" }}
-                                    content={({ active, payload }) => {
-                                      if (active && payload && payload.length) {
-                                        const point = payload[0]
-                                          .payload as ClusterKarmaPoint;
-                                        return (
-                                          <div className="rounded-xl border border-border/60 bg-background/95 p-2.5 shadow-xl backdrop-blur-sm">
-                                            <p className="mb-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
-                                              {point.cluster}
-                                            </p>
-                                            <div className="flex flex-col gap-0.5">
-                                              <p className="text-sm font-black text-primary">
-                                                {point.karma?.toLocaleString()}{" "}
-                                                Karma
-                                              </p>
-                                              <p className="text-[11px] font-bold text-muted-foreground">
-                                                {point.memberCount?.toLocaleString()}{" "}
-                                                Members
-                                              </p>
-                                            </div>
-                                          </div>
-                                        );
-                                      }
-                                      return null;
+                            <div className="max-h-[420px] w-full overflow-y-auto overflow-x-hidden pr-1">
+                              <div
+                                className="w-full"
+                                style={{ height: clusterChartHeight }}
+                              >
+                                <ResponsiveContainer width="100%" height="100%">
+                                  <BarChart
+                                    data={clusterData}
+                                    layout="vertical"
+                                    barSize={18}
+                                    margin={{
+                                      top: 8,
+                                      right: 72,
+                                      left: 8,
+                                      bottom: 4,
                                     }}
-                                  />
-                                  <Bar
-                                    dataKey="karma"
-                                    fill="hsl(var(--primary))"
-                                    radius={[0, 4, 4, 0]}
-                                    barSize={20}
                                   >
-                                    {clusterData.map((entry, index) => (
-                                      <Cell
-                                        key={`cell-${entry.cluster}`}
-                                        fill={
-                                          PIE_COLORS[index % PIE_COLORS.length]
+                                    <CartesianGrid
+                                      strokeDasharray="4 4"
+                                      horizontal={false}
+                                      vertical
+                                      strokeOpacity={0.12}
+                                    />
+                                    {/* FIX: explicit uniform ticks — no more skipped axis values */}
+                                    <XAxis
+                                      type="number"
+                                      domain={[0, clusterAxisMax]}
+                                      ticks={clusterAxisTicks}
+                                      tick={{ fontSize: 10 }}
+                                      axisLine={{
+                                        stroke: "hsl(var(--border))",
+                                        strokeOpacity: 0.8,
+                                      }}
+                                      tickLine={{
+                                        stroke: "hsl(var(--border))",
+                                        strokeOpacity: 0.5,
+                                      }}
+                                    />
+                                    <YAxis
+                                      dataKey="cluster"
+                                      type="category"
+                                      tick={{
+                                        fontSize: 10,
+                                        fontWeight: 700,
+                                        textAnchor: "start",
+                                      }}
+                                      width={120}
+                                      dx={-116}
+                                      tickFormatter={formatClusterTick}
+                                      axisLine={false}
+                                      tickLine={false}
+                                    />
+                                    <Tooltip
+                                      cursor={{ fill: "transparent" }}
+                                      content={({ active, payload }) => {
+                                        if (
+                                          active &&
+                                          payload &&
+                                          payload.length
+                                        ) {
+                                          const point = payload[0]
+                                            .payload as ClusterKarmaPoint;
+                                          return (
+                                            <div className="rounded-xl border border-border/60 bg-background/95 p-2.5 shadow-xl backdrop-blur-sm">
+                                              <p className="mb-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                                                {normalizeClusterLabel(
+                                                  point.cluster,
+                                                )}
+                                              </p>
+                                              <div className="flex flex-col gap-0.5">
+                                                <p className="text-sm font-black text-primary">
+                                                  {point.karma?.toLocaleString()}{" "}
+                                                  Karma
+                                                </p>
+                                                <p className="text-[11px] font-bold text-muted-foreground">
+                                                  {point.memberCount?.toLocaleString()}{" "}
+                                                  Members
+                                                </p>
+                                              </div>
+                                            </div>
+                                          );
                                         }
+                                        return null;
+                                      }}
+                                    />
+                                    <Bar
+                                      dataKey="karma"
+                                      fill="#059669"
+                                      radius={[0, 6, 6, 0]}
+                                      barSize={18}
+                                      background={{
+                                        fill: "#f0fdf4",
+                                        radius: 6,
+                                      }}
+                                    >
+                                      <LabelList
+                                        dataKey="karma"
+                                        content={({
+                                          x,
+                                          y,
+                                          width,
+                                          height,
+                                          value,
+                                        }) => {
+                                          const xPos =
+                                            typeof x === "number"
+                                              ? x
+                                              : Number(x ?? 0);
+                                          const yPos =
+                                            typeof y === "number"
+                                              ? y
+                                              : Number(y ?? 0);
+                                          const barWidth =
+                                            typeof width === "number"
+                                              ? width
+                                              : Number(width ?? 0);
+                                          const barHeight =
+                                            typeof height === "number"
+                                              ? height
+                                              : Number(height ?? 0);
+                                          const numericValue =
+                                            typeof value === "number"
+                                              ? value
+                                              : Number(value ?? 0);
+                                          const safeValue = Number.isFinite(
+                                            numericValue,
+                                          )
+                                            ? numericValue
+                                            : 0;
+                                          if (safeValue === 0) return null;
+                                          const text =
+                                            safeValue.toLocaleString();
+                                          // Always place label to the right of the bar
+                                          const textX = xPos + barWidth + 8;
+                                          const textY =
+                                            yPos + barHeight / 2 + 4;
+
+                                          return (
+                                            <text
+                                              x={textX}
+                                              y={textY}
+                                              textAnchor="start"
+                                              fill="#059669"
+                                              fontSize={11}
+                                              fontWeight={800}
+                                            >
+                                              {text}
+                                            </text>
+                                          );
+                                        }}
                                       />
-                                    ))}
-                                  </Bar>
-                                </BarChart>
-                              </ResponsiveContainer>
+                                    </Bar>
+                                  </BarChart>
+                                </ResponsiveContainer>
+                              </div>
                             </div>
                           ) : (
                             <div className="flex h-full flex-col items-center justify-center p-8 text-center">
@@ -1048,48 +1190,46 @@ export function CampusManageDashboard() {
                         </CardContent>
                       </Card>
 
-                      {/* Card 2: Events by Tag (Donut Chart) */}
-                      <Card className="border-border/60 shadow-sm transition-shadow hover:shadow-md">
+                      {/* Card 2: Events by Tag */}
+                      <Card className="min-w-0 border-border/60 shadow-sm transition-shadow hover:shadow-md">
                         <CardHeader className="pb-2">
                           <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
                             Events by Tag
                           </CardTitle>
                         </CardHeader>
-                        <CardContent className="h-80 p-0">
+                        <CardContent className="min-h-[280px] p-0">
                           {isDistributionLoading ? (
-                            <Skeleton className="m-6 h-64 w-full rounded-xl" />
+                            <Skeleton className="m-6 h-48 w-full rounded-xl" />
+                          ) : distribution.length === 0 ? (
+                            // FIX: real empty state instead of fake gray slice
+                            <div className="flex h-[280px] flex-col items-center justify-center gap-2 text-muted-foreground">
+                              <CalendarDays className="h-8 w-8 opacity-20" />
+                              <p className="text-xs font-medium">
+                                No tags recorded
+                              </p>
+                            </div>
                           ) : (
-                            <div className="flex h-full items-center justify-between px-6">
-                              {/* Donut Chart Container */}
-                              <div className="relative h-full w-[180px] shrink-0">
+                            <div className="flex h-full flex-col items-center justify-center gap-4 px-4 py-4 sm:px-6 md:flex-row md:items-center md:justify-between">
+                              <div className="relative h-[180px] w-[180px] shrink-0 sm:h-[200px] sm:w-[200px]">
                                 <ResponsiveContainer width="100%" height="100%">
                                   <PieChart>
                                     <Pie
-                                      data={
-                                        distribution.length > 0
-                                          ? distribution
-                                          : [{ tag: "Empty", count: 1 }]
-                                      }
+                                      data={distribution}
                                       dataKey="count"
                                       nameKey="tag"
-                                      innerRadius={65}
-                                      outerRadius={85}
-                                      paddingAngle={5}
+                                      innerRadius={55}
+                                      outerRadius={75}
+                                      paddingAngle={4}
                                       stroke="transparent"
                                       className="outline-none"
                                     >
-                                      {(distribution.length > 0
-                                        ? distribution
-                                        : [{ tag: "Empty", count: 1 }]
-                                      ).map((entry, index) => (
+                                      {distribution.map((entry, index) => (
                                         <Cell
                                           key={`cell-${entry.tag}`}
                                           fill={
-                                            distribution.length > 0
-                                              ? PIE_COLORS[
-                                                  index % PIE_COLORS.length
-                                                ]
-                                              : "#f1f5f9"
+                                            PIE_COLORS[
+                                              index % PIE_COLORS.length
+                                            ]
                                           }
                                           className="transition-opacity hover:opacity-80"
                                         />
@@ -1100,8 +1240,7 @@ export function CampusManageDashboard() {
                                         if (
                                           active &&
                                           payload &&
-                                          payload.length &&
-                                          distribution.length > 0
+                                          payload.length
                                         ) {
                                           return (
                                             <div className="rounded-xl border border-border/60 bg-background/95 p-2.5 shadow-xl backdrop-blur-sm">
@@ -1119,7 +1258,6 @@ export function CampusManageDashboard() {
                                     />
                                   </PieChart>
                                 </ResponsiveContainer>
-                                {/* Center Label */}
                                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                                   <span className="text-3xl font-black tracking-tighter text-primary">
                                     {distribution.reduce(
@@ -1133,8 +1271,7 @@ export function CampusManageDashboard() {
                                 </div>
                               </div>
 
-                              {/* Custom Legend */}
-                              <div className="flex flex-1 flex-col gap-3.5 pl-8">
+                              <div className="flex w-full min-w-0 flex-1 flex-col justify-center gap-3 sm:pl-4 md:pl-8">
                                 {distribution.map((entry, index) => {
                                   const totalDist = distribution.reduce(
                                     (acc, curr) => acc + curr.count,
@@ -1163,17 +1300,12 @@ export function CampusManageDashboard() {
                                           {entry.tag}
                                         </span>
                                       </div>
-                                      <span className="ml-4.5 text-[10px] font-bold text-muted-foreground transition-colors group-hover/item:text-primary/70">
+                                      <span className="ml-4 text-[10px] font-bold text-muted-foreground transition-colors group-hover/item:text-primary/70">
                                         {percentage}% of total
                                       </span>
                                     </div>
                                   );
                                 })}
-                                {distribution.length === 0 && (
-                                  <p className="text-[11px] font-medium italic text-muted-foreground">
-                                    No tags recorded
-                                  </p>
-                                )}
                               </div>
                             </div>
                           )}
@@ -1183,52 +1315,60 @@ export function CampusManageDashboard() {
                   </TabsContent>
 
                   {/* ── Events Tab ── */}
-                  <TabsContent value="events">
-                    <div className="mb-4 flex flex-col gap-3 lg:flex-row">
-                      <FilterSelect
-                        value={eventFilters.status}
-                        onChange={handleEventFilterChange("status")}
-                        options={[
-                          { label: "All Status", value: "" },
-                          { label: "Draft", value: "draft" },
-                          { label: "Published", value: "published" },
-                          { label: "Ongoing", value: "ongoing" },
-                          { label: "Completed", value: "completed" },
-                          { label: "Cancelled", value: "cancelled" },
-                        ]}
-                      />
-                      <FilterSelect
-                        value={eventFilters.type}
-                        onChange={handleEventFilterChange("type")}
-                        options={[
-                          { label: "All Types", value: "" },
-                          { label: "Hackathon", value: "hackathon" },
-                          { label: "Workshop", value: "workshop" },
-                          { label: "Meetup", value: "meetup" },
-                          { label: "Conference", value: "conference" },
-                          { label: "Bootcamp", value: "bootcamp" },
-                          { label: "Competition", value: "competition" },
-                          { label: "Other", value: "other" },
-                        ]}
-                      />
-                      <CampusDatePicker
-                        date={eventFilters.date}
-                        onChange={handleEventFilterChange("date")}
-                      />
+                  <TabsContent value="events" className="mt-0 min-w-0">
+                    <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                        <FilterSelect
+                          value={eventFilters.status}
+                          onChange={handleEventFilterChange("status")}
+                          options={[
+                            { label: "All Status", value: "" },
+                            { label: "Draft", value: "draft" },
+                            { label: "Published", value: "published" },
+                            { label: "Ongoing", value: "ongoing" },
+                            { label: "Completed", value: "completed" },
+                            { label: "Cancelled", value: "cancelled" },
+                          ]}
+                        />
+                        <FilterSelect
+                          value={eventFilters.type}
+                          onChange={handleEventFilterChange("type")}
+                          options={[
+                            { label: "All Types", value: "" },
+                            { label: "Hackathon", value: "hackathon" },
+                            { label: "Workshop", value: "workshop" },
+                            { label: "Meetup", value: "meetup" },
+                            { label: "Conference", value: "conference" },
+                            { label: "Bootcamp", value: "bootcamp" },
+                            { label: "Competition", value: "competition" },
+                            { label: "Other", value: "other" },
+                          ]}
+                        />
+                        <CampusDatePicker
+                          date={eventFilters.date}
+                          onChange={handleEventFilterChange("date")}
+                        />
+                      </div>
+                      <Button
+                        onClick={() => router.push("/dashboard/manage-events")}
+                        className="w-full rounded-xl sm:w-auto"
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Create Event
+                      </Button>
                     </div>
 
                     {isEventsLoading ? (
                       <Skeleton className="h-52 w-full" />
                     ) : (
-                      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                         {events.map((event) => (
                           <Card
                             key={event.id}
                             className="group flex flex-col overflow-hidden border-border/60 p-0 gap-0 transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-xl"
                           >
-                            {/* Header Image Area */}
-                            {event.coverImage && (
-                              <div className="relative aspect-video w-full overflow-hidden">
+                            {event.coverImage ? (
+                              <div className="relative aspect-video w-full overflow-hidden shrink-0">
                                 <Image
                                   src={event.coverImage}
                                   alt={event.title}
@@ -1237,28 +1377,30 @@ export function CampusManageDashboard() {
                                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                                 />
                               </div>
+                            ) : (
+                              <div className="flex aspect-video w-full items-center justify-center bg-muted/30 shrink-0">
+                                <CalendarDays className="h-10 w-10 text-muted-foreground/30" />
+                              </div>
                             )}
 
-                            {/* Content */}
                             <div className="flex flex-1 flex-col p-5">
                               <div className="mb-4">
-                                <h3 className="line-clamp-1 text-lg font-bold leading-tight group-hover:text-primary transition-colors">
+                                <h3 className="line-clamp-2 text-base sm:text-lg font-bold leading-tight group-hover:text-primary transition-colors">
                                   {event.title}
                                 </h3>
-                                <div className="mt-2 flex items-center gap-1.5 text-sm font-semibold text-primary">
-                                  <CalendarDays className="h-4 w-4" />
+                                <div className="mt-2 flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-primary">
+                                  <CalendarDays className="h-3.5 w-3.5" />
                                   {formatDateRange(event.date, event.endDate)}
                                 </div>
                               </div>
 
-                              {/* Tags */}
-                              <div className="mb-5 flex flex-wrap gap-1.5">
+                              <div className="mb-5 flex items-center gap-1.5 overflow-x-auto no-scrollbar scroll-smooth pb-0.5">
                                 {event.tags.length > 0 ? (
                                   event.tags.map((tag) => (
                                     <Badge
                                       key={`${event.id}-${tag || "unnamed"}`}
                                       variant="secondary"
-                                      className="h-5 bg-muted/50 px-2 text-[10px] font-bold"
+                                      className="h-5 shrink-0 bg-muted/60 px-2 text-[9px] font-bold uppercase tracking-wider"
                                     >
                                       {tag}
                                     </Badge>
@@ -1266,95 +1408,95 @@ export function CampusManageDashboard() {
                                 ) : (
                                   <Badge
                                     variant="secondary"
-                                    className="h-5 bg-muted/50 px-2 text-[10px] font-bold"
+                                    className="h-5 shrink-0 bg-muted/60 px-2 text-[9px] font-bold uppercase tracking-wider"
                                   >
                                     No tags
                                   </Badge>
                                 )}
                               </div>
 
-                              {/* Information Grid 2x2 */}
-                              <div className="grid grid-cols-2 gap-4 border-t border-border/40 pt-5">
+                              <div className="grid grid-cols-2 gap-x-4 gap-y-5 border-t border-border/40 pt-5 mt-auto">
                                 <div className="flex items-start gap-2.5">
-                                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted/50">
                                     <MapPin className="h-4 w-4 text-muted-foreground" />
                                   </div>
-                                  <div className="min-w-0">
-                                    <div className="truncate text-xs font-bold capitalize">
+                                  <div className="min-w-0 flex-1">
+                                    <p className="truncate text-[11px] font-bold capitalize leading-none">
                                       {event.venueCity || "Kochi"}
-                                    </div>
-                                    <div className="text-[10px] uppercase tracking-tighter text-muted-foreground/60">
+                                    </p>
+                                    <p className="mt-1 text-[9px] uppercase tracking-tighter text-muted-foreground/60 font-bold">
                                       {event.venueType || "Location"}
-                                    </div>
+                                    </p>
                                   </div>
                                 </div>
-
                                 <div className="flex items-start gap-2.5">
-                                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted/50">
                                     <Users className="h-4 w-4 text-muted-foreground" />
                                   </div>
-                                  <div className="min-w-0">
-                                    <div className="truncate text-xs font-bold capitalize">
+                                  <div className="min-w-0 flex-1">
+                                    <p className="truncate text-[11px] font-bold capitalize leading-none">
                                       {event.scope || "-"}
-                                    </div>
-                                    <div className="text-[10px] uppercase tracking-tighter text-muted-foreground/60">
+                                    </p>
+                                    <p className="mt-1 text-[9px] uppercase tracking-tighter text-muted-foreground/60 font-bold">
                                       Scope
-                                    </div>
+                                    </p>
                                   </div>
                                 </div>
-
                                 <div className="flex items-start gap-2.5">
-                                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted/50">
                                     <Briefcase className="h-4 w-4 text-muted-foreground" />
                                   </div>
-                                  <div className="min-w-0">
-                                    <div className="truncate text-xs font-bold capitalize">
+                                  <div className="min-w-0 flex-1">
+                                    <p className="truncate text-[11px] font-bold capitalize leading-none">
                                       {event.organiserType || "-"}
-                                    </div>
-                                    <div className="text-[10px] uppercase tracking-tighter text-muted-foreground/60">
+                                    </p>
+                                    <p className="mt-1 text-[9px] uppercase tracking-tighter text-muted-foreground/60 font-bold">
                                       Organizer
-                                    </div>
+                                    </p>
                                   </div>
                                 </div>
-
                                 <div className="flex items-start gap-2.5">
-                                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted/50">
                                     <Trophy className="h-4 w-4 text-muted-foreground" />
                                   </div>
-                                  <div className="min-w-0">
-                                    <div className="truncate text-xs font-bold capitalize">
+                                  <div className="min-w-0 flex-1">
+                                    <p className="truncate text-[11px] font-bold capitalize leading-none">
                                       {event.type || "Event"}
-                                    </div>
-                                    <div className="text-[10px] uppercase tracking-tighter text-muted-foreground/60">
+                                    </p>
+                                    <p className="mt-1 text-[9px] uppercase tracking-tighter text-muted-foreground/60 font-bold">
                                       Category
-                                    </div>
+                                    </p>
                                   </div>
                                 </div>
                               </div>
                             </div>
 
-                            {/* Social Proof Footer */}
-                            <div className="flex items-center justify-between border-t border-border/40 bg-muted/5 px-5 py-3.5">
+                            <div className="flex items-center justify-between border-t border-border/40 bg-muted/5 px-5 py-3.5 mt-auto">
                               <div className="flex items-center gap-2">
                                 <Heart
                                   className={cn(
-                                    "h-4 w-4 transition-all duration-300",
+                                    "h-4 w-4",
                                     event.interestCount > 0
-                                      ? "fill-red-500 text-red-500 scale-110"
+                                      ? "fill-red-500 text-red-500"
                                       : "text-muted-foreground",
                                   )}
                                 />
-                                <span className="text-xs font-bold">
+                                <span className="text-xs font-bold tabular-nums">
                                   {event.interestCount}{" "}
-                                  <span className="font-medium text-muted-foreground">
+                                  <span className="font-medium text-muted-foreground/70">
                                     Interested
                                   </span>
                                 </span>
                               </div>
+                              {/* FIX: ExternalLink button now navigates to event page */}
                               <Button
                                 variant="ghost"
                                 size="icon"
                                 className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary transition-colors"
+                                onClick={() =>
+                                  router.push(`/dashboard/events/${event.id}`)
+                                }
+                                aria-label={`View ${event.title}`}
                               >
                                 <ExternalLink className="h-4 w-4" />
                               </Button>
@@ -1405,7 +1547,7 @@ export function CampusManageDashboard() {
                   {/* ── Execom Tab ── */}
                   <TabsContent
                     value="execom"
-                    className="animate-in fade-in slide-in-from-bottom-2"
+                    className="mt-0 animate-in fade-in slide-in-from-bottom-2"
                   >
                     <Card className="mb-6 border-border/60 shadow-sm">
                       <CardHeader className="pb-3 text-center sm:text-left">
@@ -1417,63 +1559,75 @@ export function CampusManageDashboard() {
                         </p>
                       </CardHeader>
                       <CardContent>
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                          <div className="group relative flex-1">
-                            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
-                            <Input
-                              value={newMuid}
-                              onChange={(e) => setNewMuid(e.target.value)}
-                              placeholder="Enter MUID (e.g. john@mulearn)"
-                              className="h-11 rounded-xl border-border/60 pl-10 pr-12 shadow-sm transition-all focus-visible:ring-primary/20"
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter") handleAddExecom();
-                              }}
+                        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(180px,220px)_auto] lg:items-end">
+                          <div className="min-w-0">
+                            <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                              Search User
+                            </p>
+                            <MuidSearchInput
+                              value={
+                                selectedExecomUser
+                                  ? [selectedExecomUser.muid]
+                                  : []
+                              }
+                              onChange={() => setSelectedExecomUser(null)}
+                              onSelectUser={(user) =>
+                                setSelectedExecomUser({
+                                  muid: user.muid,
+                                  name: user.full_name,
+                                  profilePic: user.profile_pic ?? null,
+                                })
+                              }
+                              keepOpen
+                              selectedUser={selectedExecomUser}
+                              onClear={() => setSelectedExecomUser(null)}
+                              placeholder="Search by name or MUID"
+                              disabled={isAssigningExecomRole}
                             />
-                            {/* Instant Verification Indicator */}
-                            {newMuid.includes("@") && (
-                              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-                                {isVerifyingUser ? (
-                                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground/50" />
-                                ) : verifiedUser?.name ? (
-                                  <div className="flex items-center gap-1.5 animate-in zoom-in-90 fade-in">
-                                    <div className="h-7 w-7 overflow-hidden rounded-lg shadow-sm border border-border/40">
-                                      {verifiedUser.profilePic ? (
-                                        <Image
-                                          src={verifiedUser.profilePic}
-                                          alt=""
-                                          width={28}
-                                          height={28}
-                                          className="h-full w-full object-cover"
-                                        />
-                                      ) : (
-                                        <div className="flex h-full w-full items-center justify-center bg-primary/5">
-                                          <User className="h-3.5 w-3.5 text-primary/40" />
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-                                ) : null}
-                              </div>
-                            )}
+                          </div>
+                          <div>
+                            <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                              Role
+                            </p>
+                            <Select
+                              value={selectedExecomRole}
+                              onValueChange={(value) =>
+                                setSelectedExecomRole(
+                                  value as (typeof EXECOM_ROLE_OPTIONS)[number]["value"],
+                                )
+                              }
+                              disabled={isAssigningExecomRole}
+                            >
+                              <SelectTrigger className="h-9 w-full rounded-xl">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {EXECOM_ROLE_OPTIONS.map((role) => (
+                                  <SelectItem
+                                    key={role.value}
+                                    value={role.value}
+                                  >
+                                    {role.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </div>
                           <Button
                             onClick={handleAddExecom}
-                            disabled={isAdding || !newMuid.trim()}
-                            className="h-11 rounded-xl px-6 font-bold shadow-lg shadow-primary/10 transition-all hover:shadow-primary/20 active:scale-[0.98]"
+                            disabled={
+                              isAssigningExecomRole || !selectedExecomUser?.muid
+                            }
+                            className="h-11 rounded-xl px-6 font-bold shadow-lg shadow-primary/10 transition-all hover:shadow-primary/20 active:scale-[0.98] lg:self-end"
                           >
-                            {isAdding ? (
+                            {isAssigningExecomRole ? (
                               <Loader2 className="h-4 w-4 animate-spin" />
                             ) : (
                               <Plus className="h-4 w-4" />
                             )}
-                            <span className="ml-2">Add Member</span>
+                            <span className="ml-2">Assign Role</span>
                           </Button>
                         </div>
-                        {verifiedUser?.name && (
-                          <p className="mt-2 pl-3 text-[10px] font-bold uppercase tracking-widest text-primary animate-in fade-in slide-in-from-left-1">
-                            Found: {verifiedUser.name}
-                          </p>
-                        )}
                       </CardContent>
                     </Card>
 
@@ -1483,7 +1637,7 @@ export function CampusManageDashboard() {
                     />
 
                     {isExecomLoading ? (
-                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         {[1, 2, 3].map((i) => (
                           <Skeleton
                             key={i}
@@ -1492,13 +1646,16 @@ export function CampusManageDashboard() {
                         ))}
                       </div>
                     ) : execom.length > 0 ? (
-                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        {execom.map((member) => (
+                      <div
+                        className={`grid grid-cols-1 gap-4 md:grid-cols-2 ${
+                          execom.length > 2 ? "lg:grid-cols-3" : ""
+                        }`}
+                      >
+                        {execom.map((member, index) => (
                           <div
-                            key={member.id}
+                            key={`${member.roleLinkId}-${member.muid}-${member.role}-${index}`}
                             className="group relative flex items-center gap-4 rounded-2xl border border-border/60 bg-card p-4 transition-all duration-300 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5"
                           >
-                            {/* Profile Picture (Strict Policy) */}
                             <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-border/40 bg-muted shadow-sm transition-transform group-hover:scale-105">
                               {member.profilePic ? (
                                 <Image
@@ -1515,19 +1672,18 @@ export function CampusManageDashboard() {
                               )}
                             </div>
 
-                            {/* Info */}
-                            <div className="min-w-0 flex-1 space-y-1">
-                              <p className="truncate text-base font-bold tracking-tight text-foreground">
+                            <div className="min-w-0 flex-1 space-y-1.5 pr-8">
+                              <p className="truncate text-[15px] font-bold tracking-tight text-foreground">
                                 {member.name}
                               </p>
-                              <div className="flex flex-col gap-0.5">
-                                <p className="truncate font-mono text-[10px] font-medium text-muted-foreground/80">
+                              <div className="flex flex-col gap-1">
+                                <p className="truncate font-mono text-[9px] font-semibold text-muted-foreground/60">
                                   {member.muid}
                                 </p>
-                                <div className="mt-1 flex flex-wrap gap-1.5">
+                                <div className="mt-0.5 flex flex-wrap gap-1">
                                   <Badge
                                     variant="secondary"
-                                    className="rounded-lg bg-primary/5 px-2 py-0 text-[10px] font-black uppercase tracking-widest text-primary/80"
+                                    className="rounded-lg bg-primary/5 px-2 py-0 text-[9px] font-black uppercase tracking-widest text-primary/80 ring-1 ring-primary/10"
                                   >
                                     {member.role === "member"
                                       ? "Execom"
@@ -1537,18 +1693,21 @@ export function CampusManageDashboard() {
                               </div>
                             </div>
 
-                            {/* Delete Button (Hover Only) */}
+                            {/* FIX: always at reduced opacity so keyboard users can see it */}
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="absolute right-2 top-2 h-8 w-8 rounded-full text-destructive opacity-0 transition-all hover:bg-destructive/10 group-hover:opacity-100"
+                              className="absolute right-3 top-3 h-7 w-7 rounded-full text-muted-foreground/60 hover:bg-destructive/10 hover:text-destructive transition-all opacity-60 focus-visible:opacity-100 group-hover:opacity-100"
                               disabled={isRemoving}
-                              onClick={() => removeExecom(member.id)}
+                              onClick={() =>
+                                removeExecom(member.deleteCandidates)
+                              }
+                              aria-label={`Remove ${member.name}`}
                             >
                               {isRemoving ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
                               ) : (
-                                <Trash2 className="h-4 w-4" />
+                                <Trash2 className="h-3.5 w-3.5" />
                               )}
                             </Button>
                           </div>
@@ -1567,7 +1726,7 @@ export function CampusManageDashboard() {
                   </TabsContent>
 
                   {/* ── IG Chapters Tab ── */}
-                  <TabsContent value="ig">
+                  <TabsContent value="ig" className="mt-0 min-w-0">
                     {isChaptersLoading ? (
                       <Skeleton className="h-40 w-full" />
                     ) : chapters.length > 0 ? (
@@ -1632,8 +1791,8 @@ export function CampusManageDashboard() {
                 </Tabs>
               </div>
 
-              {/* Right Column: Social Presence Sidebar (25%) */}
-              <div className="w-full lg:w-1/4">
+              {/* Right Column: Social Presence Sidebar */}
+              <div className="w-full xl:w-[320px] 2xl:w-[340px] xl:shrink-0">
                 <Card className="h-full border-border/60 shadow-sm transition-shadow hover:shadow-md/20">
                   <CardHeader className="pb-4">
                     <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
@@ -1641,14 +1800,12 @@ export function CampusManageDashboard() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="flex flex-col gap-3 p-4 pt-0">
-                    {/* Active List */}
                     <div className="flex flex-col gap-2">
                       {SOCIAL_PLATFORMS.map((platform) => {
-                        const linkData = socialLinks?.[platform.id] as
-                          | SocialLink
-                          | undefined;
+                        const linkData = socialLinks?.[
+                          platform.id as keyof SocialLinks
+                        ] as SocialLink | undefined;
 
-                        // Show row if it has data OR if we are currently editing it
                         if (!linkData && editingPlatform !== platform.id)
                           return null;
 
@@ -1657,7 +1814,7 @@ export function CampusManageDashboard() {
                         return (
                           <div
                             key={platform.id}
-                            className="group flex items-center gap-3 rounded-xl border border-transparent p-1.5 transition-all hover:border-border/60 hover:bg-muted/30"
+                            className="group flex items-start gap-3 rounded-xl border border-transparent p-1.5 transition-all hover:border-border/60 hover:bg-muted/30"
                           >
                             <div
                               className={cn(
@@ -1670,7 +1827,7 @@ export function CampusManageDashboard() {
                             </div>
 
                             {isEditing ? (
-                              <div className="flex flex-1 items-center gap-1.5 animate-in fade-in slide-in-from-right-2">
+                              <div className="flex min-w-0 flex-1 items-center gap-1.5 animate-in fade-in slide-in-from-right-2">
                                 <Input
                                   value={socialValue}
                                   onChange={(e) =>
@@ -1696,7 +1853,7 @@ export function CampusManageDashboard() {
                                       setEditingPlatform(null);
                                   }}
                                 />
-                                <div className="flex shrink-0 items-center gap-0.5">
+                                <div className="flex shrink-0 items-center gap-0.5 self-start">
                                   <Button
                                     size="icon"
                                     variant="ghost"
@@ -1741,12 +1898,12 @@ export function CampusManageDashboard() {
                                     href={linkData?.url}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="truncate text-[10px] font-medium text-muted-foreground transition-colors hover:text-primary hover:underline"
+                                    className="break-all text-[10px] font-medium text-muted-foreground transition-colors hover:text-primary hover:underline"
                                   >
                                     {linkData?.url}
                                   </a>
                                 </div>
-                                <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-all duration-200 group-focus-within:opacity-100 group-hover:translate-x-0 group-hover:opacity-100">
+                                <div className="flex shrink-0 items-center gap-0.5 opacity-100 transition-all duration-200 lg:opacity-0 lg:group-focus-within:opacity-100 lg:group-hover:translate-x-0 lg:group-hover:opacity-100">
                                   <Button
                                     size="icon"
                                     variant="ghost"
@@ -1783,8 +1940,8 @@ export function CampusManageDashboard() {
                       })}
                     </div>
 
-                    {/* Empty State */}
-                    {(!socialLinks?.items || socialLinks.items.length === 0) &&
+                    {/* FIX: correct empty-state check — socialLinks is a keyed object */}
+                    {!hasAnySocialLink &&
                       !editingPlatform &&
                       !isAddingNewSocial && (
                         <div className="flex flex-col items-center justify-center py-8 text-center animate-in fade-in zoom-in-95">
@@ -1800,7 +1957,6 @@ export function CampusManageDashboard() {
                         </div>
                       )}
 
-                    {/* Add Workflow */}
                     {isAddingNewSocial ? (
                       <div className="flex flex-col gap-2 rounded-xl border border-dashed border-border/60 bg-muted/10 p-2 animate-in fade-in slide-in-from-bottom-2">
                         <Select
@@ -1815,7 +1971,12 @@ export function CampusManageDashboard() {
                           </SelectTrigger>
                           <SelectContent className="rounded-xl">
                             {SOCIAL_PLATFORMS.filter(
-                              (p) => !socialLinks?.[p.id as keyof SocialLinks],
+                              (p) =>
+                                !(
+                                  socialLinks?.[p.id as keyof SocialLinks] as
+                                    | SocialLink
+                                    | undefined
+                                )?.url,
                             ).map((p) => (
                               <SelectItem
                                 key={p.id}
