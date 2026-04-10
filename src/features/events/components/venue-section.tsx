@@ -13,15 +13,19 @@ interface VenueSectionProps {
   control: Control<CreateEventSchema>;
   watch: UseFormWatch<CreateEventSchema>;
   errors?: FieldErrors<CreateEventSchema>;
+  variant?: "default" | "plain";
 }
 
-export function VenueSection({ control, watch, errors }: VenueSectionProps) {
+export function VenueSection({
+  control,
+  watch,
+  errors,
+  variant = "default",
+}: VenueSectionProps) {
   const venueType = watch("venue_type");
 
-  return (
-    <section className="space-y-3 rounded-lg border p-4">
-      <h3 className="mb-3 text-sm font-semibold text-foreground">Venue</h3>
-
+  const content = (
+    <>
       <Controller
         control={control}
         name="venue_type"
@@ -42,7 +46,7 @@ export function VenueSection({ control, watch, errors }: VenueSectionProps) {
                     key={item.value}
                     type="button"
                     className={`rounded-md border px-3 py-1.5 text-sm ${
-                      active ? "border-pink-500 bg-pink-50 text-pink-700" : ""
+                      active ? "border-primary bg-primary/10 text-primary" : ""
                     }`}
                     onClick={() => field.onChange(item.value)}
                   >
@@ -57,6 +61,28 @@ export function VenueSection({ control, watch, errors }: VenueSectionProps) {
       {errors?.venue_type?.message ? (
         <p className="text-xs text-red-600">{errors.venue_type.message}</p>
       ) : null}
+
+      <Controller
+        control={control}
+        name="maps_url"
+        render={({ field }) => (
+          <div className="space-y-1">
+            <label
+              htmlFor="venue_maps_url"
+              className="text-sm font-medium text-foreground"
+            >
+              Maps URL{" "}
+              <span className="text-xs text-muted-foreground">(optional)</span>
+            </label>
+            <Input
+              id="venue_maps_url"
+              {...field}
+              value={field.value ?? ""}
+              placeholder="Google Maps URL"
+            />
+          </div>
+        )}
+      />
 
       {(venueType === "physical" || venueType === "hybrid") && (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -96,29 +122,6 @@ export function VenueSection({ control, watch, errors }: VenueSectionProps) {
                   {...field}
                   value={field.value ?? ""}
                   placeholder="City"
-                />
-              </div>
-            )}
-          />
-          <Controller
-            control={control}
-            name="maps_url"
-            render={({ field }) => (
-              <div className="space-y-1 md:col-span-2">
-                <label
-                  htmlFor="venue_maps_url"
-                  className="text-sm font-medium text-foreground"
-                >
-                  Maps URL{" "}
-                  <span className="text-xs text-muted-foreground">
-                    (optional)
-                  </span>
-                </label>
-                <Input
-                  id="venue_maps_url"
-                  {...field}
-                  value={field.value ?? ""}
-                  placeholder="Google Maps URL"
                 />
               </div>
             )}
@@ -183,6 +186,17 @@ export function VenueSection({ control, watch, errors }: VenueSectionProps) {
       {errors?.platform?.message ? (
         <p className="text-xs text-red-600">{errors.platform.message}</p>
       ) : null}
+    </>
+  );
+
+  if (variant === "plain") {
+    return <div className="space-y-3">{content}</div>;
+  }
+
+  return (
+    <section className="space-y-3 rounded-lg border p-4">
+      <h3 className="mb-3 text-sm font-semibold text-foreground">Venue</h3>
+      {content}
     </section>
   );
 }

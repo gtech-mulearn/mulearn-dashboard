@@ -11,6 +11,7 @@ import {
   FeaturedEventsCarousel,
   useEventsList,
 } from "@/features/events";
+import { useDebounce } from "@/hooks/use-debounce";
 
 export default function EventsPage() {
   const router = useRouter();
@@ -22,10 +23,11 @@ export default function EventsPage() {
   const [selectedEventType, setSelectedEventType] = useState<EventType | "all">(
     "all",
   );
+  const debouncedSearch = useDebounce(search, 300);
 
   const { data, isLoading } = useEventsList({
     pageIndex: currentPage,
-    search: search || undefined,
+    search: debouncedSearch || undefined,
     cluster: selectedCluster === "all" ? undefined : selectedCluster,
     event_type: selectedEventType === "all" ? undefined : selectedEventType,
     sortBy: "-start_datetime",
@@ -56,10 +58,12 @@ export default function EventsPage() {
   };
 
   return (
-    <main className="flex-1 p-6 md:p-8">
+    <main className="flex-1 p-6 md:p-8 lc-fade-in">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Events</h1>
+          <h1 className="text-2xl font-bold text-foreground md:text-3xl">
+            Events
+          </h1>
         </div>
       </div>
 

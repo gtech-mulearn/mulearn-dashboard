@@ -37,7 +37,11 @@ export function InterestButton({
     <Button
       type="button"
       variant={isInterested ? "default" : "outline"}
-      className={isInterested ? "bg-pink-600 hover:bg-pink-700 text-white" : ""}
+      className={
+        isInterested
+          ? "bg-primary hover:bg-primary/90 text-primary-foreground"
+          : ""
+      }
       disabled={disabled || mutation.isPending}
       onClick={handleClick}
     >
