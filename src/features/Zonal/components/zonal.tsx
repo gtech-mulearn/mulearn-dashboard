@@ -218,11 +218,8 @@ export function ZonalDashboard() {
     <div className="space-y-8">
       {/* Header */}
       <div className="space-y-1">
-        <p className="text-xs font-bold uppercase tracking-widest text-primary">
-          Zonal Campus Lead
-        </p>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-          Zone Dashboard
+        <h1 className="text-2xl font-bold tracking-tight text-primary  sm:text-3xl">
+          Zonal Dashboard
         </h1>
       </div>
 
