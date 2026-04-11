@@ -1,3 +1,4 @@
+"use client";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useState, useCallback } from "react";
 import { zonalApi, triggerCsvDownload } from "../api";
@@ -16,65 +17,79 @@ export const zonalKeys = {
 };
 
 // ── 1. Zone Details ────────────────────────────────────────────────────────
+// apiClient unwraps response → returns { zone, rank, zonal_lead, ... } directly
 export function useZoneDetails() {
   return useQuery({
     queryKey: zonalKeys.zoneDetails(),
     queryFn: zonalApi.getZoneDetails,
-    select: (res) => res.response,
+    select: (res) => res,
   });
 }
 
 // ── 2. Top Districts ───────────────────────────────────────────────────────
+// apiClient unwraps response → returns [ { district, rank, karma }, ... ] directly
 export function useTopDistricts() {
   return useQuery({
     queryKey: zonalKeys.topDistricts(),
     queryFn: zonalApi.getTopDistricts,
-    select: (res) => (Array.isArray(res.response) ? res.response : []),
+    select: (res) => (Array.isArray(res) ? res : []),
   });
 }
 
 // ── 3. Student Levels ──────────────────────────────────────────────────────
+// apiClient unwraps response → returns [ { level_order, students_count }, ... ] directly
 export function useStudentLevels() {
   return useQuery({
     queryKey: zonalKeys.studentLevels(),
     queryFn: zonalApi.getStudentLevels,
-    select: (res) => (Array.isArray(res.response) ? res.response : []),
+    select: (res) => {
+      const levels = Array.isArray(res) ? res : [];
+      return [...levels].sort((a, b) => a.level_order - b.level_order);
+    },
   });
 }
 
 // ── 4. Student Details (paginated) ────────────────────────────────────────
+// apiClient unwraps response → returns { data: [...], pagination?: {...} } directly
 export function useStudentDetails(params: StudentListParams = {}) {
   return useQuery({
     queryKey: zonalKeys.students(params),
     queryFn: () => zonalApi.getStudentDetails(params),
     placeholderData: keepPreviousData,
-    select: (res) => ({
-      data: res.response?.data ?? [],
-      pagination: res.response?.pagination ?? {
-        count: 0,
-        totalPages: 1,
-        isNext: false,
-        isPrev: false,
-      },
-    }),
+    select: (res) => {
+      const data = res?.data ?? [];
+      return {
+        data,
+        pagination: res?.pagination ?? {
+          count: data.length,
+          totalPages: 1,
+          isNext: false,
+          isPrev: false,
+        },
+      };
+    },
   });
 }
 
 // ── 5. College Details (paginated) ────────────────────────────────────────
+// apiClient unwraps response → returns { data: [...], pagination?: {...} } directly
 export function useCollegeDetails(params: CollegeListParams = {}) {
   return useQuery({
     queryKey: zonalKeys.colleges(params),
     queryFn: () => zonalApi.getCollegeDetails(params),
     placeholderData: keepPreviousData,
-    select: (res) => ({
-      data: res.response?.data ?? [],
-      pagination: res.response?.pagination ?? {
-        count: 0,
-        totalPages: 1,
-        isNext: false,
-        isPrev: false,
-      },
-    }),
+    select: (res) => {
+      const data = res?.data ?? [];
+      return {
+        data,
+        pagination: res?.pagination ?? {
+          count: data.length,
+          totalPages: 1,
+          isNext: false,
+          isPrev: false,
+        },
+      };
+    },
   });
 }
 
@@ -131,7 +146,7 @@ export function useTableState<TSortField extends string>(
 
   const setSearch = useCallback((value: string) => {
     setSearchRaw(value);
-    setPageIndex(1); // reset to page 1 on new search
+    setPageIndex(1);
   }, []);
 
   const toggleSort = useCallback((field: TSortField) => {
@@ -140,7 +155,7 @@ export function useTableState<TSortField extends string>(
       direction:
         prev.field === field && prev.direction === "asc" ? "desc" : "asc",
     }));
-    setPageIndex(1); // reset to page 1 on sort change
+    setPageIndex(1);
   }, []);
 
   // Builds the sortBy string the API expects e.g. "-karma" or "full_name"
@@ -148,13 +163,11 @@ export function useTableState<TSortField extends string>(
     `${sort.direction === "desc" ? "-" : ""}${sort.field}` as TSortField;
 
   return {
-    // state
     pageIndex,
     perPage,
     search,
     sort,
     sortBy,
-    // setters
     setPage: setPageIndex,
     setSearch,
     toggleSort,

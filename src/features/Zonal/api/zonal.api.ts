@@ -52,8 +52,12 @@ export const zonalApi = {
 
   /** GET /api/dashboard/zonal/student-details/csv/ — returns raw Blob */
   downloadStudentCsv: async (): Promise<Blob> => {
-    const res = await apiClient.get(endpoints.zonal.StudentCsv);
-    return res as Blob;
+    const res = await apiClient.get<Blob>(
+      endpoints.zonal.StudentCsv,
+      undefined,
+      { responseType: "blob" }, // ← tells apiClient to skip JSON parsing
+    );
+    return res;
   },
 
   /** GET /api/dashboard/zonal/college-details/ */
@@ -68,8 +72,12 @@ export const zonalApi = {
 
   /** GET /api/dashboard/zonal/college-details/csv/ — returns raw Blob */
   downloadCollegeCsv: async (): Promise<Blob> => {
-    const res = await apiClient.get(endpoints.zonal.CollegeCsv);
-    return res as Blob;
+    const res = await apiClient.get<Blob>(
+      endpoints.zonal.CollegeCsv,
+      undefined,
+      { responseType: "blob" }, // ← tells apiClient to skip JSON parsing
+    );
+    return res;
   },
 };
 
