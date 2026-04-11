@@ -148,30 +148,29 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
     : [];
   const leads = Array.isArray(ig.leads)
     ? ig.leads
-        .map((lead) => (typeof lead === "string" ? { name: lead } : lead))
+        .map((lead) => (typeof lead === "string" ? { full_name: lead } : lead))
         .filter(
           (
             lead,
           ): lead is {
-            name?: string | null;
+            full_name?: string | null;
             email?: string | null;
             muid?: string | null;
-          } => Boolean(lead?.name || lead?.muid),
+          } => Boolean(lead?.full_name || lead?.muid),
         )
     : [];
   const mentors = Array.isArray(ig.mentors)
     ? ig.mentors
         .map((mentor) =>
-          typeof mentor === "string" ? { name: mentor } : mentor,
+          typeof mentor === "string" ? { full_name: mentor } : mentor,
         )
         .filter(
           (
             mentor,
           ): mentor is {
-            name?: string | null;
-            expertise?: string | null;
+            full_name?: string | null;
             muid?: string | null;
-          } => Boolean(mentor?.name || mentor?.muid),
+          } => Boolean(mentor?.full_name || mentor?.muid),
         )
     : [];
 
@@ -287,10 +286,10 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
                     href={blog.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-sm text-primary hover:underline truncate"
+                    className="flex items-center gap-2 text-sm text-primary hover:underline"
                   >
                     <ExternalLink className="size-3.5 shrink-0" />
-                    <span className="truncate">{blog.title}</span>
+                    <span>{blog.title}</span>
                   </a>
                 ))}
               </div>
@@ -328,17 +327,12 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
                   <div className="space-y-1.5">
                     {leads.map((lead) => (
                       <div
-                        key={lead.muid || lead.name || Math.random()}
+                        key={lead.muid || lead.full_name || Math.random()}
                         className="text-sm flex flex-col"
                       >
                         <span className="font-medium text-foreground">
-                          {lead.name || lead.muid || "Lead"}
+                          {lead.full_name || lead.muid || "Lead"}
                         </span>
-                        {lead.email && (
-                          <span className="text-muted-foreground text-xs break-all">
-                            ({lead.email})
-                          </span>
-                        )}
                         {lead.muid && (
                           <span className="text-muted-foreground text-xs">
                             MUID: {lead.muid}
@@ -354,17 +348,12 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
                   <div className="space-y-1.5">
                     {mentors.map((mentor) => (
                       <div
-                        key={mentor.muid || mentor.name || Math.random()}
+                        key={mentor.muid || mentor.full_name || Math.random()}
                         className="text-sm"
                       >
                         <span className="font-medium text-foreground">
-                          {mentor.name || mentor.muid || "Mentor"}
+                          {mentor.full_name || mentor.muid || "Mentor"}
                         </span>
-                        {mentor.expertise && (
-                          <span className="text-muted-foreground text-xs ml-1">
-                            ({mentor.expertise})
-                          </span>
-                        )}
                         {mentor.muid && (
                           <span className="text-muted-foreground text-xs block">
                             MUID: {mentor.muid}
@@ -389,10 +378,10 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
                       href={ig.resource}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline truncate max-w-full"
+                      className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline max-w-full"
                     >
                       <ExternalLink className="size-3.5 shrink-0" />
-                      <span className="truncate">{ig.resource}</span>
+                      <span>{ig.resource}</span>
                     </a>
                   </DetailSection>
                 )}

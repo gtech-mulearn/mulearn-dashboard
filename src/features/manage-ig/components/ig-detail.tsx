@@ -1,7 +1,7 @@
 /**
- * Interest Group Detail Client Component
+ * Interest Group Detail Client Component (Admin / Manage IG)
  *
- * 📍 src/features/interest-groups/components/interest-group-detail-client.tsx
+ * 📍 src/features/manage-ig/components/ig-detail.tsx
  */
 
 "use client";
@@ -13,8 +13,6 @@ import {
   Clock,
   ExternalLink,
   FileText,
-  Linkedin,
-  Mail,
   Pencil,
   Sparkles,
   Twitter,
@@ -25,6 +23,7 @@ import { useState } from "react";
 import Loader from "@/app/loading";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useInterestGroupDetail } from "@/features/interest-groups";
+import { PersonCard } from "@/features/interest-groups/components/person-card";
 import { EditInterestGroupForm } from "./edit-interest-group-form";
 
 export function IGDetail() {
@@ -302,11 +301,9 @@ export function IGDetail() {
                       {person.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="font-bold text-foreground truncate">
-                        {person.name}
-                      </p>
+                      <p className="font-bold text-foreground">{person.name}</p>
                       {person.designation && (
-                        <p className="text-sm text-muted-foreground truncate">
+                        <p className="text-sm text-muted-foreground">
                           {person.designation}
                         </p>
                       )}
@@ -328,7 +325,7 @@ export function IGDetail() {
             </div>
           )}
 
-          {/* Mentors */}
+          {/* Mentors – full cards in main column */}
           {group.mentors && group.mentors.length > 0 && (
             <div className="group rounded-3xl border border-border/50 bg-card p-5 sm:p-8 shadow-sm transition-all hover:shadow-md hover:border-primary/20">
               <div className="mb-4 sm:mb-6 flex items-center gap-3">
@@ -341,42 +338,16 @@ export function IGDetail() {
               </div>
               <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 place-items-stretch">
                 {group.mentors.map((mentor) => (
-                  <div
-                    key={mentor.muid || mentor.name || Math.random()}
-                    className="flex w-full max-w-full min-w-0 items-start gap-3 sm:gap-4 rounded-2xl border border-border/60 bg-muted/20 p-4 sm:p-5 transition-all hover:border-border hover:bg-card hover:shadow-sm overflow-hidden"
-                  >
-                    <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-purple-500/20 to-purple-500/5 text-sm sm:text-lg font-bold text-purple-600">
-                      {mentor.name
-                        ? mentor.name.charAt(0).toUpperCase()
-                        : mentor.muid?.charAt(0).toUpperCase() || "?"}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-bold text-foreground break-words">
-                        {mentor.name || mentor.muid || "Mentor"}
-                      </p>
-                      {mentor.expertise && (
-                        <p className="text-sm text-muted-foreground break-words">
-                          {mentor.expertise}
-                        </p>
-                      )}
-                      {mentor.linkedin && (
-                        <a
-                          href={mentor.linkedin}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:underline hover:text-blue-700"
-                        >
-                          <Linkedin className="h-3 w-3" />
-                          LinkedIn Profile
-                        </a>
-                      )}
-                      {mentor.muid && (
-                        <p className="text-xs text-muted-foreground mt-1 break-words">
-                          MUID: {mentor.muid}
-                        </p>
-                      )}
-                    </div>
-                  </div>
+                  <PersonCard
+                    key={
+                      mentor.muid ??
+                      mentor.full_name ??
+                      Math.random().toString()
+                    }
+                    {...mentor}
+                    avatarBgClass="from-purple-500/20 to-purple-500/5"
+                    accentClass="text-purple-600"
+                  />
                 ))}
               </div>
             </div>
@@ -461,7 +432,7 @@ export function IGDetail() {
               </div>
             </div>
 
-            {/* Leads */}
+            {/* ── Sidebar: Leads — MUID only ─────────────────────────── */}
             {group.leads && group.leads.length > 0 && (
               <div className="overflow-hidden rounded-3xl border border-border/50 bg-card shadow-sm">
                 <div className="border-b border-border/50 bg-muted/30 px-4 sm:px-6 py-3 sm:py-4">
@@ -469,47 +440,24 @@ export function IGDetail() {
                     Community Leads
                   </h3>
                 </div>
-                <div className="p-4 sm:p-6">
-                  <div className="space-y-3 sm:space-y-4">
+                <div className="p-6">
+                  <div className="space-y-3">
                     {group.leads.map((lead) => (
-                      <div
-                        key={lead.muid || lead.name || Math.random()}
-                        className="mx-0 flex items-start gap-3 rounded-xl border border-transparent p-2 transition-all hover:border-border hover:bg-muted/40 sm:-mx-2"
-                      >
-                        <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-primary to-primary/60 text-xs sm:text-sm font-bold text-white shadow-sm">
-                          {lead.name
-                            ? lead.name.charAt(0).toUpperCase()
-                            : lead.muid?.charAt(0).toUpperCase() || "?"}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-bold text-foreground break-words whitespace-normal">
-                            {lead.name || lead.muid || "Lead"}
-                          </p>
-                          {lead.email && (
-                            <a
-                              href={`mailto:${lead.email}`}
-                              className="flex w-full items-start gap-1 text-xs font-medium text-muted-foreground hover:text-primary transition-colors break-all"
-                            >
-                              <Mail className="h-3 w-3 shrink-0" />
-                              <span className="min-w-0 break-all">
-                                {lead.email}
-                              </span>
-                            </a>
-                          )}
-                          {lead.muid && (
-                            <p className="text-xs text-muted-foreground break-all">
-                              MUID: {lead.muid}
-                            </p>
-                          )}
-                        </div>
-                      </div>
+                      <PersonCard
+                        key={
+                          lead.muid ??
+                          lead.full_name ??
+                          Math.random().toString()
+                        }
+                        {...lead}
+                        avatarBgClass="from-purple-500/20 to-purple-500/5"
+                        accentClass="text-purple-600"
+                      />
                     ))}
                   </div>
                 </div>
               </div>
             )}
-
-            {/* Support / Help Box */}
             <div className="rounded-3xl bg-linear-to-br from-muted/50 to-muted/10 p-6 border border-border/50 text-center">
               <p className="text-sm font-medium text-muted-foreground">
                 Need help or have questions? Reach out to the leads or join the

@@ -191,11 +191,11 @@ export function InterestGroupsCard({
 
                   {/* Name + category */}
                   <div className="min-w-0 space-y-0.5">
-                    <p className="truncate text-sm font-semibold text-foreground transition-colors duration-200 group-hover:text-primary">
+                    <p className="text-sm font-semibold text-foreground transition-colors duration-200 group-hover:text-primary">
                       {group.name}
                     </p>
                     {group.category ? (
-                      <p className="truncate text-[11px] text-muted-foreground">
+                      <p className="text-[11px] text-muted-foreground">
                         {group.category}
                       </p>
                     ) : null}
