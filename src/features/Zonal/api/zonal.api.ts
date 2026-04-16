@@ -2,8 +2,8 @@ import { apiClient } from "@/api";
 import { endpoints } from "@/api/endpoints";
 import {
   StudentListSchema,
-  ColegeListSchema,
-  ZoneShema,
+  CollegeListSchema,
+  ZoneSchema,
   TopDistrictSchema,
   StudentLevelSchema,
 } from "../schemas";
@@ -25,25 +25,25 @@ export const zonalApi = {
   /** GET /api/dashboard/zonal/zonal-details/ */
   getZoneDetails: async () => {
     const res = await apiClient.get<unknown>(endpoints.zonal.details);
-    return ZoneShema.parse(res);
+    return ZoneSchema.parse(res);
   },
 
   /** GET /api/dashboard/zonal/top-districts/ */
   getTopDistricts: async () => {
-    const res = await apiClient.get<unknown>(endpoints.zonal.TopDistrict);
+    const res = await apiClient.get<unknown>(endpoints.zonal.topDistrict);
     return TopDistrictSchema.parse(res);
   },
 
   /** GET /api/dashboard/zonal/student-level/ */
   getStudentLevels: async () => {
-    const res = await apiClient.get<unknown>(endpoints.zonal.StudentLevel);
+    const res = await apiClient.get<unknown>(endpoints.zonal.studentLevel);
     return StudentLevelSchema.parse(res);
   },
 
   /** GET /api/dashboard/zonal/student-details/ */
   getStudentDetails: async (params: StudentListParams = {}) => {
     const url = withQuery(
-      endpoints.zonal.StudentList,
+      endpoints.zonal.studentList,
       params as Record<string, unknown>,
     );
     const res = await apiClient.get<unknown>(url);
@@ -53,7 +53,7 @@ export const zonalApi = {
   /** GET /api/dashboard/zonal/student-details/csv/ — returns raw Blob */
   downloadStudentCsv: async (): Promise<Blob> => {
     const res = await apiClient.get<Blob>(
-      endpoints.zonal.StudentCsv,
+      endpoints.zonal.studentCsv,
       undefined,
       { responseType: "blob" }, // ← tells apiClient to skip JSON parsing
     );
@@ -63,17 +63,17 @@ export const zonalApi = {
   /** GET /api/dashboard/zonal/college-details/ */
   getCollegeDetails: async (params: CollegeListParams = {}) => {
     const url = withQuery(
-      endpoints.zonal.CollegeList,
+      endpoints.zonal.collegeList,
       params as Record<string, unknown>,
     );
     const res = await apiClient.get<unknown>(url);
-    return ColegeListSchema.parse(res);
+    return CollegeListSchema.parse(res);
   },
 
   /** GET /api/dashboard/zonal/college-details/csv/ — returns raw Blob */
   downloadCollegeCsv: async (): Promise<Blob> => {
     const res = await apiClient.get<Blob>(
-      endpoints.zonal.CollegeCsv,
+      endpoints.zonal.collegeCsv,
       undefined,
       { responseType: "blob" }, // ← tells apiClient to skip JSON parsing
     );
@@ -87,6 +87,11 @@ export function triggerCsvDownload(blob: Blob, filename: string): void {
   const anchor = document.createElement("a");
   anchor.href = url;
   anchor.download = filename;
-  anchor.click();
-  URL.revokeObjectURL(url);
+  document.body.appendChild(anchor);
+  try {
+    anchor.click();
+  } finally {
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(url);
+  }
 }

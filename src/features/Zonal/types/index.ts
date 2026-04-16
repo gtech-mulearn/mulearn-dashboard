@@ -1,24 +1,24 @@
 import type { z } from "zod";
 import type {
-  ZoneShema,
+  ZoneSchema,
   TopDistrictSchema,
   StudentLevelSchema,
   StudentListSchema,
-  ColegeListSchema,
-  zonedetails,
+  CollegeListSchema,
+  ZoneDetailsSchema,
   TopDistrict,
   StudentLevel,
 } from "../schemas";
 
-export type ZoneDetails = z.infer<typeof zonedetails>;
+export type ZoneDetails = z.infer<typeof ZoneDetailsSchema>;
 export type TTopDistrict = z.infer<typeof TopDistrict>;
 export type TStudentLevel = z.infer<typeof StudentLevel>;
 
-export type ZoneDetailsResponse = z.infer<typeof ZoneShema>;
+export type ZoneDetailsResponse = z.infer<typeof ZoneSchema>;
 export type TopDistrictsResponse = z.infer<typeof TopDistrictSchema>;
 export type StudentLevelResponse = z.infer<typeof StudentLevelSchema>;
 export type StudentListResponse = z.infer<typeof StudentListSchema>;
-export type CollegeListResponse = z.infer<typeof ColegeListSchema>;
+export type CollegeListResponse = z.infer<typeof CollegeListSchema>;
 
 export interface Pagination {
   count: number;

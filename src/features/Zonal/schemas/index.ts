@@ -43,11 +43,11 @@ export const CollegeList = z.object({
   lead_number: z.string().nullable(),
 });
 export type CollegeData = z.infer<typeof CollegeList>;
-export const ColegeListSchema = PaginatedDataSchema(CollegeList);
+export const CollegeListSchema = PaginatedDataSchema(CollegeList);
 
 // ── Zone Details ───────────────────────────────────────────────────────────
 // apiClient returns: { zone, rank, zonal_lead, karma, total_members, active_members }
-export const zonedetails = z.object({
+export const ZoneDetailsSchema = z.object({
   zone: z.string(),
   rank: z.number().int(),
   zonal_lead: z.string(),
@@ -55,7 +55,7 @@ export const zonedetails = z.object({
   total_members: z.number().int(),
   active_members: z.number().int(),
 });
-export const ZoneShema = zonedetails;
+export const ZoneSchema = ZoneDetailsSchema;
 
 // ── Top Districts ──────────────────────────────────────────────────────────
 // apiClient returns: [ { district, rank, karma }, ... ]

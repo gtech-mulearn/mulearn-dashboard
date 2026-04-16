@@ -3,6 +3,7 @@ import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useState, useCallback } from "react";
 import { zonalApi, triggerCsvDownload } from "../api";
 import type { StudentListParams, CollegeListParams, SortState } from "../types";
+type SortBy<T extends string> = T | `-${T}`;
 
 // ── Query keys ─────────────────────────────────────────────────────────────
 export const zonalKeys = {
@@ -158,9 +159,8 @@ export function useTableState<TSortField extends string>(
     setPageIndex(1);
   }, []);
 
-  // Builds the sortBy string the API expects e.g. "-karma" or "full_name"
   const sortBy =
-    `${sort.direction === "desc" ? "-" : ""}${sort.field}` as TSortField;
+    `${sort.direction === "desc" ? "-" : ""}${sort.field}` as SortBy<TSortField>;
 
   return {
     pageIndex,

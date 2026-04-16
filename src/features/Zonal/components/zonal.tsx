@@ -152,21 +152,30 @@ export function ZonalDashboard() {
 
   const collegeRows: Data[] = useMemo(() => {
     if (!collegeDetails?.data) return [];
-    return collegeDetails.data.map((item) => ({
-      id: item.id,
-      title: item.title,
-      code: item.code,
-      level: item.level ?? "-",
-      lead: item.lead ?? "-",
-      lead_number: item.lead_number ?? "-",
-    }));
+    return collegeDetails.data.map(
+      (item: {
+        id: string;
+        title: string;
+        code: string;
+        level: number | null;
+        lead: string | null;
+        lead_number: string | null;
+      }) => ({
+        id: item.id,
+        title: item.title,
+        code: item.code,
+        level: item.level?.toString() ?? "-",
+        lead: item.lead ?? "-",
+        lead_number: item.lead_number ?? "-",
+      }),
+    );
   }, [collegeDetails]);
 
   const studentColumns = [
     { column: "full_name", Label: "Student", isSortable: true, width: "w-56" },
     { column: "muid", Label: "MUID", isSortable: true, width: "w-48" },
     { column: "karma", Label: "Karma", isSortable: true, width: "w-24" },
-    { column: "rank", Label: "Rank", isSortable: true, width: "w-24" },
+    { column: "rank", Label: "Rank", isSortable: false, width: "w-24" },
     { column: "level", Label: "Level", isSortable: true, width: "w-36" },
   ];
 
@@ -174,7 +183,7 @@ export function ZonalDashboard() {
     { column: "title", Label: "College", isSortable: true, width: "w-64" },
     { column: "code", Label: "Campus Code", isSortable: true, width: "w-36" },
     { column: "level", Label: "Level", isSortable: true, width: "w-24" },
-    { column: "lead", Label: "Campus Lead", isSortable: true, width: "w-44" },
+    { column: "lead", Label: "Campus Lead", isSortable: false, width: "w-44" },
     { column: "lead_number", Label: "Lead Number", isSortable: false },
   ];
 

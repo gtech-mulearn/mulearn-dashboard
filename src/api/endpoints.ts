@@ -826,12 +826,12 @@ export const endpoints = {
 
   zonal: {
     details: "/api/v1/dashboard/zonal/zonal-details/",
-    TopDistrict: "/api/v1/dashboard/zonal/top-districts/",
-    StudentLevel: "/api/v1/dashboard/zonal/student-level/",
-    StudentList: "/api/v1/dashboard/zonal/student-details/",
-    StudentCsv: "/api/v1/dashboard/zonal/student-details/csv/",
-    CollegeList: "/api/v1/dashboard/zonal/college-details/",
-    CollegeCsv: "/api/v1/dashboard/zonal/college-details/csv/",
+    topDistrict: "/api/v1/dashboard/zonal/top-districts/",
+    studentLevel: "/api/v1/dashboard/zonal/student-level/",
+    studentList: "/api/v1/dashboard/zonal/student-details/",
+    studentCsv: "/api/v1/dashboard/zonal/student-details/csv/",
+    collegeList: "/api/v1/dashboard/zonal/college-details/",
+    collegeCsv: "/api/v1/dashboard/zonal/college-details/csv/",
   },
 } as const;
 
