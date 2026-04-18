@@ -3,7 +3,6 @@
 import { useUserInfo, useUserProfile } from "@/features/auth/hooks/use-session";
 import {
   useCalendarEvents,
-  useEvents,
   useInterestGroupsList,
   useKarmaFeed,
 } from "../hooks";
@@ -30,7 +29,6 @@ export function HomePage() {
   const { data: interestGroups, isLoading: loadingGroups } =
     useInterestGroupsList();
   const { data: karmaFeed, isLoading: loadingKarma } = useKarmaFeed();
-  const { data: events, isLoading: loadingEvents } = useEvents();
   const { data: calendarEvents, isLoading: loadingCalendar } =
     useCalendarEvents();
 
@@ -138,7 +136,7 @@ export function HomePage() {
           <KarmaEarnersCard data={karmaFeed} isLoading={loadingKarma} />
         </div>
         <div className="col-span-1 md:col-span-4">
-          <EventsSliderCard events={events} isLoading={loadingEvents} />
+          <EventsSliderCard />
         </div>
       </div>
     </div>

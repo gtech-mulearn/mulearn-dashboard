@@ -1,13 +1,13 @@
 import { apiClient } from "@/api";
 import { endpoints } from "@/api/endpoints";
 import {
-  StudentListSchema,
   CollegeListSchema,
-  ZoneSchema,
-  TopDistrictSchema,
   StudentLevelSchema,
+  StudentListSchema,
+  TopDistrictSchema,
+  ZoneSchema,
 } from "../schemas";
-import type { StudentListParams, CollegeListParams } from "../types";
+import type { CollegeListParams, StudentListParams } from "../types";
 
 /** Append a params object as query string onto a base URL */
 function withQuery(url: string, params: Record<string, unknown> = {}): string {

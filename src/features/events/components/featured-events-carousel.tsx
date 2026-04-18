@@ -4,6 +4,7 @@ import { CalendarDays, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FEATURED_SLIDE_INTERVAL } from "../constants";
 import { formatEventDate, useFeaturedEvents } from "../hooks";
@@ -138,22 +139,24 @@ export function FeaturedEventsCarousel() {
       {/* Prev / Next arrows */}
       {featuredEvents.length > 1 ? (
         <>
-          <button
+          <Button
             type="button"
+            variant={"default"}
             aria-label="Previous slide"
             onClick={goPrev}
-            className="absolute left-3 top-1/2 z-20 -translate-y-1/2 hidden md:flex rounded-full bg-primary-foreground/20 backdrop-blur-sm border border-primary-foreground/30 p-2 text-primary-foreground hover:bg-primary-foreground/40 transition-colors"
+            className="absolute left-3 top-1/2 z-20 -translate-y-1/2 hidden md:flex rounded-full backdrop-blur-sm p-2"
           >
             <ChevronLeft className="h-5 w-5" />
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant={"default"}
             aria-label="Next slide"
             onClick={goNext}
-            className="absolute right-3 top-1/2 z-20 -translate-y-1/2 hidden md:flex rounded-full bg-primary-foreground/20 backdrop-blur-sm border border-primary-foreground/30 p-2 text-primary-foreground hover:bg-primary-foreground/40 transition-colors"
+            className="absolute right-3 top-1/2 z-20 -translate-y-1/2 hidden md:flex rounded-full backdrop-blur-sm p-2"
           >
             <ChevronRight className="h-5 w-5" />
-          </button>
+          </Button>
         </>
       ) : null}
     </section>

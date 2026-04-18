@@ -1,69 +1,35 @@
 "use client";
 
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { formatEventDate, useFeaturedEvents } from "@/features/events/hooks";
 import { cn } from "@/lib/utils";
-import type { Event } from "../schemas";
 
-type EventsSliderCardProps = {
-  events?: Event[];
-  isLoading?: boolean;
-};
-
-const placeholderEvents: Event[] = [
-  {
-    name: "30 Days Coding Challenge",
-    description:
-      "Complete daily challenges, track your progress, and earn karma points.",
-    poster: "/images/dashboard/creative.webp",
-    link: "/dashboard/courses",
-    date: "Ongoing",
-    status: "Active",
-  },
-  {
-    name: "Build with AI Sprint",
-    description:
-      "Ship a project in 7 days using AI tools and showcase your work.",
-    poster: "/images/dashboard/coder.webp",
-    link: "/dashboard/courses",
-    date: "Starts Soon",
-    status: "Active",
-  },
-  {
-    name: "Maker Week",
-    description:
-      "Hands-on sessions and mini builds focused on hardware and IoT.",
-    poster: "/images/dashboard/maker.webp",
-    link: "/dashboard/courses",
-    date: "This Week",
-    status: "Active",
-  },
-];
-
-export function EventsSliderCard({ events, isLoading }: EventsSliderCardProps) {
+export function EventsSliderCard() {
+  const { data, isLoading } = useFeaturedEvents({ pageIndex: 1, perPage: 10 });
+  const events = data?.data ?? [];
   const eventsData = useMemo(() => {
     if (!events || events.length === 0) {
-      return placeholderEvents;
+      return [];
     }
-    return events.map((event, index) => ({
+    return events.map((event) => ({
       ...event,
-      poster:
-        event.poster && event.poster.trim().length > 0
-          ? event.poster
-          : placeholderEvents[index % placeholderEvents.length].poster,
+      cover_image: event.cover_image ?? "/images/fallback.webp",
+      formattedDate: formatEventDate(event.start_datetime),
     }));
   }, [events]);
 
   const total = eventsData.length;
   const canSlide = total > 1;
   const [index, setIndex] = useState(0);
-  const safeIndex = total === 0 ? 0 : index % total;
   const [isPaused, setIsPaused] = useState(false);
   const [direction, setDirection] = useState<"forward" | "backward">("forward");
+  const currentEvent = eventsData[index];
 
   useEffect(() => {
     if (!canSlide || isPaused) {
@@ -88,42 +54,47 @@ export function EventsSliderCard({ events, isLoading }: EventsSliderCardProps) {
     return () => clearInterval(id);
   }, [canSlide, total, isPaused, direction]);
 
+  const goTo = (i: number) => {
+    setIndex(((i % total) + total) % total);
+  };
+  const goNext = () => goTo(index + 1);
+  const goPrev = () => goTo(index - 1);
+
+  if (total === 0 || !currentEvent) {
+    return null;
+  }
+
+  if (isLoading) {
+    return <Skeleton className="mb-8 h-85 w-full rounded-2xl sm:h-100" />;
+  }
+
   return (
     <Card
       className="group relative h-full min-h-[500px] w-full overflow-hidden rounded-[2rem] border-0 bg-muted/20 shadow-xl ring-1 ring-border/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      {/* Background Slider */}
-      <div className="absolute inset-0 z-0">
+      {eventsData.map((event, slideIndex) => (
         <div
-          className="flex h-full transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]"
-          style={{ transform: `translateX(-${safeIndex * 100}%)` }}
+          key={event.id}
+          className="absolute inset-0 transition-opacity duration-700"
+          style={{
+            opacity: slideIndex === index ? 1 : 0,
+            zIndex: slideIndex === index ? 1 : 0,
+          }}
+          aria-hidden={slideIndex !== index}
         >
-          {eventsData.map((event, slideIndex) => (
-            <div
-              key={`${event.name}-${slideIndex}`}
-              className="h-full min-w-full relative"
-            >
-              <Image
-                src={
-                  event.poster.startsWith("/")
-                    ? event.poster
-                    : placeholderEvents[slideIndex % placeholderEvents.length]
-                        .poster
-                }
-                alt={event.name}
-                fill
-                className="object-contain object-center transition-transform duration-1000 group-hover:scale-105"
-                sizes="(max-width: 1024px) 100vw, 33vw"
-                priority={slideIndex === 0}
-              />
-              {/* Gradient Overlay */}
-              <div className="absolute inset-0 bg-linear-to-t from-foreground via-foreground/40 to-transparent opacity-90 transition-opacity duration-300 group-hover:opacity-80" />
-            </div>
-          ))}
+          <Image
+            src={event.cover_image ?? "/images/fallback.webp"}
+            alt={event.title}
+            fill
+            className="object-cover"
+            priority={slideIndex === 0}
+          />
+          {/* Gradient Overlay */}
+          <div className="absolute inset-0 bg-linear-to-t from-foreground via-foreground/40 to-transparent opacity-90 transition-opacity duration-300 group-hover:opacity-80" />
         </div>
-      </div>
+      ))}
 
       {/* Top Header & Controls */}
       <div className="absolute left-0 top-0 z-10 flex w-full items-center justify-between p-6">
@@ -137,19 +108,15 @@ export function EventsSliderCard({ events, isLoading }: EventsSliderCardProps) {
       {/* Bottom Content */}
       <div className="absolute bottom-0 left-0 z-10 w-full p-8 text-background">
         <div className="flex flex-col gap-4 transition-transform duration-500 group-hover:-translate-y-2">
-          <div className="flex transition-opacity duration-500" key={safeIndex}>
+          <div className="flex transition-opacity duration-500" key={index}>
             <div className="space-y-3">
-              <span className="inline-flex items-center rounded-lg bg-primary/90 px-3 py-1 text-xs font-semibold text-primary-foreground shadow-sm backdrop-blur-sm">
-                {eventsData[safeIndex].date}
+              <span className="inline-flex items-center rounded-full bg-primary-foreground/15 backdrop-blur-sm border border-primary-foreground/20 px-3 py-1 text-xs text-primary-foreground/90">
+                {formatEventDate(currentEvent.start_datetime)}
               </span>
 
               <h2 className="text-3xl font-bold leading-none tracking-tight text-background drop-shadow-md md:text-4xl">
-                {eventsData[safeIndex].name}
+                {currentEvent.title}
               </h2>
-
-              <p className="line-clamp-2 max-w-[90%] text-sm font-medium leading-relaxed text-background/80 drop-shadow-sm md:text-base">
-                {eventsData[safeIndex].description}
-              </p>
             </div>
           </div>
 
@@ -160,7 +127,7 @@ export function EventsSliderCard({ events, isLoading }: EventsSliderCardProps) {
               className="group/btn h-12 rounded-full bg-background px-6 text-base font-semibold text-foreground shadow-lg transition-all hover:bg-background/90 hover:shadow-xl hover:scale-105"
             >
               <Link
-                href={eventsData[safeIndex].link}
+                href={`/dashboard/events/${currentEvent.id}`}
                 className="flex items-center gap-2"
               >
                 Explore Event
@@ -172,12 +139,12 @@ export function EventsSliderCard({ events, isLoading }: EventsSliderCardProps) {
             <div className="flex gap-1.5">
               {eventsData.map((event, dotIndex) => (
                 <button
-                  key={`${event.name}-${event.date}-${event.link}`}
+                  key={`${event.id}-${dotIndex}`}
                   type="button"
                   onClick={() => setIndex(dotIndex)}
                   className={cn(
                     "h-1.5 rounded-full transition-all duration-300",
-                    dotIndex === safeIndex
+                    dotIndex === index
                       ? "w-8 bg-background shadow-[0_0_10px_color-mix(in_oklab,var(--background)_50%,transparent)]"
                       : "w-1.5 bg-background/30 hover:bg-background/50",
                   )}
@@ -189,16 +156,29 @@ export function EventsSliderCard({ events, isLoading }: EventsSliderCardProps) {
         </div>
       </div>
 
-      {/* Loading State Overlay */}
-      {isLoading && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/50 backdrop-blur-sm">
-          <div className="flex gap-1">
-            <div className="h-2 w-2 animate-bounce rounded-full bg-foreground [animation-delay:-0.3s]" />
-            <div className="h-2 w-2 animate-bounce rounded-full bg-foreground [animation-delay:-0.15s]" />
-            <div className="h-2 w-2 animate-bounce rounded-full bg-foreground" />
-          </div>
-        </div>
-      )}
+      {/* Prev / Next arrows */}
+      {total > 1 ? (
+        <>
+          <Button
+            type="button"
+            variant={"default"}
+            aria-label="Previous slide"
+            onClick={goPrev}
+            className="absolute left-3 top-1/2 z-20 -translate-y-1/2 hidden md:flex rounded-full backdrop-blur-sm p-2"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+          <Button
+            type="button"
+            variant={"default"}
+            aria-label="Next slide"
+            onClick={goNext}
+            className="absolute right-3 top-1/2 z-20 -translate-y-1/2 hidden md:flex rounded-full backdrop-blur-sm p-2"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </Button>
+        </>
+      ) : null}
     </Card>
   );
 }
