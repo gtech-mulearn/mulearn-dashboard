@@ -823,6 +823,16 @@ export const endpoints = {
     /** GET - Download all college details as CSV */
     collegeDetailsCsv: "/api/v1/dashboard/district/college-details/csv/",
   },
+
+  zonal: {
+    details: "/api/v1/dashboard/zonal/zonal-details/",
+    topDistrict: "/api/v1/dashboard/zonal/top-districts/",
+    studentLevel: "/api/v1/dashboard/zonal/student-level/",
+    studentList: "/api/v1/dashboard/zonal/student-details/",
+    studentCsv: "/api/v1/dashboard/zonal/student-details/csv/",
+    collegeList: "/api/v1/dashboard/zonal/college-details/",
+    collegeCsv: "/api/v1/dashboard/zonal/college-details/csv/",
+  },
 } as const;
 
 // Type for type-safe endpoint access
