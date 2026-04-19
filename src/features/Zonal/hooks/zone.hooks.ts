@@ -1,8 +1,9 @@
 "use client";
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { useState, useCallback } from "react";
-import { zonalApi, triggerCsvDownload } from "../api";
-import type { StudentListParams, CollegeListParams, SortState } from "../types";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useCallback, useState } from "react";
+import { triggerCsvDownload, zonalApi } from "../api";
+import type { CollegeListParams, SortState, StudentListParams } from "../types";
+
 type SortBy<T extends string> = T | `-${T}`;
 
 // ── Query keys ─────────────────────────────────────────────────────────────

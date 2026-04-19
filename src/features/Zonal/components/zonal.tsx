@@ -28,13 +28,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  useCollegeCsvDownload,
   useCollegeDetails,
+  useStudentCsvDownload,
   useStudentDetails,
   useStudentLevels,
   useTopDistricts,
   useZoneDetails,
-  useCollegeCsvDownload,
-  useStudentCsvDownload,
 } from "../hooks";
 
 const numberFormatter = new Intl.NumberFormat("en-IN");

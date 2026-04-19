@@ -1,13 +1,13 @@
 import type { z } from "zod";
 import type {
-  ZoneSchema,
-  TopDistrictSchema,
+  CollegeListSchema,
+  StudentLevel,
   StudentLevelSchema,
   StudentListSchema,
-  CollegeListSchema,
-  ZoneDetailsSchema,
   TopDistrict,
-  StudentLevel,
+  TopDistrictSchema,
+  ZoneDetailsSchema,
+  ZoneSchema,
 } from "../schemas";
 
 export type ZoneDetails = z.infer<typeof ZoneDetailsSchema>;
