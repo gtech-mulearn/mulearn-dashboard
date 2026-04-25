@@ -215,3 +215,27 @@ export const CompanyOnboardingStatusResponseSchema = ApiResponseSchema(
 export type CompanyOnboardingStatus = z.infer<
   typeof CompanyOnboardingStatusSchema
 >;
+
+// ============================================
+// Google OAuth2 Schemas
+// ============================================
+
+export const GoogleAuthUrlResponseDataSchema = z.object({
+  redirect_url: z.string(),
+});
+
+export const GoogleAuthUrlResponseSchema = ApiResponseSchema(
+  GoogleAuthUrlResponseDataSchema,
+);
+
+export const GoogleCallbackResponseSchema = ApiResponseSchema(
+  LoginResponseDataSchema,
+);
+
+export type GoogleAuthUrlResponse = z.infer<typeof GoogleAuthUrlResponseSchema>;
+export type GoogleAuthUrlResponseData = z.infer<
+  typeof GoogleAuthUrlResponseDataSchema
+>;
+export type GoogleCallbackResponse = z.infer<
+  typeof GoogleCallbackResponseSchema
+>;

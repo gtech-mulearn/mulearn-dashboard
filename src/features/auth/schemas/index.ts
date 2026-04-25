@@ -46,6 +46,13 @@ export {
   UserProfileSchema,
   type VerifyResetTokenResponse,
   VerifyResetTokenResponseSchema,
+  // Google OAuth2
+  type GoogleAuthUrlResponse,
+  type GoogleAuthUrlResponseData,
+  GoogleAuthUrlResponseDataSchema,
+  GoogleAuthUrlResponseSchema,
+  type GoogleCallbackResponse,
+  GoogleCallbackResponseSchema,
 } from "./auth.schema";
 
 // Registration schemas and types

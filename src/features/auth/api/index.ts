@@ -11,6 +11,8 @@ export {
   fetchPublicUserProfile,
   fetchUserInfo,
   fetchUserProfile,
+  getGoogleAuthUrl,
+  handleGoogleCallback,
   loginWithOTP,
   loginWithPassword,
   refreshAccessToken,

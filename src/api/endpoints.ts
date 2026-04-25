@@ -20,6 +20,11 @@ export const endpoints = {
     refreshToken: "/api/v1/auth/get-access-token/",
     /** POST - Verify OTP token */
     verifyToken: "/api/v1/auth/token-verification/",
+    /** GET - Get Google OAuth2 redirect URL */
+    signinWithGoogle: "/api/v1/auth/signin-with-google/",
+    /** GET - Google OAuth2 callback to exchange code for tokens */
+    googleCallback: (code: string) =>
+      `/api/v1/auth/google/login/callback/?code=${code}`,
   },
 
   // ============================================

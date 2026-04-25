@@ -20,6 +20,8 @@ import {
   RefreshTokenResponseSchema,
   RequestOTPResponseSchema,
   ResetPasswordResponseSchema,
+  GoogleAuthUrlResponseSchema,
+  GoogleCallbackResponseSchema,
   type UserInfo,
   UserInfoResponseSchema,
   type UserProfile,
@@ -179,6 +181,34 @@ export async function fetchCompanyOnboardingStatus() {
   const response = await apiClient.get(
     endpoints.company.onboardingStatus,
     CompanyOnboardingStatusResponseSchema,
+  );
+  return response.response;
+}
+
+// ============================================
+// Google OAuth2 Functions
+// ============================================
+
+/**
+ * Get Google OAuth2 redirect URL
+ */
+export async function getGoogleAuthUrl(): Promise<{ redirect_url: string }> {
+  const response = await publicApiClient.get(
+    endpoints.auth.signinWithGoogle,
+    GoogleAuthUrlResponseSchema,
+  );
+  return response.response;
+}
+
+/**
+ * Exchange Google auth code for access/refresh tokens
+ */
+export async function handleGoogleCallback(
+  code: string,
+): Promise<LoginResponseData> {
+  const response = await publicApiClient.get(
+    endpoints.auth.googleCallback(code),
+    GoogleCallbackResponseSchema,
   );
   return response.response;
 }

@@ -11,6 +11,8 @@ export { authKeys } from "./query-keys";
 export { useForgotPassword } from "./use-forgot-password";
 // Login hooks
 export { useLoginWithOTP, useLoginWithPassword } from "./use-login";
+// Google OAuth2 hooks
+export { useGoogleAuthUrl, useGoogleCallback } from "./use-google-login";
 
 // Registration hooks
 export { useCompanyRegister, useRegister } from "./use-register";
