@@ -33,9 +33,7 @@ function getAuthHeaders(): Record<string, string> {
 
 // ─── Token expiry detection ─────────────────────────────────────────────────
 
-function handleTokenExpiry(rawData: unknown): void {
-  if (typeof window === "undefined") return;
-
+function isTokenExpiredError(rawData: unknown): boolean {
   if (
     rawData &&
     typeof rawData === "object" &&
@@ -48,19 +46,17 @@ function handleTokenExpiry(rawData: unknown): void {
       message?: { general?: string[] };
     };
 
-    if (
+    return (
       data.statusCode === 1000 ||
       data.message?.general?.some(
         (msg) =>
           msg.toLowerCase().includes("token expired") ||
           msg.toLowerCase().includes("token invalid") ||
           msg.toLowerCase().includes("invalid token"),
-      )
-    ) {
-      authStore.clearTokens();
-      window.location.href = "/login";
-    }
+      ) === true
+    );
   }
+  return false;
 }
 
 // ─── Request options ────────────────────────────────────────────────────────
@@ -121,9 +117,9 @@ async function request<T>(
   const rawData = await res.json().catch(() => null);
 
   if (options.authenticated) {
-    handleTokenExpiry(rawData);
+    const isExpired = isTokenExpiredError(rawData);
 
-    if (res.status === 401 || res.status === 403) {
+    if (res.status === 401 || res.status === 403 || isExpired) {
       const refreshToken = authStore.getRefreshToken();
 
       if (!refreshToken) {
@@ -173,15 +169,23 @@ async function request<T>(
           },
         );
 
-        if (retryRes.status === 401 || retryRes.status === 403) {
+        const retryData = await retryRes.json().catch(() => null);
+
+        if (
+          retryRes.status === 401 ||
+          retryRes.status === 403 ||
+          isTokenExpiredError(retryData)
+        ) {
           authStore.clearTokens();
           if (typeof window !== "undefined") {
             window.location.href = "/login";
           }
-          throw new ApiError(retryRes.status, "Retry failed", null);
+          throw new ApiError(
+            retryRes.status,
+            "Unauthorized after token refresh",
+            retryData,
+          );
         }
-
-        const retryData = await retryRes.json().catch(() => null);
 
         if (options.schema) {
           const parsed = options.schema.safeParse(retryData);
