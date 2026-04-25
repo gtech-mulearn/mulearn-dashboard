@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Bricolage_Grotesque, Geist } from "next/font/google";
 import { Toaster } from "sonner";
 import { Providers } from "./providers";
 import "./globals.css";
+import Loader from "./loading";
 
 const bricolage = Bricolage_Grotesque({
   variable: "--font-display",
@@ -44,7 +46,7 @@ export default function RootLayout({
         className={`${bricolage.variable} ${geist.variable} antialiased font-sans`}
       >
         <Providers>
-          {children}
+          <Suspense fallback={<Loader />}>{children}</Suspense>
           <Toaster richColors position="top-right" theme="light" />
         </Providers>
       </body>
