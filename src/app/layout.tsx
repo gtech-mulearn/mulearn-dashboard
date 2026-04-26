@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import { Bricolage_Grotesque, Geist } from "next/font/google";
+import { Suspense } from "react";
 import { Toaster } from "sonner";
 import { Providers } from "./providers";
 import "./globals.css";

@@ -1,7 +1,7 @@
 /**
  * Google OAuth2 Callback Page
  *
- * 📍 src/app/(auth)/google-callback/page.tsx
+ * 📍 src/app/(auth)/callback/page.tsx
  *
  * Handles the redirect from Google, exchanges the code for tokens,
  * and redirects the user to the dashboard.
@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 import { useGoogleCallback } from "@/features/auth";
 
-export default function GoogleCallbackPage() {
+export default function CallbackPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackMutation = useGoogleCallback();
