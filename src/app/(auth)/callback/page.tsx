@@ -10,12 +10,12 @@
 import { CallbackClient } from "./callback-client";
 
 export default async function CallbackPage({
-  params,
+  searchParams,
 }: {
-  params: Promise<{ code?: string; error?: string }>;
+  searchParams: Promise<{ code?: string; error?: string }>;
 }) {
-  const code = (await params).code;
-  const error = (await params).error;
+  const code = (await searchParams).code;
+  const error = (await searchParams).error;
 
   return <CallbackClient code={code} error={error} />;
 }

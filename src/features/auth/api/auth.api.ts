@@ -193,8 +193,11 @@ export async function fetchCompanyOnboardingStatus() {
  * Get Google OAuth2 redirect URL
  */
 export async function getGoogleAuthUrl(): Promise<{ redirect_url: string }> {
+  const redirectUri =
+    typeof window !== "undefined" ? `${window.location.origin}/callback/` : "";
+
   const response = await publicApiClient.get(
-    endpoints.auth.signinWithGoogle,
+    endpoints.auth.signinWithGoogle(encodeURIComponent(redirectUri)),
     GoogleAuthUrlResponseSchema,
   );
   return response.response;
@@ -206,8 +209,11 @@ export async function getGoogleAuthUrl(): Promise<{ redirect_url: string }> {
 export async function handleGoogleCallback(
   code: string,
 ): Promise<LoginResponseData> {
+  const redirectUri =
+    typeof window !== "undefined" ? `${window.location.origin}/callback/` : "";
+
   const response = await publicApiClient.get(
-    endpoints.auth.googleCallback(code),
+    endpoints.auth.googleCallback(code, encodeURIComponent(redirectUri)),
     GoogleCallbackResponseSchema,
   );
   return response.response;

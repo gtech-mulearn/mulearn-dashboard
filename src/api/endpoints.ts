@@ -21,10 +21,11 @@ export const endpoints = {
     /** POST - Verify OTP token */
     verifyToken: "/api/v1/auth/token-verification/",
     /** GET - Get Google OAuth2 redirect URL */
-    signinWithGoogle: "/api/v1/auth/signin-with-google/",
+    signinWithGoogle: (redirectUri: string) =>
+      `/api/v1/auth/signin-with-google/?redirect_uri=${redirectUri}`,
     /** GET - Google OAuth2 callback to exchange code for tokens */
-    googleCallback: (code: string) =>
-      `/api/v1/auth/google/login/callback/?code=${code}`,
+    googleCallback: (code: string, redirectUri: string) =>
+      `/api/v1/auth/google/login/callback/?code=${code}&redirect_uri=${redirectUri}`,
   },
 
   // ============================================
