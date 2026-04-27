@@ -15,6 +15,8 @@ import { endpoints } from "@/api/endpoints";
 import {
   CompanyOnboardingStatusResponseSchema,
   ForgotPasswordResponseSchema,
+  GoogleAuthUrlResponseSchema,
+  GoogleCallbackResponseSchema,
   type LoginResponseData,
   LoginResponseSchema,
   RefreshTokenResponseSchema,
@@ -179,6 +181,40 @@ export async function fetchCompanyOnboardingStatus() {
   const response = await apiClient.get(
     endpoints.company.onboardingStatus,
     CompanyOnboardingStatusResponseSchema,
+  );
+  return response.response;
+}
+
+// ============================================
+// Google OAuth2 Functions
+// ============================================
+
+/**
+ * Get Google OAuth2 redirect URL
+ */
+export async function fetchGoogleAuthUrl(): Promise<{ redirect_url: string }> {
+  const redirectUri =
+    typeof window !== "undefined" ? `${window.location.origin}/callback/` : "";
+
+  const response = await publicApiClient.get(
+    endpoints.auth.signinWithGoogle(encodeURIComponent(redirectUri)),
+    GoogleAuthUrlResponseSchema,
+  );
+  return response.response;
+}
+
+/**
+ * Exchange Google auth code for access/refresh tokens
+ */
+export async function fetchGoogleCallback(
+  code: string,
+): Promise<LoginResponseData> {
+  const redirectUri =
+    typeof window !== "undefined" ? `${window.location.origin}/callback/` : "";
+
+  const response = await publicApiClient.get(
+    endpoints.auth.googleCallback(code, encodeURIComponent(redirectUri)),
+    GoogleCallbackResponseSchema,
   );
   return response.response;
 }

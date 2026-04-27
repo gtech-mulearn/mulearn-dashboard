@@ -16,6 +16,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useFilteredNav } from "@/hooks/use-filtered-nav";
 import { authStore } from "@/lib/auth";
 import type { NavItem } from "@/lib/nav-config";
@@ -28,6 +29,7 @@ export function Sidebar() {
   const { isSidebarExpanded, toggleSidebar } = useUIStore();
   const { mainItems, managementItems, bottomItems } = useFilteredNav();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
 
   const isCollapsed = !isSidebarExpanded;
 
@@ -54,6 +56,7 @@ export function Sidebar() {
       <Link
         key={item.id}
         href={item.href}
+        prefetch={false}
         onClick={() => setIsMobileOpen(false)}
         aria-current={isActive(item.href) ? "page" : undefined}
         className={cn(
@@ -218,7 +221,7 @@ export function Sidebar() {
 
           {/* Logout Button */}
           <button
-            onClick={handleLogout}
+            onClick={() => setIsLogoutDialogOpen(true)}
             className={cn(
               "w-full flex items-center rounded-xl text-destructive hover:bg-destructive/10 transition-all py-2.5",
               // Base (Mobile/Expanded)
@@ -241,6 +244,15 @@ export function Sidebar() {
           </button>
         </div>
       </aside>
+
+      <ConfirmDialog
+        open={isLogoutDialogOpen}
+        onOpenChange={setIsLogoutDialogOpen}
+        title="Logout"
+        description="Are you sure you want to log out?"
+        onConfirm={handleLogout}
+        confirmLabel="Logout"
+      />
     </>
   );
 }

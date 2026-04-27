@@ -15,6 +15,13 @@ export {
   type ForgotPasswordRequest,
   ForgotPasswordRequestSchema,
   ForgotPasswordResponseSchema,
+  // Google OAuth2
+  type GoogleAuthUrlResponse,
+  type GoogleAuthUrlResponseData,
+  GoogleAuthUrlResponseDataSchema,
+  GoogleAuthUrlResponseSchema,
+  type GoogleCallbackResponse,
+  GoogleCallbackResponseSchema,
   type InterestGroup,
   InterestGroupSchema,
   type KarmaDistribution,

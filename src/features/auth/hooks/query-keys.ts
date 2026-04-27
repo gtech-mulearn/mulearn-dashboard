@@ -18,4 +18,6 @@ export const authKeys = {
     [...authKeys.all, "resetToken", token] as const,
   companyOnboardingStatus: () =>
     [...authKeys.all, "companyOnboardingStatus"] as const,
+  googleCallback: (code?: string) =>
+    [...authKeys.all, "googleCallback", code] as const,
 };

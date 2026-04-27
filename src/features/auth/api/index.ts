@@ -8,6 +8,8 @@
 
 export {
   fetchCompanyOnboardingStatus,
+  fetchGoogleAuthUrl,
+  fetchGoogleCallback,
   fetchPublicUserProfile,
   fetchUserInfo,
   fetchUserProfile,
