@@ -192,7 +192,7 @@ export async function fetchCompanyOnboardingStatus() {
 /**
  * Get Google OAuth2 redirect URL
  */
-export async function getGoogleAuthUrl(): Promise<{ redirect_url: string }> {
+export async function fetchGoogleAuthUrl(): Promise<{ redirect_url: string }> {
   const redirectUri =
     typeof window !== "undefined" ? `${window.location.origin}/callback/` : "";
 
@@ -206,7 +206,7 @@ export async function getGoogleAuthUrl(): Promise<{ redirect_url: string }> {
 /**
  * Exchange Google auth code for access/refresh tokens
  */
-export async function handleGoogleCallback(
+export async function fetchGoogleCallback(
   code: string,
 ): Promise<LoginResponseData> {
   const redirectUri =

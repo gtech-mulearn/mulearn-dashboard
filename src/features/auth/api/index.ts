@@ -8,11 +8,11 @@
 
 export {
   fetchCompanyOnboardingStatus,
+  fetchGoogleAuthUrl,
+  fetchGoogleCallback,
   fetchPublicUserProfile,
   fetchUserInfo,
   fetchUserProfile,
-  getGoogleAuthUrl,
-  handleGoogleCallback,
   loginWithOTP,
   loginWithPassword,
   refreshAccessToken,

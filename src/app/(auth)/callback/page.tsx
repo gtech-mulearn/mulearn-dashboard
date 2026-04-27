@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Google OAuth2 Callback Page
  *
@@ -7,15 +9,24 @@
  * and redirects the user to the dashboard.
  */
 
-import { CallbackClient } from "./callback-client";
+import { useSearchParams } from "next/navigation";
+import { Spinner } from "@/components/ui/spinner";
+import { useGoogleCallback } from "@/features/auth";
 
-export default async function CallbackPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ code?: string; error?: string }>;
-}) {
-  const code = (await searchParams).code;
-  const error = (await searchParams).error;
+export default function CallbackPage() {
+  const searchParams = useSearchParams();
+  const code = searchParams.get("code") || undefined;
+  const error = searchParams.get("error") || undefined;
 
-  return <CallbackClient code={code} error={error} />;
+  useGoogleCallback(code, error);
+
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center space-y-4">
+      <Spinner className="h-8 w-8 text-primary" />
+      <div className="text-center">
+        <h1 className="text-xl font-semibold">Authenticating...</h1>
+        <p className="text-sm">Please wait while we sign you in with Google.</p>
+      </div>
+    </div>
+  );
 }

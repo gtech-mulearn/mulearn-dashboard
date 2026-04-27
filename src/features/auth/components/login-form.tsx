@@ -193,7 +193,7 @@ export function LoginForm({
         <Button
           type="button"
           variant="outline"
-          className="w-full h-12 rounded-xl border-gray-200 bg-white hover:bg-gray-50"
+          className="w-full"
           disabled={isLoading || googleAuth.isPending}
           onClick={handleGoogleLogin}
         >
@@ -229,7 +229,7 @@ export function LoginForm({
         <Button
           type="button"
           variant="outline"
-          className="w-full h-12 rounded-xl border-gray-200 bg-white hover:bg-gray-50"
+          className="w-full"
           disabled={isLoading || googleAuth.isPending}
         >
           <svg
