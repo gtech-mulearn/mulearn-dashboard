@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import { useGoogleAuthUrl } from "../hooks";
 
 const registerFormSchema = z
   .object({
@@ -67,6 +68,7 @@ export function RegisterForm({
 }: RegisterFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const googleAuth = useGoogleAuthUrl();
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerFormSchema),
@@ -81,6 +83,10 @@ export function RegisterForm({
   const handleSubmit = (values: RegisterFormValues) => {
     const { confirmPassword, ...userData } = values;
     onSubmit(userData);
+  };
+
+  const handleGoogleSignup = () => {
+    googleAuth.mutate();
   };
 
   return (
@@ -256,8 +262,9 @@ export function RegisterForm({
         <Button
           type="button"
           variant="outline"
-          className="w-full h-12 rounded-xl border-gray-200 bg-white hover:bg-gray-50"
+          className="w-full"
           disabled={isLoading}
+          onClick={handleGoogleSignup}
         >
           <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
             <path
@@ -283,7 +290,7 @@ export function RegisterForm({
         <Button
           type="button"
           variant="outline"
-          className="w-full h-12 rounded-xl border-gray-200 bg-white hover:bg-gray-50"
+          className="w-full"
           disabled={isLoading}
         >
           <svg
