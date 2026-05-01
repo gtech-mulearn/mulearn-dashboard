@@ -11,10 +11,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { extractDjangoMessage } from "@/api/errors";
 import { authStore } from "@/lib/auth";
 import { fetchGoogleAuthUrl, fetchGoogleCallback, fetchUserInfo } from "../api";
 import { authKeys } from "./query-keys";
-import { extractDjangoMessage } from "@/api/errors";
 
 /**
  * Hook to initiate Google OAuth2 flow.

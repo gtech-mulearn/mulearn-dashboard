@@ -20,6 +20,7 @@ import {
   getPublicUserLevels,
   getPublicUserLog,
   getPublicUserProfile,
+  getQRCode,
   getSocials,
   getStates,
   getUserAchievements,
@@ -239,5 +240,15 @@ export function useConnectedDIDs(muid: string) {
     queryFn: () => getConnectedDIDs(muid),
     enabled: !!muid,
     staleTime: PROFILE_STALE_TIME,
+  });
+}
+
+/** Fetch QR code blob for given text/URL */
+export function useQRCode(text: string) {
+  return useQuery({
+    queryKey: ["qr-code", text],
+    queryFn: () => getQRCode(text),
+    enabled: !!text,
+    staleTime: Infinity, // QR codes for the same URL never change
   });
 }

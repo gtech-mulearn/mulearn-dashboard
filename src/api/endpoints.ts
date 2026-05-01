@@ -533,6 +533,15 @@ export const endpoints = {
     /** GET - Search users by name/muid (query: search, perPage, pageIndex, sortBy) */
     users: "/api/v1/dashboard/user/",
   },
+
+  // ============================================
+  // Utility Endpoints
+  // ============================================
+  utils: {
+    /** GET - QuickChart QR Code generator */
+    qrCode: (text: string) =>
+      `https://quickchart.io/qr?text=${encodeURIComponent(text)}&centerImageUrl=https://avatars.githubusercontent.com/u/98015594?s=88&v=4`,
+  },
   // ============================================
   // URL Shortener Endpoints
   // ============================================
