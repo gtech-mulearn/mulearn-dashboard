@@ -16,6 +16,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
+import { ThemeToggle } from "@/app/theme-toggle";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useFilteredNav } from "@/hooks/use-filtered-nav";
 import { authStore } from "@/lib/auth";
@@ -133,7 +134,12 @@ export function Sidebar() {
         )}
       >
         {/* Desktop Header */}
-        <div className="hidden lg:flex items-center justify-between p-4 border-b border-border h-16">
+        <div
+          className={cn(
+            "hidden lg:flex items-center p-4 border-b border-border h-16",
+            isCollapsed ? "justify-center" : "justify-between",
+          )}
+        >
           {!isCollapsed && (
             <Link href="/dashboard" className="flex items-center gap-2">
               <Image
@@ -145,21 +151,23 @@ export function Sidebar() {
               />
             </Link>
           )}
-          <button
-            onClick={toggleSidebar}
-            className={cn(
-              "p-1.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors",
-              isCollapsed && "mx-auto",
-            )}
-            type="button"
-            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {isCollapsed ? (
-              <ChevronRight className="w-4 h-4 text-muted-foreground" />
-            ) : (
-              <ChevronLeft className="w-4 h-4 text-muted-foreground" />
-            )}
-          </button>
+          <div className="flex items-center gap-2">
+            {!isCollapsed && <ThemeToggle />}
+            <button
+              onClick={toggleSidebar}
+              className={cn(
+                "p-1.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors",
+              )}
+              type="button"
+              aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              {isCollapsed ? (
+                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+              ) : (
+                <ChevronLeft className="w-4 h-4 text-muted-foreground" />
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Sidebar Header */}

@@ -51,7 +51,8 @@ export function HeroCard({ name, src, alt }: HeroCardProps) {
               <Button
                 asChild
                 size="lg"
-                className="group h-11 gap-2 rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:scale-105 hover:bg-primary/90"
+                variant={"default"}
+                className="group gap-2"
               >
                 <Link href="/dashboard/mujourney">
                   <TrendingUp className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />

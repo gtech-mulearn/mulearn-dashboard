@@ -59,7 +59,7 @@ export function ConnectAccountsBanner() {
             )}
             {!qsverseConnected && (
               <Button
-                variant="inverted"
+                variant="default"
                 className="h-9 flex-1 text-xs md:flex-none md:text-sm"
                 onClick={() => setIsQseverseDialogOpen(true)}
               >
@@ -67,7 +67,7 @@ export function ConnectAccountsBanner() {
               </Button>
             )}
             <Button
-              variant="blue"
+              variant="link"
               size="icon"
               onClick={() => dismissConnectBanner()}
               className="absolute right-3 top-3 h-8 w-8 md:static md:ml-1"

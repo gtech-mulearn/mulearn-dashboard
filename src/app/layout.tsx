@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Geist } from "next/font/google";
+import { Bricolage_Grotesque, Plus_Jakarta_Sans } from "next/font/google";
+import { ThemeProvider } from "next-themes";
 import { Suspense } from "react";
 import { Toaster } from "sonner";
 import { Providers } from "./providers";
@@ -12,7 +13,7 @@ const bricolage = Bricolage_Grotesque({
   display: "swap",
 });
 
-const geist = Geist({
+const geist = Plus_Jakarta_Sans({
   variable: "--font-sans",
   subsets: ["latin"],
   display: "swap",
@@ -45,10 +46,16 @@ export default function RootLayout({
       <body
         className={`${bricolage.variable} ${geist.variable} antialiased font-sans`}
       >
-        <Providers>
-          <Suspense fallback={<Loader />}>{children}</Suspense>
-          <Toaster richColors position="top-right" theme="light" />
-        </Providers>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem={true}
+        >
+          <Providers>
+            <Suspense fallback={<Loader />}>{children}</Suspense>
+            <Toaster richColors position="top-right" theme="light" />
+          </Providers>
+        </ThemeProvider>
       </body>
     </html>
   );
