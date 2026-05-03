@@ -30,6 +30,7 @@ import {
   Shield,
   Trophy,
   User,
+  UserRoundCheck,
   Users,
 } from "lucide-react";
 import type { Permission } from "@/lib/auth/permissions";
@@ -176,6 +177,14 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: MapPin,
     section: "management",
     roles: DISTRICT_ROLES,
+  },
+  {
+    id: "intern",
+    title: "Intern",
+    href: "/dashboard/intern",
+    icon: UserRoundCheck,
+    section: "management",
+    roles: [ROLES.INTERN, ...MANAGEMENT_ROLES],
   },
   {
     id: "interest-groups",

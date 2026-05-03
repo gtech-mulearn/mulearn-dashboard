@@ -11,6 +11,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { extractDjangoMessage } from "@/api/errors";
 import { authStore } from "@/lib/auth";
 import { fetchGoogleAuthUrl, fetchGoogleCallback, fetchUserInfo } from "../api";
 import { authKeys } from "./query-keys";
@@ -43,7 +44,7 @@ export function useGoogleCallback(code?: string, error?: string) {
     queryKey: authKeys.googleCallback(code),
     queryFn: async () => {
       if (error) {
-        toast.error(error || "Google login failed");
+        toast.error(extractDjangoMessage(error));
         router.push("/login");
         return null;
       }
@@ -70,8 +71,7 @@ export function useGoogleCallback(code?: string, error?: string) {
           userInfo,
         };
       } catch (err) {
-        console.error("Google callback error:", err);
-        toast.error("Failed to authenticate with Google");
+        toast.error(extractDjangoMessage(err));
         router.push("/login");
         throw err;
       }

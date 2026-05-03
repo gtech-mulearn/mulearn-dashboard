@@ -8,8 +8,9 @@
 
 "use client";
 
-import { Check, Copy, Link2, QrCode } from "lucide-react";
-import { useState } from "react";
+import { Check, Copy, Download, Link2, Loader2, QrCode } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +20,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { useQRCode } from "../hooks/use-profile";
 
 interface ShareProfileModalProps {
   open: boolean;
@@ -34,11 +36,22 @@ export function ShareProfileModal({
   isPublic,
 }: ShareProfileModalProps) {
   const [copied, setCopied] = useState(false);
+  const [qrUrl, setQrUrl] = useState<string | null>(null);
 
   const profileUrl =
     typeof window !== "undefined"
       ? `${window.location.origin}/profile/${muid}`
       : `https://mulearn.org/profile/${muid}`;
+
+  const { data: qrBlob, isLoading: isLoadingQr } = useQRCode(profileUrl);
+
+  useEffect(() => {
+    if (qrBlob) {
+      const url = URL.createObjectURL(qrBlob);
+      setQrUrl(url);
+      return () => URL.revokeObjectURL(url);
+    }
+  }, [qrBlob]);
 
   const handleCopy = async () => {
     try {
@@ -49,6 +62,19 @@ export function ShareProfileModal({
     } catch {
       toast.error("Failed to copy link");
     }
+  };
+
+  const handleDownload = () => {
+    if (!qrBlob) return;
+    const url = URL.createObjectURL(qrBlob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${muid}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success("QR code downloaded");
   };
 
   const handleNativeShare = async () => {
@@ -90,6 +116,39 @@ export function ShareProfileModal({
               </p>
             </div>
           )}
+
+          {/* QR Code Section */}
+          <div className="flex flex-col items-center justify-center space-y-3 rounded-xl border border-dashed border-gray-200 bg-gray-50/50 p-6">
+            <div className="relative aspect-square w-48 overflow-hidden rounded-lg bg-white p-2 shadow-sm">
+              {isLoadingQr ? (
+                <div className="flex h-full w-full items-center justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                </div>
+              ) : qrUrl ? (
+                <Image
+                  src={qrUrl}
+                  alt="Profile QR Code"
+                  className="h-full w-full object-contain"
+                  width={192}
+                  height={192}
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-xs text-gray-400">
+                  Failed to load QR
+                </div>
+              )}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 gap-2 text-xs"
+              onClick={handleDownload}
+              disabled={!qrBlob}
+            >
+              <Download className="h-3.5 w-3.5" />
+              Download QR Code
+            </Button>
+          </div>
 
           {/* Profile URL */}
           <div className="space-y-2">

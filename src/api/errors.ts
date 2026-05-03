@@ -23,8 +23,17 @@ export class ApiError extends Error {
  *  - `{ detail: "..." }`                  (DRF style)
  */
 export function extractDjangoMessage(data: unknown): string | null {
-  if (!data || typeof data !== "object") return null;
+  if (!data) return null;
+
+  if (typeof data === "string") return data;
+
+  if (data instanceof Error) {
+    return data.message;
+  }
+
+  if (typeof data !== "object") return null;
   const d = data as Record<string, unknown>;
+
   const msg = d.message;
   if (msg && typeof msg === "object") {
     const general = (msg as Record<string, unknown>).general;
@@ -33,7 +42,8 @@ export function extractDjangoMessage(data: unknown): string | null {
     }
   }
 
-  // DRF fallback → detail
+  if (typeof msg === "string") return msg;
+
   if (typeof d.detail === "string") return d.detail;
 
   return null;

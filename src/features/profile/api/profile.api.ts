@@ -431,3 +431,18 @@ export async function updateVCURL(
     EmptyResponseSchema,
   );
 }
+
+// ============================================
+// Utilities
+// ============================================
+
+/** Get QR code for profile URL */
+export async function getQRCode(text: string): Promise<Blob> {
+  const response = await fetch(endpoints.utils.qrCode(text));
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch QR code");
+  }
+
+  return response.blob();
+}

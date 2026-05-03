@@ -92,7 +92,7 @@ function SectionHeader({
 // Dashboard
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function ZonalDashboard() {
+export function ZonalDashboardView() {
   const [studentPage, setStudentPage] = useState(1);
   const [studentPerPage, setStudentPerPage] = useState(20);
   const [studentSearch, setStudentSearch] = useState("");
