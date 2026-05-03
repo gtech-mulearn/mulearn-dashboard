@@ -182,9 +182,7 @@ export function LoginForm({
           <span className="w-full border-t border-gray-200" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-secondary px-4 text-secondary-foreground">
-            OR
-          </span>
+          <span className=" px-4 text-secondary-foreground">OR</span>
         </div>
       </div>
 

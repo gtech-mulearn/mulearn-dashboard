@@ -18,14 +18,12 @@ import type { InterestGroup, InterestGroupListItem } from "../schemas";
 
 interface IGSelectorProps {
   userInterestGroups: InterestGroup[];
-  userLevel: number;
   isOwnProfile: boolean;
   onSave: (groupIds: string[]) => Promise<void>;
 }
 
 export function IGSelector({
   userInterestGroups,
-  userLevel,
   isOwnProfile,
   onSave,
 }: IGSelectorProps) {
@@ -56,8 +54,7 @@ export function IGSelector({
     [allIgData, localIgs],
   );
 
-  // Check if user can edit (level >= 4)
-  const canEdit = isOwnProfile && userLevel >= 4;
+  const canEdit = isOwnProfile;
 
   // Format level to display as "Level X"
   const formatLevel = (level: { unit: string; count: number }) => {
@@ -193,7 +190,7 @@ export function IGSelector({
           <p className="text-sm text-gray-500">
             {canEdit
               ? "No Interest Groups Selected. Click the edit button to select your interest groups."
-              : "No Interest Groups Selected. You need to reach Level 4 to Select"}
+              : "No Interest Groups Selected."}
           </p>
         )}
       </div>

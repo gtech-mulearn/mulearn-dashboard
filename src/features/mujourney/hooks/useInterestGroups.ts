@@ -1,18 +1,8 @@
-/**
- * Interest Groups Hook
- *
- * 📍 src/features/mujourney/hooks/useInterestGroups.ts
- *
- * Hook for fetching available interest groups.
- */
-
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { apiClient } from "@/api/client";
-import { endpoints } from "@/api/endpoints";
+import { getUserProfile } from "@/features/profile/api/profile.api";
 import { authStore } from "@/lib/auth";
-import { InterestGroupsResponseSchema } from "../schemas/mujourney.schemas";
 import { mujourneyKeys } from "./query-keys";
 
 export function useInterestGroups() {
@@ -20,12 +10,20 @@ export function useInterestGroups() {
 
   return useQuery({
     queryKey: mujourneyKeys.interestGroups(),
-    queryFn: () =>
-      apiClient.get(
-        endpoints.onboarding.areasOfInterest,
-        InterestGroupsResponseSchema,
-      ),
-    staleTime: 10 * 60 * 1000, // 10 minutes
-    enabled: isAuthenticated, // Only fetch if authenticated
+    queryFn: async () => {
+      const profile = await getUserProfile();
+      return {
+        hasError: false,
+        statusCode: 200,
+        message: null,
+        response: {
+          aois: profile.interest_groups
+            .filter((ig) => !!ig.id)
+            .map((ig) => ({ id: ig.id as string, name: ig.name })),
+        },
+      };
+    },
+    staleTime: 5 * 60 * 1000,
+    enabled: isAuthenticated,
   });
 }

@@ -1,22 +1,11 @@
-/**
- * Become Expert Tab Component
- *
- * 📍 src/features/mujourney/components/BecomeExpertTab.tsx
- *
- * Shows Interest Group specific tasks (#cl- hashtags)
- * Uses the SAME endpoint as Start Learning Tab, filters by #cl- hashtags
- */
-
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
+import { Pencil } from "lucide-react";
 import { useMemo, useState } from "react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { updateInterestGroups } from "@/features/profile/api/profile.api";
+import { EditInterestGroupsModal } from "@/features/profile/components/edit-interest-groups-modal";
+import { mujourneyKeys } from "../hooks/query-keys";
 import type {
   GetUserLevelsResponse,
   InterestGroup,
@@ -44,84 +33,121 @@ export function BecomeExpertTab({
   isAuthenticated,
 }: BecomeExpertTabProps) {
   const [selectedIG, setSelectedIG] = useState<string | null>(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   const interestGroups = igData?.response?.aois || [];
 
-  // Derive effective IG: user selection falls back to first available
-  const effectiveIG = selectedIG ?? interestGroups[0]?.id ?? "";
+  const handleToggleIG = (igId: string) => {
+    setSelectedIG((prev) => (prev === igId ? null : igId));
+  };
 
-  // Filter levels to show only #cl- tasks (Interest Group specific tasks)
-  // organized by level, similar to Start Learning Tab
+  const handleSaveIGs = async (groupIds: string[]) => {
+    await updateInterestGroups(groupIds);
+
+    // Immediately reflect the saved selection in the cache so the pills
+    // update without waiting for a round-trip.
+    const savedAois = interestGroups.filter((ig) => groupIds.includes(ig.id));
+    queryClient.setQueryData(mujourneyKeys.interestGroups(), {
+      hasError: false,
+      statusCode: 200,
+      message: null,
+      response: { aois: savedAois },
+    });
+
+    // Force an immediate background refetch to sync with the server.
+    queryClient.refetchQueries({ queryKey: mujourneyKeys.interestGroups() });
+
+    // Clear any active pill filter so it can't point at a removed IG.
+    setSelectedIG(null);
+  };
+
+  // Adapt mujourney IGs to the shape EditInterestGroupsModal expects
+  const currentGroupsForModal = interestGroups.map((ig: InterestGroup) => ({
+    id: ig.id,
+    name: ig.name,
+    karma: 0,
+    level: { unit: "level", count: 1 } as { unit: string; count: number },
+  }));
+
   const expertLevels = useMemo(() => {
     if (!levelsData?.response) return [];
 
-    const levels = levelsData.response;
-
-    // Filter tasks within each level for #cl- hashtags and selected IG
-    // Filter tasks within each level for #cl- hashtags and selected IG
-    const filteredLevels = levels
+    return levelsData.response
       .map((level: UserLevelData) => {
         const filteredTasks = (level.tasks || []).filter((task: Task) => {
-          const hashtag = task.hashtag || "";
-          const isExpertTask = hashtag.includes("#cl-");
+          const isExpertTask = (task.hashtag || "").includes("#cl-");
 
-          // Filter by interest group if selected
-          const matchesIG = effectiveIG
-            ? task.interest_group?.id === effectiveIG
+          const matchesIG = selectedIG
+            ? task.interest_group?.id === selectedIG
             : true;
 
-          // Apply completion filter
-          if (filter === "completed") {
+          if (filter === "completed")
             return isExpertTask && matchesIG && task.completed;
-          } else if (filter === "incomplete") {
+          if (filter === "incomplete")
             return isExpertTask && matchesIG && !task.completed;
-          }
           return isExpertTask && matchesIG;
         });
 
-        // Deduplicate tasks by hashtag within each level
         const uniqueTasks = Array.from(
           new Map(
             filteredTasks.map((task: Task) => [task.hashtag, task]),
           ).values(),
         );
 
-        return {
-          ...level,
-          tasks: uniqueTasks,
-        };
+        return { ...level, tasks: uniqueTasks };
       })
-      .filter((level: UserLevelData) => (level.tasks || []).length > 0); // Remove empty levels
-
-    return filteredLevels;
-  }, [levelsData, effectiveIG, filter]);
+      .filter((level: UserLevelData) => (level.tasks || []).length > 0);
+  }, [levelsData, selectedIG, filter]);
 
   return (
     <div className="space-y-6">
-      {/* Header with IG Selector */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Advanced Interest Group Tasks</h2>
-          <p className="text-muted-foreground mt-1">
-            Complete specialized tasks in your interest groups
-          </p>
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div>
+            <h2 className="text-2xl font-bold">
+              Advanced Interest Group Tasks
+            </h2>
+            <p className="text-muted-foreground mt-1">
+              Complete specialized tasks in your interest groups
+            </p>
+          </div>
+          {isAuthenticated && !isLoading && (
+            <button
+              type="button"
+              onClick={() => setEditModalOpen(true)}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors hover:bg-primary/20 shrink-0"
+              title="Edit interest groups"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
-
-        {!isLoading && interestGroups.length > 0 && (
-          <Select value={effectiveIG} onValueChange={setSelectedIG}>
-            <SelectTrigger className="w-[250px]">
-              <SelectValue placeholder="Select Interest Group" />
-            </SelectTrigger>
-            <SelectContent>
-              {interestGroups.map((ig: InterestGroup) => (
-                <SelectItem key={ig.id} value={ig.id}>
-                  {ig.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
       </div>
+
+      {/* IG Pills */}
+      {!isLoading && interestGroups.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {interestGroups.map((ig: InterestGroup) => {
+            const isActive = selectedIG === ig.id;
+            return (
+              <button
+                key={ig.id}
+                type="button"
+                onClick={() => handleToggleIG(ig.id)}
+                className={`rounded-full border-2 px-4 py-1.5 text-sm font-medium transition-all ${
+                  isActive
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-primary/40 bg-primary/5 text-foreground hover:border-primary hover:bg-primary/10"
+                }`}
+              >
+                {ig.name}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Loading State */}
       {isLoading && (
@@ -148,33 +174,33 @@ export function BecomeExpertTab({
         !error &&
         (expertLevels.length > 0 ? (
           <div className="space-y-10">
-            {expertLevels.map((level: UserLevelData, index: number) => {
-              const uniqueKey = `${level.name}-${index}`;
-              return (
-                <LevelCard key={uniqueKey} level={level} isLocked={false} />
-              );
-            })}
+            {expertLevels.map((level: UserLevelData, index: number) => (
+              <LevelCard
+                key={`${level.name}-${index}`}
+                level={level}
+                isLocked={false}
+              />
+            ))}
           </div>
         ) : (
           <div className="text-center py-12">
             <p className="text-muted-foreground">
-              {effectiveIG
-                ? "No expert tasks available for this interest group"
-                : "Select an interest group to view tasks"}
+              {interestGroups.length === 0
+                ? isAuthenticated
+                  ? "You haven't joined any interest groups yet"
+                  : "Please log in to view interest group tasks"
+                : "No expert tasks available for this interest group"}
             </p>
           </div>
         ))}
 
-      {/* No IGs Available */}
-      {!isLoading && interestGroups.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">
-            {isAuthenticated
-              ? "You haven't joined any interest groups yet"
-              : "Please log in to view interest group tasks"}
-          </p>
-        </div>
-      )}
+      {/* Edit Modal */}
+      <EditInterestGroupsModal
+        open={editModalOpen}
+        onOpenChange={setEditModalOpen}
+        currentGroups={currentGroupsForModal}
+        onSave={handleSaveIGs}
+      />
     </div>
   );
 }

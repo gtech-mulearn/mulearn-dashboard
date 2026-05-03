@@ -28,15 +28,6 @@ export function BasicDetails({
   isOwnProfile = true,
   onSaveInterestGroups,
 }: BasicDetailsProps) {
-  // Get current level as number
-  const getCurrentLevel = (level: string | null | undefined): number => {
-    if (!level) return 1;
-    const match = level.match(/\d+/);
-    return match ? Number.parseInt(match[0], 10) : 1;
-  };
-
-  const userLevel = getCurrentLevel(profile.level);
-
   const handleSaveInterestGroups = async (groupIds: string[]) => {
     if (onSaveInterestGroups) {
       await onSaveInterestGroups(groupIds);
@@ -49,7 +40,6 @@ export function BasicDetails({
       <div className="rounded-2xl bg-card p-6 shadow-sm">
         <IGSelector
           userInterestGroups={profile.interest_groups}
-          userLevel={userLevel}
           isOwnProfile={isOwnProfile}
           onSave={handleSaveInterestGroups}
         />

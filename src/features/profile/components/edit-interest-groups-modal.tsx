@@ -1,25 +1,10 @@
-/**
- * Edit Interest Groups Modal
- *
- * 📍 src/features/profile/components/edit-interest-groups-modal.tsx
- *
- * Modal dialog for selecting interest groups by category.
- * Uses the same UI style as the old codebase onboarding flow.
- */
-
 "use client";
 
-import { Check, Info } from "lucide-react";
-import Image from "next/image";
+import { Check, Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
 import { useInterestGroupsList } from "../hooks";
 import type { InterestGroup, InterestGroupListItem } from "../schemas";
@@ -31,60 +16,12 @@ interface EditInterestGroupsModalProps {
   onSave: (groupIds: string[]) => Promise<void>;
 }
 
-// Category definitions matching old codebase
-const CATEGORIES = [
-  {
-    id: "coder",
-    title: "Coder",
-    image: "/assets/landing/coder2.webp",
-    descriptions: [
-      "Web Development",
-      "Mobile Apps",
-      "Data Science",
-      "Machine Learning",
-      "Cloud Computing",
-      "DevOps",
-    ],
-  },
-  {
-    id: "maker",
-    title: "Maker",
-    image: "/assets/landing/maker.webp",
-    descriptions: [
-      "Hardware Development",
-      "IoT Projects",
-      "Robotics",
-      "3D Printing",
-      "Electronics",
-      "DIY Projects",
-    ],
-  },
-  {
-    id: "manager",
-    title: "Manager",
-    image: "/assets/landing/manager.webp",
-    descriptions: [
-      "Project Management",
-      "Product Management",
-      "Business Strategy",
-      "Team Leadership",
-      "Operations",
-      "HR Management",
-    ],
-  },
-  {
-    id: "creative",
-    title: "Creative",
-    image: "/assets/landing/creative.webp",
-    descriptions: [
-      "UI/UX Design",
-      "Graphic Design",
-      "Animation",
-      "Video Editing",
-      "Content Creation",
-      "Digital Marketing",
-    ],
-  },
+const CATEGORY_TABS = [
+  { id: "all", label: "All" },
+  { id: "coder", label: "Coder" },
+  { id: "maker", label: "Maker" },
+  { id: "manager", label: "Manager" },
+  { id: "creative", label: "Creative" },
 ];
 
 const MAX_GROUPS = 3;
@@ -95,49 +32,50 @@ export function EditInterestGroupsModal({
   currentGroups,
   onSave,
 }: EditInterestGroupsModalProps) {
-  const { data: igListData, isLoading: isLoadingGroups } =
-    useInterestGroupsList();
-
+  const { data: igListData, isLoading } = useInterestGroupsList();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState("all");
+  const [search, setSearch] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
-  // Initialize selected IDs from current groups
   useEffect(() => {
     if (open) {
       setSelectedIds(
         currentGroups.map((g) => g.id).filter((id): id is string => !!id),
       );
+      setSearch("");
+      setActiveCategory("all");
     }
   }, [open, currentGroups]);
 
-  // Group interest groups by category
-  const groupsByCategory = useMemo(() => {
-    if (!igListData?.interestGroup) return {};
-    return igListData.interestGroup.reduce(
-      (acc, ig) => {
-        const category = ig.category || "other";
-        if (!acc[category]) acc[category] = [];
-        acc[category].push(ig);
-        return acc;
-      },
-      {} as Record<string, InterestGroupListItem[]>,
-    );
-  }, [igListData]);
+  const allIgs = igListData?.interestGroup || [];
 
-  // Check if a category has any selected groups
-  const getCategorySelectedCount = (categoryId: string) => {
-    const groups = groupsByCategory[categoryId] || [];
-    return groups.filter((g) => selectedIds.includes(g.id)).length;
-  };
+  const filteredIgs = useMemo(() => {
+    return allIgs.filter((ig) => {
+      const matchesSearch = ig.name
+        .toLowerCase()
+        .includes(search.toLowerCase());
+      const matchesCategory =
+        activeCategory === "all" || ig.category === activeCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [allIgs, search, activeCategory]);
+
+  const selectedIgs = useMemo(
+    () =>
+      selectedIds
+        .map((id) => allIgs.find((ig) => ig.id === id))
+        .filter((ig): ig is InterestGroupListItem => !!ig),
+    [selectedIds, allIgs],
+  );
+
+  const atLimit = selectedIds.length >= MAX_GROUPS;
 
   const toggleGroup = (id: string) => {
     setSelectedIds((prev) => {
-      if (prev.includes(id)) {
-        return prev.filter((i) => i !== id);
-      }
+      if (prev.includes(id)) return prev.filter((i) => i !== id);
       if (prev.length >= MAX_GROUPS) {
-        toast.error(`You can select up to ${MAX_GROUPS} interest groups`);
+        toast.error("You can only select 3 interest groups");
         return prev;
       }
       return [...prev, id];
@@ -159,179 +97,190 @@ export function EditInterestGroupsModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Edit Interest Groups</DialogTitle>
-        </DialogHeader>
-
-        <div className="py-4">
-          <p className="mb-4 text-sm text-gray-500">
-            Select up to {MAX_GROUPS} interest groups that match your learning
-            goals. ({selectedIds.length}/{MAX_GROUPS} selected)
+      <DialogContent className="flex max-h-[88vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-md">
+        {/* Header */}
+        <div className="shrink-0 border-b border-border/60 px-6 pb-4 pt-6">
+          <DialogTitle className="text-base font-semibold tracking-tight">
+            Your Interests
+          </DialogTitle>
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            Choose up to 3 groups that match your goals
           </p>
 
-          {isLoadingGroups ? (
-            <div className="flex h-48 items-center justify-center">
-              <Spinner className="h-8 w-8 text-gray-400" />
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {/* Category Cards */}
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                {CATEGORIES.map((category) => {
-                  const selectedCount = getCategorySelectedCount(category.id);
-                  const hasGroups =
-                    (groupsByCategory[category.id] || []).length > 0;
-                  const isExpanded = expandedCategory === category.id;
+          {/* Progress indicator */}
+          {(() => {
+            const overLimit = selectedIds.length > MAX_GROUPS;
+            const excess = selectedIds.length - MAX_GROUPS;
+            return (
+              <div className="mt-4 flex items-center gap-2.5">
+                <div className="flex gap-1.5">
+                  {Array.from({ length: MAX_GROUPS }, (_, i) => i).map(
+                    (dotIndex) => (
+                      <div
+                        key={`dot-${dotIndex}`}
+                        className={`h-1.5 rounded-full transition-all duration-300 ${
+                          overLimit
+                            ? "w-5 bg-destructive"
+                            : dotIndex < selectedIds.length
+                              ? "w-5 bg-primary"
+                              : "w-1.5 bg-border"
+                        }`}
+                      />
+                    ),
+                  )}
+                </div>
+                {overLimit ? (
+                  <span className="text-xs font-medium text-destructive">
+                    Remove {excess} to continue
+                  </span>
+                ) : (
+                  <span className="text-xs text-muted-foreground">
+                    {selectedIds.length} of {MAX_GROUPS} chosen
+                  </span>
+                )}
+              </div>
+            );
+          })()}
 
-                  return (
+          {/* Selected chips */}
+          {selectedIgs.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {selectedIgs.map((ig) => {
+                const overLimit = selectedIds.length > MAX_GROUPS;
+                return (
+                  <span
+                    key={ig.id}
+                    className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${
+                      overLimit
+                        ? "bg-destructive/10 text-destructive"
+                        : "bg-primary/10 text-primary"
+                    }`}
+                  >
+                    {ig.name}
                     <button
                       type="button"
-                      key={category.id}
-                      className={`relative flex cursor-pointer flex-col items-center rounded-xl border-2 bg-card p-4 shadow-sm transition-all hover:shadow-md ${
-                        selectedCount > 0
-                          ? "border-primary"
-                          : "border-border hover:border-primary/50"
+                      onClick={() => toggleGroup(ig.id)}
+                      className={`rounded-full p-0.5 transition-colors ${
+                        overLimit
+                          ? "hover:bg-destructive/20"
+                          : "hover:bg-primary/20"
                       }`}
-                      onClick={() =>
-                        setExpandedCategory(isExpanded ? null : category.id)
-                      }
                     >
-                      {/* Selected count badge */}
-                      {selectedCount > 0 && (
-                        <div className="absolute -left-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground shadow">
-                          {selectedCount}
-                        </div>
-                      )}
-
-                      {/* Info button */}
-                      <span
-                        className={`absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full transition-colors ${
-                          isExpanded
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted text-primary"
-                        }`}
-                      >
-                        <Info className="h-3.5 w-3.5" />
-                      </span>
-
-                      {/* Category image */}
-                      <div className="relative mb-2 h-24 w-20 sm:h-28 sm:w-24">
-                        <Image
-                          src={category.image}
-                          alt={category.title}
-                          fill
-                          className="object-contain"
-                          onError={(e) => {
-                            // Fallback if image doesn't exist
-                            (e.target as HTMLImageElement).style.display =
-                              "none";
-                          }}
-                        />
-                      </div>
-
-                      {/* Title */}
-                      <p className="text-sm font-semibold text-gray-800">
-                        {category.title}
-                      </p>
-
-                      {/* Quick descriptions */}
-                      {!hasGroups && (
-                        <p className="mt-1 text-center text-xs text-gray-400">
-                          No groups available
-                        </p>
-                      )}
+                      <X className="h-2.5 w-2.5" />
                     </button>
-                  );
-                })}
-              </div>
-
-              {/* Expanded category - show interest groups */}
-              {expandedCategory && (
-                <div className="animate-in slide-in-from-top-2 rounded-xl border border-border bg-muted/50 p-4">
-                  <h4 className="mb-3 text-sm font-semibold text-gray-700">
-                    Select from{" "}
-                    {CATEGORIES.find((c) => c.id === expandedCategory)?.title}:
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {(groupsByCategory[expandedCategory] || []).map((ig) => {
-                      const isSelected = selectedIds.includes(ig.id);
-                      return (
-                        <button
-                          key={ig.id}
-                          type="button"
-                          onClick={() => toggleGroup(ig.id)}
-                          className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm transition-all ${
-                            isSelected
-                              ? "border-primary bg-primary text-primary-foreground"
-                              : "border-border bg-card text-foreground hover:border-primary hover:bg-primary/5"
-                          }`}
-                        >
-                          {isSelected && <Check className="h-3.5 w-3.5" />}
-                          {ig.name}
-                        </button>
-                      );
-                    })}
-                    {(groupsByCategory[expandedCategory] || []).length ===
-                      0 && (
-                      <p className="text-sm text-gray-400">
-                        No interest groups in this category yet.
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Selected groups summary */}
-              {selectedIds.length > 0 && (
-                <div className="rounded-xl border border-green-200 bg-green-50 p-4">
-                  <h4 className="mb-2 text-sm font-semibold text-green-800">
-                    Selected Groups ({selectedIds.length}/{MAX_GROUPS}):
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedIds.map((id) => {
-                      const ig = igListData?.interestGroup.find(
-                        (g) => g.id === id,
-                      );
-                      return (
-                        <span
-                          key={id}
-                          className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-700"
-                        >
-                          {ig?.name || id}
-                          <button
-                            type="button"
-                            onClick={() => toggleGroup(id)}
-                            className="ml-1 text-green-500 hover:text-green-700"
-                          >
-                            ×
-                          </button>
-                        </span>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+                  </span>
+                );
+              })}
             </div>
           )}
         </div>
 
-        {/* Actions */}
-        <div className="flex justify-end gap-2 border-t pt-4">
+        {/* Search + category tabs */}
+        <div className="shrink-0 space-y-3 px-6 pb-3 pt-4">
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/60" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search interest groups…"
+              className="w-full rounded-lg border border-border bg-muted/40 py-2 pl-9 pr-9 text-sm outline-none transition-colors placeholder:text-muted-foreground/50 focus:border-primary/40 focus:bg-background"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-0.5 text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Category tabs */}
+          <div className="flex gap-1.5 overflow-x-auto pb-0.5 [&::-webkit-scrollbar]:hidden">
+            {CATEGORY_TABS.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveCategory(tab.id)}
+                className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-all ${
+                  activeCategory === tab.id
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "bg-muted text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* IG grid — scrollable */}
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-4">
+          {isLoading ? (
+            <div className="flex h-40 items-center justify-center">
+              <Spinner className="h-5 w-5 text-muted-foreground" />
+            </div>
+          ) : filteredIgs.length === 0 ? (
+            <div className="flex h-40 items-center justify-center">
+              <p className="text-sm text-muted-foreground">
+                {search
+                  ? `No results for "${search}"`
+                  : "No groups in this category"}
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {filteredIgs.map((ig) => {
+                const isSelected = selectedIds.includes(ig.id);
+                const isDimmed = !isSelected && atLimit;
+                return (
+                  <button
+                    key={ig.id}
+                    type="button"
+                    onClick={() => toggleGroup(ig.id)}
+                    className={`flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-medium transition-all ${
+                      isSelected
+                        ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                        : isDimmed
+                          ? "cursor-not-allowed border-border/40 bg-muted/20 text-muted-foreground/40"
+                          : "border-border bg-card text-foreground hover:border-primary/50 hover:bg-primary/5"
+                    }`}
+                  >
+                    {isSelected && <Check className="h-3 w-3 shrink-0" />}
+                    {ig.name}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="flex shrink-0 items-center justify-end gap-2 border-t border-border/60 px-6 py-4">
           <Button
-            variant="outline"
+            variant="ghost"
+            size="sm"
             onClick={() => onOpenChange(false)}
             disabled={isSaving}
+            className="text-muted-foreground"
           >
             Cancel
           </Button>
           <Button
-            variant="default"
+            size="sm"
             onClick={handleSave}
-            disabled={isSaving || isLoadingGroups}
+            disabled={
+              isSaving ||
+              isLoading ||
+              selectedIds.length === 0 ||
+              selectedIds.length > MAX_GROUPS
+            }
+            className="min-w-20"
           >
-            {isSaving && <Spinner className="mr-2 h-4 w-4" />}
-            Save Changes
+            {isSaving ? <Spinner className="h-3.5 w-3.5" /> : "Save"}
           </Button>
         </div>
       </DialogContent>

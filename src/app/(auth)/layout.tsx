@@ -10,7 +10,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
   return (
     <div className="min-h-screen w-full flex bg-background">
       {/* Desktop Sidebar - Left Side */}
-      <div className="hidden lg:flex w-1/2 bg-primary flex-col justify-between p-16 text-secondary relative overflow-hidden">
+      <div className="hidden lg:flex w-1/2  flex-col justify-between p-16 text-secondary relative overflow-hidden bg-brand-blue">
         <div className="z-10">
           <Link href="/" className="inline-block">
             <Image
@@ -23,18 +23,18 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
             />
           </Link>
           <div className="mt-16 space-y-4">
-            <h1 className="text-5xl font-bold leading-tight">
+            <h1 className="text-5xl text-primary-foreground font-bold leading-tight">
               We Grow As A<br />
               Community
             </h1>
-            <p className="text-lg text-blue-100 max-w-md">
+            <p className="text-lg text-primary-foreground max-w-md">
               Join the fastest growing tech community.
             </p>
           </div>
         </div>
 
         {/* Illustration */}
-        <div className="z-10 flex justify-center -mb-8">
+        <div className="z-10 flex justify-start ">
           <Image
             src="/layout/Group.png"
             alt="Community Illustration"
@@ -45,7 +45,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
           />
         </div>
 
-        <div className="z-10 text-sm text-blue-200">
+        <div className="z-10 text-sm text-blue-200 absolute bottom-4">
           © {new Date().getFullYear()} μLearn. All rights reserved.
         </div>
       </div>

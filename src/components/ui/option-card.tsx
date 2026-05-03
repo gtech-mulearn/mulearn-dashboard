@@ -11,21 +11,18 @@
 import { cn } from "@/lib/utils";
 
 interface OptionCardProps {
-  /** Icon or emoji to display */
   icon?: React.ReactNode;
-  /** Option label */
   label: string;
-  /** Whether this option is selected */
+  description?: string;
   selected?: boolean;
-  /** Click handler */
   onClick?: () => void;
-  /** Disabled state */
   disabled?: boolean;
 }
 
 export function OptionCard({
   icon,
   label,
+  description,
   selected = false,
   onClick,
   disabled = false,
@@ -38,7 +35,7 @@ export function OptionCard({
       className={cn(
         "w-full flex items-center gap-4 px-6 py-4",
         "rounded-2xl border bg-card",
-        "text-left text-base font-medium",
+        "text-left",
         "transition-all duration-200",
         "hover:shadow-md hover:border-primary/30",
         "active:scale-[0.98]",
@@ -49,9 +46,18 @@ export function OptionCard({
       )}
     >
       {icon && <span className="text-2xl shrink-0">{icon}</span>}
-      <span className="flex-1 text-foreground">{label}</span>
+      <span className="flex-1 min-w-0">
+        <span className="block text-base font-medium text-foreground">
+          {label}
+        </span>
+        {description && (
+          <span className="block text-xs text-muted-foreground mt-0.5 leading-snug">
+            {description}
+          </span>
+        )}
+      </span>
       {selected && (
-        <span className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+        <span className="w-5 h-5 rounded-full bg-primary flex items-center justify-center shrink-0">
           <svg
             className="w-3 h-3 text-primary-foreground"
             fill="none"

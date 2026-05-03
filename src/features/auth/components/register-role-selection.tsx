@@ -67,6 +67,7 @@ export function RegisterRoleSelection({
         <OptionCard
           icon="🎓"
           label="Student"
+          description="I'm a learner building tech skills and earning karma."
           selected={selectedRole === "student"}
           onClick={() => setSelectedRole("student")}
           disabled={isLoading}
@@ -74,6 +75,7 @@ export function RegisterRoleSelection({
         <OptionCard
           icon="👨‍🏫"
           label="Mentor"
+          description="I guide and support learners. Company employees — choose this, then select your company during setup."
           selected={selectedRole === "mentor"}
           onClick={() => setSelectedRole("mentor")}
           disabled={isLoading}
@@ -81,6 +83,7 @@ export function RegisterRoleSelection({
         <OptionCard
           icon="🤝"
           label="Enabler"
+          description="I represent an institution or organisation supporting the µLearn community."
           selected={selectedRole === "enabler"}
           onClick={() => setSelectedRole("enabler")}
           disabled={isLoading}
@@ -88,6 +91,7 @@ export function RegisterRoleSelection({
         <OptionCard
           icon="🏢"
           label="Company"
+          description="I'm registering my company for the first time as the Point of Contact (POC). Employees should choose Mentor."
           selected={selectedRole === "company"}
           onClick={() => setSelectedRole("company")}
           disabled={isLoading}

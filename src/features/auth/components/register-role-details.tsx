@@ -1203,6 +1203,7 @@ export function RegisterRoleDetails({
               )}
               {companyStep < 4 ? (
                 <Button
+                  key="next-btn"
                   type="button"
                   variant="default"
                   className="flex-1"
@@ -1213,6 +1214,7 @@ export function RegisterRoleDetails({
                 </Button>
               ) : (
                 <Button
+                  key="submit-btn"
                   type="submit"
                   variant="default"
                   className="flex-1"
