@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { fetchStudentLeaderboard } from "@/features/leaderboard/api/leaderboard.api";
 import {
   getCalendarEvents,
   getEvents,
@@ -38,5 +39,14 @@ export function useCalendarEvents() {
     queryKey: homeKeys.calendarEvents(),
     queryFn: getCalendarEvents,
     staleTime: HOME_STALE_TIME,
+  });
+}
+
+export function useTopPerformers() {
+  return useQuery({
+    queryKey: homeKeys.topPerformers(),
+    queryFn: () => fetchStudentLeaderboard(false),
+    staleTime: HOME_STALE_TIME,
+    select: (data) => data.slice(0, 5),
   });
 }

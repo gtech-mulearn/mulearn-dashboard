@@ -5,4 +5,5 @@ export const homeKeys = {
   karmaFeed: () => [...homeKeys.all, "karma-feed"] as const,
   events: () => [...homeKeys.all, "events"] as const,
   calendarEvents: () => [...homeKeys.all, "calendar-events"] as const,
+  topPerformers: () => [...homeKeys.all, "top-performers"] as const,
 };

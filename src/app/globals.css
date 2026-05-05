@@ -91,12 +91,12 @@
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
+  --card: oklch(0.185 0 0); /* lifted from background for card elevation */
   --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
+  --popover: oklch(0.185 0 0);
   --popover-foreground: oklch(0.985 0 0);
   --primary: #fefefe;
-  --primary-foreground: oklch(0.985 0 0);
+  --primary-foreground: oklch(0.145 0 0); /* dark text on near-white primary */
   --secondary: #ffffff99;
   --secondary-foreground: oklch(0.985 0 0);
   --tertiary: #ffffffb2;
@@ -104,14 +104,14 @@
   --brand-blue: #2e85fe;
   --success: #4caf50;
   --warning: #ff8d0c;
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
+  --muted: oklch(0.23 0 0); /* slightly lighter for better chip contrast */
+  --muted-foreground: oklch(0.72 0 0); /* bumped from 0.708 for readability */
+  --accent: oklch(0.23 0 0);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: #f44336;
   --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
+  --border: oklch(0.26 0 0);
+  --input: oklch(0.23 0 0);
   --ring: #0961f5;
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);

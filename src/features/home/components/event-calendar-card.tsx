@@ -39,7 +39,7 @@ function getEventBg(type: string) {
 
 function CalendarSkeleton() {
   return (
-    <div className="relative flex h-full flex-col overflow-hidden rounded-2xl bg-linear-to-br from-violet-300 via-purple-200 to-purple-100 p-5 shadow-sm">
+    <div className="relative flex  flex-col overflow-hidden rounded-2xl border bg-card p-5 shadow-sm">
       {/* Decorative SVG */}
       <svg
         aria-hidden="true"
@@ -61,23 +61,23 @@ function CalendarSkeleton() {
         />
       </svg>
       <div className="relative z-10 mb-4 flex items-center justify-between">
-        <div className="h-5 w-28 animate-pulse rounded-md bg-violet-600/10" />
+        <div className="h-5 w-28 animate-pulse rounded-md bg-muted" />
         <div className="flex gap-1.5">
-          <div className="size-8 animate-pulse rounded-full bg-violet-600/10" />
-          <div className="size-8 animate-pulse rounded-full bg-violet-600/10" />
+          <div className="size-8 animate-pulse rounded-full bg-muted" />
+          <div className="size-8 animate-pulse rounded-full bg-muted" />
         </div>
       </div>
       <div className="relative z-10 grid grid-cols-7 gap-1">
         {WEEKDAYS.map((day) => (
           <div
             key={`wh-${day}`}
-            className="mx-auto h-4 w-6 animate-pulse rounded bg-violet-600/10"
+            className="mx-auto h-4 w-6 animate-pulse rounded bg-muted"
           />
         ))}
         {Array.from({ length: 35 }, (_, i) => `d-skeleton-${i}`).map((key) => (
           <div
             key={key}
-            className="mx-auto size-9 animate-pulse rounded-full bg-violet-600/10"
+            className="mx-auto size-9 animate-pulse rounded-full bg-muted"
           />
         ))}
       </div>
@@ -138,7 +138,7 @@ export function EventCalendarCard({
   if (isLoading) return <CalendarSkeleton />;
 
   return (
-    <div className="relative flex h-full flex-col overflow-hidden rounded-2xl border-none bg-linear-to-br from-violet-300 via-purple-200 to-purple-100 p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl md:p-5">
+    <div className="relative flex flex-col overflow-hidden rounded-2xl border bg-card p-5 shadow-sm">
       {/* ─── Decorative background SVG ─────────────────────────── */}
       <svg
         aria-hidden="true"
@@ -162,14 +162,14 @@ export function EventCalendarCard({
 
       {/* ─── Header: Month title + navigation arrows ────────────── */}
       <div className="relative z-10 mb-4 flex items-center justify-between">
-        <h3 className="text-sm font-bold text-violet-900 md:text-base">
+        <h3 className="text-sm font-bold text-foreground md:text-base">
           {format(currentMonth, "MMMM, yyyy")}
         </h3>
         <div className="flex items-center gap-1.5">
           <button
             type="button"
             onClick={goToPrevMonth}
-            className="flex size-8 cursor-pointer items-center justify-center rounded-full bg-violet-600/15 text-violet-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:scale-110 hover:bg-violet-600/25 hover:shadow-lg active:scale-95"
+            className="flex size-8 cursor-pointer items-center justify-center rounded-full bg-muted text-muted-foreground shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:scale-110 hover:bg-muted/80 hover:shadow-lg active:scale-95"
             aria-label="Previous month"
           >
             <ChevronLeft className="size-4" />
@@ -177,7 +177,7 @@ export function EventCalendarCard({
           <button
             type="button"
             onClick={goToNextMonth}
-            className="flex size-8 cursor-pointer items-center justify-center rounded-full bg-violet-600/15 text-violet-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:scale-110 hover:bg-violet-600/25 hover:shadow-lg active:scale-95"
+            className="flex size-8 cursor-pointer items-center justify-center rounded-full bg-muted text-muted-foreground shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:scale-110 hover:bg-muted/80 hover:shadow-lg active:scale-95"
             aria-label="Next month"
           >
             <ChevronRight className="size-4" />
@@ -190,7 +190,7 @@ export function EventCalendarCard({
         {WEEKDAYS.map((day) => (
           <div
             key={day}
-            className="py-1 text-center text-[11px] font-semibold tracking-wide text-violet-500"
+            className="py-1 text-center text-[11px] font-semibold tracking-wide text-muted-foreground"
           >
             {day}
           </div>
@@ -220,18 +220,18 @@ export function EventCalendarCard({
               className={cn(
                 "group/cell relative mx-auto flex size-9 items-center justify-center rounded-full text-sm transition-all duration-200",
                 // Default state
-                isCurrentMonth ? "text-violet-900" : "text-violet-300",
+                isCurrentMonth ? "text-foreground" : "text-muted-foreground",
                 // Hover
-                !isSelected && !hasEvents && "hover:bg-violet-600/10",
+                !isSelected && !hasEvents && "hover:bg-muted/60",
                 // Today ring indicator
                 isToday &&
                   !isSelected &&
                   !hasEvents &&
-                  "font-bold ring-2 ring-violet-500/40",
-                // Selected (no event) — violet circle
+                  "font-bold ring-2 ring-primary/40",
+                // Selected (no event) — primary circle
                 isSelected &&
                   !hasEvents &&
-                  "bg-violet-600 text-white font-semibold shadow-md",
+                  "bg-primary text-primary-foreground font-semibold shadow-md",
                 // Has events — colored circle
                 hasEvents &&
                   !isSelected &&
@@ -241,7 +241,7 @@ export function EventCalendarCard({
                   isSelected &&
                   cn(
                     eventColor,
-                    "font-semibold shadow-md ring-2 ring-violet-600 ring-offset-2 ring-offset-purple-100",
+                    "font-semibold shadow-md ring-2 ring-primary ring-offset-2 ring-offset-background",
                   ),
               )}
             >
@@ -260,8 +260,8 @@ export function EventCalendarCard({
       {/* ─── Bottom section: events or blank space ────────────── */}
       <div className="relative z-10 mt-auto flex-1 pt-3">
         {selectedDateEvents.length > 0 ? (
-          <div className="space-y-2 border-t border-violet-300/40 pt-3">
-            <p className="text-xs font-semibold text-violet-600">
+          <div className="space-y-2 border-t border-border pt-3">
+            <p className="text-xs font-semibold text-foreground">
               {format(selectedDate, "EEEE, MMM d")}
             </p>
             <div className="max-h-36 space-y-1.5 overflow-y-auto scrollbar-none">

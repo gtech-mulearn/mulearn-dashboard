@@ -1,144 +1,104 @@
 "use client";
 
-import { useUserInfo, useUserProfile } from "@/features/auth/hooks/use-session";
-import {
-  useCalendarEvents,
-  useInterestGroupsList,
-  useKarmaFeed,
-} from "../hooks";
-import { EventCalendarCard } from "./event-calendar-card";
-import { EventsSliderCard } from "./events-slider-card";
-import { HeroCard } from "./hero-card";
-import { InterestGroupsCard } from "./interest-groups-card";
-import { KarmaEarnersCard } from "./karma-earners-card";
-import { LearningCirclesCard } from "./learning-circles-card";
+import { useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useUserInfo } from "@/features/auth/hooks/use-session";
+import { usePermissions } from "@/hooks/use-permissions";
+import { CAMPUS_MANAGEMENT_ROLES, ROLES } from "@/lib/auth";
+import { CompanyHome } from "./company-home";
+import { EnablerHome } from "./enabler-home";
+import { MuLearnerHome } from "./mulearner-home";
 import { VerificationStatusBanner } from "./verification-status-banner";
 
-// Import role-specific components (commented out for now)
-// import {
-//   StudentHome,
-//   MuLearnerHome,
-//   EnablerHome,
-//   MentorHome,
-//   CompanyHome,
-// } from "./index";
+type DashboardView = "student" | "campus";
+
+function RoleComingSoon({ roleName }: { roleName: string }) {
+  return (
+    <div className="flex min-h-100 items-center justify-center rounded-2xl border bg-card shadow-sm">
+      <div className="space-y-2 text-center">
+        <p className="text-lg font-semibold text-foreground">
+          {roleName} Dashboard
+        </p>
+        <p className="text-sm text-muted-foreground">Coming soon</p>
+      </div>
+    </div>
+  );
+}
+
+function HomeLoadingSkeleton() {
+  return (
+    <div className="space-y-5">
+      <div className="grid grid-cols-5 gap-3">
+        {[0, 1, 2, 3, 4].map((i) => (
+          <Skeleton key={i} className="h-16 rounded-xl" />
+        ))}
+      </div>
+      <Skeleton className="h-48 rounded-2xl" />
+      <div className="grid grid-cols-2 gap-5">
+        <Skeleton className="h-64 rounded-2xl" />
+        <Skeleton className="h-64 rounded-2xl" />
+      </div>
+    </div>
+  );
+}
+
+function DualRoleToggle({
+  view,
+  onChange,
+}: {
+  view: DashboardView;
+  onChange: (v: DashboardView) => void;
+}) {
+  return (
+    <div className="flex items-center gap-1 rounded-xl border bg-muted p-1 w-fit">
+      {(["student", "campus"] as const).map((v) => (
+        <button
+          key={v}
+          type="button"
+          onClick={() => onChange(v)}
+          className={`rounded-lg px-4 py-1.5 text-sm font-medium transition-colors ${
+            view === v
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          {v === "student" ? "Student" : "Campus Lead"}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 export function HomePage() {
+  const { roles, isLoading } = usePermissions();
   const { data: userInfo } = useUserInfo();
-  const { data: userProfile } = useUserProfile();
-  const { data: interestGroups, isLoading: loadingGroups } =
-    useInterestGroupsList();
-  const { data: karmaFeed, isLoading: loadingKarma } = useKarmaFeed();
-  const { data: calendarEvents, isLoading: loadingCalendar } =
-    useCalendarEvents();
+  const [dualView, setDualView] = useState<DashboardView>("student");
 
-  const displayName = userInfo?.full_name?.split(" ")[0] ?? "Learner";
-  const selectedDomain = userInfo?.user_domains?.[0]?.toLowerCase();
+  if (isLoading) return <HomeLoadingSkeleton />;
 
-  const imageMap: { [key: string]: { src: string; alt: string } } = {
-    coder: { src: "/images/dashboard/coder.webp", alt: "Coding illustration" },
-    maker: { src: "/images/dashboard/maker.webp", alt: "Maker illustration" },
-    creative: {
-      src: "/images/dashboard/creative.webp",
-      alt: "Creative illustration",
-    },
-    manager: {
-      src: "/images/dashboard/manager.webp",
-      alt: "Manager illustration",
-    },
+  const isCampusRole = roles.some((r) =>
+    (CAMPUS_MANAGEMENT_ROLES as readonly string[]).includes(r),
+  );
+  const isStudent =
+    roles.includes(ROLES.STUDENT) || roles.includes(ROLES.PRE_MEMBER);
+  const isDualRole = isCampusRole && isStudent;
+
+  const renderHome = () => {
+    if (roles.includes(ROLES.MENTOR))
+      return <RoleComingSoon roleName="Mentor" />;
+    if (roles.includes(ROLES.COMPANY)) return <CompanyHome />;
+    if (isDualRole) {
+      return dualView === "campus" ? <EnablerHome /> : <MuLearnerHome />;
+    }
+    if (isCampusRole) return <EnablerHome />;
+    return <MuLearnerHome />;
   };
-
-  const defaultImage = {
-    src: "/images/dashboard/dpm.webp",
-    alt: "General illustration",
-  };
-  const { src, alt } = selectedDomain
-    ? imageMap[selectedDomain] || defaultImage
-    : defaultImage;
-
-  const currentIgsData: Record<string, string[]> = {
-    creative: [
-      "46fe1fb7-7b04-4ebe-837d-120bc16d0e0a",
-      "2de0ee0c-ddc3-4f02-bf93-b6bd2d0625c3",
-    ],
-    maker: [
-      "d379d82b-e116-4b67-8128-670916e6bb42",
-      "2de0ee0c-ddc3-4f02-bf93-b6bd2d0625c3",
-    ],
-    coder: [
-      "9b8aaf7f-16a0-4a66-ae53-79b8c25e5faa",
-      "3a74725e-a05a-418b-a275-39d68ad9a416",
-      "1be43a3a-bcfb-4ef1-b77a-959b01bcb782",
-      "85fdd535-08d2-4619-9da7-944e21365de9",
-      "1719d19a-0206-4161-9c6f-0a7dba44d4e5",
-    ],
-    manager: [
-      "5bf2bdfe-5c22-48ab-9572-9e9836c70e79",
-      "04d29c15-4de4-4b43-ad63-0f4760c62919",
-    ],
-  };
-
-  const filteredInterestGroups =
-    selectedDomain && currentIgsData[selectedDomain]
-      ? (interestGroups ?? []).filter((group) =>
-          currentIgsData[selectedDomain].includes(group.id),
-        )
-      : (interestGroups ?? []);
-
-  /**
-   * Role-based home component switcher (Disabled for now)
-   *
-   * const renderHome = () => {
-   *   switch (role?.toLowerCase()) {
-   *     case "student":
-   *       return <StudentHome />;
-   *     case "mulearner":
-   *       return <MuLearnerHome />;
-   *     case "enabler":
-   *       return <EnablerHome />;
-   *     case "mentor":
-   *       return <MentorHome />;
-   *     case "company":
-   *       return <CompanyHome />;
-   *     default:
-   *       return null;
-   *   }
-   * };
-   */
 
   return (
-    <div className="space-y-8 p-1">
+    <div className="space-y-5 p-1">
       <VerificationStatusBanner roles={userInfo?.roles ?? []} />
-
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
-        <div className="col-span-1 md:col-span-3">
-          <HeroCard name={displayName} src={src} alt={alt} />
-        </div>
-        <div className="col-span-1 md:col-span-1">
-          <EventCalendarCard
-            events={calendarEvents}
-            isLoading={loadingCalendar}
-          />
-        </div>
-        <div className="col-span-1 md:col-span-2">
-          <LearningCirclesCard
-            userInterestGroups={userProfile?.interest_groups}
-          />
-        </div>
-        <div className="col-span-1 md:col-span-1">
-          <InterestGroupsCard
-            groups={filteredInterestGroups}
-            isLoading={loadingGroups}
-            category={selectedDomain ?? "member"}
-          />
-        </div>
-        <div className="col-span-1 md:col-span-1">
-          <KarmaEarnersCard data={karmaFeed} isLoading={loadingKarma} />
-        </div>
-        <div className="col-span-1 md:col-span-4">
-          <EventsSliderCard />
-        </div>
-      </div>
+      {isDualRole && <DualRoleToggle view={dualView} onChange={setDualView} />}
+      {renderHome()}
     </div>
   );
 }

@@ -1,12 +1,15 @@
-export * from "./company-home";
+export { CompanyHome } from "./company-home";
 export * from "./enabler-home";
 export * from "./event-calendar-card";
 export * from "./events-slider-card";
 export * from "./hero-card";
 export * from "./home-page";
+export { HomeStatsPanel } from "./home-stats-panel";
 export * from "./interest-groups-card";
 export * from "./karma-earners-card";
 export * from "./learning-circles-card";
 export * from "./mentor-home";
 export * from "./mulearner-home";
+export { MuLearnerHome } from "./mulearner-home";
+export { QuickActionRow } from "./quick-action-row";
 export * from "./student-home";
