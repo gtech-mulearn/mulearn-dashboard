@@ -7,6 +7,7 @@ import { usePermissions } from "@/hooks/use-permissions";
 import { CAMPUS_MANAGEMENT_ROLES, ROLES } from "@/lib/auth";
 import { CompanyHome } from "./company-home";
 import { EnablerHome } from "./enabler-home";
+import { MentorHome } from "./mentor-home";
 import { MuLearnerHome } from "./mulearner-home";
 import { VerificationStatusBanner } from "./verification-status-banner";
 
@@ -84,8 +85,7 @@ export function HomePage() {
   const isDualRole = isCampusRole && isStudent;
 
   const renderHome = () => {
-    if (roles.includes(ROLES.MENTOR))
-      return <RoleComingSoon roleName="Mentor" />;
+    if (roles.includes(ROLES.MENTOR)) return <MentorHome />;
     if (roles.includes(ROLES.COMPANY)) return <CompanyHome />;
     if (isDualRole) {
       return dualView === "campus" ? <EnablerHome /> : <MuLearnerHome />;
