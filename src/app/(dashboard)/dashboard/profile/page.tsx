@@ -10,6 +10,7 @@
 
 import { useState } from "react";
 import Loader from "@/app/loading";
+import { CompanyProfilePage } from "@/features/company-jobs/components";
 import {
   AccountSettingsModal,
   Achievements,
@@ -39,6 +40,7 @@ import {
   type ChangeOrganizationFormValues,
   ChangeOrganizationRequestSchema,
 } from "@/features/settings";
+import { ROLES } from "@/lib/auth/roles";
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<ProfileTab>("basic-details");
@@ -177,6 +179,11 @@ export default function ProfilePage() {
         <p className="mt-1 text-muted-foreground">Please try again later.</p>
       </div>
     );
+  }
+
+  // Company users see the company profile, not the student layout
+  if (profile.roles.includes(ROLES.COMPANY)) {
+    return <CompanyProfilePage />;
   }
 
   const monthDifference = getMonthDifference(profile.joined);

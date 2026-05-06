@@ -146,7 +146,7 @@ export interface DeleteRuleResponse {
   deleted_at: string;
 }
 
-// ─── Company Profile (subset for status guard) ──────────────
+// ─── Company Profile ────────────────────────────────────────
 
 export interface CompanyProfile {
   id: string;
@@ -159,6 +159,13 @@ export interface CompanyProfile {
   email?: string | null;
   slug: string;
   location?: string | null;
+  // Extended fields from the full backend schema
+  company_size?: string | null;
+  linkedin_url?: string | null;
+  legal_name?: string | null;
+  verified_at?: string | null;
+  created_at?: string;
+  // Frontend-only permission flags (not from API)
   can_edit_profile?: boolean;
   can_access_advanced_features?: boolean;
 }

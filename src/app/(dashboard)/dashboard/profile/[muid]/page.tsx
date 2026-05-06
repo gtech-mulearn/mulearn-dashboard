@@ -12,6 +12,7 @@ import { ShieldX } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import Loader from "@/app/loading";
+import { CompanyPublicView } from "@/features/company-jobs/components";
 import {
   BasicDetails,
   KarmaHistory,
@@ -25,6 +26,7 @@ import {
   usePublicUserLevels,
   usePublicUserLog,
 } from "@/features/profile";
+import { ROLES } from "@/lib/auth/roles";
 
 export default function PublicProfilePage() {
   const params = useParams();
@@ -60,12 +62,10 @@ export default function PublicProfilePage() {
     return match ? Number.parseInt(match[0], 10) : 1;
   };
 
-  // Loading state
   if (isLoadingProfile) {
     return <Loader />;
   }
 
-  // Error or private profile
   if (isError || !profile) {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center text-center">
@@ -76,6 +76,11 @@ export default function PublicProfilePage() {
         </p>
       </div>
     );
+  }
+
+  // Company role — render company profile view instead of student profile
+  if (profile.roles.includes(ROLES.COMPANY)) {
+    return <CompanyPublicView userProfile={profile} />;
   }
 
   const monthDifference = getMonthDifference(profile.joined);
