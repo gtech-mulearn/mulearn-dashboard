@@ -1,91 +1,68 @@
-import { Sparkles, TrendingUp } from "lucide-react";
-import Image from "next/image";
+import { TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { MOCK_NEXT_MEETING, MOCK_STATS } from "../constants/mock-stats";
+import { HomeStatsPanel } from "./home-stats-panel";
 
 function getGreeting(): string {
   const hour = new Date().getHours();
-  if (hour >= 6 && hour < 12) return "Good Morning,";
-  if (hour >= 12 && hour < 16) return "Good Afternoon,";
-  return "Good Evening,";
+  if (hour >= 6 && hour < 12) return "Good morning,";
+  if (hour >= 12 && hour < 17) return "Good afternoon,";
+  return "Good evening,";
 }
 
-type HeroCardProps = {
-  name: string;
-  src: string;
-  alt: string;
-};
+type HeroCardProps = { name: string };
 
-export function HeroCard({ name, src, alt }: HeroCardProps) {
+export function HeroCard({ name }: HeroCardProps) {
+  const { karma } = MOCK_STATS;
+  const { circleName, dateLabel } = MOCK_NEXT_MEETING;
   return (
-    <Card className="h-full relative overflow-hidden rounded-2xl border-none bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-pointer">
-      {/* Creative Background Elements */}
-      <div className="absolute -top-24 -right-10 h-64 w-64 rounded-full bg-primary/10 blur-3xl transition-all duration-1000 animate-pulse" />
-      <div className="absolute top-1/2 -left-10 h-64 w-64 rounded-full bg-primary/5 blur-3xl" />
-      <div className="absolute bottom-0 right-1/3 h-40 w-40 rounded-full bg-accent/10 blur-3xl" />
-
-      {/* Grid Pattern Overlay */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--color-border)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-border)_1px,transparent_1px)] bg-[size:24px_24px] opacity-20" />
-
-      <div className="relative p-6 lg:p-10">
-        <div className="grid gap-8 lg:grid-cols-[1.3fr_0.7fr] lg:items-center">
-          <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-primary backdrop-blur-md">
-              <Sparkles className="h-3.5 w-3.5" />
-              <span className="text-xs font-semibold">Welcome back</span>
-            </div>
-
-            <div className="space-y-4">
-              <h1 className="text-4xl font-bold tracking-tight text-foreground lg:text-5xl">
-                {getGreeting()} <span className="text-primary">{name}</span>
-              </h1>
-              <p className="max-w-xl text-lg text-muted-foreground leading-relaxed">
-                Track your learning circles, discover interest groups, and watch
-                your karma grow. You're doing great!
-              </p>
-            </div>
-
-            <div className="flex flex-wrap gap-3 pt-2">
-              {/* Start Learning */}
-              <Button
-                asChild
-                size="lg"
-                variant={"default"}
-                className="group gap-2"
-              >
-                <Link href="/dashboard/mujourney">
-                  <TrendingUp className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-                  Start Learning
-                </Link>
-              </Button>
-
-              {/* Explore Groups */}
-              <Button
-                asChild
-                size="lg"
-                variant="outline"
-                className="h-11 gap-2 rounded-xl border-border bg-background text-foreground hover:bg-muted/50"
-              >
-                <Link href="/dashboard/learning-circle">Explore Groups</Link>
-              </Button>
-            </div>
+    <Card className="overflow-hidden rounded-2xl border bg-card shadow-sm">
+      <div className="flex flex-col divide-y divide-border md:flex-row md:divide-x md:divide-y-0">
+        {/* Left: Greeting */}
+        <div className="flex flex-1 flex-col justify-center gap-5 p-6 lg:p-8">
+          <div className="inline-flex w-fit items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1">
+            <span className="size-1.5 rounded-full bg-primary" />
+            <span className="text-xs font-semibold text-primary">
+              Active learner
+            </span>
           </div>
-
-          <div className="relative hidden h-60 w-full items-center justify-center lg:flex">
-            {/* Abstract Shapes behind image */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="h-48 w-48 rounded-full bg-linear-to-tr from-primary/20 to-accent/20 blur-2xl" />
-            </div>
-            <Image
-              alt={alt}
-              className="relative z-10 object-contain drop-shadow-xl transition-transform hover:scale-105 duration-500"
-              height={224}
-              width={280}
-              src={src}
-              priority
-            />
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground lg:text-4xl">
+              {getGreeting()} <span className="text-primary">{name}.</span>
+            </h1>
+            <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
+              You&apos;ve earned{" "}
+              <strong className="font-semibold text-foreground">
+                {karma.thisWeek} karma
+              </strong>{" "}
+              this week. Your{" "}
+              <strong className="font-semibold text-foreground">
+                {circleName}
+              </strong>{" "}
+              meets{" "}
+              <strong className="font-semibold text-foreground">
+                {dateLabel}
+              </strong>
+              .
+            </p>
           </div>
+          <div className="flex flex-wrap gap-3">
+            <Button asChild className="gap-2">
+              <Link href="/dashboard/mujourney">
+                <TrendingUp className="size-4" />
+                Continue learning
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/dashboard/learning-circle">Explore groups</Link>
+            </Button>
+          </div>
+        </div>
+        {/* Right: Stats */}
+        <div className="w-full p-6 md:w-72 lg:w-80">
+          <HomeStatsPanel />
         </div>
       </div>
     </Card>

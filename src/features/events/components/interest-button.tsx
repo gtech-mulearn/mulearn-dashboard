@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
+import { Heart, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { authStore } from "@/lib/auth";
@@ -36,18 +36,23 @@ export function InterestButton({
   return (
     <Button
       type="button"
-      variant={isInterested ? "default" : "outline"}
+      variant="outline"
       className={
         isInterested
-          ? "bg-primary hover:bg-primary/90 text-primary-foreground"
-          : ""
+          ? "w-full rounded-full border-emerald-500/30 bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/20 dark:text-emerald-400"
+          : "w-full rounded-full"
       }
       disabled={disabled || mutation.isPending}
       onClick={handleClick}
     >
       {mutation.isPending ? (
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-      ) : null}
+        <Loader2 className="mr-2 size-4 animate-spin" />
+      ) : (
+        <Heart
+          className="mr-2 size-4"
+          fill={isInterested ? "currentColor" : "none"}
+        />
+      )}
       {isInterested ? `Going · ${count}` : `I'm Going · ${count}`}
     </Button>
   );

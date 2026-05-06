@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc *)",
+      "Bash(node_modules/.bin/tsc --noEmit)",
+      "Bash(grep -E \"^typescript$\")",
+      "Bash(bun install *)",
+      "Bash(Get-ChildItem -Path \"d:\\\\Repos\\\\mulearn-dashboard\\\\src\" -Recurse -Include \"*type*\", \"*schema*\")",
+      "Bash(Select-Object -ExpandProperty FullName)"
+    ]
+  }
+}

@@ -111,6 +111,13 @@ export const PERMISSIONS = {
 
   // ── Task Reports ──────────────────────────────────────────
   "task_reports:view": [ROLES.ADMIN, ROLES.APPRAISER],
+
+  // ── Company ───────────────────────────────────────────────
+  "company:profile:view": [ROLES.COMPANY, ROLES.ADMIN, ROLES.FELLOW],
+  "company:profile:edit": [ROLES.COMPANY],
+  "company:jobs:view": [ROLES.COMPANY, ROLES.ADMIN],
+  "company:jobs:manage": [ROLES.COMPANY],
+  "company:verification:manage": [ROLES.ADMIN, ROLES.FELLOW],
 } as const;
 
 // ─── Types ──────────────────────────────────────────────────

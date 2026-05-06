@@ -58,20 +58,12 @@ export default function EventsPage() {
   };
 
   return (
-    <main className="flex-1 p-6 md:p-8 lc-fade-in">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground md:text-3xl">
-            Events
-          </h1>
-        </div>
-      </div>
-
-      <div className="mb-6">
-        <FeaturedEventsCarousel />
-      </div>
-
-      <div className="mb-6">
+    <main className="flex-1 lc-fade-in">
+      {/* Sticky header: title + search + filter pills */}
+      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border px-6 pt-6 pb-4 md:px-8 md:pt-8">
+        <h1 className="mb-4 text-2xl font-bold text-foreground md:text-3xl">
+          Events
+        </h1>
         <EventsFilters
           onSearch={handleSearch}
           selectedCluster={selectedCluster}
@@ -81,7 +73,10 @@ export default function EventsPage() {
         />
       </div>
 
-      <div className="mb-6">
+      {/* Scrollable content */}
+      <div className="space-y-6 px-6 py-6 md:px-8">
+        <FeaturedEventsCarousel />
+
         {isLoading ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Skeleton className="h-72 rounded-xl" />
@@ -97,16 +92,16 @@ export default function EventsPage() {
             }
           />
         )}
-      </div>
 
-      {pagination && (
-        <EventsPagination
-          pagination={pagination}
-          currentPage={currentPage}
-          onPageChange={handlePageChange}
-          currentCount={events.length}
-        />
-      )}
+        {pagination && (
+          <EventsPagination
+            pagination={pagination}
+            currentPage={currentPage}
+            onPageChange={handlePageChange}
+            currentCount={events.length}
+          />
+        )}
+      </div>
     </main>
   );
 }
