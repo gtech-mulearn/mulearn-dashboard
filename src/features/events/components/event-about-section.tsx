@@ -15,8 +15,8 @@ export function EventAboutSection({ description }: EventAboutSectionProps) {
   return (
     <div className="rounded-2xl border border-border bg-card shadow-sm">
       <div className="flex items-center gap-2.5 px-5 py-4">
-        <div className="flex size-9 items-center justify-center rounded-xl bg-indigo-500/10">
-          <FileText className="size-4 text-indigo-500" />
+        <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10">
+          <FileText className="size-4 text-primary" />
         </div>
         <h2 className="text-base font-bold text-foreground">
           About This Event
@@ -36,7 +36,7 @@ export function EventAboutSection({ description }: EventAboutSectionProps) {
         <button
           type="button"
           onClick={() => setIsExpanded(!isExpanded)}
-          className="relative z-10 mt-2 text-xs font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
+          className="relative z-10 mt-2 text-xs font-semibold text-primary hover:underline"
         >
           {isExpanded ? "Read less" : "Read more"}
         </button>

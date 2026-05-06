@@ -104,19 +104,19 @@ export function AccountSettingsModal({
               onClick={item.onClick}
               className={`flex w-full items-center gap-3 rounded-xl p-3 text-left transition-colors ${
                 item.variant === "danger"
-                  ? "text-red-600 hover:bg-red-50"
+                  ? "text-destructive hover:bg-destructive/10"
                   : item.variant === "warning"
-                    ? "text-amber-600 hover:bg-amber-50"
-                    : "text-gray-700 hover:bg-gray-50"
+                    ? "text-warning hover:bg-warning/10"
+                    : "text-foreground hover:bg-muted"
               }`}
             >
               <div
                 className={`flex h-10 w-10 items-center justify-center rounded-lg ${
                   item.variant === "danger"
-                    ? "bg-red-100"
+                    ? "bg-destructive/10"
                     : item.variant === "warning"
-                      ? "bg-amber-100"
-                      : "bg-gray-100"
+                      ? "bg-warning/10"
+                      : "bg-muted"
                 }`}
               >
                 <item.icon className="h-5 w-5" />
@@ -126,10 +126,10 @@ export function AccountSettingsModal({
                 <p
                   className={`text-xs ${
                     item.variant === "danger"
-                      ? "text-red-400"
+                      ? "text-destructive/70"
                       : item.variant === "warning"
-                        ? "text-amber-400"
-                        : "text-gray-400"
+                        ? "text-warning/70"
+                        : "text-muted-foreground"
                   }`}
                 >
                   {item.description}

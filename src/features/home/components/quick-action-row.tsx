@@ -10,8 +10,8 @@ const QUICK_ACTIONS = [
     sub: "Track your progress",
     href: "/dashboard/mujourney",
     icon: Zap,
-    iconBg: "#EEF2FF",
-    iconColor: "#4F46E5",
+    iconBg: "bg-primary/10",
+    iconColor: "text-primary",
   },
   {
     id: "claim-karma",
@@ -19,8 +19,8 @@ const QUICK_ACTIONS = [
     sub: "Submit your tasks",
     href: "/dashboard/mujourney",
     icon: Layers,
-    iconBg: "#F0FDF4",
-    iconColor: "#16A34A",
+    iconBg: "bg-success/10",
+    iconColor: "text-success",
   },
   {
     id: "my-circles",
@@ -28,8 +28,8 @@ const QUICK_ACTIONS = [
     sub: `${MOCK_QUICK_ACTION_COUNTS.myCircles} active circles`,
     href: "/dashboard/learning-circle",
     icon: Users,
-    iconBg: "#F5F3FF",
-    iconColor: "#7C3AED",
+    iconBg: "bg-brand-purple/10",
+    iconColor: "text-brand-purple",
   },
   {
     id: "leaderboard",
@@ -37,8 +37,8 @@ const QUICK_ACTIONS = [
     sub: `You're ranked #${MOCK_QUICK_ACTION_COUNTS.leaderboardRank}`,
     href: "/dashboard/leaderboard",
     icon: Trophy,
-    iconBg: "#FFFBEB",
-    iconColor: "#D97706",
+    iconBg: "bg-warning/10",
+    iconColor: "text-warning",
   },
   {
     id: "jobs-board",
@@ -46,8 +46,8 @@ const QUICK_ACTIONS = [
     sub: `${MOCK_QUICK_ACTION_COUNTS.jobOpenings} new openings`,
     href: "/dashboard/company/jobs",
     icon: Briefcase,
-    iconBg: "#FFF1F2",
-    iconColor: "#E11D48",
+    iconBg: "bg-destructive/10",
+    iconColor: "text-destructive",
   },
 ] as const;
 
@@ -59,10 +59,9 @@ export function QuickActionRow() {
           <Link key={id} href={href}>
             <Card className="flex cursor-pointer items-center gap-3 rounded-xl border bg-card p-4 shadow-sm transition-shadow hover:shadow-md">
               <div
-                className="flex size-9 shrink-0 items-center justify-center rounded-xl"
-                style={{ backgroundColor: iconBg }}
+                className={`flex size-9 shrink-0 items-center justify-center rounded-xl ${iconBg}`}
               >
-                <Icon className="size-4" style={{ color: iconColor }} />
+                <Icon className={`size-4 ${iconColor}`} />
               </div>
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-foreground">

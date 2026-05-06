@@ -38,9 +38,7 @@ export default function PublicUserJourneyPage({
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center space-y-4">
-          <p className="text-red-600 dark:text-red-400">
-            Failed to load journey
-          </p>
+          <p className="text-destructive">Failed to load journey</p>
           <p className="text-sm text-muted-foreground">
             {error?.message || "User journey not found"}
           </p>

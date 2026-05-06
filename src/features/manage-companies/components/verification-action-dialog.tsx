@@ -81,8 +81,8 @@ export function VerificationActionDialog({
         <DialogHeader>
           <div className="flex items-center gap-3">
             {isApprove ? (
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500/10">
-                <CheckCircle className="h-5 w-5 text-green-600" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-success/10">
+                <CheckCircle className="h-5 w-5 text-success" />
               </div>
             ) : (
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-destructive/10">
@@ -154,7 +154,7 @@ export function VerificationActionDialog({
             disabled={isPending}
             className={
               isApprove
-                ? "rounded-2xl bg-green-600 text-white hover:bg-green-700"
+                ? "rounded-2xl bg-success text-primary-foreground hover:bg-success/90"
                 : "rounded-2xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
             }
           >

@@ -6,35 +6,35 @@ const CARDS = [
     key: "jobViews" as const,
     label: "JOB VIEWS",
     icon: Eye,
-    iconColor: "#6366f1",
-    iconBg: "bg-indigo-500/10",
+    iconColor: "text-primary",
+    iconBg: "bg-primary/10",
   },
   {
     key: "applications" as const,
     label: "APPLICATIONS",
     icon: Users,
-    iconColor: "#a855f7",
-    iconBg: "bg-purple-500/10",
+    iconColor: "text-brand-purple",
+    iconBg: "bg-brand-purple/10",
   },
   {
     key: "talentPool" as const,
     label: "TALENT POOL",
     icon: Globe,
-    iconColor: "#10b981",
-    iconBg: "bg-emerald-500/10",
+    iconColor: "text-success",
+    iconBg: "bg-success/10",
   },
   {
     key: "avgKarma" as const,
     label: "AVG KARMA",
     icon: Award,
-    iconColor: "#f59e0b",
-    iconBg: "bg-amber-500/10",
+    iconColor: "text-warning",
+    iconBg: "bg-warning/10",
   },
 ] as const;
 
 const DELTA_STYLES = {
-  emerald: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
-  blue: "bg-blue-500/15 text-blue-600 dark:text-blue-400",
+  emerald: "bg-success/15 text-success",
+  blue: "bg-brand-blue/15 text-brand-blue",
 } as const;
 
 export function CompanyStatCards() {
@@ -51,7 +51,7 @@ export function CompanyStatCards() {
             <div
               className={`mb-3 flex size-10 items-center justify-center rounded-xl ${card.iconBg}`}
             >
-              <Icon className="size-5" style={{ color: card.iconColor }} />
+              <Icon className={`size-5 ${card.iconColor}`} />
             </div>
             <p className="text-3xl font-bold tracking-tight text-foreground">
               {data.value}

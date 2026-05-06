@@ -29,35 +29,35 @@ export function AttendeeReportView({ meetingId }: AttendeeReportViewProps) {
 
   return (
     <div
-      className="rounded-[20px] bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)]"
+      className="rounded-[20px] bg-card p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)]"
       style={{
         fontFamily: "var(--font-inter), ui-sans-serif, system-ui, sans-serif",
       }}
     >
       <div className="mb-5 flex items-center gap-3">
-        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#FEF3C7]">
-          <ClipboardList className="h-4 w-4 text-[#D97706]" />
+        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-warning/10">
+          <ClipboardList className="h-4 w-4 text-warning" />
         </div>
-        <h3 className="text-[15px] font-bold text-[#111827]">
+        <h3 className="text-[15px] font-bold text-foreground">
           Attendee Report
         </h3>
       </div>
 
       {!report ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl bg-[#F9FAFB] py-10">
-          <FileText className="mb-2 h-8 w-8 text-[#D1D5DB]" />
-          <p className="text-[13px] font-medium text-[#9CA3AF]">
+        <div className="flex flex-col items-center justify-center rounded-2xl bg-muted py-10">
+          <FileText className="mb-2 h-8 w-8 text-muted-foreground/40" />
+          <p className="text-[13px] font-medium text-muted-foreground">
             No report submitted yet
           </p>
         </div>
       ) : (
         <div className="space-y-4">
           {report.report && (
-            <div className="rounded-xl bg-[#FAFBFC] p-4">
-              <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-[#9CA3AF]">
+            <div className="rounded-xl bg-muted/50 p-4">
+              <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                 Report
               </p>
-              <p className="text-[13px] leading-relaxed text-[#374151]">
+              <p className="text-[13px] leading-relaxed text-foreground">
                 {report.report}
               </p>
             </div>
@@ -67,7 +67,7 @@ export function AttendeeReportView({ meetingId }: AttendeeReportViewProps) {
               href={report.report_link}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-xl bg-[#EEF2FF] px-4 py-2.5 text-[13px] font-semibold text-[#4F46E5] transition-colors hover:bg-[#E0E7FF]"
+              className="inline-flex items-center gap-2 rounded-xl bg-primary/10 px-4 py-2.5 text-[13px] font-semibold text-primary transition-colors hover:bg-primary/20"
             >
               <ExternalLink className="h-3.5 w-3.5" />
               View Report Link

@@ -31,7 +31,7 @@ export function ProfileSidebar({
       {isOwnProfile && (
         <div className="rounded-2xl bg-card p-4 shadow-sm">
           <div className="p-4">
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
               Quick Actions
             </h3>
             <div className="space-y-1">
@@ -44,11 +44,11 @@ export function ProfileSidebar({
                   <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
                     <Settings className="h-4 w-4 text-primary" />
                   </div>
-                  <span className="text-sm font-medium text-gray-700">
+                  <span className="text-sm font-medium text-foreground">
                     Account Settings
                   </span>
                 </div>
-                <ChevronRight className="h-4 w-4 text-gray-400" />
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
               </button>
             </div>
           </div>
@@ -57,19 +57,19 @@ export function ProfileSidebar({
 
       {/* Profile Visibility */}
       {isOwnProfile && (
-        <div className="rounded-2xl bg-white p-4 shadow-sm">
+        <div className="rounded-2xl bg-card p-4 shadow-sm">
           <ProfileSettings isPublic={profile.is_public} />
         </div>
       )}
 
       {/* Socials */}
-      <div className="rounded-2xl bg-white p-4 shadow-sm">
+      <div className="rounded-2xl bg-card p-4 shadow-sm">
         <SocialsDisplay isOwnProfile={isOwnProfile} />
       </div>
 
       {/* Roles */}
       {profile.roles.length > 0 && (
-        <div className="rounded-2xl bg-white p-4 shadow-sm">
+        <div className="rounded-2xl bg-card p-4 shadow-sm">
           <RolesDisplay roles={profile.roles} />
         </div>
       )}

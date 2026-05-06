@@ -18,7 +18,7 @@ import {
   useCircleMembers,
 } from "../hooks";
 
-/* ─── Bold avatar colors ─── */
+// TODO: avatar gradient palette — no semantic token for multi-color identity gradients; needs design decision
 const AVATAR_BG = [
   "from-[#6366F1] to-[#4F46E5]",
   "from-[#10B981] to-[#059669]",
@@ -40,29 +40,29 @@ function _getKarmaTier(karma: number) {
   if (karma >= 1000)
     return {
       label: "Elite",
-      bg: "bg-[#7C3AED]",
-      text: "text-white",
-      dot: "bg-[#7C3AED]",
+      bg: "bg-brand-purple",
+      text: "text-primary-foreground",
+      dot: "bg-brand-purple",
     };
   if (karma >= 500)
     return {
       label: "Pro",
-      bg: "bg-[#F59E0B]",
-      text: "text-white",
-      dot: "bg-[#F59E0B]",
+      bg: "bg-warning",
+      text: "text-primary-foreground",
+      dot: "bg-warning",
     };
   if (karma >= 100)
     return {
       label: "Active",
-      bg: "bg-[#059669]",
-      text: "text-white",
-      dot: "bg-[#059669]",
+      bg: "bg-success",
+      text: "text-primary-foreground",
+      dot: "bg-success",
     };
   return {
     label: "New",
-    bg: "bg-[#E5E7EB]",
-    text: "text-[#6B7280]",
-    dot: "bg-[#9CA3AF]",
+    bg: "bg-muted",
+    text: "text-muted-foreground",
+    dot: "bg-muted-foreground/40",
   };
 }
 
@@ -93,8 +93,8 @@ export function MemberList({
     return (
       <div className="flex items-center justify-center py-12">
         <div className="relative">
-          <div className="absolute inset-0 rounded-full bg-[#4F46E5]/10 animate-ping" />
-          <Spinner className="relative h-6 w-6 text-[#4F46E5]" />
+          <div className="absolute inset-0 rounded-full bg-primary/10 animate-ping" />
+          <Spinner className="relative h-6 w-6 text-primary" />
         </div>
       </div>
     );
@@ -102,12 +102,12 @@ export function MemberList({
 
   if (!membersData || members.length === 0) {
     return (
-      <div className="lc-fade-in flex flex-col items-center justify-center rounded-[16px] bg-linear-to-br from-[#F9FAFB] to-[#F3F4F6] px-8 py-14">
-        <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-md">
-          <Users className="h-5 w-5 text-[#4F46E5]" />
+      <div className="lc-fade-in flex flex-col items-center justify-center rounded-[16px] bg-muted px-8 py-14">
+        <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-card shadow-md">
+          <Users className="h-5 w-5 text-primary" />
         </div>
-        <p className="text-[14px] font-bold text-[#111827]">No members yet</p>
-        <p className="mt-0.5 text-[13px] text-[#9CA3AF]">
+        <p className="text-[14px] font-bold text-foreground">No members yet</p>
+        <p className="mt-0.5 text-[13px] text-muted-foreground">
           Members will appear here once they join
         </p>
       </div>
@@ -122,7 +122,7 @@ export function MemberList({
           <button
             type="button"
             onClick={onInviteClick}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-3 border-dashed border-gray-300 text-gray-500 hover:border-primary hover:bg-primary/10 hover:text-primary transition-colors"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-3 border-dashed border-border text-muted-foreground hover:border-primary hover:bg-primary/10 hover:text-primary transition-colors"
             title="Invite Member"
           >
             <Plus className="h-5 w-5" />
@@ -130,7 +130,7 @@ export function MemberList({
           <div className="flex-1">
             <button
               type="button"
-              className="text-[14px] font-semibold text-gray-900 cursor-pointer hover:text-primary bg-transparent border-none p-0"
+              className="text-[14px] font-semibold text-foreground cursor-pointer hover:text-primary bg-transparent border-none p-0"
               onClick={onInviteClick}
             >
               Invite Member
@@ -155,28 +155,28 @@ export function MemberList({
                     src={member.profile_pic}
                     alt={member.full_name}
                     fill
-                    className="rounded-full object-cover ring-2 ring-white"
+                    className="rounded-full object-cover ring-2 ring-card"
                   />
                 ) : (
                   <div
-                    className={`flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br ${getAvatarGradient(member.full_name)} text-[14px] font-bold text-white ring-2 ring-white`}
+                    className={`flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br ${getAvatarGradient(member.full_name)} text-[14px] font-bold text-primary-foreground ring-2 ring-card`}
                   >
                     {member.full_name.charAt(0)}
                   </div>
                 )}
                 {member.is_leader && (
-                  <div className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 ring-2 ring-white">
-                    <Crown className="h-[9px] w-[9px] text-white" />
+                  <div className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-warning ring-2 ring-card">
+                    <Crown className="h-[9px] w-[9px] text-primary-foreground" />
                   </div>
                 )}
               </div>
 
               {/* Info */}
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[14px] font-semibold text-gray-900 leading-tight pb-0.5">
+                <p className="truncate text-[14px] font-semibold text-foreground leading-tight pb-0.5">
                   {member.full_name}
                 </p>
-                <p className="text-[12px] font-medium text-gray-500 leading-tight">
+                <p className="text-[12px] font-medium text-muted-foreground leading-tight">
                   {member.is_leader
                     ? "Lead"
                     : `${member.ig_karma?.toLocaleString() || 0} karma`}
@@ -189,8 +189,8 @@ export function MemberList({
               <div className="flex shrink-0 gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                 <button
                   type="button"
-                  className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-50 text-emerald-600
-                    transition-colors hover:bg-emerald-100 active:scale-95 disabled:opacity-40"
+                  className="flex h-6 w-6 items-center justify-center rounded-full bg-success/10 text-success
+                    transition-colors hover:bg-success/20 active:scale-95 disabled:opacity-40"
                   onClick={() => handleApprove(member.muid)}
                   disabled={approveMember.isPending}
                   title="Approve"
@@ -199,8 +199,8 @@ export function MemberList({
                 </button>
                 <button
                   type="button"
-                  className="flex h-6 w-6 items-center justify-center rounded-full bg-red-50 text-red-500
-                    transition-colors hover:bg-red-100 active:scale-95 disabled:opacity-40"
+                  className="flex h-6 w-6 items-center justify-center rounded-full bg-destructive/10 text-destructive
+                    transition-colors hover:bg-destructive/20 active:scale-95 disabled:opacity-40"
                   onClick={() => handleReject(member.muid)}
                   disabled={approveMember.isPending}
                   title="Remove"

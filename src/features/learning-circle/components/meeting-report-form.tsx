@@ -23,14 +23,14 @@ import {
 import type { MeetingAttendee, MeetingReportRequest } from "../schemas";
 import { MeetingReportRequestSchema } from "../schemas";
 
-/* ─── Avatar colors ─── */
+// TODO: avatar color palette — no semantic token for multi-color identity; needs design decision
 const COLORS = [
-  "bg-[#C7D2FE] text-[#3730A3]",
-  "bg-[#A7F3D0] text-[#065F46]",
-  "bg-[#FDE68A] text-[#92400E]",
-  "bg-[#FBCFE8] text-[#9D174D]",
-  "bg-[#BAE6FD] text-[#075985]",
-  "bg-[#FED7AA] text-[#9A3412]",
+  "bg-primary/20 text-primary",
+  "bg-success/20 text-success",
+  "bg-warning/20 text-warning",
+  "bg-destructive/20 text-destructive",
+  "bg-brand-blue/20 text-brand-blue",
+  "bg-brand-purple/20 text-brand-purple",
 ];
 
 function getColor(name: string) {
@@ -99,16 +99,18 @@ export function MeetingReportForm({
 
   return (
     <div
-      className="rounded-[20px] bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)]"
+      className="rounded-[20px] bg-card p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)]"
       style={{
         fontFamily: "var(--font-inter), ui-sans-serif, system-ui, sans-serif",
       }}
     >
       <div className="mb-5 flex items-center gap-3">
-        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#EDE9FE]">
-          <FileText className="h-4 w-4 text-[#7C3AED]" />
+        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-purple/10">
+          <FileText className="h-4 w-4 text-brand-purple" />
         </div>
-        <h3 className="text-[15px] font-bold text-[#111827]">Meeting Report</h3>
+        <h3 className="text-[15px] font-bold text-foreground">
+          Meeting Report
+        </h3>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
@@ -116,7 +118,7 @@ export function MeetingReportForm({
         <div className="space-y-2">
           <Label
             htmlFor="report"
-            className="text-[10px] font-bold uppercase tracking-widest text-[#9CA3AF]"
+            className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground"
           >
             Report
           </Label>
@@ -125,10 +127,10 @@ export function MeetingReportForm({
             placeholder="Describe what was discussed..."
             rows={4}
             {...register("report")}
-            className="resize-none rounded-xl border-[#E5E7EB] bg-[#FAFBFC] shadow-none transition-colors focus:border-[#6366F1]/30 focus:bg-white"
+            className="resize-none rounded-xl border-border bg-muted/50 shadow-none transition-colors focus:border-primary/30 focus:bg-card"
           />
           {errors.report && (
-            <p className="text-xs font-medium text-red-500">
+            <p className="text-xs font-medium text-destructive">
               {errors.report.message}
             </p>
           )}
@@ -136,10 +138,10 @@ export function MeetingReportForm({
 
         {/* Attendee Checkboxes */}
         <div className="space-y-2">
-          <Label className="text-[10px] font-bold uppercase tracking-widest text-[#9CA3AF]">
+          <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
             Attendees
           </Label>
-          <div className="max-h-[240px] overflow-y-auto space-y-1 rounded-xl bg-[#FAFBFC] p-3">
+          <div className="max-h-[240px] overflow-y-auto space-y-1 rounded-xl bg-muted/50 p-3">
             {attendees.map((attendee) => {
               const isChecked = attendeesValue[attendee.user_id] ?? false;
               const colorClass = getColor(attendee.full_name);
@@ -147,14 +149,14 @@ export function MeetingReportForm({
                 <label
                   key={attendee.user_id}
                   className={`flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 transition-colors ${
-                    isChecked ? "bg-[#EEF2FF]" : "hover:bg-white"
+                    isChecked ? "bg-primary/5" : "hover:bg-card"
                   }`}
                 >
                   <div
                     className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md transition-colors ${
                       isChecked
-                        ? "bg-[#4F46E5] text-white"
-                        : "border-2 border-[#D1D5DB] bg-white"
+                        ? "bg-primary text-primary-foreground"
+                        : "border-2 border-border bg-card"
                     }`}
                   >
                     {isChecked && <Check className="h-3 w-3" />}
@@ -170,7 +172,7 @@ export function MeetingReportForm({
                   >
                     {attendee.full_name.charAt(0)}
                   </div>
-                  <span className="text-[13px] font-semibold text-[#374151]">
+                  <span className="text-[13px] font-semibold text-foreground">
                     {attendee.full_name}
                   </span>
                 </label>
@@ -180,11 +182,11 @@ export function MeetingReportForm({
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-3 border-t border-[#F3F4F6] pt-5">
+        <div className="flex justify-end gap-3 border-t border-border pt-5">
           {existingReport?.is_report_submitted && (
             <button
               type="button"
-              className="flex items-center gap-2 rounded-xl bg-[#FEE2E2] px-4 py-2.5 text-[13px] font-bold text-[#DC2626] transition-colors hover:bg-[#FECACA] disabled:opacity-50"
+              className="flex items-center gap-2 rounded-xl bg-destructive/10 px-4 py-2.5 text-[13px] font-bold text-destructive transition-colors hover:bg-destructive/20 disabled:opacity-50"
               onClick={() => deleteReport.mutate()}
               disabled={deleteReport.isPending}
             >
@@ -199,7 +201,7 @@ export function MeetingReportForm({
           <button
             type="submit"
             disabled={submitReport.isPending}
-            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#6366F1] px-5 py-2.5 text-[13px] font-bold text-white shadow-[0_4px_12px_rgba(79,70,229,0.3)] transition-all hover:shadow-[0_6px_20px_rgba(79,70,229,0.4)] hover:scale-[1.01] disabled:opacity-50"
+            className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-[13px] font-bold text-primary-foreground shadow-[0_4px_12px_rgba(79,70,229,0.3)] transition-all hover:bg-primary/90 hover:scale-[1.01] disabled:opacity-50"
           >
             {submitReport.isPending && <Spinner className="h-4 w-4" />}
             {existingReport?.is_report_submitted

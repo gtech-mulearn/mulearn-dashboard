@@ -75,7 +75,7 @@ export function FeaturedEventsCarousel() {
       ))}
 
       {/* Gradient overlay */}
-      <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/75 via-black/30 to-transparent" />
+      <div className="absolute inset-0 z-10 bg-linear-to-t from-foreground/75 via-foreground/30 to-transparent" />
 
       <Link
         aria-label={`Open ${event.title}`}
@@ -84,7 +84,7 @@ export function FeaturedEventsCarousel() {
       />
 
       {/* Content overlay */}
-      <div className="absolute inset-x-0 bottom-0 z-20 p-4 text-white sm:p-5">
+      <div className="absolute inset-x-0 bottom-0 z-20 p-4 text-primary-foreground sm:p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0 space-y-2">
             {/* Title */}
@@ -92,13 +92,13 @@ export function FeaturedEventsCarousel() {
               href={`/dashboard/events/${event.id}`}
               className="relative z-20"
             >
-              <h2 className="line-clamp-1 text-lg font-bold tracking-tight drop-shadow sm:text-xl hover:underline underline-offset-2 text-white">
+              <h2 className="line-clamp-1 text-lg font-bold tracking-tight drop-shadow sm:text-xl hover:underline underline-offset-2 text-primary-foreground">
                 {event.title}
               </h2>
             </Link>
 
             {/* Frosted glass info pill */}
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 px-3 py-1 text-xs text-white/90">
+            <div className="inline-flex items-center gap-2 rounded-full bg-foreground/15 backdrop-blur-sm border border-foreground/20 px-3 py-1 text-xs text-primary-foreground/90">
               <CalendarDays className="h-3.5 w-3.5" />
               <span>{formatEventDate(event.start_datetime)}</span>
               <span>|</span>

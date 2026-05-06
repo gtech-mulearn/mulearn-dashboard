@@ -114,7 +114,7 @@ export function CreateCircleModal({
             <select
               id="ig"
               {...register("ig")}
-              className="block w-full rounded-xl border border-border/40 bg-white px-4 py-2.5 text-sm shadow-sm transition-shadow focus:border-primary/30 focus:shadow-[0_0_0_3px_rgba(9,97,245,0.06)] focus:outline-none focus:ring-0"
+              className="block w-full rounded-xl border border-border/40 bg-card px-4 py-2.5 text-sm shadow-sm transition-shadow focus:border-primary/30 focus:shadow-[0_0_0_3px_rgba(9,97,245,0.06)] focus:outline-none focus:ring-0"
             >
               <option value="">Select an interest group</option>
               {interestGroups.map((ig) => (
@@ -124,7 +124,7 @@ export function CreateCircleModal({
               ))}
             </select>
             {errors.ig && (
-              <p className="text-xs font-medium text-red-500">
+              <p className="text-xs font-medium text-destructive">
                 {errors.ig.message}
               </p>
             )}
@@ -141,7 +141,7 @@ export function CreateCircleModal({
             <select
               id="org"
               {...register("org")}
-              className="block w-full rounded-xl border border-border/30 bg-white px-4 py-2.5 text-sm transition-colors focus:border-primary/30 focus:outline-none focus:ring-0"
+              className="block w-full rounded-xl border border-border/30 bg-card px-4 py-2.5 text-sm transition-colors focus:border-primary/30 focus:outline-none focus:ring-0"
             >
               <option value="">Select an organization</option>
               {organizations.map((org) => (
@@ -151,7 +151,7 @@ export function CreateCircleModal({
               ))}
             </select>
             {errors.org && (
-              <p className="text-xs font-medium text-red-500">
+              <p className="text-xs font-medium text-destructive">
                 {errors.org.message}
               </p>
             )}
@@ -172,7 +172,7 @@ export function CreateCircleModal({
               className="rounded-xl border-border/30 shadow-none"
             />
             {errors.title && (
-              <p className="text-xs font-medium text-red-500">
+              <p className="text-xs font-medium text-destructive">
                 {errors.title.message}
               </p>
             )}
@@ -194,7 +194,7 @@ export function CreateCircleModal({
               className="resize-none rounded-xl border-border/30 shadow-none"
             />
             {errors.description && (
-              <p className="text-xs font-medium text-red-500">
+              <p className="text-xs font-medium text-destructive">
                 {errors.description.message}
               </p>
             )}

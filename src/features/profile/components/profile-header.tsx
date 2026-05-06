@@ -51,7 +51,7 @@ export function ProfileHeader({
           priority
         />
         {/* Gradient overlay for text readability */}
-        <div className="absolute inset-0 bg-linear-to-r from-black/50 to-black/40" />
+        <div className="absolute inset-0 bg-linear-to-r from-foreground/50 to-foreground/40" />
 
         {/* Profile Content - Overlaid on banner */}
         <div className="absolute inset-0 flex items-end p-4 sm:items-center sm:px-6">
@@ -71,13 +71,13 @@ export function ProfileHeader({
                       onError={() => setImageError(true)}
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-indigo-500 to-purple-600 text-xl font-bold text-white sm:text-2xl">
+                    <div className="flex h-full w-full items-center justify-center bg-primary text-xl font-bold text-primary-foreground sm:text-2xl">
                       {profile.full_name?.charAt(0) || "?"}
                     </div>
                   )}
                 </div>
                 {/* Level Badge */}
-                <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-linear-to-br from-violet-500 to-purple-600 text-[10px] font-bold text-white shadow-lg ring-2 ring-white sm:h-7 sm:w-7 sm:text-xs">
+                <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-brand-purple text-[10px] font-bold text-primary-foreground shadow-lg ring-2 ring-background sm:h-7 sm:w-7 sm:text-xs">
                   {level}
                 </div>
               </div>
@@ -108,19 +108,19 @@ export function ProfileHeader({
                   <span
                     className={`flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium backdrop-blur-sm sm:text-xs ${
                       profile.is_public
-                        ? "bg-emerald-500/20 text-emerald-100"
-                        : "bg-amber-500/20 text-amber-100"
+                        ? "bg-success/20 text-primary-foreground"
+                        : "bg-warning/20 text-primary-foreground"
                     }`}
                   >
                     <span
                       className={`h-1.5 w-1.5 rounded-full ${
-                        profile.is_public ? "bg-emerald-400" : "bg-amber-400"
+                        profile.is_public ? "bg-success" : "bg-warning"
                       }`}
                     />
                     {profile.is_public ? "Public" : "Private"}
                   </span>
                   {memberSince && (
-                    <span className="shrink-0 text-[10px] text-white/70 sm:text-xs">
+                    <span className="shrink-0 text-[10px] text-primary-foreground/70 sm:text-xs">
                       Member since {memberSince}
                     </span>
                   )}

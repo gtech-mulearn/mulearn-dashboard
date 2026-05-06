@@ -24,10 +24,10 @@ const WEEKDAYS = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"] as const;
 // ─── Color mapping for event types ──────────────────────────────────────────
 
 const EVENT_TYPE_COLORS: Record<string, string> = {
-  hackathon: "bg-chart-1 text-white",
-  workshop: "bg-chart-2 text-white",
-  meetup: "bg-chart-5 text-white",
-  deadline: "bg-destructive text-white",
+  hackathon: "bg-chart-1 text-primary-foreground",
+  workshop: "bg-chart-2 text-primary-foreground",
+  meetup: "bg-chart-5 text-primary-foreground",
+  deadline: "bg-destructive text-destructive-foreground",
   other: "bg-primary text-primary-foreground",
 };
 
@@ -48,16 +48,31 @@ function CalendarSkeleton() {
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
-        <circle cx="160" cy="100" r="80" stroke="#7c3aed" strokeWidth="2" />
-        <circle cx="140" cy="380" r="100" stroke="#7c3aed" strokeWidth="1.5" />
+        <circle
+          cx="160"
+          cy="100"
+          r="80"
+          stroke="currentColor"
+          strokeWidth="2"
+          className="text-brand-purple"
+        />
+        <circle
+          cx="140"
+          cy="380"
+          r="100"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          className="text-brand-purple"
+        />
         <rect
           x="80"
           y="220"
           width="60"
           height="60"
           rx="8"
-          stroke="#7c3aed"
+          stroke="currentColor"
           strokeWidth="1.5"
+          className="text-brand-purple"
         />
       </svg>
       <div className="relative z-10 mb-4 flex items-center justify-between">
@@ -147,16 +162,31 @@ export function EventCalendarCard({
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
-        <circle cx="160" cy="100" r="80" stroke="#7c3aed" strokeWidth="2" />
-        <circle cx="140" cy="380" r="100" stroke="#7c3aed" strokeWidth="1.5" />
+        <circle
+          cx="160"
+          cy="100"
+          r="80"
+          stroke="currentColor"
+          strokeWidth="2"
+          className="text-brand-purple"
+        />
+        <circle
+          cx="140"
+          cy="380"
+          r="100"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          className="text-brand-purple"
+        />
         <rect
           x="80"
           y="220"
           width="60"
           height="60"
           rx="8"
-          stroke="#7c3aed"
+          stroke="currentColor"
           strokeWidth="1.5"
+          className="text-brand-purple"
         />
       </svg>
 
@@ -248,7 +278,7 @@ export function EventCalendarCard({
               {day.getDate()}
               {/* Multiple event indicator dot */}
               {hasEvents && dayEvents.length > 1 && (
-                <span className="absolute -right-0.5 -top-0.5 flex size-3.5 items-center justify-center rounded-full bg-destructive text-[8px] font-bold text-white shadow-sm">
+                <span className="absolute -right-0.5 -top-0.5 flex size-3.5 items-center justify-center rounded-full bg-destructive text-[8px] font-bold text-destructive-foreground shadow-sm">
                   {dayEvents.length}
                 </span>
               )}
@@ -268,7 +298,7 @@ export function EventCalendarCard({
               {selectedDateEvents.map((event) => (
                 <div
                   key={event.id}
-                  className="flex items-center gap-2.5 rounded-xl bg-white p-2.5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+                  className="flex items-center gap-2.5 rounded-xl bg-card p-2.5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <div
                     className={cn(
@@ -277,11 +307,11 @@ export function EventCalendarCard({
                     )}
                   />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-xs font-medium text-gray-800">
+                    <p className="truncate text-xs font-medium text-foreground">
                       {event.title}
                     </p>
                     {event.location && (
-                      <p className="flex items-center gap-1 text-[10px] text-gray-500">
+                      <p className="flex items-center gap-1 text-[10px] text-muted-foreground">
                         <MapPin className="size-2.5" />
                         {event.location}
                       </p>

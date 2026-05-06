@@ -33,7 +33,7 @@ function CompanyLogo({ logo, name }: { logo?: string | null; name: string }) {
       <img
         src={logo}
         alt={name}
-        className="size-16 rounded-2xl border border-border bg-white object-contain p-1 shadow-md sm:size-[72px]"
+        className="size-16 rounded-2xl border border-border bg-card object-contain p-1 shadow-md sm:size-[72px]"
       />
     );
   }
@@ -44,16 +44,18 @@ function CompanyLogo({ logo, name }: { logo?: string | null; name: string }) {
     .join("")
     .toUpperCase();
   return (
-    <div className="flex size-16 items-center justify-center rounded-2xl border border-border bg-gradient-to-br from-indigo-500 to-violet-600 shadow-md sm:size-[72px]">
-      <span className="text-xl font-black text-white">{initials}</span>
+    <div className="flex size-16 items-center justify-center rounded-2xl border border-border bg-primary shadow-md sm:size-[72px]">
+      <span className="text-xl font-black text-primary-foreground">
+        {initials}
+      </span>
     </div>
   );
 }
 
 const REMOTE_POLICY_STYLES: Record<RemotePolicy, string> = {
-  Remote: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
-  Hybrid: "bg-blue-500/15 text-blue-600 dark:text-blue-400",
-  "In-office": "bg-slate-500/15 text-slate-600 dark:text-slate-400",
+  Remote: "bg-success/15 text-success",
+  Hybrid: "bg-brand-blue/15 text-brand-blue",
+  "In-office": "bg-muted text-muted-foreground",
 };
 
 function MetaChip({
@@ -65,7 +67,7 @@ function MetaChip({
 }) {
   return (
     <span
-      className={`inline-flex items-center gap-1 text-xs text-zinc-400 ${className}`}
+      className={`inline-flex items-center gap-1 text-xs text-muted-foreground ${className}`}
     >
       {children}
     </span>
@@ -103,12 +105,12 @@ export function CompanyProfileHeader({
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
       {/* ── Banner ── */}
-      <div className="relative h-36 bg-zinc-900 sm:h-44">
+      <div className="relative h-36 bg-foreground sm:h-44">
         {/* Subtle geometric pattern overlay */}
         <div
-          className="absolute inset-0 opacity-[0.06]"
+          className="absolute inset-0 opacity-[0.06] text-background"
           style={{
-            backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`,
+            backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`,
             backgroundSize: "32px 32px",
           }}
         />
@@ -133,7 +135,7 @@ export function CompanyProfileHeader({
                   {profile.name}
                 </h1>
                 {isVerified && (
-                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-success/15 px-2 py-0.5 text-[11px] font-semibold text-success">
                     <CheckCircle2 className="size-3" />
                     Verified
                   </span>
@@ -187,7 +189,7 @@ export function CompanyProfileHeader({
           <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
             {activeJobsCount > 0 && (
               <div className="text-right">
-                <p className="text-2xl font-black text-emerald-500">
+                <p className="text-2xl font-black text-success">
                   {activeJobsCount}
                 </p>
                 <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
@@ -238,7 +240,7 @@ export function CompanyProfileHeader({
                   <Button
                     size="sm"
                     asChild
-                    className="rounded-full bg-indigo-500 text-white hover:bg-indigo-600"
+                    className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
                   >
                     <Link href="/dashboard/company/jobs/create">
                       Post a Job
@@ -260,7 +262,7 @@ export function CompanyProfileHeader({
                   </Button>
                   <Button
                     size="sm"
-                    className="rounded-full bg-indigo-500 text-white hover:bg-indigo-600"
+                    className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
                     onClick={() => {
                       const el = document.getElementById(
                         "company-jobs-section",

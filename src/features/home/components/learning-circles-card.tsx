@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useCircles } from "@/features/learning-circle";
 import type { LearningCircle } from "@/features/learning-circle/schemas/circle.schema";
 
+// TODO: per-circle accent colors are a meaningful categorical palette — leave as-is
 const ACCENT_VARS = [
   { bg: "#EEF2FF", color: "#4F46E5" },
   { bg: "#F5F3FF", color: "#7C3AED" },
@@ -37,8 +38,8 @@ export function LearningCirclesCard({
     <Card className="h-full rounded-2xl border bg-card shadow-sm">
       <CardHeader className="flex-row items-center justify-between px-5 py-4">
         <div className="flex items-center gap-2.5">
-          <div className="flex size-9 items-center justify-center rounded-xl bg-violet-50">
-            <Users2 className="size-4 text-violet-600" />
+          <div className="flex size-9 items-center justify-center rounded-xl bg-brand-purple/10">
+            <Users2 className="size-4 text-brand-purple" />
           </div>
           <CardTitle className="text-base font-bold text-foreground">
             Learning Circles
@@ -83,8 +84,8 @@ export function LearningCirclesCard({
           </>
         ) : (
           <div className="flex flex-col items-center gap-4 py-8 text-center">
-            <div className="flex size-12 items-center justify-center rounded-full bg-violet-50">
-              <Users className="size-5 text-violet-600" />
+            <div className="flex size-12 items-center justify-center rounded-full bg-brand-purple/10">
+              <Users className="size-5 text-brand-purple" />
             </div>
             <div className="space-y-1">
               <p className="text-sm font-semibold text-foreground">

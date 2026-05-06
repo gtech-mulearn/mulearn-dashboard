@@ -18,8 +18,8 @@ export function EventCollaboratorsSection({
   return (
     <div className="rounded-2xl border border-border bg-card shadow-sm">
       <div className="flex items-center gap-2.5 px-5 py-4">
-        <div className="flex size-9 items-center justify-center rounded-xl bg-blue-500/10">
-          <Handshake className="size-4 text-blue-500" />
+        <div className="flex size-9 items-center justify-center rounded-xl bg-brand-blue/10">
+          <Handshake className="size-4 text-brand-blue" />
         </div>
         <h2 className="text-base font-bold text-foreground">
           Partnering Organizations
@@ -72,8 +72,8 @@ export function EventCollaboratorsSection({
                   <Image src={logo} alt={name} fill className="object-cover" />
                 </div>
               ) : (
-                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600">
-                  <span className="text-[10px] font-black text-white">
+                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary">
+                  <span className="text-[10px] font-black text-primary-foreground">
                     {initials}
                   </span>
                 </div>

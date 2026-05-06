@@ -32,7 +32,7 @@ export function VenueSection({
         render={({ field }) => (
           <div className="space-y-2">
             <p className="text-sm font-medium text-foreground">
-              Venue type <span className="text-red-500">*</span>
+              Venue type <span className="text-destructive">*</span>
             </p>
             <div className="flex flex-wrap gap-2">
               {[
@@ -59,7 +59,7 @@ export function VenueSection({
         )}
       />
       {errors?.venue_type?.message ? (
-        <p className="text-xs text-red-600">{errors.venue_type.message}</p>
+        <p className="text-xs text-destructive">{errors.venue_type.message}</p>
       ) : null}
 
       <Controller
@@ -95,7 +95,7 @@ export function VenueSection({
                   htmlFor="venue_address"
                   className="text-sm font-medium text-foreground"
                 >
-                  Address <span className="text-red-500">*</span>
+                  Address <span className="text-destructive">*</span>
                 </label>
                 <Input
                   id="venue_address"
@@ -115,7 +115,7 @@ export function VenueSection({
                   htmlFor="venue_city"
                   className="text-sm font-medium text-foreground"
                 >
-                  City <span className="text-red-500">*</span>
+                  City <span className="text-destructive">*</span>
                 </label>
                 <Input
                   id="venue_city"
@@ -140,7 +140,7 @@ export function VenueSection({
                   htmlFor="venue_online_link"
                   className="text-sm font-medium text-foreground"
                 >
-                  Online link <span className="text-red-500">*</span>
+                  Online link <span className="text-destructive">*</span>
                 </label>
                 <Input
                   id="venue_online_link"
@@ -160,7 +160,7 @@ export function VenueSection({
                   htmlFor="venue_platform"
                   className="text-sm font-medium text-foreground"
                 >
-                  Platform <span className="text-red-500">*</span>
+                  Platform <span className="text-destructive">*</span>
                 </label>
                 <Input
                   id="venue_platform"
@@ -175,16 +175,16 @@ export function VenueSection({
       )}
 
       {errors?.address?.message ? (
-        <p className="text-xs text-red-600">{errors.address.message}</p>
+        <p className="text-xs text-destructive">{errors.address.message}</p>
       ) : null}
       {errors?.city?.message ? (
-        <p className="text-xs text-red-600">{errors.city.message}</p>
+        <p className="text-xs text-destructive">{errors.city.message}</p>
       ) : null}
       {errors?.online_link?.message ? (
-        <p className="text-xs text-red-600">{errors.online_link.message}</p>
+        <p className="text-xs text-destructive">{errors.online_link.message}</p>
       ) : null}
       {errors?.platform?.message ? (
-        <p className="text-xs text-red-600">{errors.platform.message}</p>
+        <p className="text-xs text-destructive">{errors.platform.message}</p>
       ) : null}
     </>
   );

@@ -87,7 +87,7 @@ export function TaskDetailPanel({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 bg-black/50 z-100"
+            className="fixed inset-0 bg-foreground/50 z-100"
             onClick={handleClose}
             onKeyDown={handleBackdropKeyDown}
             role="button"
@@ -164,7 +164,7 @@ export function TaskDetailPanel({
                         {extendedTask.skills.map((skill: string) => (
                           <span
                             key={skill}
-                            className="px-3 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-full text-sm font-medium"
+                            className="px-3 py-1 bg-brand-blue/10 text-brand-blue rounded-full text-sm font-medium"
                           >
                             <MarkdownRenderer
                               content={skill}
@@ -203,7 +203,7 @@ export function TaskDetailPanel({
               {/* Submit Proof of Work Button */}
               <div className="pt-6">
                 <Button
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-base h-11 rounded-lg cursor-pointer px-8"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-base h-11 rounded-lg cursor-pointer px-8"
                   onClick={() => {
                     window.open(
                       "https://discord.com/channels/771670169691881483/782353185552465951",

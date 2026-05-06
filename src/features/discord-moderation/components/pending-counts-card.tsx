@@ -108,20 +108,20 @@ export function PendingCountsCard() {
 
 const ACCENT_STYLES = {
   blue: {
-    card: "border-blue-200/60 dark:border-blue-900/40",
-    bar: "bg-blue-500",
-    iconBg: "bg-blue-100 dark:bg-blue-800/60",
-    iconColor: "text-blue-700 dark:text-blue-300",
-    valueColor: "text-blue-600 dark:text-blue-400",
-    badge: "bg-blue-500 text-white border-transparent",
+    card: "border-brand-blue/30",
+    bar: "bg-brand-blue",
+    iconBg: "bg-brand-blue/10",
+    iconColor: "text-brand-blue",
+    valueColor: "text-brand-blue",
+    badge: "bg-brand-blue text-primary-foreground border-transparent",
   },
   purple: {
-    card: "border-purple-200/60 dark:border-purple-900/40",
-    bar: "bg-purple-500",
-    iconBg: "bg-purple-100 dark:bg-purple-800/60",
-    iconColor: "text-purple-700 dark:text-purple-300",
-    valueColor: "text-purple-600 dark:text-purple-400",
-    badge: "bg-purple-500 text-white border-transparent",
+    card: "border-brand-purple/30",
+    bar: "bg-brand-purple",
+    iconBg: "bg-brand-purple/10",
+    iconColor: "text-brand-purple",
+    valueColor: "text-brand-purple",
+    badge: "bg-brand-purple text-primary-foreground border-transparent",
   },
 } as const;
 

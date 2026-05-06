@@ -112,7 +112,9 @@ export function CollaboratorsPanel({
             </div>
 
             {isManageView && collab.rejection_reason ? (
-              <p className="text-xs text-red-600">{collab.rejection_reason}</p>
+              <p className="text-xs text-destructive">
+                {collab.rejection_reason}
+              </p>
             ) : null}
 
             {isManageView ? (

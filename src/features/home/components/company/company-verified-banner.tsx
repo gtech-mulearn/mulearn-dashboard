@@ -21,19 +21,19 @@ export function CompanyVerifiedBanner({
   const name = companyName ?? "Your Company";
 
   return (
-    <output className="flex items-center justify-between rounded-2xl bg-indigo-950 px-5 py-3">
+    <output className="flex items-center justify-between rounded-2xl bg-primary px-5 py-3">
       <div className="flex items-center gap-2.5">
-        <CheckCircle2 className="size-4 text-indigo-400" />
-        <span className="text-sm font-semibold text-indigo-100">
-          {name} <span className="text-indigo-300">is verified</span>
+        <CheckCircle2 className="size-4 text-primary-foreground/70" />
+        <span className="text-sm font-semibold text-primary-foreground">
+          {name} <span className="text-primary-foreground/70">is verified</span>
         </span>
-        <span className="text-sm text-indigo-400">
+        <span className="text-sm text-primary-foreground/60">
           You can post jobs and access the talent pool.
         </span>
       </div>
       <Link
         href="/dashboard/company/profile"
-        className="text-sm font-medium text-indigo-200 transition-colors hover:text-white"
+        className="text-sm font-medium text-primary-foreground/80 transition-colors hover:text-primary-foreground"
       >
         Manage profile
       </Link>

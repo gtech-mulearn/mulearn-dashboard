@@ -14,11 +14,11 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive text-mulearn-whitish hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:
-          "border-2 border-brand-blue text-brand-blue hover:bg-linear-to-r hover:bg-brand-blue hover:text-[#fefefe] font-bold cursor-pointer  transition-all duration-300",
+          "border-2 border-brand-blue text-brand-blue hover:bg-linear-to-r hover:bg-brand-blue hover:text-primary-foreground font-bold cursor-pointer  transition-all duration-300",
         secondary:
-          "bg-[#c4c4c4] text-[#1a1a1a] hover:bg-[#a3a3a3] border border-[#c4c4c4] transition-all duration-300 font-bold cursor-pointer",
+          "bg-muted text-foreground hover:bg-muted/80 border border-muted transition-all duration-300 font-bold cursor-pointer",
         ghost:
-          "text-transparent bg-linear-to-r from-[#6366f1] to-[#2E85FE] bg-clip-text hover:bg-[#6366f1]/10 transition-all font-bold cursor-pointer duration-300",
+          "text-transparent bg-linear-to-r from-brand-purple to-brand-blue bg-clip-text hover:bg-brand-purple/10 transition-all font-bold cursor-pointer duration-300",
         link: "text-primary underline-offset-4 hover:underline",
         trusty:
           "bg-linear-to-r from-brand-blue to-brand-purple text-primary hover:from-brand-purple hover:to-brand-blue shadow-lg hover:shadow-2xl  transition-all duration-300 font-bold cursor-pointer ",

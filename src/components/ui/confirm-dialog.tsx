@@ -45,7 +45,7 @@ export function ConfirmDialog({
               className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
                 isDestructive
                   ? "bg-destructive/10 text-destructive"
-                  : "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400"
+                  : "bg-warning/10 text-warning"
               }`}
             >
               {isDestructive ? (

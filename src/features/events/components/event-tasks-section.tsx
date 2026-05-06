@@ -12,8 +12,8 @@ export function EventTasksSection({ tasks }: EventTasksSectionProps) {
   return (
     <div className="rounded-2xl border border-border bg-card shadow-sm">
       <div className="flex items-center gap-2.5 px-5 py-4">
-        <div className="flex size-9 items-center justify-center rounded-xl bg-violet-500/10">
-          <Zap className="size-4 text-violet-500" />
+        <div className="flex size-9 items-center justify-center rounded-xl bg-brand-purple/10">
+          <Zap className="size-4 text-brand-purple" />
         </div>
         <h2 className="text-base font-bold text-foreground">
           Earn Karma at This Event
@@ -27,10 +27,10 @@ export function EventTasksSection({ tasks }: EventTasksSectionProps) {
           >
             {/* Row 1: hashtag + karma */}
             <div className="flex items-center justify-between">
-              <span className="inline-flex items-center gap-1 rounded-full bg-violet-500/10 px-2.5 py-1 font-mono text-xs text-violet-600 dark:text-violet-400">
+              <span className="inline-flex items-center gap-1 rounded-full bg-brand-purple/10 px-2.5 py-1 font-mono text-xs text-brand-purple">
                 #{task.hashtag}
               </span>
-              <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+              <span className="rounded-full bg-success/15 px-2.5 py-0.5 text-xs font-bold text-success">
                 +{task.karma} karma
               </span>
             </div>
@@ -53,7 +53,7 @@ export function EventTasksSection({ tasks }: EventTasksSectionProps) {
                 {task.ig?.name}
               </span>
               {task.bonus_time && task.active ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+                <span className="inline-flex items-center gap-1 rounded-full bg-warning/15 px-2 py-0.5 text-[11px] font-semibold text-warning">
                   <Clock className="size-3" />+{task.bonus_karma} before{" "}
                   {new Date(task.bonus_time).toLocaleString(undefined, {
                     month: "short",

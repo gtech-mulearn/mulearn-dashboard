@@ -24,7 +24,7 @@ export function EventHeroBanner({
   const isLive = !isUpcoming && !isEnded;
 
   return (
-    <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-zinc-900 md:aspect-[21/8]">
+    <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-foreground md:aspect-[21/8]">
       {event.banner_image || event.cover_image ? (
         <Image
           src={
@@ -36,13 +36,13 @@ export function EventHeroBanner({
         />
       ) : null}
 
-      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-foreground/75 via-foreground/30 to-transparent" />
 
       {/* Top Row Controls */}
       <button
         type="button"
         onClick={() => router.back()}
-        className="absolute left-4 top-4 z-20 flex size-8 items-center justify-center rounded-full border border-white/15 bg-black/30 text-white backdrop-blur-sm"
+        className="absolute left-4 top-4 z-20 flex size-8 items-center justify-center rounded-full border border-primary-foreground/15 bg-foreground/30 text-primary-foreground backdrop-blur-sm"
         aria-label="Go back"
       >
         <ChevronLeft className="size-4" />
@@ -51,18 +51,18 @@ export function EventHeroBanner({
       {/* Top Right: Status Pill */}
       <div className="absolute right-4 top-4 z-20">
         {isUpcoming && (
-          <span className="rounded-full bg-blue-500/90 px-3 py-1 text-xs font-bold text-white">
+          <span className="rounded-full bg-brand-blue px-3 py-1 text-xs font-bold text-primary-foreground">
             Upcoming
           </span>
         )}
         {isLive && (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/90 px-3 py-1 text-xs font-bold text-white">
-            <span className="size-1.5 animate-pulse rounded-full bg-white" />
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-success px-3 py-1 text-xs font-bold text-primary-foreground">
+            <span className="size-1.5 animate-pulse rounded-full bg-primary-foreground" />
             Live Now
           </span>
         )}
         {isEnded && (
-          <span className="rounded-full bg-black/40 px-3 py-1 text-xs font-semibold text-white/70 backdrop-blur-sm">
+          <span className="rounded-full bg-foreground/40 px-3 py-1 text-xs font-semibold text-primary-foreground/70 backdrop-blur-sm">
             Ended
           </span>
         )}
@@ -73,7 +73,7 @@ export function EventHeroBanner({
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-2">
             {event.is_featured && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-amber-400/90 px-3 py-1 text-xs font-bold text-amber-900">
+              <span className="inline-flex items-center gap-1 rounded-full bg-warning px-3 py-1 text-xs font-bold text-foreground">
                 <Star className="size-3" /> Featured
               </span>
             )}
@@ -81,13 +81,13 @@ export function EventHeroBanner({
               event.tags.slice(0, 3).map((tag) => (
                 <span
                   key={tag as string}
-                  className="rounded-full border border-white/20 bg-white/15 px-3 py-1 text-xs text-white backdrop-blur-sm"
+                  className="rounded-full border border-primary-foreground/20 bg-primary-foreground/15 px-3 py-1 text-xs text-primary-foreground backdrop-blur-sm"
                 >
                   {tag as string}
                 </span>
               ))}
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-white sm:text-4xl">
+          <h1 className="text-3xl font-black tracking-tight text-primary-foreground sm:text-4xl">
             {event.title}
           </h1>
         </div>

@@ -17,6 +17,7 @@ interface ActivityHeatmapProps {
   isLoading?: boolean;
 }
 
+// TODO: heatmap intensity colors (emerald-200/300/400/500) are a data visualization gradient — leave as-is per design-system exception
 // Color intensity levels
 const COLORS = {
   empty: "bg-muted",

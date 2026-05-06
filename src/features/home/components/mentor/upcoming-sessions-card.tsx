@@ -5,17 +5,17 @@ import type { SessionStatus } from "../../constants/mock-mentor";
 import { MOCK_UPCOMING_SESSIONS } from "../../constants/mock-mentor";
 
 const STATUS_STYLES: Record<SessionStatus, string> = {
-  confirmed: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
-  pending: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
-  cancelled: "bg-red-500/15 text-red-600 dark:text-red-400",
+  confirmed: "bg-success/15 text-success",
+  pending: "bg-warning/15 text-warning",
+  cancelled: "bg-destructive/15 text-destructive",
 };
 
 export function UpcomingSessionsCard() {
   return (
     <Card className="rounded-2xl border bg-card shadow-sm">
       <CardHeader className="flex-row items-center gap-2.5 px-5 py-4">
-        <div className="flex size-9 items-center justify-center rounded-xl bg-indigo-500/10">
-          <CalendarClock className="size-4 text-indigo-500" />
+        <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10">
+          <CalendarClock className="size-4 text-primary" />
         </div>
         <CardTitle className="text-base font-bold text-foreground">
           Upcoming Sessions
@@ -28,8 +28,9 @@ export function UpcomingSessionsCard() {
               key={session.id}
               className="flex items-center gap-3 border-b border-border py-3 last:border-b-0"
             >
+              {/* TODO: session.avatarColor is a per-mentee categorical color from mock data — leave as-is per design-system exception */}
               <div
-                className="flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
+                className="flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-primary-foreground"
                 style={{ backgroundColor: session.avatarColor }}
               >
                 {session.menteeInitials}

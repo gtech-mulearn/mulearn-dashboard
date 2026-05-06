@@ -14,6 +14,7 @@ interface BrowserBreakdownProps {
   data: Record<string, number>;
 }
 
+// TODO: no semantic token — needs design decision
 const COLORS = ["#0961f5", "#3b82f6", "#60a5fa", "#93c5fd"];
 
 export function BrowserBreakdown({ data }: BrowserBreakdownProps) {

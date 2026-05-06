@@ -109,7 +109,7 @@ export function EditCircleModal({
               className="rounded-xl border-border/40 shadow-sm"
             />
             {errors.title && (
-              <p className="text-xs font-medium text-red-500">
+              <p className="text-xs font-medium text-destructive">
                 {errors.title.message}
               </p>
             )}
@@ -131,7 +131,7 @@ export function EditCircleModal({
               className="resize-none rounded-xl border-border/40 shadow-sm"
             />
             {errors.description && (
-              <p className="text-xs font-medium text-red-500">
+              <p className="text-xs font-medium text-destructive">
                 {errors.description.message}
               </p>
             )}

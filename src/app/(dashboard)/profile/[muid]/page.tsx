@@ -69,9 +69,9 @@ export default function PublicProfilePage() {
   if (isError || !profile) {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center text-center">
-        <ShieldX className="h-16 w-16 text-gray-300" />
+        <ShieldX className="h-16 w-16 text-muted-foreground/40" />
         <p className="mt-4 text-lg font-medium">This profile is private</p>
-        <p className="mt-1 text-gray-500">
+        <p className="mt-1 text-muted-foreground">
           The user has chosen to keep their profile hidden.
         </p>
       </div>
@@ -114,7 +114,7 @@ export default function PublicProfilePage() {
               />
             )}
             {activeTab === "achievements" && (
-              <div className="rounded-xl bg-gray-50 p-8 text-center text-gray-500">
+              <div className="rounded-xl bg-muted p-8 text-center text-muted-foreground">
                 <p className="font-medium">Achievements Coming Soon</p>
                 <p className="mt-1 text-sm">
                   This feature is under development.

@@ -108,9 +108,9 @@ export function ShareProfileModal({
         <div className="space-y-4 py-4">
           {/* Privacy Warning */}
           {!isPublic && (
-            <div className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
+            <div className="rounded-lg bg-warning/10 p-3 text-sm text-warning">
               <p className="font-medium">Your profile is private</p>
-              <p className="mt-1 text-xs text-amber-600">
+              <p className="mt-1 text-xs text-warning/80">
                 Others won't be able to view your profile until you make it
                 public in settings.
               </p>
@@ -118,11 +118,11 @@ export function ShareProfileModal({
           )}
 
           {/* QR Code Section */}
-          <div className="flex flex-col items-center justify-center space-y-3 rounded-xl border border-dashed border-gray-200 bg-gray-50/50 p-6">
-            <div className="relative aspect-square w-48 overflow-hidden rounded-lg bg-white p-2 shadow-sm">
+          <div className="flex flex-col items-center justify-center space-y-3 rounded-xl border border-dashed border-border bg-muted/50 p-6">
+            <div className="relative aspect-square w-48 overflow-hidden rounded-lg bg-card p-2 shadow-sm">
               {isLoadingQr ? (
                 <div className="flex h-full w-full items-center justify-center">
-                  <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
               ) : qrUrl ? (
                 <Image
@@ -133,7 +133,7 @@ export function ShareProfileModal({
                   height={192}
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center text-xs text-gray-400">
+                <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
                   Failed to load QR
                 </div>
               )}
@@ -152,9 +152,9 @@ export function ShareProfileModal({
 
           {/* Profile URL */}
           <div className="space-y-2">
-            <p className="text-sm font-medium text-gray-700">Profile Link</p>
+            <p className="text-sm font-medium text-foreground">Profile Link</p>
             <div className="flex gap-2">
-              <Input value={profileUrl} readOnly className="bg-gray-50" />
+              <Input value={profileUrl} readOnly className="bg-muted" />
               <Button
                 variant="outline"
                 size="icon"
@@ -162,7 +162,7 @@ export function ShareProfileModal({
                 className="shrink-0"
               >
                 {copied ? (
-                  <Check className="h-4 w-4 text-green-500" />
+                  <Check className="h-4 w-4 text-success" />
                 ) : (
                   <Copy className="h-4 w-4" />
                 )}

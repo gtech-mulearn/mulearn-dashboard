@@ -144,7 +144,7 @@ export function CreateMeetingModal({
               className="rounded-xl border-border/40 shadow-sm"
             />
             {errors.title && (
-              <p className="text-xs font-medium text-red-500">
+              <p className="text-xs font-medium text-destructive">
                 {errors.title.message}
               </p>
             )}
@@ -165,7 +165,7 @@ export function CreateMeetingModal({
               className="resize-none rounded-xl border-border/40 shadow-sm"
             />
             {errors.description && (
-              <p className="text-xs font-medium text-red-500">
+              <p className="text-xs font-medium text-destructive">
                 {errors.description.message}
               </p>
             )}
@@ -228,7 +228,7 @@ export function CreateMeetingModal({
                 </SelectContent>
               </Select>
               {errors.platform && (
-                <p className="text-xs font-medium text-red-500">
+                <p className="text-xs font-medium text-destructive">
                   {errors.platform.message}
                 </p>
               )}
@@ -254,7 +254,7 @@ export function CreateMeetingModal({
               className="rounded-xl border-border/40 shadow-sm"
             />
             {errors.meet_place && (
-              <p className="text-xs font-medium text-red-500">
+              <p className="text-xs font-medium text-destructive">
                 {errors.meet_place.message}
               </p>
             )}
@@ -276,7 +276,7 @@ export function CreateMeetingModal({
                 className="rounded-xl border-border/40 shadow-sm"
               />
               {errors.meet_time && (
-                <p className="text-xs font-medium text-red-500">
+                <p className="text-xs font-medium text-destructive">
                   {errors.meet_time.message}
                 </p>
               )}
@@ -298,7 +298,7 @@ export function CreateMeetingModal({
                 className="rounded-xl border-border/40 shadow-sm"
               />
               {errors.duration && (
-                <p className="text-xs font-medium text-red-500">
+                <p className="text-xs font-medium text-destructive">
                   {errors.duration.message}
                 </p>
               )}

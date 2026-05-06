@@ -101,12 +101,12 @@ export function IssueVCModal({
     if (is_issued && vc_url && !issuedCredential) {
       return (
         <div className="space-y-4">
-          <div className="rounded-lg bg-emerald-50 p-4 text-center">
-            <div className="mb-2 flex items-center justify-center gap-2 text-emerald-700">
+          <div className="rounded-lg bg-success/10 p-4 text-center">
+            <div className="mb-2 flex items-center justify-center gap-2 text-success">
               <Check className="h-5 w-5" />
               <span className="font-medium">Credential Issued</span>
             </div>
-            <p className="text-sm text-emerald-600">
+            <p className="text-sm text-success/80">
               Scan the QR code to add it to your wallet.
             </p>
           </div>
@@ -122,13 +122,13 @@ export function IssueVCModal({
           </div>
 
           <div className="flex flex-wrap justify-center gap-2">
-            <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
+            <span className="rounded-full bg-brand-blue/10 px-3 py-1 text-xs font-medium text-brand-blue">
               {achievementData.achievement_name}
             </span>
             {achievementData.tags.slice(0, 2).map((tag) => (
               <span
                 key={tag}
-                className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600"
+                className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground"
               >
                 {tag}
               </span>
@@ -142,14 +142,14 @@ export function IssueVCModal({
     if (issuedCredential) {
       return (
         <div className="space-y-4">
-          <div className="rounded-lg bg-emerald-50 p-4 text-center">
-            <div className="mb-2 flex items-center justify-center gap-2 text-emerald-700">
+          <div className="rounded-lg bg-success/10 p-4 text-center">
+            <div className="mb-2 flex items-center justify-center gap-2 text-success">
               <Check className="h-5 w-5" />
               <span className="font-medium">
                 Credential Issued Successfully!
               </span>
             </div>
-            <p className="text-sm text-emerald-600">
+            <p className="text-sm text-success/80">
               Scan the QR code to add it to your wallet.
             </p>
           </div>
@@ -165,10 +165,10 @@ export function IssueVCModal({
           </div>
 
           <div className="flex flex-wrap justify-center gap-2">
-            <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
+            <span className="rounded-full bg-brand-blue/10 px-3 py-1 text-xs font-medium text-brand-blue">
               {issuedCredential.subject_info.course_name}
             </span>
-            <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">
+            <span className="rounded-full bg-warning/10 px-3 py-1 text-xs font-medium text-warning">
               {issuedCredential.subject_info.type}
             </span>
           </div>
@@ -181,7 +181,9 @@ export function IssueVCModal({
       return (
         <div className="flex flex-col items-center justify-center py-8">
           <Spinner className="h-8 w-8" />
-          <p className="mt-2 text-sm text-gray-500">Loading your DIDs...</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Loading your DIDs...
+          </p>
         </div>
       );
     }
@@ -190,18 +192,18 @@ export function IssueVCModal({
     if (availableDIDs.length === 0) {
       return (
         <div className="space-y-4">
-          <div className="rounded-lg bg-amber-50 p-4">
-            <p className="mb-2 font-medium text-amber-800">No DID Linked Yet</p>
-            <p className="text-sm text-amber-700">
+          <div className="rounded-lg bg-warning/10 p-4">
+            <p className="mb-2 font-medium text-warning">No DID Linked Yet</p>
+            <p className="text-sm text-warning/80">
               To issue a Verifiable Credential, you need to link your DID first.
             </p>
           </div>
 
-          <div className="rounded-lg bg-gray-50 p-4">
-            <p className="mb-2 text-sm font-medium text-gray-700">
+          <div className="rounded-lg bg-muted p-4">
+            <p className="mb-2 text-sm font-medium text-foreground">
               How to link your DID:
             </p>
-            <ol className="list-inside list-decimal space-y-1 text-sm text-gray-600">
+            <ol className="list-inside list-decimal space-y-1 text-sm text-muted-foreground">
               <li>Download the QSeverse app from App Store or Play Store</li>
               <li>Log in with your MuLearn account</li>
               <li>Your DID will be automatically linked</li>
@@ -248,12 +250,12 @@ export function IssueVCModal({
     // DID selection and issue form
     return (
       <div className="space-y-4">
-        <div className="rounded-lg bg-blue-50 p-4">
-          <p className="text-sm text-blue-800">
+        <div className="rounded-lg bg-brand-blue/10 p-4">
+          <p className="text-sm text-brand-blue">
             <strong>{achievementData.achievement_name}</strong>
           </p>
           {achievementData.description && (
-            <p className="mt-1 text-xs text-blue-600">
+            <p className="mt-1 text-xs text-brand-blue/70">
               {achievementData.description}
             </p>
           )}
@@ -268,7 +270,7 @@ export function IssueVCModal({
               {availableDIDs.map((did, index) => (
                 <label
                   key={did}
-                  className="flex cursor-pointer items-center gap-2 rounded-lg border p-2 hover:bg-gray-50"
+                  className="flex cursor-pointer items-center gap-2 rounded-lg border p-2 hover:bg-muted"
                 >
                   <input
                     type="radio"
@@ -286,15 +288,17 @@ export function IssueVCModal({
             </div>
           </div>
         ) : (
-          <div className="rounded-lg bg-gray-50 p-3">
-            <p className="text-xs font-medium text-gray-600">Your DID:</p>
-            <p className="mt-1 text-xs text-gray-500 break-all">
+          <div className="rounded-lg bg-muted p-3">
+            <p className="text-xs font-medium text-muted-foreground">
+              Your DID:
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground break-all">
               {availableDIDs[0]}
             </p>
           </div>
         )}
 
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-muted-foreground">
           Your name ({userName}) and DID will be included in the credential.
         </p>
       </div>

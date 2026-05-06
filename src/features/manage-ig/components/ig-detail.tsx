@@ -100,13 +100,13 @@ export function IGDetail() {
       </button>
 
       {/* ── Hero ── */}
-      <div className="relative overflow-hidden rounded-[2rem] bg-linear-to-br from-primary/90 via-primary to-primary/80 p-6 sm:p-8 md:p-12 text-white shadow-xl shadow-primary/10">
+      <div className="relative overflow-hidden rounded-[2rem] bg-linear-to-br from-primary/90 via-primary to-primary/80 p-6 sm:p-8 md:p-12 text-primary-foreground shadow-xl shadow-primary/10">
         <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-20">
           <Sheet open={isEditOpen} onOpenChange={setIsEditOpen}>
             <SheetTrigger asChild>
               <button
                 type="button"
-                className="inline-flex items-center gap-2 rounded-xl bg-white/20 px-4 py-2.5 text-sm font-bold backdrop-blur-md border border-white/10 transition-all hover:bg-white/30 hover:scale-105 active:scale-95"
+                className="inline-flex items-center gap-2 rounded-xl bg-card/20 px-4 py-2.5 text-sm font-bold backdrop-blur-md border border-card/10 transition-all hover:bg-card/30 hover:scale-105 active:scale-95"
               >
                 <Pencil className="h-4 w-4" />
                 <span className="hidden sm:block">Edit</span>
@@ -124,30 +124,30 @@ export function IGDetail() {
             </SheetContent>
           </Sheet>
         </div>
-        <div className="absolute -right-20 -top-20 h-64 w-64 sm:h-80 sm:w-80 md:h-96 md:w-96 rounded-full bg-white/10 blur-3xl" />
-        <div className="absolute -left-20 -bottom-20 h-64 w-64 sm:h-80 sm:w-80 md:h-96 md:w-96 rounded-full bg-black/10 blur-3xl" />
+        <div className="absolute -right-20 -top-20 h-64 w-64 sm:h-80 sm:w-80 md:h-96 md:w-96 rounded-full bg-card/10 blur-3xl" />
+        <div className="absolute -left-20 -bottom-20 h-64 w-64 sm:h-80 sm:w-80 md:h-96 md:w-96 rounded-full bg-foreground/10 blur-3xl" />
 
         <div className="relative z-10 flex flex-col gap-6 md:gap-8 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-4 sm:space-y-6 max-w-3xl">
             <div className="flex flex-wrap items-center gap-3">
               {group.category && (
-                <div className="inline-flex items-center rounded-full bg-white/20 px-3 py-1 text-xs font-semibold uppercase tracking-wider backdrop-blur-md border border-white/10">
+                <div className="inline-flex items-center rounded-full bg-card/20 px-3 py-1 text-xs font-semibold uppercase tracking-wider backdrop-blur-md border border-card/10">
                   {group.category}
                 </div>
               )}
               {group.code && (
-                <div className="inline-flex items-center rounded-full bg-black/20 px-3 py-1 text-xs font-bold font-mono tracking-wider backdrop-blur-md border border-white/10">
+                <div className="inline-flex items-center rounded-full bg-foreground/20 px-3 py-1 text-xs font-bold font-mono tracking-wider backdrop-blur-md border border-card/10">
                   {group.code}
                 </div>
               )}
             </div>
 
             <div className="space-y-3 sm:space-y-4">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold tracking-tight text-white">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold tracking-tight text-primary-foreground">
                 {group.name}
               </h1>
               {group.about && (
-                <p className="text-base sm:text-lg leading-relaxed text-white/90 font-medium">
+                <p className="text-base sm:text-lg leading-relaxed text-primary-foreground/90 font-medium">
                   {group.about}
                 </p>
               )}
@@ -156,30 +156,30 @@ export function IGDetail() {
             {/* Stats row */}
             <div className="flex flex-wrap gap-3 sm:gap-4 pt-2 sm:pt-4">
               {group.members != null && (
-                <div className="flex items-center gap-3 rounded-2xl bg-white/10 px-4 py-2.5 sm:px-5 sm:py-3 backdrop-blur-md border border-white/10 transition-transform hover:scale-105">
-                  <div className="p-1.5 sm:p-2 rounded-full bg-white/20">
-                    <Users className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                <div className="flex items-center gap-3 rounded-2xl bg-card/10 px-4 py-2.5 sm:px-5 sm:py-3 backdrop-blur-md border border-card/10 transition-transform hover:scale-105">
+                  <div className="p-1.5 sm:p-2 rounded-full bg-card/20">
+                    <Users className="h-4 w-4 sm:h-5 sm:w-5 text-primary-foreground" />
                   </div>
                   <div>
                     <p className="text-lg sm:text-2xl font-bold leading-none">
                       {group.members.toLocaleString()}
                     </p>
-                    <p className="text-xs font-medium text-white/70 mt-0.5 sm:mt-1">
+                    <p className="text-xs font-medium text-primary-foreground/70 mt-0.5 sm:mt-1">
                       Members
                     </p>
                   </div>
                 </div>
               )}
               {group.status && (
-                <div className="flex items-center gap-3 rounded-2xl bg-white/10 px-4 py-2.5 sm:px-5 sm:py-3 backdrop-blur-md border border-white/10 transition-transform hover:scale-105">
-                  <div className="relative flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-white/20">
-                    <div className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_10px_rgba(52,211,153,0.5)]" />
+                <div className="flex items-center gap-3 rounded-2xl bg-card/10 px-4 py-2.5 sm:px-5 sm:py-3 backdrop-blur-md border border-card/10 transition-transform hover:scale-105">
+                  <div className="relative flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-card/20">
+                    <div className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-success animate-pulse shadow-[0_0_10px_rgba(52,211,153,0.5)]" />
                   </div>
                   <div>
                     <p className="text-xs sm:text-sm font-bold leading-none capitalize">
                       {group.status}
                     </p>
-                    <p className="text-xs font-medium text-white/70 mt-0.5 sm:mt-1">
+                    <p className="text-xs font-medium text-primary-foreground/70 mt-0.5 sm:mt-1">
                       Current Status
                     </p>
                   </div>
@@ -346,7 +346,7 @@ export function IGDetail() {
                     }
                     {...mentor}
                     avatarBgClass="from-purple-500/20 to-purple-500/5"
-                    accentClass="text-purple-600"
+                    accentClass="text-brand-purple"
                   />
                 ))}
               </div>
@@ -384,7 +384,7 @@ export function IGDetail() {
                 {/* Office Hours */}
                 {group.office_hours && (
                   <div className="flex items-start gap-4">
-                    <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-orange-100 text-orange-600">
+                    <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-warning/10 text-warning">
                       <Clock className="h-4 w-4" />
                     </div>
                     <div>
@@ -401,7 +401,7 @@ export function IGDetail() {
                 {/* Thinktank */}
                 {group.thinktank && (
                   <div className="flex items-start gap-4">
-                    <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+                    <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-blue/10 text-brand-blue">
                       <span className="text-sm font-bold">#</span>
                     </div>
                     <div>
@@ -451,7 +451,7 @@ export function IGDetail() {
                         }
                         {...lead}
                         avatarBgClass="from-purple-500/20 to-purple-500/5"
-                        accentClass="text-purple-600"
+                        accentClass="text-brand-purple"
                       />
                     ))}
                   </div>

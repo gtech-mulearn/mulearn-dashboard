@@ -281,8 +281,8 @@ export function useJoinCircle() {
       });
       toast.success("Join request sent!");
     },
-    onError: () => {
-      toast.error("Failed to send join request");
+    onError: (error: ApiError) => {
+      toast.error(error.message || "Failed to send join request");
     },
   });
 }
@@ -298,7 +298,7 @@ export function useSendInvite(circleId: string) {
       });
       toast.success("Invite sent successfully!");
     },
-    onError: () => {
+    onError: (error: ApiError) => {
       toast.error("Failed to send invite");
     },
   });

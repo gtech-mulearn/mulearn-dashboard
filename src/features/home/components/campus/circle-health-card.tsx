@@ -15,9 +15,9 @@ type CircleHealthCardProps = {
 };
 
 const STATUS_STYLES: Record<CircleHealthStatus, string> = {
-  active: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
-  slow: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
-  inactive: "bg-red-500/15 text-red-600 dark:text-red-400",
+  active: "bg-success/15 text-success",
+  slow: "bg-warning/15 text-warning",
+  inactive: "bg-destructive/15 text-destructive",
 };
 
 function mergeWithIgChapters(
@@ -41,8 +41,8 @@ export function CircleHealthCard({
   return (
     <Card className="h-full rounded-2xl border bg-card shadow-sm">
       <CardHeader className="flex-row items-center gap-2.5 px-5 py-4">
-        <div className="flex size-9 items-center justify-center rounded-xl bg-emerald-500/10">
-          <Activity className="size-4 text-emerald-500" />
+        <div className="flex size-9 items-center justify-center rounded-xl bg-success/10">
+          <Activity className="size-4 text-success" />
         </div>
         <CardTitle className="text-base font-bold text-foreground">
           Circle Health

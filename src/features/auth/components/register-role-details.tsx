@@ -476,7 +476,7 @@ export function RegisterRoleDetails({
                       <FormControl>
                         <Input
                           placeholder="Enter your college name"
-                          className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
+                          className="h-12 rounded-xl border-border bg-muted/50 px-4"
                           disabled={isLoading}
                           {...field}
                         />
@@ -522,7 +522,7 @@ export function RegisterRoleDetails({
                       <Input
                         type="number"
                         placeholder="e.g., 2025"
-                        className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
+                        className="h-12 rounded-xl border-border bg-muted/50 px-4"
                         disabled={isLoading}
                         {...field}
                         onChange={(e) =>
@@ -590,7 +590,7 @@ export function RegisterRoleDetails({
                       <FormControl>
                         <Input
                           placeholder="Enter your college name"
-                          className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
+                          className="h-12 rounded-xl border-border bg-muted/50 px-4"
                           disabled={isLoading}
                           {...field}
                         />
@@ -625,8 +625,8 @@ export function RegisterRoleDetails({
                           }}
                           className={`flex-1 h-12 rounded-xl border-2 transition-all ${
                             field.value === "College"
-                              ? "border-blue-500 bg-blue-50 text-blue-700"
-                              : "border-gray-200 bg-gray-50 text-gray-700 hover:border-gray-300"
+                              ? "border-brand-blue bg-brand-blue/10 text-brand-blue"
+                              : "border-border bg-muted text-muted-foreground hover:border-border/80"
                           }`}
                           disabled={isLoading}
                         >
@@ -640,8 +640,8 @@ export function RegisterRoleDetails({
                           }}
                           className={`flex-1 h-12 rounded-xl border-2 transition-all ${
                             field.value === "Company"
-                              ? "border-blue-500 bg-blue-50 text-blue-700"
-                              : "border-gray-200 bg-gray-50 text-gray-700 hover:border-gray-300"
+                              ? "border-brand-blue bg-brand-blue/10 text-brand-blue"
+                              : "border-border bg-muted text-muted-foreground hover:border-border/80"
                           }`}
                           disabled={isLoading}
                         >
@@ -709,7 +709,7 @@ export function RegisterRoleDetails({
                       <FormControl>
                         <Input
                           placeholder={`Enter your ${mentorOrgType === "College" ? "college" : "organization"} name`}
-                          className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
+                          className="h-12 rounded-xl border-border bg-muted/50 px-4"
                           disabled={isLoading}
                           {...field}
                         />
@@ -758,7 +758,7 @@ export function RegisterRoleDetails({
                           <Input
                             type="number"
                             placeholder="e.g., 2026"
-                            className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
+                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
                             disabled={isLoading}
                             min={2020}
                             max={2040}
@@ -802,20 +802,20 @@ export function RegisterRoleDetails({
                               ? "bg-primary text-primary-foreground"
                               : isActive
                                 ? "bg-primary text-primary-foreground ring-2 ring-primary/30"
-                                : "bg-gray-100 text-gray-400"
+                                : "bg-muted text-muted-foreground"
                           }`}
                         >
                           {isDone ? "✓" : stepNum}
                         </div>
                         <span
-                          className={`text-[10px] whitespace-nowrap ${isActive ? "text-primary font-medium" : "text-gray-400"}`}
+                          className={`text-[10px] whitespace-nowrap ${isActive ? "text-primary font-medium" : "text-muted-foreground"}`}
                         >
                           {label}
                         </span>
                       </div>
                       {i < COMPANY_STEPS.length - 1 && (
                         <div
-                          className={`h-px flex-1 mx-1 mb-4 transition-colors ${isDone ? "bg-primary" : "bg-gray-200"}`}
+                          className={`h-px flex-1 mx-1 mb-4 transition-colors ${isDone ? "bg-primary" : "bg-border"}`}
                         />
                       )}
                     </div>
@@ -837,7 +837,7 @@ export function RegisterRoleDetails({
                         <FormControl>
                           <Input
                             placeholder="Enter your company name"
-                            className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
+                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
                             disabled={isLoading}
                             {...field}
                           />
@@ -854,12 +854,14 @@ export function RegisterRoleDetails({
                       <FormItem>
                         <FormLabel className="text-sm font-medium">
                           Description{" "}
-                          <span className="text-gray-400">(optional)</span>
+                          <span className="text-muted-foreground">
+                            (optional)
+                          </span>
                         </FormLabel>
                         <FormControl>
                           <Input
                             placeholder="Brief description of your company"
-                            className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
+                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
                             disabled={isLoading}
                             {...field}
                           />
@@ -876,12 +878,14 @@ export function RegisterRoleDetails({
                       <FormItem>
                         <FormLabel className="text-sm font-medium">
                           Industry Sector{" "}
-                          <span className="text-gray-400">(optional)</span>
+                          <span className="text-muted-foreground">
+                            (optional)
+                          </span>
                         </FormLabel>
                         <FormControl>
                           <Input
                             placeholder="e.g., Technology, Healthcare, Finance"
-                            className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
+                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
                             disabled={isLoading}
                             {...field}
                           />
@@ -898,7 +902,9 @@ export function RegisterRoleDetails({
                       <FormItem>
                         <FormLabel className="text-sm font-medium">
                           Company Size{" "}
-                          <span className="text-gray-400">(optional)</span>
+                          <span className="text-muted-foreground">
+                            (optional)
+                          </span>
                         </FormLabel>
                         <FormControl>
                           <Combobox
@@ -927,13 +933,15 @@ export function RegisterRoleDetails({
                       <FormItem>
                         <FormLabel className="text-sm font-medium">
                           Contact Phone{" "}
-                          <span className="text-gray-400">(optional)</span>
+                          <span className="text-muted-foreground">
+                            (optional)
+                          </span>
                         </FormLabel>
                         <FormControl>
                           <Input
                             type="tel"
                             placeholder="+91 98765 43210"
-                            className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
+                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
                             disabled={isLoading}
                             {...field}
                           />
@@ -950,12 +958,14 @@ export function RegisterRoleDetails({
                       <FormItem>
                         <FormLabel className="text-sm font-medium">
                           Website{" "}
-                          <span className="text-gray-400">(optional)</span>
+                          <span className="text-muted-foreground">
+                            (optional)
+                          </span>
                         </FormLabel>
                         <FormControl>
                           <Input
                             placeholder="https://example.com"
-                            className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
+                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
                             disabled={isLoading}
                             {...field}
                           />
@@ -972,12 +982,14 @@ export function RegisterRoleDetails({
                       <FormItem>
                         <FormLabel className="text-sm font-medium">
                           LinkedIn{" "}
-                          <span className="text-gray-400">(optional)</span>
+                          <span className="text-muted-foreground">
+                            (optional)
+                          </span>
                         </FormLabel>
                         <FormControl>
                           <Input
                             placeholder="https://linkedin.com/company/..."
-                            className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
+                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
                             disabled={isLoading}
                             {...field}
                           />
@@ -999,7 +1011,9 @@ export function RegisterRoleDetails({
                       <FormItem>
                         <FormLabel className="text-sm font-medium">
                           Country{" "}
-                          <span className="text-gray-400">(optional)</span>
+                          <span className="text-muted-foreground">
+                            (optional)
+                          </span>
                         </FormLabel>
                         <FormControl>
                           <Combobox
@@ -1029,7 +1043,9 @@ export function RegisterRoleDetails({
                       <FormItem>
                         <FormLabel className="text-sm font-medium">
                           State{" "}
-                          <span className="text-gray-400">(optional)</span>
+                          <span className="text-muted-foreground">
+                            (optional)
+                          </span>
                         </FormLabel>
                         <FormControl>
                           <Combobox
@@ -1065,7 +1081,9 @@ export function RegisterRoleDetails({
                       <FormItem>
                         <FormLabel className="text-sm font-medium">
                           District{" "}
-                          <span className="text-gray-400">(optional)</span>
+                          <span className="text-muted-foreground">
+                            (optional)
+                          </span>
                         </FormLabel>
                         <FormControl>
                           <Combobox
@@ -1102,12 +1120,14 @@ export function RegisterRoleDetails({
                       <FormItem>
                         <FormLabel className="text-sm font-medium">
                           Legal Name{" "}
-                          <span className="text-gray-400">(optional)</span>
+                          <span className="text-muted-foreground">
+                            (optional)
+                          </span>
                         </FormLabel>
                         <FormControl>
                           <Input
                             placeholder="Official registered legal name"
-                            className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
+                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
                             disabled={isLoading}
                             {...field}
                           />
@@ -1124,12 +1144,14 @@ export function RegisterRoleDetails({
                       <FormItem>
                         <FormLabel className="text-sm font-medium">
                           Registration Number{" "}
-                          <span className="text-gray-400">(optional)</span>
+                          <span className="text-muted-foreground">
+                            (optional)
+                          </span>
                         </FormLabel>
                         <FormControl>
                           <Input
                             placeholder="e.g., CIN / RoC number"
-                            className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
+                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
                             disabled={isLoading}
                             {...field}
                           />
@@ -1146,12 +1168,14 @@ export function RegisterRoleDetails({
                       <FormItem>
                         <FormLabel className="text-sm font-medium">
                           Tax ID / GSTIN{" "}
-                          <span className="text-gray-400">(optional)</span>
+                          <span className="text-muted-foreground">
+                            (optional)
+                          </span>
                         </FormLabel>
                         <FormControl>
                           <Input
                             placeholder="e.g., GSTIN / PAN"
-                            className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
+                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
                             disabled={isLoading}
                             {...field}
                           />
@@ -1168,12 +1192,14 @@ export function RegisterRoleDetails({
                       <FormItem>
                         <FormLabel className="text-sm font-medium">
                           Verification Document URL{" "}
-                          <span className="text-gray-400">(optional)</span>
+                          <span className="text-muted-foreground">
+                            (optional)
+                          </span>
                         </FormLabel>
                         <FormControl>
                           <Input
                             placeholder="https://drive.google.com/..."
-                            className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
+                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
                             disabled={isLoading}
                             {...field}
                           />

@@ -29,6 +29,7 @@ import { useJoinCircle } from "../hooks";
 import type { LearningCircle } from "../schemas";
 
 /* ─── Category theme system — bold, visible backgrounds ─── */
+// TODO: no semantic token — per-category hex values in CATEGORY_THEMES need design decision
 
 interface CategoryTheme {
   cardBg: string; // gradient for entire card
@@ -42,7 +43,7 @@ interface CategoryTheme {
 const CATEGORY_THEMES: Record<string, CategoryTheme> = {
   cloud: {
     cardBg: "from-[#EEF4FF] via-[#F5F8FF] to-[#FAFCFF]",
-    pillBg: "bg-white/80 backdrop-blur-sm",
+    pillBg: "bg-card/80 backdrop-blur-sm",
     pillText: "text-[#3B82F6]",
     accent: "#3B82F6",
     titleHover: "group-hover:text-[#2563EB]",
@@ -50,7 +51,7 @@ const CATEGORY_THEMES: Record<string, CategoryTheme> = {
   },
   devops: {
     cardBg: "from-[#EEF2FF] via-[#F5F3FF] to-[#FAF9FF]",
-    pillBg: "bg-white/80 backdrop-blur-sm",
+    pillBg: "bg-card/80 backdrop-blur-sm",
     pillText: "text-[#6366F1]",
     accent: "#6366F1",
     titleHover: "group-hover:text-[#4F46E5]",
@@ -58,7 +59,7 @@ const CATEGORY_THEMES: Record<string, CategoryTheme> = {
   },
   web: {
     cardBg: "from-[#ECFDF5] via-[#F0FFF6] to-[#F9FFFC]",
-    pillBg: "bg-white/80 backdrop-blur-sm",
+    pillBg: "bg-card/80 backdrop-blur-sm",
     pillText: "text-[#059669]",
     accent: "#059669",
     titleHover: "group-hover:text-[#047857]",
@@ -66,7 +67,7 @@ const CATEGORY_THEMES: Record<string, CategoryTheme> = {
   },
   product: {
     cardBg: "from-[#F3EEFF] via-[#F8F5FF] to-[#FDFCFF]",
-    pillBg: "bg-white/80 backdrop-blur-sm",
+    pillBg: "bg-card/80 backdrop-blur-sm",
     pillText: "text-[#7C3AED]",
     accent: "#7C3AED",
     titleHover: "group-hover:text-[#6D28D9]",
@@ -74,7 +75,7 @@ const CATEGORY_THEMES: Record<string, CategoryTheme> = {
   },
   design: {
     cardBg: "from-[#FFF1E6] via-[#FFF8F2] to-[#FFFCF9]",
-    pillBg: "bg-white/80 backdrop-blur-sm",
+    pillBg: "bg-card/80 backdrop-blur-sm",
     pillText: "text-[#EA580C]",
     accent: "#EA580C",
     titleHover: "group-hover:text-[#C2410C]",
@@ -82,7 +83,7 @@ const CATEGORY_THEMES: Record<string, CategoryTheme> = {
   },
   mobile: {
     cardBg: "from-[#E6F7FF] via-[#F0FAFF] to-[#F9FDFF]",
-    pillBg: "bg-white/80 backdrop-blur-sm",
+    pillBg: "bg-card/80 backdrop-blur-sm",
     pillText: "text-[#0284C7]",
     accent: "#0284C7",
     titleHover: "group-hover:text-[#0369A1]",
@@ -90,7 +91,7 @@ const CATEGORY_THEMES: Record<string, CategoryTheme> = {
   },
   ai: {
     cardBg: "from-[#FDF2F8] via-[#FFF5FA] to-[#FFFAFC]",
-    pillBg: "bg-white/80 backdrop-blur-sm",
+    pillBg: "bg-card/80 backdrop-blur-sm",
     pillText: "text-[#DB2777]",
     accent: "#DB2777",
     titleHover: "group-hover:text-[#BE185D]",
@@ -98,7 +99,7 @@ const CATEGORY_THEMES: Record<string, CategoryTheme> = {
   },
   cyber: {
     cardBg: "from-[#FEF2F2] via-[#FFF5F5] to-[#FFFAFA]",
-    pillBg: "bg-white/80 backdrop-blur-sm",
+    pillBg: "bg-card/80 backdrop-blur-sm",
     pillText: "text-[#DC2626]",
     accent: "#DC2626",
     titleHover: "group-hover:text-[#B91C1C]",
@@ -106,7 +107,7 @@ const CATEGORY_THEMES: Record<string, CategoryTheme> = {
   },
   data: {
     cardBg: "from-[#FEF9C3] via-[#FFFBEB] to-[#FFFEF5]",
-    pillBg: "bg-white/80 backdrop-blur-sm",
+    pillBg: "bg-card/80 backdrop-blur-sm",
     pillText: "text-[#CA8A04]",
     accent: "#D97706",
     titleHover: "group-hover:text-[#B45309]",
@@ -114,7 +115,7 @@ const CATEGORY_THEMES: Record<string, CategoryTheme> = {
   },
   iot: {
     cardBg: "from-[#E6FFFA] via-[#F0FFFE] to-[#F9FFFE]",
-    pillBg: "bg-white/80 backdrop-blur-sm",
+    pillBg: "bg-card/80 backdrop-blur-sm",
     pillText: "text-[#0D9488]",
     accent: "#0D9488",
     titleHover: "group-hover:text-[#0F766E]",
@@ -124,7 +125,7 @@ const CATEGORY_THEMES: Record<string, CategoryTheme> = {
 
 const DEFAULT_THEME: CategoryTheme = {
   cardBg: "from-[#F3F4F6] via-[#F9FAFB] to-[#FEFEFE]",
-  pillBg: "bg-white/80 backdrop-blur-sm",
+  pillBg: "bg-card/80 backdrop-blur-sm",
   pillText: "text-[#374151]",
   accent: "#6B7280",
   titleHover: "group-hover:text-[#4F46E5]",
@@ -143,18 +144,19 @@ function getTheme(ig: string): CategoryTheme {
 
 /* ─── Stacked avatar placeholders ─── */
 
+// TODO: no semantic token — avatar palette colors need design decision; using chart token approximations
 const AVATAR_COLORS = [
-  "bg-[#C7D2FE]",
-  "bg-[#FDE68A]",
-  "bg-[#A7F3D0]",
-  "bg-[#FBCFE8]",
-  "bg-[#BAE6FD]",
+  "bg-chart-1/30",
+  "bg-chart-3/30",
+  "bg-chart-2/30",
+  "bg-chart-5/30",
+  "bg-chart-4/30",
 ];
 
 function StackedAvatars({ count }: { count: number }) {
   if (count === 0) {
     return (
-      <span className="flex items-center gap-1.5 text-[12px] font-medium text-[#9CA3AF]">
+      <span className="flex items-center gap-1.5 text-[12px] font-medium text-muted-foreground">
         <Users className="h-3.5 w-3.5" />
         No members
       </span>
@@ -170,7 +172,7 @@ function StackedAvatars({ count }: { count: number }) {
         {Array.from({ length: shown }).map((_, i) => (
           <div
             key={`avatar-placeholder-${String.fromCharCode(65 + i)}`}
-            className={`relative flex h-7 w-7 items-center justify-center rounded-full border-[2px] border-white text-[10px] font-bold text-[#374151] shadow-sm ${AVATAR_COLORS[i % AVATAR_COLORS.length]}`}
+            className={`relative flex h-7 w-7 items-center justify-center rounded-full border-[2px] border-card text-[10px] font-bold text-foreground shadow-sm ${AVATAR_COLORS[i % AVATAR_COLORS.length]}`}
             style={{ marginLeft: i > 0 ? "-6px" : "0", zIndex: shown - i }}
           >
             {String.fromCharCode(65 + i)}
@@ -178,7 +180,7 @@ function StackedAvatars({ count }: { count: number }) {
         ))}
         {overflow > 0 && (
           <div
-            className="relative flex h-7 w-7 items-center justify-center rounded-full border-[2px] border-white bg-[#1F2937] text-[10px] font-bold text-white shadow-sm"
+            className="relative flex h-7 w-7 items-center justify-center rounded-full border-[2px] border-card bg-foreground text-[10px] font-bold text-background shadow-sm"
             style={{ marginLeft: "-6px", zIndex: 0 }}
           >
             +{overflow}
@@ -252,7 +254,7 @@ export function CircleCard({ circle }: CircleCardProps) {
               onClick={handleJoin}
               disabled={joinCircle.isPending}
               className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full
-                bg-white/90 backdrop-blur-sm text-[#6B7280] shadow-sm
+                bg-card/90 backdrop-blur-sm text-muted-foreground shadow-sm
                 transition-all duration-200
                 hover:shadow-md hover:scale-110
                 active:scale-95 disabled:opacity-40"
@@ -268,7 +270,7 @@ export function CircleCard({ circle }: CircleCardProps) {
 
           {/* Circle name — large, bold */}
           <h4
-            className={`mt-5 text-[18px] font-extrabold leading-snug tracking-[-0.02em] text-[#111827] line-clamp-2 transition-colors duration-200 ${theme.titleHover}`}
+            className={`mt-5 text-[18px] font-extrabold leading-snug tracking-[-0.02em] text-foreground line-clamp-2 transition-colors duration-200 ${theme.titleHover}`}
           >
             {circle.title}
           </h4>
@@ -282,7 +284,7 @@ export function CircleCard({ circle }: CircleCardProps) {
           {/* Footer: Organization + member count + Stacked avatars */}
           <div className="mt-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center rounded-lg bg-white/60 px-2 py-0.5 text-[11px] font-semibold text-[#6B7280] shadow-sm backdrop-blur-sm">
+              <span className="inline-flex items-center rounded-lg bg-card/60 px-2 py-0.5 text-[11px] font-semibold text-muted-foreground shadow-sm backdrop-blur-sm">
                 {circle.org || "Open"}
               </span>
               <span

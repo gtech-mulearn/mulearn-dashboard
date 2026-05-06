@@ -130,7 +130,7 @@ export function MuidSearchInput({
                 <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                 {keepOpen && selectedUser ? (
                   <span className="flex min-w-0 items-center gap-1.5">
-                    <Check className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
+                    <Check className="h-3.5 w-3.5 shrink-0 text-success" />
                     <span className="truncate text-sm font-semibold text-foreground">
                       {selectedUser.name}
                     </span>
@@ -204,9 +204,7 @@ export function MuidSearchInput({
                         value={user.muid}
                         onSelect={() => selectUser(user)}
                         className={`flex items-center justify-between gap-3 cursor-pointer p-2 ${
-                          isSelected
-                            ? "bg-emerald-50 dark:bg-emerald-950/30"
-                            : ""
+                          isSelected ? "bg-success/10" : ""
                         }`}
                       >
                         <div className="flex min-w-0 items-center gap-2">
@@ -226,7 +224,7 @@ export function MuidSearchInput({
                           </div>
                         </div>
                         {isSelected ? (
-                          <span className="flex shrink-0 items-center gap-1 text-xs font-semibold text-emerald-600">
+                          <span className="flex shrink-0 items-center gap-1 text-xs font-semibold text-success">
                             <Check className="h-3.5 w-3.5" /> Selected
                           </span>
                         ) : (

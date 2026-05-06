@@ -165,22 +165,22 @@ function KarmaVoucherContent() {
 
             {isImportSuccess && importData && (
               <div className="space-y-4">
-                <div className="p-4 rounded-lg bg-green-900/20 border border-green-800/30">
-                  <p className="text-sm font-medium text-green-400">
+                <div className="p-4 rounded-lg bg-success/10 border border-success/20">
+                  <p className="text-sm font-medium text-success">
                     Import Summary: {importData.Success.length} Success,{" "}
                     {importData.Failed.length} Failed
                   </p>
                 </div>
 
                 {importData.Failed.length > 0 && (
-                  <div className="max-h-40 overflow-y-auto space-y-2 p-3 rounded-lg bg-red-900/10 border border-red-800/20">
-                    <p className="text-xs font-semibold text-red-500 uppercase tracking-wider">
+                  <div className="max-h-40 overflow-y-auto space-y-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                    <p className="text-xs font-semibold text-destructive uppercase tracking-wider">
                       Errors:
                     </p>
                     {importData.Failed.map((err) => (
                       <div
                         key={`${err.code}-${err.message}`}
-                        className="text-xs text-red-400 flex gap-2"
+                        className="text-xs text-destructive/80 flex gap-2"
                       >
                         <span className="font-mono text-neutral-500">
                           [{err.code}]

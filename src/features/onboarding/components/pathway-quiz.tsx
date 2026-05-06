@@ -124,7 +124,7 @@ export function PathwayQuiz({
           {recommended.map((pathway) => (
             <div
               key={pathway}
-              className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
+              className="rounded-2xl border border-border bg-card p-4 shadow-sm"
             >
               <h3 className="font-semibold capitalize">
                 {pathwayInfo[pathway].title}

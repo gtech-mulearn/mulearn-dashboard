@@ -27,7 +27,7 @@ export function EventDetailView({
 
   if (isError || !event) {
     return (
-      <p className="text-sm text-red-600">
+      <p className="text-sm text-destructive">
         {error instanceof Error ? error.message : "Failed to load event"}
       </p>
     );

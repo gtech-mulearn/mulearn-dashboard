@@ -31,6 +31,7 @@ interface SocialsDisplayProps {
   isOwnProfile: boolean;
 }
 
+// TODO: social icon brand colors are per-platform brand identities — leave as-is per design-system exception
 const socialLinks = [
   {
     key: "github",
@@ -219,7 +220,7 @@ export function SocialsDisplay({ isOwnProfile }: SocialsDisplayProps) {
                   type="button"
                   onClick={handleCancel}
                   disabled={isSaving}
-                  className="flex h-7 w-7 items-center justify-center rounded-full bg-red-50 text-red-500 transition-colors hover:bg-red-100"
+                  className="flex h-7 w-7 items-center justify-center rounded-full bg-destructive/10 text-destructive transition-colors hover:bg-destructive/20"
                   title="Cancel"
                 >
                   <X className="h-3.5 w-3.5" />
@@ -228,7 +229,7 @@ export function SocialsDisplay({ isOwnProfile }: SocialsDisplayProps) {
                   type="button"
                   onClick={handleSave}
                   disabled={isSaving}
-                  className="flex h-7 w-7 items-center justify-center rounded-full bg-green-50 text-green-600 transition-colors hover:bg-green-100"
+                  className="flex h-7 w-7 items-center justify-center rounded-full bg-success/10 text-success transition-colors hover:bg-success/20"
                   title="Save"
                 >
                   <Check className="h-3.5 w-3.5" />
@@ -253,7 +254,7 @@ export function SocialsDisplay({ isOwnProfile }: SocialsDisplayProps) {
                   href={`${link.baseUrl}${value}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 text-gray-600 transition-all hover:scale-110"
+                  className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted transition-all hover:scale-110"
                   style={{ color: link.color }}
                   title={link.key}
                 >
@@ -263,7 +264,7 @@ export function SocialsDisplay({ isOwnProfile }: SocialsDisplayProps) {
             })}
           </div>
         ) : (
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             {isOwnProfile
               ? "You have not connected any social media to your profile yet."
               : "No social links added yet"}
@@ -278,7 +279,7 @@ export function SocialsDisplay({ isOwnProfile }: SocialsDisplayProps) {
             return (
               <div key={link.key} className="flex items-center gap-3">
                 <div
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-100"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted"
                   style={{ color: link.color }}
                 >
                   <Icon className="h-4 w-4" />

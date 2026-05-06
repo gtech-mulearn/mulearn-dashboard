@@ -20,7 +20,7 @@ export function EventIdentityBar({ event }: EventIdentityBarProps) {
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-border bg-card px-5 py-3.5 shadow-sm">
       <span className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground">
-        <CalendarDays className="size-3.5 text-indigo-500" />
+        <CalendarDays className="size-3.5 text-primary" />
         {formatEventDateRange(event.start_datetime, event.end_datetime)}
       </span>
 
@@ -38,11 +38,11 @@ export function EventIdentityBar({ event }: EventIdentityBarProps) {
         {event.venue.city ?? "Location TBA"}
       </span>
 
-      <span className="rounded-full bg-indigo-500/15 px-2.5 py-0.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+      <span className="rounded-full bg-primary/15 px-2.5 py-0.5 text-xs font-semibold text-primary">
         {venueTypeLabel}
       </span>
 
-      <span className="rounded-full bg-blue-500/15 px-2.5 py-0.5 text-xs font-semibold text-blue-600 dark:text-blue-400">
+      <span className="rounded-full bg-brand-blue/15 px-2.5 py-0.5 text-xs font-semibold text-brand-blue">
         {scopeLabel}
       </span>
     </div>

@@ -37,11 +37,11 @@ export function CircleList() {
       <div className="flex min-h-[400px] items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="relative">
-            <div className="absolute inset-0 rounded-full bg-[#4F46E5]/10 animate-ping" />
-            <Spinner className="relative h-8 w-8 text-[#4F46E5]" />
+            <div className="absolute inset-0 rounded-full bg-primary/10 animate-ping" />
+            <Spinner className="relative h-8 w-8 text-primary" />
           </div>
           <p
-            className="text-[13px] font-medium text-[#9CA3AF]"
+            className="text-[13px] font-medium text-muted-foreground"
             style={{ fontFamily: "var(--font-inter)" }}
           >
             Loading circles…
@@ -61,29 +61,29 @@ export function CircleList() {
     >
       {/* Search */}
       <div className="relative max-w-md">
-        <Search className="absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#9CA3AF]" />
+        <Search className="absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-muted-foreground" />
         <Input
           type="search"
           placeholder="Search circles by name, topic, or organization…"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="h-12 rounded-xl border-[1.5px] border-[#E5E7EB] bg-white pl-11 pr-4 text-[14px] text-[#111827] shadow-none
-            placeholder:text-[#9CA3AF]
-            focus-visible:border-[#4F46E5] focus-visible:ring-[3px] focus-visible:ring-[#4F46E5]/10 focus-visible:outline-none
+          className="h-12 rounded-xl border-[1.5px] border-border bg-card pl-11 pr-4 text-[14px] text-foreground shadow-none
+            placeholder:text-muted-foreground
+            focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/10 focus-visible:outline-none
             transition-all duration-200"
         />
       </div>
 
       {/* Empty State */}
       {filteredCircles.length === 0 && (
-        <div className="lc-fade-in flex flex-col items-center justify-center rounded-2xl border border-[rgba(0,0,0,0.06)] bg-white px-8 py-24 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-          <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F3F4F6]">
-            <Users className="h-7 w-7 text-[#9CA3AF]" />
+        <div className="lc-fade-in flex flex-col items-center justify-center rounded-2xl border border-border bg-card px-8 py-24 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+          <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted">
+            <Users className="h-7 w-7 text-muted-foreground" />
           </div>
-          <h3 className="mb-2 text-[18px] font-bold tracking-[-0.02em] text-[#111827]">
+          <h3 className="mb-2 text-[18px] font-bold tracking-[-0.02em] text-foreground">
             {searchQuery ? "No circles found" : "No Learning Circles Yet"}
           </h3>
-          <p className="max-w-sm text-center text-[14px] leading-relaxed text-[#6B7280]">
+          <p className="max-w-sm text-center text-[14px] leading-relaxed text-muted-foreground">
             {searchQuery
               ? "Try a different search term or adjust your filters"
               : "Be the first to create a learning circle and start collaborating with peers!"}

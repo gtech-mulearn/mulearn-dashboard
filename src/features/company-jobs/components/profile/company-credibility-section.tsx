@@ -21,7 +21,7 @@ interface StatItemProps {
 function StatItem({ icon, value, label }: StatItemProps) {
   return (
     <div className="flex flex-col items-center gap-1.5 rounded-xl bg-muted/40 p-4 text-center">
-      <div className="flex size-9 items-center justify-center rounded-xl bg-indigo-500/10">
+      <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10">
         {icon}
       </div>
       <p className="text-2xl font-black text-foreground">{value}</p>
@@ -57,8 +57,8 @@ export function CompanyCredibilitySection({
     <Card className="rounded-2xl border bg-card shadow-sm">
       <CardHeader className="px-5 py-4">
         <div className="flex items-center gap-2.5">
-          <div className="flex size-9 items-center justify-center rounded-xl bg-indigo-500/10">
-            <Award className="size-4 text-indigo-500" />
+          <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10">
+            <Award className="size-4 text-primary" />
           </div>
           <CardTitle className="text-base font-bold text-foreground">
             muLearn Credibility
@@ -69,29 +69,29 @@ export function CompanyCredibilitySection({
       <CardContent className="px-5 pb-5 pt-0">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <StatItem
-            icon={<Users className="size-4 text-indigo-500" />}
+            icon={<Users className="size-4 text-primary" />}
             value={hireCount}
             label="Hires via muLearn"
           />
           <StatItem
-            icon={<GraduationCap className="size-4 text-indigo-500" />}
+            icon={<GraduationCap className="size-4 text-primary" />}
             value={avgKarmaOfHires.toLocaleString()}
             label="Avg. Hire Karma"
           />
           <StatItem
-            icon={<CalendarDays className="size-4 text-indigo-500" />}
+            icon={<CalendarDays className="size-4 text-primary" />}
             value={campusEventsCount}
             label="Campus Events"
           />
           {memberSinceLabel ? (
             <StatItem
-              icon={<Award className="size-4 text-indigo-500" />}
+              icon={<Award className="size-4 text-primary" />}
               value={memberSinceLabel}
               label="Member Since"
             />
           ) : (
             <StatItem
-              icon={<Award className="size-4 text-indigo-500" />}
+              icon={<Award className="size-4 text-primary" />}
               value="—"
               label="Member Since"
             />

@@ -75,14 +75,14 @@ export function Achievements({
 
   if (!achievements || achievements.length === 0) {
     return (
-      <div className="rounded-2xl bg-white p-8 text-center shadow-sm">
-        <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gray-100">
-          <Trophy className="h-10 w-10 text-gray-400" />
+      <div className="rounded-2xl bg-card p-8 text-center shadow-sm">
+        <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-muted">
+          <Trophy className="h-10 w-10 text-muted-foreground" />
         </div>
         <h3 className="text-lg font-semibold text-foreground">
           No Achievements Yet
         </h3>
-        <p className="mt-1 text-sm text-gray-500">
+        <p className="mt-1 text-sm text-muted-foreground">
           {isOwnProfile
             ? "Complete tasks to earn achievements and Verifiable Credentials."
             : "This user hasn't earned any achievements yet."}
@@ -92,7 +92,7 @@ export function Achievements({
   }
 
   return (
-    <div className="rounded-2xl bg-white p-6 shadow-sm">
+    <div className="rounded-2xl bg-card p-6 shadow-sm">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-lg font-semibold text-foreground">
           Achievements ({achievements.length})

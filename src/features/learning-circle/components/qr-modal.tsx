@@ -30,10 +30,10 @@ export function QrModal({
           {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
         <div className="flex flex-col items-center justify-center py-6">
-          <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
             <QRCode value={value} size={200} level="M" />
           </div>
-          <p className="mt-6 text-center text-sm font-medium text-gray-500 break-all w-full px-4">
+          <p className="mt-6 text-center text-sm font-medium text-muted-foreground break-all w-full px-4">
             {value}
           </p>
         </div>

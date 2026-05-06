@@ -82,9 +82,7 @@ export function RulesTable() {
       header: "Status",
       cell: ({ row }) =>
         row.original.is_active ? (
-          <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-            Active
-          </Badge>
+          <Badge className="bg-success/10 text-success">Active</Badge>
         ) : (
           <Badge variant="outline" className="text-muted-foreground">
             Inactive
@@ -102,7 +100,7 @@ export function RulesTable() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0 text-amber-600 hover:text-amber-700"
+                  className="h-8 w-8 p-0 text-warning hover:text-warning/80"
                   onClick={() => setTarget(row.original)}
                   data-testid={`deactivate-rule-${row.original.id}`}
                 >

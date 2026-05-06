@@ -27,8 +27,8 @@ export function TaskCard({
 }: TaskCardProps) {
   // Status badge colors matching the reference image
   const statusBadges = {
-    completed: "bg-green-50 text-green-600 border border-green-200",
-    pending: "bg-yellow-50 text-yellow-600 border border-yellow-200",
+    completed: "bg-success/10 text-success border border-success/30",
+    pending: "bg-warning/10 text-warning border border-warning/30",
     locked: "bg-muted text-muted-foreground border border-border",
   };
 
@@ -128,7 +128,7 @@ export function TaskCard({
         <div className="mt-auto pt-5">
           <Button
             className={cn(
-              "w-full rounded-lg font-semibold text-white transition-all duration-200 h-11 text-base cursor-pointer",
+              "w-full rounded-lg font-semibold text-primary-foreground transition-all duration-200 h-11 text-base cursor-pointer",
               // Blue background for all tasks
               // Primary background for active tasks
               status === "pending" && "bg-primary hover:bg-primary/90",

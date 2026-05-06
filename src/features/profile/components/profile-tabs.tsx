@@ -31,7 +31,7 @@ const tabs: { id: ProfileTab; label: string }[] = [
 export function ProfileTabs({ activeTab, onTabChange }: ProfileTabsProps) {
   return (
     <div className="relative">
-      <div className="flex gap-1 overflow-x-auto rounded-xl bg-gray-100 p-1">
+      <div className="flex gap-1 overflow-x-auto rounded-xl bg-muted p-1">
         {tabs.map((tab) => (
           <button
             key={tab.id}

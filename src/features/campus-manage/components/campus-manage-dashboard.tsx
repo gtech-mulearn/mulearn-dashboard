@@ -120,8 +120,8 @@ const SOCIAL_PLATFORMS = [
     id: "linkedin",
     label: "LinkedIn",
     icon: Linkedin,
-    color: "text-blue-600",
-    bg: "bg-blue-600/10",
+    color: "text-brand-blue",
+    bg: "bg-brand-blue/10",
   },
   {
     id: "twitter",
@@ -134,22 +134,22 @@ const SOCIAL_PLATFORMS = [
     id: "facebook",
     label: "Facebook",
     icon: Facebook,
-    color: "text-blue-700",
-    bg: "bg-blue-700/10",
+    color: "text-brand-blue",
+    bg: "bg-brand-blue/10",
   },
   {
     id: "youtube",
     label: "YouTube",
     icon: Youtube,
-    color: "text-red-600",
-    bg: "bg-red-600/10",
+    color: "text-destructive",
+    bg: "bg-destructive/10",
   },
   {
     id: "discord",
     label: "Discord",
     icon: MessageSquare,
-    color: "text-violet-500",
-    bg: "bg-violet-500/10",
+    color: "text-brand-purple",
+    bg: "bg-brand-purple/10",
   },
   {
     id: "github",
@@ -162,15 +162,15 @@ const SOCIAL_PLATFORMS = [
     id: "website",
     label: "Website",
     icon: Globe,
-    color: "text-indigo-500",
-    bg: "bg-indigo-500/10",
+    color: "text-primary",
+    bg: "bg-primary/10",
   },
   {
     id: "other",
     label: "Other",
     icon: Link2,
-    color: "text-amber-500",
-    bg: "bg-amber-500/10",
+    color: "text-warning",
+    bg: "bg-warning/10",
   },
 ] as const;
 
@@ -614,7 +614,7 @@ export function CampusManageDashboard() {
                   />
                   <div className="relative flex flex-col gap-5 px-4 py-6 sm:px-6 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-3 sm:gap-4 overflow-hidden">
-                      <div className="flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl bg-gradient-to-br from-teal-500 to-sky-600 text-base sm:text-lg font-bold text-white shadow-lg">
+                      <div className="flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl bg-gradient-to-br from-teal-500 to-sky-600 text-base sm:text-lg font-bold text-primary-foreground shadow-lg">
                         {(overview?.campusCode ?? overview?.collegeName ?? "C")
                           .slice(0, 2)
                           .toUpperCase()}
@@ -889,7 +889,7 @@ export function CampusManageDashboard() {
                               <div
                                 className={`mx-auto flex h-9 w-9 items-center justify-center rounded-full text-xs font-black shadow-sm transition-all duration-300 ${
                                   student.rank === 1
-                                    ? "bg-amber-100 text-amber-600 ring-2 ring-amber-400/50 shadow-[0_0_15px_rgba(251,191,36,0.25)] dark:bg-amber-900/40 dark:text-amber-400"
+                                    ? "bg-warning/10 text-warning ring-2 ring-warning/50"
                                     : student.rank === 2
                                       ? "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
                                       : student.rank === 3
@@ -911,7 +911,7 @@ export function CampusManageDashboard() {
                               </div>
                             </TableCell>
                             <TableCell>
-                              <span className="text-lg font-black tracking-tighter text-emerald-600 dark:text-emerald-500">
+                              <span className="text-lg font-black tracking-tighter text-success">
                                 {student.karma.toLocaleString()}
                               </span>
                             </TableCell>
@@ -921,9 +921,9 @@ export function CampusManageDashboard() {
                                   student.level?.includes("7")
                                     ? "bg-purple-600 hover:bg-purple-700"
                                     : student.level?.includes("6")
-                                      ? "bg-blue-600 hover:bg-blue-700"
+                                      ? "bg-brand-blue hover:bg-brand-blue/90"
                                       : student.level?.includes("5")
-                                        ? "bg-indigo-600 hover:bg-indigo-700 font-black"
+                                        ? "bg-primary hover:bg-primary/90 font-black"
                                         : student.level?.includes("4")
                                           ? "bg-teal-600 hover:bg-teal-700 font-black"
                                           : "bg-slate-500/80 hover:bg-slate-500 font-black"
@@ -1477,7 +1477,7 @@ export function CampusManageDashboard() {
                                   className={cn(
                                     "h-4 w-4",
                                     event.interestCount > 0
-                                      ? "fill-red-500 text-red-500"
+                                      ? "fill-destructive text-destructive"
                                       : "text-muted-foreground",
                                   )}
                                 />
@@ -1857,7 +1857,7 @@ export function CampusManageDashboard() {
                                   <Button
                                     size="icon"
                                     variant="ghost"
-                                    className="h-7 w-7 text-green-600 hover:bg-green-50"
+                                    className="h-7 w-7 text-success hover:bg-success/10"
                                     disabled={isUpsertingSocial || !socialValue}
                                     onClick={() => {
                                       upsertSocial(

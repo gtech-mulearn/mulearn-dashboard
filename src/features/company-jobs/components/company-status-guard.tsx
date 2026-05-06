@@ -39,8 +39,8 @@ export function CompanyStatusGuard({ children }: CompanyStatusGuardProps) {
   if (isError) {
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center gap-4 p-6">
-        <div className="rounded-full bg-red-50 p-4">
-          <AlertTriangle className="h-8 w-8 text-red-500" />
+        <div className="rounded-full bg-destructive/10 p-4">
+          <AlertTriangle className="h-8 w-8 text-destructive" />
         </div>
         <h2 className="text-lg font-semibold text-foreground">
           Unable to load company profile

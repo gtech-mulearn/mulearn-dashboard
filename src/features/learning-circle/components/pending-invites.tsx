@@ -25,8 +25,8 @@ export function PendingInvites() {
     return (
       <div className="flex min-h-[300px] items-center justify-center">
         <div className="relative">
-          <div className="absolute inset-0 rounded-full bg-[#4F46E5]/10 animate-ping" />
-          <Spinner className="relative h-6 w-6 text-[#4F46E5]" />
+          <div className="absolute inset-0 rounded-full bg-primary/10 animate-ping" />
+          <Spinner className="relative h-6 w-6 text-primary" />
         </div>
       </div>
     );
@@ -44,29 +44,29 @@ export function PendingInvites() {
       <div>
         <Link
           href="/dashboard/learning-circle"
-          className="inline-flex items-center gap-1.5 rounded-full border border-[#E5E7EB] px-3.5 py-1.5 text-[13px] font-medium text-[#6B7280]
-            transition-all duration-200 hover:bg-[#F9FAFB] hover:text-[#111827] hover:border-[#D1D5DB]"
+          className="inline-flex items-center gap-1.5 rounded-full border border-border px-3.5 py-1.5 text-[13px] font-medium text-muted-foreground
+            transition-all duration-200 hover:bg-muted hover:text-foreground hover:border-border"
         >
           <ChevronLeft className="h-3.5 w-3.5" />
           Back to Circles
         </Link>
-        <h1 className="mt-4 text-[24px] font-bold tracking-[-0.02em] text-[#111827]">
+        <h1 className="mt-4 text-[24px] font-bold tracking-[-0.02em] text-foreground">
           My Invitations
         </h1>
-        <p className="mt-1 text-[14px] text-[#9CA3AF]">
+        <p className="mt-1 text-[14px] text-muted-foreground">
           Pending circle invitations for you
         </p>
       </div>
 
       {!invites || invites.length === 0 ? (
-        <div className="lc-fade-in flex flex-col items-center justify-center rounded-2xl bg-[#F9FAFB] px-8 py-20">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#F3F4F6]">
-            <Mail className="h-6 w-6 text-[#9CA3AF]" />
+        <div className="lc-fade-in flex flex-col items-center justify-center rounded-2xl bg-muted px-8 py-20">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+            <Mail className="h-6 w-6 text-muted-foreground" />
           </div>
-          <p className="text-[15px] font-semibold text-[#111827]">
+          <p className="text-[15px] font-semibold text-foreground">
             No Pending Invitations
           </p>
-          <p className="mt-1 text-[13px] text-[#9CA3AF]">
+          <p className="mt-1 text-[13px] text-muted-foreground">
             You don&apos;t have any pending circle invitations.
           </p>
         </div>
@@ -75,23 +75,23 @@ export function PendingInvites() {
           {invites.map((invite, index) => (
             <div
               key={invite.id}
-              className="flex items-center justify-between rounded-xl bg-white px-4 py-3.5
-                border border-[#F0F0F0]
+              className="flex items-center justify-between rounded-xl bg-card px-4 py-3.5
+                border border-border
                 shadow-[0_1px_3px_rgba(0,0,0,0.04)]
                 transition-all duration-200 hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)]
                 lc-slide-up"
               style={{ animationDelay: `${index * 40}ms` }}
             >
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#EEF2FF]">
-                  <Mail className="h-4 w-4 text-[#4F46E5]" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10">
+                  <Mail className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <p className="text-[14px] font-semibold text-[#111827]">
+                  <p className="text-[14px] font-semibold text-foreground">
                     {invite.circle_name || "Learning Circle"}
                   </p>
                   {invite.created_at && (
-                    <p className="text-[11px] text-[#9CA3AF]">
+                    <p className="text-[11px] text-muted-foreground">
                       Invited {new Date(invite.created_at).toLocaleDateString()}
                     </p>
                   )}
@@ -100,8 +100,8 @@ export function PendingInvites() {
               <div className="flex gap-2">
                 <button
                   type="button"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-[#EF4444]
-                    transition-all duration-150 hover:bg-[#FEF2F2] active:scale-95
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-destructive
+                    transition-all duration-150 hover:bg-destructive/10 active:scale-95
                     disabled:opacity-40"
                   onClick={() => handleRespond(invite.id, false)}
                   disabled={respondToInvite.isPending}
@@ -111,8 +111,8 @@ export function PendingInvites() {
                 </button>
                 <button
                   type="button"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-[#10B981]
-                    transition-all duration-150 hover:bg-[#ECFDF5] active:scale-95
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-success
+                    transition-all duration-150 hover:bg-success/10 active:scale-95
                     disabled:opacity-40"
                   onClick={() => handleRespond(invite.id, true)}
                   disabled={respondToInvite.isPending}

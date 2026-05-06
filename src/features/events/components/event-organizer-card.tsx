@@ -19,8 +19,8 @@ export function EventOrganizerCard({
   return (
     <div className="rounded-2xl border border-border bg-card shadow-sm">
       <div className="flex items-center gap-2.5 px-5 py-4">
-        <div className="flex size-9 items-center justify-center rounded-xl bg-indigo-500/10">
-          <Building2 className="size-4 text-indigo-500" />
+        <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10">
+          <Building2 className="size-4 text-primary" />
         </div>
         <h2 className="text-base font-bold text-foreground">Organizer</h2>
       </div>
@@ -35,8 +35,10 @@ export function EventOrganizerCard({
             />
           </div>
         ) : (
-          <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600">
-            <span className="text-sm font-black text-white">{initials}</span>
+          <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary">
+            <span className="text-sm font-black text-primary-foreground">
+              {initials}
+            </span>
           </div>
         )}
         <div className="min-w-0">

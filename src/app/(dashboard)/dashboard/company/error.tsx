@@ -25,8 +25,8 @@ export default function CompanyError({ error, reset }: ErrorProps) {
 
   return (
     <div className="flex min-h-[500px] flex-col items-center justify-center gap-6 p-6">
-      <div className="rounded-full bg-red-50 p-5 border border-red-100">
-        <AlertTriangle className="h-10 w-10 text-red-500" />
+      <div className="rounded-full bg-destructive/10 p-5 border border-destructive/20">
+        <AlertTriangle className="h-10 w-10 text-destructive" />
       </div>
       <div className="text-center max-w-md">
         <h2 className="text-xl font-semibold text-foreground">

@@ -65,13 +65,15 @@ export function ProfileSettings({ isPublic }: ProfileSettingsProps) {
         {settings.map((setting) => (
           <div
             key={setting.id}
-            className="flex items-center justify-between rounded-lg bg-gray-50 p-3"
+            className="flex items-center justify-between rounded-lg bg-muted p-3"
           >
             <div>
               <p className="text-sm font-medium text-foreground">
                 {setting.label}
               </p>
-              <p className="text-xs text-gray-500">{setting.description}</p>
+              <p className="text-xs text-muted-foreground">
+                {setting.description}
+              </p>
             </div>
             <div className="relative">
               {setting.isLoading && (

@@ -27,11 +27,11 @@ import type { Job } from "../../types";
 // ─── Job type chip colours ────────────────────────────────────
 
 const JOB_TYPE_STYLES: Record<string, string> = {
-  "Full-Time": "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400",
-  Internship: "bg-violet-500/15 text-violet-600 dark:text-violet-400",
-  "Part-Time": "bg-blue-500/15 text-blue-600 dark:text-blue-400",
-  Contract: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
-  Freelance: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
+  "Full-Time": "bg-primary/15 text-primary",
+  Internship: "bg-brand-purple/15 text-brand-purple",
+  "Part-Time": "bg-brand-blue/15 text-brand-blue",
+  Contract: "bg-warning/15 text-warning",
+  Freelance: "bg-success/15 text-success",
 };
 
 // ─── Own-profile job card (real data) ─────────────────────────
@@ -44,7 +44,7 @@ function OwnJobCard({ job }: { job: Job }) {
     <div className="group rounded-xl border border-border bg-card p-4 transition-shadow hover:shadow-md">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <h3 className="truncate font-semibold text-foreground transition-colors group-hover:text-indigo-500">
+          <h3 className="truncate font-semibold text-foreground transition-colors group-hover:text-primary">
             {job.title}
           </h3>
           <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
@@ -109,7 +109,7 @@ function PublicJobCard({ job }: { job: MockPublicJob }) {
     <div className="group rounded-xl border border-border bg-card p-4 transition-shadow hover:shadow-md">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <h3 className="truncate font-semibold text-foreground transition-colors group-hover:text-indigo-500">
+          <h3 className="truncate font-semibold text-foreground transition-colors group-hover:text-primary">
             {job.title}
           </h3>
           <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
@@ -147,7 +147,7 @@ function PublicJobCard({ job }: { job: MockPublicJob }) {
         <span className="text-[11px] text-muted-foreground">{postedLabel}</span>
         <Button
           size="sm"
-          className="h-7 rounded-full bg-indigo-500 px-3 text-xs text-white hover:bg-indigo-600"
+          className="h-7 rounded-full bg-primary px-3 text-xs text-primary-foreground hover:bg-primary/90"
         >
           Apply
         </Button>
@@ -181,8 +181,8 @@ export function CompanyJobsSection({
       <Card className="rounded-2xl border bg-card shadow-sm">
         <CardHeader className="flex-row items-center justify-between px-5 py-4">
           <div className="flex items-center gap-2.5">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-indigo-500/10">
-              <BriefcaseBusiness className="size-4 text-indigo-500" />
+            <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10">
+              <BriefcaseBusiness className="size-4 text-primary" />
             </div>
             <CardTitle className="text-base font-bold text-foreground">
               Open Roles
@@ -191,7 +191,7 @@ export function CompanyJobsSection({
           {isOwnProfile && (
             <Link
               href="/dashboard/company/jobs/create"
-              className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500 px-4 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-indigo-600"
+              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
             >
               <Plus className="size-3.5" />
               Post New
@@ -212,7 +212,7 @@ export function CompanyJobsSection({
                 <Button
                   asChild
                   size="sm"
-                  className="mt-4 rounded-full bg-indigo-500 text-white hover:bg-indigo-600"
+                  className="mt-4 rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
                 >
                   <Link href="/dashboard/company/jobs/create">Post a Job</Link>
                 </Button>

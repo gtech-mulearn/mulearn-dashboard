@@ -138,7 +138,7 @@ function CourseOverlay({
               {typeof course.karma === "number" && course.karma > 0 && (
                 <Badge
                   variant="secondary"
-                  className="gap-1 text-yellow-600 rounded-lg"
+                  className="gap-1 text-warning rounded-lg"
                 >
                   <Trophy className="w-3 h-3" />
                   {course.karma} Karma

@@ -116,7 +116,7 @@ export function IGSelector({
   };
 
   return (
-    <div className="rounded-xl bg-slate-50 p-4">
+    <div className="rounded-xl bg-muted p-4">
       {/* Header */}
       <div className="mb-3 flex items-center justify-between">
         <span className="text-sm font-semibold text-foreground">
@@ -139,7 +139,7 @@ export function IGSelector({
                 type="button"
                 onClick={handleCancel}
                 disabled={isSaving}
-                className="flex h-7 w-7 items-center justify-center rounded-full bg-red-50 text-red-500 transition-colors hover:bg-red-100"
+                className="flex h-7 w-7 items-center justify-center rounded-full bg-destructive/10 text-destructive transition-colors hover:bg-destructive/20"
                 title="Cancel"
               >
                 <X className="h-3.5 w-3.5" />
@@ -148,7 +148,7 @@ export function IGSelector({
                 type="button"
                 onClick={handleSave}
                 disabled={isSaving}
-                className="flex h-7 w-7 items-center justify-center rounded-full bg-green-50 text-green-600 transition-colors hover:bg-green-100"
+                className="flex h-7 w-7 items-center justify-center rounded-full bg-success/10 text-success transition-colors hover:bg-success/20"
                 title="Save"
               >
                 <Check className="h-3.5 w-3.5" />
@@ -172,7 +172,7 @@ export function IGSelector({
                 <button
                   type="button"
                   onClick={() => handleRemoveIg(ig.id || "")}
-                  className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-gray-800 text-white hover:bg-red-500"
+                  className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-foreground text-background hover:bg-destructive"
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -187,7 +187,7 @@ export function IGSelector({
             </div>
           ))
         ) : (
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             {canEdit
               ? "No Interest Groups Selected. Click the edit button to select your interest groups."
               : "No Interest Groups Selected."}
@@ -197,14 +197,14 @@ export function IGSelector({
 
       {/* Divider when in edit mode */}
       {editMode && sortedIgs.length > 0 && (
-        <hr className="my-4 border-gray-200" />
+        <hr className="my-4 border-border" />
       )}
 
       {/* Available IGs to Add */}
       {editMode && (
         <div className="flex flex-wrap gap-3">
           {isLoadingAllIg ? (
-            <p className="text-sm text-gray-400">Loading...</p>
+            <p className="text-sm text-muted-foreground">Loading...</p>
           ) : availableIgs.length > 0 ? (
             availableIgs.map((ig) => (
               <button
@@ -218,7 +218,9 @@ export function IGSelector({
               </button>
             ))
           ) : (
-            <p className="text-sm text-gray-400">No more groups available</p>
+            <p className="text-sm text-muted-foreground">
+              No more groups available
+            </p>
           )}
         </div>
       )}
