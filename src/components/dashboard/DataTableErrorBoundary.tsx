@@ -54,8 +54,8 @@ export class DataTableErrorBoundary extends Component<Props, State> {
             </AlertDescription>
 
             {isSchemaError && (
-              <div className="mt-4 rounded-lg bg-black/5 p-4 font-mono text-xs overflow-auto max-h-60">
-                <div className="flex items-center gap-2 mb-2 text-blue-600 font-bold uppercase tracking-wider">
+              <div className="mt-4 rounded-lg bg-muted p-4 font-mono text-xs overflow-auto max-h-60">
+                <div className="flex items-center gap-2 mb-2 text-brand-blue font-bold uppercase tracking-wider">
                   <Bug className="h-3 w-3" />
                   Zod Validation Errors
                 </div>

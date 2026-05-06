@@ -42,7 +42,7 @@ export function RoleVerificationActions({
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-green-600 hover:bg-green-100 hover:text-green-700"
+          className="h-8 w-8 text-success hover:bg-success/10 hover:text-success/80"
           onClick={handleVerify}
           disabled={item.verified || isVerifying || isDeleting}
           title="Verify Role"

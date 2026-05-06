@@ -33,8 +33,8 @@ export function CompanyCultureSection({
     <Card className="rounded-2xl border bg-card shadow-sm">
       <CardHeader className="px-5 py-4">
         <div className="flex items-center gap-2.5">
-          <div className="flex size-9 items-center justify-center rounded-xl bg-indigo-500/10">
-            <Heart className="size-4 text-indigo-500" />
+          <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10">
+            <Heart className="size-4 text-primary" />
           </div>
           <CardTitle className="text-base font-bold text-foreground">
             Culture &amp; Stack
@@ -81,7 +81,7 @@ export function CompanyCultureSection({
               {perks.map((perk) => (
                 <span
                   key={perk}
-                  className="rounded-full bg-indigo-500/10 px-3 py-1 text-xs font-medium text-indigo-600 dark:text-indigo-400"
+                  className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary"
                 >
                   {perk}
                 </span>

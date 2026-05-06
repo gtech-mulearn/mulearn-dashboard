@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTopPerformers } from "../hooks/use-home";
 
+// TODO: per-user avatar colors are a meaningful categorical palette — leave as-is
 const AVATAR_COLORS = [
   { bg: "#EEF2FF", text: "#4F46E5" },
   { bg: "#F5F3FF", text: "#7C3AED" },
@@ -25,16 +26,11 @@ function formatKarma(n: number) {
 }
 
 function RankIndicator({ rank }: { rank: number }) {
-  if (rank === 1)
-    return (
-      <span className="text-base" style={{ color: "#F59E0B" }}>
-        ♦
-      </span>
-    );
+  if (rank === 1) return <span className="text-base text-warning">♦</span>;
   if (rank === 2)
     return <span className="text-base text-muted-foreground">◆</span>;
   return (
-    <span className="flex size-5 items-center justify-center rounded-full bg-emerald-100 text-[11px] font-bold text-emerald-700">
+    <span className="flex size-5 items-center justify-center rounded-full bg-success/10 text-[11px] font-bold text-success">
       {rank}
     </span>
   );
@@ -46,8 +42,8 @@ export function KarmaEarnersCard() {
     <Card className="rounded-2xl border bg-card shadow-sm">
       <CardHeader className="flex-row items-center justify-between px-5 py-4">
         <div className="flex items-center gap-2.5">
-          <div className="flex size-9 items-center justify-center rounded-xl bg-amber-50">
-            <Trophy className="size-4 text-amber-500" />
+          <div className="flex size-9 items-center justify-center rounded-xl bg-warning/10">
+            <Trophy className="size-4 text-warning" />
           </div>
           <CardTitle className="text-base font-bold text-foreground">
             Top Performers

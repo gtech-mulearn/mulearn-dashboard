@@ -41,14 +41,14 @@ export function VerificationStatusBanner({
 
     if (status === "rejected") {
       return (
-        <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-          <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
+        <div className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
           <div>
             <p className="font-semibold">Company profile rejected</p>
             {rejectionReason && (
-              <p className="mt-0.5 text-red-700">{rejectionReason}</p>
+              <p className="mt-0.5 text-destructive/80">{rejectionReason}</p>
             )}
-            <p className="mt-1 text-red-700">
+            <p className="mt-1 text-destructive/80">
               Please update your profile and resubmit for verification.
             </p>
           </div>
@@ -58,11 +58,11 @@ export function VerificationStatusBanner({
 
     // Default: pending / unknown
     return (
-      <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-        <Clock className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+      <div className="flex items-start gap-3 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
+        <Clock className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
         <div>
           <p className="font-semibold">Verification pending</p>
-          <p className="mt-0.5 text-amber-700">
+          <p className="mt-0.5 text-warning/80">
             Your company profile is under review. You will receive an email once
             an admin approves your account. Some features may be limited until
             then.
@@ -76,13 +76,13 @@ export function VerificationStatusBanner({
   if (isMentor || isEnabler) {
     const roleLabel = isMentor ? "Mentor" : "Enabler";
     return (
-      <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+      <div className="flex items-start gap-3 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
+        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
         <div>
           <p className="font-semibold">
             {roleLabel} account pending verification
           </p>
-          <p className="mt-0.5 text-amber-700">
+          <p className="mt-0.5 text-warning/80">
             Your {roleLabel.toLowerCase()} profile is awaiting admin approval.
             You will be notified once your account is verified.
           </p>

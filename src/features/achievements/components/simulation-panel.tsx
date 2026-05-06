@@ -47,9 +47,7 @@ function SimulationResultRow({ result }: { result: SimulationResult }) {
         <span className="font-medium text-sm">{result.achievement_name}</span>
         <div className="flex items-center gap-2">
           {result.eligible ? (
-            <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-              Eligible
-            </Badge>
+            <Badge className="bg-success/10 text-success">Eligible</Badge>
           ) : (
             <Badge variant="outline" className="text-muted-foreground">
               Not Eligible

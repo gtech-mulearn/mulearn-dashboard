@@ -45,7 +45,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
           />
         </div>
 
-        <div className="z-10 text-sm text-blue-200 absolute bottom-4">
+        <div className="z-10 text-sm text-primary-foreground/50 absolute bottom-4">
           © {new Date().getFullYear()} μLearn. All rights reserved.
         </div>
       </div>

@@ -13,8 +13,8 @@ const CARDS = [
     key: "activeMembers" as const,
     label: "ACTIVE MEMBERS",
     icon: Users,
-    iconColor: "#f59e0b",
-    iconBg: "bg-amber-500/10",
+    iconColor: "text-warning",
+    iconBg: "bg-warning/10",
     getValue: (o: CampusOverview) => o.activeMembers.toLocaleString(),
     delta: MOCK_CAMPUS_STAT_DELTAS.activeMembers.label,
   },
@@ -22,8 +22,8 @@ const CARDS = [
     key: "campusKarma" as const,
     label: "CAMPUS KARMA",
     icon: BarChart2,
-    iconColor: "#6366f1",
-    iconBg: "bg-indigo-500/10",
+    iconColor: "text-primary",
+    iconBg: "bg-primary/10",
     getValue: (o: CampusOverview) => o.totalKarma.toLocaleString(),
     delta: MOCK_CAMPUS_STAT_DELTAS.campusKarma.label,
   },
@@ -31,8 +31,8 @@ const CARDS = [
     key: "activeCircles" as const,
     label: "ACTIVE CIRCLES",
     icon: CircleDot,
-    iconColor: "#10b981",
-    iconBg: "bg-emerald-500/10",
+    iconColor: "text-success",
+    iconBg: "bg-success/10",
     getValue: (o: CampusOverview) => o.igChaptersCount.toString(),
     delta: MOCK_CAMPUS_STAT_DELTAS.activeCircles.label,
   },
@@ -40,8 +40,8 @@ const CARDS = [
     key: "campusRank" as const,
     label: "CAMPUS RANK",
     icon: Activity,
-    iconColor: "#a855f7",
-    iconBg: "bg-purple-500/10",
+    iconColor: "text-brand-purple",
+    iconBg: "bg-brand-purple/10",
     getValue: (o: CampusOverview) => `#${o.rank}`,
     delta: MOCK_CAMPUS_STAT_DELTAS.campusRank.label,
   },
@@ -60,7 +60,7 @@ export function CampusStatCards({ overview, isLoading }: CampusStatCardsProps) {
             <div
               className={`mb-3 flex size-10 items-center justify-center rounded-xl ${card.iconBg}`}
             >
-              <Icon className="size-5" style={{ color: card.iconColor }} />
+              <Icon className={`size-5 ${card.iconColor}`} />
             </div>
             {isLoading || !overview ? (
               <>
@@ -76,7 +76,7 @@ export function CampusStatCards({ overview, isLoading }: CampusStatCardsProps) {
                 <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
                   {card.label}
                 </p>
-                <p className="mt-2.5 inline-flex items-center rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                <p className="mt-2.5 inline-flex items-center rounded-full bg-success/15 px-2.5 py-0.5 text-xs font-semibold text-success">
                   {card.delta}
                 </p>
               </>

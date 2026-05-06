@@ -14,6 +14,7 @@ interface CountryBreakdownProps {
   data: Record<string, number>;
 }
 
+// TODO: no semantic token — needs design decision
 const COLORS = [
   "#f59e0b",
   "#f97316",

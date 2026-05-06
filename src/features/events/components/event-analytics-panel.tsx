@@ -14,7 +14,7 @@ export function EventAnalyticsPanel({
   return (
     <div className="space-y-4">
       <section className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 shadow-sm lc-fade-in">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-success/10 text-success">
           <Users className="size-5" />
         </div>
         <div className="flex min-w-0 flex-col justify-center">
@@ -48,7 +48,7 @@ export function EventAnalyticsPanel({
                 href={mapsUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-2 inline-flex items-center gap-1 text-xs text-indigo-600 hover:underline dark:text-indigo-400"
+                className="mt-2 inline-flex items-center gap-1 text-xs text-primary hover:underline"
               >
                 Open in Maps
                 <ExternalLink className="size-3" />

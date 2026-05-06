@@ -329,7 +329,7 @@ export default function ManageEventsDashboard() {
           <Skeleton className="h-80 rounded-xl" />
         </div>
       ) : isError ? (
-        <p className="text-sm text-red-600">
+        <p className="text-sm text-destructive">
           {is403
             ? "You don't have permission to manage events"
             : error instanceof Error

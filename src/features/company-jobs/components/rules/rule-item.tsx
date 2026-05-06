@@ -28,9 +28,9 @@ const RULE_TYPE_LABELS: Record<RuleType, string> = {
 };
 
 const RULE_TYPE_COLORS: Record<RuleType, string> = {
-  skill: "bg-blue-50 text-blue-700 border-blue-200",
-  interest_group: "bg-purple-50 text-purple-700 border-purple-200",
-  achievement: "bg-amber-50 text-amber-700 border-amber-200",
+  skill: "bg-brand-blue/10 text-brand-blue border-brand-blue/30",
+  interest_group: "bg-brand-purple/10 text-brand-purple border-brand-purple/30",
+  achievement: "bg-warning/10 text-warning border-warning/30",
 };
 
 export function RuleItem({
@@ -43,7 +43,7 @@ export function RuleItem({
   const label = RULE_TYPE_LABELS[rule.rule_type as RuleType] ?? rule.rule_type;
   const colorClass =
     RULE_TYPE_COLORS[rule.rule_type as RuleType] ??
-    "bg-gray-50 text-gray-700 border-gray-200";
+    "bg-muted text-muted-foreground border-border";
 
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-border bg-card px-4 py-3 transition-colors hover:bg-muted/50 sm:flex-row sm:items-center sm:justify-between">

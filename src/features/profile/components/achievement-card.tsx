@@ -95,7 +95,7 @@ export function AchievementCard({
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center">
-                <Award className="h-10 w-10 text-amber-500" />
+                <Award className="h-10 w-10 text-warning" />
               </div>
             )}
           </div>
@@ -107,7 +107,7 @@ export function AchievementCard({
             {achievementData.achievement_name}
           </h4>
           {achievementData.description && (
-            <p className="mb-3 text-center text-xs text-gray-500 line-clamp-2">
+            <p className="mb-3 text-center text-xs text-muted-foreground line-clamp-2">
               {achievementData.description}
             </p>
           )}
@@ -118,7 +118,7 @@ export function AchievementCard({
               {achievementData.tags.slice(0, 2).map((tag) => (
                 <span
                   key={tag}
-                  className="rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-600"
+                  className="rounded-full bg-brand-blue/10 px-2 py-0.5 text-xs text-brand-blue"
                 >
                   {tag}
                 </span>
@@ -134,7 +134,7 @@ export function AchievementCard({
                 onClick={handleButtonClick}
                 className={
                   is_issued
-                    ? "bg-emerald-500 hover:bg-emerald-600"
+                    ? "bg-success hover:bg-success/90"
                     : "bg-primary hover:bg-primary/90"
                 }
               >

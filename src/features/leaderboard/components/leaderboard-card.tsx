@@ -45,7 +45,7 @@ export function LeaderboardCard({ entry }: LeaderboardCardProps) {
                 {entry.karma.toLocaleString()}
               </div>
             </div>
-            <p className="text-xs font-black mt-0.5 sm:mt-1 text-gray-400 tracking-widest uppercase">
+            <p className="text-xs font-black mt-0.5 sm:mt-1 text-muted-foreground tracking-widest uppercase">
               KARMA
             </p>
           </div>

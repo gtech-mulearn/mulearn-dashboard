@@ -49,8 +49,8 @@ export function MemberFunnelCard({
   return (
     <Card className="h-full rounded-2xl border bg-card shadow-sm">
       <CardHeader className="flex-row items-center gap-2.5 px-5 py-4">
-        <div className="flex size-9 items-center justify-center rounded-xl bg-amber-500/10">
-          <BarChart3 className="size-4 text-amber-500" />
+        <div className="flex size-9 items-center justify-center rounded-xl bg-warning/10">
+          <BarChart3 className="size-4 text-warning" />
         </div>
         <CardTitle className="text-base font-bold text-foreground">
           Member Funnel

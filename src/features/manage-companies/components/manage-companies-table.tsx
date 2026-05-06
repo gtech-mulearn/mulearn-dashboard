@@ -45,23 +45,19 @@ const STATUS_CONFIG: Record<
 > = {
   pending_verification: {
     label: "Pending",
-    className:
-      "border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-300",
+    className: "border-warning/50 bg-warning/10 text-warning",
   },
   active: {
     label: "Active",
-    className:
-      "border-green-300 bg-green-50 text-green-700 dark:border-green-700 dark:bg-green-950 dark:text-green-300",
+    className: "border-success/50 bg-success/10 text-success",
   },
   rejected: {
     label: "Rejected",
-    className:
-      "border-red-300 bg-red-50 text-red-700 dark:border-red-700 dark:bg-red-950 dark:text-red-300",
+    className: "border-destructive/50 bg-destructive/10 text-destructive",
   },
   inactive: {
     label: "Inactive",
-    className:
-      "border-gray-300 bg-gray-50 text-gray-600 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-400",
+    className: "border-border bg-muted text-muted-foreground",
   },
 };
 
@@ -156,7 +152,7 @@ function buildColumnOrder(
                 <button
                   type="button"
                   onClick={() => onApproveRow(id)}
-                  className="inline-flex items-center gap-1 rounded-lg border border-green-400/40 bg-green-50 px-2 py-1 text-xs font-semibold text-green-700 transition-colors hover:bg-green-100 dark:border-green-700/40 dark:bg-green-950 dark:text-green-300 dark:hover:bg-green-900"
+                  className="inline-flex items-center gap-1 rounded-lg border border-success/40 bg-success/10 px-2 py-1 text-xs font-semibold text-success transition-colors hover:bg-success/20"
                   title="Approve"
                 >
                   <CheckCircle className="h-3 w-3" />
@@ -165,7 +161,7 @@ function buildColumnOrder(
                 <button
                   type="button"
                   onClick={() => onRejectRow(id)}
-                  className="inline-flex items-center gap-1 rounded-lg border border-red-400/40 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700 transition-colors hover:bg-red-100 dark:border-red-700/40 dark:bg-red-950 dark:text-red-300 dark:hover:bg-red-900"
+                  className="inline-flex items-center gap-1 rounded-lg border border-destructive/40 bg-destructive/10 px-2 py-1 text-xs font-semibold text-destructive transition-colors hover:bg-destructive/20"
                   title="Reject"
                 >
                   <XCircle className="h-3 w-3" />

@@ -100,7 +100,7 @@ export function CollaboratorInvitesSheet({
               Loading invites...
             </div>
           ) : isError ? (
-            <div className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+            <div className="rounded-md border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
               Failed to load collaborator invites.
             </div>
           ) : invites.length === 0 ? (

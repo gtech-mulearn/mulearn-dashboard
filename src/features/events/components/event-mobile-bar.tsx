@@ -39,7 +39,7 @@ export function EventMobileBar({ event }: EventMobileBarProps) {
             href={event.registration_url}
             target="_blank"
             rel="noreferrer"
-            className="shrink-0 rounded-full bg-indigo-500 px-5 py-2 text-sm font-semibold text-white hover:bg-indigo-600"
+            className="shrink-0 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
           >
             Register
           </a>

@@ -17,8 +17,8 @@ export function TalentPoolCard() {
   return (
     <Card className="rounded-2xl border bg-card shadow-sm">
       <CardHeader className="flex-row items-center gap-2.5 px-5 py-4">
-        <div className="flex size-9 items-center justify-center rounded-xl bg-emerald-500/10">
-          <Users className="size-4 text-emerald-500" />
+        <div className="flex size-9 items-center justify-center rounded-xl bg-success/10">
+          <Users className="size-4 text-success" />
         </div>
         <CardTitle className="text-base font-bold text-foreground">
           Talent Pool
@@ -33,13 +33,14 @@ export function TalentPoolCard() {
         <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
           Level Distribution
         </p>
+        {/* TODO: per-level distribution colors are a meaningful categorical palette — leave as-is */}
         <div className="mb-2 flex h-7 overflow-hidden rounded-lg">
           {MOCK_LEVEL_DISTRIBUTION.map((item) => {
             const pct = (item.count / MOCK_LEVEL_DISTRIBUTION_TOTAL) * 100;
             return (
               <div
                 key={item.level}
-                className="flex items-center justify-center text-[10px] font-bold text-white"
+                className="flex items-center justify-center text-[10px] font-bold text-primary-foreground"
                 style={{ width: `${pct}%`, backgroundColor: item.color }}
                 title={`${item.level}: ${item.count.toLocaleString()}`}
               >

@@ -41,16 +41,16 @@ export function EventRegistrationCard({
 
   // Status pill component
   const statusPill = isCancelled ? (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/15 px-3 py-1 text-xs font-semibold text-rose-600 dark:text-rose-400">
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-destructive/15 px-3 py-1 text-xs font-semibold text-destructive">
       Cancelled
     </span>
   ) : isUpcoming ? (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/15 px-3 py-1 text-xs font-semibold text-blue-600 dark:text-blue-400">
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-blue/15 px-3 py-1 text-xs font-semibold text-brand-blue">
       <CalendarDays className="size-3" /> Upcoming
     </span>
   ) : isLive ? (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-      <span className="size-1.5 animate-pulse rounded-full bg-emerald-500" />
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-success/15 px-3 py-1 text-xs font-semibold text-success">
+      <span className="size-1.5 animate-pulse rounded-full bg-success" />
       Happening Now
     </span>
   ) : (
@@ -93,7 +93,7 @@ export function EventRegistrationCard({
         <div className="space-y-1">
           <Button
             disabled
-            className="w-full rounded-full bg-indigo-500/20 text-indigo-400"
+            className="w-full rounded-full bg-primary/20 text-primary"
           >
             Karma Requirement Not Met
           </Button>
@@ -109,7 +109,7 @@ export function EventRegistrationCard({
     return (
       <Button
         asChild
-        className="w-full rounded-full bg-indigo-500 text-white hover:bg-indigo-600"
+        className="w-full rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
       >
         <a href={event.registration_url} target="_blank" rel="noreferrer">
           Register Now
@@ -129,13 +129,13 @@ export function EventRegistrationCard({
             <span className="text-xs text-muted-foreground">
               Registration closes
             </span>
-            <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+            <span className="text-[11px] font-semibold text-warning">
               {daysLeft === 0 ? "Today" : `${daysLeft}d left`}
             </span>
           </div>
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
             <div
-              className="h-full rounded-full bg-amber-500 transition-all"
+              className="h-full rounded-full bg-warning transition-all"
               style={{ width: `${pct}%` }}
             />
           </div>
@@ -157,7 +157,7 @@ export function EventRegistrationCard({
         <div className="space-y-2 border-t border-border pt-4">
           <div className="flex items-center justify-between">
             <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Zap className="size-3.5 text-amber-500" />
+              <Zap className="size-3.5 text-warning" />
               Requires {minKarma.toLocaleString()} karma
             </span>
             {eligible ? (

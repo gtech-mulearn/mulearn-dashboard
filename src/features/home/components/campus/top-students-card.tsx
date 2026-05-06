@@ -10,13 +10,14 @@ type TopStudentsCardProps = {
   campusName?: string;
 };
 
+// TODO: per-rank medal colors (gold/silver/bronze) — leave as-is per design-system exception
 const RANK_COLORS = ["#f59e0b", "#d1d5db", "#b45309"] as const;
 
 const LEVEL_COLORS: Record<string, string> = {
-  "1": "bg-blue-500/15 text-blue-600 dark:text-blue-400",
-  "2": "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400",
-  "3": "bg-purple-500/15 text-purple-600 dark:text-purple-400",
-  "4": "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+  "1": "bg-brand-blue/15 text-brand-blue",
+  "2": "bg-primary/15 text-primary",
+  "3": "bg-brand-purple/15 text-brand-purple",
+  "4": "bg-warning/15 text-warning",
 };
 
 function levelStyle(level: string) {
@@ -33,8 +34,8 @@ export function TopStudentsCard({
   return (
     <Card className="rounded-2xl border bg-card shadow-sm">
       <CardHeader className="flex-row items-center gap-2.5 px-5 py-4">
-        <div className="flex size-9 items-center justify-center rounded-xl bg-amber-500/10">
-          <Star className="size-4 text-amber-500" />
+        <div className="flex size-9 items-center justify-center rounded-xl bg-warning/10">
+          <Star className="size-4 text-warning" />
         </div>
         <CardTitle className="text-base font-bold text-foreground">
           Top Students{campusName ? ` — ${campusName}` : ""}
@@ -76,19 +77,19 @@ export function TopStudentsCard({
                 </tr>
               ) : (
                 visible.map((student, idx) => {
-                  const rankColor = idx < 3 ? RANK_COLORS[idx] : "#6b7280";
+                  const rankColor = idx < 3 ? RANK_COLORS[idx] : undefined;
                   const status = student.alumni ? "alumni" : "active";
                   const statusStyle = student.alumni
                     ? "bg-muted text-muted-foreground"
-                    : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400";
+                    : "bg-success/15 text-success";
                   return (
                     <tr
                       key={student.id}
                       className="border-b border-border last:border-b-0"
                     >
                       <td
-                        className="py-3 text-sm font-bold"
-                        style={{ color: rankColor }}
+                        className={`py-3 text-sm font-bold${rankColor ? "" : " text-muted-foreground"}`}
+                        style={rankColor ? { color: rankColor } : undefined}
                       >
                         {idx + 1}
                       </td>
@@ -105,7 +106,7 @@ export function TopStudentsCard({
                           Lv {student.level}
                         </span>
                       </td>
-                      <td className="py-3 text-right font-bold text-amber-500">
+                      <td className="py-3 text-right font-bold text-warning">
                         {student.karma.toLocaleString()}
                       </td>
                       <td className="py-3 text-right">

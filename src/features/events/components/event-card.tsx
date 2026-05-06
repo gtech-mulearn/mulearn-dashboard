@@ -125,7 +125,7 @@ export function EventCard({ event, isManageView, onView }: EventCardProps) {
                 ) : null}
               </div>
             ) : isEnded ? (
-              <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-white/80 backdrop-blur-sm">
+              <span className="rounded-full bg-primary-foreground/15 px-3 py-1 text-xs font-medium text-primary-foreground/80 backdrop-blur-sm">
                 Event Ended
               </span>
             ) : (

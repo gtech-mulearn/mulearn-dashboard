@@ -24,8 +24,8 @@ export function AvailabilityCard() {
   return (
     <Card className="rounded-2xl border bg-card shadow-sm">
       <CardHeader className="flex-row items-center gap-2.5 px-5 py-4">
-        <div className="flex size-9 items-center justify-center rounded-xl bg-amber-500/10">
-          <Sparkles className="size-4 text-amber-500" />
+        <div className="flex size-9 items-center justify-center rounded-xl bg-warning/10">
+          <Sparkles className="size-4 text-warning" />
         </div>
         <CardTitle className="text-base font-bold text-foreground">
           Availability & Expertise
@@ -48,12 +48,12 @@ export function AvailabilityCard() {
             onClick={() => setAvailable((v) => !v)}
             className={cn(
               "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors",
-              available ? "bg-emerald-500" : "bg-muted-foreground/30",
+              available ? "bg-success" : "bg-muted-foreground/30",
             )}
           >
             <span
               className={cn(
-                "pointer-events-none inline-block size-5 rounded-full bg-white shadow-lg transition-transform",
+                "pointer-events-none inline-block size-5 rounded-full bg-card shadow-lg transition-transform",
                 available ? "translate-x-5" : "translate-x-0",
               )}
             />
@@ -73,7 +73,7 @@ export function AvailabilityCard() {
                 className={cn(
                   "rounded-full px-3 py-1 text-xs font-medium transition-colors",
                   selected.has(tag)
-                    ? "bg-indigo-500/20 text-indigo-600 dark:text-indigo-400"
+                    ? "bg-primary/20 text-primary"
                     : "bg-muted text-muted-foreground hover:bg-muted/80",
                 )}
               >

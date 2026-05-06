@@ -90,15 +90,16 @@ function parseLocalTime(timeStr: string) {
 }
 
 /* ─── Avatar colors ─── */
+// TODO: no semantic token — attendee avatar palette needs design decision; using chart approximations
 const ATTENDEE_COLORS = [
-  "bg-[#C7D2FE] text-[#3730A3]",
-  "bg-[#A7F3D0] text-[#065F46]",
-  "bg-[#FDE68A] text-[#92400E]",
-  "bg-[#FBCFE8] text-[#9D174D]",
-  "bg-[#BAE6FD] text-[#075985]",
-  "bg-[#FED7AA] text-[#9A3412]",
-  "bg-[#DDD6FE] text-[#5B21B6]",
-  "bg-[#FECACA] text-[#991B1B]",
+  "bg-chart-1/30 text-foreground",
+  "bg-chart-2/30 text-foreground",
+  "bg-chart-3/30 text-foreground",
+  "bg-chart-5/30 text-foreground",
+  "bg-chart-4/30 text-foreground",
+  "bg-warning/20 text-foreground",
+  "bg-brand-purple/20 text-foreground",
+  "bg-destructive/20 text-foreground",
 ];
 
 function getAttendeeColor(name: string) {
@@ -163,7 +164,7 @@ export function MeetingDetailView({
   if (isLoading || !meeting) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
-        <Spinner className="h-8 w-8 text-indigo-600" />
+        <Spinner className="h-8 w-8 text-primary" />
       </div>
     );
   }
@@ -178,33 +179,33 @@ export function MeetingDetailView({
       {/* Back link */}
       <Link
         href={`/dashboard/learning-circle/${circleId}`}
-        className="group inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[13px] font-semibold text-[#6B7280] shadow-[0_1px_3px_rgba(0,0,0,0.06)] transition-all hover:shadow-md hover:text-[#111827]"
+        className="group inline-flex items-center gap-2 rounded-full bg-card px-4 py-2 text-[13px] font-semibold text-muted-foreground shadow-[0_1px_3px_rgba(0,0,0,0.06)] transition-all hover:shadow-md hover:text-foreground"
       >
         <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />
         Back to Circle
       </Link>
 
       {/* ─── Hero Header / Info Grid Card ─── */}
-      <div className="w-full rounded-2xl bg-white p-8 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-gray-100 flex flex-col">
-        <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-6">
-          <span className="text-[15px] font-bold text-gray-800 flex items-center gap-2">
+      <div className="w-full rounded-2xl bg-card p-8 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-border flex flex-col">
+        <div className="flex items-center justify-between pb-4 border-b border-border mb-6">
+          <span className="text-[15px] font-bold text-foreground flex items-center gap-2">
             Meeting — {meeting.ig}
             {status.dot && (
               <span className="relative flex h-2 w-2 ml-1">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
               </span>
             )}
           </span>
           <span
             className={`inline-flex rounded-lg px-3 py-1 text-[12px] font-semibold ${
               status === STATUS_CONFIG.ended
-                ? "bg-gray-100 text-gray-700"
+                ? "bg-muted text-muted-foreground"
                 : status === STATUS_CONFIG.live
-                  ? "bg-emerald-100 text-emerald-700"
+                  ? "bg-success/10 text-success"
                   : status === STATUS_CONFIG.recurring
-                    ? "bg-purple-100 text-purple-700"
-                    : "bg-indigo-100 text-indigo-700"
+                    ? "bg-brand-purple/10 text-brand-purple"
+                    : "bg-primary/10 text-primary"
             }`}
           >
             {status.label}
@@ -213,11 +214,11 @@ export function MeetingDetailView({
 
         <div className="flex items-center justify-between mb-8">
           <div className="flex-1 pr-6">
-            <h1 className="text-[28px] font-bold tracking-tight text-[#111827]">
+            <h1 className="text-[28px] font-bold tracking-tight text-foreground">
               {meeting.title}
             </h1>
             {meeting.description && (
-              <p className="mt-2 max-w-2xl text-[14px] leading-relaxed text-gray-600">
+              <p className="mt-2 max-w-2xl text-[14px] leading-relaxed text-muted-foreground">
                 {meeting.description}
               </p>
             )}
@@ -228,7 +229,7 @@ export function MeetingDetailView({
               <button
                 type="button"
                 onClick={() => setShowEditModal(true)}
-                className="flex items-center justify-center p-2 rounded-xl bg-gray-50 border border-gray-200 text-gray-500 hover:text-gray-900 transition-colors"
+                className="flex items-center justify-center p-2 rounded-xl bg-muted border border-border text-muted-foreground hover:text-foreground transition-colors"
                 title="Edit Meeting"
               >
                 <Edit2 className="h-4 w-4" />
@@ -239,7 +240,7 @@ export function MeetingDetailView({
                 type="button"
                 onClick={() => rsvpMeeting.mutate(meetingId)}
                 disabled={rsvpMeeting.isPending}
-                className="flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2 text-[13px] font-semibold text-gray-700 transition hover:bg-gray-50 disabled:opacity-50"
+                className="flex items-center gap-2 rounded-xl border border-border px-4 py-2 text-[13px] font-semibold text-foreground transition hover:bg-muted disabled:opacity-50"
               >
                 RSVP
               </button>
@@ -248,7 +249,7 @@ export function MeetingDetailView({
               <button
                 type="button"
                 onClick={() => setShowJoinModal(true)}
-                className="flex items-center gap-2 rounded-xl bg-gray-900 px-4 py-2 text-[13px] font-semibold text-white transition hover:bg-gray-800"
+                className="flex items-center gap-2 rounded-xl bg-foreground px-4 py-2 text-[13px] font-semibold text-background transition hover:bg-foreground/90"
               >
                 Join
               </button>
@@ -259,27 +260,27 @@ export function MeetingDetailView({
         {/* Info Grid (Replacing gradient info blocks) */}
         <div className="grid gap-x-12 gap-y-6 sm:grid-cols-2 lg:grid-cols-4 mb-2">
           <div className="flex flex-col">
-            <div className="flex items-center gap-2 text-gray-500 mb-1">
+            <div className="flex items-center gap-2 text-muted-foreground mb-1">
               <Calendar className="h-4 w-4" />
               <span className="text-[13px] font-medium">Date</span>
             </div>
-            <span className="text-[15px] font-semibold text-gray-900">
+            <span className="text-[15px] font-semibold text-foreground">
               {format(meetTime, "MMM d, yyyy")}
             </span>
           </div>
 
           <div className="flex flex-col">
-            <div className="flex items-center gap-2 text-gray-500 mb-1">
+            <div className="flex items-center gap-2 text-muted-foreground mb-1">
               <Clock className="h-4 w-4" />
               <span className="text-[13px] font-medium">Time</span>
             </div>
-            <span className="text-[15px] font-semibold text-gray-900">
+            <span className="text-[15px] font-semibold text-foreground">
               {format(meetTime, "h:mm a")} ({meeting.duration}h)
             </span>
           </div>
 
           <div className="flex flex-col">
-            <div className="flex items-center gap-2 text-gray-500 mb-1">
+            <div className="flex items-center gap-2 text-muted-foreground mb-1">
               {isOnline ? (
                 <Video className="h-4 w-4" />
               ) : (
@@ -292,7 +293,7 @@ export function MeetingDetailView({
                 <button
                   type="button"
                   onClick={() => setShowLinkQr(true)}
-                  className="ml-1 text-gray-400 hover:text-indigo-600 transition-colors"
+                  className="ml-1 text-muted-foreground hover:text-primary transition-colors"
                   title="Show Link QR"
                 >
                   <QrCode className="h-3.5 w-3.5" />
@@ -304,14 +305,14 @@ export function MeetingDetailView({
                 href={meeting.meet_link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[15px] font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1.5 transition-colors"
+                className="text-[15px] font-semibold text-primary hover:text-primary/80 flex items-center gap-1.5 transition-colors"
               >
                 {meeting.meet_place || "Online"}{" "}
                 <ExternalLink className="h-3 w-3" />
               </a>
             ) : (
               <span
-                className="text-[15px] font-semibold text-gray-900 truncate"
+                className="text-[15px] font-semibold text-foreground truncate"
                 title={meeting.meet_place || "TBA"}
               >
                 {meeting.meet_place || "TBA"}
@@ -320,22 +321,22 @@ export function MeetingDetailView({
           </div>
 
           <div className="flex flex-col">
-            <div className="flex items-center gap-2 text-gray-500 mb-1">
+            <div className="flex items-center gap-2 text-muted-foreground mb-1">
               <Users className="h-4 w-4" />
               <span className="text-[13px] font-medium">Attendees</span>
             </div>
-            <span className="text-[15px] font-semibold text-gray-900">
+            <span className="text-[15px] font-semibold text-foreground">
               {meeting.attendees.length} Joined
             </span>
           </div>
 
           {meeting.is_recurring && (
             <div className="flex flex-col">
-              <div className="flex items-center gap-2 text-gray-500 mb-1">
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
                 <Repeat className="h-4 w-4" />
                 <span className="text-[13px] font-medium">Recurrence</span>
               </div>
-              <span className="text-[15px] font-semibold text-gray-900 capitalize">
+              <span className="text-[15px] font-semibold text-foreground capitalize">
                 {meeting.recurrence_type || "Yes"}{" "}
                 {meeting.recurrence ? `(${meeting.recurrence} times)` : ""}
               </span>
@@ -345,23 +346,23 @@ export function MeetingDetailView({
 
         {/* Meet Code */}
         {meeting.meet_code && isCreator && (
-          <div className="mt-6 flex items-center justify-between rounded-xl border border-amber-200/50 bg-amber-50/50 p-4">
+          <div className="mt-6 flex items-center justify-between rounded-xl border border-warning/20 bg-warning/5 p-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100/50 text-amber-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/10 text-warning">
                 <Key className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-[13px] font-medium text-amber-800/70">
+                <p className="text-[13px] font-medium text-warning/70">
                   Meeting Code
                 </p>
                 <div className="flex items-center gap-3">
-                  <p className="font-mono text-[16px] font-bold tracking-widest text-amber-900">
+                  <p className="font-mono text-[16px] font-bold tracking-widest text-warning">
                     {meeting.meet_code}
                   </p>
                   <button
                     type="button"
                     onClick={() => setShowJoinQr(true)}
-                    className="flex items-center gap-1 rounded-md bg-amber-100/80 px-2 py-1 text-[11px] font-semibold text-amber-700 hover:bg-amber-200/80 transition-colors"
+                    className="flex items-center gap-1 rounded-md bg-warning/10 px-2 py-1 text-[11px] font-semibold text-warning hover:bg-warning/20 transition-colors"
                   >
                     <QrCode className="h-3.5 w-3.5" />
                     Share QR
@@ -374,18 +375,18 @@ export function MeetingDetailView({
       </div>
 
       {/* ─── Attendees ─── */}
-      <div className="w-full rounded-2xl bg-white p-8 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-gray-100 flex flex-col">
-        <h3 className="text-[16px] font-bold text-gray-900 mb-6 flex items-center gap-2">
+      <div className="w-full rounded-2xl bg-card p-8 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-border flex flex-col">
+        <h3 className="text-[16px] font-bold text-foreground mb-6 flex items-center gap-2">
           Attendees{" "}
-          <span className="text-sm font-medium text-gray-400">
+          <span className="text-sm font-medium text-muted-foreground">
             ({meeting.attendees.length})
           </span>
         </h3>
 
         {meeting.attendees.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-2xl bg-[#F9FAFB] py-10">
-            <Users className="mb-2 h-8 w-8 text-[#D1D5DB]" />
-            <p className="text-[13px] font-medium text-[#9CA3AF]">
+          <div className="flex flex-col items-center justify-center rounded-2xl bg-muted py-10">
+            <Users className="mb-2 h-8 w-8 text-muted-foreground/40" />
+            <p className="text-[13px] font-medium text-muted-foreground">
               No attendees yet
             </p>
           </div>
@@ -396,10 +397,10 @@ export function MeetingDetailView({
               return (
                 <div
                   key={attendee.user_id}
-                  className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50/30 p-3 transition-colors hover:bg-gray-50/80"
+                  className="flex items-center justify-between rounded-xl border border-border bg-muted/30 p-3 transition-colors hover:bg-muted/80"
                 >
                   <div className="flex items-center gap-3 min-w-0 pr-2">
-                    <Avatar className="h-10 w-10 border border-white shadow-sm shrink-0">
+                    <Avatar className="h-10 w-10 border border-card shadow-sm shrink-0">
                       {attendee.profile_pic && (
                         <AvatarImage src={attendee.profile_pic} />
                       )}
@@ -409,14 +410,14 @@ export function MeetingDetailView({
                         {attendee.full_name.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
-                    <p className="text-[14px] font-semibold text-gray-900 truncate">
+                    <p className="text-[14px] font-semibold text-foreground truncate">
                       {attendee.full_name}
                     </p>
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
                     {attendee.is_joined && (
                       <span
-                        className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-50 text-emerald-600"
+                        className="flex h-7 w-7 items-center justify-center rounded-full bg-success/10 text-success"
                         title="Joined"
                       >
                         <CheckCircle2 className="h-4 w-4" />
@@ -424,7 +425,7 @@ export function MeetingDetailView({
                     )}
                     {attendee.is_report_submitted && (
                       <span
-                        className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-50 text-blue-600"
+                        className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary"
                         title="Report Submitted"
                       >
                         <Radio className="h-4 w-4" />

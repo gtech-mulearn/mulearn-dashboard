@@ -39,7 +39,7 @@ export function InterestButton({
       variant="outline"
       className={
         isInterested
-          ? "w-full rounded-full border-emerald-500/30 bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/20 dark:text-emerald-400"
+          ? "w-full rounded-full border-success/30 bg-success/15 text-success hover:bg-success/20"
           : "w-full rounded-full"
       }
       disabled={disabled || mutation.isPending}

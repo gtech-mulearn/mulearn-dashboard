@@ -9,6 +9,7 @@ type InterestGroupsCardProps = {
   isLoading?: boolean;
 };
 
+// TODO: per-interest-group dot colors are a meaningful categorical palette — leave as-is
 const DOT_COLORS = [
   "#4F46E5",
   "#7C3AED",

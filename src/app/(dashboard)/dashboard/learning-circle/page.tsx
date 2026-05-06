@@ -40,17 +40,17 @@ export default function LearningCirclePage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold">Learning Circles</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-muted-foreground">
             Join or create learning circles to collaborate with others
           </p>
         </div>
         {isFormDataLoading ? (
-          <div className="flex items-center gap-2 text-gray-500">
+          <div className="flex items-center gap-2 text-muted-foreground">
             <Spinner className="h-4 w-4" />
             <span className="text-sm">Loading form data...</span>
           </div>
         ) : !hasUserOrg ? (
-          <div className="text-sm text-amber-600">
+          <div className="text-sm text-warning">
             Please link a college to your profile to create learning circles
           </div>
         ) : (

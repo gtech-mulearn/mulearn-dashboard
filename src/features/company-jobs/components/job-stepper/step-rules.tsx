@@ -30,7 +30,7 @@ export function StepRules({ rules, onAddRule, onDeleteRule }: StepRulesProps) {
       </div>
 
       {/* Info banner */}
-      <div className="flex flex-col gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800 sm:flex-row sm:gap-3">
+      <div className="flex flex-col gap-2 rounded-lg border border-brand-blue/30 bg-brand-blue/10 p-3 text-sm text-brand-blue sm:flex-row sm:gap-3">
         <Info className="h-4 w-4 shrink-0 mt-0.5" />
         <p>
           Rules are optional. You can add or modify them later from the job

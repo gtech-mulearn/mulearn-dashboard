@@ -15,7 +15,7 @@ interface KarmaDistributionProps {
   profile: UserProfile;
 }
 
-// Pastel colors for chart segments
+// TODO: karma distribution chart segment colors are a meaningful categorical palette — leave as-is
 const COLORS = [
   { bg: "bg-blue-100", bar: "bg-blue-500", text: "text-blue-700" },
   { bg: "bg-emerald-100", bar: "bg-emerald-500", text: "text-emerald-700" },
@@ -55,10 +55,10 @@ export function KarmaDistribution({ profile }: KarmaDistributionProps) {
   if (total === 0) {
     return (
       <div className="text-center">
-        <h3 className="mb-4 text-sm font-semibold text-gray-500 uppercase tracking-wide">
+        <h3 className="mb-4 text-sm font-semibold text-muted-foreground uppercase tracking-wide">
           Karma Distribution
         </h3>
-        <div className="rounded-xl bg-gray-50 p-6 text-sm text-gray-500">
+        <div className="rounded-xl bg-muted p-6 text-sm text-muted-foreground">
           <p>No karma data to display yet.</p>
           <p className="mt-1 text-xs">Complete tasks to see your breakdown!</p>
         </div>
@@ -68,7 +68,7 @@ export function KarmaDistribution({ profile }: KarmaDistributionProps) {
 
   return (
     <div>
-      <h3 className="mb-4 text-sm font-semibold text-gray-500 uppercase tracking-wide">
+      <h3 className="mb-4 text-sm font-semibold text-muted-foreground uppercase tracking-wide">
         Karma Distribution
       </h3>
 
@@ -80,14 +80,14 @@ export function KarmaDistribution({ profile }: KarmaDistributionProps) {
           return (
             <div key={item.name} className="space-y-1.5">
               <div className="flex items-center justify-between text-sm">
-                <span className="font-medium text-gray-700 truncate max-w-[60%]">
+                <span className="font-medium text-foreground truncate max-w-[60%]">
                   {item.name}
                 </span>
                 <span className={`font-semibold ${color.text}`}>
                   {item.value.toLocaleString()}
                 </span>
               </div>
-              <div className="h-2 overflow-hidden rounded-full bg-gray-100">
+              <div className="h-2 overflow-hidden rounded-full bg-muted">
                 <div
                   className={`h-full rounded-full ${color.bar} transition-all duration-500`}
                   style={{ width: `${percentage}%` }}
@@ -99,8 +99,10 @@ export function KarmaDistribution({ profile }: KarmaDistributionProps) {
       </div>
 
       {/* Total */}
-      <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-3">
-        <span className="text-sm font-medium text-gray-500">Total Karma</span>
+      <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
+        <span className="text-sm font-medium text-muted-foreground">
+          Total Karma
+        </span>
         <span className="text-lg font-bold text-foreground">
           {total.toLocaleString()}
         </span>

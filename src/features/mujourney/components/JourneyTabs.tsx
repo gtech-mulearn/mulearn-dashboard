@@ -44,7 +44,7 @@ export function JourneyTabs({
           className={cn(
             "px-4 sm:px-7 py-2 sm:py-3 rounded-full font-semibold text-sm sm:text-base whitespace-nowrap transition-all cursor-pointer shrink-0",
             activeTab === tab.id
-              ? "bg-blue-600 text-white shadow-md"
+              ? "bg-primary text-primary-foreground shadow-md"
               : "text-card-foreground hover:bg-muted",
           )}
         >

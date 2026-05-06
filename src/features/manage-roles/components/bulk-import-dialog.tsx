@@ -153,13 +153,11 @@ export function BulkImportDialog({
           <div className="space-y-4 py-2">
             {/* Success Summary */}
             {importResult && importResult.success_count > 0 && (
-              <div className="flex items-start gap-3 rounded-xl border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-950/30">
-                <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-green-600 dark:text-green-400" />
+              <div className="flex items-start gap-3 rounded-xl border border-success/30 bg-success/10 p-4">
+                <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-success" />
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-green-900 dark:text-green-100">
-                    Success
-                  </p>
-                  <p className="mt-1 text-sm text-green-700 dark:text-green-300">
+                  <p className="text-sm font-medium text-foreground">Success</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
                     {importResult.success_count} role assignment(s) imported
                     successfully
                   </p>
@@ -170,13 +168,13 @@ export function BulkImportDialog({
             {/* Error Summary */}
             {importResult && importResult.error_count > 0 && (
               <div className="space-y-3">
-                <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950/30">
-                  <AlertCircle className="mt-0.5 size-5 shrink-0 text-red-600 dark:text-red-400" />
+                <div className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/10 p-4">
+                  <AlertCircle className="mt-0.5 size-5 shrink-0 text-destructive" />
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-red-900 dark:text-red-100">
+                    <p className="text-sm font-medium text-foreground">
                       {importResult.error_count} Error(s)
                     </p>
-                    <p className="mt-1 text-sm text-red-700 dark:text-red-300">
+                    <p className="mt-1 text-sm text-muted-foreground">
                       The following entries failed to import:
                     </p>
                   </div>

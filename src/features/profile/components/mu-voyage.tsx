@@ -50,7 +50,7 @@ export function MuVoyage({
 
   if (!userLevels || userLevels.length === 0) {
     return (
-      <div className="rounded-xl bg-gray-50 p-8 text-center text-gray-500">
+      <div className="rounded-xl bg-muted p-8 text-center text-muted-foreground">
         <p className="font-medium">No level data available</p>
         <p className="mt-1 text-sm">Start your journey by completing tasks!</p>
       </div>
@@ -119,17 +119,17 @@ export function MuVoyage({
           {currentLevel < 4 && (
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">
+                <span className="text-muted-foreground">
                   {getProgressPercent(currentLevelData)}% complete
                 </span>
-                <span className="text-gray-600">
+                <span className="text-muted-foreground">
                   {getCompletedKarma(currentLevelData)}/
                   {getTotalKarma(currentLevelData)} Karma
                 </span>
               </div>
-              <div className="h-2 overflow-hidden rounded-full bg-gray-200">
+              <div className="h-2 overflow-hidden rounded-full bg-muted">
                 <div
-                  className="h-full rounded-full bg-green-500 transition-all duration-500"
+                  className="h-full rounded-full bg-success transition-all duration-500"
                   style={{ width: `${getProgressPercent(currentLevelData)}%` }}
                 />
               </div>
@@ -158,15 +158,15 @@ export function MuVoyage({
               <button
                 type="button"
                 onClick={() => toggleLevel(level.name)}
-                className="flex w-full items-center justify-between p-4 text-left hover:bg-gray-50"
+                className="flex w-full items-center justify-between p-4 text-left hover:bg-muted"
               >
                 <div className="flex items-center gap-2">
                   <span className="font-medium text-foreground">
                     {level.name}
                   </span>
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-muted-foreground">
                     [{getCompletedKarma(level)}/
-                    <span className="text-[#2E85FE]">
+                    <span className="text-brand-blue">
                       {getTotalKarma(level)}
                     </span>
                     ]
@@ -186,38 +186,40 @@ export function MuVoyage({
                         cy="10"
                         r="8"
                         fill="none"
-                        stroke="#e5e7eb"
+                        stroke="currentColor"
                         strokeWidth="3"
+                        className="text-border"
                       />
                       <circle
                         cx="10"
                         cy="10"
                         r="8"
                         fill="none"
-                        stroke="#48bb78"
+                        stroke="currentColor"
+                        className="text-success"
                         strokeWidth="3"
                         strokeDasharray={`${(completedCount / level.tasks.length) * 50.3} 50.3`}
                         strokeLinecap="round"
                       />
                     </svg>
                     {allCompleted && (
-                      <Check className="absolute inset-0 m-auto h-3 w-3 text-green-500" />
+                      <Check className="absolute inset-0 m-auto h-3 w-3 text-success" />
                     )}
                   </div>
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-muted-foreground">
                     {level.tasks.length} Tasks
                   </span>
                   <ChevronDown
-                    className={`h-4 w-4 text-gray-400 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                    className={`h-4 w-4 text-muted-foreground transition-transform ${isExpanded ? "rotate-180" : ""}`}
                   />
                 </div>
               </button>
 
               {/* Expanded Content */}
               {isExpanded && (
-                <div className="border-t border-gray-100">
+                <div className="border-t border-border">
                   {/* Goal Info */}
-                  <div className="flex items-center justify-between bg-gray-50 px-4 py-2 text-xs text-gray-500">
+                  <div className="flex items-center justify-between bg-muted px-4 py-2 text-xs text-muted-foreground">
                     <span>Mine Left: {karmaRemaining} Karma</span>
                     <span className="flex items-center gap-1">
                       <Target className="h-3 w-3" />
@@ -237,12 +239,12 @@ export function MuVoyage({
                           type="checkbox"
                           checked={task.completed}
                           readOnly
-                          className="h-4 w-4 rounded border-gray-300 text-green-500"
+                          className="h-4 w-4 rounded border-border text-success"
                         />
                         {/* Task Info */}
                         <div className="flex flex-1 flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
                           <span
-                            className={`text-sm ${task.completed ? "text-gray-500" : "font-medium text-gray-700"}`}
+                            className={`text-sm ${task.completed ? "text-muted-foreground" : "font-medium text-foreground"}`}
                           >
                             {task.task_name}
                           </span>
@@ -269,7 +271,7 @@ export function MuVoyage({
                           )}
                         </div>
                         {/* Karma */}
-                        <span className="text-sm text-gray-400">
+                        <span className="text-sm text-muted-foreground">
                           {task.karma} ϰ
                         </span>
                       </li>

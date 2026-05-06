@@ -47,7 +47,7 @@ export function LeaderboardView({
           </div>
         </div>
       ) : isError ? (
-        <div className="min-h-[50vh] flex flex-col items-center justify-center text-red-500 gap-2">
+        <div className="min-h-[50vh] flex flex-col items-center justify-center text-destructive gap-2">
           <AlertCircle className="w-8 h-8" />
           <p>Failed to load leaderboard data.</p>
         </div>

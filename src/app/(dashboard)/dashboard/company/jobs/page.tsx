@@ -61,8 +61,8 @@ export default function CompanyJobsPage() {
         {/* Error */}
         {isError && !isLoading && (
           <div className="flex min-h-[300px] flex-col items-center justify-center gap-4 rounded-xl border border-border bg-card/50 p-8">
-            <div className="rounded-full bg-red-50 p-3">
-              <AlertTriangle className="h-6 w-6 text-red-500" />
+            <div className="rounded-full bg-destructive/10 p-3">
+              <AlertTriangle className="h-6 w-6 text-destructive" />
             </div>
             <p className="text-sm text-muted-foreground">
               {error instanceof Error

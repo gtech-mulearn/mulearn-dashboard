@@ -15,9 +15,9 @@ import type { Job } from "@/features/company-jobs/types";
 import { cn } from "@/lib/utils";
 
 const STATUS_STYLES: Record<string, string> = {
-  Active: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
+  Active: "bg-success/15 text-success",
   Inactive: "bg-muted text-muted-foreground",
-  Draft: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+  Draft: "bg-warning/15 text-warning",
 };
 
 function JobRow({ job }: { job: Job }) {
@@ -74,8 +74,8 @@ export function ActiveJobListingsCard() {
     <Card className="rounded-2xl border bg-card shadow-sm">
       <CardHeader className="flex-row items-center justify-between px-5 py-4">
         <div className="flex items-center gap-2.5">
-          <div className="flex size-9 items-center justify-center rounded-xl bg-indigo-500/10">
-            <Building2 className="size-4 text-indigo-500" />
+          <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10">
+            <Building2 className="size-4 text-primary" />
           </div>
           <CardTitle className="text-base font-bold text-foreground">
             Active Job Listings
@@ -83,7 +83,7 @@ export function ActiveJobListingsCard() {
         </div>
         <Link
           href="/dashboard/company/jobs/create"
-          className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500 px-4 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-indigo-600"
+          className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
         >
           <Plus className="size-3.5" />
           Post New

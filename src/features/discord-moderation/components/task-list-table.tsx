@@ -23,10 +23,11 @@ import { useTaskList } from "../hooks";
 // ─── Status badge ────────────────────────────────────────────────────────────
 
 const STATUS_STYLES: Record<string, string> = {
-  Pending: "bg-yellow-500 text-white border-transparent",
-  "Peer Approved": "bg-blue-600 text-white border-transparent",
-  "Appraiser Approved": "bg-purple-600 text-white border-transparent",
-  "Karma Awarded": "bg-green-600 text-white border-transparent",
+  Pending: "bg-warning text-primary-foreground border-transparent",
+  "Peer Approved": "bg-brand-blue text-primary-foreground border-transparent",
+  "Appraiser Approved":
+    "bg-brand-purple text-primary-foreground border-transparent",
+  "Karma Awarded": "bg-success text-primary-foreground border-transparent",
 };
 
 function StatusBadge({ status }: { status: string }): ReactElement {

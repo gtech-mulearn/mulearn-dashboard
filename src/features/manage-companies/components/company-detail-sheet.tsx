@@ -41,23 +41,19 @@ function formatDate(dateString: string | null | undefined): string {
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   pending_verification: {
     label: "Pending Verification",
-    className:
-      "border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-300",
+    className: "border-warning/50 bg-warning/10 text-warning",
   },
   active: {
     label: "Active",
-    className:
-      "border-green-300 bg-green-50 text-green-700 dark:border-green-700 dark:bg-green-950 dark:text-green-300",
+    className: "border-success/50 bg-success/10 text-success",
   },
   rejected: {
     label: "Rejected",
-    className:
-      "border-red-300 bg-red-50 text-red-700 dark:border-red-700 dark:bg-red-950 dark:text-red-300",
+    className: "border-destructive/50 bg-destructive/10 text-destructive",
   },
   inactive: {
     label: "Inactive",
-    className:
-      "border-gray-300 bg-gray-50 text-gray-600 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-400",
+    className: "border-border bg-muted text-muted-foreground",
   },
 };
 
@@ -234,7 +230,7 @@ export function CompanyDetailSheet({
               />
               {company.verified_at && (
                 <DetailRow
-                  icon={<CheckCircle className="h-4 w-4 text-green-600" />}
+                  icon={<CheckCircle className="h-4 w-4 text-success" />}
                   label="Verified At"
                   value={formatDate(company.verified_at)}
                 />
@@ -270,7 +266,7 @@ export function CompanyDetailSheet({
                 Reject
               </Button>
               <Button
-                className="flex-1 rounded-2xl bg-green-600 text-white hover:bg-green-700"
+                className="flex-1 rounded-2xl bg-success text-primary-foreground hover:bg-success/90"
                 onClick={() => {
                   onApprove(company);
                   onOpenChange(false);

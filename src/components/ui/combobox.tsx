@@ -106,7 +106,7 @@ export function Combobox({
           onClick={() => setOpen(true)}
           disabled={disabled}
           className={cn(
-            "h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4 pr-10",
+            "h-12 rounded-xl border-border bg-muted/50 px-4 pr-10",
             className,
           )}
           autoComplete="off"

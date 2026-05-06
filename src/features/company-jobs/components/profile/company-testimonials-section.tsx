@@ -23,7 +23,7 @@ function TestimonialCard({ testimonial }: { testimonial: MockTestimonial }) {
 
   return (
     <div className="flex w-72 shrink-0 flex-col gap-4 rounded-xl border border-border bg-muted/30 p-4">
-      <Quote className="size-5 text-indigo-500/60" />
+      <Quote className="size-5 text-primary/60" />
       <p className="flex-1 text-sm leading-relaxed text-foreground">
         &ldquo;{testimonial.quote}&rdquo;
       </p>
@@ -35,8 +35,10 @@ function TestimonialCard({ testimonial }: { testimonial: MockTestimonial }) {
             className="size-9 rounded-full object-cover"
           />
         ) : (
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600">
-            <span className="text-xs font-bold text-white">{initials}</span>
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary">
+            <span className="text-xs font-bold text-primary-foreground">
+              {initials}
+            </span>
           </div>
         )}
         <div className="min-w-0">
@@ -66,8 +68,8 @@ export function CompanyTestimonialsSection({
     <Card className="rounded-2xl border bg-card shadow-sm">
       <CardHeader className="px-5 py-4">
         <div className="flex items-center gap-2.5">
-          <div className="flex size-9 items-center justify-center rounded-xl bg-indigo-500/10">
-            <Quote className="size-4 text-indigo-500" />
+          <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10">
+            <Quote className="size-4 text-primary" />
           </div>
           <CardTitle className="text-base font-bold text-foreground">
             From Our Hires

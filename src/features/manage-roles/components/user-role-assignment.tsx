@@ -88,7 +88,7 @@ function SingleTab({ role }: { role: Role }) {
               <Button
                 size="icon"
                 variant="ghost"
-                className="size-8 rounded-xl text-green-600 hover:bg-green-50 hover:text-green-700"
+                className="size-8 rounded-xl text-success hover:bg-success/10 hover:text-success/80"
                 disabled={assignMutation.isPending}
                 title="Assign role"
                 onClick={() =>

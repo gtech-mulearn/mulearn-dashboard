@@ -13,15 +13,15 @@ export function SessionRequestsCard() {
     <Card className="rounded-2xl border bg-card shadow-sm">
       <CardHeader className="flex-row items-center justify-between px-5 py-4">
         <div className="flex items-center gap-2.5">
-          <div className="flex size-9 items-center justify-center rounded-xl bg-purple-500/10">
-            <Inbox className="size-4 text-purple-500" />
+          <div className="flex size-9 items-center justify-center rounded-xl bg-brand-purple/10">
+            <Inbox className="size-4 text-brand-purple" />
           </div>
           <CardTitle className="text-base font-bold text-foreground">
             Session Requests
           </CardTitle>
         </div>
         {visible.length > 0 && (
-          <span className="flex size-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+          <span className="flex size-5 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
             {visible.length}
           </span>
         )}
@@ -38,8 +38,9 @@ export function SessionRequestsCard() {
                 key={req.id}
                 className="flex items-center gap-3 border-b border-border py-3 last:border-b-0"
               >
+                {/* TODO: req.avatarColor is a per-mentee categorical color from mock data — leave as-is per design-system exception */}
                 <div
-                  className="flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
+                  className="flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-primary-foreground"
                   style={{ backgroundColor: req.avatarColor }}
                 >
                   {req.menteeInitials}
@@ -61,7 +62,7 @@ export function SessionRequestsCard() {
                     onClick={() =>
                       setDismissed((prev) => new Set([...prev, req.id]))
                     }
-                    className="flex size-7 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-600 transition-colors hover:bg-emerald-500/25 dark:text-emerald-400"
+                    className="flex size-7 items-center justify-center rounded-full bg-success/15 text-success transition-colors hover:bg-success/25"
                     aria-label="Accept"
                   >
                     <Check className="size-3.5" />
@@ -71,7 +72,7 @@ export function SessionRequestsCard() {
                     onClick={() =>
                       setDismissed((prev) => new Set([...prev, req.id]))
                     }
-                    className="flex size-7 items-center justify-center rounded-full bg-red-500/15 text-red-600 transition-colors hover:bg-red-500/25 dark:text-red-400"
+                    className="flex size-7 items-center justify-center rounded-full bg-destructive/15 text-destructive transition-colors hover:bg-destructive/25"
                     aria-label="Decline"
                   >
                     <X className="size-3.5" />

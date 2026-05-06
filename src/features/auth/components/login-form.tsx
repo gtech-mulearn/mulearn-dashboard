@@ -99,7 +99,7 @@ export function LoginForm({
                 <FormControl>
                   <Input
                     placeholder="email@example.com or muid"
-                    className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4"
+                    className="h-12 rounded-xl border-border bg-muted/50 px-4"
                     disabled={isLoading}
                     {...field}
                   />
@@ -120,7 +120,7 @@ export function LoginForm({
                     <Input
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter your password"
-                      className="h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4 pr-12"
+                      className="h-12 rounded-xl border-border bg-muted/50 px-4 pr-12"
                       disabled={isLoading}
                       {...field}
                     />
@@ -179,7 +179,7 @@ export function LoginForm({
       {/* Divider */}
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-gray-200" />
+          <span className="w-full border-t border-border" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
           <span className=" px-4 text-secondary-foreground">OR</span>

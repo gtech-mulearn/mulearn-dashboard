@@ -114,9 +114,7 @@ export function AchievementsTable() {
       header: "Status",
       cell: ({ row }) =>
         row.original.is_active ? (
-          <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-            Active
-          </Badge>
+          <Badge className="bg-success/10 text-success">Active</Badge>
         ) : (
           <Badge variant="outline" className="text-muted-foreground">
             Inactive

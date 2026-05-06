@@ -12,11 +12,7 @@ function DeltaBadge({
   const label = value > 0 ? `+${value}` : `${value}`;
   return (
     <span
-      className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[11px] font-semibold"
-      style={{
-        backgroundColor: isGood ? "#DCFCE7" : "#FEE2E2",
-        color: isGood ? "#15803D" : "#B91C1C",
-      }}
+      className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[11px] font-semibold ${isGood ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive"}`}
     >
       {label}
     </span>
@@ -66,7 +62,7 @@ export function HomeStatsPanel() {
           <span className="ml-1 text-xs text-muted-foreground">days</span>
         </span>
       ),
-      badge: <Flame className="size-4" style={{ color: "#F97316" }} />,
+      badge: <Flame className="size-4 text-warning" />,
     },
   ];
   return (

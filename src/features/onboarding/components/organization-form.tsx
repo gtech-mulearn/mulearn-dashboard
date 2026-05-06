@@ -149,7 +149,7 @@ export function OrganizationForm({
                 onValueChange={setOrganization}
                 disabled={isLoading || isLoadingColleges || isLoadingCompanies}
               >
-                <SelectTrigger className="w-full h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4">
+                <SelectTrigger className="w-full h-12 rounded-xl border-border bg-muted/50 px-4">
                   <SelectValue
                     placeholder={`Select your ${userType === "student" ? "college" : "company"}`}
                   />
@@ -182,7 +182,7 @@ export function OrganizationForm({
                     onValueChange={setDepartment}
                     disabled={isLoading || isLoadingDepartments}
                   >
-                    <SelectTrigger className="w-full h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4">
+                    <SelectTrigger className="w-full h-12 rounded-xl border-border bg-muted/50 px-4">
                       <SelectValue placeholder="Select your department" />
                     </SelectTrigger>
                     <SelectContent className="max-h-[300px]">
@@ -204,7 +204,7 @@ export function OrganizationForm({
                     onValueChange={setGraduationYear}
                     disabled={isLoading}
                   >
-                    <SelectTrigger className="w-full h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4">
+                    <SelectTrigger className="w-full h-12 rounded-xl border-border bg-muted/50 px-4">
                       <SelectValue placeholder="Select graduation year" />
                     </SelectTrigger>
                     <SelectContent>

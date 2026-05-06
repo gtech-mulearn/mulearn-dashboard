@@ -100,7 +100,7 @@ export function RoleVerificationTable() {
             return rowData.verified ? (
               <Badge
                 variant="default"
-                className="bg-green-100 text-green-800 hover:bg-green-100 cursor-default"
+                className="bg-success/10 text-success hover:bg-success/10 cursor-default"
               >
                 Verified
               </Badge>

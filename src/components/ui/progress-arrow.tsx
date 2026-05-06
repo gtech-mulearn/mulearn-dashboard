@@ -41,9 +41,9 @@ export function ProgressArrow({
       className={cn(
         "relative inline-flex items-center justify-center",
         "w-14 h-14 rounded-full",
-        "bg-primary text-white",
+        "bg-primary text-primary-foreground",
         "shadow-[inset_0_6px_11px_0_rgba(255,255,255,0.33),inset_0_-6px_17px_0_rgba(0,0,0,0.18)]",
-        "border border-[#0054E8]",
+        "border border-primary",
         "hover:bg-primary/90 active:scale-95 transition-all",
         "disabled:opacity-50 disabled:cursor-not-allowed",
         className,
@@ -64,7 +64,8 @@ export function ProgressArrow({
           cy="30"
           r={radius}
           fill="none"
-          stroke="rgba(255,255,255,0.2)"
+          stroke="currentColor"
+          strokeOpacity="0.2"
           strokeWidth="3"
         />
         {/* Progress ring */}
@@ -73,7 +74,7 @@ export function ProgressArrow({
           cy="30"
           r={radius}
           fill="none"
-          stroke="white"
+          stroke="currentColor"
           strokeWidth="3"
           strokeLinecap="round"
           strokeDasharray={circumference}
