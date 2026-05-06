@@ -13,9 +13,9 @@ export function EventAnalyticsPanel({
 }: EventAnalyticsPanelProps) {
   return (
     <div className="space-y-4">
-      <section className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 lc-card-shadow lc-fade-in">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--primary)_12%,var(--background))] text-primary">
-          <Users className="h-5 w-5" />
+      <section className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 shadow-sm lc-fade-in">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500">
+          <Users className="size-5" />
         </div>
         <div className="flex min-w-0 flex-col justify-center">
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -28,7 +28,7 @@ export function EventAnalyticsPanel({
       </section>
 
       {mapQuery ? (
-        <section className="rounded-2xl border border-border bg-card p-3 lc-card-shadow">
+        <section className="rounded-2xl border border-border bg-card p-3 shadow-sm">
           <div className="overflow-hidden rounded-xl">
             <iframe
               title="Event location map"
@@ -40,7 +40,7 @@ export function EventAnalyticsPanel({
           </div>
           <div className="space-y-2 pt-3">
             <p className="flex items-center gap-1 text-xs text-muted-foreground">
-              <MapPin className="h-3.5 w-3.5" />
+              <MapPin className="size-3.5" />
               {venueName ?? "Venue not set"}
             </p>
             {mapsUrl ? (
@@ -48,10 +48,10 @@ export function EventAnalyticsPanel({
                 href={mapsUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-2 inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                className="mt-2 inline-flex items-center gap-1 text-xs text-indigo-600 hover:underline dark:text-indigo-400"
               >
                 Open in Maps
-                <ExternalLink className="h-3 w-3" />
+                <ExternalLink className="size-3" />
               </a>
             ) : null}
             <ExpandableMapDialog

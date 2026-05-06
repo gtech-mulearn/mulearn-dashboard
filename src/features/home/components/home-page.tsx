@@ -13,7 +13,7 @@ import { VerificationStatusBanner } from "./verification-status-banner";
 
 type DashboardView = "student" | "campus";
 
-function RoleComingSoon({ roleName }: { roleName: string }) {
+function _RoleComingSoon({ roleName }: { roleName: string }) {
   return (
     <div className="flex min-h-100 items-center justify-center rounded-2xl border bg-card shadow-sm">
       <div className="space-y-2 text-center">

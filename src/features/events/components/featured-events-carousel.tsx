@@ -40,7 +40,7 @@ export function FeaturedEventsCarousel() {
   }, [paused, featuredEvents.length, goNext]);
 
   if (isLoading) {
-    return <Skeleton className="mb-8 h-85 w-full rounded-2xl sm:h-100" />;
+    return <Skeleton className="h-48 w-full rounded-2xl md:h-56" />;
   }
 
   if (featuredEvents.length === 0) return null;
@@ -49,7 +49,7 @@ export function FeaturedEventsCarousel() {
   return (
     <section
       aria-label="Featured events carousel"
-      className="group relative mb-8 aspect-[4/3] w-full overflow-hidden rounded-2xl md:aspect-[16/7] lc-card-shadow lc-slide-up"
+      className="group relative h-48 w-full overflow-hidden rounded-2xl shadow-sm md:h-56 lc-slide-up"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
@@ -75,7 +75,7 @@ export function FeaturedEventsCarousel() {
       ))}
 
       {/* Gradient overlay */}
-      <div className="absolute inset-0 z-10 bg-gradient-to-t from-foreground/85 via-foreground/50 to-transparent" />
+      <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/75 via-black/30 to-transparent" />
 
       <Link
         aria-label={`Open ${event.title}`}
@@ -84,7 +84,7 @@ export function FeaturedEventsCarousel() {
       />
 
       {/* Content overlay */}
-      <div className="absolute inset-x-0 bottom-0 z-20 p-5 text-primary-foreground sm:p-8 lc-slide-up">
+      <div className="absolute inset-x-0 bottom-0 z-20 p-4 text-white sm:p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0 space-y-2">
             {/* Title */}
@@ -92,13 +92,13 @@ export function FeaturedEventsCarousel() {
               href={`/dashboard/events/${event.id}`}
               className="relative z-20"
             >
-              <h2 className="line-clamp-2 text-xl font-bold tracking-tight drop-shadow sm:text-3xl hover:underline underline-offset-2 text-primary-foreground">
+              <h2 className="line-clamp-1 text-lg font-bold tracking-tight drop-shadow sm:text-xl hover:underline underline-offset-2 text-white">
                 {event.title}
               </h2>
             </Link>
 
             {/* Frosted glass info pill */}
-            <div className="inline-flex items-center gap-2 rounded-full bg-primary-foreground/15 backdrop-blur-sm border border-primary-foreground/20 px-3 py-1 text-xs text-primary-foreground/90">
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 px-3 py-1 text-xs text-white/90">
               <CalendarDays className="h-3.5 w-3.5" />
               <span>{formatEventDate(event.start_datetime)}</span>
               <span>|</span>

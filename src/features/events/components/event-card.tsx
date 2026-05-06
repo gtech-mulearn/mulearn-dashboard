@@ -58,6 +58,8 @@ export function EventCard({ event, isManageView, onView }: EventCardProps) {
         ? event.venue_city
         : "Venue TBA";
 
+  const isEnded = new Date(event.end_datetime).getTime() < Date.now();
+
   return (
     <article className="group relative h-full overflow-hidden rounded-2xl border border-border bg-card lc-card-shadow transition-all duration-300 hover:-translate-y-1 lc-card-shadow-hover cursor-pointer lc-slide-up">
       {onView ? (
@@ -122,6 +124,10 @@ export function EventCard({ event, isManageView, onView }: EventCardProps) {
                   </Badge>
                 ) : null}
               </div>
+            ) : isEnded ? (
+              <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-white/80 backdrop-blur-sm">
+                Event Ended
+              </span>
             ) : (
               <div className="relative z-40">
                 <InterestButton
@@ -132,7 +138,7 @@ export function EventCard({ event, isManageView, onView }: EventCardProps) {
               </div>
             )}
 
-            {event.min_karma != null ? (
+            {event.min_karma != null && !isEnded ? (
               <div className="flex items-center gap-1 rounded-md bg-primary-foreground/15 px-2 py-1 text-xs backdrop-blur-sm">
                 <Lock className="h-3 w-3" />
                 <span>{event.min_karma.toLocaleString()}</span>
