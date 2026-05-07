@@ -12,7 +12,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -79,6 +79,17 @@ export function RegisterForm({
       confirmPassword: "",
     },
   });
+
+  useEffect(() => {
+    if (defaultValues) {
+      form.reset({
+        fullName: defaultValues.fullName || "",
+        email: defaultValues.email || "",
+        password: "",
+        confirmPassword: "",
+      });
+    }
+  }, [defaultValues, form.reset]);
 
   const handleSubmit = (values: RegisterFormValues) => {
     const { confirmPassword, ...userData } = values;

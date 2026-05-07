@@ -15,8 +15,8 @@
 
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ApiError } from "@/api";
 import {
@@ -39,6 +39,8 @@ import {
 interface RegisterClientProps {
   redirectUri?: string;
   referralId?: string;
+  email?: string;
+  fullName?: string;
 }
 
 type RegistrationStep = "basic" | "role" | "details";
@@ -46,6 +48,8 @@ type RegistrationStep = "basic" | "role" | "details";
 export function RegisterClient({
   redirectUri,
   referralId,
+  email,
+  fullName,
 }: RegisterClientProps) {
   const router = useRouter();
   const [step, setStep] = useState<RegistrationStep>("basic");
@@ -53,8 +57,34 @@ export function RegisterClient({
     fullName: string;
     email: string;
     password: string;
-  } | null>(null);
+  } | null>(() => {
+    if (email || fullName) {
+      return {
+        fullName: fullName || "",
+        email: email || "",
+        password: "",
+      };
+    }
+    return null;
+  });
+  const searchParams = useSearchParams();
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
+  const hasClearedParams = useRef(false);
+  useEffect(() => {
+    if (hasClearedParams.current) return;
+    const newParams = new URLSearchParams(searchParams.toString());
+    if (newParams.has("email") || newParams.has("fullName")) {
+      newParams.delete("email");
+      newParams.delete("fullName");
+      const queryString = newParams.toString();
+
+      hasClearedParams.current = true;
+      router.replace(
+        queryString ? `?${queryString}` : window.location.pathname,
+        { scroll: false },
+      );
+    }
+  }, [searchParams, router]);
 
   // Mutations
   const register = useRegister();

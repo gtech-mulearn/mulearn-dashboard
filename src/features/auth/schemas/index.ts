@@ -20,7 +20,7 @@ export {
   type GoogleAuthUrlResponseData,
   GoogleAuthUrlResponseDataSchema,
   GoogleAuthUrlResponseSchema,
-  type GoogleCallbackResponse,
+  type GoogleCallbackResponseData,
   GoogleCallbackResponseSchema,
   type InterestGroup,
   InterestGroupSchema,

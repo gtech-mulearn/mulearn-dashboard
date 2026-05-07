@@ -16,6 +16,8 @@ interface RegisterPageProps {
   searchParams: Promise<{
     ruri?: string;
     referral_id?: string;
+    email?: string;
+    fullName?: string;
   }>;
 }
 
@@ -24,6 +26,11 @@ export default async function RegisterPage({
 }: RegisterPageProps) {
   const params = await searchParams;
   return (
-    <RegisterClient redirectUri={params.ruri} referralId={params.referral_id} />
+    <RegisterClient
+      redirectUri={params.ruri}
+      referralId={params.referral_id}
+      email={params.email}
+      fullName={params.fullName}
+    />
   );
 }
