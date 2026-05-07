@@ -15,8 +15,8 @@
 
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ApiError } from "@/api";
 import {
@@ -39,6 +39,8 @@ import {
 interface RegisterClientProps {
   redirectUri?: string;
   referralId?: string;
+  email?: string;
+  fullName?: string;
 }
 
 type RegistrationStep = "basic" | "role" | "details";
@@ -46,6 +48,8 @@ type RegistrationStep = "basic" | "role" | "details";
 export function RegisterClient({
   redirectUri,
   referralId,
+  email,
+  fullName,
 }: RegisterClientProps) {
   const router = useRouter();
   const [step, setStep] = useState<RegistrationStep>("basic");
@@ -54,7 +58,35 @@ export function RegisterClient({
     email: string;
     password: string;
   } | null>(null);
+  const searchParams = useSearchParams();
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
+
+  // Initialize basic data from props for Google signup prefill
+  const hasPrefilled = useRef(false);
+  useEffect(() => {
+    if (hasPrefilled.current) return;
+
+    if (email || fullName) {
+      setBasicData({
+        fullName: fullName || "",
+        email: email || "",
+        password: "",
+      });
+      hasPrefilled.current = true;
+
+      // Delete params from URL after usage to keep it clean
+      const newParams = new URLSearchParams(searchParams.toString());
+      if (newParams.has("email") || newParams.has("fullName")) {
+        newParams.delete("email");
+        newParams.delete("fullName");
+        const queryString = newParams.toString();
+        router.replace(
+          queryString ? `?${queryString}` : window.location.pathname,
+          { scroll: false },
+        );
+      }
+    }
+  }, [email, fullName, searchParams, router]);
 
   // Mutations
   const register = useRegister();

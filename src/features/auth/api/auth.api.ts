@@ -16,6 +16,7 @@ import {
   CompanyOnboardingStatusResponseSchema,
   ForgotPasswordResponseSchema,
   GoogleAuthUrlResponseSchema,
+  type GoogleCallbackResponseData,
   GoogleCallbackResponseSchema,
   type LoginResponseData,
   LoginResponseSchema,
@@ -208,7 +209,7 @@ export async function fetchGoogleAuthUrl(): Promise<{ redirect_url: string }> {
  */
 export async function fetchGoogleCallback(
   code: string,
-): Promise<LoginResponseData> {
+): Promise<GoogleCallbackResponseData> {
   const redirectUri =
     typeof window !== "undefined" ? `${window.location.origin}/callback/` : "";
 

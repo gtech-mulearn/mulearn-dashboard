@@ -57,7 +57,26 @@ export function useGoogleCallback(code?: string, error?: string) {
 
       try {
         const tokenData = await fetchGoogleCallback(code);
-        authStore.setTokens(tokenData.accessToken, tokenData.refreshToken);
+
+        if (tokenData.isNewUser === true && tokenData.email) {
+          const params = new URLSearchParams();
+          params.set("email", tokenData.email);
+          if (tokenData.fullName) {
+            params.set("fullName", tokenData.fullName);
+          }
+          router.replace(`/register?${params.toString()}`);
+          return {
+            isNewUser: true,
+          };
+        }
+
+        if (tokenData.access_token && tokenData.refresh_token) {
+          authStore.setTokens(tokenData.access_token, tokenData.refresh_token);
+        } else {
+          toast.error("Something went wrong. Please try again.");
+          return;
+        }
+
         const userInfo = await fetchUserInfo();
 
         queryClient.clear();
@@ -69,6 +88,7 @@ export function useGoogleCallback(code?: string, error?: string) {
         return {
           tokens: tokenData,
           userInfo,
+          isNewUser: false,
         };
       } catch (err) {
         toast.error(extractDjangoMessage(err));

@@ -228,13 +228,25 @@ export const GoogleAuthUrlResponseSchema = ApiResponseSchema(
   GoogleAuthUrlResponseDataSchema,
 );
 
-export const GoogleCallbackResponseSchema = ApiResponseSchema(
-  LoginResponseDataSchema,
-);
-
 export type GoogleAuthUrlResponse = z.infer<typeof GoogleAuthUrlResponseSchema>;
 export type GoogleAuthUrlResponseData = z.infer<
   typeof GoogleAuthUrlResponseDataSchema
+>;
+
+export const GoogleCallbackResponseDataSchema = z.object({
+  access_token: z.string().optional(),
+  refresh_token: z.string().optional(),
+  expiry: z.string().optional(),
+  isNewUser: z.boolean().optional(),
+  email: z.string().email().optional(),
+  fullName: z.string().optional(),
+});
+
+export const GoogleCallbackResponseSchema = ApiResponseSchema(
+  GoogleCallbackResponseDataSchema,
+);
+export type GoogleCallbackResponseData = z.infer<
+  typeof GoogleCallbackResponseDataSchema
 >;
 export type GoogleCallbackResponse = z.infer<
   typeof GoogleCallbackResponseSchema
