@@ -70,11 +70,11 @@ export function useGoogleCallback(code?: string, error?: string) {
           };
         }
 
-        if (tokenData.access_token && tokenData.refresh_token) {
-          authStore.setTokens(tokenData.access_token, tokenData.refresh_token);
+        if (tokenData.accessToken && tokenData.refreshToken) {
+          authStore.setTokens(tokenData.accessToken, tokenData.refreshToken);
         } else {
           toast.error("Something went wrong. Please try again.");
-          return;
+          return null;
         }
 
         const userInfo = await fetchUserInfo();

@@ -57,36 +57,34 @@ export function RegisterClient({
     fullName: string;
     email: string;
     password: string;
-  } | null>(null);
-  const searchParams = useSearchParams();
-  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
-
-  // Initialize basic data from props for Google signup prefill
-  const hasPrefilled = useRef(false);
-  useEffect(() => {
-    if (hasPrefilled.current) return;
-
+  } | null>(() => {
     if (email || fullName) {
-      setBasicData({
+      return {
         fullName: fullName || "",
         email: email || "",
         password: "",
-      });
-      hasPrefilled.current = true;
-
-      // Delete params from URL after usage to keep it clean
-      const newParams = new URLSearchParams(searchParams.toString());
-      if (newParams.has("email") || newParams.has("fullName")) {
-        newParams.delete("email");
-        newParams.delete("fullName");
-        const queryString = newParams.toString();
-        router.replace(
-          queryString ? `?${queryString}` : window.location.pathname,
-          { scroll: false },
-        );
-      }
+      };
     }
-  }, [email, fullName, searchParams, router]);
+    return null;
+  });
+  const searchParams = useSearchParams();
+  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
+  const hasClearedParams = useRef(false);
+  useEffect(() => {
+    if (hasClearedParams.current) return;
+    const newParams = new URLSearchParams(searchParams.toString());
+    if (newParams.has("email") || newParams.has("fullName")) {
+      newParams.delete("email");
+      newParams.delete("fullName");
+      const queryString = newParams.toString();
+
+      hasClearedParams.current = true;
+      router.replace(
+        queryString ? `?${queryString}` : window.location.pathname,
+        { scroll: false },
+      );
+    }
+  }, [searchParams, router]);
 
   // Mutations
   const register = useRegister();

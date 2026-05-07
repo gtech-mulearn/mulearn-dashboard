@@ -182,14 +182,17 @@ export function Sidebar() {
               style={{ height: "auto" }}
             />
           </Link>
-          <button
-            onClick={() => setIsMobileOpen(false)}
-            className="p-1.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors"
-            type="button"
-            aria-label="Close navigation menu"
-          >
-            <X className="w-5 h-5 text-muted-foreground" />
-          </button>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <button
+              onClick={() => setIsMobileOpen(false)}
+              className="p-1.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors"
+              type="button"
+              aria-label="Close navigation menu"
+            >
+              <X className="w-5 h-5 text-muted-foreground" />
+            </button>
+          </div>
         </div>
 
         {/* Main Navigation */}

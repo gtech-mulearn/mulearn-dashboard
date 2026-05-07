@@ -234,8 +234,8 @@ export type GoogleAuthUrlResponseData = z.infer<
 >;
 
 export const GoogleCallbackResponseDataSchema = z.object({
-  access_token: z.string().optional(),
-  refresh_token: z.string().optional(),
+  accessToken: z.string().optional(),
+  refreshToken: z.string().optional(),
   expiry: z.string().optional(),
   isNewUser: z.boolean().optional(),
   email: z.string().email().optional(),
