@@ -38,6 +38,7 @@ const ROLE_VALUES = {
   LEAD_ENABLER: "Lead Enabler",
   TECH_TEAM: "Tech Team",
   IG_LEAD: "IG Lead",
+  INTERN: "Intern",
 } as const;
 
 /**
@@ -67,6 +68,11 @@ const ROLE_PROTECTED_ROUTES: Record<string, RouteConfig> = {
     ],
   },
 
+  // Intern
+  "/dashboard/intern": {
+    roles: [ROLE_VALUES.ADMIN, ROLE_VALUES.FELLOW, ROLE_VALUES.INTERN],
+  },
+
   // Admin-only
   "/dashboard/admin": { roles: [ROLE_VALUES.ADMIN] },
 
@@ -76,6 +82,9 @@ const ROLE_PROTECTED_ROUTES: Record<string, RouteConfig> = {
   },
   "/dashboard/management/user-management": { roles: [ROLE_VALUES.ADMIN] },
   "/dashboard/management/manage-achievements": { roles: [ROLE_VALUES.ADMIN] },
+  "/dashboard/management/manage-intern": {
+    roles: [ROLE_VALUES.ADMIN, ROLE_VALUES.FELLOW, ROLE_VALUES.ASSOCIATE],
+  },
   "/dashboard/management/manage-interest-groups": {
     roles: [ROLE_VALUES.ADMIN],
   },
