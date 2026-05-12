@@ -1,38 +1,29 @@
+"use client";
+
 import {
   Activity,
   AlertTriangle,
-  ArrowUpDown,
   CheckCircle2,
-  ChevronDown,
-  Download,
-  Filter,
   Flame,
+  Gem,
   MoreHorizontal,
   PauseCircle,
-  Search,
   Shield,
+  Sparkles,
   Trophy,
   Users,
 } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -40,14 +31,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import Table from "@/components/dashboard/table/Table";
+import TableTop from "@/components/dashboard/table/TableTop";
+import Pagination from "@/components/dashboard/table/pagination";
 
 // Mock Data for Admin Overview
 const MOCK_STATS = {
@@ -156,28 +142,96 @@ const getStatusBadge = (status: string) => {
 };
 
 export default function ManageInternsPage() {
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
+  const [searchText, setSearchText] = useState("");
+
+  const tableColumns = [
+    {
+      column: "name",
+      Label: "Intern Name",
+      isSortable: true,
+      wrap: (data: any, id: string, row: any) => (
+        <div className="flex flex-col">
+          <span className="font-bold text-foreground uppercase tracking-tight text-sm">
+            {data}
+          </span>
+          <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest leading-none mt-1">
+            {row.email}
+          </span>
+        </div>
+      ),
+    },
+    {
+      column: "team",
+      Label: "Alliance",
+      isSortable: true,
+      wrap: (data: any) => (
+        <span className="text-xs font-bold uppercase text-muted-foreground tracking-wider">
+          {data}
+        </span>
+      ),
+    },
+    {
+      column: "status",
+      Label: "Status",
+      isSortable: true,
+      wrap: (data: any) => getStatusBadge(data),
+    },
+    {
+      column: "streak",
+      Label: "Streak",
+      isSortable: true,
+      wrap: (data: any) => (
+        <div className="font-mono font-black text-warning flex items-center gap-1">
+          {Number(data) > 0 ? (
+            <>
+              <Flame className="w-3 h-3 fill-warning" /> {data}
+            </>
+          ) : (
+            <span className="text-muted-foreground/40">{data}</span>
+          )}
+        </div>
+      ),
+    },
+    {
+      column: "points",
+      Label: "Gems",
+      isSortable: true,
+      wrap: (data: any) => (
+        <div className="font-mono font-black text-foreground flex items-center gap-1.5">
+          <Gem className="w-3.5 h-3.5 text-brand-blue" />
+          {Number(data).toLocaleString()}
+        </div>
+      ),
+    },
+    {
+      column: "rank",
+      Label: "Rank",
+      isSortable: true,
+      wrap: (data: any) => (
+        <span className="font-black text-muted-foreground">#{data}</span>
+      ),
+    },
+  ];
+
   return (
-    <div className="flex-1 space-y-8 p-8 pt-6 max-w-7xl mx-auto w-full">
+    <div className="flex-1 space-y-8 p-8 pt-6 max-w-7xl mx-auto w-full bg-background/50">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
+          <h2 className="text-4xl font-black tracking-tighter text-foreground uppercase flex items-center gap-3">
+            <Users className="w-10 h-10 text-primary" />
             Manage Interns
           </h2>
-          <p className="text-muted-foreground mt-1">
-            Overview, tracking, and management of all active interns.
+          <p className="text-muted-foreground mt-1 font-medium italic">
+            Oversee the realm of active learners and contributors.
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="gap-2">
-            <Download className="w-4 h-4" />
-            Export CSV
-          </Button>
-        </div>
-        <div className="flex items-center gap-3">
-          <Link href="/intern-report">
-            <Button variant="outline" className="gap-2">
-              <Download className="w-4 h-4" />
+          <Link href="/dashboard/management/manage-interns/intern-report">
+            <Button className="gap-2 bg-primary text-primary-foreground font-black uppercase text-[10px] tracking-widest h-10 shadow-lg">
+              <Sparkles className="w-4 h-4" />
               Generate Report
             </Button>
           </Link>
@@ -186,67 +240,70 @@ export default function ManageInternsPage() {
 
       {/* Overview Stats */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-border/50 bg-card">
+        <Card className="border-border/40 bg-card/40 backdrop-blur-md shadow-xl border-t-primary/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
               Total Interns
             </CardTitle>
             <Users className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold tracking-tight text-foreground">
+            <div className="text-3xl font-black tracking-tighter tabular-nums">
               {MOCK_STATS.totalInterns}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">+12 this month</p>
+            <p className="text-[10px] text-muted-foreground mt-2 font-bold uppercase tracking-tight">
+              +12 this month
+            </p>
           </CardContent>
         </Card>
 
-        <Card className="border-border/50 bg-card">
+        <Card className="border-border/40 bg-card/40 backdrop-blur-md shadow-xl border-t-success/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Active
+            <CardTitle className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+              Active Heroes
             </CardTitle>
             <Activity className="h-4 w-4 text-success" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold tracking-tight text-foreground">
+            <div className="text-3xl font-black tracking-tighter tabular-nums text-success">
               {MOCK_STATS.active}
             </div>
-            <p className="text-xs text-success font-medium mt-1">
+            <p className="text-[10px] text-success font-bold mt-2 uppercase tracking-tight">
               83% engagement rate
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-border/50 bg-card">
+        <Card className="border-border/40 bg-card/40 backdrop-blur-md shadow-xl border-t-warning/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              At Risk
+            <CardTitle className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+              Failing Quests
             </CardTitle>
             <AlertTriangle className="h-4 w-4 text-warning" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold tracking-tight text-foreground">
+            <div className="text-3xl font-black tracking-tighter tabular-nums text-warning">
               {MOCK_STATS.atRisk}
             </div>
-            <p className="text-xs text-warning font-medium mt-1 flex items-center gap-1">
+            <p className="text-[10px] text-warning font-bold mt-2 uppercase tracking-tight">
               Missed &gt; 3 timesheets
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-border/50 bg-card">
+        <Card className="border-border/40 bg-card/40 backdrop-blur-md shadow-xl border-t-brand-blue/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Points
+            <CardTitle className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+              Global XP Bank
             </CardTitle>
-            <Trophy className="h-4 w-4 text-chart-4" />
+            <Trophy className="h-4 w-4 text-brand-blue" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold font-mono tracking-tight text-foreground">
+            <div className="text-3xl font-black font-mono tracking-tighter tabular-nums text-brand-blue flex items-center gap-2">
+              <Gem className="w-6 h-6" />
               {MOCK_STATS.totalPointsAwarded.toLocaleString()}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-[10px] text-muted-foreground mt-2 font-bold uppercase tracking-tight">
               Across all cohorts
             </p>
           </CardContent>
@@ -254,167 +311,98 @@ export default function ManageInternsPage() {
       </div>
 
       {/* Interns Data Table Section */}
-      <Card className="border-border/50 bg-card">
-        <CardHeader className="pb-4">
-          <CardTitle>Intern Directory</CardTitle>
-          <CardDescription>
-            Search and filter interns to view detailed profiles and adjust
-            points.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-0">
-          {/* Toolbar */}
-          <div className="p-4 border-b border-border/50 flex flex-col sm:flex-row items-center gap-4 bg-muted/20">
-            <div className="relative flex-1 w-full sm:w-auto">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Search by name or email..."
-                className="pl-9 bg-background w-full max-w-sm"
+      <div className="space-y-4">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+          <div>
+            <h3 className="text-xl font-black uppercase tracking-widest">
+              Intern Directory
+            </h3>
+            <p className="text-[10px] font-bold uppercase text-muted-foreground/60 tracking-wider">
+              Manage profiles and track progress
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Select defaultValue="all">
+              <SelectTrigger className="w-[180px] h-10 font-black uppercase text-[10px] tracking-widest border-border/40">
+                <SelectValue placeholder="Alliance" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem
+                  value="all"
+                  className="font-bold uppercase text-[10px]"
+                >
+                  All Alliances
+                </SelectItem>
+                <SelectItem
+                  value="frontend"
+                  className="font-bold uppercase text-[10px]"
+                >
+                  Frontend
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <TableTop
+          onSearchText={setSearchText}
+          onPerPageNumber={setPerPage}
+          CSV="interns.csv"
+          perPage={perPage}
+          perPageOptions={[10, 20, 50]}
+          searchPlaceholder="Search heroes..."
+          searchSize="md"
+          searchPosition="left"
+          searchWrapperClassName="bg-card/40 border-border/40"
+        />
+
+        <Card className="border-border/40 bg-card/40 backdrop-blur-xl shadow-2xl overflow-hidden">
+          <CardContent className="p-0">
+            <Table
+              rows={MOCK_INTERNS}
+              page={page}
+              perPage={perPage}
+              columnOrder={tableColumns}
+              id={["id"]}
+              slNoCellClassName="font-black text-muted-foreground/40 w-16"
+              customActionRender={(row) => (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="h-8 w-8 p-0 hover:bg-muted/50"
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    className="w-48 bg-card/95 backdrop-blur-xl border-border/60 font-bold"
+                  >
+                    <DropdownMenuItem className="cursor-pointer uppercase text-[10px] tracking-wider py-3">
+                      View Profile
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-pointer uppercase text-[10px] tracking-wider py-3">
+                      Adjust XP
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            />
+
+            <div className="p-4 border-t border-border/20">
+              <Pagination
+                currentPage={page}
+                totalPages={Math.ceil(MOCK_INTERNS.length / perPage)}
+                perPage={perPage}
+                totalCount={MOCK_INTERNS.length}
+                handlePreviousClick={() => setPage((p) => Math.max(1, p - 1))}
+                handleNextClick={() => setPage((p) => p + 1)}
               />
             </div>
-            <div className="flex items-center gap-3 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0">
-              <Select defaultValue="all">
-                <SelectTrigger className="w-[140px] bg-background">
-                  <SelectValue placeholder="Team" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Teams</SelectItem>
-                  <SelectItem value="frontend">Frontend</SelectItem>
-                  <SelectItem value="backend">Backend</SelectItem>
-                  <SelectItem value="design">Design</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select defaultValue="active">
-                <SelectTrigger className="w-[140px] bg-background">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="at_risk">At Risk</SelectItem>
-                  <SelectItem value="on_leave">On Leave</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button
-                variant="outline"
-                size="icon"
-                className="shrink-0 bg-background"
-              >
-                <Filter className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Table */}
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader className="bg-muted/30">
-                <TableRow>
-                  <TableHead className="w-[250px]">Intern Name</TableHead>
-                  <TableHead>Team</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      Streak
-                      <ArrowUpDown className="w-3 h-3 text-muted-foreground" />
-                    </div>
-                  </TableHead>
-                  <TableHead className="text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      Points
-                      <ArrowUpDown className="w-3 h-3 text-muted-foreground" />
-                    </div>
-                  </TableHead>
-                  <TableHead className="text-right">Rank</TableHead>
-                  <TableHead className="w-[70px]"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {MOCK_INTERNS.map((intern) => (
-                  <TableRow key={intern.id} className="hover:bg-muted/20">
-                    <TableCell className="font-medium">
-                      <div className="flex flex-col">
-                        <span className="text-foreground">{intern.name}</span>
-                        <span className="text-xs text-muted-foreground font-normal">
-                          {intern.email}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {intern.team}
-                    </TableCell>
-                    <TableCell>{getStatusBadge(intern.status)}</TableCell>
-                    <TableCell className="text-right font-mono">
-                      {intern.streak > 0 ? (
-                        <span className="flex items-center justify-end gap-1.5 text-warning font-medium">
-                          <Flame className="w-3 h-3" /> {intern.streak}
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground">
-                          {intern.streak}
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right font-mono font-medium text-foreground">
-                      {intern.points.toLocaleString()}
-                    </TableCell>
-                    <TableCell className="text-right text-muted-foreground">
-                      #{intern.rank}
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem className="cursor-pointer">
-                            View Profile
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="cursor-pointer">
-                            Adjust Points
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="cursor-pointer">
-                            View Timesheets
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          {intern.status !== "ON_LEAVE" ? (
-                            <DropdownMenuItem className="cursor-pointer text-brand-blue focus:text-brand-blue">
-                              Mark On Leave
-                            </DropdownMenuItem>
-                          ) : (
-                            <DropdownMenuItem className="cursor-pointer text-success focus:text-success">
-                              Resume Active Status
-                            </DropdownMenuItem>
-                          )}
-                          <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive">
-                            Deactivate Intern
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-
-          <div className="p-4 border-t border-border/50 flex items-center justify-between text-sm text-muted-foreground bg-muted/10">
-            <span>Showing 1 to 5 of 142 entries</span>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" disabled>
-                Previous
-              </Button>
-              <Button variant="outline" size="sm">
-                Next
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
