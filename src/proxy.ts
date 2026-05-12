@@ -113,7 +113,7 @@ const ROLE_PROTECTED_ROUTES: Record<string, RouteConfig> = {
     roles: [ROLE_VALUES.ADMIN, ROLE_VALUES.FELLOW, ROLE_VALUES.ASSOCIATE],
   },
 
-  "/dashboard/interest-groups": {
+  "/dashboard/edit-ig": {
     roles: [ROLE_VALUES.ADMIN, ROLE_VALUES.FELLOW, ROLE_VALUES.IG_LEAD],
   },
 
