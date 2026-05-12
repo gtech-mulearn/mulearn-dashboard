@@ -13,6 +13,7 @@
 import { Check, Pencil, Plus, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 import { useInterestGroupsList } from "../hooks";
 import type { InterestGroup, InterestGroupListItem } from "../schemas";
 
@@ -178,12 +179,15 @@ export function IGSelector({
                 </button>
               )}
               <span className="text-foreground">{ig.name}</span>
-              <span className="gap-1 rounded-full border border-primary/60 bg-secondary/70 px-3 text-xs text-foreground backdrop-blur-sm sm:gap-1.5 sm:text-sm">
+              <Badge
+                variant="outline"
+                className="gap-1 border border-primary px-3 text-xs sm:gap-1.5 sm:text-sm"
+              >
                 {formatLevel(ig.level)}
-              </span>
-              <span className="rounded-lg bg-primary px-2 py-0.5 text-secondary">
+              </Badge>
+              <Badge className="rounded-lg border border-primary px-2 py-0.5">
                 {formatKarma(ig.karma)}
-              </span>
+              </Badge>
             </div>
           ))
         ) : (

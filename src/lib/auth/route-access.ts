@@ -54,6 +54,11 @@ export const routeAccessMap: Record<string, RouteConfig> = {
     roles: [ROLES.ADMIN, ROLES.FELLOW, ROLES.DISTRICT_CAMPUS_LEAD],
   },
 
+  // ── Intern Dashboard ─────────────────────────────
+  "/dashboard/intern": {
+    roles: [ROLES.ADMIN, ROLES.FELLOW, ROLES.INTERN],
+  },
+
   // ── Interest Group Dashboard ─────────────────────────────
   "/dashboard/edit-ig": {
     roles: [ROLES.ADMIN, ROLES.FELLOW, ROLES.IG_LEAD],
@@ -77,6 +82,9 @@ export const routeAccessMap: Record<string, RouteConfig> = {
   },
   "/dashboard/management/manage-achievements": {
     roles: [ROLES.ADMIN],
+  },
+  "/dashboard/management/manage-intern": {
+    roles: [ROLES.ADMIN, ROLES.FELLOW, ROLES.ASSOCIATE],
   },
   "/dashboard/management/manage-interest-groups": {
     roles: [ROLES.ADMIN],

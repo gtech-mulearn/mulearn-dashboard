@@ -67,6 +67,13 @@ const MANAGEMENT_ITEMS: ManagementItem[] = [
     color: "bg-chart-4/10 text-chart-4",
   },
   {
+    icon: Users,
+    title: "Manage Interns",
+    description: "Manage intern accounts.",
+    path: "/dashboard/management/manage-interns",
+    color: "bg-chart-5/10 text-chart-5",
+  },
+  {
     icon: Rocket,
     title: "Manage Launchpad",
     description: "Create, edit, and configure user launchpad.",
