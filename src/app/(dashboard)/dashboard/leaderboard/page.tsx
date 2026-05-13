@@ -32,6 +32,7 @@ export default async function LeaderboardPage(props: LeaderboardPageProps) {
 
   return (
     <LeaderboardView
+      key={`${category}-${timeframe}-${wadhwaniTimeframe}`}
       category={category}
       timeframe={timeframe}
       wadhwaniTimeframe={wadhwaniTimeframe}
