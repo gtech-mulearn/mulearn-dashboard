@@ -2,6 +2,7 @@ import { TrendingUp } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import type { LeaderboardCardProps } from "@/features/leaderboard";
+import { Badge } from "@/components/ui/badge";
 
 export function LeaderboardCard({ entry }: LeaderboardCardProps) {
   return (
@@ -40,11 +41,11 @@ export function LeaderboardCard({ entry }: LeaderboardCardProps) {
             </div>
           </div>
           <div className="shrink-0 text-right">
-            <div className="bg-primary text-secondary rounded-2xl px-2.5 sm:px-4 py-0.5 sm:py-2 relative">
+            <Badge className="rounded-2xl px-2.5 sm:px-4 py-0.5 sm:py-2 relative">
               <div className="font-black text-xs sm:text-lg md:text-xl tabular-nums">
                 {entry.karma.toLocaleString()}
               </div>
-            </div>
+            </Badge>
             <p className="text-xs font-black mt-0.5 sm:mt-1 text-muted-foreground tracking-widest uppercase">
               KARMA
             </p>
