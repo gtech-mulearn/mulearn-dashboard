@@ -152,6 +152,28 @@ export const endpoints = {
   },
 
   // ============================================
+  // Mentor Dashboard Endpoints
+  // ============================================
+  mentor: {
+    /** GET - Mentor overview (stats, profile, persona, mentees summary) */
+    overview: "/api/v1/dashboard/mentor/overview/",
+    /** GET - Mentor sessions list (?status=SCHEDULED|PENDING|COMPLETED) */
+    sessions: "/api/v1/dashboard/mentor/sessions/",
+    /** GET - Mentor's active mentees list */
+    mentees: "/api/v1/dashboard/mentor/mentees/",
+    /** POST - Switch mentor persona (active IG) */
+    personaSwitch: "/api/v1/dashboard/mentor/persona/switch/",
+  },
+
+  // ============================================
+  // Public Endpoints
+  // ============================================
+  public: {
+    /** GET - Public job listings (AllowAny) — use pagination.total for count */
+    jobs: "/api/v1/public/jobs/",
+  },
+
+  // ============================================
   // User Endpoints
   // ============================================
   user: {
@@ -197,9 +219,8 @@ export const endpoints = {
     karmaFeed: "/api/v1/dashboard/profile/karma-feed/",
     /** GET - Interest groups list */
     interestGroups: "/api/v1/dashboard/ig/list/",
-    /** GET - Events (OpenSheet or dashboard events) */
-    events:
-      "https://opensheet.elk.sh/19Os47FI_fAgpMk7lnhFWz9aRwyd72cB-4PKz7W8rF9g/1",
+    /** GET - Featured events (replaced Google Sheets) — use events.featured instead */
+    events: "/api/v1/dashboard/events/featured/",
     /** GET - Calendar events for dashboard */
     calendarEvents: "/api/v1/dashboard/events/calendar/",
   },
