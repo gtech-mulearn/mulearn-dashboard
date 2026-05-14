@@ -69,6 +69,13 @@ interface RequestOptions<T> {
   responseType?: "json" | "blob";
   /** When true, sends body as FormData (no JSON.stringify, no Content-Type header) */
   isFormData?: boolean;
+  /**
+   * When true, a 403 response is thrown as ApiError instead of triggering the
+   * global token-refresh → logout flow. Use for endpoints where 403 means
+   * "resource not available to this user" (e.g. mentor persona not configured),
+   * not "invalid credentials".
+   */
+  skipAuthRedirectOn403?: boolean;
 }
 
 type ClientOptions = {
@@ -76,6 +83,8 @@ type ClientOptions = {
   responseType?: "json" | "blob";
   /** When true, sends body as FormData (no JSON.stringify, no Content-Type header) */
   isFormData?: boolean;
+  /** See RequestOptions.skipAuthRedirectOn403 */
+  skipAuthRedirectOn403?: boolean;
 };
 
 // ─── Core request fn (shared by both gateways) ─────────────────────────────
@@ -118,8 +127,17 @@ async function request<T>(
 
   if (options.authenticated) {
     const isExpired = isTokenExpiredError(rawData);
+    const is403 = res.status === 403;
 
-    if (res.status === 401 || res.status === 403 || isExpired) {
+    // If the caller opted out of the global 403 redirect (e.g. mentor overview
+    // where 403 means "persona not configured", not "bad credentials"), throw
+    // as a normal ApiError so the caller can handle it.
+    if (is403 && options.skipAuthRedirectOn403) {
+      const backendMsg = extractDjangoMessage(rawData);
+      throw new ApiError(403, backendMsg || "Forbidden", rawData);
+    }
+
+    if (res.status === 401 || is403 || isExpired) {
       const refreshToken = authStore.getRefreshToken();
 
       if (!refreshToken) {

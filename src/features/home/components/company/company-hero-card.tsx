@@ -1,21 +1,15 @@
 import { Plus, Users } from "lucide-react";
 import Link from "next/link";
-import {
-  MOCK_COMPANY_QUICK_STATS,
-  MOCK_TOTAL_LEARNERS,
-} from "../../constants/mock-company";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export function CompanyHeroCard() {
-  const stats = [
-    MOCK_COMPANY_QUICK_STATS.jobsPosted,
-    MOCK_COMPANY_QUICK_STATS.totalViews,
-    MOCK_COMPANY_QUICK_STATS.applications,
-    MOCK_COMPANY_QUICK_STATS.hired,
-  ];
+type Props = {
+  jobsPosted: number;
+  isLoading: boolean;
+};
 
+export function CompanyHeroCard({ jobsPosted, isLoading }: Props) {
   return (
     <div className="flex flex-col gap-6 rounded-2xl bg-foreground p-6 md:flex-row md:items-center md:justify-between">
-      {/* Left: pitch + CTAs */}
       <div className="space-y-4">
         <div className="inline-flex items-center rounded-full bg-primary/20 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-primary">
           Company Dashboard
@@ -24,12 +18,8 @@ export function CompanyHeroCard() {
           Find your next <span className="text-primary">hire.</span>
         </h1>
         <p className="max-w-sm text-sm text-background/60">
-          Access{" "}
-          <span className="font-semibold text-background">
-            {MOCK_TOTAL_LEARNERS} verified learners
-          </span>{" "}
-          across Kerala. Post jobs with karma and level filters — reach talent
-          that's actually ready.
+          Post jobs with karma and level filters — reach talent that&apos;s
+          actually ready.
         </p>
         <div className="flex flex-wrap gap-3">
           <Link
@@ -49,19 +39,17 @@ export function CompanyHeroCard() {
         </div>
       </div>
 
-      {/* Right: quick stats */}
       <div className="shrink-0 space-y-3 md:min-w-52">
-        {stats.map((stat) => (
-          <div
-            key={stat.label}
-            className="flex items-baseline justify-between gap-8"
-          >
-            <span className="text-sm text-background/60">{stat.label}</span>
+        <div className="flex items-baseline justify-between gap-8">
+          <span className="text-sm text-background/60">Jobs Posted</span>
+          {isLoading ? (
+            <Skeleton className="h-6 w-12 bg-background/20" />
+          ) : (
             <span className="text-xl font-bold text-background">
-              {stat.value.toLocaleString()}
+              {jobsPosted}
             </span>
-          </div>
-        ))}
+          )}
+        </div>
       </div>
     </div>
   );

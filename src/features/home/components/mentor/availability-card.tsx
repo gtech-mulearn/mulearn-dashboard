@@ -3,14 +3,17 @@
 import { Sparkles } from "lucide-react";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { MOCK_EXPERTISE_TAGS } from "../../constants/mock-mentor";
 
-export function AvailabilityCard() {
+type Props = {
+  expertise: string[];
+  isLoading: boolean;
+};
+
+export function AvailabilityCard({ expertise, isLoading }: Props) {
   const [available, setAvailable] = useState(true);
-  const [selected, setSelected] = useState<Set<string>>(
-    new Set(["React", "TypeScript", "Career Planning"]),
-  );
+  const [selected, setSelected] = useState<Set<string>>(new Set(expertise));
 
   function toggleTag(tag: string) {
     setSelected((prev) => {
@@ -28,7 +31,7 @@ export function AvailabilityCard() {
           <Sparkles className="size-4 text-warning" />
         </div>
         <CardTitle className="text-base font-bold text-foreground">
-          Availability & Expertise
+          Availability &amp; Expertise
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-5 px-5 pb-5 pt-0">
@@ -64,23 +67,35 @@ export function AvailabilityCard() {
           <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
             Expertise
           </p>
-          <div className="flex flex-wrap gap-2">
-            {MOCK_EXPERTISE_TAGS.map((tag) => (
-              <button
-                key={tag}
-                type="button"
-                onClick={() => toggleTag(tag)}
-                className={cn(
-                  "rounded-full px-3 py-1 text-xs font-medium transition-colors",
-                  selected.has(tag)
-                    ? "bg-primary/20 text-primary"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80",
-                )}
-              >
-                {tag}
-              </button>
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="flex flex-wrap gap-2">
+              {[0, 1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-6 w-20 rounded-full" />
+              ))}
+            </div>
+          ) : expertise.length === 0 ? (
+            <p className="text-xs text-muted-foreground">
+              No expertise tags set.
+            </p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {expertise.map((tag) => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => toggleTag(tag)}
+                  className={cn(
+                    "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                    selected.has(tag)
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted/50 text-muted-foreground",
+                  )}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

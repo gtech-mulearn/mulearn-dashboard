@@ -13,7 +13,6 @@
  */
 
 import Loader from "@/app/loading";
-import { MOCK_COMPANY_EXTENDED } from "../../constants/mock-company-profile";
 import { useCompanyProfile } from "../../hooks/use-company-profile";
 import { useJobs } from "../../hooks/use-jobs";
 import { CompanyCredibilitySection } from "./company-credibility-section";
@@ -35,35 +34,32 @@ export function CompanyProfilePage() {
   const allJobs = jobsData?.jobs ?? [];
   const activeJobs = allJobs.filter((j) => j.status === "Active");
 
-  // Mock fields — remove as backend ships them (#company-profile-extended)
-  const mock = MOCK_COMPANY_EXTENDED;
-
   return (
     <div className="space-y-5">
       <CompanyProfileHeader
         profile={profile}
         activeJobsCount={activeJobs.length}
         isOwnProfile
-        foundedYear={mock.founded_year}
-        remotePolicy={mock.remote_policy}
+        foundedYear={profile.founded_year ?? null}
+        remotePolicy={profile.remote_policy ?? null}
       />
 
       <CompanyJobsSection isOwnProfile ownJobs={isLoadingJobs ? [] : allJobs} />
 
       <CompanyCultureSection
-        cultureText={mock.culture_text}
-        techStack={mock.tech_stack}
-        perks={mock.perks}
+        cultureText={profile.culture_text ?? null}
+        techStack={profile.tech_stack ?? []}
+        perks={profile.perks ?? []}
       />
 
       <CompanyCredibilitySection
-        hireCount={mock.hire_count}
-        avgKarmaOfHires={mock.avg_karma_of_hires}
-        campusEventsCount={mock.campus_events_count}
+        hireCount={profile.hire_count ?? 0}
+        avgKarmaOfHires={profile.avg_karma_of_hires ?? 0}
+        campusEventsCount={profile.campus_events_count ?? 0}
         memberSince={profile.created_at}
       />
 
-      <CompanyTestimonialsSection testimonials={mock.testimonials} />
+      <CompanyTestimonialsSection testimonials={profile.testimonials ?? []} />
     </div>
   );
 }

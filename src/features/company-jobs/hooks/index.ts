@@ -1,4 +1,9 @@
-export { COMPANY_KEYS, useCompanyProfile } from "./use-company-profile";
+export {
+  COMPANY_KEYS,
+  useCompanyProfile,
+  usePublicCompanyJobs,
+  usePublicCompanyProfile,
+} from "./use-company-profile";
 export { useJobDetail } from "./use-job-detail";
 export { useCreateJob, useDeleteJob, useUpdateJob } from "./use-job-mutations";
 export {

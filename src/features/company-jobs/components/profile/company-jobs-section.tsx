@@ -21,7 +21,7 @@ import {
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { MockPublicJob } from "../../constants/mock-company-profile";
+import type { PublicJob } from "../../schemas";
 import type { Job } from "../../types";
 
 // ─── Job type chip colours ────────────────────────────────────
@@ -95,15 +95,19 @@ function OwnJobCard({ job }: { job: Job }) {
 
 // ─── Public job card (mock or public API data) ─────────────────
 
-function PublicJobCard({ job }: { job: MockPublicJob }) {
+function PublicJobCard({ job }: { job: PublicJob }) {
   const chipStyle =
-    JOB_TYPE_STYLES[job.job_type] ?? JOB_TYPE_STYLES["Full-Time"];
+    JOB_TYPE_STYLES[job.job_type ?? "Full-Time"] ??
+    JOB_TYPE_STYLES["Full-Time"];
+  const postedDaysAgo = Math.floor(
+    (Date.now() - new Date(job.created_at).getTime()) / (1000 * 60 * 60 * 24),
+  );
   const postedLabel =
-    job.posted_days_ago === 0
+    postedDaysAgo === 0
       ? "Today"
-      : job.posted_days_ago === 1
+      : postedDaysAgo === 1
         ? "Yesterday"
-        : `${job.posted_days_ago}d ago`;
+        : `${postedDaysAgo}d ago`;
 
   return (
     <div className="group rounded-xl border border-border bg-card p-4 transition-shadow hover:shadow-md">
@@ -163,7 +167,7 @@ interface CompanyJobsSectionProps {
   isOwnProfile: boolean;
   ownJobs?: Job[];
   /** Public view: pass mock/public jobs and isOwnProfile=false */
-  publicJobs?: MockPublicJob[];
+  publicJobs?: PublicJob[];
 }
 
 export function CompanyJobsSection({

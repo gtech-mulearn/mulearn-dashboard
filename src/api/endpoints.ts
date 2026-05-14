@@ -124,11 +124,16 @@ export const endpoints = {
     /** GET - Public profile by slug (AllowAny) */
     publicProfile: (slug: string) =>
       `/api/v1/dashboard/company/profile/public/${slug}/`,
+    /** GET - Public company job listings by slug (no auth) */
+    publicJobsBySlug: (slug: string) =>
+      `/api/v1/dashboard/company/profile/public/${slug}/jobs/`,
     /** GET/POST/PATCH - Admin verification queue (JWT + Admin) */
     verificationRequests: "/api/v1/dashboard/company/verification/requests/",
     /** PATCH - Admin approve/reject a company (JWT + Admin) */
     verificationAction: (companyId: string) =>
       `/api/v1/dashboard/company/verification/requests/${companyId}/`,
+    /** GET - Company home dashboard summary */
+    homeSummary: "/api/v1/dashboard/company/home-summary/",
     /** GET - List jobs for authenticated company (JWT required) */
     jobs: "/api/v1/dashboard/company/jobs/",
     /** POST - Create job (JWT required, active company only) */
@@ -149,6 +154,32 @@ export const endpoints = {
     /** DELETE - Hard delete eligibility rule (JWT required) */
     deleteJobRule: (jobId: string, ruleId: string) =>
       `/api/v1/dashboard/company/jobs/${jobId}/rules/${ruleId}/delete/`,
+  },
+
+  // ============================================
+  // Mentor Dashboard Endpoints
+  // ============================================
+  mentor: {
+    /** GET - Mentor overview (stats, profile, persona, mentees summary) */
+    overview: "/api/v1/dashboard/mentor/overview/",
+    /** GET - Mentor sessions list (?status=SCHEDULED|PENDING|COMPLETED) */
+    sessions: "/api/v1/dashboard/mentor/sessions/",
+    /** GET - Mentor's active mentees list */
+    mentees: "/api/v1/dashboard/mentor/mentees/",
+    /** POST - Switch mentor persona (active IG) */
+    personaSwitch: "/api/v1/dashboard/mentor/persona/switch/",
+    /** GET - Available IG mentor role assignments for the user */
+    personaIgRoles: "/api/v1/dashboard/mentor/persona/ig-roles/",
+    /** GET - Single-call mentor home summary */
+    homeSummary: "/api/v1/dashboard/mentor/overview/home-summary/",
+  },
+
+  // ============================================
+  // Public Endpoints
+  // ============================================
+  public: {
+    /** GET - Public job listings (AllowAny) — use pagination.total for count */
+    jobs: "/api/v1/public/jobs/",
   },
 
   // ============================================
@@ -197,9 +228,8 @@ export const endpoints = {
     karmaFeed: "/api/v1/dashboard/profile/karma-feed/",
     /** GET - Interest groups list */
     interestGroups: "/api/v1/dashboard/ig/list/",
-    /** GET - Events (OpenSheet or dashboard events) */
-    events:
-      "https://opensheet.elk.sh/19Os47FI_fAgpMk7lnhFWz9aRwyd72cB-4PKz7W8rF9g/1",
+    /** GET - Featured events (replaced Google Sheets) — use events.featured instead */
+    events: "/api/v1/dashboard/events/featured/",
     /** GET - Calendar events for dashboard */
     calendarEvents: "/api/v1/dashboard/events/calendar/",
   },
@@ -847,6 +877,29 @@ export const endpoints = {
     studentCsv: "/api/v1/dashboard/zonal/student-details/csv/",
     collegeList: "/api/v1/dashboard/zonal/college-details/",
     collegeCsv: "/api/v1/dashboard/zonal/college-details/csv/",
+  },
+  // ============================================
+  // Learner Dashboard Endpoints
+  // ============================================
+  learner: {
+    /** GET - Learner dashboard summary (stats, next meeting, quick action counts) */
+    homeSummary: "/api/v1/dashboard/home/learner/summary/",
+    /** GET - Standalone streak data */
+    streak: "/api/v1/dashboard/home/learner/streak/",
+  },
+
+  // ============================================
+  // Campus Dashboard Endpoints
+  // ============================================
+  campusDashboard: {
+    /** GET - Single-call campus home summary */
+    homeSummary: "/api/v1/dashboard/campus/home-summary/",
+    /** GET - Standalone member funnel */
+    memberFunnel: "/api/v1/dashboard/campus/member-funnel/",
+    /** GET - Standalone circle health */
+    circleHealth: "/api/v1/dashboard/campus/circle-health/",
+    /** GET - Standalone recent activity feed */
+    recentActivity: "/api/v1/dashboard/campus/recent-activity/",
   },
 } as const;
 

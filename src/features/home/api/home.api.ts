@@ -2,17 +2,28 @@ import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
   CalendarEventsResponseSchema,
-  EventRowSchema,
-  EventsSchema,
+  CampusCircleHealthResponseSchema,
+  CampusHomeSummaryResponseSchema,
+  CampusMemberFunnelResponseSchema,
+  CampusRecentActivityResponseSchema,
+  CompanyHomeSummaryResponseSchema,
   InterestGroupsListResponseSchema,
   KarmaFeedResponseSchema,
+  LearnerHomeSummaryResponseSchema,
+  LearnerStreakResponseSchema,
+  MentorHomeSummaryResponseSchema,
+  MentorIgRolesResponseSchema,
+  MentorMenteesResponseSchema,
+  MentorOverviewResponseSchema,
+  MentorPersonaSwitchResponseSchema,
+  MentorSessionsResponseSchema,
+  PublicJobsResponseSchema,
 } from "../schemas";
 
 // ============================================
 // Interest Groups
 // ============================================
 
-/** Get list of all interest groups */
 export async function getInterestGroupsList() {
   const response = await apiClient.get(
     endpoints.dashboard.interestGroups,
@@ -25,7 +36,6 @@ export async function getInterestGroupsList() {
 // Karma Feed
 // ============================================
 
-/** Get dashboard karma feed */
 export async function getKarmaFeed() {
   const response = await apiClient.get(
     endpoints.dashboard.karmaFeed,
@@ -35,56 +45,173 @@ export async function getKarmaFeed() {
 }
 
 // ============================================
-// Events (OpenSheet)
-// ============================================
-
-export async function getEvents() {
-  try {
-    const res = await fetch(endpoints.dashboard.events);
-
-    if (!res.ok) {
-      throw new Error(`Failed to fetch events: ${res.statusText}`);
-    }
-
-    const raw = await res.json();
-
-    // Validate raw rows
-    const rows = EventRowSchema.array().safeParse(raw);
-
-    if (!rows.success) {
-      console.error("Invalid events data structure", rows.error);
-      return [];
-    }
-
-    // Map to UI shape and validate
-    const mapped = rows.data
-      .map((event) => ({
-        name: event.Name || "No Name",
-        description: event.Description || "No Description",
-        poster: event.Poster || "",
-        link: event.Links || "#",
-        date: event.Date || "No Date",
-        status: event.Status || "",
-      }))
-      .filter((event) => event.status !== "Expired");
-
-    return EventsSchema.parse(mapped);
-  } catch (error) {
-    console.error("Error fetching events:", error);
-    // Return empty array as fallback instead of Crashing
-    return [];
-  }
-}
-
-// ============================================
 // Calendar Events
 // ============================================
 
-/** Get calendar events for dashboard */
 export async function getCalendarEvents() {
   const response = await apiClient.get(
     endpoints.dashboard.calendarEvents,
     CalendarEventsResponseSchema,
   );
   return response.response.events;
+}
+
+// ============================================
+// Mentor Overview
+// ============================================
+
+export async function getMentorOverview() {
+  const response = await apiClient.get(
+    endpoints.mentor.overview,
+    MentorOverviewResponseSchema,
+    { skipAuthRedirectOn403: true },
+  );
+  return response.response;
+}
+
+// ============================================
+// Mentor Sessions
+// ============================================
+
+export async function getMentorSessions(status = "SCHEDULED") {
+  const url = `${endpoints.mentor.sessions}?status=${status}`;
+  const response = await apiClient.get(url, MentorSessionsResponseSchema, {
+    skipAuthRedirectOn403: true,
+  });
+  return response.response.data;
+}
+
+// ============================================
+// Mentor Mentees
+// ============================================
+
+export async function getMentorMentees() {
+  const response = await apiClient.get(
+    endpoints.mentor.mentees,
+    MentorMenteesResponseSchema,
+    { skipAuthRedirectOn403: true },
+  );
+  return response.response.data;
+}
+
+// ============================================
+// Mentor Persona — IG Roles + Switch
+// ============================================
+
+export async function getMentorIgRoles() {
+  const response = await apiClient.get(
+    endpoints.mentor.personaIgRoles,
+    MentorIgRolesResponseSchema,
+  );
+  return response.response.ig_roles;
+}
+
+export async function switchMentorPersona(roleLinkId: string) {
+  const response = await apiClient.post(
+    endpoints.mentor.personaSwitch,
+    { active_role_link_id: roleLinkId },
+    MentorPersonaSwitchResponseSchema,
+  );
+  return response.response;
+}
+
+// ============================================
+// Public Jobs Count (for QuickActionRow)
+// ============================================
+
+export async function getPublicJobsCount(): Promise<number> {
+  const response = await apiClient.get(
+    endpoints.public.jobs,
+    PublicJobsResponseSchema,
+  );
+  return response.response.pagination.totalCount;
+}
+
+// ============================================
+// Learner Home Summary
+// ============================================
+
+// Learner endpoints require auth — 403 intentionally triggers global redirect
+export async function getLearnerHomeSummary() {
+  const response = await apiClient.get(
+    endpoints.learner.homeSummary,
+    LearnerHomeSummaryResponseSchema,
+  );
+  return response.response;
+}
+
+// ============================================
+// Mentor Home Summary
+// ============================================
+
+export async function getMentorHomeSummary() {
+  const response = await apiClient.get(
+    endpoints.mentor.homeSummary,
+    MentorHomeSummaryResponseSchema,
+    { skipAuthRedirectOn403: true },
+  );
+  return response.response;
+}
+
+// ============================================
+// Company Home Summary
+// ============================================
+
+export async function getCompanyHomeSummary() {
+  const response = await apiClient.get(
+    endpoints.company.homeSummary,
+    CompanyHomeSummaryResponseSchema,
+    { skipAuthRedirectOn403: true },
+  );
+  return response.response;
+}
+
+// Learner endpoints require auth — 403 intentionally triggers global redirect
+export async function getLearnerStreak() {
+  const response = await apiClient.get(
+    endpoints.learner.streak,
+    LearnerStreakResponseSchema,
+  );
+  return response.response;
+}
+
+// ============================================
+// Campus Dashboard
+// ============================================
+
+export async function getCampusHomeSummary() {
+  const response = await apiClient.get(
+    endpoints.campusDashboard.homeSummary,
+    CampusHomeSummaryResponseSchema,
+    { skipAuthRedirectOn403: true },
+  );
+  return response.response;
+}
+
+export async function getCampusMemberFunnel() {
+  const response = await apiClient.get(
+    endpoints.campusDashboard.memberFunnel,
+    CampusMemberFunnelResponseSchema,
+    { skipAuthRedirectOn403: true },
+  );
+  return response.response;
+}
+
+export async function getCampusCircleHealth() {
+  const response = await apiClient.get(
+    endpoints.campusDashboard.circleHealth,
+    CampusCircleHealthResponseSchema,
+    { skipAuthRedirectOn403: true },
+  );
+  return response.response.data;
+}
+
+export async function getCampusRecentActivity(limit = 10) {
+  const url = `${endpoints.campusDashboard.recentActivity}?limit=${limit}`;
+  const response = await apiClient.get(
+    url,
+    CampusRecentActivityResponseSchema,
+    { skipAuthRedirectOn403: true },
+  );
+  return response.response.data;
 }

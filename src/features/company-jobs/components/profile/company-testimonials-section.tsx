@@ -11,10 +11,10 @@
 
 import { Quote } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { MockTestimonial } from "../../constants/mock-company-profile";
+import type { CompanyTestimonial } from "../../types";
 
-function TestimonialCard({ testimonial }: { testimonial: MockTestimonial }) {
-  const initials = testimonial.author_name
+function TestimonialCard({ testimonial }: { testimonial: CompanyTestimonial }) {
+  const initials = testimonial.learner_name
     .split(" ")
     .slice(0, 2)
     .map((w) => w[0])
@@ -28,25 +28,17 @@ function TestimonialCard({ testimonial }: { testimonial: MockTestimonial }) {
         &ldquo;{testimonial.quote}&rdquo;
       </p>
       <div className="flex items-center gap-3">
-        {testimonial.author_avatar ? (
-          <img
-            src={testimonial.author_avatar}
-            alt={testimonial.author_name}
-            className="size-9 rounded-full object-cover"
-          />
-        ) : (
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary">
-            <span className="text-xs font-bold text-primary-foreground">
-              {initials}
-            </span>
-          </div>
-        )}
+        <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary">
+          <span className="text-xs font-bold text-primary-foreground">
+            {initials}
+          </span>
+        </div>
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-foreground">
-            {testimonial.author_name}
+            {testimonial.learner_name}
           </p>
           <p className="truncate text-[11px] text-muted-foreground">
-            {testimonial.author_level} · {testimonial.author_ig}
+            {testimonial.role}
           </p>
         </div>
       </div>
@@ -55,8 +47,7 @@ function TestimonialCard({ testimonial }: { testimonial: MockTestimonial }) {
 }
 
 interface CompanyTestimonialsSectionProps {
-  /** @mock tracked: #company-testimonials-model */
-  testimonials: MockTestimonial[];
+  testimonials: CompanyTestimonial[];
 }
 
 export function CompanyTestimonialsSection({
@@ -80,7 +71,7 @@ export function CompanyTestimonialsSection({
       <CardContent className="px-5 pb-5 pt-0">
         <div className="flex gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {testimonials.map((t) => (
-            <TestimonialCard key={t.id} testimonial={t} />
+            <TestimonialCard key={t.learner_name} testimonial={t} />
           ))}
         </div>
       </CardContent>
