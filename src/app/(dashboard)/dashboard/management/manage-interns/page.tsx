@@ -14,7 +14,11 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
+import type { ReactElement } from "react";
 import { useState } from "react";
+import Pagination from "@/components/dashboard/table/pagination";
+import Table, { type Data } from "@/components/dashboard/table/Table";
+import TableTop from "@/components/dashboard/table/TableTop";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,9 +35,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import Table from "@/components/dashboard/table/Table";
-import TableTop from "@/components/dashboard/table/TableTop";
-import Pagination from "@/components/dashboard/table/pagination";
 
 // Mock Data for Admin Overview
 const MOCK_STATS = {
@@ -144,20 +145,20 @@ const getStatusBadge = (status: string) => {
 export default function ManageInternsPage() {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
-  const [searchText, setSearchText] = useState("");
+  const [_searchText, setSearchText] = useState("");
 
   const tableColumns = [
     {
       column: "name",
       Label: "Intern Name",
       isSortable: true,
-      wrap: (data: any, id: string, row: any) => (
+      wrap: (data: string | ReactElement, _id: string, row: Data) => (
         <div className="flex flex-col">
           <span className="font-bold text-foreground uppercase tracking-tight text-sm">
             {data}
           </span>
           <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest leading-none mt-1">
-            {row.email}
+            {row.email as string}
           </span>
         </div>
       ),
@@ -166,7 +167,7 @@ export default function ManageInternsPage() {
       column: "team",
       Label: "Alliance",
       isSortable: true,
-      wrap: (data: any) => (
+      wrap: (data: string | ReactElement) => (
         <span className="text-xs font-bold uppercase text-muted-foreground tracking-wider">
           {data}
         </span>
@@ -176,13 +177,13 @@ export default function ManageInternsPage() {
       column: "status",
       Label: "Status",
       isSortable: true,
-      wrap: (data: any) => getStatusBadge(data),
+      wrap: (data: string | ReactElement) => getStatusBadge(data as string),
     },
     {
       column: "streak",
       Label: "Streak",
       isSortable: true,
-      wrap: (data: any) => (
+      wrap: (data: string | ReactElement) => (
         <div className="font-mono font-black text-warning flex items-center gap-1">
           {Number(data) > 0 ? (
             <>
@@ -198,7 +199,7 @@ export default function ManageInternsPage() {
       column: "points",
       Label: "Gems",
       isSortable: true,
-      wrap: (data: any) => (
+      wrap: (data: string | ReactElement) => (
         <div className="font-mono font-black text-foreground flex items-center gap-1.5">
           <Gem className="w-3.5 h-3.5 text-brand-blue" />
           {Number(data).toLocaleString()}
@@ -209,7 +210,7 @@ export default function ManageInternsPage() {
       column: "rank",
       Label: "Rank",
       isSortable: true,
-      wrap: (data: any) => (
+      wrap: (data: string | ReactElement) => (
         <span className="font-black text-muted-foreground">#{data}</span>
       ),
     },
@@ -365,7 +366,7 @@ export default function ManageInternsPage() {
               columnOrder={tableColumns}
               id={["id"]}
               slNoCellClassName="font-black text-muted-foreground/40 w-16"
-              customActionRender={(row) => (
+              customActionRender={(_row) => (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button

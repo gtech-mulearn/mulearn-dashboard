@@ -1,10 +1,12 @@
 "use client";
 
+import { Search, Sparkles, Trophy } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table from "@/components/dashboard/table/Table";
 import THead from "@/components/dashboard/table/Thead";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
@@ -25,8 +27,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Search, Sparkles, Trophy } from "lucide-react";
 
 const MOCK_RESPONSES = [
   {
@@ -63,7 +63,7 @@ export default function WeeklyReportGeneratorPage() {
   const responses = MOCK_RESPONSES;
   const isLoading = false;
   const [searchText, setSearchText] = useState("");
-  const [perPage, setPerPage] = useState(10);
+  const [perPage, _setPerPage] = useState(10);
   const [page, setPage] = useState(1);
   const [teamFilter, setTeamFilter] = useState("ALL");
 
@@ -108,9 +108,9 @@ export default function WeeklyReportGeneratorPage() {
       column: "full_name",
       Label: "Hero Name",
       isSortable: true,
-      wrap: (data: any) => (
+      wrap: (data: unknown) => (
         <span className="font-bold uppercase text-[11px] tracking-tight">
-          {data}
+          {String(data)}
         </span>
       ),
     },
@@ -118,9 +118,9 @@ export default function WeeklyReportGeneratorPage() {
       column: "muid",
       Label: "MUID Token",
       isSortable: true,
-      wrap: (data: any) => (
+      wrap: (data: unknown) => (
         <span className="font-mono text-[10px] bg-muted/50 px-2 py-0.5 rounded">
-          {data}
+          {String(data)}
         </span>
       ),
     },
@@ -128,12 +128,12 @@ export default function WeeklyReportGeneratorPage() {
       column: "team",
       Label: "Alliance",
       isSortable: true,
-      wrap: (data: any) => (
+      wrap: (data: unknown) => (
         <Badge
           variant="outline"
           className="text-[9px] uppercase font-black tracking-widest"
         >
-          {data}
+          {String(data)}
         </Badge>
       ),
     },
@@ -142,17 +142,19 @@ export default function WeeklyReportGeneratorPage() {
       column: "tasks_completed",
       Label: "Achievements",
       isSortable: false,
-      wrap: (data: any) => (
-        <span className="text-xs italic text-muted-foreground">"{data}"</span>
+      wrap: (data: unknown) => (
+        <span className="text-xs italic text-muted-foreground">
+          "{String(data)}"
+        </span>
       ),
     },
     {
       column: "hours_committed",
       Label: "Energy",
       isSortable: true,
-      wrap: (data: any) => (
+      wrap: (data: unknown) => (
         <div className="flex items-center gap-1 font-black text-brand-blue">
-          {data} <span className="text-[8px] opacity-50">XP</span>
+          {String(data)} <span className="text-[8px] opacity-50">XP</span>
         </div>
       ),
     },
@@ -323,7 +325,7 @@ export default function WeeklyReportGeneratorPage() {
         </CardHeader>
         <CardContent className="p-0">
           <Table
-            rows={currentRows as any}
+            rows={currentRows}
             isloading={isLoading}
             page={page}
             perPage={perPage}

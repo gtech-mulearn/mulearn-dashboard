@@ -182,6 +182,9 @@ export interface CompanyProfile {
   // Frontend-only permission flags (not from API)
   can_edit_profile?: boolean;
   can_access_advanced_features?: boolean;
+  registration_number?: string | null;
+  tax_id?: string | null;
+  verification_document_url?: string | null;
   // Extended profile fields (new backend fields — optional for backwards compat)
   founded_year?: number | null;
   remote_policy?: string | null;

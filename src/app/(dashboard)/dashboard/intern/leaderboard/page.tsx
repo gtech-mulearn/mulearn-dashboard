@@ -2,30 +2,18 @@
 
 import { Clock, Gem, Trophy } from "lucide-react";
 import { useState } from "react";
+import Pagination from "@/components/dashboard/table/pagination";
+import Table, { type Data } from "@/components/dashboard/table/Table";
+import TableTop from "@/components/dashboard/table/TableTop";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-// import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Table from "@/components/dashboard/table/Table";
-import TableTop from "@/components/dashboard/table/TableTop";
-import Pagination from "@/components/dashboard/table/pagination";
 
 export default function LeaderboardPage() {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
-  const [searchText, setSearchText] = useState("");
+  const [_searchText, setSearchText] = useState("");
 
   const MOCK_LEADERBOARD = [
     {
@@ -101,11 +89,17 @@ export default function LeaderboardPage() {
       column: "name",
       Label: "Username",
       isSortable: false,
-      wrap: (data: any, id: string, row: any) => (
+      wrap: (
+        data: string | import("react").ReactElement,
+        _id: string,
+        row: Data,
+      ) => (
         <div className="flex items-center gap-3">
           <Avatar className="w-8 h-8">
-            <AvatarImage src={row.avatarUrl} />
-            <AvatarFallback className="text-xs">{row.avatar}</AvatarFallback>
+            <AvatarImage src={row.avatarUrl as string | undefined} />
+            <AvatarFallback className="text-xs">
+              {row.avatar as string}
+            </AvatarFallback>
           </Avatar>
           <span className="font-medium">{data}</span>
           {row.name === "Alex Doe" && (
@@ -120,7 +114,7 @@ export default function LeaderboardPage() {
       column: "points",
       Label: "Points",
       isSortable: true,
-      wrap: (data: any) => (
+      wrap: (data: string | import("react").ReactElement) => (
         <div className="flex items-center gap-1.5 font-mono">
           <Gem className="w-3.5 h-3.5 text-brand-blue" />
           {data}
@@ -131,7 +125,7 @@ export default function LeaderboardPage() {
       column: "streak",
       Label: "Streak",
       isSortable: true,
-      wrap: (data: any) => (
+      wrap: (data: string | import("react").ReactElement) => (
         <div className="flex items-center gap-1.5 text-warning">
           <span>🔥</span>
           {data}

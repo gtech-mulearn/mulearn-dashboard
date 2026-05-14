@@ -13,6 +13,7 @@ import {
   Zap,
 } from "lucide-react";
 import Link from "next/link";
+import Table, { type Data } from "@/components/dashboard/table/Table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,7 +23,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import Table from "@/components/dashboard/table/Table";
 
 // Mock Data
 const MOCK_USER = {
@@ -93,10 +93,14 @@ export default function InternDashboardPage() {
       column: "name",
       Label: "Intern",
       isSortable: false,
-      wrap: (data: any, id: string, row: any) => (
+      wrap: (
+        data: string | import("react").ReactElement,
+        _id: string,
+        row: Data,
+      ) => (
         <div className="flex items-center gap-2">
           <span className="font-medium">{data}</span>
-          {row.name === "Alex Doe" && (
+          {(row.name as string) === "Alex Doe" && (
             <Badge
               variant="outline"
               className="text-[10px] bg-primary/10 text-primary border-primary/30 h-4"
@@ -111,7 +115,7 @@ export default function InternDashboardPage() {
       column: "points",
       Label: "Points",
       isSortable: false,
-      wrap: (data: any) => (
+      wrap: (data: string | import("react").ReactElement) => (
         <div className="flex items-center gap-1 font-mono font-bold">
           <Gem className="w-3 h-3 text-brand-blue" />
           {data}

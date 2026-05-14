@@ -5,21 +5,14 @@ import {
   CompanyProfileResponseSchema,
   CompanyProfileSchema,
 } from "@/features/company-jobs/schemas";
+import { ApiResponseSchema } from "@/lib/schemas/api-response";
 
 // ─── Re-export for convenience ────────────────────────────────
 export { CompanyProfileSchema, CompanyProfileResponseSchema };
 
-// ─── Django response wrapper (local copy — avoids cross-feature coupling) ──
-const DjangoResponse = <T extends z.ZodTypeAny>(dataSchema: T) =>
-  z.object({
-    hasError: z.boolean().optional(),
-    statusCode: z.number().optional(),
-    message: z.any().optional(),
-    response: dataSchema,
-  });
-
 // ─── Update mutation response ─────────────────────────────────
-export const UpdateProfileResponseSchema = DjangoResponse(CompanyProfileSchema);
+export const UpdateProfileResponseSchema =
+  ApiResponseSchema(CompanyProfileSchema);
 
 // ─── Step 1: Basic Info ───────────────────────────────────────
 export const BasicInfoStepSchema = z.object({
@@ -36,16 +29,31 @@ export const BasicInfoStepSchema = z.object({
       "Slug must be lowercase letters, numbers, and hyphens only",
     ),
   description: z.string().min(1, "Description is required"),
-  industry_sector: z.string().max(75).nullish().transform((v) => v ?? null),
-  company_size: z.string().max(50).nullish().transform((v) => v ?? null),
+  industry_sector: z
+    .string()
+    .max(75)
+    .nullish()
+    .transform((v) => v ?? null),
+  company_size: z
+    .string()
+    .max(50)
+    .nullish()
+    .transform((v) => v ?? null),
   founded_year: z
     .number()
     .int()
     .min(1800, "Must be 1800 or later")
-    .max(new Date().getFullYear(), `Must be ${new Date().getFullYear()} or earlier`)
+    .max(
+      new Date().getFullYear(),
+      `Must be ${new Date().getFullYear()} or earlier`,
+    )
     .nullish()
     .transform((v) => v ?? null),
-  location: z.string().max(150).nullish().transform((v) => v ?? null),
+  location: z
+    .string()
+    .max(150)
+    .nullish()
+    .transform((v) => v ?? null),
 });
 
 // ─── Step 2: Contact & Links ──────────────────────────────────
@@ -75,9 +83,21 @@ export const ContactStepSchema = z.object({
 
 // ─── Step 3: Legal & Verification ────────────────────────────
 export const LegalStepSchema = z.object({
-  legal_name: z.string().max(150).nullish().transform((v) => v ?? null),
-  registration_number: z.string().max(100).nullish().transform((v) => v ?? null),
-  tax_id: z.string().max(100).nullish().transform((v) => v ?? null),
+  legal_name: z
+    .string()
+    .max(150)
+    .nullish()
+    .transform((v) => v ?? null),
+  registration_number: z
+    .string()
+    .max(100)
+    .nullish()
+    .transform((v) => v ?? null),
+  tax_id: z
+    .string()
+    .max(100)
+    .nullish()
+    .transform((v) => v ?? null),
   verification_document_url: z
     .string()
     .nullish()
@@ -90,7 +110,10 @@ export const CultureStepSchema = z.object({
     .enum(["Remote", "Hybrid", "In-office"])
     .nullish()
     .transform((v) => v ?? null),
-  culture_text: z.string().nullish().transform((v) => v ?? null),
+  culture_text: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? null),
   tech_stack: z
     .array(z.string().min(1).max(100))
     .max(30, "Max 30 items")
@@ -104,7 +127,9 @@ export const CultureStepSchema = z.object({
 // ─── Combined form schema ─────────────────────────────────────
 export const ProfileEditFormSchema = BasicInfoStepSchema.merge(
   ContactStepSchema,
-).merge(LegalStepSchema).merge(CultureStepSchema);
+)
+  .merge(LegalStepSchema)
+  .merge(CultureStepSchema);
 
 // ─── Inferred types ───────────────────────────────────────────
 export type BasicInfoStepValues = z.infer<typeof BasicInfoStepSchema>;

@@ -1,8 +1,8 @@
 import { TrendingUp } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import type { LeaderboardCardProps } from "@/features/leaderboard";
-import { Badge } from "@/components/ui/badge";
 
 export function LeaderboardCard({ entry }: LeaderboardCardProps) {
   return (
