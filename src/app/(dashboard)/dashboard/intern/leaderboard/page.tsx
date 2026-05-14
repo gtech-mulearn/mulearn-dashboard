@@ -1,5 +1,7 @@
-import { Flame, Medal, Search, Trophy } from "lucide-react";
-import type { ReactNode } from "react";
+"use client";
+
+import { Clock, Gem, Trophy } from "lucide-react";
+import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 // import { Button } from "@/components/ui/button";
@@ -14,248 +16,315 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Table from "@/components/dashboard/table/Table";
+import TableTop from "@/components/dashboard/table/TableTop";
+import Pagination from "@/components/dashboard/table/pagination";
 
 export default function LeaderboardPage() {
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
+  const [searchText, setSearchText] = useState("");
+
   const MOCK_LEADERBOARD = [
     {
+      id: "1",
       rank: 1,
       name: "Michael Chen",
       team: "Design",
       points: 2100,
       streak: 28,
-      trend: "up",
       avatar: "MC",
+      avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Michael",
     },
     {
+      id: "2",
       rank: 2,
       name: "Jessica Wong",
       team: "Backend",
       points: 1950,
       streak: 15,
-      trend: "same",
       avatar: "JW",
+      avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jessica",
     },
     {
+      id: "3",
       rank: 3,
       name: "Alex Doe",
       team: "Frontend",
       points: 1240,
       streak: 14,
-      trend: "up",
       avatar: "AD",
+      avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alex",
     },
     {
+      id: "4",
       rank: 4,
       name: "Emma Wilson",
       team: "Frontend",
       points: 920,
       streak: 5,
-      trend: "down",
       avatar: "EW",
     },
     {
+      id: "5",
       rank: 5,
       name: "Sarah Smith",
       team: "Backend",
       points: 850,
       streak: 0,
-      trend: "down",
       avatar: "SS",
     },
     {
+      id: "6",
       rank: 6,
       name: "David Kim",
       team: "Mobile",
       points: 810,
       streak: 2,
-      trend: "up",
       avatar: "DK",
     },
     {
+      id: "7",
       rank: 7,
       name: "Lisa Brown",
       team: "Design",
       points: 790,
       streak: 4,
-      trend: "same",
       avatar: "LB",
     },
   ];
 
+  const tableColumns = [
+    {
+      column: "name",
+      Label: "Username",
+      isSortable: false,
+      wrap: (data: any, id: string, row: any) => (
+        <div className="flex items-center gap-3">
+          <Avatar className="w-8 h-8">
+            <AvatarImage src={row.avatarUrl} />
+            <AvatarFallback className="text-xs">{row.avatar}</AvatarFallback>
+          </Avatar>
+          <span className="font-medium">{data}</span>
+          {row.name === "Alex Doe" && (
+            <Badge className="bg-brand-blue/10 text-brand-blue border-brand-blue/20 text-[10px] h-4">
+              YOU
+            </Badge>
+          )}
+        </div>
+      ),
+    },
+    {
+      column: "points",
+      Label: "Points",
+      isSortable: true,
+      wrap: (data: any) => (
+        <div className="flex items-center gap-1.5 font-mono">
+          <Gem className="w-3.5 h-3.5 text-brand-blue" />
+          {data}
+        </div>
+      ),
+    },
+    {
+      column: "streak",
+      Label: "Streak",
+      isSortable: true,
+      wrap: (data: any) => (
+        <div className="flex items-center gap-1.5 text-warning">
+          <span>🔥</span>
+          {data}
+        </div>
+      ),
+    },
+  ];
+
+  const top3 = MOCK_LEADERBOARD.slice(0, 3);
+  const others = MOCK_LEADERBOARD.slice(3);
+
   return (
-    <div className="flex-1 space-y-8 p-8 pt-6 max-w-5xl mx-auto w-full">
+    <div className="flex-1 space-y-8 p-8 pt-6 max-w-7xl mx-auto w-full bg-background/50">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
             <Trophy className="w-8 h-8 text-warning" />
-            Global Leaderboard
+            Reward Leaderboard
           </h2>
           <p className="text-muted-foreground mt-1">
-            See how you stack up against other interns this month.
+            Compete with others and earn rewards.
           </p>
         </div>
-        <Tabs defaultValue="month" className="w-full sm:w-auto">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="week">Week</TabsTrigger>
-            <TabsTrigger value="month">Month</TabsTrigger>
-            <TabsTrigger value="all">All Time</TabsTrigger>
+        <Tabs defaultValue="daily" className="w-full sm:w-auto">
+          <TabsList className="bg-muted/50 p-1">
+            <TabsTrigger value="daily" className="px-6">
+              Daily
+            </TabsTrigger>
+            <TabsTrigger value="monthly" className="px-6">
+              Monthly
+            </TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
 
-      {/* Podium Top 3 */}
-      <div className="flex flex-col md:flex-row items-end justify-center gap-4 py-8">
+      {/* Podium Section */}
+      <div className="relative flex flex-col md:flex-row items-end justify-center gap-4 md:gap-8 pt-20 pb-12">
         {/* Rank 2 */}
-        <div className="flex flex-col items-center order-2 md:order-1 w-full md:w-1/3 max-w-[200px]">
-          <Avatar className="w-16 h-16 border-4 border-slate-300 shadow-lg mb-4">
-            <AvatarFallback className="bg-slate-200 text-slate-700 text-lg font-bold">
-              {MOCK_LEADERBOARD[1].avatar}
-            </AvatarFallback>
-          </Avatar>
-          <div className="bg-gradient-to-t from-slate-200 to-slate-100 w-full rounded-t-xl border border-slate-300 p-4 text-center flex flex-col items-center justify-end h-[140px] shadow-sm relative">
-            <Medal className="w-8 h-8 text-slate-400 absolute -top-4 bg-white rounded-full p-1 border border-slate-200" />
-            <h3 className="font-bold text-slate-800">
-              {MOCK_LEADERBOARD[1].name}
-            </h3>
-            <p className="text-xs text-slate-500 mb-2">
-              {MOCK_LEADERBOARD[1].team}
-            </p>
-            <Badge variant="secondary" className="font-mono">
-              {MOCK_LEADERBOARD[1].points} pts
-            </Badge>
+        <div className="flex flex-col items-center w-full md:w-64 z-10">
+          <div className="relative mb-4">
+            <Avatar className="w-24 h-24 border-4 border-slate-400 shadow-[0_0_20px_rgba(148,163,184,0.3)]">
+              <AvatarImage src={top3[1].avatarUrl} />
+              <AvatarFallback className="bg-slate-800 text-slate-200 text-xl font-bold">
+                {top3[1].avatar}
+              </AvatarFallback>
+            </Avatar>
+            <div className="absolute -top-2 -right-2 bg-slate-400 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border-2 border-background">
+              2
+            </div>
+          </div>
+          <h3 className="text-xl font-bold text-foreground mb-1">
+            {top3[1].name}
+          </h3>
+          <p className="text-sm text-muted-foreground mb-4">Earn 500 points</p>
+          <div className="bg-card/80 backdrop-blur-sm border border-border/50 rounded-xl p-6 w-full text-center shadow-xl flex flex-col items-center gap-3 h-48 justify-end transform transition-transform hover:scale-105">
+            <div className="p-2 bg-slate-400/10 rounded-lg">
+              <Trophy className="w-6 h-6 text-slate-400" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                Reward
+              </p>
+              <div className="flex items-center justify-center gap-2 text-2xl font-bold text-foreground">
+                <Gem className="w-6 h-6 text-brand-blue" />
+                5,000
+              </div>
+              <p className="text-xs text-muted-foreground">Prize</p>
+            </div>
           </div>
         </div>
 
         {/* Rank 1 */}
-        <div className="flex flex-col items-center order-1 md:order-2 w-full md:w-1/3 max-w-[220px]">
-          <Avatar className="w-20 h-20 border-4 border-warning shadow-xl mb-4 relative">
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-2xl">
+        <div className="flex flex-col items-center w-full md:w-72 z-20 -mt-8 md:-mt-12">
+          <div className="relative mb-6">
+            <div className="absolute -top-10 left-1/2 -translate-x-1/2 text-4xl animate-bounce">
               👑
             </div>
-            <AvatarFallback className="bg-warning/20 text-warning text-xl font-bold">
-              {MOCK_LEADERBOARD[0].avatar}
-            </AvatarFallback>
-          </Avatar>
-          <div className="bg-gradient-to-t from-warning/30 to-warning/10 w-full rounded-t-xl border border-warning/50 p-4 text-center flex flex-col items-center justify-end h-[180px] shadow-md relative">
-            <Medal className="w-10 h-10 text-warning absolute -top-5 bg-card rounded-full p-1 border border-warning/50" />
-            <h3 className="font-bold text-foreground text-lg">
-              {MOCK_LEADERBOARD[0].name}
-            </h3>
-            <p className="text-xs text-muted-foreground mb-3">
-              {MOCK_LEADERBOARD[0].team}
-            </p>
-            <Badge className="font-mono bg-warning hover:bg-warning/90 text-white px-3 py-1 text-sm">
-              {MOCK_LEADERBOARD[0].points} pts
-            </Badge>
+            <Avatar className="w-32 h-32 border-4 border-warning shadow-[0_0_30px_rgba(255,141,12,0.4)] ring-4 ring-warning/20">
+              <AvatarImage src={top3[0].avatarUrl} />
+              <AvatarFallback className="bg-warning/20 text-warning text-2xl font-bold">
+                {top3[0].avatar}
+              </AvatarFallback>
+            </Avatar>
+            <div className="absolute -top-2 -right-2 bg-warning text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg border-2 border-background shadow-lg">
+              1
+            </div>
+          </div>
+          <h3 className="text-2xl font-extrabold text-foreground mb-1">
+            {top3[0].name}
+          </h3>
+          <p className="text-sm text-muted-foreground mb-6">Earn 1500 points</p>
+          <div className="bg-gradient-to-b from-card to-warning/5 backdrop-blur-sm border-2 border-warning/30 rounded-2xl p-8 w-full text-center shadow-[0_20px_50px_rgba(255,141,12,0.15)] flex flex-col items-center gap-4 h-64 justify-end relative overflow-hidden group">
+            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-warning to-transparent opacity-50" />
+            <div className="p-3 bg-warning/10 rounded-xl group-hover:scale-110 transition-transform">
+              <Trophy className="w-8 h-8 text-warning" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs uppercase tracking-wider text-warning font-bold">
+                Grand Prize
+              </p>
+              <div className="flex items-center justify-center gap-2 text-4xl font-black text-foreground tabular-nums">
+                <Gem className="w-8 h-8 text-brand-blue" />
+                10,000
+              </div>
+              <p className="text-sm text-muted-foreground">Prize Points</p>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2 bg-muted/30 px-3 py-1.5 rounded-full">
+              <Clock className="w-3 h-3" />
+              Ends In: 00d 00h 43m 51s
+            </div>
           </div>
         </div>
 
         {/* Rank 3 */}
-        <div className="flex flex-col items-center order-3 md:order-3 w-full md:w-1/3 max-w-[200px]">
-          <Avatar className="w-16 h-16 border-4 border-chart-4/50 shadow-lg mb-4">
-            <AvatarFallback className="bg-chart-4/20 text-chart-4 text-lg font-bold">
-              {MOCK_LEADERBOARD[2].avatar}
-            </AvatarFallback>
-          </Avatar>
-          <div className="bg-gradient-to-t from-chart-4/30 to-chart-4/10 w-full rounded-t-xl border border-chart-4/50 p-4 text-center flex flex-col items-center justify-end h-[120px] shadow-sm relative">
-            <Medal className="w-8 h-8 text-chart-4 absolute -top-4 bg-card rounded-full p-1 border border-chart-4/30" />
-            <h3 className="font-bold text-foreground">
-              {MOCK_LEADERBOARD[2].name}
-            </h3>
-            <p className="text-xs text-muted-foreground mb-2">
-              {MOCK_LEADERBOARD[2].team}
-            </p>
-            <Badge
-              variant="secondary"
-              className="font-mono bg-chart-4/10 text-chart-4 hover:bg-chart-4/20"
-            >
-              {MOCK_LEADERBOARD[2].points} pts
-            </Badge>
+        <div className="flex flex-col items-center w-full md:w-64 z-10">
+          <div className="relative mb-4">
+            <Avatar className="w-24 h-24 border-4 border-amber-700/50 shadow-[0_0_20px_rgba(180,83,9,0.2)]">
+              <AvatarImage src={top3[2].avatarUrl} />
+              <AvatarFallback className="bg-amber-900/20 text-amber-700 text-xl font-bold">
+                {top3[2].avatar}
+              </AvatarFallback>
+            </Avatar>
+            <div className="absolute -top-2 -right-2 bg-amber-700/80 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border-2 border-background">
+              3
+            </div>
+          </div>
+          <h3 className="text-xl font-bold text-foreground mb-1">
+            {top3[2].name}
+          </h3>
+          <p className="text-sm text-muted-foreground mb-4">Earn 250 points</p>
+          <div className="bg-card/80 backdrop-blur-sm border border-border/50 rounded-xl p-6 w-full text-center shadow-xl flex flex-col items-center gap-3 h-44 justify-end transform transition-transform hover:scale-105">
+            <div className="p-2 bg-amber-700/10 rounded-lg">
+              <Trophy className="w-6 h-6 text-amber-700" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                Reward
+              </p>
+              <div className="flex items-center justify-center gap-2 text-2xl font-bold text-foreground">
+                <Gem className="w-6 h-6 text-brand-blue" />
+                2,500
+              </div>
+              <p className="text-xs text-muted-foreground">Prize</p>
+            </div>
           </div>
         </div>
       </div>
 
-      <Card className="border-border/50 bg-card overflow-hidden">
-        <div className="p-4 border-b border-border/50 flex items-center justify-between bg-muted/20">
-          <div className="relative w-full max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Search interns or teams..."
-              className="pl-9 bg-background w-full"
+      {/* User Status Banner */}
+      <div className="bg-brand-blue/10 border border-brand-blue/20 rounded-full py-3 px-8 text-center text-sm font-medium text-brand-blue max-w-2xl mx-auto flex items-center justify-center gap-2 mb-12 animate-pulse">
+        You earned <Gem className="w-4 h-4" /> 50 today and are ranked - out of{" "}
+        <span className="font-bold">13868</span> users
+      </div>
+
+      {/* Rankings Table */}
+      <div className="space-y-4">
+        <h3 className="text-xl font-bold">Rankings</h3>
+
+        <TableTop
+          onSearchText={setSearchText}
+          onPerPageNumber={setPerPage}
+          CSV=""
+          perPage={perPage}
+          perPageOptions={[10, 20, 50]}
+          searchPlaceholder="Search users..."
+          searchSize="md"
+          searchPosition="left"
+          searchWrapperClassName="bg-card/40 border-border/40"
+        />
+
+        <Card className="border-border/40 bg-card/40 backdrop-blur-xl shadow-2xl overflow-hidden">
+          <CardContent className="p-0">
+            <Table
+              rows={others}
+              page={page}
+              perPage={perPage}
+              columnOrder={tableColumns}
+              id={["id"]}
+              slNoCellClassName="text-muted-foreground font-bold"
             />
-          </div>
-          <div className="text-sm text-muted-foreground">
-            Live updates{" "}
-            <span className="inline-block w-2 h-2 rounded-full bg-success animate-pulse ml-1" />
-          </div>
-        </div>
-        <Table>
-          <TableHeader className="bg-muted/30">
-            <TableRow>
-              <TableHead className="w-[80px] text-center">Rank</TableHead>
-              <TableHead>Intern</TableHead>
-              <TableHead>Team</TableHead>
-              <TableHead className="text-center">Streak</TableHead>
-              <TableHead className="text-right">Points</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {MOCK_LEADERBOARD.slice(3).map((intern) => (
-              <TableRow
-                key={intern.rank}
-                className={
-                  intern.name === "Alex Doe"
-                    ? "bg-primary/5"
-                    : "hover:bg-muted/20"
-                }
-              >
-                <TableCell className="text-center font-bold text-muted-foreground">
-                  {intern.rank}
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <Avatar className="w-8 h-8">
-                      <AvatarFallback className="text-xs">
-                        {intern.avatar}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="font-medium text-foreground">
-                      {intern.name}
-                    </span>
-                    {intern.name === "Alex Doe" && (
-                      <Badge
-                        variant="outline"
-                        className="ml-2 bg-primary/10 text-primary border-primary/20 text-[10px] uppercase"
-                      >
-                        You
-                      </Badge>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {intern.team}
-                </TableCell>
-                <TableCell className="text-center">
-                  <div className="inline-flex items-center gap-1 font-mono text-sm">
-                    {intern.streak > 0 ? (
-                      <span className="text-warning font-medium flex items-center gap-1">
-                        <Flame className="w-3 h-3" /> {intern.streak}
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground">
-                        {intern.streak}
-                      </span>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell className="text-right font-mono font-medium text-foreground">
-                  {intern.points.toLocaleString()}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Card>
+            <div className="p-4 border-t border-border/20">
+              <Pagination
+                currentPage={page}
+                totalPages={Math.ceil(others.length / perPage)}
+                perPage={perPage}
+                totalCount={others.length}
+                handlePreviousClick={() => setPage((p) => Math.max(1, p - 1))}
+                handleNextClick={() => setPage((p) => p + 1)}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
