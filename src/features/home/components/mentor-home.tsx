@@ -60,10 +60,10 @@ export function MentorHome() {
       </div>
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[3fr_2fr]">
         <MenteeProgressCard mentees={mentees} isLoading={menteesLoading} />
-        <AvailabilityCard
+        {/* <AvailabilityCard
           expertise={overview?.mentor_profile.expertise ?? []}
           isLoading={overviewLoading}
-        />
+        /> */}
       </div>
     </div>
   );

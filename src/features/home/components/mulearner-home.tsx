@@ -4,10 +4,11 @@ import { useUserInfo, useUserProfile } from "@/features/auth/hooks/use-session";
 import {
   useCalendarEvents,
   useInterestGroupsList,
-  usePublicJobsCount,
+  useLearnerHomeSummary,
 } from "../hooks";
 import { EventCalendarCard } from "./event-calendar-card";
 import { HeroCard } from "./hero-card";
+import { HomeStatsPanel } from "./home-stats-panel";
 import { InterestGroupsCard } from "./interest-groups-card";
 import { KarmaEarnersCard } from "./karma-earners-card";
 import { LearningCirclesCard } from "./learning-circles-card";
@@ -20,14 +21,14 @@ export function MuLearnerHome() {
     useInterestGroupsList();
   const { data: calendarEvents, isLoading: loadingCalendar } =
     useCalendarEvents();
-  const { data: jobCount = 0 } = usePublicJobsCount();
+  const { data: summary } = useLearnerHomeSummary();
 
   const displayName = userInfo?.full_name?.split(" ")[0] ?? "Learner";
   const groups = interestGroups ?? [];
-  const rank: number | null = userProfile?.rank ?? null;
 
-  // UserProfile has no learning_circles field; default to 0 until backend exposes it
-  const circleCount = 0;
+  const circleCount = summary?.quick_action_counts.circles ?? 0;
+  const rank = summary?.stats.rank ?? userProfile?.rank ?? null;
+  const jobCount = summary?.quick_action_counts.job_openings ?? 0;
 
   return (
     <div className="space-y-5">
@@ -47,7 +48,13 @@ export function MuLearnerHome() {
           </div>
           <KarmaEarnersCard />
         </div>
-        <div className="hidden self-start lg:sticky lg:top-5 lg:block">
+        <div className="space-y-5 self-start lg:sticky lg:top-5">
+          <HomeStatsPanel
+            karma={summary?.stats.total_karma ?? 0}
+            rank={rank}
+            activeCircles={circleCount}
+            streakDays={summary?.stats.streak_days ?? 0}
+          />
           <EventCalendarCard
             events={calendarEvents}
             isLoading={loadingCalendar}

@@ -4,6 +4,8 @@ import {
   CalendarEventsResponseSchema,
   InterestGroupsListResponseSchema,
   KarmaFeedResponseSchema,
+  LearnerHomeSummaryResponseSchema,
+  LearnerStreakResponseSchema,
   MentorIgRolesResponseSchema,
   MentorMenteesResponseSchema,
   MentorOverviewResponseSchema,
@@ -117,4 +119,24 @@ export async function getPublicJobsCount(): Promise<number> {
     PublicJobsResponseSchema,
   );
   return response.response.pagination.totalCount;
+}
+
+// ============================================
+// Learner Home Summary
+// ============================================
+
+export async function getLearnerHomeSummary() {
+  const response = await apiClient.get(
+    endpoints.learner.homeSummary,
+    LearnerHomeSummaryResponseSchema,
+  );
+  return response.response;
+}
+
+export async function getLearnerStreak() {
+  const response = await apiClient.get(
+    endpoints.learner.streak,
+    LearnerStreakResponseSchema,
+  );
+  return response.response;
 }

@@ -13,4 +13,7 @@ export const homeKeys = {
   mentorMentees: () => [...homeKeys.all, "mentor", "mentees"] as const,
   mentorIgRoles: () => [...homeKeys.all, "mentor", "ig-roles"] as const,
   publicJobsCount: () => [...homeKeys.all, "public-jobs-count"] as const,
+  learnerHomeSummary: () =>
+    [...homeKeys.all, "learner", "home-summary"] as const,
+  learnerStreak: () => [...homeKeys.all, "learner", "streak"] as const,
 };

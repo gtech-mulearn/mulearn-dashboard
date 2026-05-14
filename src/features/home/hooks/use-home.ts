@@ -4,6 +4,8 @@ import {
   getCalendarEvents,
   getInterestGroupsList,
   getKarmaFeed,
+  getLearnerHomeSummary,
+  getLearnerStreak,
   getMentorIgRoles,
   getMentorMentees,
   getMentorOverview,
@@ -113,5 +115,21 @@ export function usePublicJobsCount() {
     queryKey: homeKeys.publicJobsCount(),
     queryFn: getPublicJobsCount,
     staleTime: 15 * 60 * 1000,
+  });
+}
+
+export function useLearnerHomeSummary() {
+  return useQuery({
+    queryKey: homeKeys.learnerHomeSummary(),
+    queryFn: getLearnerHomeSummary,
+    staleTime: HOME_STALE_TIME,
+  });
+}
+
+export function useLearnerStreak() {
+  return useQuery({
+    queryKey: homeKeys.learnerStreak(),
+    queryFn: getLearnerStreak,
+    staleTime: HOME_STALE_TIME,
   });
 }

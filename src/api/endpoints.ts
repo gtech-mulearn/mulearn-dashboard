@@ -871,6 +871,15 @@ export const endpoints = {
     collegeList: "/api/v1/dashboard/zonal/college-details/",
     collegeCsv: "/api/v1/dashboard/zonal/college-details/csv/",
   },
+  // ============================================
+  // Learner Dashboard Endpoints
+  // ============================================
+  learner: {
+    /** GET - Learner dashboard summary (stats, next meeting, quick action counts) */
+    homeSummary: "/api/v1/dashboard/home/learner/summary/",
+    /** GET - Standalone streak data */
+    streak: "/api/v1/dashboard/home/learner/streak/",
+  },
 } as const;
 
 // Type for type-safe endpoint access

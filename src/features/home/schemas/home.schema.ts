@@ -282,3 +282,67 @@ export const MentorPersonaSwitchResponseSchema = ApiResponseSchema(
     access: z.string().nullable().optional(),
   }),
 );
+
+// ============================================
+// Learner Home Summary (/dashboard/home/learner/summary/)
+// ============================================
+
+export const LearnerStatsSchema = z.object({
+  weekly_karma: z.number(),
+  total_karma: z.number(),
+  rank: z.number().nullable(),
+  active_circles: z.number(),
+  streak_days: z.number(),
+});
+export type LearnerStats = z.infer<typeof LearnerStatsSchema>;
+
+export const LearnerNextMeetingSchema = z
+  .object({
+    id: z.string(),
+    circle_id: z.string(),
+    circle_name: z.string(),
+    title: z.string(),
+    starts_at: z.string(),
+    duration_minutes: z.number(),
+    meeting_link: z.string().nullable(),
+    rsvp_status: z.string(),
+  })
+  .nullable();
+export type LearnerNextMeeting = z.infer<typeof LearnerNextMeetingSchema>;
+
+export const LearnerQuickActionCountsSchema = z.object({
+  circles: z.number(),
+  leaderboard_rank: z.number().nullable(),
+  job_openings: z.number(),
+});
+export type LearnerQuickActionCounts = z.infer<
+  typeof LearnerQuickActionCountsSchema
+>;
+
+export const LearnerHomeSummaryDataSchema = z.object({
+  stats: LearnerStatsSchema,
+  next_meeting: LearnerNextMeetingSchema,
+  quick_action_counts: LearnerQuickActionCountsSchema,
+});
+export type LearnerHomeSummaryData = z.infer<
+  typeof LearnerHomeSummaryDataSchema
+>;
+
+export const LearnerHomeSummaryResponseSchema = ApiResponseSchema(
+  LearnerHomeSummaryDataSchema,
+);
+
+// ============================================
+// Learner Streak (/dashboard/home/learner/streak/)
+// ============================================
+
+export const LearnerStreakDataSchema = z.object({
+  streak_days: z.number(),
+  last_activity_at: z.string().nullable(),
+  activity_dates: z.array(z.string()),
+});
+export type LearnerStreakData = z.infer<typeof LearnerStreakDataSchema>;
+
+export const LearnerStreakResponseSchema = ApiResponseSchema(
+  LearnerStreakDataSchema,
+);
