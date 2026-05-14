@@ -118,3 +118,131 @@ export const CalendarEventsResponseSchema = ApiResponseSchema(
 export type CalendarEventsResponse = z.infer<
   typeof CalendarEventsResponseSchema
 >;
+
+// ============================================
+// Pagination (shared)
+// ============================================
+
+export const PaginationSchema = z.object({
+  totalPages: z.number(),
+  currentPage: z.number(),
+  totalCount: z.number(),
+  nextPage: z.number().nullable(),
+  previousPage: z.number().nullable(),
+});
+
+// ============================================
+// Mentor Overview (/mentor/overview/)
+// ============================================
+
+export const MentorOverviewSchema = z.object({
+  user: z.object({
+    full_name: z.string(),
+    muid: z.string(),
+    profile_pic: z.string().nullable(),
+  }),
+  mentor_profile: z.object({
+    about: z.string().nullable(),
+    expertise: z.array(z.string()),
+    reason: z.string().nullable(),
+    volunteer_hours: z.number(),
+    mentor_tier: z.string().nullable(),
+    is_verified: z.boolean(),
+  }),
+  active_persona: z
+    .object({
+      active_persona: z.string().nullable(),
+      active_role_link_id: z.string().nullable(),
+      active_ig_id: z.string().nullable(),
+      ig_name: z.string().nullable(),
+      is_verified: z.boolean(),
+    })
+    .nullable(),
+  authorized_igs: z.array(
+    z.object({
+      role_link_id: z.string(),
+      ig_id: z.string(),
+      ig_name: z.string(),
+      is_primary: z.boolean(),
+      is_verified: z.boolean(),
+    }),
+  ),
+  stats: z.object({
+    total_mentees: z.number(),
+    sessions_conducted: z.number(),
+    pending_task_approvals: z.number(),
+    volunteer_hours: z.number(),
+  }),
+});
+export type MentorOverview = z.infer<typeof MentorOverviewSchema>;
+
+export const MentorOverviewResponseSchema =
+  ApiResponseSchema(MentorOverviewSchema);
+
+// ============================================
+// Mentor Sessions (/mentor/sessions/)
+// ============================================
+
+export const MentorSessionParticipantSchema = z.object({
+  user_id: z.string(),
+  full_name: z.string(),
+  participant_role: z.string(),
+  attendance_status: z.string().nullable(),
+});
+
+export const MentorSessionSchema = z.object({
+  id: z.string(),
+  ig_name: z.string().nullable(),
+  title: z.string(),
+  mode: z.string(),
+  starts_at: z.string(),
+  ends_at: z.string(),
+  status: z.string(),
+  meeting_link: z.string().nullable(),
+  participants: z.array(MentorSessionParticipantSchema),
+});
+export type MentorSession = z.infer<typeof MentorSessionSchema>;
+
+export const MentorSessionsResponseSchema = ApiResponseSchema(
+  z.object({
+    data: z.array(MentorSessionSchema),
+    pagination: PaginationSchema,
+  }),
+);
+
+// ============================================
+// Mentor Mentees (/mentor/mentees/)
+// ============================================
+
+export const MentorMenteeSchema = z.object({
+  user_id: z.string(),
+  full_name: z.string(),
+  muid: z.string(),
+  profile_pic: z.string().nullable(),
+  karma: z.number(),
+  level: z.string().nullable(),
+  ig_karma: z.number(),
+  ig_level: z.string().nullable(),
+  session_count: z.number(),
+  last_session_at: z.string().nullable(),
+});
+export type MentorMentee = z.infer<typeof MentorMenteeSchema>;
+
+export const MentorMenteesResponseSchema = ApiResponseSchema(
+  z.object({
+    active_ig_id: z.string().nullable(),
+    data: z.array(MentorMenteeSchema),
+    pagination: PaginationSchema,
+  }),
+);
+
+// ============================================
+// Public Jobs Count (/public/jobs/)
+// ============================================
+
+export const PublicJobsResponseSchema = ApiResponseSchema(
+  z.object({
+    data: z.array(z.unknown()),
+    pagination: PaginationSchema,
+  }),
+);
