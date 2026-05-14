@@ -5,7 +5,7 @@ import { useUserInfo } from "@/features/auth/hooks/use-session";
 import { useCompanyProfile } from "@/features/company-jobs/hooks/use-company-profile";
 import { useJobs } from "@/features/company-jobs/hooks/use-jobs";
 import { ROLES } from "@/lib/auth";
-import { useInterestGroupsList } from "../hooks";
+import { useCompanyHomeSummary } from "../hooks";
 import { ActiveJobListingsCard } from "./company/active-job-listings-card";
 import { CompanyHeroCard } from "./company/company-hero-card";
 import { CompanyStatCards } from "./company/company-stat-cards";
@@ -18,11 +18,10 @@ export function CompanyHome() {
   const { data: companyStatus } = useCompanyOnboardingStatus(isCompany);
   const { profile, isLoading: profileLoading } = useCompanyProfile();
   const { data: jobsData, isLoading: jobsLoading } = useJobs({ perPage: 100 });
-  const { data: interestGroups = [], isLoading: igsLoading } =
-    useInterestGroupsList();
+  const { data: summary, isLoading: summaryLoading } = useCompanyHomeSummary();
 
-  // Pagination.count holds the total number of jobs
-  const jobsPosted = jobsData?.pagination?.count ?? 0;
+  const jobsPosted =
+    summary?.quick_stats.jobs_posted ?? jobsData?.pagination?.count ?? 0;
   const companyName = profile?.name ?? undefined;
 
   return (
@@ -32,12 +31,15 @@ export function CompanyHome() {
         jobsPosted={jobsPosted}
         isLoading={jobsLoading || profileLoading}
       />
-      <CompanyStatCards jobsPosted={jobsPosted} isLoading={jobsLoading} />
+      <CompanyStatCards
+        quickStats={summary?.quick_stats}
+        isLoading={summaryLoading}
+      />
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_296px]">
         <ActiveJobListingsCard />
         <TalentPoolCard
-          interestGroups={interestGroups}
-          igsLoading={igsLoading}
+          talentPool={summary?.talent_pool}
+          isLoading={summaryLoading}
         />
       </div>
     </div>

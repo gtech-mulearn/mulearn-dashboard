@@ -87,8 +87,8 @@ export function AvailabilityCard({ expertise, isLoading }: Props) {
                   className={cn(
                     "rounded-full px-3 py-1 text-xs font-medium transition-colors",
                     selected.has(tag)
-                      ? "bg-primary/20 text-primary"
-                      : "bg-muted text-muted-foreground hover:bg-muted/80",
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted/50 text-muted-foreground",
                   )}
                 >
                   {tag}

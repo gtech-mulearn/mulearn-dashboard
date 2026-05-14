@@ -22,8 +22,9 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import type { RemotePolicy } from "../../constants/mock-company-profile";
 import type { CompanyProfile } from "../../types";
+
+type RemotePolicy = "Remote" | "Hybrid" | "In-office";
 
 // ─── Sub-components ──────────────────────────────────────────
 
@@ -80,9 +81,8 @@ interface CompanyProfileHeaderProps {
   profile: CompanyProfile;
   activeJobsCount: number;
   isOwnProfile: boolean;
-  // Mock fields (replace as backend ships them)
   foundedYear?: number | null;
-  remotePolicy?: RemotePolicy;
+  remotePolicy?: string | null;
 }
 
 export function CompanyProfileHeader({
@@ -90,7 +90,7 @@ export function CompanyProfileHeader({
   activeJobsCount,
   isOwnProfile,
   foundedYear,
-  remotePolicy = "Hybrid",
+  remotePolicy,
 }: CompanyProfileHeaderProps) {
   const isVerified = profile.status === "active";
 
@@ -176,7 +176,7 @@ export function CompanyProfileHeader({
                 )}
                 {remotePolicy && (
                   <span
-                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ${REMOTE_POLICY_STYLES[remotePolicy]}`}
+                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ${REMOTE_POLICY_STYLES[remotePolicy as RemotePolicy] ?? "bg-muted text-muted-foreground"}`}
                   >
                     {remotePolicy}
                   </span>

@@ -1,17 +1,19 @@
 import { Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { InterestGroupListItem } from "../../schemas/home.schema";
+import type { CompanyTalentPool } from "../../schemas/home.schema";
 
 type Props = {
-  interestGroups: InterestGroupListItem[];
-  igsLoading: boolean;
+  talentPool?: CompanyTalentPool;
+  isLoading: boolean;
 };
 
 const LEVEL_COLORS = ["#374151", "#6366f1", "#a855f7", "#f59e0b", "#10b981"];
 
-export function TalentPoolCard({ interestGroups, igsLoading }: Props) {
-  const topIgs = interestGroups.slice(0, 4);
+export function TalentPoolCard({ talentPool, isLoading }: Props) {
+  const topIgs = talentPool?.top_interest_groups.slice(0, 4) ?? [];
+  const totalLearners = talentPool?.total_learners ?? 0;
+  const maxCount = topIgs[0]?.learner_count ?? 1;
 
   return (
     <Card className="rounded-2xl border bg-card shadow-sm">
@@ -25,13 +27,15 @@ export function TalentPoolCard({ interestGroups, igsLoading }: Props) {
       </CardHeader>
       <CardContent className="px-5 pb-5 pt-0">
         <p className="mb-5 text-xs text-muted-foreground">
-          MuLearn verified learners network
+          {totalLearners > 0
+            ? `${totalLearners.toLocaleString()} MuLearn verified learners`
+            : "MuLearn verified learners network"}
         </p>
 
         <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
           Top Interest Groups
         </p>
-        {igsLoading ? (
+        {isLoading ? (
           <div className="space-y-3">
             {[0, 1, 2, 3].map((i) => (
               <Skeleton key={i} className="h-5 w-full rounded-lg" />
@@ -39,22 +43,29 @@ export function TalentPoolCard({ interestGroups, igsLoading }: Props) {
           </div>
         ) : (
           <div className="space-y-3">
-            {topIgs.map((ig, idx) => (
-              <div key={ig.id} className="flex items-center gap-3">
-                <span className="w-32 shrink-0 truncate text-xs font-medium text-foreground">
-                  {ig.name}
-                </span>
-                <div className="flex-1 overflow-hidden rounded-full bg-muted h-2">
-                  <div
-                    className="h-full rounded-full"
-                    style={{
-                      width: `${100 - idx * 18}%`,
-                      backgroundColor: LEVEL_COLORS[idx % LEVEL_COLORS.length],
-                    }}
-                  />
+            {topIgs.map((ig, idx) => {
+              const pct = Math.round((ig.learner_count / maxCount) * 100);
+              return (
+                <div key={ig.ig_id} className="flex items-center gap-3">
+                  <span className="w-32 shrink-0 truncate text-xs font-medium text-foreground">
+                    {ig.name}
+                  </span>
+                  <div className="flex-1 overflow-hidden rounded-full bg-muted h-2">
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${pct}%`,
+                        backgroundColor:
+                          LEVEL_COLORS[idx % LEVEL_COLORS.length],
+                      }}
+                    />
+                  </div>
+                  <span className="w-10 shrink-0 text-right text-[11px] text-muted-foreground">
+                    {ig.learner_count.toLocaleString()}
+                  </span>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </CardContent>

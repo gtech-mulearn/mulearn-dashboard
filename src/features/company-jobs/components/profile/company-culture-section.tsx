@@ -13,8 +13,7 @@ import { Code2, Heart, Layers } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface CompanyCultureSectionProps {
-  /** @mock tracked: #company-profile-extended */
-  cultureText: string;
+  cultureText?: string | null;
   /** @mock tracked: #company-profile-extended */
   techStack: string[];
   /** @mock tracked: #company-profile-extended */

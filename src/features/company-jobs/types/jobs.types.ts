@@ -146,12 +146,26 @@ export interface DeleteRuleResponse {
   deleted_at: string;
 }
 
+// ─── Company Profile Sub-types ──────────────────────────────
+
+export interface CompanyTestimonial {
+  learner_name: string;
+  role: string;
+  quote: string;
+}
+
+export interface CompanyGalleryItem {
+  image_url: string;
+  caption?: string;
+  sort_order?: number;
+}
+
 // ─── Company Profile ────────────────────────────────────────
 
 export interface CompanyProfile {
   id: string;
   name: string;
-  status: string;
+  status?: string;
   logo?: string | null;
   description?: string | null;
   industry_sector?: string | null;
@@ -168,6 +182,18 @@ export interface CompanyProfile {
   // Frontend-only permission flags (not from API)
   can_edit_profile?: boolean;
   can_access_advanced_features?: boolean;
+  // Extended profile fields (new backend fields — optional for backwards compat)
+  founded_year?: number | null;
+  remote_policy?: string | null;
+  culture_text?: string | null;
+  tech_stack?: string[];
+  perks?: string[];
+  testimonials?: CompanyTestimonial[];
+  gallery?: CompanyGalleryItem[];
+  hire_count?: number;
+  alumni_count?: number;
+  avg_karma_of_hires?: number;
+  campus_events_count?: number;
 }
 
 // ─── Stepper Types ──────────────────────────────────────────

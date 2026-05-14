@@ -1,9 +1,9 @@
 import { Calendar, CheckCircle2, Shield } from "lucide-react";
 import { useUserInfo } from "@/features/auth/hooks/use-session";
-import type { MentorSession } from "../../schemas/home.schema";
+import type { MentorNextSession } from "../../schemas/home.schema";
 
 type MentorHeroCardProps = {
-  nextSession: MentorSession | null;
+  nextSession: MentorNextSession;
   isVerified: boolean;
 };
 
@@ -14,10 +14,8 @@ function getGreeting() {
   return "Good evening";
 }
 
-function formatSessionLabel(session: MentorSession): string {
-  const name =
-    session.participants.find((p) => p.participant_role !== "MENTOR")
-      ?.full_name ?? "a mentee";
+function formatSessionLabel(session: NonNullable<MentorNextSession>): string {
+  const name = session.mentee_name || "a mentee";
   const date = new Intl.DateTimeFormat("en-IN", {
     weekday: "short",
     month: "short",

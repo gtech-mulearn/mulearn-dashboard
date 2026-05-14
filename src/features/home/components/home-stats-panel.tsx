@@ -18,7 +18,7 @@ function DeltaBadge({
   );
 }
 
-type HomeStatsPanelProps = {
+export type HomeStatsPanelProps = {
   karma?: number;
   karmaDelta?: number;
   rank?: number | null;

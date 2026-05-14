@@ -8,7 +8,6 @@ import {
 } from "../hooks";
 import { EventCalendarCard } from "./event-calendar-card";
 import { HeroCard } from "./hero-card";
-import { HomeStatsPanel } from "./home-stats-panel";
 import { InterestGroupsCard } from "./interest-groups-card";
 import { KarmaEarnersCard } from "./karma-earners-card";
 import { LearningCirclesCard } from "./learning-circles-card";
@@ -39,7 +38,13 @@ export function MuLearnerHome() {
       />
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_296px]">
         <div className="space-y-5">
-          <HeroCard name={displayName} />
+          <HeroCard
+            name={displayName}
+            karma={summary?.stats.total_karma ?? 0}
+            rank={rank}
+            activeCircles={circleCount}
+            streakDays={summary?.stats.streak_days ?? 0}
+          />
           <div className="grid grid-cols-1 gap-5 md:grid-cols-[3fr_2fr]">
             <LearningCirclesCard
               userInterestGroups={userProfile?.interest_groups}
@@ -48,13 +53,7 @@ export function MuLearnerHome() {
           </div>
           <KarmaEarnersCard />
         </div>
-        <div className="space-y-5 self-start lg:sticky lg:top-5">
-          <HomeStatsPanel
-            karma={summary?.stats.total_karma ?? 0}
-            rank={rank}
-            activeCircles={circleCount}
-            streakDays={summary?.stats.streak_days ?? 0}
-          />
+        <div className="hidden space-y-5 self-start lg:sticky lg:top-5 lg:block">
           <EventCalendarCard
             events={calendarEvents}
             isLoading={loadingCalendar}

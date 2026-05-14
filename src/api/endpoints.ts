@@ -124,11 +124,16 @@ export const endpoints = {
     /** GET - Public profile by slug (AllowAny) */
     publicProfile: (slug: string) =>
       `/api/v1/dashboard/company/profile/public/${slug}/`,
+    /** GET - Public company job listings by slug (no auth) */
+    publicJobsBySlug: (slug: string) =>
+      `/api/v1/dashboard/company/profile/public/${slug}/jobs/`,
     /** GET/POST/PATCH - Admin verification queue (JWT + Admin) */
     verificationRequests: "/api/v1/dashboard/company/verification/requests/",
     /** PATCH - Admin approve/reject a company (JWT + Admin) */
     verificationAction: (companyId: string) =>
       `/api/v1/dashboard/company/verification/requests/${companyId}/`,
+    /** GET - Company home dashboard summary */
+    homeSummary: "/api/v1/dashboard/company/home-summary/",
     /** GET - List jobs for authenticated company (JWT required) */
     jobs: "/api/v1/dashboard/company/jobs/",
     /** POST - Create job (JWT required, active company only) */
@@ -165,6 +170,8 @@ export const endpoints = {
     personaSwitch: "/api/v1/dashboard/mentor/persona/switch/",
     /** GET - Available IG mentor role assignments for the user */
     personaIgRoles: "/api/v1/dashboard/mentor/persona/ig-roles/",
+    /** GET - Single-call mentor home summary */
+    homeSummary: "/api/v1/dashboard/mentor/overview/home-summary/",
   },
 
   // ============================================
@@ -879,6 +886,20 @@ export const endpoints = {
     homeSummary: "/api/v1/dashboard/home/learner/summary/",
     /** GET - Standalone streak data */
     streak: "/api/v1/dashboard/home/learner/streak/",
+  },
+
+  // ============================================
+  // Campus Dashboard Endpoints
+  // ============================================
+  campusDashboard: {
+    /** GET - Single-call campus home summary */
+    homeSummary: "/api/v1/dashboard/campus/home-summary/",
+    /** GET - Standalone member funnel */
+    memberFunnel: "/api/v1/dashboard/campus/member-funnel/",
+    /** GET - Standalone circle health */
+    circleHealth: "/api/v1/dashboard/campus/circle-health/",
+    /** GET - Standalone recent activity feed */
+    recentActivity: "/api/v1/dashboard/campus/recent-activity/",
   },
 } as const;
 

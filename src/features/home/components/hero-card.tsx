@@ -2,6 +2,7 @@ import { TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import type { HomeStatsPanelProps } from "./home-stats-panel";
 import { HomeStatsPanel } from "./home-stats-panel";
 
 function getGreeting(): string {
@@ -11,9 +12,9 @@ function getGreeting(): string {
   return "Good evening,";
 }
 
-type HeroCardProps = { name: string };
+type HeroCardProps = { name: string } & HomeStatsPanelProps;
 
-export function HeroCard({ name }: HeroCardProps) {
+export function HeroCard({ name, ...statsProps }: HeroCardProps) {
   return (
     <Card className="overflow-hidden rounded-2xl border bg-card shadow-sm">
       <div className="flex flex-col divide-y divide-border md:flex-row md:divide-x md:divide-y-0">
@@ -47,7 +48,7 @@ export function HeroCard({ name }: HeroCardProps) {
         </div>
         {/* Right: Stats */}
         <div className="w-full p-6 md:w-72 lg:w-80">
-          <HomeStatsPanel />
+          <HomeStatsPanel {...statsProps} />
         </div>
       </div>
     </Card>

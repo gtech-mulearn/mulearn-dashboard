@@ -2,10 +2,16 @@ import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
   CalendarEventsResponseSchema,
+  CampusCircleHealthResponseSchema,
+  CampusHomeSummaryResponseSchema,
+  CampusMemberFunnelResponseSchema,
+  CampusRecentActivityResponseSchema,
+  CompanyHomeSummaryResponseSchema,
   InterestGroupsListResponseSchema,
   KarmaFeedResponseSchema,
   LearnerHomeSummaryResponseSchema,
   LearnerStreakResponseSchema,
+  MentorHomeSummaryResponseSchema,
   MentorIgRolesResponseSchema,
   MentorMenteesResponseSchema,
   MentorOverviewResponseSchema,
@@ -125,6 +131,7 @@ export async function getPublicJobsCount(): Promise<number> {
 // Learner Home Summary
 // ============================================
 
+// Learner endpoints require auth — 403 intentionally triggers global redirect
 export async function getLearnerHomeSummary() {
   const response = await apiClient.get(
     endpoints.learner.homeSummary,
@@ -133,10 +140,78 @@ export async function getLearnerHomeSummary() {
   return response.response;
 }
 
+// ============================================
+// Mentor Home Summary
+// ============================================
+
+export async function getMentorHomeSummary() {
+  const response = await apiClient.get(
+    endpoints.mentor.homeSummary,
+    MentorHomeSummaryResponseSchema,
+    { skipAuthRedirectOn403: true },
+  );
+  return response.response;
+}
+
+// ============================================
+// Company Home Summary
+// ============================================
+
+export async function getCompanyHomeSummary() {
+  const response = await apiClient.get(
+    endpoints.company.homeSummary,
+    CompanyHomeSummaryResponseSchema,
+    { skipAuthRedirectOn403: true },
+  );
+  return response.response;
+}
+
+// Learner endpoints require auth — 403 intentionally triggers global redirect
 export async function getLearnerStreak() {
   const response = await apiClient.get(
     endpoints.learner.streak,
     LearnerStreakResponseSchema,
   );
   return response.response;
+}
+
+// ============================================
+// Campus Dashboard
+// ============================================
+
+export async function getCampusHomeSummary() {
+  const response = await apiClient.get(
+    endpoints.campusDashboard.homeSummary,
+    CampusHomeSummaryResponseSchema,
+    { skipAuthRedirectOn403: true },
+  );
+  return response.response;
+}
+
+export async function getCampusMemberFunnel() {
+  const response = await apiClient.get(
+    endpoints.campusDashboard.memberFunnel,
+    CampusMemberFunnelResponseSchema,
+    { skipAuthRedirectOn403: true },
+  );
+  return response.response;
+}
+
+export async function getCampusCircleHealth() {
+  const response = await apiClient.get(
+    endpoints.campusDashboard.circleHealth,
+    CampusCircleHealthResponseSchema,
+    { skipAuthRedirectOn403: true },
+  );
+  return response.response.data;
+}
+
+export async function getCampusRecentActivity(limit = 10) {
+  const url = `${endpoints.campusDashboard.recentActivity}?limit=${limit}`;
+  const response = await apiClient.get(
+    url,
+    CampusRecentActivityResponseSchema,
+    { skipAuthRedirectOn403: true },
+  );
+  return response.response.data;
 }

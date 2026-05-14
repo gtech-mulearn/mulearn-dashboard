@@ -39,7 +39,8 @@ export function VerificationStatusBanner({
     const rejectionReason = data?.rejection_reason;
 
     // Already verified — no banner needed
-    if (verified === true || status === "approved") return null;
+    if (verified === true || status === "approved" || status === "active")
+      return null;
 
     if (status === "rejected") {
       return (

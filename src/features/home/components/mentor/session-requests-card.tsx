@@ -4,10 +4,10 @@ import { Check, Inbox, X } from "lucide-react";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { MentorSession } from "../../schemas/home.schema";
+import type { MentorSessionPartial } from "../../schemas/home.schema";
 
 type Props = {
-  sessions: MentorSession[];
+  sessions: MentorSessionPartial[];
   isLoading: boolean;
 };
 
@@ -69,8 +69,8 @@ export function SessionRequestsCard({ sessions, isLoading }: Props) {
           </p>
         ) : (
           <div className="space-y-0">
-            {visible.map((req) => {
-              const mentee = req.participants.find(
+            {visible.map((req, idx) => {
+              const mentee = req.participants?.find(
                 (p) => p.participant_role !== "MENTOR",
               );
               const color = avatarColor(mentee?.user_id ?? req.id);

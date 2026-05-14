@@ -2,10 +2,16 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchStudentLeaderboard } from "@/features/leaderboard/api/leaderboard.api";
 import {
   getCalendarEvents,
+  getCampusCircleHealth,
+  getCampusHomeSummary,
+  getCampusMemberFunnel,
+  getCampusRecentActivity,
+  getCompanyHomeSummary,
   getInterestGroupsList,
   getKarmaFeed,
   getLearnerHomeSummary,
   getLearnerStreak,
+  getMentorHomeSummary,
   getMentorIgRoles,
   getMentorMentees,
   getMentorOverview,
@@ -118,6 +124,15 @@ export function usePublicJobsCount() {
   });
 }
 
+export function useMentorHomeSummary() {
+  return useQuery({
+    queryKey: homeKeys.mentorHomeSummary(),
+    queryFn: getMentorHomeSummary,
+    staleTime: HOME_STALE_TIME,
+    retry: no403Retry,
+  });
+}
+
 export function useLearnerHomeSummary() {
   return useQuery({
     queryKey: homeKeys.learnerHomeSummary(),
@@ -126,10 +141,55 @@ export function useLearnerHomeSummary() {
   });
 }
 
+export function useCompanyHomeSummary() {
+  return useQuery({
+    queryKey: homeKeys.companyHomeSummary(),
+    queryFn: getCompanyHomeSummary,
+    staleTime: HOME_STALE_TIME,
+    retry: no403Retry,
+  });
+}
+
 export function useLearnerStreak() {
   return useQuery({
     queryKey: homeKeys.learnerStreak(),
     queryFn: getLearnerStreak,
     staleTime: HOME_STALE_TIME,
+  });
+}
+
+export function useCampusHomeSummary() {
+  return useQuery({
+    queryKey: homeKeys.campusHomeSummary(),
+    queryFn: getCampusHomeSummary,
+    staleTime: HOME_STALE_TIME,
+    retry: no403Retry,
+  });
+}
+
+export function useCampusMemberFunnel() {
+  return useQuery({
+    queryKey: homeKeys.campusMemberFunnel(),
+    queryFn: getCampusMemberFunnel,
+    staleTime: HOME_STALE_TIME,
+    retry: no403Retry,
+  });
+}
+
+export function useCampusCircleHealth() {
+  return useQuery({
+    queryKey: homeKeys.campusCircleHealth(),
+    queryFn: getCampusCircleHealth,
+    staleTime: HOME_STALE_TIME,
+    retry: no403Retry,
+  });
+}
+
+export function useCampusRecentActivity() {
+  return useQuery({
+    queryKey: homeKeys.campusRecentActivity(),
+    queryFn: () => getCampusRecentActivity(),
+    staleTime: 2 * 60 * 1000,
+    retry: no403Retry,
   });
 }

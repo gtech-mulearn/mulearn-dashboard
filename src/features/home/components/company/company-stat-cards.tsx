@@ -1,12 +1,13 @@
-import { Briefcase, Globe, Users } from "lucide-react";
+import { Briefcase, CheckCircle2, Users } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { CompanyQuickStats } from "../../schemas/home.schema";
 
 type Props = {
-  jobsPosted: number;
+  quickStats?: CompanyQuickStats;
   isLoading: boolean;
 };
 
-export function CompanyStatCards({ jobsPosted, isLoading }: Props) {
+export function CompanyStatCards({ quickStats, isLoading }: Props) {
   const cards = [
     {
       key: "jobsPosted",
@@ -14,29 +15,26 @@ export function CompanyStatCards({ jobsPosted, isLoading }: Props) {
       icon: Briefcase,
       iconColor: "text-primary",
       iconBg: "bg-primary/10",
-      value: jobsPosted.toString(),
+      value: quickStats?.jobs_posted.toString() ?? "—",
       subLabel: "active listings",
-      isDynamic: true,
     },
     {
-      key: "talentPool",
-      label: "TALENT POOL",
-      icon: Globe,
+      key: "applications",
+      label: "APPLICATIONS",
+      icon: CheckCircle2,
       iconColor: "text-success",
       iconBg: "bg-success/10",
-      value: "MuLearn",
-      subLabel: "verified learners",
-      isDynamic: false,
+      value: quickStats?.applications.toString() ?? "—",
+      subLabel: "total received",
     },
     {
-      key: "network",
-      label: "NETWORK",
+      key: "hired",
+      label: "HIRED",
       icon: Users,
       iconColor: "text-brand-purple",
       iconBg: "bg-brand-purple/10",
-      value: "Kerala",
-      subLabel: "region coverage",
-      isDynamic: false,
+      value: quickStats?.hired.toString() ?? "—",
+      subLabel: "via muLearn",
     },
   ];
 
@@ -54,7 +52,7 @@ export function CompanyStatCards({ jobsPosted, isLoading }: Props) {
             >
               <Icon className={`size-5 ${card.iconColor}`} />
             </div>
-            {isLoading && card.isDynamic ? (
+            {isLoading ? (
               <>
                 <Skeleton className="mb-1.5 h-8 w-16 rounded-md" />
                 <Skeleton className="h-3.5 w-24 rounded-md" />

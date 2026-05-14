@@ -1,17 +1,15 @@
 import { CheckCircle2, Clock, ListChecks, Users } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { MentorStatCard } from "../../schemas/home.schema";
 
-type MentorStatCardsProps = {
-  totalMentees: number;
-  hoursMentored: number;
-  sessionsConducted: number;
-  pendingApprovals: number;
+type Props = {
+  statCards: MentorStatCard[];
   isLoading: boolean;
 };
 
 const CARDS = [
   {
-    key: "totalMentees" as const,
+    key: "active_mentees",
     label: "ACTIVE MENTEES",
     icon: Users,
     iconColor: "text-primary",
@@ -19,7 +17,7 @@ const CARDS = [
     subLabel: "mentees total",
   },
   {
-    key: "hoursMentored" as const,
+    key: "volunteer_hours",
     label: "HOURS MENTORED",
     icon: Clock,
     iconColor: "text-success",
@@ -27,7 +25,7 @@ const CARDS = [
     subLabel: "volunteer hours",
   },
   {
-    key: "sessionsConducted" as const,
+    key: "sessions_conducted",
     label: "SESSIONS DONE",
     icon: CheckCircle2,
     iconColor: "text-brand-purple",
@@ -35,7 +33,7 @@ const CARDS = [
     subLabel: "all time",
   },
   {
-    key: "pendingApprovals" as const,
+    key: "pending_task_approvals",
     label: "PENDING APPROVALS",
     icon: ListChecks,
     iconColor: "text-warning",
@@ -44,19 +42,10 @@ const CARDS = [
   },
 ] as const;
 
-export function MentorStatCards({
-  totalMentees,
-  hoursMentored,
-  sessionsConducted,
-  pendingApprovals,
-  isLoading,
-}: MentorStatCardsProps) {
-  const values: Record<(typeof CARDS)[number]["key"], number> = {
-    totalMentees,
-    hoursMentored,
-    sessionsConducted,
-    pendingApprovals,
-  };
+export function MentorStatCards({ statCards, isLoading }: Props) {
+  function get(key: (typeof CARDS)[number]["key"]): number {
+    return statCards.find((c) => c.key === key)?.value ?? 0;
+  }
 
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -80,7 +69,7 @@ export function MentorStatCards({
             ) : (
               <>
                 <p className="text-3xl font-bold tracking-tight text-foreground">
-                  {values[card.key]}
+                  {get(card.key)}
                 </p>
                 <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
                   {card.label}

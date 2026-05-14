@@ -2,10 +2,10 @@ import { CalendarClock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import type { MentorSession } from "../../schemas/home.schema";
+import type { MentorSessionPartial } from "../../schemas/home.schema";
 
 type Props = {
-  sessions: MentorSession[];
+  sessions: MentorSessionPartial[];
   isLoading: boolean;
 };
 
@@ -71,12 +71,13 @@ export function UpcomingSessionsCard({ sessions, isLoading }: Props) {
           </p>
         ) : (
           <div className="space-y-0">
-            {sessions.map((session) => {
-              const mentee = session.participants.find(
+            {sessions.map((session, idx) => {
+              const mentee = session.participants?.find(
                 (p) => p.participant_role !== "MENTOR",
               );
               const { date, time } = formatDateTime(session.starts_at);
               const color = avatarColor(mentee?.user_id ?? session.id);
+              const status = session.status;
               return (
                 <div
                   key={session.id}
@@ -105,12 +106,10 @@ export function UpcomingSessionsCard({ sessions, isLoading }: Props) {
                   <span
                     className={cn(
                       "shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold",
-                      STATUS_STYLES[session.status] ??
-                        "bg-muted text-muted-foreground",
+                      STATUS_STYLES[status] ?? "bg-muted text-muted-foreground",
                     )}
                   >
-                    {session.status.charAt(0) +
-                      session.status.slice(1).toLowerCase()}
+                    {status.charAt(0) + status.slice(1).toLowerCase()}
                   </span>
                 </div>
               );

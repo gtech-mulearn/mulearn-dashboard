@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  useMentorMentees,
-  useMentorOverview,
-  useMentorSessions,
-} from "../hooks";
+import { useMentorHomeSummary } from "../hooks";
 import { AvailabilityCard } from "./mentor/availability-card";
 import { MenteeProgressCard } from "./mentor/mentee-progress-card";
 import { MentorHeroCard } from "./mentor/mentor-hero-card";
@@ -14,22 +10,13 @@ import { SessionRequestsCard } from "./mentor/session-requests-card";
 import { UpcomingSessionsCard } from "./mentor/upcoming-sessions-card";
 
 export function MentorHome() {
-  const {
-    data: overview,
-    isLoading: overviewLoading,
-    error: overviewError,
-  } = useMentorOverview();
-  const { data: scheduledSessions = [], isLoading: sessionsLoading } =
-    useMentorSessions("SCHEDULED");
-  const { data: pendingSessions = [], isLoading: pendingLoading } =
-    useMentorSessions("PENDING");
-  const { data: mentees = [], isLoading: menteesLoading } = useMentorMentees();
+  const { data: summary, isLoading, error } = useMentorHomeSummary();
 
   // 403 = mentor persona not configured
   const is403 =
-    overviewError instanceof Error &&
-    "status" in overviewError &&
-    (overviewError as { status: number }).status === 403;
+    error instanceof Error &&
+    "status" in error &&
+    (error as { status: number }).status === 403;
 
   if (is403) {
     return <MentorSetupPrompt />;
@@ -38,32 +25,33 @@ export function MentorHome() {
   return (
     <div className="space-y-5">
       <MentorHeroCard
-        nextSession={scheduledSessions[0] ?? null}
-        isVerified={overview?.mentor_profile.is_verified ?? false}
+        nextSession={summary?.next_session ?? null}
+        // Verification status not exposed by home-summary endpoint; hardcoded until backend adds it
+        isVerified={false}
       />
       <MentorStatCards
-        totalMentees={overview?.stats.total_mentees ?? 0}
-        hoursMentored={overview?.stats.volunteer_hours ?? 0}
-        sessionsConducted={overview?.stats.sessions_conducted ?? 0}
-        pendingApprovals={overview?.stats.pending_task_approvals ?? 0}
-        isLoading={overviewLoading}
+        statCards={summary?.stat_cards ?? []}
+        isLoading={isLoading}
       />
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <UpcomingSessionsCard
-          sessions={scheduledSessions}
-          isLoading={sessionsLoading}
+          sessions={summary?.upcoming_sessions ?? []}
+          isLoading={isLoading}
         />
         <SessionRequestsCard
-          sessions={pendingSessions}
-          isLoading={pendingLoading}
+          sessions={summary?.session_requests ?? []}
+          isLoading={isLoading}
         />
       </div>
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[3fr_2fr]">
-        <MenteeProgressCard mentees={mentees} isLoading={menteesLoading} />
-        {/* <AvailabilityCard
-          expertise={overview?.mentor_profile.expertise ?? []}
-          isLoading={overviewLoading}
-        /> */}
+        <MenteeProgressCard
+          mentees={summary?.mentee_progress ?? []}
+          isLoading={isLoading}
+        />
+        <AvailabilityCard
+          expertise={summary?.expertise_tags ?? []}
+          isLoading={isLoading}
+        />
       </div>
     </div>
   );
