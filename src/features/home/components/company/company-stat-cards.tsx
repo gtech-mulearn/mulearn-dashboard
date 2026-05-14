@@ -1,48 +1,49 @@
-import { Award, Eye, Globe, Users } from "lucide-react";
-import { MOCK_COMPANY_STAT_CARDS } from "../../constants/mock-company";
+import { Briefcase, Globe, Users } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const CARDS = [
-  {
-    key: "jobViews" as const,
-    label: "JOB VIEWS",
-    icon: Eye,
-    iconColor: "text-primary",
-    iconBg: "bg-primary/10",
-  },
-  {
-    key: "applications" as const,
-    label: "APPLICATIONS",
-    icon: Users,
-    iconColor: "text-brand-purple",
-    iconBg: "bg-brand-purple/10",
-  },
-  {
-    key: "talentPool" as const,
-    label: "TALENT POOL",
-    icon: Globe,
-    iconColor: "text-success",
-    iconBg: "bg-success/10",
-  },
-  {
-    key: "avgKarma" as const,
-    label: "AVG KARMA",
-    icon: Award,
-    iconColor: "text-warning",
-    iconBg: "bg-warning/10",
-  },
-] as const;
+type Props = {
+  jobsPosted: number;
+  isLoading: boolean;
+};
 
-const DELTA_STYLES = {
-  emerald: "bg-success/15 text-success",
-  blue: "bg-brand-blue/15 text-brand-blue",
-} as const;
+export function CompanyStatCards({ jobsPosted, isLoading }: Props) {
+  const cards = [
+    {
+      key: "jobsPosted",
+      label: "JOBS POSTED",
+      icon: Briefcase,
+      iconColor: "text-primary",
+      iconBg: "bg-primary/10",
+      value: jobsPosted.toString(),
+      subLabel: "active listings",
+      isDynamic: true,
+    },
+    {
+      key: "talentPool",
+      label: "TALENT POOL",
+      icon: Globe,
+      iconColor: "text-success",
+      iconBg: "bg-success/10",
+      value: "MuLearn",
+      subLabel: "verified learners",
+      isDynamic: false,
+    },
+    {
+      key: "network",
+      label: "NETWORK",
+      icon: Users,
+      iconColor: "text-brand-purple",
+      iconBg: "bg-brand-purple/10",
+      value: "Kerala",
+      subLabel: "region coverage",
+      isDynamic: false,
+    },
+  ];
 
-export function CompanyStatCards() {
   return (
-    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-      {CARDS.map((card) => {
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+      {cards.map((card) => {
         const Icon = card.icon;
-        const data = MOCK_COMPANY_STAT_CARDS[card.key];
         return (
           <div
             key={card.key}
@@ -53,17 +54,24 @@ export function CompanyStatCards() {
             >
               <Icon className={`size-5 ${card.iconColor}`} />
             </div>
-            <p className="text-3xl font-bold tracking-tight text-foreground">
-              {data.value}
-            </p>
-            <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-              {card.label}
-            </p>
-            <p
-              className={`mt-2.5 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${DELTA_STYLES[data.deltaColor]}`}
-            >
-              {data.delta}
-            </p>
+            {isLoading && card.isDynamic ? (
+              <>
+                <Skeleton className="mb-1.5 h-8 w-16 rounded-md" />
+                <Skeleton className="h-3.5 w-24 rounded-md" />
+              </>
+            ) : (
+              <>
+                <p className="text-3xl font-bold tracking-tight text-foreground">
+                  {card.value}
+                </p>
+                <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  {card.label}
+                </p>
+                <p className="mt-2.5 text-xs text-muted-foreground">
+                  {card.subLabel}
+                </p>
+              </>
+            )}
           </div>
         );
       })}

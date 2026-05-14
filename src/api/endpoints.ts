@@ -163,6 +163,8 @@ export const endpoints = {
     mentees: "/api/v1/dashboard/mentor/mentees/",
     /** POST - Switch mentor persona (active IG) */
     personaSwitch: "/api/v1/dashboard/mentor/persona/switch/",
+    /** GET - Available IG mentor role assignments for the user */
+    personaIgRoles: "/api/v1/dashboard/mentor/persona/ig-roles/",
   },
 
   // ============================================

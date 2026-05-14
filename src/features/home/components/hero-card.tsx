@@ -2,7 +2,6 @@ import { TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { MOCK_NEXT_MEETING, MOCK_STATS } from "../constants/mock-stats";
 import { HomeStatsPanel } from "./home-stats-panel";
 
 function getGreeting(): string {
@@ -15,8 +14,6 @@ function getGreeting(): string {
 type HeroCardProps = { name: string };
 
 export function HeroCard({ name }: HeroCardProps) {
-  const { karma } = MOCK_STATS;
-  const { circleName, dateLabel } = MOCK_NEXT_MEETING;
   return (
     <Card className="overflow-hidden rounded-2xl border bg-card shadow-sm">
       <div className="flex flex-col divide-y divide-border md:flex-row md:divide-x md:divide-y-0">
@@ -33,19 +30,7 @@ export function HeroCard({ name }: HeroCardProps) {
               {getGreeting()} <span className="text-primary">{name}.</span>
             </h1>
             <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
-              You&apos;ve earned{" "}
-              <strong className="font-semibold text-foreground">
-                {karma.thisWeek} karma
-              </strong>{" "}
-              this week. Your{" "}
-              <strong className="font-semibold text-foreground">
-                {circleName}
-              </strong>{" "}
-              meets{" "}
-              <strong className="font-semibold text-foreground">
-                {dateLabel}
-              </strong>
-              .
+              Keep learning and earning karma to level up your profile.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">

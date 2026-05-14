@@ -115,10 +115,3 @@ export const MOCK_RECENT_ACTIVITY: ActivityItem[] = [
     timeAgo: "2d ago",
   },
 ];
-
-export const MOCK_CAMPUS_STAT_DELTAS = {
-  activeMembers: { pct: 18, label: "+18% this month" },
-  campusKarma: { abs: 12000, label: "+12k this week" },
-  activeCircles: { abs: 2, label: "+2 new circles" },
-  campusRank: { from: 5, label: "↑ from #5 last month" },
-} as const;

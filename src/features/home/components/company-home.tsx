@@ -2,7 +2,10 @@
 
 import { useCompanyOnboardingStatus } from "@/features/auth/hooks";
 import { useUserInfo } from "@/features/auth/hooks/use-session";
+import { useCompanyProfile } from "@/features/company-jobs/hooks/use-company-profile";
+import { useJobs } from "@/features/company-jobs/hooks/use-jobs";
 import { ROLES } from "@/lib/auth";
+import { useInterestGroupsList } from "../hooks";
 import { ActiveJobListingsCard } from "./company/active-job-listings-card";
 import { CompanyHeroCard } from "./company/company-hero-card";
 import { CompanyStatCards } from "./company/company-stat-cards";
@@ -13,22 +16,29 @@ export function CompanyHome() {
   const { data: userInfo } = useUserInfo();
   const isCompany = userInfo?.roles?.includes(ROLES.COMPANY) ?? false;
   const { data: companyStatus } = useCompanyOnboardingStatus(isCompany);
+  const { profile, isLoading: profileLoading } = useCompanyProfile();
+  const { data: jobsData, isLoading: jobsLoading } = useJobs({ perPage: 100 });
+  const { data: interestGroups = [], isLoading: igsLoading } =
+    useInterestGroupsList();
+
+  // Pagination.count holds the total number of jobs
+  const jobsPosted = jobsData?.pagination?.count ?? 0;
+  const companyName = profile?.name ?? undefined;
 
   return (
     <div className="space-y-5">
-      {/* Verified banner — only shown when company is approved */}
-      <CompanyVerifiedBanner status={companyStatus} />
-
-      {/* Hero */}
-      <CompanyHeroCard />
-
-      {/* 4 stat cards */}
-      <CompanyStatCards />
-
-      {/* Bottom: Job listings | Talent pool */}
+      <CompanyVerifiedBanner status={companyStatus} companyName={companyName} />
+      <CompanyHeroCard
+        jobsPosted={jobsPosted}
+        isLoading={jobsLoading || profileLoading}
+      />
+      <CompanyStatCards jobsPosted={jobsPosted} isLoading={jobsLoading} />
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_296px]">
         <ActiveJobListingsCard />
-        <TalentPoolCard />
+        <TalentPoolCard
+          interestGroups={interestGroups}
+          igsLoading={igsLoading}
+        />
       </div>
     </div>
   );

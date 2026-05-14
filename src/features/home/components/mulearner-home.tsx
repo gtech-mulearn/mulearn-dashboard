@@ -1,7 +1,11 @@
 "use client";
 
 import { useUserInfo, useUserProfile } from "@/features/auth/hooks/use-session";
-import { useCalendarEvents, useInterestGroupsList } from "../hooks";
+import {
+  useCalendarEvents,
+  useInterestGroupsList,
+  usePublicJobsCount,
+} from "../hooks";
 import { EventCalendarCard } from "./event-calendar-card";
 import { HeroCard } from "./hero-card";
 import { InterestGroupsCard } from "./interest-groups-card";
@@ -16,18 +20,23 @@ export function MuLearnerHome() {
     useInterestGroupsList();
   const { data: calendarEvents, isLoading: loadingCalendar } =
     useCalendarEvents();
+  const { data: jobCount = 0 } = usePublicJobsCount();
 
   const displayName = userInfo?.full_name?.split(" ")[0] ?? "Learner";
   const groups = interestGroups ?? [];
+  const rank: number | null = userProfile?.rank ?? null;
+
+  // UserProfile has no learning_circles field; default to 0 until backend exposes it
+  const circleCount = 0;
 
   return (
     <div className="space-y-5">
-      {/* Row 1: Quick action strip */}
-      <QuickActionRow />
-
-      {/* Row 2+: Main content + calendar */}
+      <QuickActionRow
+        circleCount={circleCount}
+        rank={rank}
+        jobCount={jobCount}
+      />
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_296px]">
-        {/* Left column */}
         <div className="space-y-5">
           <HeroCard name={displayName} />
           <div className="grid grid-cols-1 gap-5 md:grid-cols-[3fr_2fr]">
@@ -38,7 +47,6 @@ export function MuLearnerHome() {
           </div>
           <KarmaEarnersCard />
         </div>
-        {/* Right column: Calendar — self-start prevents stretching to left-column height */}
         <div className="hidden self-start lg:sticky lg:top-5 lg:block">
           <EventCalendarCard
             events={calendarEvents}

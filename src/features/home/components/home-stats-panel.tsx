@@ -1,5 +1,4 @@
 import { Flame } from "lucide-react";
-import { MOCK_STATS } from "../constants/mock-stats";
 
 function DeltaBadge({
   value,
@@ -19,45 +18,65 @@ function DeltaBadge({
   );
 }
 
-export function HomeStatsPanel() {
-  const { karma, rank, activeCircles, streak } = MOCK_STATS;
+type HomeStatsPanelProps = {
+  karma?: number;
+  karmaDelta?: number;
+  rank?: number | null;
+  rankDelta?: number;
+  activeCircles?: number;
+  circlesDelta?: number;
+  streakDays?: number;
+};
+
+export function HomeStatsPanel({
+  karma = 0,
+  karmaDelta = 0,
+  rank = null,
+  rankDelta = 0,
+  activeCircles = 0,
+  circlesDelta = 0,
+  streakDays = 0,
+}: HomeStatsPanelProps) {
   const rows = [
     {
       label: "Total Karma",
       value: (
         <span>
           <span className="text-xl font-bold text-foreground">
-            {karma.total.toLocaleString()}
+            {karma.toLocaleString()}
           </span>
           <span className="ml-1 text-xs text-muted-foreground">pts</span>
         </span>
       ),
-      badge: <DeltaBadge value={karma.deltaPct} />,
+      badge: karmaDelta !== 0 ? <DeltaBadge value={karmaDelta} /> : null,
     },
     {
       label: "Rank",
       value: (
         <span className="text-xl font-bold text-foreground">
-          #{rank.current}
+          {rank != null ? `#${rank}` : "—"}
         </span>
       ),
-      badge: <DeltaBadge value={rank.delta} isPositiveGood={false} />,
+      badge:
+        rankDelta !== 0 ? (
+          <DeltaBadge value={rankDelta} isPositiveGood={false} />
+        ) : null,
     },
     {
       label: "Active Circles",
       value: (
         <span className="text-xl font-bold text-foreground">
-          {activeCircles.count}
+          {activeCircles}
         </span>
       ),
-      badge: <DeltaBadge value={activeCircles.delta} />,
+      badge: circlesDelta !== 0 ? <DeltaBadge value={circlesDelta} /> : null,
     },
     {
       label: "Streak",
       value: (
         <span>
           <span className="text-xl font-bold text-foreground">
-            {streak.days}
+            {streakDays}
           </span>
           <span className="ml-1 text-xs text-muted-foreground">days</span>
         </span>

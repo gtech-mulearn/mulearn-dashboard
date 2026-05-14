@@ -299,7 +299,7 @@ export function useSendInvite(circleId: string) {
       toast.success("Invite sent successfully!");
     },
     onError: (error: ApiError) => {
-      toast.error("Failed to send invite");
+      toast.error(error.message || "Failed to send invite");
     },
   });
 }
