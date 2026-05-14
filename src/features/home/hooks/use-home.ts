@@ -1,11 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchStudentLeaderboard } from "@/features/leaderboard/api/leaderboard.api";
-import {
-  getCalendarEvents,
-  getEvents,
-  getInterestGroupsList,
-  getKarmaFeed,
-} from "../api";
+import { getCalendarEvents, getInterestGroupsList, getKarmaFeed } from "../api";
 import { homeKeys } from "./query-keys";
 
 const HOME_STALE_TIME = 5 * 60 * 1000;
@@ -22,14 +17,6 @@ export function useKarmaFeed() {
   return useQuery({
     queryKey: homeKeys.karmaFeed(),
     queryFn: getKarmaFeed,
-    staleTime: HOME_STALE_TIME,
-  });
-}
-
-export function useEvents() {
-  return useQuery({
-    queryKey: homeKeys.events(),
-    queryFn: getEvents,
     staleTime: HOME_STALE_TIME,
   });
 }

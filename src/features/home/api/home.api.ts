@@ -2,17 +2,18 @@ import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
   CalendarEventsResponseSchema,
-  EventRowSchema,
-  EventsSchema,
   InterestGroupsListResponseSchema,
   KarmaFeedResponseSchema,
+  MentorMenteesResponseSchema,
+  MentorOverviewResponseSchema,
+  MentorSessionsResponseSchema,
+  PublicJobsResponseSchema,
 } from "../schemas";
 
 // ============================================
 // Interest Groups
 // ============================================
 
-/** Get list of all interest groups */
 export async function getInterestGroupsList() {
   const response = await apiClient.get(
     endpoints.dashboard.interestGroups,
@@ -25,7 +26,6 @@ export async function getInterestGroupsList() {
 // Karma Feed
 // ============================================
 
-/** Get dashboard karma feed */
 export async function getKarmaFeed() {
   const response = await apiClient.get(
     endpoints.dashboard.karmaFeed,
@@ -35,56 +35,59 @@ export async function getKarmaFeed() {
 }
 
 // ============================================
-// Events (OpenSheet)
-// ============================================
-
-export async function getEvents() {
-  try {
-    const res = await fetch(endpoints.dashboard.events);
-
-    if (!res.ok) {
-      throw new Error(`Failed to fetch events: ${res.statusText}`);
-    }
-
-    const raw = await res.json();
-
-    // Validate raw rows
-    const rows = EventRowSchema.array().safeParse(raw);
-
-    if (!rows.success) {
-      console.error("Invalid events data structure", rows.error);
-      return [];
-    }
-
-    // Map to UI shape and validate
-    const mapped = rows.data
-      .map((event) => ({
-        name: event.Name || "No Name",
-        description: event.Description || "No Description",
-        poster: event.Poster || "",
-        link: event.Links || "#",
-        date: event.Date || "No Date",
-        status: event.Status || "",
-      }))
-      .filter((event) => event.status !== "Expired");
-
-    return EventsSchema.parse(mapped);
-  } catch (error) {
-    console.error("Error fetching events:", error);
-    // Return empty array as fallback instead of Crashing
-    return [];
-  }
-}
-
-// ============================================
 // Calendar Events
 // ============================================
 
-/** Get calendar events for dashboard */
 export async function getCalendarEvents() {
   const response = await apiClient.get(
     endpoints.dashboard.calendarEvents,
     CalendarEventsResponseSchema,
   );
   return response.response.events;
+}
+
+// ============================================
+// Mentor Overview
+// ============================================
+
+export async function getMentorOverview() {
+  const response = await apiClient.get(
+    endpoints.mentor.overview,
+    MentorOverviewResponseSchema,
+  );
+  return response.response;
+}
+
+// ============================================
+// Mentor Sessions
+// ============================================
+
+export async function getMentorSessions(status = "SCHEDULED") {
+  const url = `${endpoints.mentor.sessions}?status=${status}`;
+  const response = await apiClient.get(url, MentorSessionsResponseSchema);
+  return response.response.data;
+}
+
+// ============================================
+// Mentor Mentees
+// ============================================
+
+export async function getMentorMentees() {
+  const response = await apiClient.get(
+    endpoints.mentor.mentees,
+    MentorMenteesResponseSchema,
+  );
+  return response.response.data;
+}
+
+// ============================================
+// Public Jobs Count (for QuickActionRow)
+// ============================================
+
+export async function getPublicJobsCount(): Promise<number> {
+  const response = await apiClient.get(
+    endpoints.public.jobs,
+    PublicJobsResponseSchema,
+  );
+  return response.response.pagination.totalCount;
 }
