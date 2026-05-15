@@ -21,12 +21,12 @@ import { Blank } from "@/components/dashboard/table/Blank";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table, { type Data } from "@/components/dashboard/table/Table";
 import TableTop from "@/components/dashboard/table/TableTop";
-import THead from "@/components/dashboard/table/Thead";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import THead from "../../../components/dashboard/table/Thead";
 import {
   useDistrictCollegeDetails,
   useDistrictDetails,
@@ -173,10 +173,32 @@ export function DistrictDashboard() {
   const collegeTotalCount = collegeDetails?.pagination?.count ?? 0;
 
   const sortedStudentLevels = useMemo(() => {
-    return [...studentLevels].sort(
+    // Group by level_order to deduplicate and sum students_count
+    const grouped = studentLevels.reduce(
+      (acc, item) => {
+        const existing = acc.find((x) => x.level_order === item.level_order);
+        if (existing) {
+          existing.students_count += item.students_count;
+        } else {
+          acc.push({ ...item });
+        }
+        return acc;
+      },
+      [] as typeof studentLevels,
+    );
+
+    // Sort by level_order
+    return grouped.sort(
       (a, b) => Number(a.level_order) - Number(b.level_order),
     );
   }, [studentLevels]);
+
+  const hasValidStudentLevelData = useMemo(() => {
+    return (
+      sortedStudentLevels.length > 0 &&
+      sortedStudentLevels.some((item) => item.students_count > 0)
+    );
+  }, [sortedStudentLevels]);
 
   const handleStudentSort = (column: string) => {
     setStudentPage(1);
@@ -303,7 +325,7 @@ export function DistrictDashboard() {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={topCampus}
-                    margin={{ top: 20, right: 0, left: -20, bottom: 0 }}
+                    margin={{ top: 20, right: 20, left: 0, bottom: 0 }}
                   >
                     <XAxis
                       dataKey="campus_code"
@@ -320,7 +342,7 @@ export function DistrictDashboard() {
                       tickFormatter={(value) => numberFormatter.format(value)}
                     />
                     <Tooltip
-                      cursor={{ fill: "var(--color-muted)", opacity: 0.2 }}
+                      cursor={{ fill: "var(--color-muted)", opacity: 0.4 }}
                       contentStyle={{
                         borderRadius: "8px",
                         border: "1px solid var(--color-border)",
@@ -337,7 +359,6 @@ export function DistrictDashboard() {
                       name="Karma"
                       fill="var(--color-primary)"
                       radius={[4, 4, 0, 0]}
-                      maxBarSize={48}
                     />
                   </BarChart>
                 </ResponsiveContainer>
@@ -366,7 +387,7 @@ export function DistrictDashboard() {
                   <Skeleton key={key} className="h-10 w-full rounded-xl" />
                 ))}
               </div>
-            ) : sortedStudentLevels.length ? (
+            ) : hasValidStudentLevelData ? (
               <div className="h-[350px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
@@ -389,7 +410,7 @@ export function DistrictDashboard() {
                       tickFormatter={(value) => numberFormatter.format(value)}
                     />
                     <Tooltip
-                      cursor={{ fill: "var(--color-muted)", opacity: 0.2 }}
+                      cursor={{ fill: "var(--color-muted)", opacity: 0.4 }}
                       contentStyle={{
                         borderRadius: "8px",
                         border: "1px solid var(--color-border)",
@@ -478,6 +499,7 @@ export function DistrictDashboard() {
                 columnOrder={studentColumns}
                 onIconClick={handleStudentSort}
                 action={false}
+                currentSort={studentSort}
               />
 
               {!isStudentDetailsLoading && (
@@ -547,6 +569,7 @@ export function DistrictDashboard() {
                 columnOrder={collegeColumns}
                 onIconClick={handleCollegeSort}
                 action={false}
+                currentSort={collegeSort}
               />
 
               {!isCollegeDetailsLoading && (

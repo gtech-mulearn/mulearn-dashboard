@@ -1,4 +1,5 @@
-import { FaSort } from "react-icons/fa";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import type { FC } from "react";
 
 type Column = {
   column: string;
@@ -14,16 +15,40 @@ interface TableHeadProps {
   verify?: boolean;
   thClassName?: string;
   slNoClassName?: string;
+  currentSort?: string;
 }
 
-const THead = ({
+const THead: FC<TableHeadProps> = ({
   columnOrder,
   onIconClick,
   action,
   verify = false,
   thClassName = "",
   slNoClassName = "w-16",
-}: TableHeadProps) => {
+  currentSort = "",
+}) => {
+  const getSortIcon = (columnName: string) => {
+    const isDescending = currentSort.startsWith("-");
+    const sortedColumn = isDescending ? currentSort.slice(1) : currentSort;
+
+    const isThisColumnSorted = sortedColumn === columnName;
+
+    const baseClass = "h-4 w-4 transition-opacity";
+
+    if (isThisColumnSorted) {
+      return isDescending ? (
+        <ChevronDown className={`${baseClass} text-primary opacity-100`} />
+      ) : (
+        <ChevronUp className={`${baseClass} text-primary opacity-100`} />
+      );
+    }
+
+    // Not sorted: icon hidden by default, visible on hover via group
+    return (
+      <ChevronUp className={`${baseClass} opacity-0 group-hover:opacity-40`} />
+    );
+  };
+
   return (
     <thead>
       <tr>
@@ -43,9 +68,10 @@ const THead = ({
                 <button
                   type="button"
                   onClick={() => onIconClick(column.column)}
-                  className="text-muted-foreground hover:text-foreground"
+                  className="group inline-flex items-center justify-center p-1 rounded hover:bg-muted transition-colors"
+                  title={`Sort by ${column.Label}`}
                 >
-                  <FaSort className="text-[12px]" />
+                  {getSortIcon(column.column)}
                 </button>
               )}
             </div>
