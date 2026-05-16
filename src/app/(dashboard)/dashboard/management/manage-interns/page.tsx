@@ -15,6 +15,9 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import Pagination from "@/components/dashboard/table/pagination";
+import Table from "@/components/dashboard/table/Table";
+import TableTop from "@/components/dashboard/table/TableTop";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,9 +34,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import Table from "@/components/dashboard/table/Table";
-import TableTop from "@/components/dashboard/table/TableTop";
-import Pagination from "@/components/dashboard/table/pagination";
 
 // Mock Data for Admin Overview
 const MOCK_STATS = {

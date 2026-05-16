@@ -2,18 +2,19 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  Loader2,
+  CheckCircle2,
   Gem,
+  Loader2,
+  ShieldAlert,
   Sparkles,
   Target,
   Zap,
-  ShieldAlert,
-  CheckCircle2,
 } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -42,7 +43,6 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useUserInfo } from "@/features/auth";
 import { type WeeklyReviewFormValues, weeklyReviewSchema } from "../schemas";
-import { Badge } from "@/components/ui/badge";
 
 const DEFAULT_TEAMS = [
   "Web Dev",
