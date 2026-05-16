@@ -173,7 +173,22 @@ export function DistrictDashboard() {
   const collegeTotalCount = collegeDetails?.pagination?.count ?? 0;
 
   const sortedStudentLevels = useMemo(() => {
-    return [...studentLevels].sort(
+    // Group by level_order to deduplicate and sum students_count
+    const grouped = studentLevels.reduce<Array<(typeof studentLevels)[number]>>(
+      (acc, item) => {
+        const existing = acc.find((x) => x.level_order === item.level_order);
+        if (existing) {
+          existing.students_count += item.students_count;
+          return acc;
+        }
+
+        acc.push({ ...item });
+        return acc;
+      },
+      [],
+    );
+
+    return grouped.sort(
       (a, b) => Number(a.level_order) - Number(b.level_order),
     );
   }, [studentLevels]);
@@ -303,7 +318,7 @@ export function DistrictDashboard() {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={topCampus}
-                    margin={{ top: 20, right: 0, left: -20, bottom: 0 }}
+                    margin={{ top: 20, right: 0, left: 8, bottom: 0 }}
                   >
                     <XAxis
                       dataKey="campus_code"
@@ -315,6 +330,8 @@ export function DistrictDashboard() {
                     <YAxis
                       axisLine={false}
                       tickLine={false}
+                      width={76}
+                      tickMargin={8}
                       fontSize={12}
                       tick={{ fill: "var(--color-muted-foreground)" }}
                       tickFormatter={(value) => numberFormatter.format(value)}
@@ -371,7 +388,7 @@ export function DistrictDashboard() {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={sortedStudentLevels}
-                    margin={{ top: 20, right: 0, left: -20, bottom: 0 }}
+                    margin={{ top: 20, right: 0, left: 8, bottom: 0 }}
                   >
                     <XAxis
                       dataKey="level_order"
@@ -384,6 +401,8 @@ export function DistrictDashboard() {
                     <YAxis
                       axisLine={false}
                       tickLine={false}
+                      width={76}
+                      tickMargin={8}
                       fontSize={12}
                       tick={{ fill: "var(--color-muted-foreground)" }}
                       tickFormatter={(value) => numberFormatter.format(value)}
