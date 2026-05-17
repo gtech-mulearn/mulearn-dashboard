@@ -106,27 +106,25 @@ export function PathwayQuiz({
         <div className="text-6xl">🎉</div>
 
         <div className="space-y-3">
-          <h1 className="text-3xl font-bold text-foreground">
+          <h1 className="text-3xl font-bold text-slate-900">
             Welcome to the
             <br />
             community!
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-slate-600">
             You're officially one of us. Let's build something amazing together.
           </p>
         </div>
 
         {/* Recommended pathways */}
         <div className="w-full space-y-3">
-          <p className="text-sm text-muted-foreground">
-            Your recommended paths:
-          </p>
+          <p className="text-sm text-slate-600">Your recommended paths:</p>
           {recommended.map((pathway) => (
             <div
               key={pathway}
               className="rounded-2xl border border-border bg-card p-4 shadow-sm"
             >
-              <h3 className="font-semibold capitalize">
+              <h3 className="font-semibold capitalize text-card-foreground">
                 {pathwayInfo[pathway].title}
               </h3>
               <div className="flex flex-wrap gap-2 mt-2">
@@ -174,7 +172,7 @@ export function PathwayQuiz({
       {/* Back button */}
       <button
         onClick={handleBack}
-        className="self-start p-2 -ml-2 text-muted-foreground hover:text-foreground transition-colors"
+        className="self-start p-2 -ml-2 text-slate-500 hover:text-slate-900 transition-colors"
         type="button"
       >
         <ArrowLeft className="w-5 h-5" />
@@ -182,10 +180,10 @@ export function PathwayQuiz({
 
       {/* Header */}
       <div className="text-center mt-4 mb-8">
-        <p className="text-sm text-muted-foreground mb-2">
+        <p className="text-sm text-slate-600 mb-2">
           Lets bring out the true YOU
         </p>
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground leading-tight">
+        <h1 className="text-2xl md:text-3xl font-bold text-slate-900 leading-tight">
           {question.question}
         </h1>
       </div>
