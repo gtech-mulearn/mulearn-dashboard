@@ -96,7 +96,7 @@ export function InterestSelector({
         {/* Back button */}
         <button
           onClick={handleBack}
-          className="self-start p-2 -ml-2 text-slate-500 hover:text-slate-900 transition-colors"
+          className="self-start p-2 -ml-2 text-muted-foreground hover:text-foreground transition-colors"
           type="button"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -104,10 +104,10 @@ export function InterestSelector({
 
         {/* Header */}
         <div className="text-center mt-4 mb-8">
-          <p className="text-sm text-slate-600 mb-2">
+          <p className="text-sm text-muted-foreground mb-2">
             Lets bring out the true YOU
           </p>
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-900 leading-tight">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground leading-tight">
             What's your long-
             <br />
             term tech goal?
@@ -150,7 +150,7 @@ export function InterestSelector({
       {/* Back button */}
       <button
         onClick={handleBack}
-        className="self-start p-2 -ml-2 text-slate-500 hover:text-slate-900 transition-colors"
+        className="self-start p-2 -ml-2 text-muted-foreground hover:text-foreground transition-colors"
         type="button"
       >
         <ArrowLeft className="w-5 h-5" />
@@ -158,10 +158,10 @@ export function InterestSelector({
 
       {/* Header */}
       <div className="text-center mt-4 mb-8">
-        <p className="text-sm text-slate-600 mb-2">
+        <p className="text-sm text-muted-foreground mb-2">
           Lets bring out the true YOU
         </p>
-        <h1 className="text-2xl md:text-3xl font-bold text-slate-900 leading-tight">
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground leading-tight">
           Which one feels
           <br />
           like you?
