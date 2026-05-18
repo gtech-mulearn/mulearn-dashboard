@@ -39,7 +39,8 @@ const PENDING_STATUS_GROUP = [
   "pending_mentor_approval",
 ] as const;
 
-const TEMPORAL_STATUS_FALLBACK_LIMIT = 200;
+// Used as perPage when we need all records; proper pagination is not available for these endpoints.
+const FETCH_ALL_LIMIT = 200;
 
 // Compatibility shim:
 // If the backend returns event_type but omits category_name, mirror it here so
@@ -208,7 +209,7 @@ async function fetchListWithStatusFallback(
     const fallbackParams = {
       ...params,
       pageIndex: 1,
-      perPage: TEMPORAL_STATUS_FALLBACK_LIMIT,
+      perPage: FETCH_ALL_LIMIT,
     };
 
     const groupedResponses = await Promise.all(
@@ -243,7 +244,7 @@ async function fetchListWithStatusFallback(
       ...params,
       status: "published",
       pageIndex: 1,
-      perPage: TEMPORAL_STATUS_FALLBACK_LIMIT,
+      perPage: FETCH_ALL_LIMIT,
       sortBy: "-start_datetime",
     };
 

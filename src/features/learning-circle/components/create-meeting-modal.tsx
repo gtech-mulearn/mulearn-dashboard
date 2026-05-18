@@ -11,6 +11,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Calendar } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -107,7 +108,9 @@ export function CreateMeetingModal({
       reset();
       onOpenChange(false);
     } catch (error) {
-      console.error("Failed to create meeting:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to create meeting",
+      );
     }
   };
 

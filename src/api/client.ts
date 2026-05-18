@@ -208,10 +208,12 @@ async function request<T>(
         if (options.schema) {
           const parsed = options.schema.safeParse(retryData);
           if (!parsed.success) {
-            console.error(
-              `⚠️ API schema mismatch [${endpoint}]`,
-              parsed.error.issues,
-            );
+            if (process.env.NODE_ENV === "development") {
+              console.error(
+                `⚠️ API schema mismatch [${endpoint}]`,
+                parsed.error.issues,
+              );
+            }
             return retryData as T;
           }
           return parsed.data;
@@ -244,13 +246,13 @@ async function request<T>(
       backendMsg || `Request failed: ${endpoint}`,
       rawData,
     );
-    console.error("[API Client] Business error:", {
-      endpoint,
-      status: res.status,
-      message: backendMsg,
-      rawData,
-      error,
-    });
+    if (process.env.NODE_ENV === "development") {
+      console.error("[API Client] Business error:", {
+        endpoint,
+        status: res.status,
+        message: backendMsg,
+      });
+    }
     throw error;
   }
 
@@ -261,21 +263,25 @@ async function request<T>(
       backendMsg || `Request failed: ${endpoint}`,
       rawData,
     );
-    console.error("[API Client] HTTP error:", {
-      endpoint,
-      status: res.status,
-      statusText: res.statusText,
-      message: backendMsg,
-      rawData,
-      error,
-    });
+    if (process.env.NODE_ENV === "development") {
+      console.error("[API Client] HTTP error:", {
+        endpoint,
+        status: res.status,
+        message: backendMsg,
+      });
+    }
     throw error;
   }
 
   if (options.schema) {
     const parsed = options.schema.safeParse(rawData);
     if (!parsed.success) {
-      console.error(`⚠️ API schema mismatch [${endpoint}]`, parsed.error.issues);
+      if (process.env.NODE_ENV === "development") {
+        console.error(
+          `⚠️ API schema mismatch [${endpoint}]`,
+          parsed.error.issues,
+        );
+      }
       // Return raw data preserving the full envelope shape.
       // Schemas are defensive — a mismatch should not crash the UI.
       return rawData as T;

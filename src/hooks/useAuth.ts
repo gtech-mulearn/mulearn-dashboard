@@ -27,17 +27,18 @@ export function useAuth() {
       });
     };
 
-    // Check on specific events
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") checkAuth();
+    };
+
     window.addEventListener("focus", checkAuth);
     window.addEventListener("storage", checkAuth); // Cross-tab sync
-
-    // Optional: Regular interval check (e.g., every 5 seconds) to catch cookie expiry
-    const interval = setInterval(checkAuth, 5000);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       window.removeEventListener("focus", checkAuth);
       window.removeEventListener("storage", checkAuth);
-      clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
 

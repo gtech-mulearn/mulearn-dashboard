@@ -12,6 +12,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import type { ReactNode } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 function makeQueryClient() {
@@ -46,24 +47,14 @@ function makeQueryClient() {
   });
 }
 
-let browserQueryClient: QueryClient | undefined;
-
-function getQueryClient() {
-  if (typeof window === "undefined") {
-    // Server: always make a new query client
-    return makeQueryClient();
-  }
-  // Browser: make a new query client if we don't already have one
-  if (!browserQueryClient) browserQueryClient = makeQueryClient();
-  return browserQueryClient;
-}
-
 interface ProvidersProps {
   children: ReactNode;
 }
 
 export function Providers({ children }: ProvidersProps) {
-  const queryClient = getQueryClient();
+  // useState ensures a stable client instance across React strict-mode double
+  // invocations and HMR cycles, avoiding a stale module-level singleton.
+  const [queryClient] = useState(makeQueryClient);
 
   return (
     <QueryClientProvider client={queryClient}>

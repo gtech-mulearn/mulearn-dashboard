@@ -10,6 +10,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { toast } from "sonner";
 import type { KarmaVoucher } from "../types";
 import {
   useDeleteKarmaVoucher,
@@ -91,7 +92,9 @@ export function useKarmaVoucherLogic() {
       try {
         await deleteVoucher(id);
       } catch (error) {
-        console.error("Delete failed:", error);
+        toast.error(
+          error instanceof Error ? error.message : "Failed to delete voucher",
+        );
       }
     },
     [deleteVoucher],
@@ -107,7 +110,9 @@ export function useKarmaVoucherLogic() {
       try {
         await uploadVouchers(file);
       } catch (error) {
-        console.error("Import failed:", error);
+        toast.error(
+          error instanceof Error ? error.message : "Failed to import vouchers",
+        );
       }
     },
     [uploadVouchers],

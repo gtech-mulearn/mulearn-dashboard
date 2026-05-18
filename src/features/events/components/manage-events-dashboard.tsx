@@ -1,27 +1,34 @@
 "use client";
 
-// TODO: add RBAC guard — check user role from /api/v1/dashboard/user/info/ before rendering
-// The manage endpoint likely requires staff/organiser permissions server-side.
-// If the current user doesn't have those permissions, the API returns an empty list or 403.
-
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { Plus, Search } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import { apiClient, endpoints } from "@/api";
+import { useCallback, useEffect, useState } from "react";
 import { ApiError } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useUserInfo } from "@/features/auth/hooks";
+import { cn } from "@/lib/utils";
 import { eventsApi } from "../api";
 import { MANAGE_EVENT_STATUS_PILLS } from "../constants/events.constants";
 import { usePendingCollaboratorInvites } from "../hooks";
 import { eventKeys } from "../hooks/query-keys";
-import type { EventStatus } from "../types";
+import type { EventListQueryParams, EventStatus } from "../types";
 import { CollaboratorInvitesSheet } from "./collaborator-invites-sheet";
 import { EventCreateWizard } from "./event-create-wizard";
 import { EventsGrid } from "./events-grid";
 import { EventsPagination } from "./events-pagination";
+
+function makeEventQuery(isAdmin: boolean, params: EventListQueryParams) {
+  return {
+    queryKey: isAdmin
+      ? eventKeys.adminList(params as Record<string, unknown>)
+      : eventKeys.manageList(params),
+    queryFn: () =>
+      isAdmin ? eventsApi.adminList(params) : eventsApi.manageList(params),
+  };
+}
 
 export default function ManageEventsDashboard() {
   const router = useRouter();
@@ -32,20 +39,14 @@ export default function ManageEventsDashboard() {
   const [showWizard, setShowWizard] = useState(false);
   const [invitesOpen, setInvitesOpen] = useState(false);
 
-  const { data: userInfo } = useQuery({
-    queryKey: ["user", "info", "events-manage"],
-    queryFn: () => apiClient.get<Record<string, unknown>>(endpoints.user.info),
-  });
+  const { data: userInfo, isLoading: isUserInfoLoading } = useUserInfo();
 
-  const canAdminView = Boolean(
-    (userInfo?.is_staff as boolean | undefined) ||
-      (Array.isArray(userInfo?.roles) &&
-        (userInfo.roles as string[]).some((role) =>
-          role.toLowerCase().includes("admin"),
-        )),
-  );
-
-  const useAdminView = canAdminView;
+  const canAdminView =
+    !isUserInfoLoading &&
+    Boolean(
+      Array.isArray(userInfo?.roles) &&
+        userInfo.roles.some((role) => role.toLowerCase().includes("admin")),
+    );
 
   const {
     pendingInvites,
@@ -73,7 +74,7 @@ export default function ManageEventsDashboard() {
     }
   }, [searchParams]);
 
-  const listParams = {
+  const listParams: EventListQueryParams = {
     pageIndex: page,
     search: search || undefined,
     status: statusFilter === "all" ? undefined : statusFilter,
@@ -82,107 +83,27 @@ export default function ManageEventsDashboard() {
 
   const statsQueries = useQueries({
     queries: [
-      {
-        queryKey: useAdminView
-          ? eventKeys.adminList({ pageIndex: 1, perPage: 1 })
-          : eventKeys.manageList({ pageIndex: 1, perPage: 1 }),
-        queryFn: () =>
-          useAdminView
-            ? eventsApi.adminList({ pageIndex: 1, perPage: 1 })
-            : eventsApi.manageList({ pageIndex: 1, perPage: 1 }),
-      },
-      {
-        queryKey: useAdminView
-          ? eventKeys.adminList({
-              pageIndex: 1,
-              perPage: 1,
-              status: "published",
-            })
-          : eventKeys.manageList({
-              pageIndex: 1,
-              perPage: 1,
-              status: "published",
-            }),
-        queryFn: () =>
-          useAdminView
-            ? eventsApi.adminList({
-                pageIndex: 1,
-                perPage: 1,
-                status: "published",
-              })
-            : eventsApi.manageList({
-                pageIndex: 1,
-                perPage: 1,
-                status: "published",
-              }),
-      },
-      {
-        queryKey: useAdminView
-          ? eventKeys.adminList({
-              pageIndex: 1,
-              perPage: 1,
-              status: "pending_approval",
-            })
-          : eventKeys.manageList({
-              pageIndex: 1,
-              perPage: 1,
-              status: "pending_approval",
-            }),
-        queryFn: () =>
-          useAdminView
-            ? eventsApi.adminList({
-                pageIndex: 1,
-                perPage: 1,
-                status: "pending_approval",
-              })
-            : eventsApi.manageList({
-                pageIndex: 1,
-                perPage: 1,
-                status: "pending_approval",
-              }),
-      },
-      {
-        queryKey: useAdminView
-          ? eventKeys.adminList({ pageIndex: 1, perPage: 1, status: "draft" })
-          : eventKeys.manageList({
-              pageIndex: 1,
-              perPage: 1,
-              status: "draft",
-            }),
-        queryFn: () =>
-          useAdminView
-            ? eventsApi.adminList({ pageIndex: 1, perPage: 1, status: "draft" })
-            : eventsApi.manageList({
-                pageIndex: 1,
-                perPage: 1,
-                status: "draft",
-              }),
-      },
-      {
-        queryKey: useAdminView
-          ? eventKeys.adminList({
-              pageIndex: 1,
-              perPage: 1,
-              status: "completed",
-            })
-          : eventKeys.manageList({
-              pageIndex: 1,
-              perPage: 1,
-              status: "completed",
-            }),
-        queryFn: () =>
-          useAdminView
-            ? eventsApi.adminList({
-                pageIndex: 1,
-                perPage: 1,
-                status: "completed",
-              })
-            : eventsApi.manageList({
-                pageIndex: 1,
-                perPage: 1,
-                status: "completed",
-              }),
-      },
+      makeEventQuery(canAdminView, { pageIndex: 1, perPage: 1 }),
+      makeEventQuery(canAdminView, {
+        pageIndex: 1,
+        perPage: 1,
+        status: "published",
+      }),
+      makeEventQuery(canAdminView, {
+        pageIndex: 1,
+        perPage: 1,
+        status: "pending_approval",
+      }),
+      makeEventQuery(canAdminView, {
+        pageIndex: 1,
+        perPage: 1,
+        status: "draft",
+      }),
+      makeEventQuery(canAdminView, {
+        pageIndex: 1,
+        perPage: 1,
+        status: "completed",
+      }),
     ],
   });
 
@@ -192,19 +113,21 @@ export default function ManageEventsDashboard() {
   const pendingApprovalCount = statsQueries[2].data?.pagination.count ?? 0;
   const draftCount = statsQueries[3].data?.pagination.count ?? 0;
 
-  const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: useAdminView
-      ? eventKeys.adminList(listParams)
-      : eventKeys.manageList(listParams),
-    queryFn: () =>
-      useAdminView
-        ? eventsApi.adminList(listParams)
-        : eventsApi.manageList(listParams),
-  });
+  const { data, isLoading, isError, error, refetch } = useQuery(
+    makeEventQuery(canAdminView, listParams),
+  );
 
   const events = data?.data ?? [];
 
   const is403 = error instanceof ApiError && error.status === 403;
+
+  const handleEventDeleted = useCallback(() => refetch(), [refetch]);
+  const handleCreateEvent = useCallback(() => setShowWizard(true), []);
+  const handleEventView = useCallback(
+    (event: { id: string }) =>
+      router.push(`/dashboard/manage-events/${event.id}`),
+    [router],
+  );
 
   return (
     <div className="space-y-6 p-4 sm:p-6">
@@ -290,11 +213,12 @@ export default function ManageEventsDashboard() {
               key={pill.value}
               variant="outline"
               size="sm"
-              className={`rounded-full border border-border bg-background px-4 py-1.5 text-sm text-muted-foreground hover:border-primary hover:text-primary ${
-                active
-                  ? "border-primary bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground"
-                  : ""
-              }`}
+              aria-pressed={active}
+              className={cn(
+                "rounded-full border border-border bg-background px-4 py-1.5 text-sm text-muted-foreground hover:border-primary hover:text-primary",
+                active &&
+                  "border-primary bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground",
+              )}
               onClick={() => {
                 setStatusFilter(pill.value);
                 setPage(1);
@@ -338,23 +262,19 @@ export default function ManageEventsDashboard() {
         </p>
       ) : (
         <>
-          {canAdminView && events.length === 0 ? (
+          {events.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              No events found. If you expected to see events created by other
-              admins, ensure you have been added as a co-owner or contact a
-              platform admin.
+              {canAdminView
+                ? "No events found. If you expected to see events created by other admins, ensure you have been added as a co-owner or contact a platform admin."
+                : "No events found. Create your first event to get started."}
             </p>
           ) : null}
           <EventsGrid
             events={events}
             isManageView
-            onEventDeleted={() => refetch()}
-            onCreateEvent={() => {
-              setShowWizard(true);
-            }}
-            onEventView={(event) => {
-              router.push(`/dashboard/manage-events/${event.id}`);
-            }}
+            onEventDeleted={handleEventDeleted}
+            onCreateEvent={handleCreateEvent}
+            onEventView={handleEventView}
           />
           <EventsPagination
             pagination={data?.pagination}

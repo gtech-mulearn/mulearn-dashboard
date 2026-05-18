@@ -20,8 +20,9 @@ interface ErrorProps {
 
 export default function CompanyError({ error, reset }: ErrorProps) {
   useEffect(() => {
-    console.error("[Company Section Error]", error);
-  }, [error]);
+    // Error is already captured by the root errorLogger via the error boundary hierarchy.
+    // No additional logging needed here to avoid duplicate production noise.
+  }, []);
 
   return (
     <div className="flex min-h-[500px] flex-col items-center justify-center gap-6 p-6">

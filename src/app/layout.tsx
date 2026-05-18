@@ -53,7 +53,7 @@ export default function RootLayout({
         >
           <Providers>
             <Suspense fallback={<Loader />}>{children}</Suspense>
-            <Toaster richColors position="top-right" theme="light" />
+            <Toaster richColors position="top-right" theme="system" />
           </Providers>
         </ThemeProvider>
       </body>

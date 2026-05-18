@@ -265,9 +265,13 @@ export function proxy(request: NextRequest) {
           url.searchParams.set("unauthorized", "true");
           return NextResponse.redirect(url);
         }
+      } else {
+        // No accessToken but refreshToken present — redirect through the
+        // server-side refresh endpoint so roles can be verified after refresh.
+        const refreshUrl = new URL("/api/auth/refresh", request.url);
+        refreshUrl.searchParams.set("ruri", pathname.slice(1));
+        return NextResponse.redirect(refreshUrl);
       }
-      // If no accessToken but refreshToken exists, let through —
-      // the page will attempt token refresh via API call
     }
   }
 
