@@ -34,14 +34,29 @@ import { Textarea } from "@/components/ui/textarea";
 import { useEditMeeting } from "../hooks";
 import type { MeetingDetail } from "../schemas";
 
-const EditMeetingFormSchema = z.object({
-  title: z.string().min(1, "Title is required").max(100),
-  description: z.string().min(1, "Description is required").max(1000),
-  mode: z.enum(["online", "offline"]),
-  meet_place: z.string().min(1, "Meeting place is required").max(200),
-  meet_time: z.string().min(1, "Meeting time is required"),
-  duration: z.number().min(1).max(24),
-});
+const PLATFORMS = [
+  "Zoom",
+  "Google Meet",
+  "Microsoft Teams",
+  "Discord",
+  "Other",
+] as const;
+type Platform = (typeof PLATFORMS)[number];
+
+const EditMeetingFormSchema = z
+  .object({
+    title: z.string().min(1, "Title is required").max(100),
+    description: z.string().min(1, "Description is required").max(1000),
+    mode: z.enum(["online", "offline"]),
+    platform: z.enum(PLATFORMS).nullable().optional(),
+    meet_place: z.string().min(1, "Meeting place is required").max(200),
+    meet_time: z.string().min(1, "Meeting time is required"),
+    duration: z.number().min(1).max(24),
+  })
+  .refine((data) => data.mode !== "online" || !!data.platform, {
+    message: "Platform is required for online meetings",
+    path: ["platform"],
+  });
 
 type EditMeetingFormData = z.infer<typeof EditMeetingFormSchema>;
 
@@ -73,6 +88,9 @@ export function EditMeetingModal({
       title: meeting.title,
       description: meeting.description,
       mode: meeting.mode as "online" | "offline",
+      platform: PLATFORMS.includes(meeting.meet_place as Platform)
+        ? (meeting.meet_place as Platform)
+        : null,
       meet_place: meeting.meet_link || meeting.meet_place || "",
       meet_time: meeting.meet_time,
       duration: meeting.duration,
@@ -86,6 +104,9 @@ export function EditMeetingModal({
       title: meeting.title,
       description: meeting.description,
       mode: meeting.mode as "online" | "offline",
+      platform: PLATFORMS.includes(meeting.meet_place as Platform)
+        ? (meeting.meet_place as Platform)
+        : null,
       meet_place: meeting.meet_link || meeting.meet_place || "",
       meet_time: meeting.meet_time,
       duration: meeting.duration,
@@ -96,6 +117,7 @@ export function EditMeetingModal({
     try {
       await editMeeting.mutateAsync({
         ...data,
+        platform: data.mode === "online" ? data.platform : null,
         meet_link: data.mode === "online" ? data.meet_place : null,
         coord_x: meeting.coord_x,
         coord_y: meeting.coord_y,
@@ -170,9 +192,10 @@ export function EditMeetingModal({
             </Label>
             <Select
               defaultValue={meeting.mode}
-              onValueChange={(value) =>
-                setValue("mode", value as "online" | "offline")
-              }
+              onValueChange={(value) => {
+                setValue("mode", value as "online" | "offline");
+                if (value === "offline") setValue("platform", null);
+              }}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select mode" />
@@ -183,6 +206,40 @@ export function EditMeetingModal({
               </SelectContent>
             </Select>
           </div>
+
+          {mode === "online" && (
+            <div className="space-y-2">
+              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Platform
+              </Label>
+              <Select
+                defaultValue={
+                  PLATFORMS.includes(meeting.meet_place as Platform)
+                    ? meeting.meet_place
+                    : undefined
+                }
+                onValueChange={(value) =>
+                  setValue("platform", value as Platform)
+                }
+              >
+                <SelectTrigger className="rounded-xl border-border/40 shadow-sm">
+                  <SelectValue placeholder="Select platform" />
+                </SelectTrigger>
+                <SelectContent>
+                  {PLATFORMS.map((p) => (
+                    <SelectItem key={p} value={p}>
+                      {p}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.platform && (
+                <p className="text-xs font-medium text-destructive">
+                  {errors.platform.message}
+                </p>
+              )}
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label
