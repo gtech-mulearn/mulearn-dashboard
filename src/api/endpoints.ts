@@ -131,6 +131,21 @@ export const endpoints = {
       `/api/v1/dashboard/company/verification/requests/${companyId}/`,
     /** GET - List jobs for authenticated company (JWT required) */
     jobs: "/api/v1/dashboard/company/jobs/",
+    /** GET - Public jobs list (AllowAny) */
+    publicJobs: "/api/v1/public/jobs/",
+    /** POST - Learner apply to job */
+    applyJob: (jobId: string) =>
+      `/api/v1/dashboard/company/jobs/${jobId}/apply/`,
+    /** GET - Learner applications list */
+    learnerApplications: "/api/v1/dashboard/company/applications/",
+    /** GET - Company view job applicants */
+    jobApplicants: (jobId: string) =>
+      `/api/v1/dashboard/company/jobs/${jobId}/applications/`,
+    /** PATCH - Company update applicant status */
+    updateApplicantStatus: (jobId: string, appId: string) =>
+      `/api/v1/dashboard/company/jobs/${jobId}/applications/${appId}/`,
+    /** GET - Learner discovery (Talent Pool) */
+    learners: "/api/v1/dashboard/company/learners/",
     /** POST - Create job (JWT required, active company only) */
     createJob: "/api/v1/dashboard/company/jobs/create/",
     /** GET - Job details (JWT required) */

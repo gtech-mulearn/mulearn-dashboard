@@ -15,8 +15,6 @@ export function useJobDetail(jobId: string | undefined) {
     queryKey: JOBS_KEYS.detail(jobId ?? ""),
     queryFn: () => fetchJobDetail(jobId ?? ""),
     enabled: !!jobId,
-    staleTime: 2 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
 }

@@ -14,8 +14,9 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { type ReactElement, useState } from "react";
 import Pagination from "@/components/dashboard/table/pagination";
+import type { Data } from "@/components/dashboard/table/Table";
 import Table from "@/components/dashboard/table/Table";
 import TableTop from "@/components/dashboard/table/TableTop";
 import { Badge } from "@/components/ui/badge";
@@ -146,18 +147,24 @@ export default function ManageInternsPage() {
   const [perPage, setPerPage] = useState(10);
   const [searchText, setSearchText] = useState("");
 
+  const filteredInterns = MOCK_INTERNS.filter(
+    (intern) =>
+      intern.name.toLowerCase().includes(searchText.toLowerCase()) ||
+      intern.email.toLowerCase().includes(searchText.toLowerCase()),
+  );
+
   const tableColumns = [
     {
       column: "name",
       Label: "Intern Name",
       isSortable: true,
-      wrap: (data: any, id: string, row: any) => (
+      wrap: (data: string | ReactElement, _id: string, row: Data) => (
         <div className="flex flex-col">
           <span className="font-bold text-foreground uppercase tracking-tight text-sm">
             {data}
           </span>
           <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest leading-none mt-1">
-            {row.email}
+            {String(row.email ?? "")}
           </span>
         </div>
       ),
@@ -166,7 +173,7 @@ export default function ManageInternsPage() {
       column: "team",
       Label: "Alliance",
       isSortable: true,
-      wrap: (data: any) => (
+      wrap: (data: string | ReactElement) => (
         <span className="text-xs font-bold uppercase text-muted-foreground tracking-wider">
           {data}
         </span>
@@ -176,40 +183,46 @@ export default function ManageInternsPage() {
       column: "status",
       Label: "Status",
       isSortable: true,
-      wrap: (data: any) => getStatusBadge(data),
+      wrap: (data: string | ReactElement) => getStatusBadge(String(data)),
     },
     {
       column: "streak",
       Label: "Streak",
       isSortable: true,
-      wrap: (data: any) => (
-        <div className="font-mono font-black text-warning flex items-center gap-1">
-          {Number(data) > 0 ? (
-            <>
-              <Flame className="w-3 h-3 fill-warning" /> {data}
-            </>
-          ) : (
-            <span className="text-muted-foreground/40">{data}</span>
-          )}
-        </div>
-      ),
+      wrap: (data: string | ReactElement) => {
+        const val = typeof data === "string" ? Number(data) : 0;
+        return (
+          <div className="font-mono font-black text-warning flex items-center gap-1">
+            {val > 0 ? (
+              <>
+                <Flame className="w-3 h-3 fill-warning" /> {data}
+              </>
+            ) : (
+              <span className="text-muted-foreground/40">{data}</span>
+            )}
+          </div>
+        );
+      },
     },
     {
       column: "points",
       Label: "Gems",
       isSortable: true,
-      wrap: (data: any) => (
-        <div className="font-mono font-black text-foreground flex items-center gap-1.5">
-          <Gem className="w-3.5 h-3.5 text-brand-blue" />
-          {Number(data).toLocaleString()}
-        </div>
-      ),
+      wrap: (data: string | ReactElement) => {
+        const val = typeof data === "string" ? Number(data) : 0;
+        return (
+          <div className="font-mono font-black text-foreground flex items-center gap-1.5">
+            <Gem className="w-3.5 h-3.5 text-brand-blue" />
+            {val.toLocaleString()}
+          </div>
+        );
+      },
     },
     {
       column: "rank",
       Label: "Rank",
       isSortable: true,
-      wrap: (data: any) => (
+      wrap: (data: string | ReactElement) => (
         <span className="font-black text-muted-foreground">#{data}</span>
       ),
     },
@@ -359,13 +372,13 @@ export default function ManageInternsPage() {
         <Card className="border-border/40 bg-card/40 backdrop-blur-xl shadow-2xl overflow-hidden">
           <CardContent className="p-0">
             <Table
-              rows={MOCK_INTERNS}
+              rows={filteredInterns}
               page={page}
               perPage={perPage}
               columnOrder={tableColumns}
               id={["id"]}
               slNoCellClassName="font-black text-muted-foreground/40 w-16"
-              customActionRender={(row) => (
+              customActionRender={(_row) => (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -393,9 +406,9 @@ export default function ManageInternsPage() {
             <div className="p-4 border-t border-border/20">
               <Pagination
                 currentPage={page}
-                totalPages={Math.ceil(MOCK_INTERNS.length / perPage)}
+                totalPages={Math.ceil(filteredInterns.length / perPage)}
                 perPage={perPage}
-                totalCount={MOCK_INTERNS.length}
+                totalCount={filteredInterns.length}
                 handlePreviousClick={() => setPage((p) => Math.max(1, p - 1))}
                 handleNextClick={() => setPage((p) => p + 1)}
               />

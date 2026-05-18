@@ -20,6 +20,7 @@ import {
   Share2,
   Users,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import type { RemotePolicy } from "../../constants/mock-company-profile";
@@ -30,9 +31,11 @@ import type { CompanyProfile } from "../../types";
 function CompanyLogo({ logo, name }: { logo?: string | null; name: string }) {
   if (logo) {
     return (
-      <img
+      <Image
         src={logo}
         alt={name}
+        width={72}
+        height={72}
         className="size-16 rounded-2xl border border-border bg-card object-contain p-1 shadow-md sm:size-[72px]"
       />
     );

@@ -11,8 +11,8 @@ interface EventHeroBannerProps {
 
 export function EventHeroBanner({
   event,
-  organizerName,
-  organizerLogo,
+  organizerName: _organizerName,
+  organizerLogo: _organizerLogo,
 }: EventHeroBannerProps) {
   const router = useRouter();
   const now = Date.now();

@@ -20,7 +20,7 @@ export const StudentLeaderboardEntrySchema = z.object({
   full_name: z.string(),
   institution: z.string().optional(),
   total_karma: z.number(),
-  profile_pic: z.string().optional(),
+  profile_pic: z.string().optional().nullable(),
 });
 
 export const CollegeLeaderboardEntrySchema = z.object({

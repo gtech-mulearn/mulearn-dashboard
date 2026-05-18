@@ -44,7 +44,7 @@ const QUICK_ACTIONS = [
     id: "jobs-board",
     label: "Jobs Board",
     sub: `${MOCK_QUICK_ACTION_COUNTS.jobOpenings} new openings`,
-    href: "/dashboard/company/jobs",
+    href: "/dashboard/jobs",
     icon: Briefcase,
     iconBg: "bg-destructive/10",
     iconColor: "text-destructive",

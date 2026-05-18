@@ -12,8 +12,9 @@ import {
   Trophy,
   Zap,
 } from "lucide-react";
+import type { ReactElement } from "react";
 import Link from "next/link";
-import Table from "@/components/dashboard/table/Table";
+import Table, { type Data } from "@/components/dashboard/table/Table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -87,31 +88,41 @@ const MOCK_TOP_PERFORMERS = [
   },
 ];
 
+interface Performer {
+  id: string;
+  rank: number;
+  name: string;
+  points: number;
+}
+
 export default function InternDashboardPage() {
   const performerColumns = [
     {
       column: "name",
       Label: "Intern",
       isSortable: false,
-      wrap: (data: any, id: string, row: any) => (
-        <div className="flex items-center gap-2">
-          <span className="font-medium">{data}</span>
-          {row.name === "Alex Doe" && (
-            <Badge
-              variant="outline"
-              className="text-[10px] bg-primary/10 text-primary border-primary/30 h-4"
-            >
-              YOU
-            </Badge>
-          )}
-        </div>
-      ),
+      wrap: (data: string | ReactElement, _id: string, row: Data) => {
+        const performerRow = row as unknown as Performer;
+        return (
+          <div className="flex items-center gap-2">
+            <span className="font-medium">{data}</span>
+            {performerRow.name === "Alex Doe" && (
+              <Badge
+                variant="outline"
+                className="text-[10px] bg-primary/10 text-primary border-primary/30 h-4"
+              >
+                YOU
+              </Badge>
+            )}
+          </div>
+        );
+      },
     },
     {
       column: "points",
       Label: "Points",
       isSortable: false,
-      wrap: (data: any) => (
+      wrap: (data: string | ReactElement) => (
         <div className="flex items-center gap-1 font-mono font-bold">
           <Gem className="w-3 h-3 text-brand-blue" />
           {data}

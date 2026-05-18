@@ -1,17 +1,24 @@
-import { apiClient } from "@/api/client";
+import { apiClient, publicApiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
+  ApplyJobResponseSchema,
   CompanyProfileResponseSchema,
   CreateJobResponseSchema,
   CreateRuleResponseSchema,
   DeleteJobResponseSchema,
   DeleteRuleResponseSchema,
+  JobApplicantsResponseSchema,
   JobDetailResponseSchema,
   JobsListResponseSchema,
+  LearnerApplicationsResponseSchema,
+  LearnerDiscoveryResponseSchema,
+  PublicJobsResponseSchema,
+  UpdateApplicantStatusResponseSchema,
   UpdateJobResponseSchema,
   UpdateRuleResponseSchema,
 } from "../schemas";
 import type {
+  ApplyJobResponse,
   CompanyProfile,
   CreateJobPayload,
   CreateJobResponse,
@@ -20,8 +27,14 @@ import type {
   DeleteJobResponse,
   DeleteRuleResponse,
   Job,
+  JobApplicantsResponse,
   JobsListParams,
   JobsListResponse,
+  LearnerApplicationsResponse,
+  LearnerDiscoveryParams,
+  LearnerDiscoveryResponse,
+  PublicJobsResponse,
+  UpdateApplicantStatusResponse,
   UpdateJobPayload,
   UpdateJobResponse,
   UpdateRulePayload,
@@ -135,5 +148,134 @@ export async function deleteJobRule(
     undefined,
     DeleteRuleResponseSchema,
   );
+  return res.response;
+}
+
+// ─── Learner Public Jobs & Applications ──────────────────────
+
+export async function fetchPublicJobs(
+  params?: JobsListParams,
+): Promise<PublicJobsResponse> {
+  const query = new URLSearchParams();
+
+  if (params?.pageIndex) query.set("pageIndex", String(params.pageIndex));
+  if (params?.perPage) query.set("perPage", String(params.perPage));
+  if (params?.search?.trim()) query.set("search", params.search.trim());
+  if (params?.sortBy) query.set("sortBy", params.sortBy);
+
+  const queryString = query.toString();
+  const url = queryString
+    ? `${endpoints.company.publicJobs}?${queryString}`
+    : endpoints.company.publicJobs;
+
+  const res = await publicApiClient.get(url, PublicJobsResponseSchema);
+  return res.response;
+}
+
+export async function fetchLearnerApplications(params?: {
+  search?: string;
+  sortBy?: string;
+  pageIndex?: number;
+  perPage?: number;
+}): Promise<LearnerApplicationsResponse> {
+  const query = new URLSearchParams();
+
+  if (params?.pageIndex) query.set("pageIndex", String(params.pageIndex));
+  if (params?.perPage) query.set("perPage", String(params.perPage));
+  if (params?.search?.trim()) query.set("search", params.search.trim());
+  if (params?.sortBy) query.set("sortBy", params.sortBy);
+
+  const queryString = query.toString();
+  const url = queryString
+    ? `${endpoints.company.learnerApplications}?${queryString}`
+    : endpoints.company.learnerApplications;
+
+  const res = await apiClient.get(url, LearnerApplicationsResponseSchema);
+  return res.response;
+}
+
+export async function applyToJob(
+  jobId: string,
+  coverNote?: string,
+): Promise<ApplyJobResponse> {
+  const res = await apiClient.post(
+    endpoints.company.applyJob(jobId),
+    coverNote ? { cover_note: coverNote } : {},
+    ApplyJobResponseSchema,
+  );
+  return res.response;
+}
+
+// ─── Company Applicant Management & Talent Pool ──────────────
+
+export async function fetchJobApplicants(
+  jobId: string,
+  params?: {
+    status?: string;
+    search?: string;
+    sortBy?: string;
+    pageIndex?: number;
+    perPage?: number;
+  },
+): Promise<JobApplicantsResponse> {
+  const query = new URLSearchParams();
+
+  if (params?.status) query.set("status", params.status);
+  if (params?.pageIndex) query.set("pageIndex", String(params.pageIndex));
+  if (params?.perPage) query.set("perPage", String(params.perPage));
+  if (params?.search?.trim()) query.set("search", params.search.trim());
+  if (params?.sortBy) query.set("sortBy", params.sortBy);
+
+  const queryString = query.toString();
+  const url = queryString
+    ? `${endpoints.company.jobApplicants(jobId)}?${queryString}`
+    : endpoints.company.jobApplicants(jobId);
+
+  const res = await apiClient.get(url, JobApplicantsResponseSchema);
+  return res.response;
+}
+
+export async function updateApplicantStatus(
+  jobId: string,
+  appId: string,
+  status: string,
+): Promise<UpdateApplicantStatusResponse> {
+  const res = await apiClient.patch(
+    endpoints.company.updateApplicantStatus(jobId, appId),
+    { status },
+    UpdateApplicantStatusResponseSchema,
+  );
+  return res.response;
+}
+
+export async function fetchLearnerDiscovery(
+  params?: LearnerDiscoveryParams,
+): Promise<LearnerDiscoveryResponse> {
+  const query = new URLSearchParams();
+
+  if (params?.karma_min !== undefined)
+    query.set("karma_min", String(params.karma_min));
+  if (params?.karma_max !== undefined)
+    query.set("karma_max", String(params.karma_max));
+  if (params?.ig_ids) query.set("ig_ids", params.ig_ids);
+  if (params?.achievement_ids)
+    query.set("achievement_ids", params.achievement_ids);
+  if (params?.level_order_min !== undefined)
+    query.set("level_order_min", String(params.level_order_min));
+  if (params?.interested_in_work !== undefined)
+    query.set("interested_in_work", String(params.interested_in_work));
+  if (params?.interested_in_gig_work !== undefined)
+    query.set("interested_in_gig_work", String(params.interested_in_gig_work));
+  if (params?.pageIndex) query.set("pageIndex", String(params.pageIndex));
+  if (params?.perPage) query.set("perPage", String(params.perPage));
+  if (params?.search?.trim()) query.set("search", params.search.trim());
+  if (params?.sortBy) query.set("sortBy", params.sortBy);
+
+  const queryString = query.toString();
+  const url = queryString
+    ? `${endpoints.company.learners}?${queryString}`
+    : endpoints.company.learners;
+
+  const res = await apiClient.get(url, LearnerDiscoveryResponseSchema);
   return res.response;
 }

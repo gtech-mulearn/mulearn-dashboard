@@ -23,8 +23,11 @@ import { Button } from "@/components/ui/button";
 import { JOB_STATUS_CONFIG } from "../constants";
 import type { RuleFormValues } from "../schemas";
 import type { Job } from "../types";
+import { ApplicantsSection } from "./applicants-section";
 import { JobDeleteDialog } from "./job-delete-dialog";
 import { RuleAddDialog, RuleList } from "./rules";
+
+// ─── Props ────────────────────────────────────────────────────────────────────
 
 interface JobDetailViewProps {
   job: Job;
@@ -211,6 +214,9 @@ export function JobDetailView({
           />
         </div>
       </div>
+
+      {/* Applicants */}
+      <ApplicantsSection jobId={job.id} />
 
       {/* Timestamps */}
       <div className="flex items-center gap-4 text-xs text-muted-foreground">

@@ -21,8 +21,6 @@ export function useJobs(params?: JobsListParams) {
   return useQuery({
     queryKey: JOBS_KEYS.list(params),
     queryFn: () => fetchJobs(params),
-    staleTime: 2 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
 }

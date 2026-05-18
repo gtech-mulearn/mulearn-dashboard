@@ -10,6 +10,7 @@
  */
 
 import { Quote } from "lucide-react";
+import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { MockTestimonial } from "../../constants/mock-company-profile";
 
@@ -29,9 +30,11 @@ function TestimonialCard({ testimonial }: { testimonial: MockTestimonial }) {
       </p>
       <div className="flex items-center gap-3">
         {testimonial.author_avatar ? (
-          <img
+          <Image
             src={testimonial.author_avatar}
             alt={testimonial.author_name}
+            width={36}
+            height={36}
             className="size-9 rounded-full object-cover"
           />
         ) : (

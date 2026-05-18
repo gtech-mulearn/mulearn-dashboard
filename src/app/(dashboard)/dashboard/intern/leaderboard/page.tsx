@@ -1,14 +1,25 @@
 "use client";
 
 import { Clock, Gem, Trophy } from "lucide-react";
-import { useState } from "react";
+import { useState, type ReactElement } from "react";
 import Pagination from "@/components/dashboard/table/pagination";
-import Table from "@/components/dashboard/table/Table";
+import Table, { type Data } from "@/components/dashboard/table/Table";
 import TableTop from "@/components/dashboard/table/TableTop";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+interface LeaderboardEntry {
+  id: string;
+  rank: number;
+  name: string;
+  team: string;
+  points: number;
+  streak: number;
+  avatar: string;
+  avatarUrl?: string;
+}
 
 export default function LeaderboardPage() {
   const [page, setPage] = useState(1);
@@ -89,26 +100,31 @@ export default function LeaderboardPage() {
       column: "name",
       Label: "Username",
       isSortable: false,
-      wrap: (data: any, id: string, row: any) => (
-        <div className="flex items-center gap-3">
-          <Avatar className="w-8 h-8">
-            <AvatarImage src={row.avatarUrl} />
-            <AvatarFallback className="text-xs">{row.avatar}</AvatarFallback>
-          </Avatar>
-          <span className="font-medium">{data}</span>
-          {row.name === "Alex Doe" && (
-            <Badge className="bg-brand-blue/10 text-brand-blue border-brand-blue/20 text-[10px] h-4">
-              YOU
-            </Badge>
-          )}
-        </div>
-      ),
+      wrap: (data: string | ReactElement, _id: string, row: Data) => {
+        const leaderboardRow = row as unknown as LeaderboardEntry;
+        return (
+          <div className="flex items-center gap-3">
+            <Avatar className="w-8 h-8">
+              <AvatarImage src={leaderboardRow.avatarUrl} />
+              <AvatarFallback className="text-xs">
+                {leaderboardRow.avatar}
+              </AvatarFallback>
+            </Avatar>
+            <span className="font-medium">{data}</span>
+            {leaderboardRow.name === "Alex Doe" && (
+              <Badge className="bg-brand-blue/10 text-brand-blue border-brand-blue/20 text-[10px] h-4">
+                YOU
+              </Badge>
+            )}
+          </div>
+        );
+      },
     },
     {
       column: "points",
       Label: "Points",
       isSortable: true,
-      wrap: (data: any) => (
+      wrap: (data: string | ReactElement) => (
         <div className="flex items-center gap-1.5 font-mono">
           <Gem className="w-3.5 h-3.5 text-brand-blue" />
           {data}
@@ -119,7 +135,7 @@ export default function LeaderboardPage() {
       column: "streak",
       Label: "Streak",
       isSortable: true,
-      wrap: (data: any) => (
+      wrap: (data: string | ReactElement) => (
         <div className="flex items-center gap-1.5 text-warning">
           <span>🔥</span>
           {data}
@@ -129,7 +145,9 @@ export default function LeaderboardPage() {
   ];
 
   const top3 = MOCK_LEADERBOARD.slice(0, 3);
-  const others = MOCK_LEADERBOARD.slice(3);
+  const others = MOCK_LEADERBOARD.slice(3).filter((item) =>
+    item.name.toLowerCase().includes(searchText.toLowerCase()),
+  );
 
   return (
     <div className="flex-1 space-y-8 p-8 pt-6 max-w-7xl mx-auto w-full bg-background/50">

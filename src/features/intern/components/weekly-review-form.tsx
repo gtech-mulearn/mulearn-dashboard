@@ -83,7 +83,7 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
 
   const isOnLeave = form.watch("isOnLeave");
 
-  const onSubmit = async (data: WeeklyReviewFormValues) => {
+  const onSubmit = async (_data: WeeklyReviewFormValues) => {
     toast.loading("Publishing your weekly legend...", { id: "submit-review" });
 
     // Simulate API call
