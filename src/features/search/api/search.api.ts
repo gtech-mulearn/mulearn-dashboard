@@ -114,7 +114,12 @@ export async function searchCampuses(
       },
     };
   } catch (error) {
-    console.error("Error fetching campus data:", error);
+    if (process.env.NODE_ENV === "development") {
+      console.error(
+        "Error fetching campus data:",
+        error instanceof Error ? error.message : error,
+      );
+    }
     throw error;
   }
 }

@@ -60,10 +60,11 @@ function extractAndValidate<T>(raw: unknown, innerSchema: z.ZodType<T>): T {
   }
 
   // All strategies exhausted — log details and throw
-  console.error("❌ Dynamic-type inner schema mismatch", {
-    received: raw,
-    directError: direct.error?.format(),
-  });
+  if (process.env.NODE_ENV === "development") {
+    console.error("❌ Dynamic-type inner schema mismatch", {
+      directError: direct.error?.format(),
+    });
+  }
   throw new Error(
     "Unexpected API response shape from dynamic-management endpoint",
   );

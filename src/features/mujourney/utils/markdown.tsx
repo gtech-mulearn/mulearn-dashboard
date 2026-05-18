@@ -55,8 +55,7 @@ export function decodeUnicodeEscapes(text: string): string {
     });
 
     return decoded;
-  } catch (error) {
-    console.error("Error decoding Unicode escapes:", error);
+  } catch {
     return text;
   }
 }

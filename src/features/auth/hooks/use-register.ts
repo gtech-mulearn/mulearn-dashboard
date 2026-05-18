@@ -42,13 +42,12 @@ export function useRegister() {
       queryClient.setQueryData(authKeys.userInfo(), data.userInfo);
     },
     onError: (error) => {
-      console.error("[useRegister] Error occurred:", error);
-      console.error("[useRegister] Error details:", {
-        message: error instanceof Error ? error.message : "Unknown error",
-        name: error instanceof Error ? error.name : undefined,
-        stack: error instanceof Error ? error.stack : undefined,
-        fullError: error,
-      });
+      if (process.env.NODE_ENV === "development") {
+        console.error(
+          "[useRegister] Error:",
+          error instanceof Error ? error.message : "Unknown error",
+        );
+      }
     },
   });
 }
@@ -96,11 +95,12 @@ export function useCompanyRegister() {
       queryClient.setQueryData(authKeys.userInfo(), data.userInfo);
     },
     onError: (error) => {
-      console.error("[useCompanyRegister] Error occurred:", error);
-      console.error("[useCompanyRegister] Error details:", {
-        message: error instanceof Error ? error.message : "Unknown error",
-        fullError: error,
-      });
+      if (process.env.NODE_ENV === "development") {
+        console.error(
+          "[useCompanyRegister] Error:",
+          error instanceof Error ? error.message : "Unknown error",
+        );
+      }
     },
   });
 }

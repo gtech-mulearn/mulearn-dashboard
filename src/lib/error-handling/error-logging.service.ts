@@ -17,10 +17,9 @@ class ConsoleLogger implements LoggerAdapter {
         console.table(context);
       }
       console.groupEnd();
-    } else {
-      // Minimal production logging (can be expanded later)
-      console.error(error.message);
     }
+    // Production: wire up a real adapter (Sentry, Datadog, Logtail) via
+    // errorLogger.registerAdapter(...) at app startup instead of raw console.
   }
 }
 

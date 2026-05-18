@@ -3,6 +3,7 @@
 import { Map as MapIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { toast } from "sonner";
 import type { z } from "zod";
 import { DataTableErrorBoundary } from "@/components/dashboard/DataTableErrorBoundary";
 import THead from "@/components/dashboard/table/Thead";
@@ -256,7 +257,7 @@ function LocationContent() {
       setEditingItem(null);
       reset({ label: "", country: "", state: "", zone: "" });
     } catch (err) {
-      console.error(err);
+      toast.error(err instanceof Error ? err.message : "Operation failed");
     }
   };
 

@@ -44,7 +44,7 @@ export function useCompanyProfile() {
 export function usePublicCompanyProfile(slug?: string) {
   return useQuery({
     queryKey: COMPANY_KEYS.publicProfile(slug ?? ""),
-    queryFn: () => fetchPublicCompanyProfile(slug!),
+    queryFn: () => fetchPublicCompanyProfile(slug as string),
     enabled: !!slug,
     staleTime: 10 * 60 * 1000,
   });
@@ -53,7 +53,7 @@ export function usePublicCompanyProfile(slug?: string) {
 export function usePublicCompanyJobs(slug?: string) {
   return useQuery({
     queryKey: COMPANY_KEYS.publicJobs(slug ?? ""),
-    queryFn: () => fetchPublicCompanyJobsBySlug(slug!),
+    queryFn: () => fetchPublicCompanyJobsBySlug(slug as string),
     enabled: !!slug,
     staleTime: 5 * 60 * 1000,
   });

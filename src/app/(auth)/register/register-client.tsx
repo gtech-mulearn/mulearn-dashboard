@@ -146,7 +146,6 @@ export function RegisterClient({
       // ── Student / Mentor / Enabler: generic register endpoint ─
       await handleGenericSignup(values);
     } catch (error) {
-      console.error("[Registration] Error:", error);
       const message =
         error instanceof ApiError
           ? error.message

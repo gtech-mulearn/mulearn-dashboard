@@ -71,7 +71,12 @@ export async function getServerUser(): Promise<ServerUser | null> {
       { next: { revalidate: 60, tags: ["user-info"] } },
     );
   } catch (error) {
-    console.error("[auth/server] Failed to fetch user info:", error);
+    if (process.env.NODE_ENV === "development") {
+      console.error(
+        "[auth/server] Failed to fetch user info:",
+        error instanceof Error ? error.message : error,
+      );
+    }
     return null;
   }
 }
