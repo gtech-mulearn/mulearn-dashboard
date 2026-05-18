@@ -126,7 +126,7 @@ export function PathwayQuiz({
               key={pathway}
               className="rounded-2xl border border-border bg-card p-4 shadow-sm"
             >
-              <h3 className="font-semibold capitalize">
+              <h3 className="font-semibold capitalize text-card-foreground">
                 {pathwayInfo[pathway].title}
               </h3>
               <div className="flex flex-wrap gap-2 mt-2">
