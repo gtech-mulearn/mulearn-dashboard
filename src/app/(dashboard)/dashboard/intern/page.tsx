@@ -12,8 +12,8 @@ import {
   Trophy,
   Zap,
 } from "lucide-react";
-import type { ReactElement } from "react";
 import Link from "next/link";
+import type { ReactElement } from "react";
 import Table, { type Data } from "@/components/dashboard/table/Table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

@@ -13,10 +13,10 @@ import {
   JobsListResponseSchema,
   LearnerApplicationsResponseSchema,
   LearnerDiscoveryResponseSchema,
-  PublicJobsResponseSchema,
-  UpdateApplicantStatusResponseSchema,
   PublicCompanyProfileResponseSchema,
   PublicJobsBySlugResponseSchema,
+  PublicJobsResponseSchema,
+  UpdateApplicantStatusResponseSchema,
   UpdateJobResponseSchema,
   UpdateRuleResponseSchema,
 } from "../schemas";
