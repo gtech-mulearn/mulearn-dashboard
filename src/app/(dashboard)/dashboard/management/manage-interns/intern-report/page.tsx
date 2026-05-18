@@ -63,7 +63,7 @@ export default function WeeklyReportGeneratorPage() {
   const responses = MOCK_RESPONSES;
   const isLoading = false;
   const [searchText, setSearchText] = useState("");
-  const perPage = 10;
+  const [perPage, _setPerPage] = useState(10);
   const [page, setPage] = useState(1);
   const [teamFilter, setTeamFilter] = useState("ALL");
 
@@ -110,7 +110,7 @@ export default function WeeklyReportGeneratorPage() {
       isSortable: true,
       wrap: (data: string) => (
         <span className="font-bold uppercase text-[11px] tracking-tight">
-          {data}
+          {String(data)}
         </span>
       ),
     },
@@ -120,7 +120,7 @@ export default function WeeklyReportGeneratorPage() {
       isSortable: true,
       wrap: (data: string) => (
         <span className="font-mono text-[10px] bg-muted/50 px-2 py-0.5 rounded">
-          {data}
+          {String(data)}
         </span>
       ),
     },
@@ -133,7 +133,7 @@ export default function WeeklyReportGeneratorPage() {
           variant="outline"
           className="text-[9px] uppercase font-black tracking-widest"
         >
-          {data}
+          {String(data)}
         </Badge>
       ),
     },
@@ -152,7 +152,7 @@ export default function WeeklyReportGeneratorPage() {
       isSortable: true,
       wrap: (data: string) => (
         <div className="flex items-center gap-1 font-black text-brand-blue">
-          {data} <span className="text-[8px] opacity-50">XP</span>
+          {String(data)} <span className="text-[8px] opacity-50">XP</span>
         </div>
       ),
     },

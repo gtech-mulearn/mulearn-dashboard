@@ -9,11 +9,19 @@
  */
 
 import { useQuery } from "@tanstack/react-query";
-import { fetchCompanyProfile } from "../api";
+import {
+  fetchCompanyProfile,
+  fetchPublicCompanyJobsBySlug,
+  fetchPublicCompanyProfile,
+} from "../api";
 
 export const COMPANY_KEYS = {
   all: ["company"] as const,
   profile: () => [...COMPANY_KEYS.all, "profile"] as const,
+  publicProfile: (slug: string) =>
+    [...COMPANY_KEYS.all, "public-profile", slug] as const,
+  publicJobs: (slug: string) =>
+    [...COMPANY_KEYS.all, "public-jobs", slug] as const,
 };
 
 export function useCompanyProfile() {
@@ -31,4 +39,22 @@ export function useCompanyProfile() {
     isActive: query.data?.status === "active",
     status: query.data?.status,
   };
+}
+
+export function usePublicCompanyProfile(slug?: string) {
+  return useQuery({
+    queryKey: COMPANY_KEYS.publicProfile(slug ?? ""),
+    queryFn: () => fetchPublicCompanyProfile(slug!),
+    enabled: !!slug,
+    staleTime: 10 * 60 * 1000,
+  });
+}
+
+export function usePublicCompanyJobs(slug?: string) {
+  return useQuery({
+    queryKey: COMPANY_KEYS.publicJobs(slug ?? ""),
+    queryFn: () => fetchPublicCompanyJobsBySlug(slug!),
+    enabled: !!slug,
+    staleTime: 5 * 60 * 1000,
+  });
 }

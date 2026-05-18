@@ -16,7 +16,7 @@ interface OnboardingLayoutProps {
 
 export default function OnboardingLayout({ children }: OnboardingLayoutProps) {
   return (
-    <div className="min-h-screen w-full flex flex-col bg-linear-to-b from-white via-white to-violet-100/50">
+    <div className="min-h-screen w-full flex flex-col bg-linear-to-b from-background via-background to-muted">
       {/* Header */}
       <header className="flex items-center justify-center py-6 px-4 relative">
         <Link href="/">

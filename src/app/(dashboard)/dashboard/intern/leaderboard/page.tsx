@@ -1,30 +1,19 @@
 "use client";
 
 import { Clock, Gem, Trophy } from "lucide-react";
-import { useState, type ReactElement } from "react";
-import Pagination from "@/components/dashboard/table/pagination";
-import Table, { type Data } from "@/components/dashboard/table/Table";
-import TableTop from "@/components/dashboard/table/TableTop";
+import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-interface LeaderboardEntry {
-  id: string;
-  rank: number;
-  name: string;
-  team: string;
-  points: number;
-  streak: number;
-  avatar: string;
-  avatarUrl?: string;
-}
+import Table, { type Data } from "@/components/dashboard/table/Table";
+import TableTop from "@/components/dashboard/table/TableTop";
+import Pagination from "@/components/dashboard/table/pagination";
 
 export default function LeaderboardPage() {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
-  const [searchText, setSearchText] = useState("");
+  const [_searchText, setSearchText] = useState("");
 
   const MOCK_LEADERBOARD = [
     {
@@ -100,31 +89,32 @@ export default function LeaderboardPage() {
       column: "name",
       Label: "Username",
       isSortable: false,
-      wrap: (data: string | ReactElement, _id: string, row: Data) => {
-        const leaderboardRow = row as unknown as LeaderboardEntry;
-        return (
-          <div className="flex items-center gap-3">
-            <Avatar className="w-8 h-8">
-              <AvatarImage src={leaderboardRow.avatarUrl} />
-              <AvatarFallback className="text-xs">
-                {leaderboardRow.avatar}
-              </AvatarFallback>
-            </Avatar>
-            <span className="font-medium">{data}</span>
-            {leaderboardRow.name === "Alex Doe" && (
-              <Badge className="bg-brand-blue/10 text-brand-blue border-brand-blue/20 text-[10px] h-4">
-                YOU
-              </Badge>
-            )}
-          </div>
-        );
-      },
+      wrap: (
+        data: string | import("react").ReactElement,
+        _id: string,
+        row: Data,
+      ) => (
+        <div className="flex items-center gap-3">
+          <Avatar className="w-8 h-8">
+            <AvatarImage src={row.avatarUrl as string | undefined} />
+            <AvatarFallback className="text-xs">
+              {row.avatar as string}
+            </AvatarFallback>
+          </Avatar>
+          <span className="font-medium">{data}</span>
+          {row.name === "Alex Doe" && (
+            <Badge className="bg-brand-blue/10 text-brand-blue border-brand-blue/20 text-[10px] h-4">
+              YOU
+            </Badge>
+          )}
+        </div>
+      ),
     },
     {
       column: "points",
       Label: "Points",
       isSortable: true,
-      wrap: (data: string | ReactElement) => (
+      wrap: (data: string | import("react").ReactElement) => (
         <div className="flex items-center gap-1.5 font-mono">
           <Gem className="w-3.5 h-3.5 text-brand-blue" />
           {data}
@@ -135,7 +125,7 @@ export default function LeaderboardPage() {
       column: "streak",
       Label: "Streak",
       isSortable: true,
-      wrap: (data: string | ReactElement) => (
+      wrap: (data: string | import("react").ReactElement) => (
         <div className="flex items-center gap-1.5 text-warning">
           <span>🔥</span>
           {data}
@@ -146,7 +136,7 @@ export default function LeaderboardPage() {
 
   const top3 = MOCK_LEADERBOARD.slice(0, 3);
   const others = MOCK_LEADERBOARD.slice(3).filter((item) =>
-    item.name.toLowerCase().includes(searchText.toLowerCase()),
+    item.name.toLowerCase().includes(_searchText.toLowerCase()),
   );
 
   return (

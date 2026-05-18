@@ -1,23 +1,7 @@
 "use client";
 
-/**
- * Company Public View
- *
- * 📍 src/features/company-jobs/components/profile/company-public-view.tsx
- *
- * Renders the company profile from a public user profile visit (/dashboard/profile/[muid]).
- * Uses UserProfile data from the public profile API as the source of truth for
- * identity fields; mock data fills company-specific gaps.
- *
- * TODO: Replace with fetchPublicCompanyProfile(profile.company_slug) once the backend
- * returns company_slug in the user-profile/{muid}/ response.
- */
-
 import type { UserProfile } from "@/features/profile/schemas";
-import {
-  MOCK_COMPANY_EXTENDED,
-  MOCK_PUBLIC_JOBS,
-} from "../../constants/mock-company-profile";
+import { usePublicCompanyJobs, usePublicCompanyProfile } from "../../hooks";
 import type { CompanyProfile } from "../../types";
 import { CompanyCredibilitySection } from "./company-credibility-section";
 import { CompanyCultureSection } from "./company-culture-section";
@@ -30,52 +14,76 @@ interface CompanyPublicViewProps {
 }
 
 export function CompanyPublicView({ userProfile }: CompanyPublicViewProps) {
-  // Bridge UserProfile → CompanyProfile shape for the header.
-  // Fields not available from UserProfile are left null.
-  const companyProfile: CompanyProfile = {
+  // Pre-existing: muid used as company slug — backend must match
+  const slug = userProfile.muid;
+  const {
+    data: apiProfile,
+    isLoading: profileLoading,
+    isError: profileError,
+  } = usePublicCompanyProfile(slug);
+  const { data: jobsData, isLoading: jobsLoading } = usePublicCompanyJobs(slug);
+
+  if (profileLoading || jobsLoading) {
+    return (
+      <div className="flex items-center justify-center py-20 text-muted-foreground">
+        Loading profile…
+      </div>
+    );
+  }
+
+  if (profileError) {
+    return (
+      <div className="flex items-center justify-center py-20 text-destructive">
+        Failed to load company profile
+      </div>
+    );
+  }
+
+  const companyProfile: CompanyProfile = apiProfile ?? {
     id: userProfile.id,
     name: userProfile.full_name,
     slug: userProfile.muid,
-    status: "active",
     logo: userProfile.profile_pic ?? null,
-    description: null, // TODO: pull from company API when slug is available
-    industry_sector: null, // TODO: pull from company API
-    website_link: null, // TODO: pull from company API
+    description: null,
+    industry_sector: null,
+    website_link: null,
     email: userProfile.email ?? null,
-    location: null, // TODO: pull from company API
-    company_size: null, // TODO: pull from company API
-    linkedin_url: null, // TODO: pull from company API
+    location: null,
+    company_size: null,
+    linkedin_url: null,
     created_at: userProfile.joined,
   };
 
-  const mock = MOCK_COMPANY_EXTENDED;
+  const publicJobs = jobsData?.jobs ?? [];
 
   return (
     <div className="space-y-5">
       <CompanyProfileHeader
         profile={companyProfile}
-        activeJobsCount={MOCK_PUBLIC_JOBS.length}
+        activeJobsCount={jobsData?.pagination.count ?? publicJobs.length}
         isOwnProfile={false}
-        foundedYear={mock.founded_year}
-        remotePolicy={mock.remote_policy}
+        foundedYear={apiProfile?.founded_year ?? null}
+        remotePolicy={apiProfile?.remote_policy ?? null}
       />
 
-      <CompanyJobsSection isOwnProfile={false} publicJobs={MOCK_PUBLIC_JOBS} />
+      <CompanyJobsSection isOwnProfile={false} publicJobs={publicJobs} />
 
       <CompanyCultureSection
-        cultureText={mock.culture_text}
-        techStack={mock.tech_stack}
-        perks={mock.perks}
+        cultureText={apiProfile?.culture_text ?? null}
+        techStack={apiProfile?.tech_stack ?? []}
+        perks={apiProfile?.perks ?? []}
       />
 
       <CompanyCredibilitySection
-        hireCount={mock.hire_count}
-        avgKarmaOfHires={mock.avg_karma_of_hires}
-        campusEventsCount={mock.campus_events_count}
+        hireCount={apiProfile?.hire_count ?? 0}
+        avgKarmaOfHires={apiProfile?.avg_karma_of_hires ?? 0}
+        campusEventsCount={apiProfile?.campus_events_count ?? 0}
         memberSince={userProfile.joined}
       />
 
-      <CompanyTestimonialsSection testimonials={mock.testimonials} />
+      <CompanyTestimonialsSection
+        testimonials={apiProfile?.testimonials ?? []}
+      />
     </div>
   );
 }

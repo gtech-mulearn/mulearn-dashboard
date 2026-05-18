@@ -1,5 +1,10 @@
 export { useApplyJob } from "./use-apply-job";
-export { COMPANY_KEYS, useCompanyProfile } from "./use-company-profile";
+export {
+  COMPANY_KEYS,
+  useCompanyProfile,
+  usePublicCompanyJobs,
+  usePublicCompanyProfile,
+} from "./use-company-profile";
 export {
   JOB_APPLICANTS_KEYS,
   useJobApplicants,

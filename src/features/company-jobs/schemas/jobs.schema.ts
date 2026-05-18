@@ -253,6 +253,18 @@ export const GenericResponseSchema = DjangoResponse(z.unknown());
 
 // ─── Company Profile Response ───────────────────────────────
 
+export const CompanyTestimonialSchema = z.object({
+  learner_name: z.string(),
+  role: z.string(),
+  quote: z.string(),
+});
+
+export const CompanyGalleryItemSchema = z.object({
+  image_url: z.string(),
+  caption: z.string().optional(),
+  sort_order: z.number().optional(),
+});
+
 export const CompanyProfileSchema = z.object({
   id: z.string(),
   company_user_id: z.string().optional(),
@@ -278,10 +290,75 @@ export const CompanyProfileSchema = z.object({
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
   deleted_at: z.string().optional().nullable(),
+  // Extended fields (new in backend — optional for backwards compat)
+  founded_year: z.number().nullable().optional(),
+  remote_policy: z.string().nullable().optional(),
+  culture_text: z.string().nullable().optional(),
+  tech_stack: z
+    .array(z.string())
+    .nullish()
+    .transform((v) => v ?? []),
+  perks: z
+    .array(z.string())
+    .nullish()
+    .transform((v) => v ?? []),
+  testimonials: z
+    .array(CompanyTestimonialSchema)
+    .nullish()
+    .transform((v) => v ?? []),
+  gallery: z
+    .array(CompanyGalleryItemSchema)
+    .nullish()
+    .transform((v) => v ?? []),
+  hire_count: z.number().optional().default(0),
+  alumni_count: z.number().optional().default(0),
+  avg_karma_of_hires: z.number().optional().default(0),
+  campus_events_count: z.number().optional().default(0),
 });
 
 export const CompanyProfileResponseSchema =
   DjangoResponse(CompanyProfileSchema);
+
+// Public company profile response (no auth — same CompanyProfile shape, now with extended fields)
+export const PublicCompanyProfileResponseSchema =
+  DjangoResponse(CompanyProfileSchema);
+
+// Public jobs by slug
+export const PublicJobBySlugSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  job_type: z.string().optional(),
+  location: z.string().optional(),
+  salary_range: z.string(),
+  created_at: z.string(),
+  is_active: z.boolean().optional(),
+  min_karma: z.number().optional(),
+  min_level: z.number().optional(),
+  tags: z.array(z.string()).optional().default([]),
+});
+export type PublicJobBySlug = z.infer<typeof PublicJobBySlugSchema>;
+
+export const PublicJobsPaginationSchema = z.object({
+  count: z.number(),
+  totalPages: z.number(),
+  isFirst: z.boolean(),
+  isLast: z.boolean(),
+});
+
+export const PublicJobsBySlugDataSchema = z.object({
+  company: z.object({
+    id: z.string(),
+    name: z.string(),
+    slug: z.string(),
+  }),
+  jobs: z.array(PublicJobBySlugSchema),
+  pagination: PublicJobsPaginationSchema,
+});
+export type PublicJobsBySlugData = z.infer<typeof PublicJobsBySlugDataSchema>;
+
+export const PublicJobsBySlugResponseSchema = DjangoResponse(
+  PublicJobsBySlugDataSchema,
+);
 
 // ─── Form Schemas (per-step validation) ─────────────────────
 

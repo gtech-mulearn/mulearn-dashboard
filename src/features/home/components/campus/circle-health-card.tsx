@@ -1,18 +1,15 @@
 import { Activity } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { IgChapter } from "@/features/campus-manage/types";
 import { cn } from "@/lib/utils";
-import type {
-  CircleHealthItem,
-  CircleHealthStatus,
-} from "../../constants/mock-campus";
-import { MOCK_CIRCLE_HEALTH } from "../../constants/mock-campus";
+import type { CampusCircleHealthItem } from "../../schemas/home.schema";
 
 type CircleHealthCardProps = {
-  igChapters?: IgChapter[];
+  items?: CampusCircleHealthItem[];
   isLoading?: boolean;
 };
+
+type CircleHealthStatus = "active" | "slow" | "inactive";
 
 const STATUS_STYLES: Record<CircleHealthStatus, string> = {
   active: "bg-success/15 text-success",
@@ -20,24 +17,7 @@ const STATUS_STYLES: Record<CircleHealthStatus, string> = {
   inactive: "bg-destructive/15 text-destructive",
 };
 
-function mergeWithIgChapters(
-  mock: CircleHealthItem[],
-  chapters?: IgChapter[],
-): CircleHealthItem[] {
-  if (!chapters || chapters.length === 0) return mock;
-  return mock.map((item, i) => {
-    const chapter = chapters[i];
-    if (!chapter) return item;
-    return { ...item, name: chapter.name, memberCount: chapter.membersCount };
-  });
-}
-
-export function CircleHealthCard({
-  igChapters,
-  isLoading,
-}: CircleHealthCardProps) {
-  const items = mergeWithIgChapters(MOCK_CIRCLE_HEALTH, igChapters);
-
+export function CircleHealthCard({ items, isLoading }: CircleHealthCardProps) {
   return (
     <Card className="h-full rounded-2xl border bg-card shadow-sm">
       <CardHeader className="flex-row items-center gap-2.5 px-5 py-4">
@@ -63,17 +43,17 @@ export function CircleHealthCard({
           </div>
         ) : (
           <div className="space-y-0">
-            {items.map((item) => (
+            {(items ?? []).map((item) => (
               <div
-                key={item.id}
+                key={item.circle_id}
                 className="flex items-center justify-between border-b border-border py-3 last:border-b-0"
               >
                 <div>
                   <p className="text-sm font-semibold text-foreground">
-                    {item.name}
+                    {item.circle_name}
                   </p>
                   <p className="text-[11px] text-muted-foreground">
-                    {item.memberCount} members · {item.sessionsPerMonth}{" "}
+                    {item.member_count} members · {item.sessions_per_month}{" "}
                     sessions/month
                   </p>
                 </div>

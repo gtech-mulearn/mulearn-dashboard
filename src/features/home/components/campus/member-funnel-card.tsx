@@ -1,26 +1,30 @@
 import { BarChart3 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { CampusOverview } from "@/features/campus-manage/types";
-import type { FunnelStage } from "../../constants/mock-campus";
-import {
-  MOCK_CAMPUS_FUNNEL,
-  MOCK_CAMPUS_FUNNEL_MAX,
-} from "../../constants/mock-campus";
+import type {
+  CampusFunnelStage,
+  CampusMemberFunnelData,
+} from "../../schemas/home.schema";
+
+const BAR_COLORS = ["#6366f1", "#8b5cf6", "#3b82f6", "#10b981", "#06b6d4"];
 
 type MemberFunnelCardProps = {
-  overview?: CampusOverview;
+  funnelData?: CampusMemberFunnelData;
+  campusLabel?: string;
   isLoading?: boolean;
 };
 
 function FunnelRow({
   stage,
   maxValue,
+  colorIndex,
 }: {
-  stage: FunnelStage;
+  stage: CampusFunnelStage;
   maxValue: number;
+  colorIndex: number;
 }) {
-  const pct = Math.round((stage.value / maxValue) * 100);
+  const pct = maxValue > 0 ? Math.round((stage.count / maxValue) * 100) : 0;
+  const color = BAR_COLORS[colorIndex % BAR_COLORS.length];
   return (
     <div className="flex items-center gap-3">
       <span className="w-20 shrink-0 text-xs font-medium text-muted-foreground">
@@ -29,23 +33,21 @@ function FunnelRow({
       <div className="flex-1 overflow-hidden rounded-full bg-muted h-2.5">
         <div
           className="h-full rounded-full transition-all duration-500"
-          style={{ width: `${pct}%`, backgroundColor: stage.color }}
+          style={{ width: `${pct}%`, backgroundColor: color }}
         />
       </div>
       <span className="w-8 shrink-0 text-right text-xs font-semibold text-foreground">
-        {stage.value}
+        {stage.count}
       </span>
     </div>
   );
 }
 
 export function MemberFunnelCard({
-  overview,
+  funnelData,
+  campusLabel,
   isLoading,
 }: MemberFunnelCardProps) {
-  const campusLabel = overview
-    ? `${overview.collegeName} · ${new Date().toLocaleString("default", { month: "long", year: "numeric" })}`
-    : "";
   return (
     <Card className="h-full rounded-2xl border bg-card shadow-sm">
       <CardHeader className="flex-row items-center gap-2.5 px-5 py-4">
@@ -74,11 +76,12 @@ export function MemberFunnelCard({
           </div>
         ) : (
           <div className="space-y-4">
-            {MOCK_CAMPUS_FUNNEL.map((stage) => (
+            {(funnelData?.stages ?? []).map((stage, idx) => (
               <FunnelRow
-                key={stage.label}
+                key={stage.key}
                 stage={stage}
-                maxValue={MOCK_CAMPUS_FUNNEL_MAX}
+                maxValue={funnelData?.max ?? 1}
+                colorIndex={idx}
               />
             ))}
           </div>

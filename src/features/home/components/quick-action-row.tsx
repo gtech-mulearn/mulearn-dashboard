@@ -1,60 +1,78 @@
-import { Briefcase, Layers, Trophy, Users, Zap } from "lucide-react";
+import { Briefcase, Layers, Search, Trophy, Users, Zap } from "lucide-react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
-import { MOCK_QUICK_ACTION_COUNTS } from "../constants/mock-stats";
 
-const QUICK_ACTIONS = [
-  {
-    id: "mujourney",
-    label: "µJourney",
-    sub: "Track your progress",
-    href: "/dashboard/mujourney",
-    icon: Zap,
-    iconBg: "bg-primary/10",
-    iconColor: "text-primary",
-  },
-  {
-    id: "claim-karma",
-    label: "Claim Karma",
-    sub: "Submit your tasks",
-    href: "/dashboard/mujourney",
-    icon: Layers,
-    iconBg: "bg-success/10",
-    iconColor: "text-success",
-  },
-  {
-    id: "my-circles",
-    label: "My Circles",
-    sub: `${MOCK_QUICK_ACTION_COUNTS.myCircles} active circles`,
-    href: "/dashboard/learning-circle",
-    icon: Users,
-    iconBg: "bg-brand-purple/10",
-    iconColor: "text-brand-purple",
-  },
-  {
-    id: "leaderboard",
-    label: "Leaderboard",
-    sub: `You're ranked #${MOCK_QUICK_ACTION_COUNTS.leaderboardRank}`,
-    href: "/dashboard/leaderboard",
-    icon: Trophy,
-    iconBg: "bg-warning/10",
-    iconColor: "text-warning",
-  },
-  {
-    id: "jobs-board",
-    label: "Jobs Board",
-    sub: `${MOCK_QUICK_ACTION_COUNTS.jobOpenings} new openings`,
-    href: "/dashboard/jobs",
-    icon: Briefcase,
-    iconBg: "bg-destructive/10",
-    iconColor: "text-destructive",
-  },
-] as const;
+type QuickActionRowProps = {
+  circleCount: number;
+  rank: number | null;
+  jobCount: number;
+};
 
-export function QuickActionRow() {
+export function QuickActionRow({
+  circleCount,
+  rank,
+  jobCount,
+}: QuickActionRowProps) {
+  const actions = [
+    {
+      id: "mujourney",
+      label: "µJourney",
+      sub: "Track your progress",
+      href: "/dashboard/mujourney",
+      icon: Zap,
+      iconBg: "bg-primary/10",
+      iconColor: "text-primary",
+    },
+    {
+      id: "claim-karma",
+      label: "Claim Karma",
+      sub: "Submit your tasks",
+      href: "/dashboard/mujourney",
+      icon: Layers,
+      iconBg: "bg-success/10",
+      iconColor: "text-success",
+    },
+    {
+      id: "my-circles",
+      label: "My Circles",
+      sub: `${circleCount} active circle${circleCount !== 1 ? "s" : ""}`,
+      href: "/dashboard/learning-circle",
+      icon: Users,
+      iconBg: "bg-brand-purple/10",
+      iconColor: "text-brand-purple",
+    },
+    {
+      id: "leaderboard",
+      label: "Leaderboard",
+      sub: rank != null ? `You're ranked #${rank}` : "View rankings",
+      href: "/dashboard/leaderboard",
+      icon: Trophy,
+      iconBg: "bg-warning/10",
+      iconColor: "text-warning",
+    },
+    {
+      id: "jobs-board",
+      label: "Jobs Board",
+      sub: `${jobCount} new openings`,
+      href: "/dashboard/company/jobs",
+      icon: Briefcase,
+      iconBg: "bg-destructive/10",
+      iconColor: "text-destructive",
+    },
+    {
+      id: "find-mentors",
+      label: "Find Mentors",
+      sub: "Connect with experts",
+      href: "/dashboard/search/mentors",
+      icon: Search,
+      iconBg: "bg-brand-blue/10",
+      iconColor: "text-brand-blue",
+    },
+  ] as const;
+
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-      {QUICK_ACTIONS.map(
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      {actions.map(
         ({ id, label, sub, href, icon: Icon, iconBg, iconColor }) => (
           <Link key={id} href={href}>
             <Card className="flex cursor-pointer items-center gap-3 rounded-xl border bg-card p-4 shadow-sm transition-shadow hover:shadow-md">

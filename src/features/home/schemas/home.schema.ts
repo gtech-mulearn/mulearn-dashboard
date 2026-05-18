@@ -118,3 +118,418 @@ export const CalendarEventsResponseSchema = ApiResponseSchema(
 export type CalendarEventsResponse = z.infer<
   typeof CalendarEventsResponseSchema
 >;
+
+// ============================================
+// Pagination (shared)
+// ============================================
+
+export const PaginationSchema = z.object({
+  totalPages: z.number(),
+  currentPage: z.number(),
+  totalCount: z.number(),
+  nextPage: z.number().nullable(),
+  previousPage: z.number().nullable(),
+});
+
+// ============================================
+// Mentor Overview (/mentor/overview/)
+// ============================================
+
+export const MentorOverviewSchema = z.object({
+  user: z.object({
+    full_name: z.string(),
+    muid: z.string(),
+    profile_pic: z.string().nullable(),
+  }),
+  mentor_profile: z.object({
+    about: z.string().nullable(),
+    expertise: z.string().nullable(),
+    reason: z.string().nullable(),
+    volunteer_hours: z.number(),
+    mentor_tier: z.string().nullable(),
+    is_verified: z.boolean(),
+  }),
+  active_persona: z
+    .object({
+      active_persona: z.string().nullable(),
+      active_role_link_id: z.string().nullable(),
+      active_ig_id: z.string().nullable(),
+      ig_name: z.string().nullable(),
+      is_verified: z.boolean(),
+    })
+    .nullable(),
+  authorized_igs: z.array(
+    z.object({
+      role_link_id: z.string(),
+      ig_id: z.string(),
+      ig_name: z.string(),
+      is_primary: z.boolean(),
+      is_verified: z.boolean(),
+    }),
+  ),
+  stats: z.object({
+    total_mentees: z.number(),
+    sessions_conducted: z.number(),
+    pending_task_approvals: z.number(),
+    volunteer_hours: z.number(),
+  }),
+});
+export type MentorOverview = z.infer<typeof MentorOverviewSchema>;
+
+export const MentorOverviewResponseSchema =
+  ApiResponseSchema(MentorOverviewSchema);
+
+// ============================================
+// Mentor Sessions (/mentor/sessions/)
+// ============================================
+
+export const MentorSessionParticipantSchema = z.object({
+  user_id: z.string(),
+  full_name: z.string(),
+  participant_role: z.string(),
+  attendance_status: z.string().nullable(),
+});
+
+export const MentorSessionSchema = z.object({
+  id: z.string(),
+  ig_name: z.string().nullable(),
+  title: z.string(),
+  mode: z.string(),
+  starts_at: z.string(),
+  ends_at: z.string(),
+  status: z.string(),
+  meeting_link: z.string().nullable(),
+  participants: z.array(MentorSessionParticipantSchema),
+});
+export type MentorSession = z.infer<typeof MentorSessionSchema>;
+
+export const MentorSessionsResponseSchema = ApiResponseSchema(
+  z.object({
+    data: z.array(MentorSessionSchema),
+    pagination: PaginationSchema,
+  }),
+);
+
+// ============================================
+// Mentor Mentees (/mentor/mentees/)
+// ============================================
+
+export const MentorMenteeSchema = z.object({
+  user_id: z.string(),
+  full_name: z.string(),
+  muid: z.string(),
+  profile_pic: z.string().nullable(),
+  karma: z.number(),
+  level: z.string().nullable(),
+  ig_karma: z.number(),
+  ig_level: z.string().nullable(),
+  session_count: z.number(),
+  last_session_at: z.string().nullable(),
+});
+export type MentorMentee = z.infer<typeof MentorMenteeSchema>;
+
+export const MentorMenteesResponseSchema = ApiResponseSchema(
+  z.object({
+    active_ig_id: z.string().nullable(),
+    data: z.array(MentorMenteeSchema),
+    pagination: PaginationSchema,
+  }),
+);
+
+// ============================================
+// Public Jobs Count (/public/jobs/)
+// ============================================
+
+export const PublicJobsResponseSchema = ApiResponseSchema(
+  z.object({
+    data: z.array(z.unknown()),
+    pagination: PaginationSchema,
+  }),
+);
+
+// ============================================
+// Mentor Persona — IG Roles + Switch
+// ============================================
+
+export const MentorIgRoleSchema = z.object({
+  role_link_id: z.string(),
+  ig_id: z.string(),
+  ig_name: z.string(),
+  role: z.string(),
+  is_primary: z.boolean(),
+  is_verified: z.boolean(),
+  mentor_tier: z.string(),
+});
+
+export type MentorIgRole = z.infer<typeof MentorIgRoleSchema>;
+
+export const MentorIgRolesResponseSchema = ApiResponseSchema(
+  z.object({
+    ig_roles: z.array(MentorIgRoleSchema),
+  }),
+);
+
+export const MentorPersonaSwitchResponseSchema = ApiResponseSchema(
+  z.object({
+    active_persona: z.string(),
+    active_role_link_id: z.string(),
+    active_ig_id: z.string(),
+    ig_name: z.string(),
+    is_verified: z.boolean(),
+    mentor_tier: z.string(),
+    profile_created: z.boolean().optional(),
+    last_persona_switched_at: z.string().optional(),
+    access: z.string().nullable().optional(),
+  }),
+);
+
+// ============================================
+// Learner Home Summary (/dashboard/home/learner/summary/)
+// ============================================
+
+export const LearnerStatsSchema = z.object({
+  weekly_karma: z.number(),
+  total_karma: z.number(),
+  rank: z.number().nullable(),
+  active_circles: z.number(),
+  streak_days: z.number(),
+});
+export type LearnerStats = z.infer<typeof LearnerStatsSchema>;
+
+export const LearnerNextMeetingSchema = z
+  .object({
+    id: z.string(),
+    circle_id: z.string(),
+    circle_name: z.string(),
+    title: z.string(),
+    starts_at: z.string(),
+    duration_minutes: z.number(),
+    meeting_link: z.string().nullable(),
+    rsvp_status: z.string(),
+  })
+  .nullable();
+export type LearnerNextMeeting = z.infer<typeof LearnerNextMeetingSchema>;
+
+export const LearnerQuickActionCountsSchema = z.object({
+  circles: z.number(),
+  leaderboard_rank: z.number().nullable(),
+  job_openings: z.number(),
+});
+export type LearnerQuickActionCounts = z.infer<
+  typeof LearnerQuickActionCountsSchema
+>;
+
+export const LearnerHomeSummaryDataSchema = z.object({
+  stats: LearnerStatsSchema,
+  next_meeting: LearnerNextMeetingSchema,
+  quick_action_counts: LearnerQuickActionCountsSchema,
+});
+export type LearnerHomeSummaryData = z.infer<
+  typeof LearnerHomeSummaryDataSchema
+>;
+
+export const LearnerHomeSummaryResponseSchema = ApiResponseSchema(
+  LearnerHomeSummaryDataSchema,
+);
+
+// ============================================
+// Mentor Home Summary (/mentor/overview/home-summary/)
+// ============================================
+
+export const MentorStatCardSchema = z.object({
+  key: z.string(),
+  label: z.string(),
+  value: z.number(),
+  delta: z.number(),
+  delta_type: z.enum(["positive", "negative", "neutral"]),
+  period: z.string(),
+});
+export type MentorStatCard = z.infer<typeof MentorStatCardSchema>;
+
+export const MentorNextSessionSchema = z
+  .object({
+    id: z.string(),
+    title: z.string(),
+    mentee_name: z.string(),
+    mentee_muid: z.string(),
+    starts_at: z.string(),
+    mode: z.string(),
+    meeting_link: z.string().nullable(),
+  })
+  .nullable();
+export type MentorNextSession = z.infer<typeof MentorNextSessionSchema>;
+
+export const MentorHomeSummaryDataSchema = z.object({
+  next_session: MentorNextSessionSchema,
+  stat_cards: z.array(MentorStatCardSchema),
+  upcoming_sessions: z.array(MentorSessionSchema),
+  session_requests: z.array(MentorSessionSchema),
+  mentee_progress: z.array(MentorMenteeSchema),
+  expertise_tags: z.array(z.string()),
+});
+export type MentorHomeSummaryData = z.infer<typeof MentorHomeSummaryDataSchema>;
+/** @deprecated Use MentorSession instead */
+export type MentorSessionPartial = MentorSession;
+
+export const MentorHomeSummaryResponseSchema = ApiResponseSchema(
+  MentorHomeSummaryDataSchema,
+);
+
+// ============================================
+// Company Home Summary (/dashboard/company/home-summary/)
+// ============================================
+
+export const CompanyQuickStatsSchema = z.object({
+  jobs_posted: z.number(),
+  total_views: z.number(),
+  applications: z.number(),
+  hired: z.number(),
+});
+export type CompanyQuickStats = z.infer<typeof CompanyQuickStatsSchema>;
+
+export const LevelDistributionItemSchema = z.object({
+  level_id: z.string(),
+  level_name: z.string(),
+  level_order: z.number(),
+  count: z.number(),
+  percentage: z.number(),
+});
+export type LevelDistributionItem = z.infer<typeof LevelDistributionItemSchema>;
+
+export const TalentPoolTopIgSchema = z.object({
+  ig_id: z.string(),
+  name: z.string(),
+  learner_count: z.number(),
+  total_karma: z.number(),
+});
+export type TalentPoolTopIg = z.infer<typeof TalentPoolTopIgSchema>;
+
+export const CompanyTalentPoolSchema = z.object({
+  total_learners: z.number(),
+  level_distribution: z.array(LevelDistributionItemSchema),
+  top_interest_groups: z.array(TalentPoolTopIgSchema),
+});
+export type CompanyTalentPool = z.infer<typeof CompanyTalentPoolSchema>;
+
+export const CompanyHomeSummaryDataSchema = z.object({
+  company: z.object({
+    id: z.string(),
+    name: z.string(),
+    slug: z.string(),
+    status: z.string(),
+    logo: z.string().nullable(),
+  }),
+  quick_stats: CompanyQuickStatsSchema,
+  stat_cards: z.array(z.unknown()),
+  talent_pool: CompanyTalentPoolSchema,
+});
+export type CompanyHomeSummaryData = z.infer<
+  typeof CompanyHomeSummaryDataSchema
+>;
+
+export const CompanyHomeSummaryResponseSchema = ApiResponseSchema(
+  CompanyHomeSummaryDataSchema,
+);
+
+// ============================================
+// Learner Streak (/dashboard/home/learner/streak/)
+// ============================================
+
+export const LearnerStreakDataSchema = z.object({
+  streak_days: z.number(),
+  last_activity_at: z.string().nullable(),
+  activity_dates: z.array(z.string()),
+});
+export type LearnerStreakData = z.infer<typeof LearnerStreakDataSchema>;
+
+export const LearnerStreakResponseSchema = ApiResponseSchema(
+  LearnerStreakDataSchema,
+);
+
+// ============================================
+// Campus Dashboard (/dashboard/campus/*)
+// ============================================
+
+// Member Funnel
+export const CampusFunnelStageSchema = z.object({
+  key: z.string(),
+  label: z.string(),
+  count: z.number(),
+  percentage: z.number(),
+});
+export type CampusFunnelStage = z.infer<typeof CampusFunnelStageSchema>;
+
+export const CampusMemberFunnelDataSchema = z.object({
+  max: z.number(),
+  stages: z.array(CampusFunnelStageSchema),
+});
+export type CampusMemberFunnelData = z.infer<
+  typeof CampusMemberFunnelDataSchema
+>;
+
+export const CampusMemberFunnelResponseSchema = ApiResponseSchema(
+  CampusMemberFunnelDataSchema,
+);
+
+// Circle Health
+export const CampusCircleHealthItemSchema = z.object({
+  circle_id: z.string(),
+  circle_name: z.string(),
+  ig_id: z.string(),
+  ig_name: z.string(),
+  member_count: z.number(),
+  sessions_per_month: z.number(),
+  last_session_at: z.string().nullable(),
+  status: z.enum(["active", "slow", "inactive"]),
+});
+export type CampusCircleHealthItem = z.infer<
+  typeof CampusCircleHealthItemSchema
+>;
+
+export const CampusCircleHealthResponseSchema = ApiResponseSchema(
+  z.object({ data: z.array(CampusCircleHealthItemSchema) }),
+);
+
+// Recent Activity
+export const CampusActivityActorSchema = z.object({
+  id: z.string(),
+  full_name: z.string(),
+  muid: z.string(),
+  profile_pic: z.string().nullable(),
+});
+
+export const CampusRecentActivityItemSchema = z.object({
+  id: z.string(),
+  type: z.string(),
+  title: z.string(),
+  description: z.string(),
+  created_at: z.string(),
+  actor: CampusActivityActorSchema,
+  metadata: z.record(z.string(), z.unknown()).optional(),
+});
+export type CampusRecentActivityItem = z.infer<
+  typeof CampusRecentActivityItemSchema
+>;
+
+export const CampusRecentActivityResponseSchema = ApiResponseSchema(
+  z.object({ data: z.array(CampusRecentActivityItemSchema) }),
+);
+
+// Campus Home Summary (wraps all three)
+export const CampusHomeSummaryDataSchema = z.object({
+  campus: z.object({
+    org_id: z.string(),
+    college_name: z.string(),
+    campus_code: z.string(),
+    campus_zone: z.string(),
+  }),
+  stat_cards: z.array(z.unknown()),
+  member_funnel: CampusMemberFunnelDataSchema,
+  circle_health: z.array(CampusCircleHealthItemSchema),
+  recent_activity: z.array(CampusRecentActivityItemSchema),
+});
+export type CampusHomeSummaryData = z.infer<typeof CampusHomeSummaryDataSchema>;
+
+export const CampusHomeSummaryResponseSchema = ApiResponseSchema(
+  CampusHomeSummaryDataSchema,
+);

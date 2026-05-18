@@ -14,10 +14,10 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
-import { type ReactElement, useState } from "react";
+import type { ReactElement } from "react";
+import { useState } from "react";
 import Pagination from "@/components/dashboard/table/pagination";
-import type { Data } from "@/components/dashboard/table/Table";
-import Table from "@/components/dashboard/table/Table";
+import Table, { type Data } from "@/components/dashboard/table/Table";
 import TableTop from "@/components/dashboard/table/TableTop";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -145,13 +145,7 @@ const getStatusBadge = (status: string) => {
 export default function ManageInternsPage() {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
-  const [searchText, setSearchText] = useState("");
-
-  const filteredInterns = MOCK_INTERNS.filter(
-    (intern) =>
-      intern.name.toLowerCase().includes(searchText.toLowerCase()) ||
-      intern.email.toLowerCase().includes(searchText.toLowerCase()),
-  );
+  const [_searchText, setSearchText] = useState("");
 
   const tableColumns = [
     {
@@ -164,7 +158,7 @@ export default function ManageInternsPage() {
             {data}
           </span>
           <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest leading-none mt-1">
-            {String(row.email ?? "")}
+            {row.email as string}
           </span>
         </div>
       ),
@@ -183,40 +177,34 @@ export default function ManageInternsPage() {
       column: "status",
       Label: "Status",
       isSortable: true,
-      wrap: (data: string | ReactElement) => getStatusBadge(String(data)),
+      wrap: (data: string | ReactElement) => getStatusBadge(data as string),
     },
     {
       column: "streak",
       Label: "Streak",
       isSortable: true,
-      wrap: (data: string | ReactElement) => {
-        const val = typeof data === "string" ? Number(data) : 0;
-        return (
-          <div className="font-mono font-black text-warning flex items-center gap-1">
-            {val > 0 ? (
-              <>
-                <Flame className="w-3 h-3 fill-warning" /> {data}
-              </>
-            ) : (
-              <span className="text-muted-foreground/40">{data}</span>
-            )}
-          </div>
-        );
-      },
+      wrap: (data: string | ReactElement) => (
+        <div className="font-mono font-black text-warning flex items-center gap-1">
+          {Number(data) > 0 ? (
+            <>
+              <Flame className="w-3 h-3 fill-warning" /> {data}
+            </>
+          ) : (
+            <span className="text-muted-foreground/40">{data}</span>
+          )}
+        </div>
+      ),
     },
     {
       column: "points",
       Label: "Gems",
       isSortable: true,
-      wrap: (data: string | ReactElement) => {
-        const val = typeof data === "string" ? Number(data) : 0;
-        return (
-          <div className="font-mono font-black text-foreground flex items-center gap-1.5">
-            <Gem className="w-3.5 h-3.5 text-brand-blue" />
-            {val.toLocaleString()}
-          </div>
-        );
-      },
+      wrap: (data: string | ReactElement) => (
+        <div className="font-mono font-black text-foreground flex items-center gap-1.5">
+          <Gem className="w-3.5 h-3.5 text-brand-blue" />
+          {Number(data).toLocaleString()}
+        </div>
+      ),
     },
     {
       column: "rank",
@@ -372,7 +360,7 @@ export default function ManageInternsPage() {
         <Card className="border-border/40 bg-card/40 backdrop-blur-xl shadow-2xl overflow-hidden">
           <CardContent className="p-0">
             <Table
-              rows={filteredInterns}
+              rows={MOCK_INTERNS}
               page={page}
               perPage={perPage}
               columnOrder={tableColumns}
@@ -406,9 +394,9 @@ export default function ManageInternsPage() {
             <div className="p-4 border-t border-border/20">
               <Pagination
                 currentPage={page}
-                totalPages={Math.ceil(filteredInterns.length / perPage)}
+                totalPages={Math.ceil(MOCK_INTERNS.length / perPage)}
                 perPage={perPage}
-                totalCount={filteredInterns.length}
+                totalCount={MOCK_INTERNS.length}
                 handlePreviousClick={() => setPage((p) => Math.max(1, p - 1))}
                 handleNextClick={() => setPage((p) => p + 1)}
               />

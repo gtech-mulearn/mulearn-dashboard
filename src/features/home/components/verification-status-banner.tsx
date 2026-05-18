@@ -13,6 +13,7 @@
 import { AlertCircle, Clock, XCircle } from "lucide-react";
 import { useCompanyOnboardingStatus } from "@/features/auth/hooks";
 import { ROLES } from "@/lib/auth/roles";
+import { useMentorIgRoles } from "../hooks/use-home";
 
 interface VerificationStatusBannerProps {
   roles: string[];
@@ -26,6 +27,7 @@ export function VerificationStatusBanner({
   const isEnabler = roles.includes(ROLES.ENABLER);
 
   const companyStatus = useCompanyOnboardingStatus(isCompany);
+  const mentorIgRoles = useMentorIgRoles(isMentor);
 
   // ── Company ─────────────────────────────────────────────────────
   if (isCompany) {
@@ -37,7 +39,8 @@ export function VerificationStatusBanner({
     const rejectionReason = data?.rejection_reason;
 
     // Already verified — no banner needed
-    if (verified === true || status === "approved") return null;
+    if (verified === true || status === "approved" || status === "active")
+      return null;
 
     if (status === "rejected") {
       return (
@@ -72,19 +75,39 @@ export function VerificationStatusBanner({
     );
   }
 
-  // ── Mentor / Enabler ────────────────────────────────────────────
-  if (isMentor || isEnabler) {
-    const roleLabel = isMentor ? "Mentor" : "Enabler";
+  // ── Mentor ──────────────────────────────────────────────────────
+  // Hide while loading; suppress when verified on at least one IG role.
+  if (isMentor) {
+    if (mentorIgRoles.isLoading) return null;
+    const roles = mentorIgRoles.data;
+    const hasVerifiedRole = roles?.some((r) => r.is_verified) ?? false;
+    if (!hasVerifiedRole) {
+      return (
+        <div className="flex items-start gap-3 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
+          <div>
+            <p className="font-semibold">Mentor account pending verification</p>
+            <p className="mt-0.5 text-warning/80">
+              Your mentor profile is awaiting admin approval. You will be
+              notified once your account is verified.
+            </p>
+          </div>
+        </div>
+      );
+    }
+  }
+
+  // ── Enabler ─────────────────────────────────────────────────────
+  // No verification status endpoint exists; keep the static banner.
+  if (isEnabler) {
     return (
       <div className="flex items-start gap-3 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
         <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
         <div>
-          <p className="font-semibold">
-            {roleLabel} account pending verification
-          </p>
+          <p className="font-semibold">Enabler account pending verification</p>
           <p className="mt-0.5 text-warning/80">
-            Your {roleLabel.toLowerCase()} profile is awaiting admin approval.
-            You will be notified once your account is verified.
+            Your enabler profile is awaiting admin approval. You will be
+            notified once your account is verified.
           </p>
         </div>
       </div>
