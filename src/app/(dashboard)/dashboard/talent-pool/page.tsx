@@ -12,7 +12,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -20,6 +20,8 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -64,6 +66,12 @@ function LearnerCardSkeleton() {
 interface ActiveFilters {
   interested_in_work?: boolean;
   interested_in_gig_work?: boolean;
+  karma_min?: number;
+  karma_max?: number;
+  level_order_min?: number;
+  ig_ids?: string;
+  achievement_ids?: string;
+  sortBy?: string;
 }
 
 interface FiltersDropdownProps {
@@ -88,7 +96,10 @@ function FiltersDropdown({ filters, onChange }: FiltersDropdownProps) {
           <ChevronDown className="h-3.5 w-3.5 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
+      <DropdownMenuContent
+        align="end"
+        className="w-64 max-h-[80vh] overflow-y-auto"
+      >
         <DropdownMenuLabel>Work Intent</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuCheckboxItem
@@ -109,6 +120,99 @@ function FiltersDropdown({ filters, onChange }: FiltersDropdownProps) {
           <Sparkles className="h-3.5 w-3.5 mr-2" />
           Open to Gig Work
         </DropdownMenuCheckboxItem>
+
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel>Sort By</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuRadioGroup
+          value={filters.sortBy || "-karma"}
+          onValueChange={(v) => onChange({ ...filters, sortBy: v })}
+        >
+          <DropdownMenuRadioItem value="-karma" className="text-xs">
+            Karma (High to Low)
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="karma" className="text-xs">
+            Karma (Low to High)
+          </DropdownMenuRadioItem>
+        </DropdownMenuRadioGroup>
+
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel>Karma Range</DropdownMenuLabel>
+        <div className="flex gap-2 p-2">
+          <Input
+            placeholder="Min"
+            value={filters.karma_min || ""}
+            onChange={(e) =>
+              onChange({
+                ...filters,
+                karma_min: e.target.value
+                  ? parseInt(e.target.value)
+                  : undefined,
+              })
+            }
+            className="h-8 text-xs"
+          />
+          <Input
+            placeholder="Max"
+            value={filters.karma_max || ""}
+            onChange={(e) =>
+              onChange({
+                ...filters,
+                karma_max: e.target.value
+                  ? parseInt(e.target.value)
+                  : undefined,
+              })
+            }
+            className="h-8 text-xs"
+          />
+        </div>
+
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel>Min Level</DropdownMenuLabel>
+        <div className="p-2">
+          <Input
+            placeholder="Min Level Order"
+            value={filters.level_order_min || ""}
+            onChange={(e) =>
+              onChange({
+                ...filters,
+                level_order_min: e.target.value
+                  ? parseInt(e.target.value)
+                  : undefined,
+              })
+            }
+            className="h-8 text-xs"
+          />
+        </div>
+
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel>Interest Groups</DropdownMenuLabel>
+        <div className="p-2">
+          <Input
+            placeholder="UUID1,UUID2..."
+            value={filters.ig_ids || ""}
+            onChange={(e) =>
+              onChange({ ...filters, ig_ids: e.target.value || undefined })
+            }
+            className="h-8 text-xs"
+          />
+        </div>
+
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel>Achievements</DropdownMenuLabel>
+        <div className="p-2">
+          <Input
+            placeholder="UUID1,UUID2..."
+            value={filters.achievement_ids || ""}
+            onChange={(e) =>
+              onChange({
+                ...filters,
+                achievement_ids: e.target.value || undefined,
+              })
+            }
+            className="h-8 text-xs"
+          />
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -118,6 +222,7 @@ function FiltersDropdown({ filters, onChange }: FiltersDropdownProps) {
 
 export default function TalentPoolPage() {
   const [search, setSearch] = useState("");
+  const [pageIndex, setPageIndex] = useState(1);
   const [filters, setFilters] = useState<ActiveFilters>({});
   const debouncedSearch = useDebounce(search, 300);
 
@@ -125,6 +230,13 @@ export default function TalentPoolPage() {
     search: debouncedSearch || undefined,
     interested_in_work: filters.interested_in_work,
     interested_in_gig_work: filters.interested_in_gig_work,
+    karma_min: filters.karma_min,
+    karma_max: filters.karma_max,
+    level_order_min: filters.level_order_min,
+    ig_ids: filters.ig_ids,
+    achievement_ids: filters.achievement_ids,
+    sortBy: filters.sortBy,
+    pageIndex: pageIndex,
     perPage: 24,
   };
 
@@ -186,7 +298,10 @@ export default function TalentPoolPage() {
             <Input
               id="talent-search"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPageIndex(1);
+              }}
               placeholder="Search by name or MUID…"
               className="h-9 pl-9 pr-8 text-sm"
             />
@@ -200,7 +315,13 @@ export default function TalentPoolPage() {
               </button>
             )}
           </div>
-          <FiltersDropdown filters={filters} onChange={setFilters} />
+          <FiltersDropdown
+            filters={filters}
+            onChange={(f) => {
+              setFilters(f);
+              setPageIndex(1);
+            }}
+          />
           {hasActive && (
             <Button
               variant="ghost"
@@ -260,6 +381,36 @@ export default function TalentPoolPage() {
             ))}
           </div>
         )}
+
+        {/* Pagination */}
+        {!isLoading &&
+          !isError &&
+          data?.pagination.totalPages &&
+          data.pagination.totalPages > 1 && (
+            <div className="flex justify-between items-center mt-6">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPageIndex((p) => Math.max(1, p - 1))}
+                disabled={pageIndex === 1}
+                className="h-8 text-xs"
+              >
+                Previous
+              </Button>
+              <span className="text-xs text-muted-foreground">
+                Page {pageIndex} of {data.pagination.totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPageIndex((p) => p + 1)}
+                disabled={!data.pagination.isNext}
+                className="h-8 text-xs"
+              >
+                Next
+              </Button>
+            </div>
+          )}
       </div>
     </CompanyStatusGuard>
   );

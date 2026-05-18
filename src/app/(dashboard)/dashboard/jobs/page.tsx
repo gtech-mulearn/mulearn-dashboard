@@ -8,9 +8,16 @@ import {
   Search,
   X,
 } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -72,6 +79,8 @@ const APP_SKELETONS = ["app-s1", "app-s2", "app-s3", "app-s4", "app-s5"];
 export default function LearnerJobsPage() {
   const [tab, setTab] = useState<"browse" | "applications">("browse");
   const [search, setSearch] = useState("");
+  const [pageIndex, setPageIndex] = useState(1);
+  const [sortBy, setSortBy] = useState<string>("-appliedAt");
   const [applyJob, setApplyJob] = useState<PublicJob | null>(null);
   const debouncedSearch = useDebounce(search, 300);
 
@@ -88,6 +97,8 @@ export default function LearnerJobsPage() {
   } = useLearnerApplications({
     search: debouncedSearch || undefined,
     perPage: 30,
+    sortBy: sortBy,
+    pageIndex: pageIndex,
   });
 
   const jobs = publicJobsData?.jobs ?? [];
@@ -131,27 +142,70 @@ export default function LearnerJobsPage() {
             </TabsTrigger>
           </TabsList>
 
-          {/* Search bar */}
-          <div className="relative w-full max-w-xs">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-            <Input
-              id="jobs-search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={
-                tab === "browse" ? "Search jobs…" : "Search applications…"
-              }
-              className="h-9 pl-9 pr-8 text-sm"
-            />
-            {search && (
-              <button
-                type="button"
-                onClick={handleSearchClear}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
+          <div className="flex items-center gap-2">
+            {/* Sort Dropdown (only visible on applications tab) */}
+            {tab === "applications" && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2 h-9 text-sm"
+                  >
+                    <Filter className="h-3.5 w-3.5" />
+                    Sort
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuRadioGroup
+                    value={sortBy}
+                    onValueChange={(v) => {
+                      setSortBy(v);
+                      setPageIndex(1);
+                    }}
+                  >
+                    <DropdownMenuRadioItem
+                      value="-appliedAt"
+                      className="text-xs"
+                    >
+                      Newest First
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem
+                      value="appliedAt"
+                      className="text-xs"
+                    >
+                      Oldest First
+                    </DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
+
+            {/* Search bar */}
+            <div className="relative w-full max-w-xs">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+              <Input
+                id="jobs-search"
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPageIndex(1);
+                }}
+                placeholder={
+                  tab === "browse" ? "Search jobs…" : "Search applications…"
+                }
+                className="h-9 pl-9 pr-8 text-sm"
+              />
+              {search && (
+                <button
+                  type="button"
+                  onClick={handleSearchClear}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -218,11 +272,45 @@ export default function LearnerJobsPage() {
               }
             />
           ) : (
-            <div className="space-y-3">
-              {applications.map((app, index) => (
-                <ApplicationRow key={`${app.id}-${index}`} application={app} />
-              ))}
-            </div>
+            <>
+              <div className="space-y-3">
+                {applications.map((app, index) => (
+                  <ApplicationRow
+                    key={`${app.id}-${index}`}
+                    application={app}
+                  />
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {applicationsData?.pagination.totalPages &&
+                applicationsData.pagination.totalPages > 1 && (
+                  <div className="flex justify-between items-center mt-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPageIndex((p) => Math.max(1, p - 1))}
+                      disabled={pageIndex === 1}
+                      className="h-8 text-xs"
+                    >
+                      Previous
+                    </Button>
+                    <span className="text-xs text-muted-foreground">
+                      Page {pageIndex} of{" "}
+                      {applicationsData.pagination.totalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPageIndex((p) => p + 1)}
+                      disabled={!applicationsData.pagination.isNext}
+                      className="h-8 text-xs"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                )}
+            </>
           )}
         </TabsContent>
       </Tabs>

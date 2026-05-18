@@ -9,9 +9,18 @@
 
 "use client";
 
-import { Users } from "lucide-react";
+import { Filter, Search, Users } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { AppStatus } from "../constants";
 import { APP_STATUS_META } from "../constants";
@@ -49,10 +58,16 @@ function ApplicantRowSkeleton() {
 
 export function ApplicantsSection({ jobId }: ApplicantsSectionProps) {
   const [statusFilter, setStatusFilter] = useState<FilterTab>("all");
+  const [search, setSearch] = useState("");
+  const [pageIndex, setPageIndex] = useState(1);
+  const [sortBy, setSortBy] = useState<string>("-karma");
 
   // Filtered list (server-side filtered)
   const { data, isLoading, isError } = useJobApplicants(jobId, {
     status: statusFilter === "all" ? undefined : statusFilter,
+    search: search || undefined,
+    sortBy: sortBy,
+    pageIndex: pageIndex,
   });
 
   // Unfiltered for counts
@@ -82,6 +97,48 @@ export function ApplicantsSection({ jobId }: ApplicantsSectionProps) {
         )}
       </div>
 
+      {/* Search and Sort */}
+      <div className="mt-4 flex items-center gap-3 flex-wrap">
+        <div className="relative flex-1 min-w-[150px] max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+          <Input
+            id="applicant-search"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPageIndex(1);
+            }}
+            placeholder="Search applicants…"
+            className="h-9 pl-9 text-sm"
+          />
+        </div>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="gap-2 h-9 text-sm">
+              <Filter className="h-3.5 w-3.5" />
+              Sort
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuRadioGroup
+              value={sortBy}
+              onValueChange={(v) => {
+                setSortBy(v);
+                setPageIndex(1);
+              }}
+            >
+              <DropdownMenuRadioItem value="-karma" className="text-xs">
+                Karma (High to Low)
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="karma" className="text-xs">
+                Karma (Low to High)
+              </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
       {/* Filter tabs */}
       <div className="mt-4 flex flex-wrap gap-1.5">
         {FILTER_TABS.map(({ key, label }) => {
@@ -93,7 +150,10 @@ export function ApplicantsSection({ jobId }: ApplicantsSectionProps) {
             <button
               key={key}
               type="button"
-              onClick={() => setStatusFilter(key)}
+              onClick={() => {
+                setStatusFilter(key);
+                setPageIndex(1);
+              }}
               className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
                 isActive
                   ? "bg-primary/10 text-primary"
@@ -134,6 +194,36 @@ export function ApplicantsSection({ jobId }: ApplicantsSectionProps) {
             />
           ))
         )}
+
+        {/* Pagination */}
+        {!isLoading &&
+          !isError &&
+          data?.pagination.totalPages &&
+          data.pagination.totalPages > 1 && (
+            <div className="flex justify-between items-center mt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPageIndex((p) => Math.max(1, p - 1))}
+                disabled={pageIndex === 1}
+                className="h-8 text-xs"
+              >
+                Previous
+              </Button>
+              <span className="text-xs text-muted-foreground">
+                Page {pageIndex} of {data.pagination.totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPageIndex((p) => p + 1)}
+                disabled={!data.pagination.isNext}
+                className="h-8 text-xs"
+              >
+                Next
+              </Button>
+            </div>
+          )}
       </div>
     </div>
   );
