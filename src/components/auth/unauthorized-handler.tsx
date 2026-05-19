@@ -12,6 +12,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
+import { toast } from "sonner";
 
 /**
  * Watches for `?unauthorized=true` in the URL and shows a toast.
@@ -31,9 +32,7 @@ export function UnauthorizedHandler() {
     if (searchParams.get("unauthorized") === "true") {
       // Use a small delay to ensure the page has rendered
       const timer = setTimeout(() => {
-        // Show browser-native alert as a fallback
-        // Replace with your toast library (e.g., sonner, react-hot-toast)
-        console.warn("[RBAC] Access denied — insufficient permissions");
+        toast.error("You don't have permission to access that page.");
 
         // Clean up the URL parameter
         const url = new URL(window.location.href);

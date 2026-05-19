@@ -1,5 +1,5 @@
 "use client";
-import { Copy, TrendingUp } from "lucide-react";
+import { Copy, Pencil, Trash2, TrendingUp } from "lucide-react";
 import type { FC, ReactElement, ReactNode } from "react";
 import {
   useCallback,
@@ -9,8 +9,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { AiOutlineDelete } from "react-icons/ai";
-import { HiOutlinePencil } from "react-icons/hi";
 import Loader from "@/app/loading";
 import Modal from "./Modal";
 
@@ -233,7 +231,7 @@ const Table: FC<TableProps> = (props) => {
                                   props.onEditClick?.(rowData[column] ?? "")
                                 }
                               >
-                                <HiOutlinePencil />
+                                <Pencil className="size-4" />
                               </button>
                             )}
                             {props.onVerifyClick && (
@@ -255,7 +253,7 @@ const Table: FC<TableProps> = (props) => {
                                   setDeleteRowId(String(rowData[column] ?? ""))
                                 }
                               >
-                                <AiOutlineDelete />
+                                <Trash2 className="size-4" />
                               </button>
                             )}
                           </>
@@ -335,7 +333,7 @@ const Table: FC<TableProps> = (props) => {
                               props.onEditClick?.(rowData[actionIdColumn] ?? "")
                             }
                           >
-                            <HiOutlinePencil />
+                            <Pencil className="size-4" />
                           </button>
                         )}
                         {props.onVerifyClick && (
@@ -359,7 +357,7 @@ const Table: FC<TableProps> = (props) => {
                               )
                             }
                           >
-                            <AiOutlineDelete />
+                            <Trash2 className="size-4" />
                           </button>
                         )}
                       </>

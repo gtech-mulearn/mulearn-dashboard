@@ -25,8 +25,8 @@ export default async function MuJourneyPage() {
       if (publicData) {
         initialLevels = publicData;
       }
-    } catch (error) {
-      console.error("Failed to fetch public levels on server:", error);
+    } catch {
+      // Non-fatal: authenticated users get their data client-side anyway.
     }
   }
 

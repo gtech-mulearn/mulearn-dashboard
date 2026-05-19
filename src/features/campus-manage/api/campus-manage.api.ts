@@ -260,7 +260,12 @@ export const campusManageApi = {
         socialLinks,
       };
     } catch (e) {
-      console.error("[CampusManageApi] getOverview CRASHED:", e);
+      if (process.env.NODE_ENV === "development") {
+        console.error(
+          "[CampusManageApi] getOverview CRASHED:",
+          e instanceof Error ? e.message : e,
+        );
+      }
       throw e;
     }
   },

@@ -11,8 +11,8 @@ const config: UserConfig = {
     "footer-max-line-length": [0],
     // Subject just can't be empty
     "subject-empty": [2, "never"],
-    // Type still required (feat, fix, chore, etc.) but any case allowed
-    "type-empty": [2, "never"],
+    // Type is optional
+    "type-empty": [0],
     "type-case": [0],
   },
 };

@@ -18,6 +18,7 @@ import {
   Edit2,
   ExternalLink,
   Key,
+  LogOut,
   MapPin,
   QrCode,
   Radio,
@@ -29,12 +30,21 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
+import { useUserInfo } from "@/features/auth/hooks";
 import {
   useCircleDetail,
   useCircleMeetings,
   useCircleMembers,
   useCirclePermissions,
+  useLeaveMeeting,
   useMeetingDetail,
   useRsvpMeeting,
 } from "../hooks";
@@ -129,6 +139,9 @@ export function MeetingDetailView({
   const { data: members } = useCircleMembers(circleId);
   const { data: circleMeetings } = useCircleMeetings(circleId);
   const rsvpMeeting = useRsvpMeeting();
+  const { data: userInfo } = useUserInfo();
+  const leaveMeeting = useLeaveMeeting();
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
 
   const listMeetingInfo = circleMeetings?.find((m) => m.id === meetingId);
   const meeting = rawMeeting
@@ -152,8 +165,16 @@ export function MeetingDetailView({
       ) || permissions.role === "owner"
     : false;
 
-  const canJoin =
-    meeting?.is_started && !meeting.is_ended && !meeting.is_member;
+  const currentUserAttendee = userInfo
+    ? meeting?.attendees.find((a) => a.user_id === userInfo.muid)
+    : undefined;
+  const hasJoined = currentUserAttendee?.is_joined ?? false;
+
+  const canJoin = Boolean(
+    meeting?.is_recurring
+      ? meeting?.is_member && !hasJoined
+      : meeting?.is_started && !meeting?.is_ended && !hasJoined,
+  );
 
   useEffect(() => {
     if (joinMeetCode && canJoin) {
@@ -171,7 +192,9 @@ export function MeetingDetailView({
 
   const meetTime = parseLocalTime(meeting.meet_time);
   const isOnline = meeting.mode === "online";
-  const canRsvp = !meeting.is_ended && !meeting.is_member;
+  const isActive = meeting.is_recurring || !meeting.is_ended;
+  const canRsvp = isActive && !meeting.is_member;
+  const canLeave = meeting.is_member && isActive;
   const status = getStatus(meeting);
 
   return (
@@ -252,6 +275,16 @@ export function MeetingDetailView({
                 className="flex items-center gap-2 rounded-xl bg-foreground px-4 py-2 text-[13px] font-semibold text-background transition hover:bg-foreground/90"
               >
                 Join
+              </button>
+            )}
+            {canLeave && (
+              <button
+                type="button"
+                onClick={() => setShowLeaveConfirm(true)}
+                className="flex items-center gap-2 rounded-xl border border-destructive/30 px-4 py-2 text-[13px] font-semibold text-destructive transition hover:bg-destructive/10"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+                Leave
               </button>
             )}
           </div>
@@ -488,6 +521,38 @@ export function MeetingDetailView({
           value={meeting.meet_link}
         />
       )}
+
+      <Dialog open={showLeaveConfirm} onOpenChange={setShowLeaveConfirm}>
+        <DialogContent className="sm:max-w-90">
+          <DialogHeader>
+            <DialogTitle>Leave Meeting?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            You will be removed from the attendees list. You can RSVP again if
+            you change your mind.
+          </p>
+          <div className="flex justify-end gap-3 pt-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowLeaveConfirm(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={leaveMeeting.isPending}
+              onClick={() => {
+                leaveMeeting.mutate(meetingId, {
+                  onSuccess: () => setShowLeaveConfirm(false),
+                });
+              }}
+            >
+              {leaveMeeting.isPending && <Spinner className="mr-2 h-4 w-4" />}
+              Leave Meeting
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

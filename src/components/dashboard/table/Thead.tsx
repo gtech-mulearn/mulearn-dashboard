@@ -1,4 +1,4 @@
-import { FaSort } from "react-icons/fa";
+import { ArrowUpDown } from "lucide-react";
 
 type Column = {
   column: string;
@@ -45,7 +45,7 @@ const THead = ({
                   onClick={() => onIconClick(column.column)}
                   className="text-muted-foreground hover:text-foreground"
                 >
-                  <FaSort className="text-[12px]" />
+                  <ArrowUpDown className="size-3" />
                 </button>
               )}
             </div>

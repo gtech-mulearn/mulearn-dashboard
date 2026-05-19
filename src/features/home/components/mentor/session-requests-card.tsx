@@ -4,10 +4,10 @@ import { Check, Inbox, X } from "lucide-react";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { MentorSessionPartial } from "../../schemas/home.schema";
+import type { MentorSession } from "../../schemas/home.schema";
 
 type Props = {
-  sessions: MentorSessionPartial[];
+  sessions: MentorSession[];
   isLoading: boolean;
 };
 
@@ -69,7 +69,7 @@ export function SessionRequestsCard({ sessions, isLoading }: Props) {
           </p>
         ) : (
           <div className="space-y-0">
-            {visible.map((req, idx) => {
+            {visible.map((req, _idx) => {
               const mentee = req.participants?.find(
                 (p) => p.participant_role !== "MENTOR",
               );

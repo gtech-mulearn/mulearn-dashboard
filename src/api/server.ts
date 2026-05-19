@@ -14,6 +14,13 @@ import { ApiError, extractDjangoMessage } from "./errors";
 
 // ─── URL + Headers ──────────────────────────────────────────────────────────
 
+if (process.env.NODE_ENV === "production" && !process.env.BACKEND_URL) {
+  console.warn(
+    "[server] BACKEND_URL is not set — falling back to NEXT_PUBLIC_DJANGO_API_URL. " +
+      "Set BACKEND_URL to an internal VPC endpoint for better performance and security.",
+  );
+}
+
 function getBaseUrl(): string {
   return env.BACKEND_URL ?? env.NEXT_PUBLIC_DJANGO_API_URL;
 }
@@ -45,6 +52,14 @@ async function refreshAndSetToken(): Promise<string | null> {
     const newAccessToken = result.accessToken;
 
     if (newAccessToken) {
+      // Persist the refreshed token so subsequent server requests in this
+      // render cycle (and the next page load) use the new token.
+      cookieStore.set("accessToken", newAccessToken, {
+        expires: new Date(Date.now() + 86_400_000), // 1 day
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        path: "/",
+      });
       return newAccessToken;
     }
 
@@ -109,10 +124,12 @@ async function request<T>(
           if (options.schema) {
             const parsed = options.schema.safeParse(retryData);
             if (!parsed.success) {
-              console.error(
-                `⚠️ API schema mismatch (server) [${endpoint}]`,
-                parsed.error.issues,
-              );
+              if (process.env.NODE_ENV === "development") {
+                console.error(
+                  `⚠️ API schema mismatch (server) [${endpoint}]`,
+                  parsed.error.issues,
+                );
+              }
               return retryData as T;
             }
             return parsed.data;
@@ -141,10 +158,12 @@ async function request<T>(
   if (options.schema) {
     const parsed = options.schema.safeParse(rawData);
     if (!parsed.success) {
-      console.error(
-        `⚠️ API schema mismatch (server) [${endpoint}]`,
-        parsed.error.issues,
-      );
+      if (process.env.NODE_ENV === "development") {
+        console.error(
+          `⚠️ API schema mismatch (server) [${endpoint}]`,
+          parsed.error.issues,
+        );
+      }
       // Return raw data preserving the full envelope shape.
       return rawData as T;
     }

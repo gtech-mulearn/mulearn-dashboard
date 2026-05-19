@@ -2,10 +2,10 @@ import { CalendarClock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import type { MentorSessionPartial } from "../../schemas/home.schema";
+import type { MentorSession } from "../../schemas/home.schema";
 
 type Props = {
-  sessions: MentorSessionPartial[];
+  sessions: MentorSession[];
   isLoading: boolean;
 };
 
@@ -71,7 +71,7 @@ export function UpcomingSessionsCard({ sessions, isLoading }: Props) {
           </p>
         ) : (
           <div className="space-y-0">
-            {sessions.map((session, idx) => {
+            {sessions.map((session, _idx) => {
               const mentee = session.participants?.find(
                 (p) => p.participant_role !== "MENTOR",
               );

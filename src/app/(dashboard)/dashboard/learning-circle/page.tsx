@@ -6,37 +6,12 @@
  * Main page showing all learning circles.
  */
 
-"use client";
-
-import { Spinner } from "@/components/ui/spinner";
-import { CircleList, CreateCircleModal } from "@/features/learning-circle";
-import { useInterestGroupsList, useUserProfile } from "@/features/profile";
+import { CircleList } from "@/features/learning-circle";
+import { LearningCircleHeader } from "./learning-circle-header";
 
 export default function LearningCirclePage() {
-  // Fetch interest groups and user profile for the create form
-  const { data: igData, isLoading: igLoading } = useInterestGroupsList();
-  const { data: profile, isLoading: profileLoading } = useUserProfile();
-
-  // Transform interest groups for the modal component
-  const interestGroups =
-    igData?.interestGroup?.map((ig) => ({
-      id: ig.id,
-      name: ig.name,
-    })) || [];
-
-  // Use the user's college from their profile as the default organization
-  // The org field is pre-filled and read-only
-  const userOrganization =
-    profile?.college_id && profile?.college_code
-      ? [{ id: profile.college_id, title: profile.college_code }]
-      : [];
-
-  const isFormDataLoading = igLoading || profileLoading;
-  const hasUserOrg = userOrganization.length > 0;
-
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold">Learning Circles</h1>
@@ -44,24 +19,9 @@ export default function LearningCirclePage() {
             Join or create learning circles to collaborate with others
           </p>
         </div>
-        {isFormDataLoading ? (
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Spinner className="h-4 w-4" />
-            <span className="text-sm">Loading form data...</span>
-          </div>
-        ) : !hasUserOrg ? (
-          <div className="text-sm text-warning">
-            Please link a college to your profile to create learning circles
-          </div>
-        ) : (
-          <CreateCircleModal
-            interestGroups={interestGroups}
-            organizations={userOrganization}
-          />
-        )}
+        <LearningCircleHeader />
       </div>
 
-      {/* Circle List */}
       <CircleList />
     </div>
   );

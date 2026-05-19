@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { type Resolver, useForm } from "react-hook-form";
 import type { CompanyProfile } from "@/features/company-jobs/types";
 import {
   PROFILE_STEPPER_STEPS,
@@ -35,8 +35,9 @@ export function useProfileStepper(profile: CompanyProfile) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
   const form = useForm<ProfileEditFormValues>({
-    // biome-ignore lint/suspicious/noExplicitAny: zodResolver type mismatch with nullish transforms
-    resolver: zodResolver(ProfileEditFormSchema) as any,
+    resolver: zodResolver(
+      ProfileEditFormSchema,
+    ) as Resolver<ProfileEditFormValues>,
     defaultValues: {
       name: profile.name ?? "",
       slug: profile.slug ?? "",
