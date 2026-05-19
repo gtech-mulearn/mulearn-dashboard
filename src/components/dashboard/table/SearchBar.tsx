@@ -1,6 +1,6 @@
 "use client";
+import { X } from "lucide-react";
 import { useState } from "react";
-import { HiOutlineX } from "react-icons/hi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -73,7 +73,7 @@ export const SearchBar = ({
             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
             onClick={clearInput}
           >
-            <HiOutlineX />
+            <X className="size-4" />
           </button>
         )}
       </div>
