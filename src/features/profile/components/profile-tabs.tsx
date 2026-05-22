@@ -14,7 +14,9 @@ export type ProfileTab =
   | "basic-details"
   | "karma-history"
   | "mu-voyage"
-  | "achievements";
+  | "achievements"
+  | "badges"
+  | "projects";
 
 interface ProfileTabsProps {
   activeTab: ProfileTab;
@@ -26,6 +28,8 @@ const tabs: { id: ProfileTab; label: string }[] = [
   { id: "karma-history", label: "Karma History" },
   { id: "mu-voyage", label: "Mu Voyage" },
   { id: "achievements", label: "Achievements" },
+  { id: "badges", label: "Badges" },
+  { id: "projects", label: "Projects" },
 ];
 
 export function ProfileTabs({ activeTab, onTabChange }: ProfileTabsProps) {

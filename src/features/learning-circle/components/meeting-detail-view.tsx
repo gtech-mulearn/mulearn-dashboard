@@ -11,6 +11,7 @@
 
 import { format } from "date-fns";
 import {
+  AlertCircle,
   ArrowLeft,
   Calendar,
   CheckCircle2,
@@ -90,12 +91,8 @@ function getStatus(meeting: {
   return STATUS_CONFIG.upcoming;
 }
 
-/** Parses UTC timestamp string discarding 'Z' so it treats it as local time */
 function parseLocalTime(timeStr: string) {
   if (!timeStr) return new Date();
-  if (timeStr.endsWith("Z")) {
-    return new Date(timeStr.slice(0, -1));
-  }
   return new Date(timeStr);
 }
 
@@ -168,12 +165,17 @@ export function MeetingDetailView({
   const currentUserAttendee = userInfo
     ? meeting?.attendees.find((a) => a.user_id === userInfo.muid)
     : undefined;
+  const hasAttendeeRecord = Boolean(currentUserAttendee);
   const hasJoined = currentUserAttendee?.is_joined ?? false;
+  const joinedAttendees = meeting?.attendees.filter((a) => a.is_joined) ?? [];
+  const pendingJoinAttendees =
+    meeting?.attendees.filter((a) => !a.is_joined) ?? [];
 
   const canJoin = Boolean(
-    meeting?.is_recurring
-      ? meeting?.is_member && !hasJoined
-      : meeting?.is_started && !meeting?.is_ended && !hasJoined,
+    meeting?.is_started && !meeting?.is_ended && !hasJoined,
+  );
+  const isJoinWaitingForStart = Boolean(
+    meeting && !meeting.is_started && !meeting.is_ended && !hasJoined,
   );
 
   useEffect(() => {
@@ -193,8 +195,9 @@ export function MeetingDetailView({
   const meetTime = parseLocalTime(meeting.meet_time);
   const isOnline = meeting.mode === "online";
   const isActive = meeting.is_recurring || !meeting.is_ended;
-  const canRsvp = isActive && !meeting.is_member;
-  const canLeave = meeting.is_member && isActive;
+  const canRsvp = isActive && !hasAttendeeRecord;
+  const canCancelAttendance = hasAttendeeRecord && !hasJoined && isActive;
+  const canLeave = hasJoined && isActive;
   const status = getStatus(meeting);
 
   return (
@@ -275,6 +278,26 @@ export function MeetingDetailView({
                 className="flex items-center gap-2 rounded-xl bg-foreground px-4 py-2 text-[13px] font-semibold text-background transition hover:bg-foreground/90"
               >
                 Join
+              </button>
+            )}
+            {isJoinWaitingForStart && (
+              <button
+                type="button"
+                disabled
+                className="flex items-center gap-2 rounded-xl bg-muted px-4 py-2 text-[13px] font-semibold text-muted-foreground"
+                title="You can join after the meeting starts"
+              >
+                Join opens at start
+              </button>
+            )}
+            {canCancelAttendance && (
+              <button
+                type="button"
+                onClick={() => setShowLeaveConfirm(true)}
+                className="flex items-center gap-2 rounded-xl border border-destructive/30 px-4 py-2 text-[13px] font-semibold text-destructive transition hover:bg-destructive/10"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+                Cancel RSVP
               </button>
             )}
             {canLeave && (
@@ -359,8 +382,13 @@ export function MeetingDetailView({
               <span className="text-[13px] font-medium">Attendees</span>
             </div>
             <span className="text-[15px] font-semibold text-foreground">
-              {meeting.attendees.length} Joined
+              {joinedAttendees.length} Joined
             </span>
+            {pendingJoinAttendees.length > 0 && (
+              <span className="mt-0.5 text-[12px] font-medium text-muted-foreground">
+                {pendingJoinAttendees.length} not joined
+              </span>
+            )}
           </div>
 
           {meeting.is_recurring && (
@@ -412,7 +440,11 @@ export function MeetingDetailView({
         <h3 className="text-[16px] font-bold text-foreground mb-6 flex items-center gap-2">
           Attendees{" "}
           <span className="text-sm font-medium text-muted-foreground">
-            ({meeting.attendees.length})
+            ({joinedAttendees.length} joined
+            {pendingJoinAttendees.length > 0
+              ? `, ${pendingJoinAttendees.length} not joined`
+              : ""}
+            )
           </span>
         </h3>
 
@@ -456,6 +488,11 @@ export function MeetingDetailView({
                         <CheckCircle2 className="h-4 w-4" />
                       </span>
                     )}
+                    {!attendee.is_joined && (
+                      <span className="rounded-full bg-warning/10 px-2 py-1 text-[10px] font-bold text-warning">
+                        Not joined
+                      </span>
+                    )}
                     {attendee.is_report_submitted && (
                       <span
                         className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary"
@@ -473,8 +510,20 @@ export function MeetingDetailView({
       </div>
 
       {/* Attendee Report — visible to joined attendees */}
-      {meeting?.is_member && meeting.is_ended && (
+      {hasJoined && meeting.is_ended && (
         <AttendeeReportView meetingId={meetingId} />
+      )}
+      {!hasJoined && currentUserAttendee && meeting.is_ended && (
+        <div className="flex items-start gap-3 rounded-2xl border border-warning/25 bg-warning/10 p-5 text-foreground">
+          <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
+          <div>
+            <h3 className="text-[15px] font-bold">Attendee Report Locked</h3>
+            <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
+              You are listed for this meeting, but you did not join it with the
+              meeting code. Only joined attendees can submit attendee reports.
+            </p>
+          </div>
+        </div>
       )}
 
       {/* Meeting Report — visible to owner/lead */}
@@ -525,11 +574,15 @@ export function MeetingDetailView({
       <Dialog open={showLeaveConfirm} onOpenChange={setShowLeaveConfirm}>
         <DialogContent className="sm:max-w-90">
           <DialogHeader>
-            <DialogTitle>Leave Meeting?</DialogTitle>
+            <DialogTitle>
+              {hasJoined ? "Leave Meeting?" : "Cancel RSVP?"}
+            </DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            You will be removed from the attendees list. You can RSVP again if
-            you change your mind.
+            {hasJoined
+              ? "You will be removed from the attendees list."
+              : "You will be removed from the RSVP list."}{" "}
+            You can RSVP again if you change your mind.
           </p>
           <div className="flex justify-end gap-3 pt-2">
             <Button
@@ -548,7 +601,7 @@ export function MeetingDetailView({
               }}
             >
               {leaveMeeting.isPending && <Spinner className="mr-2 h-4 w-4" />}
-              Leave Meeting
+              {hasJoined ? "Leave Meeting" : "Cancel RSVP"}
             </Button>
           </div>
         </DialogContent>

@@ -5,4 +5,5 @@
  */
 
 export * from "./achievement.schema";
+export * from "./badges.schema";
 export * from "./profile.schema";

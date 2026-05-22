@@ -50,4 +50,7 @@ export const profileKeys = {
     [...profileKeys.all, "achievements", muid] as const,
   connectedDIDs: (muid: string) =>
     [...profileKeys.all, "connected-dids", muid] as const,
+
+  // Badges
+  badges: (muid: string) => [...profileKeys.all, "badges", muid] as const,
 };

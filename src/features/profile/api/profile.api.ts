@@ -16,6 +16,7 @@ import {
   type ConnectedDIDsData,
   ConnectedDIDsResponseSchema,
   CountriesResponseSchema,
+  CoverPicResponseSchema,
   DistrictsResponseSchema,
   type EditableProfile,
   EditableProfileResponseSchema,
@@ -224,6 +225,78 @@ export async function syncDiscordProfileImage(): Promise<void> {
   await apiClient.patch(
     endpoints.user.updateProfileImage,
     {},
+    EmptyResponseSchema,
+  );
+}
+
+// ============================================
+// Cover Pic
+// ============================================
+
+/** Max cover image size in bytes — must match backend (UserProfileCoverView.MAX_COVER_SIZE_BYTES) */
+export const COVER_PIC_MAX_BYTES = 5 * 1024 * 1024;
+
+/** Get current user's cover pic URL (null if none uploaded) */
+export async function getCoverPic(): Promise<string | null> {
+  const response = await apiClient.get(
+    endpoints.user.coverPic,
+    CoverPicResponseSchema,
+  );
+  return response.response.cover_pic;
+}
+
+/** Upload cover pic (multipart/form-data, field name "cover"). Returns new URL. */
+export async function uploadCoverPic(cover: File): Promise<string | null> {
+  if (!cover.type.startsWith("image/")) {
+    throw new ApiError(400, "Expected an image file");
+  }
+  if (cover.size > COVER_PIC_MAX_BYTES) {
+    throw new ApiError(400, "Cover image must be under 5 MB");
+  }
+
+  const token = authStore.getAccessToken();
+  const formData = new FormData();
+  formData.append("cover", cover);
+
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_DJANGO_API_URL}${endpoints.user.coverPic}`,
+    {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    },
+  );
+
+  const rawData = await response.json().catch(() => null);
+
+  if (!response.ok || rawData?.hasError) {
+    // 413 typically comes from a reverse proxy (nginx client_max_body_size)
+    // before Django sees the request, so the body is HTML rather than the
+    // Django envelope. Show a useful message instead of a generic failure.
+    if (response.status === 413) {
+      throw new ApiError(
+        413,
+        "Cover image is too large for the server. Please use a smaller file (under 5 MB).",
+        rawData,
+      );
+    }
+    const message =
+      rawData?.message?.general?.[0] ?? "Failed to upload cover image";
+    throw new ApiError(response.status, message, rawData);
+  }
+
+  const parsed = CoverPicResponseSchema.safeParse(rawData);
+  if (!parsed.success) {
+    throw new ApiError(200, "Invalid cover-pic response", rawData);
+  }
+  return parsed.data.response.cover_pic;
+}
+
+/** Delete current user's cover pic */
+export async function deleteCoverPic(): Promise<void> {
+  await apiClient.delete(
+    endpoints.user.coverPic,
+    undefined,
     EmptyResponseSchema,
   );
 }

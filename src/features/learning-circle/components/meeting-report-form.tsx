@@ -9,7 +9,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, FileText, Trash2 } from "lucide-react";
+import { AlertCircle, Check, FileText, Trash2 } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Label } from "@/components/ui/label";
@@ -55,6 +55,7 @@ export function MeetingReportForm({
     register,
     handleSubmit,
     reset,
+    setError,
     setValue,
     watch,
     formState: { errors },
@@ -67,24 +68,55 @@ export function MeetingReportForm({
   });
 
   const attendeesValue = watch("attendees");
+  const joinedAttendees = attendees.filter((attendee) => attendee.is_joined);
+  const submittedReportCount = joinedAttendees.filter(
+    (attendee) => attendee.is_report_submitted,
+  ).length;
+  const pendingReportCount = joinedAttendees.length - submittedReportCount;
+  const canSubmitFinalReport =
+    pendingReportCount === 0 && joinedAttendees.length >= 2;
 
   useEffect(() => {
     if (existingReport) {
       reset({
         report: existingReport.report ?? "",
         attendees: Object.fromEntries(
-          existingReport.attendees?.map((a) => [a.user_id, a.is_lc_approved]) ??
-            [],
+          existingReport.attendees
+            ?.filter((a) => a.report || a.report_link || a.is_lc_approved)
+            .map((a) => [a.user_id, a.is_lc_approved]) ?? [],
         ),
       });
     }
   }, [existingReport, reset]);
 
   const onSubmit = (data: MeetingReportRequest) => {
-    submitReport.mutate(data);
+    const approvedSubmittedAttendees = Object.fromEntries(
+      Object.entries(data.attendees).filter(([userId, approved]) => {
+        const attendee = joinedAttendees.find(
+          (item) => item.user_id === userId,
+        );
+        return approved && attendee?.is_report_submitted;
+      }),
+    );
+
+    if (Object.keys(approvedSubmittedAttendees).length < 2) {
+      setError("attendees", {
+        type: "manual",
+        message: "Select at least 2 attendees who submitted their reports.",
+      });
+      return;
+    }
+
+    submitReport.mutate({
+      ...data,
+      attendees: approvedSubmittedAttendees,
+    });
   };
 
   const handleToggleAttendee = (userId: string) => {
+    const attendee = joinedAttendees.find((item) => item.user_id === userId);
+    if (!attendee?.is_report_submitted) return;
+
     const current = attendeesValue[userId] ?? false;
     setValue("attendees", { ...attendeesValue, [userId]: !current });
   };
@@ -141,16 +173,29 @@ export function MeetingReportForm({
           <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
             Attendees
           </Label>
+          <div className="flex items-start gap-2 rounded-xl border border-warning/25 bg-warning/10 px-3 py-2.5 text-[12px] leading-relaxed text-foreground">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
+            <p>
+              Each joined member must submit their own attendee report before
+              the organizer can include them in the final meeting report.
+              {pendingReportCount > 0
+                ? ` ${pendingReportCount} attendee${pendingReportCount === 1 ? "" : "s"} still need to submit.`
+                : " All joined attendees have submitted their reports."}
+            </p>
+          </div>
           <div className="max-h-[240px] overflow-y-auto space-y-1 rounded-xl bg-muted/50 p-3">
-            {attendees.map((attendee) => {
+            {joinedAttendees.map((attendee) => {
               const isChecked = attendeesValue[attendee.user_id] ?? false;
               const colorClass = getColor(attendee.full_name);
+              const canApprove = attendee.is_report_submitted;
               return (
                 <label
                   key={attendee.user_id}
-                  className={`flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 transition-colors ${
-                    isChecked ? "bg-primary/5" : "hover:bg-card"
-                  }`}
+                  className={`flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors ${
+                    canApprove
+                      ? "cursor-pointer"
+                      : "cursor-not-allowed opacity-65"
+                  } ${isChecked ? "bg-primary/5" : "hover:bg-card"}`}
                 >
                   <div
                     className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md transition-colors ${
@@ -164,6 +209,7 @@ export function MeetingReportForm({
                   <input
                     type="checkbox"
                     checked={isChecked}
+                    disabled={!canApprove}
                     onChange={() => handleToggleAttendee(attendee.user_id)}
                     className="sr-only"
                   />
@@ -175,10 +221,31 @@ export function MeetingReportForm({
                   <span className="text-[13px] font-semibold text-foreground">
                     {attendee.full_name}
                   </span>
+                  <span
+                    className={`ml-auto rounded-full px-2 py-1 text-[10px] font-bold ${
+                      canApprove
+                        ? "bg-success/10 text-success"
+                        : "bg-warning/10 text-warning"
+                    }`}
+                  >
+                    {canApprove ? "Report submitted" : "Report pending"}
+                  </span>
                 </label>
               );
             })}
+            {joinedAttendees.length === 0 && (
+              <p className="px-3 py-4 text-center text-[13px] font-medium text-muted-foreground">
+                No attendees have joined this meeting yet.
+              </p>
+            )}
           </div>
+          {errors.attendees && (
+            <p className="text-xs font-medium text-destructive">
+              {typeof errors.attendees.message === "string"
+                ? errors.attendees.message
+                : "Select at least 2 attendees who submitted their reports."}
+            </p>
+          )}
         </div>
 
         {/* Actions */}
@@ -200,7 +267,7 @@ export function MeetingReportForm({
           )}
           <button
             type="submit"
-            disabled={submitReport.isPending}
+            disabled={submitReport.isPending || !canSubmitFinalReport}
             className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-[13px] font-bold text-primary-foreground shadow-[0_4px_12px_rgba(79,70,229,0.3)] transition-all hover:bg-primary/90 hover:scale-[1.01] disabled:opacity-50"
           >
             {submitReport.isPending && <Spinner className="h-4 w-4" />}

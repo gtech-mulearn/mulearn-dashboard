@@ -60,6 +60,16 @@ const EditMeetingFormSchema = z
 
 type EditMeetingFormData = z.infer<typeof EditMeetingFormSchema>;
 
+function utcToLocalDateTimeInput(value: string) {
+  const date = new Date(value);
+  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return localDate.toISOString().slice(0, 16);
+}
+
+function localDateTimeToUtc(value: string) {
+  return new Date(value).toISOString();
+}
+
 interface EditMeetingModalProps {
   meeting: MeetingDetail;
   circleId: string;
@@ -92,7 +102,7 @@ export function EditMeetingModal({
         ? (meeting.meet_place as Platform)
         : null,
       meet_place: meeting.meet_link || meeting.meet_place || "",
-      meet_time: meeting.meet_time,
+      meet_time: utcToLocalDateTimeInput(meeting.meet_time),
       duration: meeting.duration,
     },
   });
@@ -108,7 +118,7 @@ export function EditMeetingModal({
         ? (meeting.meet_place as Platform)
         : null,
       meet_place: meeting.meet_link || meeting.meet_place || "",
-      meet_time: meeting.meet_time,
+      meet_time: utcToLocalDateTimeInput(meeting.meet_time),
       duration: meeting.duration,
     });
   }, [meeting, reset]);
@@ -117,6 +127,7 @@ export function EditMeetingModal({
     try {
       await editMeeting.mutateAsync({
         ...data,
+        meet_time: localDateTimeToUtc(data.meet_time),
         platform: data.mode === "online" ? data.platform : null,
         meet_link: data.mode === "online" ? data.meet_place : null,
         coord_x: meeting.coord_x,
