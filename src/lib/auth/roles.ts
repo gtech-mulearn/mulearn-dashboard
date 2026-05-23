@@ -64,6 +64,14 @@ export function igLeadRole(igCode: string): string {
   return `${igCode} IGLead`;
 }
 
+/**
+ * Returns true if any role in the array is a dynamic IG lead role.
+ * e.g. "WEBDEV IGLead", "AI IGLead" — NOT the static "IG Lead" constant.
+ */
+export function hasIgLeadRole(roles: readonly string[]): boolean {
+  return roles.some((r) => r.endsWith(" IGLead"));
+}
+
 // ─── Role Group Presets ────────────────────────────────────
 // Commonly used role combinations. Use these instead of
 // repeating arrays of roles across the codebase.
@@ -98,8 +106,12 @@ export const DISTRICT_ROLES = [
   ROLES.DISTRICT_CAMPUS_LEAD,
 ] as const;
 
-/** Roles that can view interest group dashboards */
-export const IG_ROLES = [ROLES.ADMIN, ROLES.FELLOW, ROLES.IG_LEAD] as const;
+/**
+ * Roles that can view IG dashboards (static values only).
+ * NOTE: Dynamic IG leads ("{igCode} IGLead") are NOT in this array.
+ * Use `hasIgLeadRole(userRoles)` for dynamic checks.
+ */
+export const IG_ROLES = [ROLES.ADMIN, ROLES.FELLOW] as const;
 
 /** Roles with technical access (error logs, debugging tools) */
 export const TECH_ROLES = [ROLES.ADMIN, ROLES.TECH_TEAM] as const;

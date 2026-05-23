@@ -586,7 +586,7 @@ export const campusManageApi = {
 
   async transferIgRole(muid: string, igCode: string): Promise<unknown> {
     return apiClient.post<unknown>(endpoints.campusManage.transferIgRole, {
-      muid,
+      new_ig_muid: muid,
       ig_code: igCode,
     });
   },

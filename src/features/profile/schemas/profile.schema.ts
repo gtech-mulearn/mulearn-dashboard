@@ -203,7 +203,6 @@ export const SocialsSchema = z.object({
   facebook: z.string().nullable().optional(),
   instagram: z.string().nullable().optional(),
   linkedin: z.string().nullable().optional(),
-  twitter: z.string().nullable().optional(),
   dribble: z.string().nullable().optional(),
   behance: z.string().nullable().optional(),
   stackoverflow: z.string().nullable().optional(),

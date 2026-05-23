@@ -85,13 +85,6 @@ const socialLinks: {
     color: "#0077B5",
   },
   {
-    key: "twitter",
-    icon: XTwitterLogo,
-    baseUrl: "https://x.com/",
-    placeholder: "X (Twitter) username",
-    color: "#000",
-  },
-  {
     key: "instagram",
     icon: Instagram,
     baseUrl: "https://instagram.com/",
@@ -138,7 +131,6 @@ const socialLinks: {
 type SocialFormValues = {
   github: string;
   linkedin: string;
-  twitter: string;
   instagram: string;
   facebook: string;
   behance: string;
@@ -156,7 +148,6 @@ export function SocialsDisplay({ isOwnProfile }: SocialsDisplayProps) {
   const [formValues, setFormValues] = useState<SocialFormValues>({
     github: "",
     linkedin: "",
-    twitter: "",
     instagram: "",
     facebook: "",
     behance: "",
@@ -171,7 +162,6 @@ export function SocialsDisplay({ isOwnProfile }: SocialsDisplayProps) {
       setFormValues({
         github: socials.github || "",
         linkedin: socials.linkedin || "",
-        twitter: socials.twitter || "",
         instagram: socials.instagram || "",
         facebook: socials.facebook || "",
         behance: socials.behance || "",
@@ -210,7 +200,6 @@ export function SocialsDisplay({ isOwnProfile }: SocialsDisplayProps) {
       setFormValues({
         github: socials.github || "",
         linkedin: socials.linkedin || "",
-        twitter: socials.twitter || "",
         instagram: socials.instagram || "",
         facebook: socials.facebook || "",
         behance: socials.behance || "",

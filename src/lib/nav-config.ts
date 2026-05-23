@@ -31,7 +31,6 @@ import {
   Shield,
   Trophy,
   User,
-  UserRoundCheck,
   Users,
 } from "lucide-react";
 import type { Permission } from "@/lib/auth/permissions";
@@ -69,6 +68,11 @@ export interface NavItem {
    * If set, item is visible to users who have any of these roles.
    */
   roles?: readonly string[];
+  /**
+   * Dynamic check for roles that can't be expressed as static strings
+   * (e.g. "{igCode} IGLead"). Evaluated after `roles` check fails.
+   */
+  dynamicCheck?: (userRoles: readonly string[]) => boolean;
 }
 
 // ─── Navigation Items ───────────────────────────────────────
@@ -180,20 +184,13 @@ export const NAV_ITEMS: readonly NavItem[] = [
     roles: DISTRICT_ROLES,
   },
   {
-    id: "intern",
-    title: "Intern",
-    href: "/dashboard/intern",
-    icon: UserRoundCheck,
-    section: "management",
-    roles: [ROLES.INTERN, ...MANAGEMENT_ROLES],
-  },
-  {
     id: "interest-groups",
     title: "Interest Groups",
     href: "/dashboard/edit-ig",
     icon: Users,
     section: "management",
     roles: IG_ROLES,
+    dynamicCheck: (roles) => roles.some((r) => r.endsWith(" IGLead")),
   },
   {
     id: "management",
