@@ -51,13 +51,16 @@ export function MuLearnerHome() {
             />
             <InterestGroupsCard groups={groups} isLoading={loadingGroups} />
           </div>
-          <KarmaEarnersCard />
         </div>
-        <div className="hidden space-y-5 self-start lg:sticky lg:top-5 lg:block">
-          <EventCalendarCard
-            events={calendarEvents}
-            isLoading={loadingCalendar}
-          />
+        {/* Right column: Calendar + Top Performers */}
+        <div className="self-start lg:sticky lg:top-5 space-y-5">
+          <div className="hidden lg:block">
+            <EventCalendarCard
+              events={calendarEvents}
+              isLoading={loadingCalendar}
+            />
+          </div>
+          <KarmaEarnersCard />
         </div>
       </div>
     </div>

@@ -21,7 +21,7 @@ import {
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { PublicJob } from "../../schemas";
+import type { PublicJobBySlug } from "../../schemas";
 import type { Job } from "../../types";
 
 // ─── Job type chip colours ────────────────────────────────────
@@ -95,7 +95,7 @@ function OwnJobCard({ job }: { job: Job }) {
 
 // ─── Public job card (mock or public API data) ─────────────────
 
-function PublicJobCard({ job }: { job: PublicJob }) {
+function PublicJobCard({ job }: { job: PublicJobBySlug }) {
   const chipStyle =
     JOB_TYPE_STYLES[job.job_type ?? "Full-Time"] ??
     JOB_TYPE_STYLES["Full-Time"];
@@ -167,7 +167,7 @@ interface CompanyJobsSectionProps {
   isOwnProfile: boolean;
   ownJobs?: Job[];
   /** Public view: pass mock/public jobs and isOwnProfile=false */
-  publicJobs?: PublicJob[];
+  publicJobs?: PublicJobBySlug[];
 }
 
 export function CompanyJobsSection({

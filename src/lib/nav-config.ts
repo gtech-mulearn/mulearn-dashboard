@@ -150,6 +150,13 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: Rocket,
     section: "main",
   },
+  {
+    id: "jobs",
+    title: "Jobs",
+    href: "/dashboard/jobs",
+    icon: Briefcase,
+    section: "main",
+  },
 
   // ── Management Section (role-gated) ───────────────────────
   {

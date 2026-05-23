@@ -10,6 +10,7 @@
  */
 
 import { Quote } from "lucide-react";
+import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { CompanyTestimonial } from "../../types";
 
@@ -28,11 +29,21 @@ function TestimonialCard({ testimonial }: { testimonial: CompanyTestimonial }) {
         &ldquo;{testimonial.quote}&rdquo;
       </p>
       <div className="flex items-center gap-3">
-        <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary">
-          <span className="text-xs font-bold text-primary-foreground">
-            {initials}
-          </span>
-        </div>
+        {testimonial.author_avatar ? (
+          <Image
+            src={testimonial.author_avatar}
+            alt={testimonial.learner_name}
+            width={36}
+            height={36}
+            className="size-9 rounded-full object-cover"
+          />
+        ) : (
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary">
+            <span className="text-xs font-bold text-primary-foreground">
+              {initials}
+            </span>
+          </div>
+        )}
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-foreground">
             {testimonial.learner_name}

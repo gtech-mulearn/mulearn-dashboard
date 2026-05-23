@@ -108,7 +108,7 @@ export default function WeeklyReportGeneratorPage() {
       column: "full_name",
       Label: "Hero Name",
       isSortable: true,
-      wrap: (data: unknown) => (
+      wrap: (data: string) => (
         <span className="font-bold uppercase text-[11px] tracking-tight">
           {String(data)}
         </span>
@@ -118,7 +118,7 @@ export default function WeeklyReportGeneratorPage() {
       column: "muid",
       Label: "MUID Token",
       isSortable: true,
-      wrap: (data: unknown) => (
+      wrap: (data: string) => (
         <span className="font-mono text-[10px] bg-muted/50 px-2 py-0.5 rounded">
           {String(data)}
         </span>
@@ -128,7 +128,7 @@ export default function WeeklyReportGeneratorPage() {
       column: "team",
       Label: "Alliance",
       isSortable: true,
-      wrap: (data: unknown) => (
+      wrap: (data: string) => (
         <Badge
           variant="outline"
           className="text-[9px] uppercase font-black tracking-widest"
@@ -142,17 +142,15 @@ export default function WeeklyReportGeneratorPage() {
       column: "tasks_completed",
       Label: "Achievements",
       isSortable: false,
-      wrap: (data: unknown) => (
-        <span className="text-xs italic text-muted-foreground">
-          "{String(data)}"
-        </span>
+      wrap: (data: string) => (
+        <span className="text-xs italic text-muted-foreground">"{data}"</span>
       ),
     },
     {
       column: "hours_committed",
       Label: "Energy",
       isSortable: true,
-      wrap: (data: unknown) => (
+      wrap: (data: string) => (
         <div className="flex items-center gap-1 font-black text-brand-blue">
           {String(data)} <span className="text-[8px] opacity-50">XP</span>
         </div>

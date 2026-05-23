@@ -26,9 +26,18 @@ function formatKarma(n: number) {
 }
 
 function RankIndicator({ rank }: { rank: number }) {
-  if (rank === 1) return <span className="text-base text-warning">♦</span>;
+  if (rank === 1)
+    return (
+      <span className="flex size-5 items-center justify-center text-sm text-warning">
+        ♦
+      </span>
+    );
   if (rank === 2)
-    return <span className="text-base text-muted-foreground">◆</span>;
+    return (
+      <span className="flex size-5 items-center justify-center text-sm text-muted-foreground">
+        ◆
+      </span>
+    );
   return (
     <span className="flex size-5 items-center justify-center rounded-full bg-success/10 text-[11px] font-bold text-success">
       {rank}
@@ -40,9 +49,9 @@ export function KarmaEarnersCard() {
   const { data: performers, isLoading } = useTopPerformers();
   return (
     <Card className="rounded-2xl border bg-card shadow-sm">
-      <CardHeader className="flex-row items-center justify-between px-5 py-4">
-        <div className="flex items-center gap-2.5">
-          <div className="flex size-9 items-center justify-center rounded-xl bg-warning/10">
+      <CardHeader className="flex-row items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="flex size-8 items-center justify-center rounded-xl bg-warning/10">
             <Trophy className="size-4 text-warning" />
           </div>
           <CardTitle className="text-base font-bold text-foreground">
@@ -57,7 +66,7 @@ export function KarmaEarnersCard() {
           <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
         </Link>
       </CardHeader>
-      <CardContent className="px-5 pb-5 pt-0">
+      <CardContent className="px-4 pt-0">
         {isLoading ? (
           <div className="space-y-3">
             {[0, 1, 2].map((i) => (
@@ -76,7 +85,7 @@ export function KarmaEarnersCard() {
               return (
                 <div
                   key={`${p.full_name}-${p.institution ?? "unknown"}-${p.total_karma}`}
-                  className="flex items-center gap-3 border-b border-border py-3 last:border-b-0"
+                  className="flex items-center gap-3 border-b border-border py-2 last:border-b-0"
                 >
                   <div className="flex w-5 shrink-0 items-center justify-center">
                     <RankIndicator rank={rank} />

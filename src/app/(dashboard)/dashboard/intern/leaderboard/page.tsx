@@ -135,7 +135,9 @@ export default function LeaderboardPage() {
   ];
 
   const top3 = MOCK_LEADERBOARD.slice(0, 3);
-  const others = MOCK_LEADERBOARD.slice(3);
+  const others = MOCK_LEADERBOARD.slice(3).filter((item) =>
+    item.name.toLowerCase().includes(_searchText.toLowerCase()),
+  );
 
   return (
     <div className="flex-1 space-y-8 p-8 pt-6 max-w-7xl mx-auto w-full bg-background/50">

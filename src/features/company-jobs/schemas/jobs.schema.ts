@@ -79,6 +79,109 @@ export const JobDetailDataSchema = z.object({
 
 export const JobDetailResponseSchema = DjangoResponse(JobDetailDataSchema);
 
+export const PublicJobSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  job_type: z.string(),
+  location: z.string(),
+  salary_range: z.string().optional().nullable(),
+  min_karma: z.number(),
+  min_level: z.number(),
+  status: z.string(),
+  created_at: z.string(),
+  updated_at: z.string(),
+  karma_reward: z.number().optional().nullable(),
+  duration_value: z.number().optional().nullable(),
+  duration_unit: z.string().optional().nullable(),
+  hourly_rate: z.string().optional().nullable(),
+  deliverables: z.array(z.string()).optional().nullable(),
+  stipend: z.string().optional().nullable(),
+  certificate_provided: z.boolean().optional().nullable(),
+  rules: z.array(JobRuleSchema).default([]),
+});
+
+export const LearnerApplicationSchema = z.object({
+  id: z.string(),
+  status: z.enum(["applied", "shortlisted", "accepted", "rejected"]),
+  cover_note: z.string().optional().nullable(),
+  job_title: z.string(),
+  job_type: z.string(),
+  company_name: z.string(),
+  company_id: z.string(),
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+
+export const LevelSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  level_order: z.number(),
+});
+
+export const JobApplicantSchema = z.object({
+  id: z.string(),
+  status: z.enum(["applied", "shortlisted", "accepted", "rejected"]),
+  cover_note: z.string().optional().nullable(),
+  applicant_id: z.string(),
+  full_name: z.string(),
+  muid: z.string(),
+  district: z.string().optional().nullable(),
+  karma: z.number(),
+  level: LevelSchema,
+  reviewed_by_id: z.string().optional().nullable(),
+  reviewed_at: z.string().optional().nullable(),
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+
+export const LearnerProfileSchema = z.object({
+  id: z.string(),
+  muid: z.string(),
+  full_name: z.string(),
+  gender: z.string().optional().nullable(),
+  district: z.string().optional().nullable(),
+  karma: z.number(),
+  level: LevelSchema,
+  interest_groups: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+    }),
+  ),
+  interested_in_work: z.boolean(),
+  interested_in_gig_work: z.boolean(),
+});
+
+export const PublicJobsResponseSchema = DjangoResponse(
+  z.object({
+    jobs: z.array(PublicJobSchema),
+    pagination: PaginationSchema,
+  }),
+);
+
+export const LearnerApplicationsResponseSchema = DjangoResponse(
+  z.object({
+    applications: z.array(LearnerApplicationSchema),
+    pagination: PaginationSchema,
+  }),
+);
+
+export const JobApplicantsResponseSchema = DjangoResponse(
+  z.object({
+    job_id: z.string(),
+    job_title: z.string(),
+    applicants: z.array(JobApplicantSchema),
+    pagination: PaginationSchema,
+  }),
+);
+
+export const LearnerDiscoveryResponseSchema = DjangoResponse(
+  z.object({
+    learners: z.array(LearnerProfileSchema),
+    pagination: PaginationSchema,
+  }),
+);
+
 // ─── Mutation Response Schemas ──────────────────────────────
 
 export const CreateJobResponseSchema = DjangoResponse(
@@ -131,6 +234,26 @@ export const DeleteRuleResponseSchema = DjangoResponse(
     rule_id: z.string(),
     job_id: z.string(),
     deleted_at: z.string(),
+  }),
+);
+
+export const ApplyJobResponseSchema = DjangoResponse(
+  z.object({
+    application_id: z.string(),
+    job_id: z.string(),
+    job_title: z.string(),
+    status: z.string(),
+    applied_at: z.string(),
+  }),
+);
+
+export const UpdateApplicantStatusResponseSchema = DjangoResponse(
+  z.object({
+    application_id: z.string(),
+    applicant_id: z.string(),
+    new_status: z.string(),
+    reviewed_by: z.string(),
+    reviewed_at: z.string(),
   }),
 );
 
@@ -209,7 +332,7 @@ export const PublicCompanyProfileResponseSchema =
   DjangoResponse(CompanyProfileSchema);
 
 // Public jobs by slug
-export const PublicJobSchema = z.object({
+export const PublicJobBySlugSchema = z.object({
   id: z.string(),
   title: z.string(),
   job_type: z.string().optional(),
@@ -221,7 +344,7 @@ export const PublicJobSchema = z.object({
   min_level: z.number().optional(),
   tags: z.array(z.string()).optional().default([]),
 });
-export type PublicJob = z.infer<typeof PublicJobSchema>;
+export type PublicJobBySlug = z.infer<typeof PublicJobBySlugSchema>;
 
 export const PublicJobsPaginationSchema = z.object({
   count: z.number(),
@@ -236,7 +359,7 @@ export const PublicJobsBySlugDataSchema = z.object({
     name: z.string(),
     slug: z.string(),
   }),
-  jobs: z.array(PublicJobSchema),
+  jobs: z.array(PublicJobBySlugSchema),
   pagination: PublicJobsPaginationSchema,
 });
 export type PublicJobsBySlugData = z.infer<typeof PublicJobsBySlugDataSchema>;

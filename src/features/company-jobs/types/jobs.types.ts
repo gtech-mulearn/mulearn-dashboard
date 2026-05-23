@@ -77,6 +77,90 @@ export interface JobDetailResponse {
   job: Job;
 }
 
+export interface PublicJob {
+  id: string;
+  title: string;
+  job_type: string;
+  location: string;
+  salary_range?: string | null;
+  min_karma: number;
+  min_level: number;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  karma_reward?: number | null;
+  duration_value?: number | null;
+  duration_unit?: string | null;
+  hourly_rate?: string | null;
+  deliverables?: string[] | null;
+  stipend?: string | null;
+  certificate_provided?: boolean | null;
+  rules: JobRule[];
+}
+
+export interface LearnerApplication {
+  id: string;
+  status: "applied" | "shortlisted" | "accepted" | "rejected";
+  cover_note?: string | null;
+  job_title: string;
+  job_type: string;
+  company_name: string;
+  company_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface JobApplicant {
+  id: string;
+  status: "applied" | "shortlisted" | "accepted" | "rejected";
+  cover_note?: string | null;
+  applicant_id: string;
+  full_name: string;
+  muid: string;
+  district?: string | null;
+  karma: number;
+  level: { id: string; name: string; level_order: number };
+  reviewed_by_id?: string | null;
+  reviewed_at?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LearnerProfile {
+  id: string;
+  muid: string;
+  full_name: string;
+  gender?: string | null;
+  district?: string | null;
+  karma: number;
+  level: { id: string; name: string; level_order: number };
+  interest_groups: { id: string; name: string }[];
+  interested_in_work: boolean;
+  interested_in_gig_work: boolean;
+}
+
+export interface PublicJobsResponse {
+  jobs: PublicJob[];
+  pagination: Pagination;
+}
+
+export interface LearnerApplicationsResponse {
+  applications: LearnerApplication[];
+  pagination: Pagination;
+}
+
+export interface JobApplicantsResponse {
+  job_id: string;
+  job_title: string;
+  applicants: JobApplicant[];
+  pagination: Pagination;
+}
+
+export interface LearnerDiscoveryResponse {
+  learners: LearnerProfile[];
+  pagination: Pagination;
+}
+
 // ─── API Payloads ───────────────────────────────────────────
 
 export interface CreateJobPayload {
@@ -170,12 +254,33 @@ export interface DeleteRuleResponse {
   deleted_at: string;
 }
 
+export interface ApplyJobResponse {
+  application_id: string;
+  job_id: string;
+  job_title: string;
+  status: string;
+  applied_at: string;
+}
+
+export interface UpdateApplicantStatusResponse {
+  application_id: string;
+  applicant_id: string;
+  new_status: string;
+  reviewed_by: string;
+  reviewed_at: string;
+}
+
 // ─── Company Profile Sub-types ──────────────────────────────
 
 export interface CompanyTestimonial {
   learner_name: string;
   role: string;
   quote: string;
+  author_avatar?: string;
+  author_level?: string;
+  author_ig?: string;
+  id?: string;
+  created_at?: string;
 }
 
 export interface CompanyGalleryItem {
@@ -240,4 +345,18 @@ export interface JobsListParams {
   perPage?: number;
   search?: string;
   sortBy?: string;
+}
+
+export interface LearnerDiscoveryParams {
+  karma_min?: number;
+  karma_max?: number;
+  ig_ids?: string;
+  achievement_ids?: string;
+  level_order_min?: number;
+  interested_in_work?: boolean;
+  interested_in_gig_work?: boolean;
+  search?: string;
+  sortBy?: string;
+  pageIndex?: number;
+  perPage?: number;
 }

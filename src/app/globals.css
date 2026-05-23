@@ -276,6 +276,36 @@ h5 {
     color: var(--muted-foreground);
   }
 
+  /* ── Application / Applicant status chips ──────────────────────────── */
+  .app-status-applied {
+    background-color: color-mix(
+      in srgb,
+      var(--brand-blue) 14%,
+      var(--background)
+    );
+    color: var(--brand-blue);
+    border-color: color-mix(in srgb, var(--brand-blue) 24%, transparent);
+  }
+  .app-status-shortlisted {
+    background-color: color-mix(in srgb, var(--warning) 14%, var(--background));
+    color: var(--warning);
+    border-color: color-mix(in srgb, var(--warning) 24%, transparent);
+  }
+  .app-status-accepted {
+    background-color: color-mix(in srgb, var(--success) 14%, var(--background));
+    color: var(--success);
+    border-color: color-mix(in srgb, var(--success) 24%, transparent);
+  }
+  .app-status-rejected {
+    background-color: color-mix(
+      in srgb,
+      var(--destructive) 12%,
+      var(--background)
+    );
+    color: var(--destructive);
+    border-color: color-mix(in srgb, var(--destructive) 22%, transparent);
+  }
+
   .gradient-1 {
     background: linear-gradient(
       135deg,

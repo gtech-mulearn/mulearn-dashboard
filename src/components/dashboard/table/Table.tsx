@@ -27,7 +27,7 @@ type TableProps = {
     Label: string;
     isSortable: boolean;
     width?: string;
-    wrap?: (data: string | ReactElement, id: string, row: Data) => ReactElement;
+    wrap?: (data: string, id: string, row: Data) => ReactElement;
   }[];
   id?: string[];
   onEditClick?: (column: string | number | boolean) => void;

@@ -43,7 +43,7 @@ export function InterestGroupsCard({
           <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
         </Link>
       </CardHeader>
-      <CardContent className="px-5 pb-5 pt-0">
+      <CardContent className="px-5 pb-12 pt-0">
         {isLoading ? (
           <div className="space-y-3">
             {[0, 1, 2, 3, 4, 5].map((i) => (
@@ -55,7 +55,7 @@ export function InterestGroupsCard({
             No interest groups available.
           </p>
         ) : (
-          <div className="space-y-0">
+          <div className="space-y-2">
             {visible.map((group, index) => {
               const dot = DOT_COLORS[index % DOT_COLORS.length];
               const num = String(index + 1).padStart(2, "0");
