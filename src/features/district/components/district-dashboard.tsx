@@ -344,7 +344,7 @@ export function DistrictDashboard() {
                         backgroundColor: "var(--color-card)",
                         color: "var(--color-foreground)",
                       }}
-                      formatter={(value: number | undefined) => [
+                      formatter={(value) => [
                         numberFormatter.format(Number(value) || 0),
                         "Karma",
                       ]}
@@ -415,7 +415,7 @@ export function DistrictDashboard() {
                         backgroundColor: "var(--color-card)",
                         color: "var(--color-foreground)",
                       }}
-                      formatter={(value: number | undefined) => [
+                      formatter={(value) => [
                         numberFormatter.format(Number(value) || 0),
                         "Students",
                       ]}

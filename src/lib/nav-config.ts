@@ -31,6 +31,7 @@ import {
   Shield,
   Trophy,
   User,
+  UserCheck,
   Users,
 } from "lucide-react";
 import type { Permission } from "@/lib/auth/permissions";
@@ -151,6 +152,14 @@ export const NAV_ITEMS: readonly NavItem[] = [
   },
 
   // ── Management Section (role-gated) ───────────────────────
+  {
+    id: "mentor",
+    title: "Mentor",
+    href: "/dashboard/mentor",
+    icon: UserCheck,
+    section: "management",
+    roles: [ROLES.MENTOR],
+  },
   {
     id: "company-jobs",
     title: "Company",

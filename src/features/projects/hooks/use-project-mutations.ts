@@ -94,17 +94,15 @@ export function useVoteProject(projectId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (vote: "upvote" | "downvote") => voteProject(projectId, vote),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: projectsKeys.detail(projectId) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: projectsKeys.all }),
   });
 }
 
-export function useDeleteVote(projectId: string) {
+export function useDeleteVote(_projectId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (voteId: string) => deleteVote(voteId),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: projectsKeys.detail(projectId) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: projectsKeys.all }),
   });
 }
 
@@ -112,16 +110,14 @@ export function useCommentOnProject(projectId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (comment: string) => commentOnProject(projectId, comment),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: projectsKeys.detail(projectId) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: projectsKeys.all }),
   });
 }
 
-export function useDeleteComment(projectId: string) {
+export function useDeleteComment(_projectId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (commentId: string) => deleteComment(commentId),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: projectsKeys.detail(projectId) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: projectsKeys.all }),
   });
 }

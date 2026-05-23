@@ -184,7 +184,7 @@ export const MANAGE_EVENT_STATUS_PILLS: Array<
 export const EVENT_FORM_DEFAULT_VALUES: CreateEventSchema = {
   title: "",
   description: "",
-  event_type: "other",
+
   scope: "global",
   start_datetime: "",
   end_datetime: "",
@@ -200,7 +200,7 @@ export const EVENT_FORM_DEFAULT_VALUES: CreateEventSchema = {
   registration_deadline: null,
   min_karma: null,
   linked_tasks: [],
-  co_owners: [],
+
   is_collaboration: false,
   target_campus_id: null,
   target_ig_id: null,

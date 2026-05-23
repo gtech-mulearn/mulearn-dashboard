@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { MarkdownEditor } from "@/components/ui/markdown-editor";
 import {
   Select,
   SelectContent,
@@ -19,7 +20,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import {
   type Project,
   ProjectFormSchema,
@@ -100,12 +100,19 @@ export function ProjectFormModal({
 
           <div>
             <Label>Description</Label>
-            <Textarea rows={5} {...form.register("description")} />
-            {form.formState.errors.description && (
-              <p className="text-xs text-destructive">
-                {form.formState.errors.description.message}
-              </p>
-            )}
+            <Controller
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <MarkdownEditor
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="Describe your project using Markdown…"
+                  rows={8}
+                  error={form.formState.errors.description?.message}
+                />
+              )}
+            />
           </div>
 
           <div>

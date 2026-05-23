@@ -128,7 +128,16 @@ export function useUploadCoverPic() {
 
   return useMutation({
     mutationFn: (cover: File) => uploadCoverPic(cover),
-    onSuccess: () => {
+    onSuccess: (newCoverUrl) => {
+      // Optimistically patch the cached profile with the new cover URL
+      queryClient.setQueriesData(
+        { queryKey: ["profile", "user-profile"] },
+        (old: Record<string, unknown> | undefined) => {
+          if (!old) return old;
+          return { ...old, cover_pic: newCoverUrl };
+        },
+      );
+      // Also invalidate to ensure full consistency
       queryClient.invalidateQueries({ queryKey: profileKeys.profile() });
       queryClient.invalidateQueries({
         queryKey: [...profileKeys.all, "public-profile"],
@@ -151,6 +160,14 @@ export function useDeleteCoverPic() {
   return useMutation({
     mutationFn: () => deleteCoverPic(),
     onSuccess: () => {
+      // Optimistically clear cover_pic in the cached profile
+      queryClient.setQueriesData(
+        { queryKey: ["profile", "user-profile"] },
+        (old: Record<string, unknown> | undefined) => {
+          if (!old) return old;
+          return { ...old, cover_pic: null };
+        },
+      );
       queryClient.invalidateQueries({ queryKey: profileKeys.profile() });
       queryClient.invalidateQueries({
         queryKey: [...profileKeys.all, "public-profile"],

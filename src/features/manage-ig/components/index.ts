@@ -1,4 +1,3 @@
-export * from "./edit-interest-group-form";
 export * from "./ig-card";
 export * from "./ig-client";
 export * from "./ig-detail";

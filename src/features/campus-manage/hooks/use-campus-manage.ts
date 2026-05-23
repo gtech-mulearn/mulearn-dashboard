@@ -96,8 +96,8 @@ export function useAddExecomMember() {
 export function useRemoveExecomMember() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (memberIds: string | string[]) =>
-      campusManageApi.removeExecomMember(memberIds),
+    mutationFn: (roleLinkId: string) =>
+      campusManageApi.removeExecomMember(roleLinkId),
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: campusManageKeys.execom(),
@@ -143,10 +143,32 @@ export function useIgCodes() {
   });
 }
 
+export function useGlobalIgs() {
+  return useQuery({
+    queryKey: campusManageKeys.globalIgs(),
+    queryFn: () => campusManageApi.getGlobalIgs(),
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useExecomRoles() {
+  return useQuery({
+    queryKey: campusManageKeys.execomRoles(),
+    queryFn: () => campusManageApi.getExecomRoles(),
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
 export function useTransferIgRole() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ muid, igCode }: { muid: string; igCode: string }) =>
       campusManageApi.transferIgRole(muid, igCode),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: campusManageKeys.igChapters(),
+      });
+    },
   });
 }
 

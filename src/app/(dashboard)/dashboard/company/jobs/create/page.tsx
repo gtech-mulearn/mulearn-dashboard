@@ -43,6 +43,21 @@ export default function CreateJobPage() {
           job_type: values.job_type,
           min_karma: values.min_karma,
           min_level: values.min_level,
+          // Advanced options — only include if set
+          ...(values.karma_reward !== undefined && {
+            karma_reward: values.karma_reward,
+          }),
+          ...(values.duration_value !== undefined && {
+            duration_value: values.duration_value,
+          }),
+          ...(values.duration_unit && { duration_unit: values.duration_unit }),
+          ...(values.hourly_rate && { hourly_rate: values.hourly_rate }),
+          ...(values.deliverables && { deliverables: values.deliverables }),
+          ...(values.stipend && { stipend: values.stipend }),
+          ...(values.certificate_provided !== undefined &&
+            values.certificate_provided !== false && {
+              certificate_provided: values.certificate_provided,
+            }),
         });
 
         const jobId = result.job.id;

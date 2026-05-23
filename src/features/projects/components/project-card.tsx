@@ -1,14 +1,28 @@
 "use client";
 import {
-  ArrowUpDown,
-  ExternalLink,
+  ArrowUp,
+  ArrowUpRight,
   MessageCircle,
+  MoreHorizontal,
   Pencil,
   Trash2,
 } from "lucide-react";
 import Image from "next/image";
+
+function resolveMediaUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  if (url.startsWith("http")) return url;
+  return `${process.env.NEXT_PUBLIC_DJANGO_API_URL ?? ""}${url}`;
+}
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import type { Project } from "../schemas";
 
 interface ProjectCardProps {
@@ -19,12 +33,46 @@ interface ProjectCardProps {
   onDelete: () => void;
 }
 
-function statusVariant(
-  status: Project["status"],
-): "default" | "secondary" | "outline" {
-  if (status === "published") return "default";
-  if (status === "draft") return "secondary";
-  return "outline";
+function stripMarkdown(md: string): string {
+  return md
+    .replace(/<[^>]*>/g, "")
+    .replace(/^#{1,6}\s+/gm, "")
+    .replace(/(\*\*|__)(.*?)\1/g, "$2")
+    .replace(/(\*|_)(.*?)\1/g, "$2")
+    .replace(/~~(.*?)~~/g, "$1")
+    .replace(/`{1,3}[^`]*`{1,3}/g, "")
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, "")
+    .replace(/^\s*[-*+]\s+/gm, "")
+    .replace(/^\s*\d+\.\s+/gm, "")
+    .replace(/^\s*>\s+/gm, "")
+    .replace(/---+/g, "")
+    .replace(/\n{2,}/g, " ")
+    .replace(/\n/g, " ")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
+function generateGradient(seed: string): string {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = seed.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const hue1 = Math.abs(hash) % 360;
+  const hue2 = (hue1 + 40) % 360;
+  return `linear-gradient(135deg, hsl(${hue1}, 70%, 60%), hsl(${hue2}, 80%, 50%))`;
+}
+
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 30) return `${days}d ago`;
+  return new Date(dateStr).toLocaleDateString();
 }
 
 export function ProjectCard({
@@ -35,126 +83,146 @@ export function ProjectCard({
   onDelete,
 }: ProjectCardProps) {
   const upvotes = project.votes.filter((v) => v.vote === "upvote").length;
-  const downvotes = project.votes.filter((v) => v.vote === "downvote").length;
-  const primaryLink = project.links[0];
+  const commentCount = project.comments.length;
+  const plainDescription = stripMarkdown(project.description);
 
   return (
-    <div className="group rounded-2xl border bg-card p-5 shadow-sm transition hover:shadow-md">
-      <div className="flex items-start gap-4">
-        {project.logo ? (
+    // biome-ignore lint/a11y/useSemanticElements: nested buttons prevent using <button>
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={onOpen}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onOpen();
+        }
+      }}
+      className="group flex flex-col gap-4 rounded-2xl border border-border/50 bg-card p-5 shadow-sm transition-all duration-200 hover:border-border hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer h-full"
+    >
+      {/* Logo + actions */}
+      <div className="flex items-start justify-between gap-3">
+        {resolveMediaUrl(project.logo) ? (
           <Image
-            src={project.logo}
-            alt={project.title}
+            src={resolveMediaUrl(project.logo) as string}
+            alt=""
             width={48}
             height={48}
-            className="rounded-lg object-cover"
+            unoptimized
+            className="h-12 w-12 rounded-full object-cover border border-border/40 shrink-0"
           />
         ) : (
-          <div className="h-12 w-12 rounded-lg bg-muted" />
-        )}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <button type="button" onClick={onOpen} className="text-left">
-              <h4 className="font-semibold truncate">{project.title}</h4>
-            </button>
-            {project.status !== "published" && (
-              <Badge
-                variant={statusVariant(project.status)}
-                className="text-xs capitalize"
-              >
-                {project.status}
-              </Badge>
-            )}
+          <div
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-lg font-bold text-white"
+            style={{ background: generateGradient(project.title) }}
+          >
+            {project.title.charAt(0).toUpperCase()}
           </div>
-          <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
-            {project.description}
-          </p>
+        )}
+
+        {/* biome-ignore lint/a11y/noStaticElementInteractions: stops click propagation to parent role=button */}
+        <div
+          className="flex items-center gap-1.5 ml-auto"
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
+        >
+          <span className="flex items-center gap-1 rounded-full border border-border/50 bg-muted/50 px-2.5 py-1 text-[12px] font-semibold text-muted-foreground">
+            <ArrowUp className="h-3 w-3" />
+            {upvotes}
+          </span>
+
+          {canEdit && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-7 w-7 rounded-full text-muted-foreground hover:text-foreground"
+                >
+                  <MoreHorizontal className="h-3.5 w-3.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-32 rounded-xl">
+                <DropdownMenuItem
+                  onClick={onEdit}
+                  className="rounded-lg cursor-pointer"
+                >
+                  <Pencil className="h-3.5 w-3.5 mr-2" />
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={onDelete}
+                  className="rounded-lg cursor-pointer text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="h-3.5 w-3.5 mr-2" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </div>
 
-      {project.skills.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-1">
-          {project.skills.slice(0, 4).map((s) => (
-            <Badge key={s.id} variant="outline" className="text-xs">
-              {s.name}
-            </Badge>
-          ))}
-          {project.skills.length > 4 && (
-            <Badge variant="outline" className="text-xs">
-              +{project.skills.length - 4}
+      {/* Creator + time */}
+      <p className="text-[12px] font-medium text-muted-foreground -mt-1">
+        {project.created_by ?? "Unknown"} · {timeAgo(project.created_at)}
+      </p>
+
+      {/* Title + status + description */}
+      <div className="flex-1">
+        <div className="flex flex-wrap items-center gap-2 mb-1.5">
+          <h3 className="text-[16px] font-bold tracking-tight text-foreground leading-snug line-clamp-1">
+            {project.title}
+          </h3>
+          {project.status !== "published" && (
+            <Badge
+              variant="secondary"
+              className="text-[10px] px-1.5 py-0 h-4 uppercase tracking-wider font-semibold shrink-0"
+            >
+              {project.status}
             </Badge>
           )}
         </div>
-      )}
+        <p className="text-[13px] leading-relaxed text-muted-foreground line-clamp-2">
+          {plainDescription || "No description provided."}
+        </p>
+      </div>
 
-      {project.members.length > 0 && (
-        <div className="mt-4 flex -space-x-2">
-          {project.members.slice(0, 5).map((m) =>
-            m.is_linked && m.profile_pic ? (
-              <Image
-                key={m.id}
-                src={m.profile_pic}
-                alt={m.full_name}
-                width={28}
-                height={28}
-                className="rounded-full border-2 border-card"
-                title={m.full_name}
-              />
-            ) : (
-              <div
-                key={m.id}
-                title={`${m.full_name}${m.is_linked ? "" : " (external)"}`}
-                className="h-7 w-7 rounded-full border-2 border-card bg-muted text-xs flex items-center justify-center"
+      {/* Skill pills */}
+      <div className="flex flex-wrap gap-1.5">
+        {project.skills.length > 0 ? (
+          <>
+            {project.skills.slice(0, 3).map((s) => (
+              <span
+                key={s.id}
+                className="rounded-full bg-secondary/60 px-2.5 py-0.5 text-[11px] font-medium text-secondary-foreground"
               >
-                {m.full_name.charAt(0)}
-              </div>
-            ),
-          )}
-          {project.members.length > 5 && (
-            <div className="h-7 w-7 rounded-full border-2 border-card bg-muted text-xs flex items-center justify-center">
-              +{project.members.length - 5}
-            </div>
-          )}
-        </div>
-      )}
-
-      <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-        <div className="flex items-center gap-3">
-          <span className="flex items-center gap-1">
-            <ArrowUpDown className="h-3 w-3" />
-            {upvotes - downvotes}
+                {s.name}
+              </span>
+            ))}
+            {project.skills.length > 3 && (
+              <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                +{project.skills.length - 3}
+              </span>
+            )}
+          </>
+        ) : (
+          <span className="text-[12px] italic text-muted-foreground/40">
+            No skills listed
           </span>
-          <span className="flex items-center gap-1">
-            <MessageCircle className="h-3 w-3" />
-            {project.comments.length}
-          </span>
-          {primaryLink && (
-            <a
-              href={primaryLink.url}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-1 hover:text-primary truncate max-w-[10rem]"
-            >
-              <ExternalLink className="h-3 w-3" />
-              {primaryLink.label}
-            </a>
-          )}
-        </div>
-        {canEdit && (
-          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">
-            <Button type="button" size="icon" variant="ghost" onClick={onEdit}>
-              <Pencil className="h-3 w-3" />
-            </Button>
-            <Button
-              type="button"
-              size="icon"
-              variant="ghost"
-              onClick={onDelete}
-            >
-              <Trash2 className="h-3 w-3" />
-            </Button>
-          </div>
         )}
+      </div>
+
+      {/* Bottom: comments + View CTA */}
+      <div className="flex items-center justify-between border-t border-border/40 pt-3 mt-auto">
+        <span className="flex items-center gap-1.5 text-[12px] font-medium text-muted-foreground">
+          <MessageCircle className="h-3.5 w-3.5" />
+          {commentCount} {commentCount === 1 ? "comment" : "comments"}
+        </span>
+        <span className="flex items-center gap-0.5 text-[12px] font-semibold text-primary group-hover:underline underline-offset-2 transition-colors">
+          View
+          <ArrowUpRight className="h-3.5 w-3.5" />
+        </span>
       </div>
     </div>
   );

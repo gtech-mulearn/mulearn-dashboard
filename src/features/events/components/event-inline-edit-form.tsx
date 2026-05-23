@@ -9,29 +9,22 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
-import { MuidSearchInput } from "@/components/ui/muid-search-input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
   EVENT_FORM_DEFAULT_VALUES,
   EVENT_SCOPE_OPTIONS,
-  EVENT_TYPE_SELECT_OPTIONS,
 } from "../constants/events.constants";
 import {
   buildChangedPatchPayload,
   buildEventPatchPayload,
   eventEditSectionClassName,
-  resolveEventTypeValue,
   toDatetimeLocal,
   toEventFormData,
   usePatchEvent,
 } from "../hooks";
 import { type CreateEventSchema, updateEventSchema } from "../schemas";
-import type {
-  CoOwnerDisplay,
-  EventInlineEditFormProps,
-  EventWriteBody,
-} from "../types";
+import type { EventInlineEditFormProps, EventWriteBody } from "../types";
 import { EventSearch } from "./event-search";
 import { VenueSection } from "./venue-section";
 
@@ -47,9 +40,6 @@ export function EventInlineEditForm({
   const [selectedCampusName, setSelectedCampusName] = useState("");
   const [selectedIgName, setSelectedIgName] = useState("");
   const [selectedCampusIgName, setSelectedCampusIgName] = useState("");
-  const [selectedCoOwners, setSelectedCoOwners] = useState<CoOwnerDisplay[]>(
-    [],
-  );
   const [tagInput, setTagInput] = useState("");
 
   const {
@@ -87,7 +77,6 @@ export function EventInlineEditForm({
       ...EVENT_FORM_DEFAULT_VALUES,
       title: event.title ?? "",
       description: event.description ?? "",
-      event_type: resolveEventTypeValue(event.event_type, event.category_name),
       scope,
       start_datetime: toDatetimeLocal(event.start_datetime),
       end_datetime: toDatetimeLocal(event.end_datetime),
@@ -114,15 +103,6 @@ export function EventInlineEditForm({
       is_collaboration: event.is_collaboration ?? false,
       is_featured: event.is_featured ?? false,
     });
-
-    setSelectedCoOwners(
-      event.co_owners?.map((owner) => ({
-        user_id: owner.user.id,
-        role: owner.role ?? "co_owner",
-        full_name: owner.user.full_name,
-        muid: owner.user.muid,
-      })) ?? [],
-    );
 
     setCoverImageFile(null);
     setBannerImageFile(null);
@@ -211,11 +191,6 @@ export function EventInlineEditForm({
       return;
     }
 
-    patchPayload.co_owners = selectedCoOwners.map(({ user_id, role }) => ({
-      user_id,
-      role,
-    }));
-
     const changedPayload = buildChangedPatchPayload(patchPayload, event);
     const hasImageChange = Boolean(coverImageFile || bannerImageFile);
     if (Object.keys(changedPayload).length === 0 && !hasImageChange) {
@@ -285,35 +260,6 @@ export function EventInlineEditForm({
         <h3 className="mb-4 text-base font-semibold tracking-tight text-foreground">
           Type & Scope
         </h3>
-
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-foreground">Event Type</p>
-          <Controller
-            control={control}
-            name="event_type"
-            render={({ field }) => (
-              <div className="flex flex-wrap gap-2">
-                {EVENT_TYPE_SELECT_OPTIONS.map((item) => {
-                  const active = field.value === item.value;
-                  return (
-                    <button
-                      key={item.value}
-                      type="button"
-                      className={`rounded-full border px-4 py-1.5 text-sm transition-colors ${
-                        active
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-border bg-background text-muted-foreground hover:border-primary hover:text-primary"
-                      }`}
-                      onClick={() => field.onChange(item.value)}
-                    >
-                      {item.label}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          />
-        </div>
 
         <div className="space-y-2">
           <p className="text-sm font-medium text-foreground">Scope</p>
@@ -535,7 +481,7 @@ export function EventInlineEditForm({
 
       <section className={eventEditSectionClassName()}>
         <h3 className="mb-4 text-base font-semibold tracking-tight text-foreground">
-          Tags & Co-owners
+          Tags
         </h3>
 
         <div className="space-y-2">
@@ -582,46 +528,6 @@ export function EventInlineEditForm({
                     );
                     setValue("tags", next, { shouldDirty: true });
                   }}
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            ))}
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-foreground">Co-owners</p>
-          <MuidSearchInput
-            placeholder="Search by name or muid"
-            onSelectUser={(user) => {
-              if (!user.id) return;
-              setSelectedCoOwners((previous) => {
-                if (previous.some((item) => item.user_id === user.id))
-                  return previous;
-                return [
-                  ...previous,
-                  {
-                    user_id: user.id,
-                    role: "co_owner",
-                    full_name: user.full_name,
-                    muid: user.muid,
-                  },
-                ];
-              });
-            }}
-          />
-          <div className="flex flex-wrap gap-2">
-            {selectedCoOwners.map((owner) => (
-              <Badge key={owner.user_id} variant="secondary" className="gap-1">
-                {owner.full_name} ({owner.muid})
-                <button
-                  type="button"
-                  onClick={() =>
-                    setSelectedCoOwners((previous) =>
-                      previous.filter((item) => item.user_id !== owner.user_id),
-                    )
-                  }
                 >
                   <X className="h-3 w-3" />
                 </button>

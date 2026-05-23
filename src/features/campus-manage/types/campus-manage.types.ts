@@ -44,6 +44,12 @@ export interface CampusLeaderboardItem {
   ig: string;
   cluster: string;
   alumni: boolean;
+  profilePic: string | null;
+  igCount: number;
+  department: string;
+  graduationYear: string;
+  joinDate: string;
+  lastKarmaGained: string;
 }
 
 export interface CampusLeaderboardResponse {
@@ -109,7 +115,6 @@ export interface IgChapter {
 export interface ExecomMember {
   id: string;
   roleLinkId: string;
-  deleteCandidates: string[];
   name: string;
   muid: string;
   role: string;

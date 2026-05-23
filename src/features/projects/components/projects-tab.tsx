@@ -15,7 +15,7 @@ import {
 import type { Project, ProjectFormValues } from "../schemas";
 import { ProjectCard } from "./project-card";
 import { ProjectDetailModal } from "./project-detail-modal";
-import { ProjectFormModal } from "./project-form-modal";
+import { ProjectWizard } from "./project-wizard";
 
 interface ProjectsTabProps {
   muid: string;
@@ -40,9 +40,10 @@ export function ProjectsTab({
   const update = useUpdateProject(muid);
   const del = useDeleteProject(muid);
 
-  const [showForm, setShowForm] = useState(false);
+  const [showWizard, setShowWizard] = useState(false);
   const [editing, setEditing] = useState<Project | undefined>();
   const [detailId, setDetailId] = useState<string | undefined>();
+  const [detailCanEdit, setDetailCanEdit] = useState(false);
 
   const { data: editingMembers = [] } = useProjectMembers(editing?.id ?? "");
   const addMember = useAddMember(editing?.id ?? "");
@@ -52,27 +53,23 @@ export function ProjectsTab({
     values: ProjectFormValues,
     files: { logo?: File; images?: File[] },
   ) => {
-    try {
-      if (editing) {
-        await update.mutateAsync({
-          id: editing.id,
-          values,
-          logo: files.logo,
-          images: files.images,
-        });
-        toast.success("Project updated");
-      } else {
-        await create.mutateAsync({
-          values,
-          logo: files.logo,
-          images: files.images,
-        });
-        toast.success("Project created");
-      }
-      setEditing(undefined);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Save failed");
+    if (editing) {
+      const result = await update.mutateAsync({
+        id: editing.id,
+        values,
+        logo: files.logo,
+        images: files.images,
+      });
+      toast.success("Project updated");
+      return result;
     }
+    const result = await create.mutateAsync({
+      values,
+      logo: files.logo,
+      images: files.images,
+    });
+    toast.success("Project created");
+    return result;
   };
 
   const handleDelete = async (p: Project) => {
@@ -111,7 +108,7 @@ export function ProjectsTab({
           <Button
             onClick={() => {
               setEditing(undefined);
-              setShowForm(true);
+              setShowWizard(true);
             }}
           >
             <Plus className="h-4 w-4 mr-1" />
@@ -130,16 +127,21 @@ export function ProjectsTab({
           </p>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           {projects.map((p) => (
             <ProjectCard
               key={p.id}
               project={p}
               canEdit={isOwnProfile && p.created_by_id === currentUserId}
-              onOpen={() => setDetailId(p.id)}
+              onOpen={() => {
+                setDetailId(p.id);
+                setDetailCanEdit(
+                  isOwnProfile && p.created_by_id === currentUserId,
+                );
+              }}
               onEdit={() => {
                 setEditing(p);
-                setShowForm(true);
+                setShowWizard(true);
               }}
               onDelete={() => handleDelete(p)}
             />
@@ -147,10 +149,10 @@ export function ProjectsTab({
         </div>
       )}
 
-      <ProjectFormModal
-        open={showForm}
+      <ProjectWizard
+        open={showWizard}
         onOpenChange={(o) => {
-          setShowForm(o);
+          setShowWizard(o);
           if (!o) setEditing(undefined);
         }}
         project={editing}
@@ -193,6 +195,7 @@ export function ProjectsTab({
             : undefined
         }
       />
+
       {detailId && (
         <ProjectDetailModal
           open={!!detailId}
@@ -201,6 +204,15 @@ export function ProjectsTab({
           }}
           projectId={detailId}
           currentUserId={currentUserId}
+          canEdit={detailCanEdit}
+          onEdit={() => {
+            const p = projects?.find((proj) => proj.id === detailId);
+            if (p) {
+              setEditing(p);
+              setDetailId(undefined);
+              setShowWizard(true);
+            }
+          }}
         />
       )}
     </div>

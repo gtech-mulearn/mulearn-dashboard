@@ -38,6 +38,14 @@ export const MIN_LEVEL_OPTIONS = [
   { value: 7, label: "Level 7" },
 ] as const;
 
+// ─── Duration Unit Options ──────────────────────────────────
+
+export const DURATION_UNIT_OPTIONS = [
+  { value: "days", label: "Days" },
+  { value: "weeks", label: "Weeks" },
+  { value: "months", label: "Months" },
+] as const;
+
 // ─── Stepper Steps ──────────────────────────────────────────
 
 export const JOB_STEPPER_STEPS: StepDefinition[] = [

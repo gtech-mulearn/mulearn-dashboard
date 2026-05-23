@@ -27,7 +27,9 @@ export const campusManageKeys = {
     [...campusManageKeys.all, "events", page, status, type, date] as const,
   studentLevels: () => [...campusManageKeys.all, "student-levels"] as const,
   execom: () => [...campusManageKeys.all, "execom"] as const,
+  execomRoles: () => [...campusManageKeys.all, "execom-roles"] as const,
   igCodes: () => [...campusManageKeys.all, "ig-codes"] as const,
+  globalIgs: () => [...campusManageKeys.all, "global-igs"] as const,
   igChapters: (orgId?: string) =>
     [...campusManageKeys.all, "ig-chapters", orgId ?? ""] as const,
 };

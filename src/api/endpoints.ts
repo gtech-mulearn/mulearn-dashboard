@@ -172,6 +172,8 @@ export const endpoints = {
     personaIgRoles: "/api/v1/dashboard/mentor/persona/ig-roles/",
     /** GET - Single-call mentor home summary */
     homeSummary: "/api/v1/dashboard/mentor/overview/home-summary/",
+    /** GET/POST - Mentor's weekly availability schedule */
+    availabilitySlots: "/api/v1/dashboard/mentor/availability/",
   },
 
   // ============================================
@@ -331,6 +333,8 @@ export const endpoints = {
     // --- Role Management & Execom ---
     /** GET - List Execom members | POST - Appoint a member to an Execom role */
     execom: "/api/v1/dashboard/campus/execom/",
+    /** GET - List available Execom role titles */
+    execomRoles: "/api/v1/dashboard/campus/execom/roles/",
     /** DELETE - Remove an Execom role from a member by role link ID */
     execomDelete: (memberId: string) =>
       `/api/v1/dashboard/campus/execom/${memberId}/`,

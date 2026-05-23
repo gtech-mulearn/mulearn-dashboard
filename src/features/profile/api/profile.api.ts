@@ -440,7 +440,7 @@ export async function getInterestGroupsList(): Promise<InterestGroupsListData> {
 export async function updateInterestGroups(groupIds: string[]): Promise<void> {
   await apiClient.patch(
     endpoints.user.interestGroups,
-    { interest_group: groupIds },
+    { interest_groups: groupIds },
     EmptyResponseSchema,
   );
 }

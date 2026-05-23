@@ -87,7 +87,9 @@ export const PaginationSchema = z.object({
 
 export const ProjectsListResponseSchema = ApiResponseSchema(
   z.object({
-    Projects: z.array(ProjectSchema),
+    data: z.object({
+      Projects: z.array(ProjectSchema),
+    }),
     pagination: PaginationSchema.optional(),
   }),
 );

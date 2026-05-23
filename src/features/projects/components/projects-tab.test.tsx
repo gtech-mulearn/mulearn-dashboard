@@ -24,7 +24,26 @@ const makeProject = (overrides = {}) => ({
 });
 
 vi.mock("../api", () => ({
-  listProjectsForMuid: vi.fn().mockResolvedValue([makeProject()]),
+  listProjectsForMuid: vi.fn().mockResolvedValue([
+    {
+      id: "p1",
+      title: "Demo",
+      description: "d",
+      status: "published" as const,
+      logo: null,
+      images: [],
+      links: [{ id: "l1", label: "GitHub", url: "https://x.com", position: 0 }],
+      skills: [{ id: "s1", name: "Python", code: "PY", icon: null }],
+      created_by: "Owner",
+      created_by_id: "u1",
+      updated_by: "Owner",
+      created_at: "",
+      updated_at: "",
+      members: [],
+      votes: [],
+      comments: [],
+    },
+  ]),
   listMembers: vi.fn().mockResolvedValue([]),
   createProject: vi.fn(),
   updateProject: vi.fn(),
@@ -45,7 +64,7 @@ function wrap(ui: React.ReactNode) {
 }
 
 describe("<ProjectsTab />", () => {
-  it("renders project cards with status, skills, and primary link", async () => {
+  it("renders project cards with status, skills, and view CTA", async () => {
     render(
       wrap(
         <ProjectsTab
@@ -59,8 +78,11 @@ describe("<ProjectsTab />", () => {
     await waitFor(() => expect(screen.getByText("Demo")).toBeInTheDocument());
     expect(screen.getByText("Projects (1)")).toBeInTheDocument();
     expect(screen.getByText("Python")).toBeInTheDocument();
-    expect(screen.getByText("GitHub")).toBeInTheDocument();
+    // Links moved to detail modal — not on card
+    expect(screen.queryByText("GitHub")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /new/i })).toBeInTheDocument();
+    // New card surface: View CTA is present
+    expect(screen.getAllByText(/view/i).length).toBeGreaterThan(0);
   });
 
   it("hides New button when not own profile", async () => {

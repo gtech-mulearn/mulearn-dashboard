@@ -57,6 +57,7 @@ export function ProfileHeader({
 }: ProfileHeaderProps) {
   const [imageError, setImageError] = useState(false);
   const [coverError, setCoverError] = useState(false);
+  const [coverVersion, setCoverVersion] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const fileInputId = useId();
 
@@ -70,8 +71,8 @@ export function ProfileHeader({
 
   const coverSrc = useMemo(() => {
     if (!profile.cover_pic || coverError) return DEFAULT_COVER_SRC;
-    return `${profile.cover_pic}?v=${encodeURIComponent(profile.cover_pic)}`;
-  }, [profile.cover_pic, coverError]);
+    return `${profile.cover_pic}?v=${coverVersion}`;
+  }, [profile.cover_pic, coverError, coverVersion]);
 
   const hasCustomCover = Boolean(profile.cover_pic) && !coverError;
   const showCoverControls = isOwnProfile && Boolean(onUploadCover);
@@ -100,6 +101,7 @@ export function ProfileHeader({
     try {
       await onUploadCover(file);
       setCoverError(false);
+      setCoverVersion((v) => v + 1);
     } catch {
       // Mutation hook surfaces the toast.
     }
@@ -110,6 +112,7 @@ export function ProfileHeader({
     if (!window.confirm("Remove your cover photo?")) return;
     try {
       await onDeleteCover();
+      setCoverVersion((v) => v + 1);
     } catch {
       // Mutation hook surfaces the toast.
     }

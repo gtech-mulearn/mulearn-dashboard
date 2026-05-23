@@ -5,4 +5,5 @@ export * from "./project-form-modal";
 export * from "./project-links-editor";
 export * from "./project-member-picker";
 export * from "./project-skill-picker";
+export * from "./project-wizard";
 export * from "./projects-tab";

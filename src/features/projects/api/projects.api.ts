@@ -36,7 +36,7 @@ export async function listProjectsForMuid(
     `${endpoints.projects.list}?${params}`,
     ProjectsListResponseSchema,
   );
-  return res.response.Projects;
+  return res.response.data.Projects;
 }
 
 export async function getProject(id: string): Promise<Project> {
@@ -87,6 +87,16 @@ async function postMultipart(
     body: fd,
   });
   const raw = await res.json();
+  if (!res.ok) {
+    // Backend returns { general_message: "..." } on error
+    const msg =
+      typeof raw?.message?.general_message === "string"
+        ? raw.message.general_message
+        : typeof raw?.message?.general_message === "object"
+          ? JSON.stringify(raw.message.general_message)
+          : `Server error (${res.status})`;
+    throw new Error(msg);
+  }
   return ProjectDetailResponseSchema.parse(raw).response.Project;
 }
 
