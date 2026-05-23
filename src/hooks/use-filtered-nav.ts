@@ -30,12 +30,16 @@ interface UseFilteredNavReturn {
 }
 
 export function useFilteredNav(): UseFilteredNavReturn {
-  const { can, hasRole, isLoading } = usePermissions();
+  const { can, hasRole, roles, isLoading } = usePermissions();
 
   const filtered = useMemo(() => {
     const visible = NAV_ITEMS.filter((item) => {
       // No restriction → visible to all authenticated users
-      if (!item.permission && (!item.roles || item.roles.length === 0)) {
+      if (
+        !item.permission &&
+        (!item.roles || item.roles.length === 0) &&
+        !item.dynamicCheck
+      ) {
         return true;
       }
 
@@ -44,10 +48,15 @@ export function useFilteredNav(): UseFilteredNavReturn {
         return can(item.permission);
       }
 
-      // Role-based check
+      // Role-based check (static + dynamic)
       if (item.roles && item.roles.length > 0) {
-        return hasRole(item.roles);
+        if (hasRole(item.roles)) return true;
+        if (item.dynamicCheck) return item.dynamicCheck(roles);
+        return false;
       }
+
+      // Dynamic-only check (no static roles)
+      if (item.dynamicCheck) return item.dynamicCheck(roles);
 
       return false;
     });
@@ -57,7 +66,7 @@ export function useFilteredNav(): UseFilteredNavReturn {
       managementItems: visible.filter((item) => item.section === "management"),
       bottomItems: visible.filter((item) => item.section === "bottom"),
     };
-  }, [can, hasRole]);
+  }, [can, hasRole, roles]);
 
   return {
     ...filtered,

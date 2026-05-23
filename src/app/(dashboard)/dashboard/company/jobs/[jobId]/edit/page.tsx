@@ -47,6 +47,14 @@ export default function EditJobPage() {
             job_type: values.job_type,
             min_karma: values.min_karma,
             min_level: values.min_level,
+            // Advanced options — always send to allow clearing values
+            karma_reward: values.karma_reward,
+            duration_value: values.duration_value,
+            duration_unit: values.duration_unit,
+            hourly_rate: values.hourly_rate || undefined,
+            deliverables: values.deliverables || undefined,
+            stipend: values.stipend || undefined,
+            certificate_provided: values.certificate_provided,
           },
         });
 

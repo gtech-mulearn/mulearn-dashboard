@@ -14,6 +14,7 @@ import { CompanyProfilePage } from "@/features/company-jobs/components";
 import {
   AccountSettingsModal,
   Achievements,
+  Badges,
   BasicDetails,
   EditInterestGroupsModal,
   type EditProfileFormValues,
@@ -28,14 +29,17 @@ import {
   ShareProfileModal,
   type UpdateProfileRequest,
   updateInterestGroups,
+  useDeleteCoverPic,
   useEditableProfile,
   useEditCollege,
   useUpdateProfile,
   useUpdateProfileImage,
+  useUploadCoverPic,
   useUserLevels,
   useUserLog,
   useUserProfile,
 } from "@/features/profile";
+import { ProjectsTab } from "@/features/projects";
 import {
   type ChangeOrganizationFormValues,
   ChangeOrganizationRequestSchema,
@@ -62,6 +66,8 @@ export default function ProfilePage() {
   const { data: editableProfile } = useEditableProfile();
   const changeOrganizationMutation = useEditCollege();
   const updateProfileImageMutation = useUpdateProfileImage();
+  const uploadCoverPicMutation = useUploadCoverPic();
+  const deleteCoverPicMutation = useDeleteCoverPic();
   const { data: userLog, isLoading: isLoadingLog } = useUserLog();
   const { data: userLevels, isLoading: isLoadingLevels } = useUserLevels();
 
@@ -197,6 +203,11 @@ export default function ProfilePage() {
           isOwnProfile={true}
           onEdit={() => setShowEditProfile(true)}
           onShare={() => setShowShareProfile(true)}
+          onUploadCover={(file) => uploadCoverPicMutation.mutateAsync(file)}
+          onDeleteCover={() => deleteCoverPicMutation.mutateAsync()}
+          isCoverPending={
+            uploadCoverPicMutation.isPending || deleteCoverPicMutation.isPending
+          }
         />
       </div>
 
@@ -240,6 +251,17 @@ export default function ProfilePage() {
               <Achievements
                 muid={profile.muid}
                 userName={profile.full_name}
+                isOwnProfile={true}
+              />
+            )}
+            {activeTab === "badges" && (
+              <Badges muid={profile.muid} isOwnProfile={true} />
+            )}
+            {activeTab === "projects" && (
+              <ProjectsTab
+                muid={profile.muid}
+                ownerMuid={profile.muid}
+                currentUserId={profile.id}
                 isOwnProfile={true}
               />
             )}

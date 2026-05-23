@@ -8,6 +8,7 @@ export { AccountSettingsModal } from "./account-settings-modal";
 export { AchievementCard } from "./achievement-card";
 export { Achievements } from "./achievements";
 export { ActivityHeatmap } from "./activity-heatmap";
+export { Badges } from "./badges";
 export { BasicDetails } from "./basic-details";
 export { EditInterestGroupsModal } from "./edit-interest-groups-modal";
 export { EditProfileModal } from "./edit-profile-modal";

@@ -56,6 +56,10 @@ const CreateMeetingFormSchema = z
 
 type CreateMeetingFormData = z.infer<typeof CreateMeetingFormSchema>;
 
+function localDateTimeToUtc(value: string) {
+  return new Date(value).toISOString();
+}
+
 interface CreateMeetingModalProps {
   circleId: string;
   open: boolean;
@@ -95,6 +99,7 @@ export function CreateMeetingModal({
     try {
       await createMeeting.mutateAsync({
         ...data,
+        meet_time: localDateTimeToUtc(data.meet_time),
         platform: data.mode === "online" ? data.platform : null,
         meet_link: data.mode === "online" ? data.meet_place : null,
         coord_x: 0,

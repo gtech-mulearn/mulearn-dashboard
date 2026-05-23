@@ -1,4 +1,4 @@
-import { ApiError, apiClient } from "@/api/client";
+import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import type {
   CampusEvent,
@@ -336,6 +336,18 @@ export const campusManageApi = {
             "-",
           ),
           alumni: toBoolean(row.alumni ?? row.is_alumni),
+          profilePic: row.profile_pic ? safeToString(row.profile_pic) : null,
+          igCount: toNumber(row.ig_count ?? row.igCount),
+          department: safeToString(row.department, ""),
+          graduationYear: safeToString(
+            row.graduation_year ?? row.graduationYear,
+            "",
+          ),
+          joinDate: safeToString(row.join_date ?? row.joinDate, ""),
+          lastKarmaGained: safeToString(
+            row.last_karma_gained ?? row.lastKarmaGained,
+            "",
+          ),
         };
       })
       .filter((item): item is CampusLeaderboardItem => item !== null);
@@ -394,8 +406,8 @@ export const campusManageApi = {
     if (filters.status) params.set("status", filters.status);
     if (filters.type) params.set("event_type", filters.type);
     if (filters.date) {
-      params.set("start_date", filters.date);
-      params.set("end_date", filters.date);
+      params.set("date_from", filters.date);
+      params.set("date_to", filters.date);
     }
 
     const suffix = params.toString();
@@ -453,7 +465,7 @@ export const campusManageApi = {
       const row = asRecord(item);
       return {
         level: safeToString(row.level ?? row.level_name, "-"),
-        count: toNumber(row.count ?? row.student_count),
+        count: toNumber(row.students ?? row.count ?? row.student_count),
       };
     });
   },
@@ -464,21 +476,6 @@ export const campusManageApi = {
     return unwrapDataArray(raw).map((item, index) => {
       const row = asRecord(item);
       const roleLink = asRecord(row.role_link);
-      const roleObject = asRecord(row.role);
-      const deleteCandidates = [
-        safeToString(row.execom_id),
-        safeToString(row.role_link_id),
-        safeToString(row.role_id),
-        safeToString(row.campus_role_id),
-        safeToString(row.assignment_id),
-        safeToString(roleLink.id),
-        safeToString(roleLink.execom_id),
-        safeToString(roleObject.id),
-        safeToString(row.id),
-        safeToString(row.user_id),
-      ].filter(Boolean);
-
-      const uniqueDeleteCandidates = [...new Set(deleteCandidates)];
       const roleLinkId = safeToString(
         row.execom_id ??
           row.role_link_id ??
@@ -493,16 +490,12 @@ export const campusManageApi = {
       return {
         id: rawId || `execom-user-${index}`,
         roleLinkId: roleLinkId || `execom-role-link-${index}`,
-        deleteCandidates:
-          uniqueDeleteCandidates.length > 0
-            ? uniqueDeleteCandidates
-            : [roleLinkId || rawId || `execom-role-link-${index}`],
         name: safeToString(row.full_name ?? row.name, "-"),
         muid: safeToString(row.muid, "-"),
         role: safeToString(row.role_title ?? row.role, "member"),
         igChapter: safeToString(
-          row.ig_chapter ?? row.ig ?? row.chapter,
-          "Campus",
+          row.ig_name ?? row.ig_chapter ?? row.ig ?? row.chapter,
+          "",
         ),
         profilePic: row.profile_pic ? safeToString(row.profile_pic) : null,
       };
@@ -522,6 +515,28 @@ export const campusManageApi = {
     };
   },
 
+  async getExecomRoles(): Promise<Array<{ label: string; value: string }>> {
+    const raw = await apiClient.get<unknown>(
+      endpoints.campusManage.execomRoles,
+    );
+    return unwrapDataArray(raw)
+      .map((item) => {
+        // Backend returns a flat array of role title strings like ["Campus Lead", "Enabler", ...]
+        if (typeof item === "string") {
+          const trimmed = item.trim();
+          return { label: trimmed, value: trimmed };
+        }
+        const row = asRecord(item);
+        const label = safeToString(row.title ?? row.name ?? row.label, "");
+        const value = safeToString(
+          row.value ?? row.id ?? row.slug ?? label,
+          "",
+        );
+        return { label, value };
+      })
+      .filter((r) => r.label && r.value);
+  },
+
   async addExecomMember(data: {
     muid: string;
     roleTitle: string;
@@ -532,48 +547,21 @@ export const campusManageApi = {
     });
   },
 
-  async removeExecomMember(memberIds: string | string[]): Promise<unknown> {
-    const idsToTry = Array.isArray(memberIds) ? memberIds : [memberIds];
-    let lastError: unknown = null;
-
-    for (const id of idsToTry) {
-      if (!id) continue;
-      try {
-        return await apiClient.delete<unknown>(
-          endpoints.campusManage.execomDelete(id),
-        );
-      } catch (error) {
-        lastError = error;
-        if (
-          error instanceof ApiError &&
-          error.message.toLowerCase().includes("role link not found")
-        ) {
-          continue;
-        }
-        throw error;
-      }
-    }
-
-    throw lastError instanceof Error
-      ? lastError
-      : new Error("Unable to remove role: no valid role link id found");
+  async removeExecomMember(roleLinkId: string): Promise<unknown> {
+    return apiClient.delete<unknown>(
+      endpoints.campusManage.execomDelete(roleLinkId),
+    );
   },
 
   async transferLeadRole(muid: string): Promise<unknown> {
     return apiClient.post<unknown>(endpoints.campusManage.transferLeadRole, {
-      muid,
-      new_muid: muid,
       new_lead_muid: muid,
-      new_campus_lead_muid: muid,
     });
   },
 
   async transferEnablerRole(muid: string): Promise<unknown> {
     return apiClient.post<unknown>(endpoints.campusManage.transferEnablerRole, {
-      muid,
-      new_muid: muid,
       new_enabler_muid: muid,
-      new_lead_enabler_muid: muid,
     });
   },
 
@@ -581,12 +569,52 @@ export const campusManageApi = {
     const raw = await apiClient.get<unknown>(
       endpoints.campusManage.transferIgRole,
     );
-    return unwrapDataArray(raw).map((item) => safeToString(item));
+    // apiClient already unwraps rawData.response, so `raw` === { ig_list: [...] }
+    const record = asRecord(raw);
+    const igList = asArray(record.ig_list ?? record.ig_codes ?? record.codes);
+    const source = igList.length > 0 ? igList : unwrapDataArray(raw);
+
+    return source
+      .map((item) => {
+        if (typeof item === "string") return item.trim();
+        const row = asRecord(item);
+        return safeToString(
+          row.ig_code ?? row.code ?? row.value ?? row.name ?? row.id,
+          "",
+        );
+      })
+      .filter(Boolean);
+  },
+
+  async getGlobalIgs(): Promise<
+    Array<{ id: string; name: string; code: string; icon: string }>
+  > {
+    const raw = await apiClient.get<unknown>(endpoints.interestGroups.list());
+    // Backend returns { interestGroup: [...] } which pickNestedArray doesn't check,
+    // so we extract it directly from the response record.
+    const record = asRecord(raw);
+    const data = asArray(
+      record.interestGroup ?? record.interest_group ?? record.data,
+    );
+    // Fallback to unwrapDataArray if none of the above matched
+    const items = data.length > 0 ? data : unwrapDataArray(raw);
+
+    return items
+      .map((item) => {
+        const row = asRecord(item);
+        return {
+          id: safeToString(row.id),
+          name: safeToString(row.name),
+          code: safeToString(row.code),
+          icon: safeToString(row.icon),
+        };
+      })
+      .filter((ig) => ig.id && ig.name);
   },
 
   async transferIgRole(muid: string, igCode: string): Promise<unknown> {
     return apiClient.post<unknown>(endpoints.campusManage.transferIgRole, {
-      muid,
+      new_ig_muid: muid,
       ig_code: igCode,
     });
   },
@@ -620,7 +648,7 @@ export const campusManageApi = {
         leadId: safeToString(row.lead_id ?? lead.id),
         lead: safeToString(
           row.lead_name ?? lead.full_name ?? row.lead,
-          "No Lead Assistant",
+          "No Lead Assigned",
         ),
         membersCount: toNumber(
           row.campus_ig_member_count ?? row.member_count ?? row.members,

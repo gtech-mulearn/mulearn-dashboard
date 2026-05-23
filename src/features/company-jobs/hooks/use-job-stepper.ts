@@ -34,6 +34,13 @@ const DEFAULT_VALUES: JobFormValues = {
   job_description: "",
   min_karma: 0,
   min_level: 1,
+  karma_reward: undefined,
+  duration_value: undefined,
+  duration_unit: undefined,
+  hourly_rate: "",
+  deliverables: "",
+  stipend: "",
+  certificate_provided: false,
 };
 
 function jobToFormValues(job: Job): JobFormValues {
@@ -46,6 +53,13 @@ function jobToFormValues(job: Job): JobFormValues {
     job_description: job.job_description ?? "",
     min_karma: job.min_karma,
     min_level: job.min_level,
+    karma_reward: job.karma_reward ?? undefined,
+    duration_value: job.duration_value ?? undefined,
+    duration_unit: job.duration_unit ?? undefined,
+    hourly_rate: job.hourly_rate ?? "",
+    deliverables: job.deliverables ?? "",
+    stipend: job.stipend ?? "",
+    certificate_provided: job.certificate_provided ?? false,
   };
 }
 

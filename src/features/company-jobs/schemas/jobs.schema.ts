@@ -32,6 +32,14 @@ export const JobSchema = z.object({
   created_at: z.string(),
   updated_at: z.string(),
   rules: z.array(JobRuleSchema).default([]),
+  // Advanced options
+  karma_reward: z.number().optional().nullable(),
+  duration_value: z.number().optional().nullable(),
+  duration_unit: z.string().optional().nullable(),
+  hourly_rate: z.string().optional().nullable(),
+  deliverables: z.string().optional().nullable(),
+  stipend: z.string().optional().nullable(),
+  certificate_provided: z.boolean().optional().nullable(),
 });
 
 export const PaginationSchema = z.object({
@@ -274,6 +282,27 @@ export const RequirementsStepSchema = z.object({
     .int("Level must be a whole number")
     .min(1, "Level must be between 1 and 7")
     .max(7, "Level must be between 1 and 7"),
+  // Advanced options — all optional
+  karma_reward: z
+    .number()
+    .int("Must be a whole number")
+    .min(0, "Must be 0 or more")
+    .max(10000, "Must be 10000 or fewer")
+    .optional(),
+  duration_value: z
+    .number()
+    .int("Must be a whole number")
+    .min(1, "Must be at least 1")
+    .max(365, "Must be 365 or fewer")
+    .optional(),
+  duration_unit: z.string().optional(),
+  hourly_rate: z.string().max(50, "Must be 50 characters or fewer").optional(),
+  deliverables: z
+    .string()
+    .max(1000, "Must be 1000 characters or fewer")
+    .optional(),
+  stipend: z.string().max(50, "Must be 50 characters or fewer").optional(),
+  certificate_provided: z.boolean().optional(),
 });
 
 /** Combined form schema for create / edit */

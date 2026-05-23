@@ -383,7 +383,6 @@ export interface EventWriteBody {
   cover_image: string | null;
   banner_image: string | null;
   category: UUID | null;
-  event_type?: EventType;
   start_datetime: ISODateTime;
   end_datetime: ISODateTime;
   registration_url: string | null;
@@ -403,7 +402,6 @@ export interface EventWriteBody {
   organiser_ig: UUID | null;
   organiser_org: UUID | null;
   organiser_ci_id: UUID | null;
-  co_owners?: EventCoOwnerInput[];
   is_collaboration?: boolean;
   is_featured?: boolean;
   tags: string[] | null;

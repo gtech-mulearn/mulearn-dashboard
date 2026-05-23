@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/dialog";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
-import { MuidSearchInput } from "@/components/ui/muid-search-input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { eventsApi } from "../api";
@@ -24,7 +23,6 @@ import {
   EVENT_CREATE_WIZARD_STEPS,
   EVENT_FORM_DEFAULT_VALUES,
   EVENT_SCOPE_OPTIONS,
-  EVENT_TYPE_SELECT_OPTIONS,
 } from "../constants/events.constants";
 import {
   toEventFormData,
@@ -33,11 +31,7 @@ import {
   useOrganizerOptions,
 } from "../hooks";
 import { type CreateEventSchema, updateEventSchema } from "../schemas";
-import type {
-  CoOwnerDisplay,
-  EventCreateWizardProps,
-  SelectedOrganiser,
-} from "../types";
+import type { EventCreateWizardProps, SelectedOrganiser } from "../types";
 import { EventSearch } from "./event-search";
 import { VenueSection } from "./venue-section";
 
@@ -186,9 +180,6 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
   const [selectedCampusName, setSelectedCampusName] = useState("");
   const [selectedIgName, setSelectedIgName] = useState("");
   const [selectedCampusIgName, setSelectedCampusIgName] = useState("");
-  const [selectedCoOwners, setSelectedCoOwners] = useState<CoOwnerDisplay[]>(
-    [],
-  );
   const [tagInput, setTagInput] = useState("");
   const [confirmCloseOpen, setConfirmCloseOpen] = useState(false);
   const [organiserError, setOrganiserError] = useState("");
@@ -273,7 +264,6 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
     setSelectedCampusName("");
     setSelectedIgName("");
     setSelectedCampusIgName("");
-    setSelectedCoOwners([]);
     setTagInput("");
     setOrganiserError("");
   };
@@ -448,7 +438,6 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
     const payload = {
       title: values.title,
       description: values.description,
-      event_type: values.event_type,
       start_datetime: start,
       end_datetime: end,
       registration_url: values.registration_url,
@@ -475,10 +464,6 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
           : null,
       organiser_ci_id:
         selectedOrganiser.type === "campus_ig" ? selectedOrganiser.id : null,
-      co_owners: selectedCoOwners.map(({ user_id, role }) => ({
-        user_id,
-        role,
-      })),
       is_collaboration: values.is_collaboration,
       is_featured: values.is_featured,
       tags: values.tags && values.tags.length > 0 ? values.tags : null,
@@ -627,36 +612,6 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                         {errors.description.message}
                       </p>
                     ) : null}
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-foreground">
-                      Event type
-                    </p>
-                    <Controller
-                      control={control}
-                      name="event_type"
-                      render={({ field }) => (
-                        <div className="flex flex-wrap gap-2">
-                          {EVENT_TYPE_SELECT_OPTIONS.map((item) => {
-                            const active = field.value === item.value;
-                            return (
-                              <button
-                                key={item.value}
-                                type="button"
-                                className={`rounded-full border px-4 py-1.5 text-sm transition-colors ${
-                                  active
-                                    ? "border-primary bg-primary text-primary-foreground"
-                                    : "border-border bg-background text-muted-foreground hover:border-primary hover:text-primary"
-                                }`}
-                                onClick={() => field.onChange(item.value)}
-                              >
-                                {item.label}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
-                    />
                   </div>
                   <div className="space-y-2">
                     <p className="text-sm font-medium text-foreground">Tags</p>
@@ -819,54 +774,6 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                       }}
                     />
                   ) : null}
-
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-foreground">
-                      Co-owners
-                    </p>
-                    <MuidSearchInput
-                      placeholder="Search by name or muid"
-                      onSelectUser={(user) => {
-                        if (!user.id) return;
-                        setSelectedCoOwners((previous) => {
-                          if (previous.some((item) => item.user_id === user.id))
-                            return previous;
-                          return [
-                            ...previous,
-                            {
-                              user_id: user.id,
-                              role: "co_owner",
-                              full_name: user.full_name,
-                              muid: user.muid,
-                            },
-                          ];
-                        });
-                      }}
-                    />
-                    <div className="flex flex-wrap gap-2">
-                      {selectedCoOwners.map((owner) => (
-                        <Badge
-                          key={owner.user_id}
-                          variant="secondary"
-                          className="gap-1"
-                        >
-                          {owner.full_name} ({owner.muid})
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setSelectedCoOwners((previous) =>
-                                previous.filter(
-                                  (item) => item.user_id !== owner.user_id,
-                                ),
-                              )
-                            }
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
                 </section>
               ) : null}
 
@@ -1016,11 +923,6 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                           ? `${watch("description").slice(0, 100)}${watch("description").length > 100 ? "..." : ""}`
                           : "Not set",
                         true,
-                      ],
-                      [
-                        "Event type",
-                        formatReviewEnum(watch("event_type")),
-                        false,
                       ],
                       [
                         "Organizer",

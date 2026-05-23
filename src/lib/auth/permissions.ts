@@ -45,7 +45,7 @@ export const PERMISSIONS = {
 
   // ── Interest Groups ──────────────────────────────────────
   "ig:manage": [ROLES.ADMIN],
-  "ig:lead": [ROLES.IG_LEAD, ROLES.ADMIN],
+  "ig:lead": [ROLES.ADMIN],
   "ig:export_csv": [ROLES.ADMIN],
 
   // ── Tasks ─────────────────────────────────────────────────
@@ -133,7 +133,19 @@ export function getRolesForPermission(
 }
 
 /**
+ * Dynamic permission checks for permissions that can't be expressed
+ * as static role values (e.g. IG leads with per-IG role strings).
+ */
+export const DYNAMIC_PERMISSION_CHECKS: Partial<
+  Record<Permission, (roles: readonly string[]) => boolean>
+> = {
+  "ig:lead": (roles) =>
+    roles.some((r) => r.endsWith(" IGLead")) || roles.includes(ROLES.ADMIN),
+};
+
+/**
  * Check if a user's roles satisfy a specific permission.
+ * Checks static roles first, then dynamic predicates.
  * This is a pure function — no React dependency.
  */
 export function hasPermission(
@@ -141,7 +153,8 @@ export function hasPermission(
   permission: Permission,
 ): boolean {
   const requiredRoles = PERMISSIONS[permission];
-  return requiredRoles.some((role) => userRoles.includes(role));
+  if (requiredRoles.some((role) => userRoles.includes(role))) return true;
+  return DYNAMIC_PERMISSION_CHECKS[permission]?.(userRoles) ?? false;
 }
 
 /**
