@@ -69,6 +69,7 @@ export const UserProfileSchema = z.object({
   email: z.string().optional(),
   mobile: z.string().optional(),
   profile_pic: z.string().nullable(),
+  cover_pic: z.string().nullable().optional(),
   gender: z.string().nullable(),
   dob: z.string().optional(),
   college_code: z.string().nullable(),
@@ -202,7 +203,6 @@ export const SocialsSchema = z.object({
   facebook: z.string().nullable().optional(),
   instagram: z.string().nullable().optional(),
   linkedin: z.string().nullable().optional(),
-  twitter: z.string().nullable().optional(),
   dribble: z.string().nullable().optional(),
   behance: z.string().nullable().optional(),
   stackoverflow: z.string().nullable().optional(),
@@ -274,6 +274,13 @@ export const UpdateProfileImageResponseSchema = ApiResponseSchema(
     })
     .passthrough(),
 );
+
+export const CoverPicResponseSchema = ApiResponseSchema(
+  z.object({
+    cover_pic: z.string().nullable(),
+  }),
+);
+export type CoverPicResponse = z.infer<typeof CoverPicResponseSchema>;
 
 export const EditProfileFormSchema = z
   .object({

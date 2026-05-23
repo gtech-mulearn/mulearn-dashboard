@@ -20,6 +20,12 @@ import { ROLES } from "./roles";
 export interface RouteConfig {
   /** Roles allowed to access this route. Empty = any authenticated user. */
   roles: readonly string[];
+  /**
+   * Optional predicate for roles that can't be expressed as static strings
+   * (e.g. dynamic IG lead roles like "{igCode} IGLead").
+   * Access is granted when EITHER `roles` OR `dynamicCheck` passes.
+   */
+  dynamicCheck?: (userRoles: readonly string[]) => boolean;
 }
 
 // ─── Route Access Map ──────────────────────────────────────
@@ -61,7 +67,8 @@ export const routeAccessMap: Record<string, RouteConfig> = {
 
   // ── Interest Group Dashboard ─────────────────────────────
   "/dashboard/edit-ig": {
-    roles: [ROLES.ADMIN, ROLES.FELLOW, ROLES.IG_LEAD],
+    roles: [ROLES.ADMIN, ROLES.FELLOW],
+    dynamicCheck: (roles) => roles.some((r) => r.endsWith(" IGLead")),
   },
 
   // ── Admin Routes ─────────────────────────────────────────

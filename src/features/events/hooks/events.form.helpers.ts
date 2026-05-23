@@ -1,4 +1,4 @@
-import { resolveEventTypeValue, toISOWithOffset } from "../hooks/events.hooks";
+import { toISOWithOffset } from "../hooks/events.hooks";
 import type { CreateEventSchema } from "../schemas";
 import type { EventDetailManage, EventPatchBody } from "../types";
 
@@ -118,16 +118,6 @@ export function buildComparableInitialPayload(
             | string
             | null)
         : null,
-    event_type: resolveEventTypeValue(
-      currentEvent.event_type,
-      currentEvent.category_name,
-    ),
-    co_owners: (currentEvent.co_owners ?? [])
-      .map((owner) => ({
-        user_id: owner.user.id,
-        role: owner.role ?? "co_owner",
-      }))
-      .sort((a, b) => a.user_id.localeCompare(b.user_id)),
   } as ComparablePatchPayload;
 }
 
@@ -158,7 +148,6 @@ export function buildEventPatchPayload(values: CreateEventSchema) {
   const patchPayload: ComparablePatchPayload = {
     title: values.title,
     description: values.description,
-    event_type: values.event_type,
     start_datetime: start ?? undefined,
     end_datetime: end ?? undefined,
     registration_url: values.registration_url,

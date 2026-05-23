@@ -10,6 +10,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   editCollege,
+  getBadges,
   getCommunities,
   getConnectedDIDs,
   getCountries,
@@ -250,5 +251,19 @@ export function useQRCode(text: string) {
     queryFn: () => getQRCode(text),
     enabled: !!text,
     staleTime: Infinity, // QR codes for the same URL never change
+  });
+}
+
+// ============================================
+// Badges Hooks
+// ============================================
+
+/** Fetch user badges by muid */
+export function useBadges(muid: string) {
+  return useQuery({
+    queryKey: profileKeys.badges(muid),
+    queryFn: () => getBadges(muid),
+    enabled: !!muid,
+    staleTime: PROFILE_STALE_TIME,
   });
 }

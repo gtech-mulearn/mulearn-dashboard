@@ -7,19 +7,26 @@
 "use client";
 
 import {
+  AlignLeft,
   ArrowLeft,
   BookOpen,
   Briefcase,
   Clock,
   ExternalLink,
   FileText,
+  Pencil,
   Sparkles,
   Twitter,
   Users,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
+import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
+import { useUserInfo } from "@/features/auth";
 import { useInterestGroupDetail } from "@/features/interest-groups";
+import { InterestGroupFormDialog } from "@/features/manage-ig";
+import { hasIgLeadRole } from "@/lib/auth/roles";
 import { PersonCard } from "./person-card";
 
 export function InterestGroupDetailClient() {
@@ -29,6 +36,10 @@ export function InterestGroupDetailClient() {
 
   const { data, isLoading, error } = useInterestGroupDetail(id || "");
   const group = data?.response?.interestGroup;
+
+  const { data: userInfo } = useUserInfo();
+  const isIGLead = hasIgLeadRole(userInfo?.roles ?? []);
+  const [editOpen, setEditOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -91,7 +102,7 @@ export function InterestGroupDetailClient() {
     group.resource;
 
   return (
-    <div className="w-full max-w-6xl mx-auto space-y-8 px-5 py-8 sm:px-6 md:px-8">
+    <div className="w-full  mx-auto space-y-8 px-5 py-8 sm:px-6 md:px-8">
       {/* Back */}
       <button
         type="button"
@@ -106,6 +117,17 @@ export function InterestGroupDetailClient() {
       <div className="relative overflow-hidden rounded-[2rem] bg-linear-to-br from-primary/90 via-primary to-primary/80 p-6 sm:p-8 md:p-12 text-primary-foreground shadow-xl shadow-primary/10">
         <div className="absolute -right-20 -top-20 h-64 w-64 sm:h-80 sm:w-80 md:h-96 md:w-96 rounded-full bg-card/10 blur-3xl" />
         <div className="absolute -left-20 -bottom-20 h-64 w-64 sm:h-80 sm:w-80 md:h-96 md:w-96 rounded-full bg-foreground/10 blur-3xl" />
+
+        {isIGLead && (
+          <button
+            type="button"
+            onClick={() => setEditOpen(true)}
+            className="absolute right-4 top-4 z-20 flex items-center gap-1.5 rounded-xl bg-card/20 px-3 py-1.5 text-xs font-semibold text-primary-foreground backdrop-blur-md border border-card/20 transition-all hover:bg-card/30 hover:scale-105 active:scale-95"
+          >
+            <Pencil className="h-3 w-3" />
+            Edit
+          </button>
+        )}
 
         <div className="relative z-10 flex flex-col gap-6 md:gap-8 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-4 sm:space-y-6 max-w-3xl">
@@ -122,16 +144,9 @@ export function InterestGroupDetailClient() {
               )}
             </div>
 
-            <div className="space-y-3 sm:space-y-4">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold tracking-tight text-primary-foreground">
-                {group.name}
-              </h1>
-              {group.about && (
-                <p className="text-base sm:text-lg leading-relaxed text-primary-foreground/90 font-medium">
-                  {group.about}
-                </p>
-              )}
-            </div>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold tracking-tight text-primary-foreground">
+              {group.name}
+            </h1>
 
             {/* Stats row */}
             <div className="flex flex-wrap gap-3 sm:gap-4 pt-2 sm:pt-4">
@@ -174,7 +189,24 @@ export function InterestGroupDetailClient() {
       <div className="grid gap-6 md:gap-8 lg:grid-cols-12 min-w-0">
         {/* Main column */}
         <div className="space-y-6 md:space-y-8 lg:col-span-8 px-2 sm:px-0 min-w-0">
-          {/* About Card (only if distinct from header about) */}
+          {/* About */}
+          {group.about && (
+            <div className="group rounded-3xl border border-border/50 bg-card p-5 sm:p-8 shadow-sm transition-all hover:shadow-md hover:border-primary/20">
+              <div className="mb-4 sm:mb-6 flex items-center gap-3">
+                <div className="p-2 sm:p-2.5 rounded-xl bg-primary/10 text-primary">
+                  <AlignLeft className="h-5 w-5 sm:h-6 sm:w-6" />
+                </div>
+                <h2 className="text-xl sm:text-2xl font-bold text-foreground">
+                  About
+                </h2>
+              </div>
+              <MarkdownRenderer
+                content={group.about}
+                className="text-sm sm:text-base"
+              />
+            </div>
+          )}
+
           {/* Prerequisites */}
           {group.prerequisites && group.prerequisites.length > 0 && (
             <div className="group rounded-3xl border border-border/50 bg-card p-5 sm:p-8 shadow-sm transition-all hover:shadow-md hover:border-primary/20">
@@ -443,9 +475,44 @@ export function InterestGroupDetailClient() {
                 think tank channel.
               </p>
             </div>
+
+            {/* Join Requests — coming soon */}
+            <div className="overflow-hidden rounded-3xl border border-border/50 bg-card shadow-sm">
+              <div className="border-b border-border/50 bg-muted/30 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+                <h3 className="text-base sm:text-lg font-bold text-foreground">
+                  Join Requests
+                </h3>
+                <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
+                  Soon
+                </span>
+              </div>
+              <div className="flex flex-col items-center gap-3 p-6 text-center">
+                <div className="rounded-full bg-muted p-3">
+                  <Users className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <p className="text-sm font-medium text-foreground">
+                  Member join requests
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Review and approve membership requests from your community.
+                  This feature is coming soon.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* IG Lead Edit Dialog */}
+      {isIGLead && group && (
+        <InterestGroupFormDialog
+          isOpen={editOpen}
+          onClose={() => setEditOpen(false)}
+          // biome-ignore lint/suspicious/noExplicitAny: detail shape is a superset of the form type
+          initialData={group as any}
+          isIGLead
+        />
+      )}
     </div>
   );
 }

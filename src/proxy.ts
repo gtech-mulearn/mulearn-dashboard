@@ -39,6 +39,8 @@ const ROLE_VALUES = {
   TECH_TEAM: "Tech Team",
   IG_LEAD: "IG Lead",
   INTERN: "Intern",
+  COMPANY: "Company",
+  MENTOR: "Mentor",
 } as const;
 
 /**
@@ -123,6 +125,16 @@ const ROLE_PROTECTED_ROUTES: Record<string, RouteConfig> = {
   // Events Management
   "/dashboard/manage-events": {
     roles: [ROLE_VALUES.ADMIN, ROLE_VALUES.FELLOW, ROLE_VALUES.ASSOCIATE],
+  },
+
+  // Company Dashboard
+  "/dashboard/company": {
+    roles: [ROLE_VALUES.COMPANY, ROLE_VALUES.ADMIN],
+  },
+
+  // Mentor Dashboard
+  "/dashboard/mentor": {
+    roles: [ROLE_VALUES.MENTOR, ROLE_VALUES.ADMIN],
   },
 };
 
@@ -257,7 +269,14 @@ export function proxy(request: NextRequest) {
 
       if (accessToken) {
         const userRoles = extractRolesFromToken(accessToken);
-        const hasAccess = routeConfig.roles.some((r) => userRoles.includes(r));
+        const hasStaticRole = routeConfig.roles.some((r) =>
+          userRoles.includes(r),
+        );
+        // Dynamic check: IG leads have per-IG roles like "{code} IGLead"
+        const hasIgLead =
+          pathname.startsWith("/dashboard/edit-ig") &&
+          userRoles.some((r) => r.endsWith(" IGLead"));
+        const hasAccess = hasStaticRole || hasIgLead;
 
         if (!hasAccess) {
           // Redirect to dashboard with unauthorized flag

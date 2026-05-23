@@ -48,6 +48,14 @@ export interface Job {
   created_at: string;
   updated_at: string;
   rules: JobRule[];
+  // Advanced options
+  karma_reward?: number | null;
+  duration_value?: number | null;
+  duration_unit?: string | null;
+  hourly_rate?: string | null;
+  deliverables?: string | null;
+  stipend?: string | null;
+  certificate_provided?: boolean | null;
 }
 
 export interface Pagination {
@@ -164,6 +172,14 @@ export interface CreateJobPayload {
   job_type: string;
   min_karma: number;
   min_level: number;
+  // Advanced options
+  karma_reward?: number;
+  duration_value?: number;
+  duration_unit?: string;
+  hourly_rate?: string;
+  deliverables?: string;
+  stipend?: string;
+  certificate_provided?: boolean;
 }
 
 export interface UpdateJobPayload {
@@ -175,6 +191,14 @@ export interface UpdateJobPayload {
   job_type?: string;
   min_karma?: number;
   min_level?: number;
+  // Advanced options
+  karma_reward?: number;
+  duration_value?: number;
+  duration_unit?: string;
+  hourly_rate?: string;
+  deliverables?: string;
+  stipend?: string;
+  certificate_provided?: boolean;
 }
 
 export interface CreateRulePayload {

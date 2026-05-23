@@ -11,17 +11,6 @@ export const venueTypeSchema = z.enum(["physical", "online", "hybrid"]);
 const createEventBaseSchema = z.object({
   title: z.string().min(1, "Title is required").max(200, "Title too long"),
   description: z.string().min(1, "Description is required"),
-  event_type: z
-    .enum([
-      "workshop",
-      "webinar",
-      "hackathon",
-      "meetup",
-      "competition",
-      "social_gathering",
-      "other",
-    ])
-    .optional(),
   scope: z.enum(["global", "campus", "ig", "campus_ig"]),
   start_datetime: z
     .string()
@@ -80,14 +69,6 @@ const createEventBaseSchema = z.object({
     .array(
       z.object({
         task_id: z.string().uuid(),
-      }),
-    )
-    .optional(),
-  co_owners: z
-    .array(
-      z.object({
-        user_id: z.string().uuid(),
-        role: z.enum(["co_owner", "admin"]).optional(),
       }),
     )
     .optional(),

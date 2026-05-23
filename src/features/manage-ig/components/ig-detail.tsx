@@ -7,6 +7,7 @@
 "use client";
 
 import {
+  AlignLeft,
   ArrowLeft,
   BookOpen,
   Briefcase,
@@ -21,10 +22,11 @@ import {
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import Loader from "@/app/loading";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { useInterestGroupDetail } from "@/features/interest-groups";
 import { PersonCard } from "@/features/interest-groups/components/person-card";
-import { EditInterestGroupForm } from "./edit-interest-group-form";
+import type { InterestGroup } from "../schemas";
+import { InterestGroupFormDialog } from "./ig-form-dialog";
 
 export function IGDetail() {
   const router = useRouter();
@@ -88,7 +90,7 @@ export function IGDetail() {
     group.resource;
 
   return (
-    <div className="w-full max-w-6xl mx-auto space-y-8 px-5 py-8 sm:px-6 md:px-8">
+    <div className="w-full  mx-auto space-y-8 px-5 py-8 sm:px-6 md:px-8">
       {/* Back */}
       <button
         type="button"
@@ -102,27 +104,14 @@ export function IGDetail() {
       {/* ── Hero ── */}
       <div className="relative overflow-hidden rounded-[2rem] bg-linear-to-br from-primary/90 via-primary to-primary/80 p-6 sm:p-8 md:p-12 text-primary-foreground shadow-xl shadow-primary/10">
         <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-20">
-          <Sheet open={isEditOpen} onOpenChange={setIsEditOpen}>
-            <SheetTrigger asChild>
-              <button
-                type="button"
-                className="inline-flex items-center gap-2 rounded-xl bg-card/20 px-4 py-2.5 text-sm font-bold backdrop-blur-md border border-card/10 transition-all hover:bg-card/30 hover:scale-105 active:scale-95"
-              >
-                <Pencil className="h-4 w-4" />
-                <span className="hidden sm:block">Edit</span>
-              </button>
-            </SheetTrigger>
-            <SheetContent
-              side="right"
-              className="sm:max-w-lg w-full overflow-hidden p-0"
-              showCloseButton={false}
-            >
-              <EditInterestGroupForm
-                group={group}
-                onSuccess={() => setIsEditOpen(false)}
-              />
-            </SheetContent>
-          </Sheet>
+          <button
+            type="button"
+            onClick={() => setIsEditOpen(true)}
+            className="inline-flex items-center gap-2 rounded-xl bg-card/20 px-4 py-2.5 text-sm font-bold backdrop-blur-md border border-card/10 transition-all hover:bg-card/30 hover:scale-105 active:scale-95"
+          >
+            <Pencil className="h-4 w-4" />
+            <span className="hidden sm:block">Edit</span>
+          </button>
         </div>
         <div className="absolute -right-20 -top-20 h-64 w-64 sm:h-80 sm:w-80 md:h-96 md:w-96 rounded-full bg-card/10 blur-3xl" />
         <div className="absolute -left-20 -bottom-20 h-64 w-64 sm:h-80 sm:w-80 md:h-96 md:w-96 rounded-full bg-foreground/10 blur-3xl" />
@@ -142,16 +131,9 @@ export function IGDetail() {
               )}
             </div>
 
-            <div className="space-y-3 sm:space-y-4">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold tracking-tight text-primary-foreground">
-                {group.name}
-              </h1>
-              {group.about && (
-                <p className="text-base sm:text-lg leading-relaxed text-primary-foreground/90 font-medium">
-                  {group.about}
-                </p>
-              )}
-            </div>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold tracking-tight text-primary-foreground">
+              {group.name}
+            </h1>
 
             {/* Stats row */}
             <div className="flex flex-wrap gap-3 sm:gap-4 pt-2 sm:pt-4">
@@ -194,7 +176,24 @@ export function IGDetail() {
       <div className="grid gap-6 md:gap-8 lg:grid-cols-12 min-w-0">
         {/* Main column */}
         <div className="space-y-6 md:space-y-8 lg:col-span-8 px-2 sm:px-0 min-w-0">
-          {/* About Card (only if distinct from header about) */}
+          {/* About */}
+          {group.about && (
+            <div className="group rounded-3xl border border-border/50 bg-card p-5 sm:p-8 shadow-sm transition-all hover:shadow-md hover:border-primary/20">
+              <div className="mb-4 sm:mb-6 flex items-center gap-3">
+                <div className="p-2 sm:p-2.5 rounded-xl bg-primary/10 text-primary">
+                  <AlignLeft className="h-5 w-5 sm:h-6 sm:w-6" />
+                </div>
+                <h2 className="text-xl sm:text-2xl font-bold text-foreground">
+                  About
+                </h2>
+              </div>
+              <MarkdownRenderer
+                content={group.about}
+                className="text-sm sm:text-base"
+              />
+            </div>
+          )}
+
           {/* Prerequisites */}
           {group.prerequisites && group.prerequisites.length > 0 && (
             <div className="group rounded-3xl border border-border/50 bg-card p-5 sm:p-8 shadow-sm transition-all hover:shadow-md hover:border-primary/20">
@@ -467,6 +466,12 @@ export function IGDetail() {
           </div>
         </div>
       </div>
+
+      <InterestGroupFormDialog
+        isOpen={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        initialData={group as unknown as InterestGroup}
+      />
     </div>
   );
 }

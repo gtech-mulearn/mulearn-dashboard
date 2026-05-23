@@ -17,6 +17,7 @@ import {
   Loader2,
   MapPin,
   MessageSquare,
+  MoreHorizontal,
   Pencil,
   Plus,
   PlusCircle,
@@ -54,6 +55,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Combobox } from "@/components/ui/combobox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { MuidSearchInput } from "@/components/ui/muid-search-input";
 import {
@@ -84,6 +92,7 @@ import {
   useCampusEvents,
   useCampusLeaderboard,
   useCampusOverview,
+  useChangeStudentType,
   useDeleteSocialLink,
   useEventDistribution,
   useExecomMembers,
@@ -99,13 +108,23 @@ import type {
   SocialLink,
   SocialLinks,
 } from "../types";
+import { IgChapterEditSheet } from "./ig-chapter-edit-sheet";
+import { IgChapterFormDialog } from "./ig-chapter-form-dialog";
+import { StudentLevelsCard } from "./student-levels-card";
+import { TransferEnablerDialog } from "./transfer-enabler-dialog";
+import { TransferIgRoleDialog } from "./transfer-ig-role-dialog";
+import { TransferLeadDialog } from "./transfer-lead-dialog";
 
 const PIE_COLORS = ["#16a34a", "#0ea5e9", "#f59e0b", "#ef4444", "#8b5cf6"];
 const PAGE_SIZE = 10;
-const EXECOM_ROLE_OPTIONS = [
-  { label: "Enabler", value: "enabler" },
-  { label: "Campus Lead", value: "campus-lead" },
-  { label: "Lead Enabler", value: "lead-enabler" },
+const CORE_CAMPUS_ROLES = [
+  { label: "Campus Lead", value: "Campus Lead" },
+  { label: "Lead Enabler", value: "Lead Enabler" },
+  { label: "Enabler", value: "Enabler" },
+  { label: "Tech Lead", value: "Tech Lead" },
+  { label: "Design Lead", value: "Design Lead" },
+  { label: "Campus Tech Team", value: "Campus Tech Team" },
+  { label: "Campus Design Team", value: "Campus Design Team" },
 ] as const;
 
 const SOCIAL_PLATFORMS = [
@@ -409,7 +428,7 @@ export function CampusManageDashboard() {
     profilePic: string | null;
   } | null>(null);
   const [selectedExecomRole, setSelectedExecomRole] =
-    useState<(typeof EXECOM_ROLE_OPTIONS)[number]["value"]>("enabler");
+    useState<string>("Enabler");
 
   // ─── Queries ────────────────────────────────────────────────────────────
   const { data: overview, isLoading: isOverviewLoading } = useCampusOverview();
@@ -441,6 +460,8 @@ export function CampusManageDashboard() {
   const { mutate: addExecom, isPending: isAdding } = useAddExecomMember();
   const { mutate: removeExecom, isPending: isRemoving } =
     useRemoveExecomMember();
+  const { mutate: changeStudentType, isPending: isChangingType } =
+    useChangeStudentType();
 
   // ─── Social presence state ──
   const [editingPlatform, setEditingPlatform] = useState<string | null>(null);
@@ -451,6 +472,26 @@ export function CampusManageDashboard() {
   const leaderboard = leaderboardData?.items ?? [];
   const leaderboardPagination = leaderboardData?.pagination;
   const events = eventsData?.items ?? [];
+
+  // Build campus-scoped role list: core roles + IG campus lead per active chapter
+  // Custom roles can be typed via the combobox's "Create" option
+  const comboboxRoleOptions = useMemo(() => {
+    const roles: Array<{ id: string; title: string }> = CORE_CAMPUS_ROLES.map(
+      (r) => ({ id: r.value, title: r.label }),
+    );
+
+    // Add IG Campus Lead role for each active campus chapter
+    for (const ch of chapters) {
+      if (ch.code) {
+        roles.push({
+          id: `${ch.code} CampusLead`,
+          title: `${ch.name} IG Lead`,
+        });
+      }
+    }
+
+    return roles;
+  }, [chapters]);
 
   // FIX: extracted from IIFE — computed above return
   const karmaTrend = overview?.trend ?? [];
@@ -553,21 +594,16 @@ export function CampusManageDashboard() {
       return;
     }
 
-    const roleTitleByValue: Record<
-      (typeof EXECOM_ROLE_OPTIONS)[number]["value"],
-      string
-    > = {
-      enabler: "Enabler",
-      "campus-lead": "Campus Lead",
-      "lead-enabler": "Lead Enabler",
-    };
+    // selectedExecomRole is already the exact role title
+    // (from combobox option.id or custom-typed text)
+    const roleTitle = selectedExecomRole;
 
     addExecom(
-      { muid, roleTitle: roleTitleByValue[selectedExecomRole] },
+      { muid, roleTitle },
       {
         onSuccess: () => {
           setSelectedExecomUser(null);
-          setSelectedExecomRole("enabler");
+          setSelectedExecomRole("Enabler");
         },
       },
     );
@@ -638,22 +674,48 @@ export function CampusManageDashboard() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex flex-col gap-1.5 text-xs sm:text-sm sm:items-end border-t border-border/10 pt-4 sm:border-0 sm:pt-0">
+                    <div className="flex flex-col gap-2 text-xs sm:text-sm sm:items-end border-t border-border/10 pt-4 sm:border-0 sm:pt-0">
                       <div className="flex items-center justify-between sm:justify-end gap-2">
                         <span className="opacity-60 text-[10px] uppercase tracking-widest">
                           Lead:
                         </span>
-                        <span className="font-bold truncate max-w-[120px] sm:max-w-none">
-                          {overview?.campusLead ?? "-"}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold truncate max-w-[120px] sm:max-w-none">
+                            {overview?.campusLead ?? "-"}
+                          </span>
+                          <TransferLeadDialog
+                            trigger={
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-6 px-2 text-[10px]"
+                              >
+                                Transfer
+                              </Button>
+                            }
+                          />
+                        </div>
                       </div>
                       <div className="flex items-center justify-between sm:justify-end gap-2">
                         <span className="opacity-60 text-[10px] uppercase tracking-widest">
                           Enabler:
                         </span>
-                        <span className="font-bold truncate max-w-[120px] sm:max-w-none">
-                          {overview?.enabler ?? "Not assigned"}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold truncate max-w-[120px] sm:max-w-none">
+                            {overview?.enabler ?? "Not assigned"}
+                          </span>
+                          <TransferEnablerDialog
+                            trigger={
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-6 px-2 text-[10px]"
+                              >
+                                Transfer
+                              </Button>
+                            }
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -877,6 +939,7 @@ export function CampusManageDashboard() {
                           <TableHead>Karma</TableHead>
                           <TableHead>Level</TableHead>
                           <TableHead>Department / Cluster</TableHead>
+                          <TableHead className="w-[50px]" />
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -935,12 +998,59 @@ export function CampusManageDashboard() {
                             <TableCell className="max-w-[200px] truncate text-xs text-muted-foreground">
                               {student.cluster}
                             </TableCell>
+                            <TableCell>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7"
+                                    disabled={isChangingType}
+                                  >
+                                    <MoreHorizontal className="h-3.5 w-3.5" />
+                                    <span className="sr-only">
+                                      Student actions
+                                    </span>
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem
+                                    onClick={() =>
+                                      changeStudentType(
+                                        {
+                                          memberId: student.id,
+                                          data: {
+                                            is_alumni: !student.alumni,
+                                          },
+                                        },
+                                        {
+                                          onSuccess: () =>
+                                            toast.success(
+                                              student.alumni
+                                                ? "Marked as active student"
+                                                : "Marked as alumni",
+                                            ),
+                                          onError: () =>
+                                            toast.error(
+                                              "Failed to update student type",
+                                            ),
+                                        },
+                                      )
+                                    }
+                                  >
+                                    {student.alumni
+                                      ? "Mark as Active"
+                                      : "Mark as Alumni"}
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
                           </TableRow>
                         ))}
                         {leaderboard.length === 0 && (
                           <TableRow>
                             <TableCell
-                              colSpan={5}
+                              colSpan={6}
                               className="py-12 text-center text-muted-foreground"
                             >
                               <div className="flex flex-col items-center gap-2 opacity-50">
@@ -989,14 +1099,19 @@ export function CampusManageDashboard() {
               {/* Main Column */}
               <div className="min-w-0 flex-1">
                 <Tabs defaultValue="analytics" className="w-full">
-                  <TabsList className="mb-6 flex h-auto w-full items-center justify-start gap-3 overflow-x-auto whitespace-nowrap no-scrollbar rounded-none border-b border-border/40 bg-transparent p-0 px-1 pb-1 sm:gap-5 sm:px-3 md:justify-center md:gap-6 md:px-4">
-                    {["analytics", "events", "execom", "ig"].map((tab) => (
+                  <TabsList className="mb-6 flex h-auto w-full gap-1 overflow-x-auto rounded-xl bg-muted p-1">
+                    {[
+                      { value: "analytics", label: "Analytics" },
+                      { value: "events", label: "Events" },
+                      { value: "execom", label: "Execom" },
+                      { value: "ig", label: "IG Chapters" },
+                    ].map((tab) => (
                       <TabsTrigger
-                        key={tab}
-                        value={tab}
-                        className="relative h-10 shrink-0 rounded-none border-b-2 border-transparent bg-transparent px-1 pb-3 pt-2 text-sm font-bold capitalize tracking-tight text-muted-foreground transition-all data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary/70"
+                        key={tab.value}
+                        value={tab.value}
+                        className="relative whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-all data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-card/50 data-[state=inactive]:hover:text-foreground"
                       >
-                        {tab === "ig" ? "IG Chapters" : tab}
+                        {tab.label}
                       </TabsTrigger>
                     ))}
                   </TabsList>
@@ -1311,6 +1426,7 @@ export function CampusManageDashboard() {
                           )}
                         </CardContent>
                       </Card>
+                      <StudentLevelsCard />
                     </div>
                   </TabsContent>
 
@@ -1589,29 +1705,19 @@ export function CampusManageDashboard() {
                             <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                               Role
                             </p>
-                            <Select
+                            <Combobox
+                              options={comboboxRoleOptions}
                               value={selectedExecomRole}
-                              onValueChange={(value) =>
-                                setSelectedExecomRole(
-                                  value as (typeof EXECOM_ROLE_OPTIONS)[number]["value"],
-                                )
-                              }
+                              onValueChange={setSelectedExecomRole}
+                              placeholder="Select or type a role..."
+                              emptyText="No matching roles."
                               disabled={isAssigningExecomRole}
-                            >
-                              <SelectTrigger className="h-9 w-full rounded-xl">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {EXECOM_ROLE_OPTIONS.map((role) => (
-                                  <SelectItem
-                                    key={role.value}
-                                    value={role.value}
-                                  >
-                                    {role.label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                              className="h-9 rounded-xl"
+                              onCreateNew={(term) => {
+                                setSelectedExecomRole(term);
+                              }}
+                              createNewText="Use custom role"
+                            />
                           </div>
                           <Button
                             onClick={handleAddExecom}
@@ -1699,9 +1805,7 @@ export function CampusManageDashboard() {
                               size="icon"
                               className="absolute right-3 top-3 h-7 w-7 rounded-full text-muted-foreground/60 hover:bg-destructive/10 hover:text-destructive transition-all opacity-60 focus-visible:opacity-100 group-hover:opacity-100"
                               disabled={isRemoving}
-                              onClick={() =>
-                                removeExecom(member.deleteCandidates)
-                              }
+                              onClick={() => removeExecom(member.roleLinkId)}
                               aria-label={`Remove ${member.name}`}
                             >
                               {isRemoving ? (
@@ -1727,6 +1831,20 @@ export function CampusManageDashboard() {
 
                   {/* ── IG Chapters Tab ── */}
                   <TabsContent value="ig" className="mt-0 min-w-0">
+                    <div className="mb-4 flex items-center justify-between">
+                      <p className="text-sm text-muted-foreground">
+                        {chapters.length} chapter
+                        {chapters.length !== 1 ? "s" : ""} active
+                      </p>
+                      <IgChapterFormDialog
+                        trigger={
+                          <Button size="sm" className="gap-1.5">
+                            <PlusCircle className="h-3.5 w-3.5" />
+                            New Chapter
+                          </Button>
+                        }
+                      />
+                    </div>
                     {isChaptersLoading ? (
                       <Skeleton className="h-40 w-full" />
                     ) : chapters.length > 0 ? (
@@ -1734,11 +1852,49 @@ export function CampusManageDashboard() {
                         {chapters.map((chapter) => (
                           <Card key={chapter.id} className="border-border/60">
                             <CardHeader className="pb-2">
-                              <div className="flex items-center gap-2">
-                                <BookOpen className="h-4 w-4 text-primary" />
-                                <CardTitle className="text-base">
-                                  {chapter.name}
-                                </CardTitle>
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-2">
+                                  <BookOpen className="h-4 w-4 text-primary" />
+                                  <CardTitle className="text-base">
+                                    {chapter.name}
+                                  </CardTitle>
+                                </div>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-7 w-7"
+                                    >
+                                      <MoreHorizontal className="h-4 w-4" />
+                                      <span className="sr-only">
+                                        Chapter actions
+                                      </span>
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <IgChapterEditSheet
+                                      chapter={chapter}
+                                      trigger={
+                                        <DropdownMenuItem
+                                          onSelect={(e) => e.preventDefault()}
+                                        >
+                                          Edit Chapter
+                                        </DropdownMenuItem>
+                                      }
+                                    />
+                                    <TransferIgRoleDialog
+                                      trigger={
+                                        <DropdownMenuItem
+                                          onSelect={(e) => e.preventDefault()}
+                                        >
+                                          Transfer IG Lead
+                                        </DropdownMenuItem>
+                                      }
+                                      defaultIgCode={chapter.code}
+                                    />
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
                               </div>
                             </CardHeader>
                             <CardContent className="space-y-2">

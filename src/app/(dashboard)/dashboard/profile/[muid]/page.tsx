@@ -14,6 +14,7 @@ import { useState } from "react";
 import Loader from "@/app/loading";
 import { CompanyPublicView } from "@/features/company-jobs/components";
 import {
+  Badges,
   BasicDetails,
   KarmaHistory,
   MuVoyage,
@@ -25,7 +26,9 @@ import {
   usePublicProfile,
   usePublicUserLevels,
   usePublicUserLog,
+  useUserProfile,
 } from "@/features/profile";
+import { ProjectsTab } from "@/features/projects";
 import { ROLES } from "@/lib/auth/roles";
 
 export default function PublicProfilePage() {
@@ -42,6 +45,7 @@ export default function PublicProfilePage() {
   const { data: userLog, isLoading: isLoadingLog } = usePublicUserLog(muid);
   const { data: userLevels, isLoading: isLoadingLevels } =
     usePublicUserLevels(muid);
+  const { data: viewer } = useUserProfile();
 
   // Calculate month difference for avg karma
   const getMonthDifference = (joined: string | undefined): number => {
@@ -125,6 +129,17 @@ export default function PublicProfilePage() {
                   This feature is under development.
                 </p>
               </div>
+            )}
+            {activeTab === "badges" && (
+              <Badges muid={muid} isOwnProfile={false} />
+            )}
+            {activeTab === "projects" && (
+              <ProjectsTab
+                muid={muid}
+                ownerMuid={muid}
+                currentUserId={viewer?.id ?? null}
+                isOwnProfile={false}
+              />
             )}
           </div>
         </div>

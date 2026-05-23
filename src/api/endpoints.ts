@@ -187,6 +187,8 @@ export const endpoints = {
     personaIgRoles: "/api/v1/dashboard/mentor/persona/ig-roles/",
     /** GET - Single-call mentor home summary */
     homeSummary: "/api/v1/dashboard/mentor/overview/home-summary/",
+    /** GET/POST - Mentor's weekly availability schedule */
+    availabilitySlots: "/api/v1/dashboard/mentor/availability/",
   },
 
   // ============================================
@@ -231,8 +233,36 @@ export const endpoints = {
     updateProfile: "/api/v1/dashboard/profile/",
     /** POST - Update profile image */
     updateProfileImage: "/api/v1/dashboard/user/profile/update/",
+    /** GET/POST/DELETE - User profile cover image (multipart field name: "cover") */
+    coverPic: "/api/v1/dashboard/profile/cover-pic/",
     /** DELETE - Delete user account */
     delete: "/api/v1/dashboard/user/",
+    /** GET - User badges (completed task titles tagged as TFP) */
+    badges: (muid: string) => `/api/v1/dashboard/profile/badges/${muid}`,
+  },
+
+  // ============================================
+  // Projects Endpoints
+  // ============================================
+  projects: {
+    /** GET - List projects (query: muid, created_by, status, perPage, pageIndex, search) */
+    list: "/api/v1/dashboard/projects/",
+    /** POST - Create project (multipart: title, description, status, logo, images[], links_json, skill_ids_json) */
+    create: "/api/v1/dashboard/projects/",
+    detail: (id: string) => `/api/v1/dashboard/projects/${id}/`,
+    update: (id: string) => `/api/v1/dashboard/projects/${id}/`,
+    delete: (id: string) => `/api/v1/dashboard/projects/${id}/`,
+    /** PATCH - Update status only */
+    status: (id: string) => `/api/v1/dashboard/projects/${id}/status/`,
+    members: (projectId: string) =>
+      `/api/v1/dashboard/projects/${projectId}/members/`,
+    member: (projectId: string, memberId: string) =>
+      `/api/v1/dashboard/projects/${projectId}/members/${memberId}/`,
+    vote: "/api/v1/dashboard/projects/vote/",
+    voteById: (voteId: string) => `/api/v1/dashboard/projects/vote/${voteId}/`,
+    comment: "/api/v1/dashboard/projects/comment/",
+    commentById: (commentId: string) =>
+      `/api/v1/dashboard/projects/comment/${commentId}/`,
   },
 
   // ============================================
@@ -318,6 +348,8 @@ export const endpoints = {
     // --- Role Management & Execom ---
     /** GET - List Execom members | POST - Appoint a member to an Execom role */
     execom: "/api/v1/dashboard/campus/execom/",
+    /** GET - List available Execom role titles */
+    execomRoles: "/api/v1/dashboard/campus/execom/roles/",
     /** DELETE - Remove an Execom role from a member by role link ID */
     execomDelete: (memberId: string) =>
       `/api/v1/dashboard/campus/execom/${memberId}/`,

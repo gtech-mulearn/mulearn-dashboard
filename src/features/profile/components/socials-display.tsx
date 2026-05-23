@@ -34,7 +34,7 @@ interface SocialsDisplayProps {
 
 type SocialIcon = ElementType<{ className?: string }>;
 
-const XTwitterLogo = (props: SVGProps<SVGSVGElement>) => (
+const _XTwitterLogo = (props: SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
     <path d="M13.7 10.6 20.4 3h-1.6l-5.8 6.6L8.4 3H3l7 10-7 8h1.6l6.1-7 4.9 7H21l-7.3-10.4Zm-2.2 2.5-.7-1L5.2 4.2h2.4l4.5 6.4.7 1 5.9 8.4h-2.4l-4.8-6.9Z" />
   </svg>
@@ -85,13 +85,6 @@ const socialLinks: {
     color: "#0077B5",
   },
   {
-    key: "twitter",
-    icon: XTwitterLogo,
-    baseUrl: "https://x.com/",
-    placeholder: "X (Twitter) username",
-    color: "#000",
-  },
-  {
     key: "instagram",
     icon: Instagram,
     baseUrl: "https://instagram.com/",
@@ -138,7 +131,6 @@ const socialLinks: {
 type SocialFormValues = {
   github: string;
   linkedin: string;
-  twitter: string;
   instagram: string;
   facebook: string;
   behance: string;
@@ -156,7 +148,6 @@ export function SocialsDisplay({ isOwnProfile }: SocialsDisplayProps) {
   const [formValues, setFormValues] = useState<SocialFormValues>({
     github: "",
     linkedin: "",
-    twitter: "",
     instagram: "",
     facebook: "",
     behance: "",
@@ -171,7 +162,6 @@ export function SocialsDisplay({ isOwnProfile }: SocialsDisplayProps) {
       setFormValues({
         github: socials.github || "",
         linkedin: socials.linkedin || "",
-        twitter: socials.twitter || "",
         instagram: socials.instagram || "",
         facebook: socials.facebook || "",
         behance: socials.behance || "",
@@ -210,7 +200,6 @@ export function SocialsDisplay({ isOwnProfile }: SocialsDisplayProps) {
       setFormValues({
         github: socials.github || "",
         linkedin: socials.linkedin || "",
-        twitter: socials.twitter || "",
         instagram: socials.instagram || "",
         facebook: socials.facebook || "",
         behance: socials.behance || "",

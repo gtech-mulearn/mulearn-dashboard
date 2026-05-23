@@ -10,6 +10,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { authKeys } from "@/features/auth/hooks/query-keys";
 import {
+  deleteCoverPic,
   issueVC,
   togglePublicProfile,
   updateProfile,
@@ -17,6 +18,7 @@ import {
   updateSocials,
   updateUserPreferences,
   updateVCURL,
+  uploadCoverPic,
 } from "../api";
 import type {
   Socials,
@@ -113,6 +115,67 @@ export function useUpdateProfileImage() {
     },
     onError: () => {
       toast.error("Failed to update profile image");
+    },
+  });
+}
+
+/**
+ * Upload (POST) user's profile cover image.
+ * Invalidates profile + all public profile caches so the banner re-renders.
+ */
+export function useUploadCoverPic() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (cover: File) => uploadCoverPic(cover),
+    onSuccess: (newCoverUrl) => {
+      // Optimistically patch the cached profile with the new cover URL
+      queryClient.setQueriesData(
+        { queryKey: ["profile", "user-profile"] },
+        (old: Record<string, unknown> | undefined) => {
+          if (!old) return old;
+          return { ...old, cover_pic: newCoverUrl };
+        },
+      );
+      // Also invalidate to ensure full consistency
+      queryClient.invalidateQueries({ queryKey: profileKeys.profile() });
+      queryClient.invalidateQueries({
+        queryKey: [...profileKeys.all, "public-profile"],
+      });
+      toast.success("Cover photo updated");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to update cover photo");
+    },
+  });
+}
+
+/**
+ * Delete user's profile cover image.
+ * Invalidates profile + all public profile caches.
+ */
+export function useDeleteCoverPic() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => deleteCoverPic(),
+    onSuccess: () => {
+      // Optimistically clear cover_pic in the cached profile
+      queryClient.setQueriesData(
+        { queryKey: ["profile", "user-profile"] },
+        (old: Record<string, unknown> | undefined) => {
+          if (!old) return old;
+          return { ...old, cover_pic: null };
+        },
+      );
+      queryClient.invalidateQueries({ queryKey: profileKeys.profile() });
+      queryClient.invalidateQueries({
+        queryKey: [...profileKeys.all, "public-profile"],
+      });
+      toast.success("Cover photo removed");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to remove cover photo");
     },
   });
 }
