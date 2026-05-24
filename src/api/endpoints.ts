@@ -197,6 +197,8 @@ export const endpoints = {
   public: {
     /** GET - Public job listings (AllowAny) — use pagination.total for count */
     jobs: "/api/v1/public/jobs/",
+    /** GET - Public interest group detail (AllowAny) */
+    igDetail: (id: string) => `/api/v1/public/ig/${id}/`,
   },
 
   // ============================================

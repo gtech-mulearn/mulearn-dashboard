@@ -6,6 +6,7 @@ export { ApplyJobDialog } from "./apply-job-dialog";
 export { CompanyStatusGuard } from "./company-status-guard";
 export { JobCard } from "./job-card";
 export { JobDeleteDialog } from "./job-delete-dialog";
+export { JobDetailModal } from "./job-detail-modal";
 export { JobDetailSkeleton } from "./job-detail-skeleton";
 export { JobDetailView } from "./job-detail-view";
 export { JobStepper } from "./job-stepper";

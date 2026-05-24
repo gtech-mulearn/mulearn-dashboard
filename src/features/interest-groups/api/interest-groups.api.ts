@@ -7,7 +7,7 @@
  * These wrap the apiClient calls with proper typing and schema validation.
  */
 
-import { apiClient } from "@/api/client";
+import { apiClient, publicApiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import type {
   InterestGroup,
@@ -61,8 +61,8 @@ export function extractInterestGroups(
 export async function getInterestGroupDetail(
   id: string,
 ): Promise<InterestGroupDetailResponse> {
-  return apiClient.get(
-    endpoints.interestGroups.detail(id),
+  return publicApiClient.get(
+    endpoints.public.igDetail(id),
     InterestGroupDetailResponseSchema,
   );
 }

@@ -23,7 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ApplicationRow,
-  ApplyJobDialog,
+  JobDetailModal,
   PublicJobCard,
 } from "@/features/company-jobs/components";
 import {
@@ -81,7 +81,7 @@ export default function LearnerJobsPage() {
   const [search, setSearch] = useState("");
   const [pageIndex, setPageIndex] = useState(1);
   const [sortBy, setSortBy] = useState<string>("-appliedAt");
-  const [applyJob, setApplyJob] = useState<PublicJob | null>(null);
+  const [selectedJob, setSelectedJob] = useState<PublicJob | null>(null);
   const debouncedSearch = useDebounce(search, 300);
 
   const {
@@ -239,7 +239,7 @@ export default function LearnerJobsPage() {
                 <PublicJobCard
                   key={`${job.id}-${index}`}
                   job={job}
-                  onApply={setApplyJob}
+                  onView={setSelectedJob}
                 />
               ))}
             </div>
@@ -315,11 +315,10 @@ export default function LearnerJobsPage() {
         </TabsContent>
       </Tabs>
 
-      {/* Apply dialog */}
-      <ApplyJobDialog
-        job={applyJob}
-        open={!!applyJob}
-        onOpenChange={(open) => !open && setApplyJob(null)}
+      <JobDetailModal
+        job={selectedJob}
+        open={!!selectedJob}
+        onOpenChange={(open) => !open && setSelectedJob(null)}
       />
     </div>
   );

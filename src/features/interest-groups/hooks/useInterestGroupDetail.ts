@@ -9,17 +9,14 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { authStore } from "@/lib/auth";
 import { getInterestGroupDetail } from "../api";
 import { igKeys } from "./query-keys";
 
 export function useInterestGroupDetail(id: string) {
-  const isAuthenticated = !!authStore.getAccessToken();
-
   return useQuery({
     queryKey: igKeys.detail(id),
     queryFn: () => getInterestGroupDetail(id),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    enabled: isAuthenticated && !!id,
+    staleTime: 5 * 60 * 1000,
+    enabled: !!id,
   });
 }

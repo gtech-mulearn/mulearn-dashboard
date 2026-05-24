@@ -34,6 +34,7 @@ import {
   useCreateOrganization,
   useDepartments,
   useRoles,
+  useSelectOrganization,
 } from "@/features/onboarding";
 
 interface RegisterClientProps {
@@ -90,6 +91,7 @@ export function RegisterClient({
   const register = useRegister();
   const companyRegister = useCompanyRegister();
   const createOrganization = useCreateOrganization();
+  const selectOrganization = useSelectOrganization();
 
   // Reference data
   const colleges = useColleges();
@@ -200,7 +202,6 @@ export function RegisterClient({
     if (!basicData || !selectedRole) return;
 
     // 1. Resolve role title → DB UUID
-    //    Title mapping: "student" → "Student", "mentor" → "Mentor", "enabler" → "Enabler"
     const roleTitle =
       selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1);
     const roleId = roles.getRoleId(roleTitle);
@@ -211,66 +212,8 @@ export function RegisterClient({
       );
     }
 
-    // 2. Resolve organization for student / enabler (custom college creation)
-    let collegeId = values.college;
-
-    if (
-      values.college === "others" &&
-      values.customCollege &&
-      (selectedRole === "student" || selectedRole === "enabler")
-    ) {
-      const payload: {
-        title: string;
-        org_type: "College" | "Company";
-        department?: string;
-        graduation_year?: string;
-      } = { title: values.customCollege, org_type: "College" };
-
-      if (selectedRole === "student") {
-        if (values.department) payload.department = values.department;
-        if (values.graduationYear)
-          payload.graduation_year = values.graduationYear.toString();
-      }
-
-      const createResponse = await createOrganization.mutateAsync(payload);
-      collegeId = createResponse.response?.id || values.customCollege;
-      toast.success("College created successfully!");
-    }
-
-    // 3. Resolve organization for mentor (custom org creation)
-    let organizationId = values.organization;
-
-    if (
-      values.organization === "others" &&
-      values.customOrganization &&
-      selectedRole === "mentor"
-    ) {
-      const orgType = values.organizationType || "Company";
-      const orgPayload: {
-        title: string;
-        org_type: "College" | "Company";
-        department?: string;
-        graduation_year?: string;
-      } = { title: values.customOrganization, org_type: orgType };
-
-      if (orgType === "College") {
-        if (values.department) orgPayload.department = values.department;
-        if (values.graduationYear)
-          orgPayload.graduation_year = values.graduationYear.toString();
-      }
-
-      const createResponse = await createOrganization.mutateAsync(orgPayload);
-      organizationId = createResponse.response?.id || values.customOrganization;
-      toast.success("Organization created successfully!");
-    }
-
-    // 4. Determine final organization ID
-    const finalOrganization =
-      selectedRole === "student" || selectedRole === "enabler"
-        ? collegeId
-        : organizationId;
-
-    // 5. Register the user — role UUID goes inside the `user` object
+    // 2. Register the user first — useRegister saves tokens after this resolves,
+    //    so subsequent authenticated calls (org creation/selection) will have a valid token.
     const result = await register.mutateAsync({
       user: {
         full_name: basicData.fullName,
@@ -279,14 +222,69 @@ export function RegisterClient({
         role: roleId,
       },
       referral: referralId ? { muid: referralId } : undefined,
-      organization: finalOrganization,
-      department: values.department,
-      graduation_year: values.graduationYear,
     });
+
+    // 3. Now authenticated — handle org linking for student / enabler
+    if (selectedRole === "student" || selectedRole === "enabler") {
+      if (values.college === "others" && values.customCollege) {
+        // Submit unverified org for admin review
+        const payload: {
+          title: string;
+          org_type: "College" | "Company";
+          department?: string;
+          graduation_year?: string;
+        } = { title: values.customCollege, org_type: "College" };
+
+        if (selectedRole === "student") {
+          if (values.department) payload.department = values.department;
+          if (values.graduationYear)
+            payload.graduation_year = values.graduationYear.toString();
+        }
+
+        await createOrganization.mutateAsync(payload);
+        toast.success("College submitted for review!");
+      } else if (values.college) {
+        await selectOrganization.mutateAsync({
+          organization: values.college,
+          department: values.department ?? null,
+          graduation_year: values.graduationYear ?? null,
+          is_student: selectedRole === "student",
+        });
+      }
+    }
+
+    // 4. Handle org linking for mentor
+    if (selectedRole === "mentor") {
+      if (values.organization === "others" && values.customOrganization) {
+        const orgType = values.organizationType || "Company";
+        const orgPayload: {
+          title: string;
+          org_type: "College" | "Company";
+          department?: string;
+          graduation_year?: string;
+        } = { title: values.customOrganization, org_type: orgType };
+
+        if (orgType === "College") {
+          if (values.department) orgPayload.department = values.department;
+          if (values.graduationYear)
+            orgPayload.graduation_year = values.graduationYear.toString();
+        }
+
+        await createOrganization.mutateAsync(orgPayload);
+        toast.success("Organization submitted for review!");
+      } else if (values.organization) {
+        await selectOrganization.mutateAsync({
+          organization: values.organization,
+          department: values.department ?? null,
+          graduation_year: values.graduationYear ?? null,
+          is_student: false,
+        });
+      }
+    }
 
     toast.success("Account created successfully!");
 
-    // 6. Navigate to interests onboarding → role-based dashboard redirect
+    // 5. Navigate to interests onboarding → role-based dashboard redirect
     //    happens inside interests-client.tsx after domains are selected.
     const redirectPath = redirectUri
       ? `/onboarding/interests?ruri=${redirectUri}`
@@ -306,7 +304,8 @@ export function RegisterClient({
   const isLoading =
     register.isPending ||
     companyRegister.isPending ||
-    createOrganization.isPending;
+    createOrganization.isPending ||
+    selectOrganization.isPending;
 
   // ─── Render ──────────────────────────────────────────────────
 

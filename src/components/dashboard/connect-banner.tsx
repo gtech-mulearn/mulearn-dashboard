@@ -25,7 +25,11 @@ export function ConnectAccountsBanner() {
   const qsverse = useQseverseInfo(user.data?.muid);
   const [isQseverseDialogOpen, setIsQseverseDialogOpen] = useState(false);
   const [isDiscordDialogOpen, setIsDiscordDialogOpen] = useState(false);
-  const ALLOWED_ROUTES = ["/dashboard/profile", "/dashboard/mujourney"];
+  const ALLOWED_ROUTES = [
+    "/dashboard/profile",
+    "/dashboard/mujourney",
+    "/dashboard/courses",
+  ];
   const isAllowedRoute = ALLOWED_ROUTES.includes(pathname);
   if (!isAllowedRoute) return null;
   if (isConnectBannerDismissed) return null;

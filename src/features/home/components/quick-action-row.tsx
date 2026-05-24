@@ -23,15 +23,15 @@ export function QuickActionRow({
       iconBg: "bg-primary/10",
       iconColor: "text-primary",
     },
-    {
-      id: "claim-karma",
-      label: "Claim Karma",
-      sub: "Submit your tasks",
-      href: "/dashboard/mujourney",
-      icon: Layers,
-      iconBg: "bg-success/10",
-      iconColor: "text-success",
-    },
+    // {
+    //   id: "claim-karma",
+    //   label: "Claim Karma",
+    //   sub: "Submit your tasks",
+    //   href: "/dashboard/mujourney",
+    //   icon: Layers,
+    //   iconBg: "bg-success/10",
+    //   iconColor: "text-success",
+    // },
     {
       id: "my-circles",
       label: "My Circles",
@@ -71,7 +71,7 @@ export function QuickActionRow({
   ] as const;
 
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
       {actions.map(
         ({ id, label, sub, href, icon: Icon, iconBg, iconColor }) => (
           <Link key={id} href={href}>

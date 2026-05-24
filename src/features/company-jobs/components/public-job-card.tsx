@@ -9,12 +9,11 @@
 
 import { Briefcase, Calendar, MapPin, Sparkles, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import type { PublicJob } from "../types";
 
 interface PublicJobCardProps {
   job: PublicJob;
-  onApply: (job: PublicJob) => void;
+  onView: (job: PublicJob) => void;
 }
 
 function formatDate(iso: string) {
@@ -25,9 +24,13 @@ function formatDate(iso: string) {
   });
 }
 
-export function PublicJobCard({ job, onApply }: PublicJobCardProps) {
+export function PublicJobCard({ job, onView }: PublicJobCardProps) {
   return (
-    <div className="group relative rounded-2xl border border-border bg-card p-5 transition-all duration-200 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5">
+    <button
+      type="button"
+      onClick={() => onView(job)}
+      className="group relative w-full rounded-2xl border border-border bg-card p-5 text-left transition-all duration-200 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5"
+    >
       {/* Karma reward pill */}
       {job.karma_reward ? (
         <div className="absolute right-4 top-4 flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
@@ -86,15 +89,10 @@ export function PublicJobCard({ job, onApply }: PublicJobCardProps) {
           <Calendar className="h-3 w-3" />
           {formatDate(job.created_at)}
         </span>
-        <Button
-          id={`apply-job-${job.id}`}
-          size="sm"
-          onClick={() => onApply(job)}
-          className="h-7 rounded-lg px-3 text-xs"
-        >
-          Apply
-        </Button>
+        <span className="text-xs font-medium text-primary group-hover:underline">
+          View details →
+        </span>
       </div>
-    </div>
+    </button>
   );
 }
