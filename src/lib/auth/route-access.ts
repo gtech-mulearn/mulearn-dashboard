@@ -163,6 +163,11 @@ export const routeAccessMap: Record<string, RouteConfig> = {
     roles: [ROLES.ADMIN, ROLES.FELLOW],
   },
 
+  // ── Mentor Dashboard ────────────────────────────────────
+  "/dashboard/mentor": {
+    roles: [ROLES.MENTOR],
+  },
+
   // ── Company Dashboard ───────────────────────────────────
   "/dashboard/company": {
     roles: [ROLES.COMPANY],

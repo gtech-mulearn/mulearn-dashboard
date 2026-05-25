@@ -11,9 +11,9 @@ import {
   KarmaFeedResponseSchema,
   LearnerHomeSummaryResponseSchema,
   LearnerStreakResponseSchema,
-  MentorHomeSummaryResponseSchema,
   MentorIgRolesResponseSchema,
   MentorMenteesResponseSchema,
+  MentorMyIgsResponseSchema,
   MentorOverviewResponseSchema,
   MentorPersonaSwitchResponseSchema,
   MentorSessionsResponseSchema,
@@ -66,7 +66,7 @@ export async function getMentorOverview() {
     MentorOverviewResponseSchema,
     { skipAuthRedirectOn403: true },
   );
-  return response.response;
+  return response.response.overview;
 }
 
 // ============================================
@@ -145,12 +145,80 @@ export async function getLearnerHomeSummary() {
 // ============================================
 
 export async function getMentorHomeSummary() {
-  const response = await apiClient.get(
-    endpoints.mentor.homeSummary,
-    MentorHomeSummaryResponseSchema,
-    { skipAuthRedirectOn403: true },
-  );
-  return response.response;
+  // Backend's home-summary endpoint is aliased to /mentor/overview/
+  // and returns { overview: {...} }. Adapt to legacy MentorHomeSummaryData shape
+  // so the existing dashboard cards keep working without a rewrite.
+  const overview = await getMentorOverview();
+
+  const mapSession = (s: (typeof overview.sessions.upcoming)[number]) => ({
+    id: s.id,
+    title: s.title,
+    ig_name: s.ig_name ?? null,
+    mode: s.mode ?? "",
+    starts_at: s.starts_at,
+    ends_at: s.ends_at,
+    status: s.status,
+    meeting_link: s.meeting_link ?? null,
+    participants: [],
+  });
+
+  const counts = overview.sessions.counts;
+  const totalMentees =
+    "total_unique" in overview.mentees ? overview.mentees.total_unique : 0;
+
+  const next = overview.sessions.upcoming[0] ?? null;
+
+  return {
+    next_session: next
+      ? {
+          id: next.id,
+          title: next.title,
+          mentee_name: "",
+          mentee_muid: "",
+          starts_at: next.starts_at,
+          mode: next.mode ?? "",
+          meeting_link: next.meeting_link ?? null,
+        }
+      : null,
+    stat_cards: [
+      {
+        key: "sessions_scheduled",
+        label: "Scheduled Sessions",
+        value: counts.scheduled,
+        delta: 0,
+        delta_type: "neutral" as const,
+        period: "all_time",
+      },
+      {
+        key: "sessions_completed",
+        label: "Completed Sessions",
+        value: counts.completed,
+        delta: 0,
+        delta_type: "neutral" as const,
+        period: "all_time",
+      },
+      {
+        key: "pending_approvals",
+        label: "Pending Approvals",
+        value: overview.task_requests.pending,
+        delta: 0,
+        delta_type: "neutral" as const,
+        period: "all_time",
+      },
+      {
+        key: "total_mentees",
+        label: "Unique Mentees",
+        value: totalMentees,
+        delta: 0,
+        delta_type: "neutral" as const,
+        period: "all_time",
+      },
+    ],
+    upcoming_sessions: overview.sessions.upcoming.map(mapSession),
+    session_requests: overview.sessions.pending_global.map(mapSession),
+    mentee_progress: [],
+    expertise_tags: [],
+  };
 }
 
 // ============================================
@@ -214,4 +282,45 @@ export async function getCampusRecentActivity(limit = 10) {
     { skipAuthRedirectOn403: true },
   );
   return response.response.data;
+}
+
+// ============================================
+// Session Accept / Decline (Mentor Home)
+// ============================================
+
+export async function acceptSessionRequest(
+  sessionId: string,
+  userId: string,
+): Promise<void> {
+  await apiClient.post(
+    endpoints.mentor.sessionParticipants(sessionId),
+    { user: userId, participant_role: "MENTOR", attendance_status: "INVITED" },
+    undefined,
+    { skipAuthRedirectOn403: true },
+  );
+}
+
+export async function declineSessionRequest(
+  sessionId: string,
+  userId: string,
+): Promise<void> {
+  await apiClient.delete(
+    endpoints.mentor.sessionParticipant(sessionId, userId),
+    undefined,
+    undefined,
+    { skipAuthRedirectOn403: true },
+  );
+}
+
+// ============================================
+// My IGs (Mentor)
+// ============================================
+
+export async function getMentorMyIgs() {
+  const res = await apiClient.get(
+    endpoints.mentor.myIgs,
+    MentorMyIgsResponseSchema,
+    { skipAuthRedirectOn403: true },
+  );
+  return res.response.igs;
 }

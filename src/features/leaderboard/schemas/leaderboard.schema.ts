@@ -82,3 +82,42 @@ export type CollegeLeaderboardResponse = z.infer<
 export type WadhwaniLeaderboardResponse = z.infer<
   typeof WadhwaniLeaderboardResponseSchema
 >;
+
+// Matches backend MentorLeaderboardSerializer
+export const MentorLeaderboardEntrySchema = z.object({
+  rank: z.coerce.number().default(0),
+  mentor_id: z.string().optional().default(""),
+  full_name: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? ""),
+  muid: z.string().optional().default(""),
+  profile_pic: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? undefined),
+  mentor_tier: z.string().optional().default(""),
+  sessions_completed: z.coerce.number().default(0),
+  mentees_attended: z.coerce.number().default(0),
+  hours: z.coerce.number().default(0),
+  score: z.coerce.number().default(0),
+});
+export type MentorLeaderboardEntry = z.infer<
+  typeof MentorLeaderboardEntrySchema
+>;
+
+export const MentorLeaderboardResponseSchema = z.object({
+  statusCode: z.number().optional(),
+  response: z.object({
+    data: z.array(MentorLeaderboardEntrySchema),
+    pagination: z
+      .object({
+        count: z.number().optional(),
+        totalPages: z.coerce.number().default(1),
+        isNext: z.boolean().optional(),
+        isPrev: z.boolean().optional(),
+        nextPage: z.number().nullable().optional(),
+      })
+      .optional(),
+  }),
+});

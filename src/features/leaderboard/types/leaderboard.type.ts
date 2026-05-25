@@ -1,6 +1,6 @@
 export type TimeFrame = "monthly" | "overall";
 export type WadhwaniTimeFrame = "campus" | "zonal";
-export type Category = "students" | "campus" | "wadhwani";
+export type Category = "students" | "campus" | "wadhwani" | "mentors";
 
 export interface LeaderboardEntry {
   id: string;

@@ -9,7 +9,12 @@ interface LeaderboardPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-const validCategories: Category[] = ["students", "campus", "wadhwani"];
+const validCategories: Category[] = [
+  "students",
+  "campus",
+  "wadhwani",
+  "mentors",
+];
 const validTimeframes: TimeFrame[] = ["monthly", "overall"];
 const validWadhwaniTimeframes: WadhwaniTimeFrame[] = ["campus", "zonal"];
 

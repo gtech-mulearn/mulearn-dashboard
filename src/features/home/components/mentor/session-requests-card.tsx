@@ -1,20 +1,21 @@
 "use client";
 
-import { Check, Inbox, X } from "lucide-react";
-import { useState } from "react";
+import { Check, Inbox, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { MentorSession } from "../../schemas/home.schema";
+import { useUserInfo } from "@/features/auth";
+import { useAcceptSession } from "@/features/mentor/hooks/use-session-actions";
+import type { OverviewSessionListItem } from "../../schemas/home.schema";
 
 type Props = {
-  sessions: MentorSession[];
+  sessions: OverviewSessionListItem[];
   isLoading: boolean;
 };
 
-function avatarColor(userId: string): string {
+function avatarColor(id: string): string {
   let hash = 0;
-  for (let i = 0; i < userId.length; i++) {
-    hash = userId.charCodeAt(i) + ((hash << 5) - hash);
+  for (let i = 0; i < id.length; i++) {
+    hash = id.charCodeAt(i) + ((hash << 5) - hash);
   }
   return `hsl(${Math.abs(hash) % 360}, 60%, 50%)`;
 }
@@ -36,8 +37,8 @@ function timeAgo(iso: string): string {
 }
 
 export function SessionRequestsCard({ sessions, isLoading }: Props) {
-  const [dismissed, setDismissed] = useState<Set<string>>(new Set());
-  const visible = sessions.filter((s) => !dismissed.has(s.id));
+  const { data: userInfo } = useUserInfo();
+  const { mutate: accept, isPending: isAccepting } = useAcceptSession();
 
   return (
     <Card className="rounded-2xl border bg-card shadow-sm">
@@ -50,9 +51,9 @@ export function SessionRequestsCard({ sessions, isLoading }: Props) {
             Session Requests
           </CardTitle>
         </div>
-        {visible.length > 0 && (
+        {sessions.length > 0 && (
           <span className="flex size-5 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
-            {visible.length}
+            {sessions.length}
           </span>
         )}
       </CardHeader>
@@ -63,17 +64,14 @@ export function SessionRequestsCard({ sessions, isLoading }: Props) {
               <Skeleton key={i} className="h-12 w-full rounded-lg" />
             ))}
           </div>
-        ) : visible.length === 0 ? (
+        ) : sessions.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">
             No pending requests.
           </p>
         ) : (
           <div className="space-y-0">
-            {visible.map((req, _idx) => {
-              const mentee = req.participants?.find(
-                (p) => p.participant_role !== "MENTOR",
-              );
-              const color = avatarColor(mentee?.user_id ?? req.id);
+            {sessions.map((req) => {
+              const color = avatarColor(req.id);
               return (
                 <div
                   key={req.id}
@@ -83,41 +81,39 @@ export function SessionRequestsCard({ sessions, isLoading }: Props) {
                     className="flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-primary-foreground"
                     style={{ backgroundColor: color }}
                   >
-                    {mentee ? initials(mentee.full_name) : "?"}
+                    {initials(req.title)}
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold text-foreground">
-                      {mentee?.full_name ?? "Unknown"}
+                      {req.title}
                     </p>
                     <p className="truncate text-[11px] text-muted-foreground">
-                      {req.title}
+                      {req.ig_name ?? (req.is_global ? "Global" : req.mode)}
                     </p>
                   </div>
                   <span className="shrink-0 text-[11px] text-muted-foreground">
-                    {timeAgo(req.starts_at)}
+                    {req.created_at
+                      ? timeAgo(req.created_at)
+                      : timeAgo(req.starts_at)}
                   </span>
-                  <div className="flex shrink-0 gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setDismissed((prev) => new Set([...prev, req.id]))
-                      }
-                      className="flex size-7 items-center justify-center rounded-full bg-success/15 text-success transition-colors hover:bg-success/25"
-                      aria-label="Accept"
-                    >
+                  <button
+                    type="button"
+                    disabled={isAccepting}
+                    onClick={() =>
+                      accept({
+                        sessionId: req.id,
+                        userId: userInfo?.muid ?? "",
+                      })
+                    }
+                    className="flex size-7 shrink-0 items-center justify-center rounded-full bg-success/15 text-success transition-colors hover:bg-success/25 disabled:opacity-50"
+                    aria-label="Accept"
+                  >
+                    {isAccepting ? (
+                      <Loader2 className="size-3.5 animate-spin" />
+                    ) : (
                       <Check className="size-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setDismissed((prev) => new Set([...prev, req.id]))
-                      }
-                      className="flex size-7 items-center justify-center rounded-full bg-destructive/15 text-destructive transition-colors hover:bg-destructive/25"
-                      aria-label="Decline"
-                    >
-                      <X className="size-3.5" />
-                    </button>
-                  </div>
+                    )}
+                  </button>
                 </div>
               );
             })}

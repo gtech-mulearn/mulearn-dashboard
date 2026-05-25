@@ -15,6 +15,8 @@ import { endpoints } from "@/api/endpoints";
 import {
   type CollegeLeaderboardEntry,
   CollegeLeaderboardResponseSchema,
+  type MentorLeaderboardEntry,
+  MentorLeaderboardResponseSchema,
   type StudentLeaderboardEntry,
   StudentLeaderboardResponseSchema,
   type WadhwaniLeaderboardEntry,
@@ -70,4 +72,18 @@ export async function fetchWadhwaniLeaderboard(
     WadhwaniLeaderboardResponseSchema,
   );
   return response.response;
+}
+
+/**
+ * Fetch mentor leaderboard
+ */
+export async function fetchMentorLeaderboard(): Promise<
+  MentorLeaderboardEntry[]
+> {
+  const response = await apiClient.get(
+    endpoints.mentor.leaderboard,
+    MentorLeaderboardResponseSchema,
+    { skipAuthRedirectOn403: true },
+  );
+  return response.response.data;
 }

@@ -10,11 +10,13 @@
 import { useQuery } from "@tanstack/react-query";
 import {
   fetchCampusLeaderboard,
+  fetchMentorLeaderboard,
   fetchStudentLeaderboard,
   fetchWadhwaniLeaderboard,
 } from "../api";
 import type {
   CollegeLeaderboardEntry,
+  MentorLeaderboardEntry,
   StudentLeaderboardEntry,
   WadhwaniLeaderboardEntry,
 } from "../schemas";
@@ -39,20 +41,24 @@ export function useLeaderboard(
         ? leaderboardKeys.college(monthly)
         : category === "wadhwani"
           ? leaderboardKeys.wadhwani(campus)
-          : leaderboardKeys.students(monthly),
+          : category === "mentors"
+            ? leaderboardKeys.mentors()
+            : leaderboardKeys.students(monthly),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     queryFn: async () => {
       if (category === "campus") return await fetchCampusLeaderboard(monthly);
       if (category === "wadhwani")
         return await fetchWadhwaniLeaderboard(campus);
+      if (category === "mentors") return await fetchMentorLeaderboard();
       return await fetchStudentLeaderboard(monthly);
     },
     select: (
       data:
         | StudentLeaderboardEntry[]
         | CollegeLeaderboardEntry[]
-        | WadhwaniLeaderboardEntry[],
+        | WadhwaniLeaderboardEntry[]
+        | MentorLeaderboardEntry[],
     ): LeaderboardEntry[] => {
       if (!data || !Array.isArray(data)) return [];
 
@@ -94,6 +100,20 @@ export function useLeaderboard(
             return entry;
           })
           .filter((item): item is LeaderboardEntry => item !== null);
+      }
+
+      if (category === "mentors") {
+        return (data as MentorLeaderboardEntry[]).map((item, index) => {
+          const id = item.mentor_id || item.muid || `mentor-${index}`;
+          const entry: LeaderboardEntry = {
+            id,
+            rank: item.rank || index + 1,
+            name: item.full_name,
+            karma: item.score,
+            profile_pic: item.profile_pic,
+          };
+          return entry;
+        });
       }
 
       // Default: students

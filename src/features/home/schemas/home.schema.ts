@@ -133,51 +133,121 @@ export const PaginationSchema = z.object({
 
 // ============================================
 // Mentor Overview (/mentor/overview/)
+// Backend returns { overview: { mentors, sessions, task_requests, opportunities, mentees, recent_activity } }
 // ============================================
 
+// Mentor self-stats (mentor user) vs aggregate (admin)
+const OverviewMentorsSelfSchema = z.object({
+  is_verified: z.boolean(),
+  mentor_tier: z.string().nullable(),
+  hours: z.number(),
+});
+const OverviewMentorsAggregateSchema = z.object({
+  total: z.number(),
+  verified: z.number(),
+  unverified: z.number(),
+  pending_verification: z.number(),
+});
+
+const OverviewSessionListItemSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string().nullable().optional(),
+  mode: z.string().optional(),
+  starts_at: z.string(),
+  ends_at: z.string(),
+  meeting_link: z.string().nullable().optional(),
+  status: z.string(),
+  is_global: z.boolean().optional(),
+  ig_id: z.string().nullable().optional(),
+  ig_name: z.string().nullable().optional(),
+  created_by_name: z.string().optional(),
+  created_at: z.string().optional(),
+  participant_count: z.number().optional().default(0),
+});
+export type OverviewSessionListItem = z.infer<
+  typeof OverviewSessionListItemSchema
+>;
+
+const OverviewSessionsSchema = z.object({
+  counts: z.object({
+    pending_approval: z.number(),
+    scheduled: z.number(),
+    completed: z.number(),
+    cancelled: z.number(),
+    no_show: z.number(),
+    total: z.number(),
+  }),
+  upcoming: z.array(OverviewSessionListItemSchema).default([]),
+  pending_global: z.array(OverviewSessionListItemSchema).default([]),
+});
+
+const OverviewTaskRequestItemSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  hashtag: z.string().optional(),
+  karma: z.number().optional(),
+  mentor_name: z.string().optional(),
+  ig_name: z.string().optional(),
+  ig_id: z.string().optional(),
+  status: z.string(),
+  created_at: z.string().optional(),
+});
+export type OverviewTaskRequestItem = z.infer<
+  typeof OverviewTaskRequestItemSchema
+>;
+
+const OverviewTaskRequestsSchema = z.object({
+  pending: z.number(),
+  approved: z.number(),
+  rejected: z.number(),
+  recent_pending: z.array(OverviewTaskRequestItemSchema).default([]),
+});
+
+const OverviewOpportunitiesSchema = z.object({
+  total: z.number(),
+  published: z.number(),
+  draft: z.number(),
+  closed: z.number(),
+  by_ig: z
+    .array(
+      z.object({
+        ig_id: z.string().nullable(),
+        ig_name: z.string().nullable(),
+        count: z.number(),
+      }),
+    )
+    .default([]),
+});
+
+const OverviewActivityItemSchema = z.object({
+  id: z.string(),
+  action_type: z.string(),
+  actor_name: z.string().nullable().optional(),
+  subject_name: z.string().nullable().optional(),
+  ig_name: z.string().nullable().optional(),
+  entity_name: z.string().optional(),
+  entity_id: z.string().optional(),
+  old_data: z.record(z.string(), z.unknown()).nullable().optional(),
+  new_data: z.record(z.string(), z.unknown()).nullable().optional(),
+  remarks: z.string().nullable().optional(),
+  created_at: z.string(),
+});
+export type OverviewActivityItem = z.infer<typeof OverviewActivityItemSchema>;
+
 export const MentorOverviewSchema = z.object({
-  user: z.object({
-    full_name: z.string(),
-    muid: z.string(),
-    profile_pic: z.string().nullable(),
-  }),
-  mentor_profile: z.object({
-    about: z.string().nullable(),
-    expertise: z.string().nullable(),
-    reason: z.string().nullable(),
-    volunteer_hours: z.number(),
-    mentor_tier: z.string().nullable(),
-    is_verified: z.boolean(),
-  }),
-  active_persona: z
-    .object({
-      active_persona: z.string().nullable(),
-      active_role_link_id: z.string().nullable(),
-      active_ig_id: z.string().nullable(),
-      ig_name: z.string().nullable(),
-      is_verified: z.boolean(),
-    })
-    .nullable(),
-  authorized_igs: z.array(
-    z.object({
-      role_link_id: z.string(),
-      ig_id: z.string(),
-      ig_name: z.string(),
-      is_primary: z.boolean(),
-      is_verified: z.boolean(),
-    }),
-  ),
-  stats: z.object({
-    total_mentees: z.number(),
-    sessions_conducted: z.number(),
-    pending_task_approvals: z.number(),
-    volunteer_hours: z.number(),
-  }),
+  mentors: z.union([OverviewMentorsSelfSchema, OverviewMentorsAggregateSchema]),
+  sessions: OverviewSessionsSchema,
+  task_requests: OverviewTaskRequestsSchema,
+  opportunities: OverviewOpportunitiesSchema,
+  mentees: z.object({ total_unique: z.number() }),
+  recent_activity: z.array(OverviewActivityItemSchema).default([]),
 });
 export type MentorOverview = z.infer<typeof MentorOverviewSchema>;
 
-export const MentorOverviewResponseSchema =
-  ApiResponseSchema(MentorOverviewSchema);
+export const MentorOverviewResponseSchema = ApiResponseSchema(
+  z.object({ overview: MentorOverviewSchema }),
+);
 
 // ============================================
 // Mentor Sessions (/mentor/sessions/)
@@ -267,6 +337,18 @@ export const MentorIgRolesResponseSchema = ApiResponseSchema(
   z.object({
     ig_roles: z.array(MentorIgRoleSchema),
   }),
+);
+
+// mentor/my-igs/ returns a simpler shape than the persona endpoint
+export const MentorMyIgSchema = z.object({
+  ig_id: z.string(),
+  ig_name: z.string(),
+  ig_code: z.string(),
+});
+export type MentorMyIg = z.infer<typeof MentorMyIgSchema>;
+
+export const MentorMyIgsResponseSchema = ApiResponseSchema(
+  z.object({ igs: z.array(MentorMyIgSchema) }),
 );
 
 export const MentorPersonaSwitchResponseSchema = ApiResponseSchema(
@@ -359,14 +441,16 @@ export const MentorNextSessionSchema = z
   .nullable();
 export type MentorNextSession = z.infer<typeof MentorNextSessionSchema>;
 
-export const MentorHomeSummaryDataSchema = z.object({
-  next_session: MentorNextSessionSchema,
-  stat_cards: z.array(MentorStatCardSchema),
-  upcoming_sessions: z.array(MentorSessionSchema),
-  session_requests: z.array(MentorSessionSchema),
-  mentee_progress: z.array(MentorMenteeSchema),
-  expertise_tags: z.array(z.string()),
-});
+export const MentorHomeSummaryDataSchema = z
+  .object({
+    next_session: MentorNextSessionSchema.optional().default(null),
+    stat_cards: z.array(MentorStatCardSchema).optional().default([]),
+    upcoming_sessions: z.array(MentorSessionSchema).optional().default([]),
+    session_requests: z.array(MentorSessionSchema).optional().default([]),
+    mentee_progress: z.array(MentorMenteeSchema).optional().default([]),
+    expertise_tags: z.array(z.string()).optional().default([]),
+  })
+  .passthrough();
 export type MentorHomeSummaryData = z.infer<typeof MentorHomeSummaryDataSchema>;
 /** @deprecated Use MentorSession instead */
 export type MentorSessionPartial = MentorSession;

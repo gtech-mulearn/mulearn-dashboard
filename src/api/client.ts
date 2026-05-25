@@ -43,16 +43,17 @@ function isTokenExpiredError(rawData: unknown): boolean {
     const data = rawData as {
       hasError: boolean;
       statusCode: number;
-      message?: { general?: string[] };
+      message?: { general?: (string | Record<string, unknown>)[] };
     };
 
     return (
       data.statusCode === 1000 ||
       data.message?.general?.some(
         (msg) =>
-          msg.toLowerCase().includes("token expired") ||
-          msg.toLowerCase().includes("token invalid") ||
-          msg.toLowerCase().includes("invalid token"),
+          typeof msg === "string" &&
+          (msg.toLowerCase().includes("token expired") ||
+            msg.toLowerCase().includes("token invalid") ||
+            msg.toLowerCase().includes("invalid token")),
       ) === true
     );
   }

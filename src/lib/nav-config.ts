@@ -17,6 +17,9 @@ import {
   BookOpen,
   Briefcase,
   Calendar,
+  CalendarDays,
+  ClipboardCheck,
+  FileText,
   Globe,
   GraduationCap,
   Home,
@@ -74,6 +77,12 @@ export interface NavItem {
    * (e.g. "{igCode} IGLead"). Evaluated after `roles` check fails.
    */
   dynamicCheck?: (userRoles: readonly string[]) => boolean;
+  /**
+   * Optional override for the actual link destination.
+   * Use when the link needs query params but active-state matching
+   * should use the bare pathname (href).
+   */
+  linkHref?: string;
 }
 
 // ─── Navigation Items ───────────────────────────────────────
@@ -156,14 +165,48 @@ export const NAV_ITEMS: readonly NavItem[] = [
     href: "/dashboard/jobs",
     icon: Briefcase,
     section: "main",
+    dynamicCheck: (roles) =>
+      !roles.some((r) => r === ROLES.MENTOR || r === ROLES.COMPANY),
   },
 
   // ── Management Section (role-gated) ───────────────────────
   {
-    id: "mentor",
-    title: "Mentor",
-    href: "/dashboard/mentor",
-    icon: UserCheck,
+    id: "mentor-sessions",
+    title: "Sessions",
+    href: "/dashboard/mentor/sessions",
+    icon: CalendarDays,
+    section: "management",
+    roles: [ROLES.MENTOR],
+  },
+  {
+    id: "mentor-task-review",
+    title: "Task Review",
+    href: "/dashboard/mentor/task-review",
+    icon: ClipboardCheck,
+    section: "management",
+    roles: [ROLES.MENTOR],
+  },
+  {
+    id: "mentor-opportunities",
+    title: "Opportunities",
+    href: "/dashboard/mentor/opportunities",
+    icon: Briefcase,
+    section: "management",
+    roles: [ROLES.MENTOR],
+  },
+  {
+    id: "mentor-task-requests",
+    title: "Task Requests",
+    href: "/dashboard/mentor/task-requests",
+    icon: FileText,
+    section: "management",
+    roles: [ROLES.MENTOR],
+  },
+  {
+    id: "mentor-mentees",
+    title: "Mentees",
+    href: "/dashboard/mentor/mentees",
+    icon: Users,
     section: "management",
     roles: [ROLES.MENTOR],
   },
@@ -207,6 +250,14 @@ export const NAV_ITEMS: readonly NavItem[] = [
     section: "management",
     roles: IG_ROLES,
     dynamicCheck: (roles) => roles.some((r) => r.endsWith(" IGLead")),
+  },
+  {
+    id: "mentor-verification",
+    title: "Mentor Verification",
+    href: "/dashboard/management/mentor-verification",
+    icon: UserCheck,
+    section: "management",
+    roles: MANAGEMENT_ROLES,
   },
   {
     id: "management",

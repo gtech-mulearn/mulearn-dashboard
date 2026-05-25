@@ -1,4 +1,4 @@
-import { Award, Building2, Users } from "lucide-react";
+import { Award, Building2, GraduationCap, Users } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,6 +25,11 @@ const categories: { value: Category; label: string; icon: ReactNode }[] = [
     value: "wadhwani",
     label: "Wadhwani",
     icon: <Award className="w-5 h-5" />,
+  },
+  {
+    value: "mentors",
+    label: "Mentors",
+    icon: <GraduationCap className="w-5 h-5" />,
   },
 ];
 

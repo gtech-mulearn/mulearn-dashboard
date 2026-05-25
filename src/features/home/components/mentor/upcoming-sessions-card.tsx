@@ -2,10 +2,10 @@ import { CalendarClock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import type { MentorSession } from "../../schemas/home.schema";
+import type { OverviewSessionListItem } from "../../schemas/home.schema";
 
 type Props = {
-  sessions: MentorSession[];
+  sessions: OverviewSessionListItem[];
   isLoading: boolean;
 };
 
@@ -71,12 +71,9 @@ export function UpcomingSessionsCard({ sessions, isLoading }: Props) {
           </p>
         ) : (
           <div className="space-y-0">
-            {sessions.map((session, _idx) => {
-              const mentee = session.participants?.find(
-                (p) => p.participant_role !== "MENTOR",
-              );
+            {sessions.map((session) => {
               const { date, time } = formatDateTime(session.starts_at);
-              const color = avatarColor(mentee?.user_id ?? session.id);
+              const color = avatarColor(session.id);
               const status = session.status;
               return (
                 <div
@@ -87,14 +84,15 @@ export function UpcomingSessionsCard({ sessions, isLoading }: Props) {
                     className="flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-primary-foreground"
                     style={{ backgroundColor: color }}
                   >
-                    {mentee ? initials(mentee.full_name) : "?"}
+                    {initials(session.title)}
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold text-foreground">
-                      {mentee?.full_name ?? "Unknown"}
+                      {session.title}
                     </p>
                     <p className="truncate text-[11px] text-muted-foreground">
-                      {session.title}
+                      {session.ig_name ??
+                        (session.is_global ? "Global" : session.mode)}
                     </p>
                   </div>
                   <div className="shrink-0 text-right">

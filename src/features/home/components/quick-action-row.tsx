@@ -1,4 +1,4 @@
-import { Briefcase, Layers, Search, Trophy, Users, Zap } from "lucide-react";
+import { Briefcase, Search, Trophy, Users, Zap } from "lucide-react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 
@@ -54,7 +54,7 @@ export function QuickActionRow({
       id: "jobs-board",
       label: "Jobs Board",
       sub: `${jobCount} new openings`,
-      href: "/dashboard/company/jobs",
+      href: "/dashboard/jobs",
       icon: Briefcase,
       iconBg: "bg-destructive/10",
       iconColor: "text-destructive",

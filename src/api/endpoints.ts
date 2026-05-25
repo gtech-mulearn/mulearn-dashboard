@@ -186,9 +186,63 @@ export const endpoints = {
     /** GET - Available IG mentor role assignments for the user */
     personaIgRoles: "/api/v1/dashboard/mentor/persona/ig-roles/",
     /** GET - Single-call mentor home summary */
-    homeSummary: "/api/v1/dashboard/mentor/overview/home-summary/",
+    homeSummary: "/api/v1/dashboard/mentor/overview/",
     /** GET/POST - Mentor's weekly availability schedule */
     availabilitySlots: "/api/v1/dashboard/mentor/availability/",
+    /** GET - Own mentor application status; POST to apply; PATCH to update */
+    onboarding: "/api/v1/dashboard/mentor/onboarding/",
+    /** GET - Admin: list of all mentor applications (supports ?search=<muid>) */
+    list: "/api/v1/dashboard/mentor/list/",
+    /** PATCH - Admin: approve or reject a mentor application */
+    verify: (mentorId: string) =>
+      `/api/v1/dashboard/mentor/${mentorId}/verify/`,
+    /** GET/PATCH - Single session detail */
+    session: (id: string) => `/api/v1/dashboard/mentor/sessions/${id}/`,
+    /** PATCH - Update session status */
+    sessionStatus: (id: string) =>
+      `/api/v1/dashboard/mentor/sessions/${id}/status/`,
+    /** PATCH - Admin approve/reject a global session */
+    sessionApprove: (id: string) =>
+      `/api/v1/dashboard/mentor/sessions/${id}/approve/`,
+    /** GET - Admin: global session approval queue */
+    sessionsPending: "/api/v1/dashboard/mentor/sessions/pending/",
+    /** GET/POST - Session participants list */
+    sessionParticipants: (id: string) =>
+      `/api/v1/dashboard/mentor/sessions/${id}/participants/`,
+    /** DELETE - Remove a participant from a session */
+    sessionParticipant: (sessionId: string, userId: string) =>
+      `/api/v1/dashboard/mentor/sessions/${sessionId}/participants/${userId}/`,
+    /** POST - Award karma to mentor for a completed session */
+    sessionKarmaAward: (id: string) =>
+      `/api/v1/dashboard/mentor/sessions/${id}/karma-award/`,
+    /** POST - Send reminder to session participants */
+    sessionRemind: (id: string) =>
+      `/api/v1/dashboard/mentor/sessions/${id}/remind/`,
+    /** GET - Task review queue for mentor */
+    reviewQueue: "/api/v1/dashboard/mentor/review-queue/",
+    /** PATCH - Approve or reject a task review item */
+    reviewQueueItem: (kalId: string) =>
+      `/api/v1/dashboard/mentor/review-queue/${kalId}/`,
+    /** GET/POST - Mentor task requests (proposals) */
+    taskRequests: "/api/v1/dashboard/mentor/task-requests/",
+    /** GET/PATCH - Single task request */
+    taskRequest: (id: string) =>
+      `/api/v1/dashboard/mentor/task-requests/${id}/`,
+    /** GET/POST - Mentor opportunities */
+    opportunities: "/api/v1/dashboard/mentor/opportunities/",
+    /** GET/PATCH/DELETE - Single opportunity */
+    opportunity: (id: string) =>
+      `/api/v1/dashboard/mentor/opportunities/${id}/`,
+    /** GET - IGs linked to the authenticated mentor */
+    myIgs: "/api/v1/dashboard/mentor/my-igs/",
+    /** GET - IG mentor link requests */
+    igRequests: "/api/v1/dashboard/mentor/ig-requests/",
+    /** GET/PATCH - Single IG request */
+    igRequest: (id: string) => `/api/v1/dashboard/mentor/ig-requests/${id}/`,
+    /** GET - Mentor activity log */
+    activityLog: "/api/v1/dashboard/mentor/activity-log/",
+    /** GET - Mentor leaderboard (paginated) */
+    leaderboard: "/api/v1/dashboard/mentor/leaderboard/",
   },
 
   // ============================================

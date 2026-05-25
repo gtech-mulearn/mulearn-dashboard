@@ -56,7 +56,7 @@ export function Sidebar() {
     return (
       <Link
         key={item.id}
-        href={item.href}
+        href={item.linkHref ?? item.href}
         prefetch={false}
         onClick={() => setIsMobileOpen(false)}
         aria-current={isActive(item.href) ? "page" : undefined}
