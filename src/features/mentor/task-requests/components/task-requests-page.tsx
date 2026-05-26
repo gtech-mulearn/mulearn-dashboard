@@ -323,6 +323,7 @@ function RequestTable({
         <TableHeader>
           <TableRow>
             <TableHead>Task</TableHead>
+            <TableHead>Description</TableHead>
             <TableHead>IG</TableHead>
             <TableHead>Karma</TableHead>
             <TableHead>Status</TableHead>
@@ -339,17 +340,15 @@ function RequestTable({
                     {req.hashtag}
                   </p>
                 )}
-                {req.description && (
-                  <p className="mt-0.5 max-w-[240px] truncate text-xs text-muted-foreground">
-                    {req.description}
-                  </p>
-                )}
+              </TableCell>
+              <TableCell>
+                {req.description ? req.description.slice(0, 100) + "..." : "—"}
               </TableCell>
               <TableCell className="text-sm text-muted-foreground">
                 {req.ig_name ?? "—"}
               </TableCell>
               <TableCell>
-                <Badge variant="outline">{req.karma} K</Badge>
+                <Badge variant="outline">{req.karma} pts</Badge>
               </TableCell>
               <TableCell>
                 <Badge variant={STATUS_BADGE[req.status] ?? "secondary"}>
