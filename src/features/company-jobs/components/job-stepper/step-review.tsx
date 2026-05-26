@@ -15,7 +15,9 @@ import {
   Timer,
   Wallet,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import type { JobFormValues } from "../../schemas";
 import type { JobRule } from "../../types";
 import { RuleList } from "../rules";
@@ -144,12 +146,27 @@ export function StepReview({
         </div>
         {values.job_description && (
           <div className="mt-4 border-t border-border pt-4">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
               Job Description
             </p>
-            <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
-              {values.job_description}
+            <MarkdownRenderer
+              content={values.job_description}
+              className="text-sm"
+            />
+          </div>
+        )}
+        {values.deliverables && values.deliverables.length > 0 && (
+          <div className="mt-4 border-t border-border pt-4">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
+              Deliverables
             </p>
+            <div className="flex flex-wrap gap-1.5">
+              {values.deliverables.map((d) => (
+                <Badge key={d} variant="secondary" className="text-xs">
+                  {d}
+                </Badge>
+              ))}
+            </div>
           </div>
         )}
       </div>

@@ -20,11 +20,13 @@ import {
   Package,
   Sparkles,
   Star,
+  Timer,
 } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { useApplyJob } from "../hooks";
@@ -130,8 +132,24 @@ export function JobDetailModal({
                 <Star className="h-4 w-4 text-primary" />
                 <span className="font-medium">Level ≥ {job.min_level}</span>
               </div>
+              {job.experience && (
+                <div className="flex items-center gap-2 rounded-lg bg-muted px-3 py-2 text-sm">
+                  <Timer className="h-4 w-4 text-primary" />
+                  <span className="font-medium">{job.experience}</span>
+                </div>
+              )}
             </div>
           </Section>
+
+          {/* Job Description */}
+          {job.job_description && (
+            <Section title="Job Description">
+              <MarkdownRenderer
+                content={job.job_description}
+                className="text-sm"
+              />
+            </Section>
+          )}
 
           {/* Compensation */}
           {(job.salary_range || job.stipend || job.hourly_rate) && (

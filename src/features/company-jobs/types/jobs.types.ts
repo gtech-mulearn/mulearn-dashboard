@@ -53,7 +53,7 @@ export interface Job {
   duration_value?: number | null;
   duration_unit?: string | null;
   hourly_rate?: string | null;
-  deliverables?: string | null;
+  deliverables?: string[] | string | null;
   stipend?: string | null;
   certificate_provided?: boolean | null;
 }
@@ -82,6 +82,8 @@ export interface PublicJob {
   title: string;
   job_type: string;
   location: string;
+  experience?: string | null;
+  job_description?: string | null;
   salary_range?: string | null;
   min_karma: number;
   min_level: number;
@@ -177,7 +179,7 @@ export interface CreateJobPayload {
   duration_value?: number;
   duration_unit?: string;
   hourly_rate?: string;
-  deliverables?: string;
+  deliverables?: string[];
   stipend?: string;
   certificate_provided?: boolean;
 }
@@ -196,7 +198,7 @@ export interface UpdateJobPayload {
   duration_value?: number;
   duration_unit?: string;
   hourly_rate?: string;
-  deliverables?: string;
+  deliverables?: string[];
   stipend?: string;
   certificate_provided?: boolean;
 }

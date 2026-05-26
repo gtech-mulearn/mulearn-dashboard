@@ -38,7 +38,7 @@ const DEFAULT_VALUES: JobFormValues = {
   duration_value: undefined,
   duration_unit: undefined,
   hourly_rate: "",
-  deliverables: "",
+  deliverables: [],
   stipend: "",
   certificate_provided: false,
 };
@@ -57,7 +57,11 @@ function jobToFormValues(job: Job): JobFormValues {
     duration_value: job.duration_value ?? undefined,
     duration_unit: job.duration_unit ?? undefined,
     hourly_rate: job.hourly_rate ?? "",
-    deliverables: job.deliverables ?? "",
+    deliverables: Array.isArray(job.deliverables)
+      ? job.deliverables
+      : job.deliverables
+        ? [job.deliverables]
+        : [],
     stipend: job.stipend ?? "",
     certificate_provided: job.certificate_provided ?? false,
   };

@@ -8,18 +8,25 @@
 
 import {
   ArrowLeft,
+  Award,
   Briefcase,
   Calendar,
+  Clock,
+  DollarSign,
   Edit,
   MapPin,
+  Package,
   Plus,
   Sparkles,
   Star,
+  Timer,
   Trash2,
   Wallet,
 } from "lucide-react";
 import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { JOB_STATUS_CONFIG } from "../constants";
 import type { RuleFormValues } from "../schemas";
 import type { Job } from "../types";
@@ -169,6 +176,72 @@ export function JobDetailView({
               Level {job.min_level}
             </div>
           </div>
+          {job.experience && (
+            <div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Experience
+              </p>
+              <div className="mt-1 flex items-center gap-1.5 text-sm text-foreground">
+                <Timer className="h-3.5 w-3.5 text-muted-foreground" />
+                {job.experience}
+              </div>
+            </div>
+          )}
+          {job.karma_reward != null && job.karma_reward > 0 && (
+            <div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Karma Reward
+              </p>
+              <div className="mt-1 flex items-center gap-1.5 text-sm text-foreground">
+                <Sparkles className="h-3.5 w-3.5 text-muted-foreground" />+
+                {job.karma_reward}
+              </div>
+            </div>
+          )}
+          {job.duration_value != null && job.duration_unit && (
+            <div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Duration
+              </p>
+              <div className="mt-1 flex items-center gap-1.5 text-sm text-foreground">
+                <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                {job.duration_value} {job.duration_unit}
+              </div>
+            </div>
+          )}
+          {job.hourly_rate && (
+            <div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Hourly Rate
+              </p>
+              <div className="mt-1 flex items-center gap-1.5 text-sm text-foreground">
+                <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />₹
+                {job.hourly_rate}/hr
+              </div>
+            </div>
+          )}
+          {job.stipend && (
+            <div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Stipend
+              </p>
+              <div className="mt-1 flex items-center gap-1.5 text-sm text-foreground">
+                <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
+                {job.stipend}
+              </div>
+            </div>
+          )}
+          {job.certificate_provided && (
+            <div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Certificate
+              </p>
+              <div className="mt-1 flex items-center gap-1.5 text-sm text-foreground">
+                <Award className="h-3.5 w-3.5 text-muted-foreground" />
+                Certificate Provided
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -178,11 +251,43 @@ export function JobDetailView({
           <h2 className="text-base font-semibold text-foreground">
             Job Description
           </h2>
-          <p className="mt-3 text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap">
-            {job.job_description}
-          </p>
+          <div className="mt-3">
+            <MarkdownRenderer
+              content={job.job_description}
+              className="text-sm"
+            />
+          </div>
         </div>
       )}
+
+      {/* Deliverables */}
+      {job.deliverables &&
+        (() => {
+          const items = Array.isArray(job.deliverables)
+            ? job.deliverables
+            : typeof job.deliverables === "string" && job.deliverables
+              ? [job.deliverables]
+              : [];
+          return items.length > 0 ? (
+            <div className="rounded-xl border border-border bg-card p-6">
+              <h2 className="text-base font-semibold text-foreground">
+                Deliverables
+              </h2>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {items.map((d) => (
+                  <Badge
+                    key={d}
+                    variant="secondary"
+                    className="gap-1.5 text-sm"
+                  >
+                    <Package className="h-3.5 w-3.5" />
+                    {d}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          ) : null;
+        })()}
 
       {/* Eligibility Rules */}
       <div className="rounded-xl border border-border bg-card p-6">

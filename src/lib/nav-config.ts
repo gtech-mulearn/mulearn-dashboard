@@ -168,6 +168,15 @@ export const NAV_ITEMS: readonly NavItem[] = [
     dynamicCheck: (roles) =>
       !roles.some((r) => r === ROLES.MENTOR || r === ROLES.COMPANY),
   },
+  {
+    id: "talent-pool",
+    title: "Talent Pool",
+    href: "/dashboard/talent-pool",
+    icon: UserCheck,
+    section: "main",
+    dynamicCheck: (roles) =>
+      roles.some((r) => r === ROLES.MENTOR || r === ROLES.COMPANY),
+  },
 
   // ── Management Section (role-gated) ───────────────────────
   {

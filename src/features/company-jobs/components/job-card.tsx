@@ -89,7 +89,7 @@ export function JobCard({ job, onView }: JobCardProps) {
           variant="ghost"
           size="sm"
           onClick={() => onView(job.id)}
-          className="text-xs hover:text-primary"
+          className="text-xs hover:text-primary text-brand-blue"
         >
           View details →
         </Button>

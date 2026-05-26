@@ -37,7 +37,10 @@ export const JobSchema = z.object({
   duration_value: z.number().optional().nullable(),
   duration_unit: z.string().optional().nullable(),
   hourly_rate: z.string().optional().nullable(),
-  deliverables: z.string().optional().nullable(),
+  deliverables: z
+    .union([z.array(z.string()), z.string()])
+    .optional()
+    .nullable(),
   stipend: z.string().optional().nullable(),
   certificate_provided: z.boolean().optional().nullable(),
 });
@@ -84,6 +87,8 @@ export const PublicJobSchema = z.object({
   title: z.string(),
   job_type: z.string(),
   location: z.string(),
+  experience: z.string().optional().nullable(),
+  job_description: z.string().optional().nullable(),
   salary_range: z.string().optional().nullable(),
   min_karma: z.number(),
   min_level: z.number(),
@@ -420,10 +425,7 @@ export const RequirementsStepSchema = z.object({
     .optional(),
   duration_unit: z.string().optional(),
   hourly_rate: z.string().max(50, "Must be 50 characters or fewer").optional(),
-  deliverables: z
-    .string()
-    .max(1000, "Must be 1000 characters or fewer")
-    .optional(),
+  deliverables: z.array(z.string().min(1)).optional(),
   stipend: z.string().max(50, "Must be 50 characters or fewer").optional(),
   certificate_provided: z.boolean().optional(),
 });

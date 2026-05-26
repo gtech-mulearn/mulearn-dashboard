@@ -17,6 +17,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { MarkdownEditor } from "@/components/ui/markdown-editor";
 import {
   Select,
   SelectContent,
@@ -25,7 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
+import { TagInput } from "@/components/ui/tag-input";
 import { cn } from "@/lib/utils";
 import { DURATION_UNIT_OPTIONS, MIN_LEVEL_OPTIONS } from "../../constants";
 import type { JobFormValues } from "../../schemas";
@@ -73,11 +74,11 @@ export function StepRequirements({ form }: StepRequirementsProps) {
             <FormItem className="sm:col-span-2">
               <FormLabel>Job Description</FormLabel>
               <FormControl>
-                <Textarea
-                  {...field}
-                  placeholder="Describe the role, responsibilities, and what a typical day looks like..."
-                  rows={6}
-                  className="resize-y"
+                <MarkdownEditor
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="Describe the role, responsibilities, and what a typical day looks like…"
+                  rows={8}
                 />
               </FormControl>
               <FormMessage />
@@ -312,13 +313,15 @@ export function StepRequirements({ form }: StepRequirementsProps) {
                     <FormItem className="sm:col-span-2">
                       <FormLabel>Deliverables</FormLabel>
                       <FormControl>
-                        <Textarea
-                          {...field}
-                          placeholder="List the key outputs or deliverables expected from this role..."
-                          rows={3}
-                          className="resize-y"
+                        <TagInput
+                          value={field.value ?? []}
+                          onChange={field.onChange}
+                          placeholder="Type a deliverable and press Enter..."
                         />
                       </FormControl>
+                      <p className="text-[11px] text-muted-foreground mt-1">
+                        Press Enter or comma to add each deliverable
+                      </p>
                       <FormMessage />
                     </FormItem>
                   )}

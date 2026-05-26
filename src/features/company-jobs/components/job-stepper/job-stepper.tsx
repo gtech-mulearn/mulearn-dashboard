@@ -107,7 +107,7 @@ export function JobStepper({
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl space-y-6 sm:space-y-8">
+    <div className="mx-auto w-full max-w-6xl space-y-6 sm:space-y-8">
       {/* Stepper header */}
       <StepperHeader
         steps={steps}
@@ -118,12 +118,7 @@ export function JobStepper({
       {/* Step content */}
       <Form {...form}>
         <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (isLastStep) {
-              form.handleSubmit(handleFinalSubmit)(e);
-            }
-          }}
+          onSubmit={(e) => e.preventDefault()}
           className="rounded-xl border border-border bg-card p-4 sm:p-6"
         >
           {renderStep()}
@@ -157,8 +152,9 @@ export function JobStepper({
             <div className="sm:ml-auto">
               {isLastStep ? (
                 <Button
-                  type="submit"
+                  type="button"
                   disabled={isSubmitting}
+                  onClick={() => form.handleSubmit(handleFinalSubmit)()}
                   className="w-full gap-2 sm:w-auto"
                 >
                   {isSubmitting ? (

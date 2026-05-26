@@ -62,9 +62,15 @@ export function LearnerCard({ learner }: LearnerCardProps) {
           <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
             Level
           </p>
-          <p className="mt-0.5 text-sm font-bold text-foreground truncate">
-            {learner.level.name}
-          </p>
+          {learner.level ? (
+            <p className="mt-0.5 text-sm font-bold text-foreground truncate">
+              {learner.level?.name}
+            </p>
+          ) : (
+            <p className="mt-0.5 text-sm font-bold text-foreground truncate">
+              Not Available
+            </p>
+          )}
         </div>
       </div>
 
