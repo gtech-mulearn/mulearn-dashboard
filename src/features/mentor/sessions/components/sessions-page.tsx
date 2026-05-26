@@ -48,10 +48,10 @@ const STATUS_VARIANT: Record<
   PENDING_APPROVAL: "secondary",
   COMPLETED: "outline",
   CANCELLED: "destructive",
-  NO_SHOW: "destructive",
+  REJECTED: "destructive",
 };
 
-const TERMINAL = new Set(["COMPLETED", "CANCELLED", "NO_SHOW"]);
+const TERMINAL = new Set(["COMPLETED", "CANCELLED", "REJECTED"]);
 
 function SessionRow({
   session,
@@ -81,7 +81,9 @@ function SessionRow({
         )}
       </TableCell>
       <TableCell className="text-sm text-muted-foreground">
-        {new Date(session.starts_at).toLocaleString()}
+        {session.starts_at
+          ? new Date(session.starts_at).toLocaleString()
+          : "Not scheduled"}
       </TableCell>
       <TableCell>
         <Badge variant={STATUS_VARIANT[session.status] ?? "secondary"}>

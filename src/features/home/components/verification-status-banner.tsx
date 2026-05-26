@@ -7,13 +7,15 @@
  *
  * Shown on the dashboard home for unverified Company, Mentor, and Enabler users.
  * - Company: fetches live verification status from the onboarding-status API.
- * - Mentor / Enabler: shows a static pending banner (no user-facing status endpoint).
+ * - Mentor: fetches the profile verification status.
+ * - Enabler: shows a static pending banner (no user-facing status endpoint).
  */
 
 import { AlertCircle, Clock, XCircle } from "lucide-react";
 import { useCompanyOnboardingStatus } from "@/features/auth/hooks";
+import { useMentorApplication } from "@/features/mentor/onboarding/hooks/use-onboarding";
 import { ROLES } from "@/lib/auth/roles";
-import { useMentorIgRoles } from "../hooks/use-home";
+import { shouldShowMentorPendingBanner } from "./verification-status-banner.logic";
 
 interface VerificationStatusBannerProps {
   roles: string[];
@@ -27,7 +29,7 @@ export function VerificationStatusBanner({
   const isEnabler = roles.includes(ROLES.ENABLER);
 
   const companyStatus = useCompanyOnboardingStatus(isCompany);
-  const mentorIgRoles = useMentorIgRoles(isMentor);
+  const mentorApplication = useMentorApplication(isMentor);
 
   // ── Company ─────────────────────────────────────────────────────
   if (isCompany) {
@@ -76,12 +78,14 @@ export function VerificationStatusBanner({
   }
 
   // ── Mentor ──────────────────────────────────────────────────────
-  // Hide while loading; suppress when verified on at least one IG role.
+  // Hide while loading; suppress when the mentor profile is verified.
   if (isMentor) {
-    if (mentorIgRoles.isLoading) return null;
-    const roles = mentorIgRoles.data;
-    const hasVerifiedRole = roles?.some((r) => r.is_verified) ?? false;
-    if (!hasVerifiedRole) {
+    const showPending = shouldShowMentorPendingBanner({
+      isLoading: mentorApplication.isLoading,
+      mentorApplication: mentorApplication.data,
+    });
+
+    if (showPending) {
       return (
         <div className="flex items-start gap-3 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />

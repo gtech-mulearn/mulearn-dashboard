@@ -175,7 +175,7 @@ const OverviewSessionsSchema = z.object({
     scheduled: z.number(),
     completed: z.number(),
     cancelled: z.number(),
-    no_show: z.number(),
+    rejected: z.number(),
     total: z.number(),
   }),
   upcoming: z.array(OverviewSessionListItemSchema).default([]),

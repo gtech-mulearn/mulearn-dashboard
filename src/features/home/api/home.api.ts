@@ -305,7 +305,7 @@ export async function declineSessionRequest(
   userId: string,
 ): Promise<void> {
   await apiClient.delete(
-    endpoints.mentor.sessionParticipant(sessionId, userId),
+    endpoints.mentor.sessionParticipant(sessionId, userId, "MENTOR"),
     undefined,
     undefined,
     { skipAuthRedirectOn403: true },

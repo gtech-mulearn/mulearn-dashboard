@@ -81,6 +81,7 @@ export function SessionParticipantsDialog({
   const [removeTarget, setRemoveTarget] = useState<{
     userId: string;
     name: string;
+    participantRole: "MENTOR" | "CO_MENTOR" | "MENTEE";
   } | null>(null);
 
   const form = useForm<AddParticipantFormValues>({
@@ -156,6 +157,7 @@ export function SessionParticipantsDialog({
                         setRemoveTarget({
                           userId: p.user_id,
                           name: p.full_name,
+                          participantRole: p.participant_role,
                         })
                       }
                       disabled={isRemoving}
@@ -226,9 +228,13 @@ export function SessionParticipantsDialog({
         description={`Remove ${removeTarget?.name} from this session?`}
         onConfirm={() => {
           if (removeTarget) {
-            removeP(removeTarget.userId, {
-              onSuccess: () => setRemoveTarget(null),
-            });
+            removeP(
+              {
+                userId: removeTarget.userId,
+                participantRole: removeTarget.participantRole,
+              },
+              { onSuccess: () => setRemoveTarget(null) },
+            );
           }
         }}
         isPending={isRemoving}

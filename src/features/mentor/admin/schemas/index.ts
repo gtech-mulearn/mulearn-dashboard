@@ -57,6 +57,11 @@ export const VerifyActionSchema = z.object({
 });
 export type VerifyActionValues = z.infer<typeof VerifyActionSchema>;
 
+export const TierUpdateSchema = z.object({
+  mentor_tier: z.enum(MENTOR_TIERS),
+});
+export type TierUpdateValues = z.infer<typeof TierUpdateSchema>;
+
 export const GenericResponseSchema = z.object({
   statusCode: z.number().optional(),
   response: z.unknown(),

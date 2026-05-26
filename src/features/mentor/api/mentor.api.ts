@@ -1,7 +1,11 @@
 import { z } from "zod";
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
-import type { TimeSlot, WeeklySchedule } from "../types";
+import type {
+  AvailabilityCalendarSlot,
+  TimeSlot,
+  WeeklySchedule,
+} from "../types";
 
 // ─── Schemas ────────────────────────────────────────────────
 
@@ -26,6 +30,27 @@ const AvailabilityListResponseSchema = ApiResponseOf(
     data: z.array(BackendSlotSchema).optional().default([]),
     pagination: z.unknown().optional(),
   }),
+);
+
+const AvailabilityCalendarSlotSchema = z.object({
+  id: z.string(),
+  mentor_user_id: z.string(),
+  mentor_full_name: z.string().optional(),
+  mentor_name: z.string().optional(),
+  ig_id: z.string().nullable().optional(),
+  ig_name: z.string().nullable().optional(),
+  weekday: z.coerce.number().int().min(0).max(6),
+  start_time: z.string(),
+  end_time: z.string(),
+  timezone: z.string().optional().default("Asia/Kolkata"),
+  is_active: z.boolean().optional().default(true),
+  valid_from: z.string().nullable().optional(),
+  valid_to: z.string().nullable().optional(),
+  created_at: z.string().optional(),
+});
+
+const AvailabilityCalendarResponseSchema = ApiResponseOf(
+  z.array(AvailabilityCalendarSlotSchema),
 );
 
 // ─── Time format helpers ────────────────────────────────────
@@ -59,6 +84,17 @@ export async function getAvailabilitySlots(): Promise<WeeklySchedule> {
   }
 
   return Array.from(byDay.entries()).map(([day, slots]) => ({ day, slots }));
+}
+
+export async function fetchAvailabilityCalendar(): Promise<
+  AvailabilityCalendarSlot[]
+> {
+  const res = await apiClient.get(
+    endpoints.mentor.availabilityCalendar,
+    AvailabilityCalendarResponseSchema,
+    { skipAuthRedirectOn403: true },
+  );
+  return res.response;
 }
 
 // Fetch raw slot records with their backend IDs (used for deletion)

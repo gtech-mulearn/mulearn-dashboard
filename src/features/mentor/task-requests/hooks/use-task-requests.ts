@@ -4,8 +4,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   createTaskRequest,
+  fetchTaskRequest,
   fetchTaskRequests,
   reviewTaskRequest,
+  withdrawTaskRequest,
 } from "../api/task-requests.api";
 import type {
   ReviewTaskRequestValues,
@@ -16,6 +18,7 @@ const taskRequestKeys = {
   all: ["mentor-task-requests"] as const,
   list: (params: Record<string, unknown>) =>
     [...taskRequestKeys.all, "list", params] as const,
+  detail: (id: string) => [...taskRequestKeys.all, "detail", id] as const,
 };
 
 const no403Retry = (failureCount: number, error: unknown) => {
@@ -59,5 +62,27 @@ export function useReviewTaskRequest() {
       toast.success("Task request updated");
     },
     onError: () => toast.error("Failed to update task request"),
+  });
+}
+
+export function useTaskRequest(id: string | null | undefined) {
+  return useQuery({
+    queryKey: taskRequestKeys.detail(id ?? ""),
+    queryFn: () => fetchTaskRequest(id as string),
+    retry: no403Retry,
+    enabled: !!id,
+  });
+}
+
+export function useWithdrawTaskRequest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => withdrawTaskRequest(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: taskRequestKeys.all });
+      toast.success("Task request withdrawn");
+    },
+    onError: (err: Error) =>
+      toast.error(err.message ?? "Failed to withdraw task request"),
   });
 }

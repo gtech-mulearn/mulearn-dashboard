@@ -1,6 +1,10 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
-import type { MentorApplicationListItem, VerifyActionValues } from "../schemas";
+import type {
+  MentorApplicationListItem,
+  TierUpdateValues,
+  VerifyActionValues,
+} from "../schemas";
 import { GenericResponseSchema, MentorListResponseSchema } from "../schemas";
 
 interface ListParams {
@@ -56,6 +60,17 @@ export async function verifyMentor(
 ): Promise<void> {
   await apiClient.patch(
     endpoints.mentor.verify(mentorId),
+    data,
+    GenericResponseSchema,
+  );
+}
+
+export async function updateMentorTier(
+  mentorId: string,
+  data: TierUpdateValues,
+): Promise<void> {
+  await apiClient.patch(
+    endpoints.mentor.tier(mentorId),
     data,
     GenericResponseSchema,
   );

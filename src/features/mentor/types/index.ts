@@ -9,3 +9,20 @@ export type DayAvailability = {
 };
 
 export type WeeklySchedule = DayAvailability[];
+
+export type AvailabilityCalendarSlot = {
+  id: string;
+  mentor_user_id: string;
+  mentor_full_name?: string;
+  mentor_name?: string;
+  ig_id?: string | null;
+  ig_name?: string | null;
+  weekday: number;
+  start_time: string;
+  end_time: string;
+  timezone?: string;
+  is_active?: boolean;
+  valid_from?: string | null;
+  valid_to?: string | null;
+  created_at?: string;
+};

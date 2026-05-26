@@ -34,6 +34,13 @@ export const ReviewListResponseSchema = z.object({
   }),
 });
 
+export const ReviewDetailResponseSchema = z.object({
+  statusCode: z.number().optional(),
+  response: z.object({
+    submission: ReviewItemSchema,
+  }),
+});
+
 // Matches backend KarmaReviewSerializer body
 export const ReviewActionSchema = z.object({
   status: z.enum(["APPROVED", "REJECTED"]),

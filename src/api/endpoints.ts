@@ -209,15 +209,25 @@ export const endpoints = {
     /** GET/POST - Session participants list */
     sessionParticipants: (id: string) =>
       `/api/v1/dashboard/mentor/sessions/${id}/participants/`,
-    /** DELETE - Remove a participant from a session */
-    sessionParticipant: (sessionId: string, userId: string) =>
-      `/api/v1/dashboard/mentor/sessions/${sessionId}/participants/${userId}/`,
+    /** DELETE - Remove a participant from a session. Backend requires participant_role query param. */
+    sessionParticipant: (
+      sessionId: string,
+      userId: string,
+      participantRole: "MENTOR" | "CO_MENTOR" | "MENTEE",
+    ) =>
+      `/api/v1/dashboard/mentor/sessions/${sessionId}/participants/${userId}/?participant_role=${participantRole}`,
     /** POST - Award karma to mentor for a completed session */
     sessionKarmaAward: (id: string) =>
       `/api/v1/dashboard/mentor/sessions/${id}/karma-award/`,
     /** POST - Send reminder to session participants */
     sessionRemind: (id: string) =>
       `/api/v1/dashboard/mentor/sessions/${id}/remind/`,
+    /** PATCH - Bulk update attendance for participants in a session */
+    sessionAttendance: (id: string) =>
+      `/api/v1/dashboard/mentor/sessions/${id}/attendance/`,
+    /** POST - Deep-clone a session (clears starts_at/ends_at) */
+    sessionClone: (id: string) =>
+      `/api/v1/dashboard/mentor/sessions/${id}/clone/`,
     /** GET - Task review queue for mentor */
     reviewQueue: "/api/v1/dashboard/mentor/review-queue/",
     /** PATCH - Approve or reject a task review item */
@@ -243,6 +253,28 @@ export const endpoints = {
     activityLog: "/api/v1/dashboard/mentor/activity-log/",
     /** GET - Mentor leaderboard (paginated) */
     leaderboard: "/api/v1/dashboard/mentor/leaderboard/",
+    /** PATCH - Admin updates the tier of a verified mentor */
+    tier: (mentorId: string) =>
+      `/api/v1/dashboard/mentor/list/${mentorId}/tier/`,
+    /** GET - Mentee profile (sessions, karma, task review stats) */
+    menteeDetail: (userId: string) =>
+      `/api/v1/dashboard/mentor/mentees/${userId}/`,
+    /** GET - Single task submission detail for review */
+    reviewQueueDetail: (kalId: string) =>
+      `/api/v1/dashboard/mentor/review-queue/${kalId}/`,
+    /** GET - Calendar-friendly availability slots (flat, no pagination) */
+    availabilityCalendar: "/api/v1/dashboard/mentor/availability/calendar/",
+    /** GET - Public availability for a verified mentor (no auth) */
+    publicAvailability: (muid: string, igId?: string) => {
+      const q = new URLSearchParams({ mentor_muid: muid });
+      if (igId) q.set("ig_id", igId);
+      return `/api/v1/dashboard/mentor/availability/public/?${q}`;
+    },
+    /** GET - Public mentor profile card (no auth) */
+    publicCard: (muid: string) => `/api/v1/dashboard/mentor/${muid}/public/`,
+    /** GET - Public completed sessions for a mentor (no auth) */
+    publicSessions: (muid: string) =>
+      `/api/v1/dashboard/mentor/${muid}/public/sessions/`,
   },
 
   // ============================================

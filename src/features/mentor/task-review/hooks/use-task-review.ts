@@ -2,13 +2,18 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { fetchReviewQueue, reviewItem } from "../api/task-review.api";
+import {
+  fetchReviewQueue,
+  fetchReviewSubmission,
+  reviewItem,
+} from "../api/task-review.api";
 import type { ReviewActionValues } from "../schemas";
 
 const reviewKeys = {
   all: ["mentor-review"] as const,
   list: (params: Record<string, unknown>) =>
     [...reviewKeys.all, "list", params] as const,
+  detail: (kalId: string) => [...reviewKeys.all, "detail", kalId] as const,
 };
 
 const no403Retry = (failureCount: number, error: unknown) => {
@@ -27,6 +32,15 @@ export function useReviewQueue(params: UseReviewQueueParams = {}) {
     queryKey: reviewKeys.list(params as Record<string, unknown>),
     queryFn: () => fetchReviewQueue(params),
     retry: no403Retry,
+  });
+}
+
+export function useReviewSubmission(kalId: string | null | undefined) {
+  return useQuery({
+    queryKey: reviewKeys.detail(kalId ?? ""),
+    queryFn: () => fetchReviewSubmission(kalId as string),
+    retry: no403Retry,
+    enabled: !!kalId,
   });
 }
 

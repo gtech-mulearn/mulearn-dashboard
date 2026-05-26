@@ -71,8 +71,8 @@ export function SessionEditSheet({
       form.reset({
         title: session.title,
         description: session.description ?? "",
-        starts_at: session.starts_at.slice(0, 16),
-        ends_at: session.ends_at.slice(0, 16),
+        starts_at: session.starts_at?.slice(0, 16) ?? "",
+        ends_at: session.ends_at?.slice(0, 16) ?? "",
         meet_link: session.meeting_link ?? "",
       });
     }

@@ -9,17 +9,25 @@ export const PaginationSchema = z.object({
   nextPage: z.number().nullable().optional(),
 });
 
+export const PARTICIPANT_ROLES = ["MENTOR", "CO_MENTOR", "MENTEE"] as const;
+export type ParticipantRole = (typeof PARTICIPANT_ROLES)[number];
+
+export const ATTENDANCE_STATUSES = [
+  "INVITED",
+  "ATTENDED",
+  "ABSENT",
+  "NO_SHOW",
+] as const;
+export type AttendanceStatus = (typeof ATTENDANCE_STATUSES)[number];
+
 export const SessionParticipantSchema = z.object({
   id: z.string().optional(),
   user_id: z.string(),
   full_name: z.string(),
   email: z.string().optional(),
   muid: z.string().optional(),
-  participant_role: z.enum(["MENTOR", "CO_MENTOR", "MENTEE"]),
-  attendance_status: z
-    .enum(["INVITED", "ATTENDED", "ABSENT"])
-    .nullable()
-    .optional(),
+  participant_role: z.enum(PARTICIPANT_ROLES),
+  attendance_status: z.enum(ATTENDANCE_STATUSES).nullable().optional(),
   progress_note: z.string().nullable().optional(),
   contributed_minutes: z.number().nullable().optional(),
   created_at: z.string().optional(),
@@ -34,14 +42,14 @@ export const SessionSchema = z.object({
   ig_name: z.string().nullable().optional(),
   is_global: z.boolean().optional().default(false),
   mode: z.string().optional(),
-  starts_at: z.string(),
-  ends_at: z.string(),
+  starts_at: z.string().nullable(),
+  ends_at: z.string().nullable(),
   status: z.enum([
     "SCHEDULED",
     "PENDING_APPROVAL",
     "COMPLETED",
     "CANCELLED",
-    "NO_SHOW",
+    "REJECTED",
   ]),
   meeting_link: z.string().nullable().optional(),
   max_participants: z.number().nullable().optional(),
@@ -142,9 +150,23 @@ export const KarmaAwardSingleResponseSchema = ApiResponseSchema(
 
 export const AddParticipantFormSchema = z.object({
   user: z.string().min(1, "User ID is required"),
-  participant_role: z.enum(["MENTOR", "CO_MENTOR", "MENTEE"]),
+  participant_role: z.enum(PARTICIPANT_ROLES),
 });
 export type AddParticipantFormValues = z.infer<typeof AddParticipantFormSchema>;
+
+// Bulk attendance update — PATCH /sessions/<id>/attendance/
+export const AttendanceEntrySchema = z.object({
+  user_id: z.string().min(1),
+  attendance_status: z.enum(ATTENDANCE_STATUSES),
+});
+export type AttendanceEntry = z.infer<typeof AttendanceEntrySchema>;
+
+export const AttendanceBulkUpdateSchema = z.object({
+  participants: z.array(AttendanceEntrySchema).min(1),
+});
+export type AttendanceBulkUpdateValues = z.infer<
+  typeof AttendanceBulkUpdateSchema
+>;
 
 export const RemindResponseSchema = ApiResponseSchema(z.any());
 

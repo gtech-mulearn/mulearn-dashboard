@@ -24,12 +24,13 @@ const no403Retry = (failureCount: number, error: unknown) => {
   return failureCount < 2;
 };
 
-export function useMentorApplication() {
+export function useMentorApplication(enabled = true) {
   return useQuery({
     queryKey: ONBOARDING_KEYS.application(),
     queryFn: getMentorApplication,
     retry: no403Retry,
     staleTime: 5 * 60 * 1000,
+    enabled,
   });
 }
 

@@ -1,7 +1,11 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import type { ReviewActionValues, ReviewItem } from "../schemas";
-import { GenericResponseSchema, ReviewListResponseSchema } from "../schemas";
+import {
+  GenericResponseSchema,
+  ReviewDetailResponseSchema,
+  ReviewListResponseSchema,
+} from "../schemas";
 
 const OPT = { skipAuthRedirectOn403: true } as const;
 
@@ -30,6 +34,17 @@ export async function fetchReviewQueue(params: ListParams = {}): Promise<{
     data: res.response.data,
     totalPages: res.response.pagination?.totalPages ?? 1,
   };
+}
+
+export async function fetchReviewSubmission(
+  kalId: string,
+): Promise<ReviewItem> {
+  const res = await apiClient.get(
+    endpoints.mentor.reviewQueueDetail(kalId),
+    ReviewDetailResponseSchema,
+    OPT,
+  );
+  return res.response.submission;
 }
 
 export async function reviewItem(

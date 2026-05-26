@@ -7,6 +7,7 @@ import type {
 } from "../schemas";
 import {
   GenericResponseSchema,
+  SingleTaskRequestResponseSchema,
   TaskRequestListResponseSchema,
 } from "../schemas";
 
@@ -58,6 +59,24 @@ export async function reviewTaskRequest(
   await apiClient.patch(
     endpoints.mentor.taskRequest(id),
     data,
+    GenericResponseSchema,
+    OPT,
+  );
+}
+
+export async function fetchTaskRequest(id: string): Promise<TaskRequest> {
+  const res = await apiClient.get(
+    endpoints.mentor.taskRequest(id),
+    SingleTaskRequestResponseSchema,
+    OPT,
+  );
+  return res.response.task_request;
+}
+
+export async function withdrawTaskRequest(id: string): Promise<void> {
+  await apiClient.delete(
+    endpoints.mentor.taskRequest(id),
+    undefined,
     GenericResponseSchema,
     OPT,
   );

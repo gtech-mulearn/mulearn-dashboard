@@ -7,6 +7,8 @@ import {
   addParticipant,
   approveSession,
   awardKarma,
+  bulkUpdateAttendance,
+  cloneSession,
   createSession,
   fetchParticipants,
   fetchPendingSessions,
@@ -18,7 +20,9 @@ import {
 import type {
   AddParticipantFormValues,
   ApproveSessionFormValues,
+  AttendanceBulkUpdateValues,
   KarmaAwardFormValues,
+  ParticipantRole,
   SessionFormValues,
 } from "../schemas";
 
@@ -112,7 +116,13 @@ export function useAddParticipant(sessionId: string) {
 export function useRemoveParticipant(sessionId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (userId: string) => removeParticipant(sessionId, userId),
+    mutationFn: ({
+      userId,
+      participantRole,
+    }: {
+      userId: string;
+      participantRole: ParticipantRole;
+    }) => removeParticipant(sessionId, userId, participantRole),
     onSuccess: () => {
       toast.success("Participant removed.");
       void qc.invalidateQueries({
@@ -121,6 +131,38 @@ export function useRemoveParticipant(sessionId: string) {
     },
     onError: (err: Error) =>
       toast.error(err.message ?? "Failed to remove participant"),
+  });
+}
+
+export function useBulkUpdateAttendance(sessionId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: AttendanceBulkUpdateValues) =>
+      bulkUpdateAttendance(sessionId, data),
+    onSuccess: () => {
+      toast.success("Attendance updated.");
+      void qc.invalidateQueries({
+        queryKey: mentorKeys.sessions.participants(sessionId),
+      });
+      void qc.invalidateQueries({ queryKey: mentorKeys.sessions.all });
+    },
+    onError: (err: Error) =>
+      toast.error(err.message ?? "Failed to update attendance"),
+  });
+}
+
+export function useCloneSession() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (sessionId: string) => cloneSession(sessionId),
+    onSuccess: () => {
+      toast.success(
+        "Session cloned. Update start/end times before publishing.",
+      );
+      void qc.invalidateQueries({ queryKey: mentorKeys.sessions.all });
+    },
+    onError: (err: Error) =>
+      toast.error(err.message ?? "Failed to clone session"),
   });
 }
 

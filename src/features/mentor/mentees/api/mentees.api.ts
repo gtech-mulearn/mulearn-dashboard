@@ -1,8 +1,9 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
-import type { ActivityLogItem, Mentee } from "../schemas";
+import type { ActivityLogItem, Mentee, MenteeDetail } from "../schemas";
 import {
   ActivityLogResponseSchema,
+  MenteeDetailResponseSchema,
   MenteeListResponseSchema,
 } from "../schemas";
 
@@ -33,6 +34,15 @@ export async function fetchMentees(params: ListParams = {}): Promise<{
     totalPages: res.response.pagination?.totalPages ?? 1,
     totalItems: res.response.pagination?.count ?? res.response.data.length,
   };
+}
+
+export async function fetchMenteeDetail(userId: string): Promise<MenteeDetail> {
+  const res = await apiClient.get(
+    endpoints.mentor.menteeDetail(userId),
+    MenteeDetailResponseSchema,
+    OPT,
+  );
+  return res.response.mentee;
 }
 
 export async function fetchActivityLog(params: ListParams = {}): Promise<{

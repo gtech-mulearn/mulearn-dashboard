@@ -1,12 +1,17 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { fetchActivityLog, fetchMentees } from "../api/mentees.api";
+import {
+  fetchActivityLog,
+  fetchMenteeDetail,
+  fetchMentees,
+} from "../api/mentees.api";
 
 const menteeKeys = {
   all: ["mentor-mentees"] as const,
   list: (params: Record<string, unknown>) =>
     [...menteeKeys.all, "list", params] as const,
+  detail: (userId: string) => [...menteeKeys.all, "detail", userId] as const,
   activityLog: (params: Record<string, unknown>) =>
     [...menteeKeys.all, "activity-log", params] as const,
 };
@@ -26,6 +31,15 @@ export function useMentees(params: UseMenteesParams = {}) {
     queryKey: menteeKeys.list(params as Record<string, unknown>),
     queryFn: () => fetchMentees(params),
     retry: no403Retry,
+  });
+}
+
+export function useMenteeDetail(userId: string | null | undefined) {
+  return useQuery({
+    queryKey: menteeKeys.detail(userId ?? ""),
+    queryFn: () => fetchMenteeDetail(userId as string),
+    retry: no403Retry,
+    enabled: !!userId,
   });
 }
 

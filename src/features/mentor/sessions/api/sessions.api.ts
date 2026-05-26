@@ -3,7 +3,9 @@ import { endpoints } from "@/api/endpoints";
 import type {
   AddParticipantFormValues,
   ApproveSessionFormValues,
+  AttendanceBulkUpdateValues,
   KarmaAwardFormValues,
+  ParticipantRole,
   Session,
   SessionFormValues,
   SessionParticipant,
@@ -57,12 +59,10 @@ export async function fetchPendingSessions(): Promise<Session[]> {
 }
 
 function toBackendPayload(data: Partial<SessionFormValues>) {
-  const { ig_id, meet_link, max_participants, ...rest } = data;
+  const { ig_id, meet_link, ...rest } = data;
   const payload: Record<string, unknown> = { ...rest };
   if (ig_id !== undefined) payload.ig = ig_id;
   if (meet_link !== undefined) payload.meeting_link = meet_link;
-  // max_participants is not stored on MentorshipSession; intentionally dropped
-  void max_participants;
   return payload;
 }
 
@@ -115,13 +115,36 @@ export async function addParticipant(
 export async function removeParticipant(
   sessionId: string,
   userId: string,
+  participantRole: ParticipantRole,
 ): Promise<void> {
   await apiClient.delete(
-    endpoints.mentor.sessionParticipant(sessionId, userId),
+    endpoints.mentor.sessionParticipant(sessionId, userId, participantRole),
     undefined,
     GenericResponseSchema,
     OPT,
   );
+}
+
+export async function bulkUpdateAttendance(
+  sessionId: string,
+  data: AttendanceBulkUpdateValues,
+): Promise<void> {
+  await apiClient.patch(
+    endpoints.mentor.sessionAttendance(sessionId),
+    data,
+    GenericResponseSchema,
+    OPT,
+  );
+}
+
+export async function cloneSession(sessionId: string): Promise<Session> {
+  const res = await apiClient.post(
+    endpoints.mentor.sessionClone(sessionId),
+    {},
+    SingleSessionResponseSchema,
+    OPT,
+  );
+  return res.response.session;
 }
 
 export async function approveSession(
