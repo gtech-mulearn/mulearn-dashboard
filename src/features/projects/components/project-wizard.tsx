@@ -85,14 +85,19 @@ export function ProjectWizard({
 
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(ProjectFormSchema),
-    values: {
+    defaultValues: {
       title: project?.title ?? "",
       description: project?.description ?? "",
-      status: (project?.status ?? "published") as ProjectStatus,
       links: project?.links.map((l) => ({ label: l.label, url: l.url })) ?? [],
       skill_ids: project?.skills.map((s) => s.id) ?? [],
     },
   });
+
+  // status is kept in React state (not RHF) so it survives step navigation
+  // when the Controller would otherwise unmount and lose its value.
+  const [selectedStatus, setSelectedStatus] = useState<ProjectStatus>(
+    (project?.status ?? "published") as ProjectStatus,
+  );
 
   const [currentStep, setCurrentStep] = useState(1);
   const [logo, setLogo] = useState<File>();
@@ -167,14 +172,14 @@ export function ProjectWizard({
     if (!ok) {
       // Set react-hook-form errors so inline messages appear
       if (currentStep === 1) {
-        void form.trigger(["title", "description", "status"]);
+        void form.trigger(["title", "description"]);
       }
       toast.error(errors.join("; "));
       return;
     }
     // Clear any stale form errors for this step's fields
     if (currentStep === 1) {
-      form.clearErrors(["title", "description", "status"]);
+      form.clearErrors(["title", "description"]);
     }
     if (currentStep === 2) {
       form.clearErrors("links");
@@ -195,7 +200,7 @@ export function ProjectWizard({
       if (!ok) {
         setCurrentStep(step);
         // Also trigger react-hook-form so inline error messages appear
-        if (step === 1) void form.trigger(["title", "description", "status"]);
+        if (step === 1) void form.trigger(["title", "description"]);
         if (step === 2) void form.trigger("links");
         toast.error(`Step ${step} (${STEPS[step - 1]}): ${errors.join("; ")}`);
         return;
@@ -203,7 +208,7 @@ export function ProjectWizard({
     }
 
     try {
-      const values = form.getValues();
+      const values = { ...form.getValues(), status: selectedStatus };
       const result = await onSubmit(values, { logo, images });
       if (result && typeof result === "object" && "id" in result) {
         setCreatedProject(result as Project);
@@ -222,6 +227,7 @@ export function ProjectWizard({
     setImages([]);
     setShowSuccess(false);
     setCreatedProject(null);
+    setSelectedStatus("published");
     form.reset();
   };
 
@@ -435,32 +441,27 @@ export function ProjectWizard({
                     <Label className="text-[13px] font-medium">
                       Visibility
                     </Label>
-                    <Controller
-                      control={form.control}
-                      name="status"
-                      render={({ field }) => (
-                        <Select
-                          value={field.value}
-                          onValueChange={field.onChange}
-                          defaultValue="published"
-                        >
-                          <SelectTrigger className="rounded-xl">
-                            <SelectValue placeholder="Published (visible on profile)" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="draft">
-                              Draft — only you can see
-                            </SelectItem>
-                            <SelectItem value="published">
-                              Published — visible on profile
-                            </SelectItem>
-                            <SelectItem value="archived">
-                              Archived — hidden, kept for reference
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
+                    <Select
+                      value={selectedStatus}
+                      onValueChange={(val) =>
+                        setSelectedStatus(val as ProjectStatus)
+                      }
+                    >
+                      <SelectTrigger className="rounded-xl">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="draft">
+                          Draft — only you can see
+                        </SelectItem>
+                        <SelectItem value="published">
+                          Published — visible on profile
+                        </SelectItem>
+                        <SelectItem value="archived">
+                          Archived — hidden, kept for reference
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </section>
               ) : currentStep === 2 ? (
@@ -669,65 +670,81 @@ export function ProjectWizard({
                     </p>
                   </div>
                   <div className="rounded-xl border divide-y">
-                    {[
-                      ["Title", watchedValues.title || "Not set", true],
-                      ["Status", watchedValues.status, false],
-                      [
-                        "Links",
-                        watchedValues.links.length > 0
-                          ? `${watchedValues.links.length} link(s)`
-                          : "None",
-                        false,
-                      ],
-                      [
-                        "Skills",
-                        watchedValues.skill_ids.length > 0
-                          ? `${watchedValues.skill_ids.length} skill(s)`
-                          : "None",
-                        false,
-                      ],
-                      [
-                        "Logo",
-                        logo ? logo.name : project?.logo ? "Existing" : "None",
-                        false,
-                      ],
-                      [
-                        "Images",
-                        images.length > 0
-                          ? `${images.length} new`
-                          : project?.images?.length
-                            ? `${project.images.length} existing`
+                    {(() => {
+                      const STATUS_LABELS: Record<string, string> = {
+                        draft: "Draft — only you can see",
+                        published: "Published — visible on profile",
+                        archived: "Archived — hidden, kept for reference",
+                      };
+                      const rows: [string, string, boolean][] = [
+                        ["Title", watchedValues.title || "Not set", true],
+                        [
+                          "Status",
+                          STATUS_LABELS[selectedStatus] ?? "Not set",
+                          true,
+                        ],
+                        [
+                          "Links",
+                          watchedValues.links.length > 0
+                            ? `${watchedValues.links.length} link(s)`
                             : "None",
-                        false,
-                      ],
-                      [
-                        "Team",
-                        members.length > 0
-                          ? `${members.length} member(s)`
-                          : "None yet",
-                        false,
-                      ],
-                    ].map(([label, value, required]) => (
-                      <div
-                        key={String(label)}
-                        className="flex items-start justify-between gap-4 px-4 py-3"
-                      >
-                        <p className="w-20 shrink-0 text-xs font-medium text-muted-foreground">
-                          {label}
-                        </p>
-                        <p
-                          className={`text-right text-sm capitalize ${
-                            String(value) === "Not set"
-                              ? required
-                                ? "text-destructive"
-                                : "text-muted-foreground"
-                              : "text-foreground"
-                          }`}
+                          false,
+                        ],
+                        [
+                          "Skills",
+                          watchedValues.skill_ids.length > 0
+                            ? `${watchedValues.skill_ids.length} skill(s)`
+                            : "None",
+                          false,
+                        ],
+                        [
+                          "Logo",
+                          logo
+                            ? logo.name
+                            : project?.logo
+                              ? "Existing"
+                              : "None",
+                          false,
+                        ],
+                        [
+                          "Images",
+                          images.length > 0
+                            ? `${images.length} new`
+                            : project?.images?.length
+                              ? `${project.images.length} existing`
+                              : "None",
+                          false,
+                        ],
+                        [
+                          "Team",
+                          members.length > 0
+                            ? `${members.length} member(s)`
+                            : "None yet",
+                          false,
+                        ],
+                      ];
+                      return rows.map(([label, value, required]) => (
+                        <div
+                          key={label}
+                          className="flex items-start justify-between gap-4 px-4 py-3"
                         >
-                          {String(value)}
-                        </p>
-                      </div>
-                    ))}
+                          <p className="w-20 shrink-0 text-xs font-medium text-muted-foreground">
+                            {label}
+                          </p>
+                          <p
+                            className={`text-right text-sm ${
+                              value === "Not set"
+                                ? required
+                                  ? "text-destructive"
+                                  : "text-muted-foreground"
+                                : "text-foreground"
+                            }`}
+                          >
+                            {value}
+                          </p>
+                        </div>
+                      ));
+                    })()}
                   </div>
 
                   {watchedValues.description && (

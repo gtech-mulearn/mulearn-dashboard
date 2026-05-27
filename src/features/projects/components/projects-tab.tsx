@@ -150,6 +150,7 @@ export function ProjectsTab({
       )}
 
       <ProjectWizard
+        key={editing?.id ?? "new"}
         open={showWizard}
         onOpenChange={(o) => {
           setShowWizard(o);
