@@ -5,6 +5,7 @@ import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { apiClient, endpoints } from "@/api";
+import { ROLES } from "@/lib/auth/roles";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -172,9 +173,7 @@ export function ManageEventDetailView({
   const canApprove = Boolean(
     (userInfo?.is_staff as boolean | undefined) ||
       (Array.isArray(userInfo?.roles) &&
-        (userInfo.roles as string[]).some((role) =>
-          role.toLowerCase().includes("admin"),
-        )),
+        (userInfo.roles as string[]).includes(ROLES.ADMIN)),
   );
   const canAdmin = canApprove;
   const canSelfPublish = canApprove || event?.organizer.type === "company";

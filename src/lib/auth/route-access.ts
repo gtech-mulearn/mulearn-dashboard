@@ -163,6 +163,7 @@ export const routeAccessMap: Record<string, RouteConfig> = {
     roles: [
       ROLES.ADMIN,
       ROLES.CAMPUS_LEAD,
+      ROLES.LEAD_ENABLER,
       ROLES.COMPANY,
       ROLES.ENABLER,
       ROLES.ZONAL_CAMPUS_LEAD,

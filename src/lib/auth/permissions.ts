@@ -67,6 +67,7 @@ export const PERMISSIONS = {
   "events:manage": [
     ROLES.ADMIN,
     ROLES.CAMPUS_LEAD,
+    ROLES.LEAD_ENABLER,
     ROLES.COMPANY,
     ROLES.ENABLER,
     ROLES.ZONAL_CAMPUS_LEAD,
@@ -75,6 +76,7 @@ export const PERMISSIONS = {
   "events:manage_co_owners": [
     ROLES.ADMIN,
     ROLES.CAMPUS_LEAD,
+    ROLES.LEAD_ENABLER,
     ROLES.COMPANY,
     ROLES.ENABLER,
     ROLES.ZONAL_CAMPUS_LEAD,

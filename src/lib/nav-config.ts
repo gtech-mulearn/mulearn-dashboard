@@ -306,12 +306,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     href: "/dashboard/manage-events",
     icon: LayoutDashboard,
     section: "management",
-    roles: [
-      ...CAMPUS_MANAGEMENT_ROLES,
-      ...DISTRICT_ROLES,
-      ROLES.COMPANY,
-      ...MANAGEMENT_ROLES,
-    ],
+    permission: "events:manage",
   },
 
   // ── Bottom Section (all authenticated users) ──────────────

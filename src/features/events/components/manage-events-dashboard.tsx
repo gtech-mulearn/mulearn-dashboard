@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserInfo } from "@/features/auth/hooks";
+import { ROLES } from "@/lib/auth/roles";
 import { cn } from "@/lib/utils";
 import { eventsApi } from "../api";
 import { MANAGE_EVENT_STATUS_PILLS } from "../constants/events.constants";
@@ -44,8 +45,7 @@ export default function ManageEventsDashboard() {
   const canAdminView =
     !isUserInfoLoading &&
     Boolean(
-      Array.isArray(userInfo?.roles) &&
-        userInfo.roles.some((role) => role.toLowerCase().includes("admin")),
+      Array.isArray(userInfo?.roles) && userInfo.roles.includes(ROLES.ADMIN),
     );
 
   const {
