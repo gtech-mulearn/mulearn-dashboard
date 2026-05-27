@@ -35,7 +35,7 @@ export function EventIdentityBar({ event }: EventIdentityBarProps) {
 
       <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
         <MapPin className="size-3.5" />
-        {event.venue.city ?? "Location TBA"}
+        {event.venue.city || "Location TBA"}
       </span>
 
       <span className="rounded-full bg-primary/15 px-2.5 py-0.5 text-xs font-semibold text-primary">

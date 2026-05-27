@@ -33,27 +33,29 @@ export function EventVenueSection({ venue }: EventVenueSectionProps) {
           </div>
         )}
 
-        <div className="flex items-center justify-between gap-4">
-          <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            <MapPin className="size-3.5 shrink-0" />
-            {venue.address}
-            {venue.address && venue.city ? ", " : ""}
-            {venue.city}
-          </p>
+        {(mapQuery || venue.maps_url) && (
+          <div className="flex items-center justify-between gap-4">
+            {mapQuery && (
+              <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <MapPin className="size-3.5 shrink-0" />
+                {mapQuery}
+              </p>
+            )}
 
-          {venue.maps_url && (
-            <Button
-              variant="outline"
-              size="sm"
-              asChild
-              className="shrink-0 rounded-full"
-            >
-              <a href={venue.maps_url} target="_blank" rel="noreferrer">
-                Get Directions <ExternalLink className="ml-1.5 size-3" />
-              </a>
-            </Button>
-          )}
-        </div>
+            {venue.maps_url && (
+              <Button
+                variant="outline"
+                size="sm"
+                asChild
+                className="shrink-0 rounded-full ml-auto"
+              >
+                <a href={venue.maps_url} target="_blank" rel="noreferrer">
+                  Get Directions <ExternalLink className="ml-1.5 size-3" />
+                </a>
+              </Button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
