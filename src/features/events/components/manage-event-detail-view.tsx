@@ -5,7 +5,6 @@ import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { apiClient, endpoints } from "@/api";
-import { ROLES } from "@/lib/auth/roles";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -19,6 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigationGuard } from "@/hooks/use-navigation-guard";
+import { ROLES } from "@/lib/auth/roles";
 import type { ManagePanelSectionValue } from "../constants";
 import { MANAGE_PANEL_SECTIONS } from "../constants";
 import {

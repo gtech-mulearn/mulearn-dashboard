@@ -255,6 +255,17 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
 
   const scope = watch("scope");
 
+  // When the organizer is a campus and scope is "campus", lock target to the
+  // organizer's own campus — campus leads must not target a different campus.
+  useEffect(() => {
+    if (selectedOrganiser?.type === "campus" && scope === "campus") {
+      setValue("target_campus_id", selectedOrganiser.id, {
+        shouldValidate: true,
+      });
+      setSelectedCampusName(selectedOrganiser.label);
+    }
+  }, [selectedOrganiser, scope, setValue]);
+
   const resetWizard = () => {
     reset(EVENT_FORM_DEFAULT_VALUES);
     setCurrentStep(1);
@@ -728,19 +739,30 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                   </div>
 
                   {scope === "campus" ? (
-                    <EventSearch
-                      mode="select"
-                      type="campus"
-                      value={watch("target_campus_id") ?? null}
-                      selectedName={selectedCampusName}
-                      placeholder="Search campus"
-                      onChange={(id, name) => {
-                        setValue("target_campus_id", id || null, {
-                          shouldValidate: true,
-                        });
-                        setSelectedCampusName(name);
-                      }}
-                    />
+                    selectedOrganiser?.type === "campus" ? (
+                      <div className="space-y-1">
+                        <p className="text-xs text-muted-foreground">
+                          Target Campus
+                        </p>
+                        <div className="flex h-10 items-center rounded-xl border border-border bg-muted px-3 text-sm text-foreground">
+                          {selectedOrganiser.label}
+                        </div>
+                      </div>
+                    ) : (
+                      <EventSearch
+                        mode="select"
+                        type="campus"
+                        value={watch("target_campus_id") ?? null}
+                        selectedName={selectedCampusName}
+                        placeholder="Search campus"
+                        onChange={(id, name) => {
+                          setValue("target_campus_id", id || null, {
+                            shouldValidate: true,
+                          });
+                          setSelectedCampusName(name);
+                        }}
+                      />
+                    )
                   ) : null}
 
                   {scope === "ig" ? (

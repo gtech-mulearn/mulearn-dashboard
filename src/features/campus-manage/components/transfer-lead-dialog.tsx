@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { ApiError } from "@/api";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
@@ -17,7 +18,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { MuidSearchInput } from "@/components/ui/muid-search-input";
-import { ApiError } from "@/api";
 import type { UserResult } from "@/hooks/use-search";
 import { useTransferLeadRole } from "../hooks";
 

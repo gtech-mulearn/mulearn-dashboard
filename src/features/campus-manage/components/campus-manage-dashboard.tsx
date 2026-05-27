@@ -50,6 +50,7 @@ import {
   YAxis,
 } from "recharts";
 import { toast } from "sonner";
+import { ApiError } from "@/api";
 import Pagination from "@/components/dashboard/table/pagination";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -87,7 +88,6 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { ApiError } from "@/api";
 import {
   useAddExecomMember,
   useCampusEvents,

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { ApiError } from "@/api";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -25,7 +26,6 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { UserResult } from "@/hooks/use-search";
-import { ApiError } from "@/api";
 import { useCreateIgChapter, useGlobalIgs } from "../hooks";
 
 const schema = z.object({

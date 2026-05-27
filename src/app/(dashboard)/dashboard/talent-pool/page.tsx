@@ -27,10 +27,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  CompanyStatusGuard,
-  LearnerCard,
-} from "@/features/company-jobs/components";
+import { LearnerCard } from "@/features/company-jobs/components";
 import { useLearnerDiscovery } from "@/features/company-jobs/hooks";
 import type { LearnerDiscoveryParams } from "@/features/company-jobs/types";
 import { useDebounce } from "@/hooks/use-debounce";
@@ -252,166 +249,164 @@ export default function TalentPoolPage() {
   const hasActive = !!search || Object.values(filters).some(Boolean);
 
   return (
-    <CompanyStatusGuard>
-      <div className="space-y-6 p-1">
-        {/* Header */}
-        <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Talent Pool
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Discover learners by karma, level, and work intent.
-          </p>
+    <div className="space-y-6 p-1">
+      {/* Header */}
+      <div className="flex flex-col gap-1">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          Talent Pool
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Discover learners by karma, level, and work intent.
+        </p>
+      </div>
+
+      {/* Summary strip */}
+      {!isLoading && !isError && (
+        <div className="flex flex-wrap gap-3">
+          <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm">
+            <Users className="h-4 w-4 text-primary" />
+            <span className="font-semibold text-foreground">
+              {total.toLocaleString()}
+            </span>
+            <span className="text-muted-foreground">learners found</span>
+          </div>
+          <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm">
+            <CheckCircle className="h-4 w-4 text-emerald-500" />
+            <span className="font-semibold text-foreground">
+              {learners.filter((l) => l.interested_in_work).length}
+            </span>
+            <span className="text-muted-foreground">open to work</span>
+          </div>
+          <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm">
+            <Sparkles className="h-4 w-4 text-blue-500" />
+            <span className="font-semibold text-foreground">
+              {learners.filter((l) => l.interested_in_gig_work).length}
+            </span>
+            <span className="text-muted-foreground">open to gigs</span>
+          </div>
         </div>
+      )}
 
-        {/* Summary strip */}
-        {!isLoading && !isError && (
-          <div className="flex flex-wrap gap-3">
-            <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm">
-              <Users className="h-4 w-4 text-primary" />
-              <span className="font-semibold text-foreground">
-                {total.toLocaleString()}
-              </span>
-              <span className="text-muted-foreground">learners found</span>
-            </div>
-            <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm">
-              <CheckCircle className="h-4 w-4 text-emerald-500" />
-              <span className="font-semibold text-foreground">
-                {learners.filter((l) => l.interested_in_work).length}
-              </span>
-              <span className="text-muted-foreground">open to work</span>
-            </div>
-            <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm">
-              <Sparkles className="h-4 w-4 text-blue-500" />
-              <span className="font-semibold text-foreground">
-                {learners.filter((l) => l.interested_in_gig_work).length}
-              </span>
-              <span className="text-muted-foreground">open to gigs</span>
-            </div>
-          </div>
-        )}
-
-        {/* Controls row */}
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="relative flex-1 min-w-[200px] max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-            <Input
-              id="talent-search"
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPageIndex(1);
-              }}
-              placeholder="Search by name or MUID…"
-              className="h-9 pl-9 pr-8 text-sm"
-            />
-            {search && (
-              <button
-                type="button"
-                onClick={() => setSearch("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            )}
-          </div>
-          <FiltersDropdown
-            filters={filters}
-            onChange={(f) => {
-              setFilters(f);
+      {/* Controls row */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <div className="relative flex-1 min-w-[200px] max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+          <Input
+            id="talent-search"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
               setPageIndex(1);
             }}
+            placeholder="Search by name or MUID…"
+            className="h-9 pl-9 pr-8 text-sm"
           />
-          {hasActive && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-9 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
-              onClick={clearFilters}
+          {search && (
+            <button
+              type="button"
+              onClick={() => setSearch("")}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
               <X className="h-3.5 w-3.5" />
-              Clear all
-            </Button>
+            </button>
           )}
         </div>
+        <FiltersDropdown
+          filters={filters}
+          onChange={(f) => {
+            setFilters(f);
+            setPageIndex(1);
+          }}
+        />
+        {hasActive && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-9 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+            onClick={clearFilters}
+          >
+            <X className="h-3.5 w-3.5" />
+            Clear all
+          </Button>
+        )}
+      </div>
 
-        {/* Grid */}
-        {isLoading ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-            {LEARNER_SKELETONS.map((s) => (
-              <LearnerCardSkeleton key={s} />
-            ))}
-          </div>
-        ) : isError ? (
-          <Card className="border-border">
-            <CardContent className="flex min-h-[200px] flex-col items-center justify-center gap-3 py-12">
-              <div className="rounded-full bg-destructive/10 p-3">
-                <AlertTriangle className="h-6 w-6 text-destructive" />
-              </div>
+      {/* Grid */}
+      {isLoading ? (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          {LEARNER_SKELETONS.map((s) => (
+            <LearnerCardSkeleton key={s} />
+          ))}
+        </div>
+      ) : isError ? (
+        <Card className="border-border">
+          <CardContent className="flex min-h-[200px] flex-col items-center justify-center gap-3 py-12">
+            <div className="rounded-full bg-destructive/10 p-3">
+              <AlertTriangle className="h-6 w-6 text-destructive" />
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Failed to load learners. Please try again.
+            </p>
+          </CardContent>
+        </Card>
+      ) : learners.length === 0 ? (
+        <Card className="border-dashed border-border">
+          <CardContent className="flex min-h-[200px] flex-col items-center justify-center gap-3 py-12 text-center">
+            <div className="rounded-full bg-muted p-4">
+              <User className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <div className="space-y-1">
+              <p className="font-medium text-foreground">No learners found</p>
               <p className="text-sm text-muted-foreground">
-                Failed to load learners. Please try again.
+                {hasActive
+                  ? "Try adjusting your filters."
+                  : "No learners available yet."}
               </p>
-            </CardContent>
-          </Card>
-        ) : learners.length === 0 ? (
-          <Card className="border-dashed border-border">
-            <CardContent className="flex min-h-[200px] flex-col items-center justify-center gap-3 py-12 text-center">
-              <div className="rounded-full bg-muted p-4">
-                <User className="h-8 w-8 text-muted-foreground" />
-              </div>
-              <div className="space-y-1">
-                <p className="font-medium text-foreground">No learners found</p>
-                <p className="text-sm text-muted-foreground">
-                  {hasActive
-                    ? "Try adjusting your filters."
-                    : "No learners available yet."}
-                </p>
-              </div>
-              {hasActive && (
-                <Button variant="outline" size="sm" onClick={clearFilters}>
-                  Clear filters
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-            {learners.map((learner, index) => (
-              <LearnerCard key={`${learner.id}-${index}`} learner={learner} />
-            ))}
+            </div>
+            {hasActive && (
+              <Button variant="outline" size="sm" onClick={clearFilters}>
+                Clear filters
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          {learners.map((learner, index) => (
+            <LearnerCard key={`${learner.id}-${index}`} learner={learner} />
+          ))}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {!isLoading &&
+        !isError &&
+        data?.pagination.totalPages &&
+        data.pagination.totalPages > 1 && (
+          <div className="flex justify-between items-center mt-6">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPageIndex((p) => Math.max(1, p - 1))}
+              disabled={pageIndex === 1}
+              className="h-8 text-xs"
+            >
+              Previous
+            </Button>
+            <span className="text-xs text-muted-foreground">
+              Page {pageIndex} of {data.pagination.totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPageIndex((p) => p + 1)}
+              disabled={!data.pagination.isNext}
+              className="h-8 text-xs"
+            >
+              Next
+            </Button>
           </div>
         )}
-
-        {/* Pagination */}
-        {!isLoading &&
-          !isError &&
-          data?.pagination.totalPages &&
-          data.pagination.totalPages > 1 && (
-            <div className="flex justify-between items-center mt-6">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPageIndex((p) => Math.max(1, p - 1))}
-                disabled={pageIndex === 1}
-                className="h-8 text-xs"
-              >
-                Previous
-              </Button>
-              <span className="text-xs text-muted-foreground">
-                Page {pageIndex} of {data.pagination.totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPageIndex((p) => p + 1)}
-                disabled={!data.pagination.isNext}
-                className="h-8 text-xs"
-              >
-                Next
-              </Button>
-            </div>
-          )}
-      </div>
-    </CompanyStatusGuard>
+    </div>
   );
 }
