@@ -696,7 +696,7 @@ export const endpoints = {
     colleges: "/api/v1/dashboard/organisation/institutes/college/",
     schools: "/api/v1/dashboard/organisation/institutes/school/",
     /** GET - Search users by name/muid (query: search, perPage, pageIndex, sortBy) */
-    users: "/api/v1/dashboard/user/",
+    users: "/api/v1/dashboard/user/search/",
   },
 
   // ============================================
