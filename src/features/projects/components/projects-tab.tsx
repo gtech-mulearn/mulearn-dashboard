@@ -133,6 +133,7 @@ export function ProjectsTab({
               key={p.id}
               project={p}
               canEdit={isOwnProfile && p.created_by_id === currentUserId}
+              currentUserId={currentUserId}
               onOpen={() => {
                 setDetailId(p.id);
                 setDetailCanEdit(

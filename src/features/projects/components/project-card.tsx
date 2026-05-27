@@ -8,6 +8,7 @@ import {
   Trash2,
 } from "lucide-react";
 import Image from "next/image";
+import { toast } from "sonner";
 
 function resolveMediaUrl(url: string | null | undefined): string | null {
   if (!url) return null;
@@ -15,6 +16,7 @@ function resolveMediaUrl(url: string | null | undefined): string | null {
   return `${process.env.NEXT_PUBLIC_DJANGO_API_URL ?? ""}${url}`;
 }
 
+import { ApiError } from "@/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,11 +25,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
+import { useDeleteVote, useVoteProject } from "../hooks";
 import type { Project } from "../schemas";
 
 interface ProjectCardProps {
   project: Project;
   canEdit: boolean;
+  currentUserId?: string | null;
   onOpen: () => void;
   onEdit: () => void;
   onDelete: () => void;
@@ -78,6 +83,7 @@ function timeAgo(dateStr: string): string {
 export function ProjectCard({
   project,
   canEdit,
+  currentUserId,
   onOpen,
   onEdit,
   onDelete,
@@ -85,6 +91,36 @@ export function ProjectCard({
   const upvotes = project.votes.filter((v) => v.vote === "upvote").length;
   const commentCount = project.comments.length;
   const plainDescription = stripMarkdown(project.description);
+
+  const userVote = currentUserId
+    ? project.votes.find(
+        (v) => v.user_id === currentUserId && v.vote === "upvote",
+      )
+    : undefined;
+  const hasUpvoted = !!userVote;
+
+  const vote = useVoteProject(project.id);
+  const removeVote = useDeleteVote(project.id);
+  const isPendingVote = vote.isPending || removeVote.isPending;
+
+  const handleUpvote = () => {
+    if (isPendingVote) return;
+    if (hasUpvoted && userVote) {
+      removeVote.mutate(userVote.id, {
+        onError: (error) =>
+          toast.error(
+            error instanceof ApiError ? error.message : "Failed to remove vote",
+          ),
+      });
+    } else {
+      vote.mutate("upvote", {
+        onError: (error) =>
+          toast.error(
+            error instanceof ApiError ? error.message : "Failed to upvote",
+          ),
+      });
+    }
+  };
 
   return (
     // biome-ignore lint/a11y/useSemanticElements: nested buttons prevent using <button>
@@ -126,10 +162,21 @@ export function ProjectCard({
           onClick={(e) => e.stopPropagation()}
           onKeyDown={(e) => e.stopPropagation()}
         >
-          <span className="flex items-center gap-1 rounded-full border border-border/50 bg-muted/50 px-2.5 py-1 text-[12px] font-semibold text-muted-foreground">
+          <button
+            type="button"
+            onClick={handleUpvote}
+            disabled={!currentUserId || isPendingVote}
+            className={cn(
+              "flex items-center gap-1 rounded-full border px-2.5 py-1 text-[12px] font-semibold transition-colors",
+              hasUpvoted
+                ? "border-primary/40 bg-primary/10 text-primary"
+                : "border-border/50 bg-muted/50 text-muted-foreground hover:border-primary/30 hover:text-primary/70",
+              (!currentUserId || isPendingVote) && "cursor-default opacity-70",
+            )}
+          >
             <ArrowUp className="h-3 w-3" />
             {upvotes}
-          </span>
+          </button>
 
           {canEdit && (
             <DropdownMenu>

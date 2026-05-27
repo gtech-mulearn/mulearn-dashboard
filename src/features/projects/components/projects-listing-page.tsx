@@ -115,6 +115,7 @@ export function ProjectsListingPage() {
                 key={p.id}
                 project={p}
                 canEdit={false}
+                currentUserId={currentUserId}
                 onOpen={() => setDetailId(p.id)}
                 onEdit={() => {}}
                 onDelete={() => {}}

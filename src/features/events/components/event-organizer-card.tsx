@@ -45,9 +45,11 @@ export function EventOrganizerCard({
           <p className="truncate text-sm font-bold text-foreground">
             {organizerName}
           </p>
-          <p className="text-xs capitalize text-muted-foreground">
-            {organizerTypeLabel(event.organizer.type)}
-          </p>
+          {event.organizer.type !== "admin" && (
+            <p className="text-xs capitalize text-muted-foreground">
+              {organizerTypeLabel(event.organizer.type)}
+            </p>
+          )}
         </div>
       </div>
     </div>
