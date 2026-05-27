@@ -8,6 +8,7 @@ import {
   EmptyResponseSchema,
   MemberMutationResponseSchema,
   MembersListResponseSchema,
+  type Pagination,
   type Project,
   ProjectDetailResponseSchema,
   type ProjectFormValues,
@@ -37,6 +38,37 @@ export async function listProjectsForMuid(
     ProjectsListResponseSchema,
   );
   return res.response.data.Projects;
+}
+
+interface PublicListParams {
+  search?: string;
+  page?: number;
+  perPage?: number;
+}
+
+export async function listProjects(params: PublicListParams = {}): Promise<{
+  projects: Project[];
+  pagination: Pagination;
+}> {
+  const p = new URLSearchParams({
+    perPage: String(params.perPage ?? 12),
+    pageIndex: String(params.page ?? 1),
+  });
+  if (params.search) p.set("search", params.search);
+  const res = await apiClient.get(
+    `${endpoints.projects.list}?${p}`,
+    ProjectsListResponseSchema,
+  );
+  return {
+    projects: res.response.data.Projects,
+    pagination: res.response.pagination ?? {
+      count: res.response.data.Projects.length,
+      totalPages: 1,
+      isNext: false,
+      isPrev: false,
+      nextPage: null,
+    },
+  };
 }
 
 export async function getProject(id: string): Promise<Project> {

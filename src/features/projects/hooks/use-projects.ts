@@ -1,5 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
-import { getProject, listMembers, listProjectsForMuid } from "../api";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import {
+  getProject,
+  listMembers,
+  listProjects,
+  listProjectsForMuid,
+} from "../api";
 import type { ProjectStatus } from "../schemas";
 import { projectsKeys } from "./query-keys";
 
@@ -29,5 +34,15 @@ export function useProjectMembers(projectId: string) {
     queryFn: () => listMembers(projectId),
     enabled: !!projectId,
     staleTime: STALE,
+  });
+}
+
+export function usePublicProjects(search: string, page: number) {
+  return useQuery({
+    queryKey: projectsKeys.public(search, page),
+    queryFn: () =>
+      listProjects({ search: search || undefined, page, perPage: 12 }),
+    staleTime: 30_000,
+    placeholderData: keepPreviousData,
   });
 }

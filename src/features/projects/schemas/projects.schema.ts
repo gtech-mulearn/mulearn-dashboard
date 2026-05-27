@@ -84,6 +84,7 @@ export const PaginationSchema = z.object({
   isPrev: z.boolean(),
   nextPage: z.number().nullable(),
 });
+export type Pagination = z.infer<typeof PaginationSchema>;
 
 export const ProjectsListResponseSchema = ApiResponseSchema(
   z.object({

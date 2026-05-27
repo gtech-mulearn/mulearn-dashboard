@@ -7,4 +7,6 @@ export const projectsKeys = {
   detail: (id: string) => [...projectsKeys.all, "detail", id] as const,
   members: (projectId: string) =>
     [...projectsKeys.all, "members", projectId] as const,
+  public: (search: string, page: number) =>
+    [...projectsKeys.all, "public", search, page] as const,
 };

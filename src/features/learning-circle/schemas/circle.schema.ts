@@ -48,6 +48,22 @@ export type LearningCircle = z.infer<typeof LearningCircleSchema>;
  * Circle detail - matches actual API response from /learningcircle/<id>/
  * Actual response: id, ig, title, description, org, is_recurring, recurrence_type, recurrence, created_by
  */
+/**
+ * next_meetup shape returned by LearningCircleDetailSerializer.get_next_meetup:
+ *  - is_scheduled=true  → a pending CircleMeetingLog exists; full meeting data included
+ *  - is_scheduled=false → no pending meeting; meet_time is the suggested next date
+ *  - null               → circle has no meetings or last meeting was not recurring
+ */
+const NextMeetupSchema = z
+  .object({
+    is_scheduled: z.boolean(),
+    meet_time: z.union([z.string(), z.null()]).optional(),
+  })
+  .passthrough() // allow extra meeting fields when is_scheduled=true
+  .nullable();
+
+export type NextMeetup = z.infer<typeof NextMeetupSchema>;
+
 export const LearningCircleDetailSchema = z.object({
   id: z.string(),
   ig: z.string(),
@@ -58,10 +74,10 @@ export const LearningCircleDetailSchema = z.object({
   recurrence_type: z.string().nullable().optional(),
   recurrence: z.number().nullable().optional(),
   created_by: UserBasicSchema,
-  // These may be added by to_representation but aren't in current response
   rank: z.number().nullable().optional(),
   total_karma: z.number().nullable().optional(),
   total_members: z.number().nullable().optional(),
+  next_meetup: NextMeetupSchema.optional(),
 });
 
 export type LearningCircleDetail = z.infer<typeof LearningCircleDetailSchema>;

@@ -27,7 +27,7 @@ export function getRoleHomePath(roles: string[]): string {
     return "/dashboard/admin";
   }
 
-  if (roles.includes(ROLES.FELLOW) || roles.includes(ROLES.ASSOCIATE)) {
+  if (roles.includes(ROLES.ASSOCIATE)) {
     return "/dashboard/management";
   }
 

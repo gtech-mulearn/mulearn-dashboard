@@ -6,4 +6,5 @@ export * from "./project-links-editor";
 export * from "./project-member-picker";
 export * from "./project-skill-picker";
 export * from "./project-wizard";
+export * from "./projects-listing-page";
 export * from "./projects-tab";

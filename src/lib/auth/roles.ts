@@ -79,12 +79,8 @@ export function hasIgLeadRole(roles: readonly string[]): boolean {
 /** Roles with full platform administration access */
 export const ADMIN_ROLES = [ROLES.ADMIN] as const;
 
-/** Roles that can perform management tasks (admin-level + fellows) */
-export const MANAGEMENT_ROLES = [
-  ROLES.ADMIN,
-  ROLES.ASSOCIATE,
-  ROLES.FELLOW,
-] as const;
+/** Roles that can perform management tasks (admin-level) */
+export const MANAGEMENT_ROLES = [ROLES.ADMIN, ROLES.ASSOCIATE] as const;
 
 /** Roles that can manage campus-level operations */
 export const CAMPUS_MANAGEMENT_ROLES = [
@@ -93,16 +89,11 @@ export const CAMPUS_MANAGEMENT_ROLES = [
 ] as const;
 
 /** Roles that can view zonal dashboards */
-export const ZONAL_ROLES = [
-  ROLES.ADMIN,
-  ROLES.FELLOW,
-  ROLES.ZONAL_CAMPUS_LEAD,
-] as const;
+export const ZONAL_ROLES = [ROLES.ADMIN, ROLES.ZONAL_CAMPUS_LEAD] as const;
 
 /** Roles that can view district dashboards */
 export const DISTRICT_ROLES = [
   ROLES.ADMIN,
-  ROLES.FELLOW,
   ROLES.DISTRICT_CAMPUS_LEAD,
 ] as const;
 
@@ -111,7 +102,7 @@ export const DISTRICT_ROLES = [
  * NOTE: Dynamic IG leads ("{igCode} IGLead") are NOT in this array.
  * Use `hasIgLeadRole(userRoles)` for dynamic checks.
  */
-export const IG_ROLES = [ROLES.ADMIN, ROLES.FELLOW] as const;
+export const IG_ROLES = [ROLES.ADMIN] as const;
 
 /** Roles with technical access (error logs, debugging tools) */
 export const TECH_ROLES = [ROLES.ADMIN, ROLES.TECH_TEAM] as const;

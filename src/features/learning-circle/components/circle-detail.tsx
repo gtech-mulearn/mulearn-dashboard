@@ -17,6 +17,7 @@ import {
   Edit,
   Loader2,
   Plus,
+  Repeat,
   UserPlus,
   Users,
 } from "lucide-react";
@@ -238,6 +239,41 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
 
             {/* Tab Content: Meetings */}
             <div className="mt-6">
+              {/* Next-meetup suggestion banner — shown when recurring but nothing scheduled yet */}
+              {permissions.canCreateMeeting &&
+                circle.next_meetup &&
+                !circle.next_meetup.is_scheduled &&
+                circle.next_meetup.meet_time && (
+                  <div className="mb-4 flex items-center justify-between rounded-xl border border-primary/20 bg-primary/5 px-4 py-3">
+                    <div className="flex items-center gap-2.5">
+                      <Repeat className="h-4 w-4 shrink-0 text-primary" />
+                      <div>
+                        <p className="text-[13px] font-semibold text-foreground">
+                          Next suggested meeting
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(
+                            circle.next_meetup.meet_time,
+                          ).toLocaleDateString(undefined, {
+                            weekday: "long",
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowCreateMeetingModal(true)}
+                      className="shrink-0 inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-[12px] font-semibold text-primary-foreground transition-all hover:bg-primary/90 active:scale-95"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      Schedule
+                    </button>
+                  </div>
+                )}
+
               {meetings && meetings.length > 0 ? (
                 <div className="space-y-4">
                   {meetings.map((meeting) => (
@@ -382,6 +418,11 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
             circleId={circleId}
             open={showCreateMeetingModal}
             onOpenChange={setShowCreateMeetingModal}
+            suggestedMeetTime={
+              circle.next_meetup && !circle.next_meetup.is_scheduled
+                ? (circle.next_meetup.meet_time as string | undefined)
+                : undefined
+            }
           />
           {permissions.canTransferLead && (
             <TransferLeadModal

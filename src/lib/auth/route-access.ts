@@ -52,22 +52,22 @@ export const routeAccessMap: Record<string, RouteConfig> = {
 
   // ── Zonal Dashboard ──────────────────────────────────────
   "/dashboard/zonal": {
-    roles: [ROLES.ADMIN, ROLES.FELLOW, ROLES.ZONAL_CAMPUS_LEAD],
+    roles: [ROLES.ADMIN, ROLES.ZONAL_CAMPUS_LEAD],
   },
 
   // ── District Dashboard ───────────────────────────────────
   "/dashboard/district": {
-    roles: [ROLES.ADMIN, ROLES.FELLOW, ROLES.DISTRICT_CAMPUS_LEAD],
+    roles: [ROLES.ADMIN, ROLES.DISTRICT_CAMPUS_LEAD],
   },
 
   // ── Intern Dashboard ─────────────────────────────
   "/dashboard/intern": {
-    roles: [ROLES.ADMIN, ROLES.FELLOW, ROLES.INTERN],
+    roles: [ROLES.ADMIN, ROLES.INTERN],
   },
 
   // ── Interest Group Dashboard ─────────────────────────────
   "/dashboard/edit-ig": {
-    roles: [ROLES.ADMIN, ROLES.FELLOW],
+    roles: [ROLES.ADMIN],
     dynamicCheck: (roles) => roles.some((r) => r.endsWith(" IGLead")),
   },
 
@@ -77,21 +77,21 @@ export const routeAccessMap: Record<string, RouteConfig> = {
     roles: [ROLES.ADMIN],
   },
 
-  // ── Management Routes (Admin + Fellow) ───────────────────
+  // ── Management Routes (Admin only) ───────────────────────
   "/dashboard/management": {
-    roles: [ROLES.ADMIN, ROLES.FELLOW],
+    roles: [ROLES.ADMIN],
   },
   "/dashboard/management/user-management": {
     roles: [ROLES.ADMIN],
   },
   "/dashboard/management/user-role-verification": {
-    roles: [ROLES.ADMIN, ROLES.FELLOW],
+    roles: [ROLES.ADMIN],
   },
   "/dashboard/management/manage-achievements": {
     roles: [ROLES.ADMIN],
   },
   "/dashboard/management/manage-intern": {
-    roles: [ROLES.ADMIN, ROLES.FELLOW, ROLES.ASSOCIATE],
+    roles: [ROLES.ADMIN, ROLES.ASSOCIATE],
   },
   "/dashboard/management/manage-interest-groups": {
     roles: [ROLES.ADMIN],
@@ -103,13 +103,13 @@ export const routeAccessMap: Record<string, RouteConfig> = {
     roles: [ROLES.ADMIN],
   },
   "/dashboard/management/verify-organizations": {
-    roles: [ROLES.ADMIN, ROLES.FELLOW],
+    roles: [ROLES.ADMIN],
   },
   "/dashboard/management/karma-voucher": {
-    roles: [ROLES.ADMIN, ROLES.FELLOW],
+    roles: [ROLES.ADMIN],
   },
   "/dashboard/management/lc-meetup-verification": {
-    roles: [ROLES.ADMIN, ROLES.FELLOW],
+    roles: [ROLES.ADMIN],
   },
   "/dashboard/management/college-levels": {
     roles: [ROLES.ADMIN],
@@ -150,7 +150,7 @@ export const routeAccessMap: Record<string, RouteConfig> = {
 
   // ── URL Shortener (broader access) ───────────────────────
   "/dashboard/url-shortener": {
-    roles: [ROLES.ADMIN, ROLES.FELLOW, ROLES.ASSOCIATE],
+    roles: [ROLES.ADMIN, ROLES.ASSOCIATE],
   },
 
   // ── Task Management ──────────────────────────────────────
@@ -160,7 +160,16 @@ export const routeAccessMap: Record<string, RouteConfig> = {
 
   // ── Events Management ────────────────────────────────────
   "/dashboard/manage-events": {
-    roles: [ROLES.ADMIN, ROLES.FELLOW],
+    roles: [
+      ROLES.ADMIN,
+      ROLES.CAMPUS_LEAD,
+      ROLES.COMPANY,
+      ROLES.ENABLER,
+      ROLES.ZONAL_CAMPUS_LEAD,
+      ROLES.DISTRICT_CAMPUS_LEAD,
+    ],
+    dynamicCheck: (roles) =>
+      roles.some((r) => r.endsWith(" IGLead") || r.endsWith(" CampusLead")),
   },
 
   // ── Mentor Dashboard ────────────────────────────────────

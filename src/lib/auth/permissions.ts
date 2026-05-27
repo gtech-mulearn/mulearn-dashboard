@@ -24,13 +24,13 @@ export const PERMISSIONS = {
   "users:read": [ROLES.ADMIN],
   "users:write": [ROLES.ADMIN],
   "users:delete": [ROLES.ADMIN],
-  "users:verify": [ROLES.ADMIN, ROLES.FELLOW],
+  "users:verify": [ROLES.ADMIN],
   "users:export_csv": [ROLES.ADMIN],
 
   // ── Organization Management ──────────────────────────────
   "orgs:list": [ROLES.ADMIN],
   "orgs:manage": [ROLES.ADMIN],
-  "orgs:verify": [ROLES.ADMIN, ROLES.FELLOW],
+  "orgs:verify": [ROLES.ADMIN],
   "orgs:transfer": [ROLES.ADMIN],
 
   // ── Campus Management ────────────────────────────────────
@@ -40,8 +40,8 @@ export const PERMISSIONS = {
   "campus:transfer_role": [ROLES.CAMPUS_LEAD],
 
   // ── Zonal & District ─────────────────────────────────────
-  "zonal:view": [ROLES.ADMIN, ROLES.FELLOW, ROLES.ZONAL_CAMPUS_LEAD],
-  "district:view": [ROLES.ADMIN, ROLES.FELLOW, ROLES.DISTRICT_CAMPUS_LEAD],
+  "zonal:view": [ROLES.ADMIN, ROLES.ZONAL_CAMPUS_LEAD],
+  "district:view": [ROLES.ADMIN, ROLES.DISTRICT_CAMPUS_LEAD],
 
   // ── Interest Groups ──────────────────────────────────────
   "ig:manage": [ROLES.ADMIN],
@@ -55,23 +55,48 @@ export const PERMISSIONS = {
   "task_type:manage": [ROLES.ADMIN],
 
   // ── Karma ─────────────────────────────────────────────────
-  "karma_voucher:manage": [ROLES.ADMIN, ROLES.FELLOW],
+  "karma_voucher:manage": [ROLES.ADMIN],
   "karma_voucher:bulk_import": [ROLES.ADMIN],
 
   // ── Achievements ──────────────────────────────────────────
   "achievements:manage": [ROLES.ADMIN],
-  "achievements:issue": [ROLES.ADMIN, ROLES.FELLOW],
+  "achievements:issue": [ROLES.ADMIN],
   "achievements:bulk_issue": [ROLES.ADMIN],
 
   // ── Events & Hackathons ───────────────────────────────────
-  "events:manage": [ROLES.ADMIN],
+  "events:manage": [
+    ROLES.ADMIN,
+    ROLES.CAMPUS_LEAD,
+    ROLES.COMPANY,
+    ROLES.ENABLER,
+    ROLES.ZONAL_CAMPUS_LEAD,
+    ROLES.DISTRICT_CAMPUS_LEAD,
+  ],
+  "events:manage_co_owners": [
+    ROLES.ADMIN,
+    ROLES.CAMPUS_LEAD,
+    ROLES.COMPANY,
+    ROLES.ENABLER,
+    ROLES.ZONAL_CAMPUS_LEAD,
+    ROLES.DISTRICT_CAMPUS_LEAD,
+  ],
+  "events:accept_collaboration": [
+    ROLES.ADMIN,
+    ROLES.CAMPUS_LEAD,
+    ROLES.COMPANY,
+  ],
+  "events:reject_collaboration": [
+    ROLES.ADMIN,
+    ROLES.CAMPUS_LEAD,
+    ROLES.COMPANY,
+  ],
   "hackathons:manage": [ROLES.ADMIN],
 
   // ── Roles Management ──────────────────────────────────────
   "roles:manage": [ROLES.ADMIN],
 
   // ── URL Shortener ─────────────────────────────────────────
-  "url_shortener:manage": [ROLES.ADMIN, ROLES.FELLOW, ROLES.ASSOCIATE],
+  "url_shortener:manage": [ROLES.ADMIN, ROLES.ASSOCIATE],
 
   // ── Error Log ─────────────────────────────────────────────
   "errors:view": [ROLES.ADMIN, ROLES.TECH_TEAM],
@@ -104,7 +129,7 @@ export const PERMISSIONS = {
   "launchpad:manage": [ROLES.ADMIN],
 
   // ── LC Meetup Verification ────────────────────────────────
-  "lc_meetup:verify": [ROLES.ADMIN, ROLES.FELLOW],
+  "lc_meetup:verify": [ROLES.ADMIN],
 
   // ── Coupon ────────────────────────────────────────────────
   "coupon:manage": [ROLES.ADMIN],
@@ -113,11 +138,11 @@ export const PERMISSIONS = {
   "task_reports:view": [ROLES.ADMIN, ROLES.APPRAISER],
 
   // ── Company ───────────────────────────────────────────────
-  "company:profile:view": [ROLES.COMPANY, ROLES.ADMIN, ROLES.FELLOW],
+  "company:profile:view": [ROLES.COMPANY, ROLES.ADMIN],
   "company:profile:edit": [ROLES.COMPANY],
   "company:jobs:view": [ROLES.COMPANY, ROLES.ADMIN],
   "company:jobs:manage": [ROLES.COMPANY],
-  "company:verification:manage": [ROLES.ADMIN, ROLES.FELLOW],
+  "company:verification:manage": [ROLES.ADMIN],
 } as const;
 
 // ─── Types ──────────────────────────────────────────────────
@@ -141,6 +166,18 @@ export const DYNAMIC_PERMISSION_CHECKS: Partial<
 > = {
   "ig:lead": (roles) =>
     roles.some((r) => r.endsWith(" IGLead")) || roles.includes(ROLES.ADMIN),
+
+  "events:manage": (roles) =>
+    roles.some((r) => r.endsWith(" IGLead") || r.endsWith(" CampusLead")),
+
+  "events:manage_co_owners": (roles) =>
+    roles.some((r) => r.endsWith(" IGLead") || r.endsWith(" CampusLead")),
+
+  "events:accept_collaboration": (roles) =>
+    roles.some((r) => r.endsWith(" IGLead") || r.endsWith(" CampusLead")),
+
+  "events:reject_collaboration": (roles) =>
+    roles.some((r) => r.endsWith(" IGLead") || r.endsWith(" CampusLead")),
 };
 
 /**

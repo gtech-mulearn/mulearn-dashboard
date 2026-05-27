@@ -20,6 +20,7 @@ import {
   CalendarDays,
   ClipboardCheck,
   FileText,
+  Folder,
   Globe,
   GraduationCap,
   Home,
@@ -136,6 +137,13 @@ export const NAV_ITEMS: readonly NavItem[] = [
     title: "Search",
     href: "/dashboard/search",
     icon: Search,
+    section: "main",
+  },
+  {
+    id: "projects",
+    title: "Projects",
+    href: "/dashboard/projects",
+    icon: Folder,
     section: "main",
   },
   {
