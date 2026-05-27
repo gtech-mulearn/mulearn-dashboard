@@ -36,6 +36,7 @@ const ROLE_VALUES = {
   DISTRICT_CAMPUS_LEAD: "District Campus Lead",
   CAMPUS_LEAD: "Campus Lead",
   LEAD_ENABLER: "Lead Enabler",
+  ENABLER: "Enabler",
   TECH_TEAM: "Tech Team",
   IG_LEAD: "IG Lead",
   INTERN: "Intern",
@@ -56,36 +57,26 @@ const ROLE_PROTECTED_ROUTES: Record<string, RouteConfig> = {
 
   // Zonal/District
   "/dashboard/zonal": {
-    roles: [
-      ROLE_VALUES.ADMIN,
-      ROLE_VALUES.FELLOW,
-      ROLE_VALUES.ZONAL_CAMPUS_LEAD,
-    ],
+    roles: [ROLE_VALUES.ADMIN, ROLE_VALUES.ZONAL_CAMPUS_LEAD],
   },
   "/dashboard/district": {
-    roles: [
-      ROLE_VALUES.ADMIN,
-      ROLE_VALUES.FELLOW,
-      ROLE_VALUES.DISTRICT_CAMPUS_LEAD,
-    ],
+    roles: [ROLE_VALUES.ADMIN, ROLE_VALUES.DISTRICT_CAMPUS_LEAD],
   },
 
   // Intern
   "/dashboard/intern": {
-    roles: [ROLE_VALUES.ADMIN, ROLE_VALUES.FELLOW, ROLE_VALUES.INTERN],
+    roles: [ROLE_VALUES.ADMIN, ROLE_VALUES.INTERN],
   },
 
   // Admin-only
   "/dashboard/admin": { roles: [ROLE_VALUES.ADMIN] },
 
-  // Management (Admin + Fellow baseline, specific sub-routes may differ)
-  "/dashboard/management": {
-    roles: [ROLE_VALUES.ADMIN, ROLE_VALUES.FELLOW],
-  },
+  // Management
+  "/dashboard/management": { roles: [ROLE_VALUES.ADMIN] },
   "/dashboard/management/user-management": { roles: [ROLE_VALUES.ADMIN] },
   "/dashboard/management/manage-achievements": { roles: [ROLE_VALUES.ADMIN] },
   "/dashboard/management/manage-intern": {
-    roles: [ROLE_VALUES.ADMIN, ROLE_VALUES.FELLOW, ROLE_VALUES.ASSOCIATE],
+    roles: [ROLE_VALUES.ADMIN, ROLE_VALUES.ASSOCIATE],
   },
   "/dashboard/management/manage-interest-groups": {
     roles: [ROLE_VALUES.ADMIN],
@@ -112,11 +103,12 @@ const ROLE_PROTECTED_ROUTES: Record<string, RouteConfig> = {
 
   // URL Shortener (broader access)
   "/dashboard/url-shortener": {
-    roles: [ROLE_VALUES.ADMIN, ROLE_VALUES.FELLOW, ROLE_VALUES.ASSOCIATE],
+    roles: [ROLE_VALUES.ADMIN, ROLE_VALUES.ASSOCIATE],
   },
 
   "/dashboard/edit-ig": {
-    roles: [ROLE_VALUES.ADMIN, ROLE_VALUES.FELLOW, ROLE_VALUES.IG_LEAD],
+    roles: [ROLE_VALUES.ADMIN],
+    // dynamic: any "{code} IGLead" role — handled in middleware below
   },
 
   // Tasks
@@ -124,17 +116,25 @@ const ROLE_PROTECTED_ROUTES: Record<string, RouteConfig> = {
 
   // Events Management
   "/dashboard/manage-events": {
-    roles: [ROLE_VALUES.ADMIN, ROLE_VALUES.FELLOW, ROLE_VALUES.ASSOCIATE],
+    roles: [
+      ROLE_VALUES.ADMIN,
+      ROLE_VALUES.CAMPUS_LEAD,
+      ROLE_VALUES.COMPANY,
+      ROLE_VALUES.ENABLER,
+      ROLE_VALUES.ZONAL_CAMPUS_LEAD,
+      ROLE_VALUES.DISTRICT_CAMPUS_LEAD,
+    ],
+    // dynamic: any "{code} IGLead" or "{code} CampusLead" — handled in middleware below
   },
 
   // Company Dashboard
   "/dashboard/company": {
-    roles: [ROLE_VALUES.COMPANY, ROLE_VALUES.ADMIN],
+    roles: [ROLE_VALUES.COMPANY],
   },
 
   // Mentor Dashboard
   "/dashboard/mentor": {
-    roles: [ROLE_VALUES.MENTOR, ROLE_VALUES.ADMIN],
+    roles: [ROLE_VALUES.MENTOR],
   },
 };
 
@@ -272,11 +272,16 @@ export function proxy(request: NextRequest) {
         const hasStaticRole = routeConfig.roles.some((r) =>
           userRoles.includes(r),
         );
-        // Dynamic check: IG leads have per-IG roles like "{code} IGLead"
+        // Dynamic check: per-IG/campus roles like "{code} IGLead" / "{code} CampusLead"
         const hasIgLead =
           pathname.startsWith("/dashboard/edit-ig") &&
           userRoles.some((r) => r.endsWith(" IGLead"));
-        const hasAccess = hasStaticRole || hasIgLead;
+        const hasEventsDynamic =
+          pathname.startsWith("/dashboard/manage-events") &&
+          userRoles.some(
+            (r) => r.endsWith(" IGLead") || r.endsWith(" CampusLead"),
+          );
+        const hasAccess = hasStaticRole || hasIgLead || hasEventsDynamic;
 
         if (!hasAccess) {
           // Redirect to dashboard with unauthorized flag

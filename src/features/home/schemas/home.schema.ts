@@ -599,6 +599,17 @@ export const CampusRecentActivityResponseSchema = ApiResponseSchema(
   z.object({ data: z.array(CampusRecentActivityItemSchema) }),
 );
 
+// Stat Cards
+export const CampusStatCardSchema = z.object({
+  key: z.string(),
+  label: z.string(),
+  value: z.number().nullable(),
+  delta: z.number(),
+  delta_type: z.enum(["increase", "decrease", "neutral"]),
+  period: z.string(),
+});
+export type CampusStatCard = z.infer<typeof CampusStatCardSchema>;
+
 // Campus Home Summary (wraps all three)
 export const CampusHomeSummaryDataSchema = z.object({
   campus: z.object({
@@ -607,7 +618,7 @@ export const CampusHomeSummaryDataSchema = z.object({
     campus_code: z.string(),
     campus_zone: z.string(),
   }),
-  stat_cards: z.array(z.unknown()),
+  stat_cards: z.array(CampusStatCardSchema),
   member_funnel: CampusMemberFunnelDataSchema,
   circle_health: z.array(CampusCircleHealthItemSchema),
   recent_activity: z.array(CampusRecentActivityItemSchema),

@@ -1,63 +1,70 @@
 import { Activity, BarChart2, CircleDot, Users } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { CampusOverview } from "@/features/campus-manage/types";
+import type { CampusStatCard } from "../../schemas/home.schema";
 
 type CampusStatCardsProps = {
-  overview?: CampusOverview;
+  statCards?: CampusStatCard[];
   isLoading?: boolean;
 };
 
-const CARDS = [
-  {
-    key: "activeMembers" as const,
+const CARD_META = {
+  active_members: {
     label: "ACTIVE MEMBERS",
     icon: Users,
     iconColor: "text-warning",
     iconBg: "bg-warning/10",
-    getValue: (o: CampusOverview) => o.activeMembers.toLocaleString(),
   },
-  {
-    key: "campusKarma" as const,
+  total_karma: {
     label: "CAMPUS KARMA",
     icon: BarChart2,
     iconColor: "text-primary",
     iconBg: "bg-primary/10",
-    getValue: (o: CampusOverview) => o.totalKarma.toLocaleString(),
   },
-  {
-    key: "activeCircles" as const,
+  active_circles: {
     label: "ACTIVE CIRCLES",
     icon: CircleDot,
     iconColor: "text-success",
     iconBg: "bg-success/10",
-    getValue: (o: CampusOverview) => o.igChaptersCount.toString(),
   },
-  {
-    key: "campusRank" as const,
+  rank: {
     label: "CAMPUS RANK",
     icon: Activity,
     iconColor: "text-brand-purple",
     iconBg: "bg-brand-purple/10",
-    getValue: (o: CampusOverview) => `#${o.rank}`,
   },
+} as const;
+
+const KEY_ORDER = [
+  "active_members",
+  "total_karma",
+  "active_circles",
+  "rank",
 ] as const;
 
-export function CampusStatCards({ overview, isLoading }: CampusStatCardsProps) {
+function formatValue(key: (typeof KEY_ORDER)[number], value: number | null) {
+  if (value == null) return "–";
+  if (key === "rank") return `#${value}`;
+  return value.toLocaleString();
+}
+
+export function CampusStatCards({
+  statCards,
+  isLoading,
+}: CampusStatCardsProps) {
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-      {CARDS.map((card) => {
-        const Icon = card.icon;
+      {KEY_ORDER.map((key) => {
+        const meta = CARD_META[key];
+        const card = statCards?.find((c) => c.key === key);
+        const Icon = meta.icon;
         return (
-          <div
-            key={card.key}
-            className="rounded-2xl border bg-card p-5 shadow-sm"
-          >
+          <div key={key} className="rounded-2xl border bg-card p-5 shadow-sm">
             <div
-              className={`mb-3 flex size-10 items-center justify-center rounded-xl ${card.iconBg}`}
+              className={`mb-3 flex size-10 items-center justify-center rounded-xl ${meta.iconBg}`}
             >
-              <Icon className={`size-5 ${card.iconColor}`} />
+              <Icon className={`size-5 ${meta.iconColor}`} />
             </div>
-            {isLoading || !overview ? (
+            {isLoading || !statCards ? (
               <>
                 <Skeleton className="mb-1.5 h-8 w-24 rounded-md" />
                 <Skeleton className="h-3.5 w-32 rounded-md" />
@@ -65,10 +72,10 @@ export function CampusStatCards({ overview, isLoading }: CampusStatCardsProps) {
             ) : (
               <>
                 <p className="text-3xl font-bold tracking-tight text-foreground">
-                  {card.getValue(overview)}
+                  {formatValue(key, card?.value ?? null)}
                 </p>
                 <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                  {card.label}
+                  {meta.label}
                 </p>
               </>
             )}
