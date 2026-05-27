@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { ApiError } from "@/api";
 import {
   fetchMentorList,
   updateMentorTier,
@@ -42,7 +43,12 @@ export function useVerifyMentor() {
       void queryClient.invalidateQueries({ queryKey: mentorVerifyKeys.all });
       toast.success("Mentor verification updated");
     },
-    onError: () => toast.error("Failed to update verification"),
+    onError: (error) =>
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to update verification",
+      ),
   });
 }
 

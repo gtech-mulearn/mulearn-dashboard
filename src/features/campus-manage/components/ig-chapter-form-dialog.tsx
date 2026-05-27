@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { UserResult } from "@/hooks/use-search";
+import { ApiError } from "@/api";
 import { useCreateIgChapter, useGlobalIgs } from "../hooks";
 
 const schema = z.object({
@@ -77,8 +78,12 @@ export function IgChapterFormDialog({ trigger }: IgChapterFormDialogProps) {
           form.reset();
           setSelectedUser(null);
         },
-        onError: () => {
-          toast.error("Failed to create IG chapter");
+        onError: (error) => {
+          toast.error(
+            error instanceof ApiError
+              ? error.message
+              : "Failed to create IG chapter",
+          );
         },
       },
     );

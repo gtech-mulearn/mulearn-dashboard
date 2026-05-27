@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
+import { ApiError } from "@/api";
 import type {
   ChannelData,
   CreateChannelInput,
@@ -76,7 +77,12 @@ export function useChannelLogic() {
     (id: string) => {
       deleteMutation.mutate(id, {
         onSuccess: () => toast.success("Channel deleted."),
-        onError: () => toast.error("Failed to delete channel."),
+        onError: (error) =>
+          toast.error(
+            error instanceof ApiError
+              ? error.message
+              : "Failed to delete channel.",
+          ),
       });
     },
     [deleteMutation],
@@ -96,7 +102,12 @@ export function useChannelLogic() {
           toast.success("Channel created.");
           toggleCreateModal(false);
         },
-        onError: () => toast.error("Failed to create channel."),
+        onError: (error) =>
+          toast.error(
+            error instanceof ApiError
+              ? error.message
+              : "Failed to create channel.",
+          ),
       });
     },
     [addMutation, createForm, toggleCreateModal],
@@ -121,7 +132,12 @@ export function useChannelLogic() {
           toast.success("Channel updated.");
           toggleEditModal(false);
         },
-        onError: () => toast.error("Failed to update channel."),
+        onError: (error) =>
+          toast.error(
+            error instanceof ApiError
+              ? error.message
+              : "Failed to update channel.",
+          ),
       });
     },
     [updateMutation, editForm, toggleEditModal],

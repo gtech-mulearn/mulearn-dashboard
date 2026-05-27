@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
+import { ApiError } from "@/api";
 import {
   createInterestGroup as apiCreateIG,
   deleteInterestGroup as apiDeleteIG,
@@ -37,8 +38,12 @@ export function useInterestGroupsAdmin() {
       toast.success("Interest Group created successfully");
       queryClient.invalidateQueries({ queryKey: ["admin-interest-groups"] });
     },
-    onError: () => {
-      toast.error("Failed to create interest group");
+    onError: (error) => {
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to create interest group",
+      );
     },
   });
 
@@ -49,8 +54,12 @@ export function useInterestGroupsAdmin() {
       toast.success("Interest Group updated successfully");
       queryClient.invalidateQueries({ queryKey: ["admin-interest-groups"] });
     },
-    onError: () => {
-      toast.error("Failed to update interest group");
+    onError: (error) => {
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to update interest group",
+      );
     },
   });
 
@@ -66,8 +75,12 @@ export function useInterestGroupsAdmin() {
       toast.success("Interest Group partially updated");
       queryClient.invalidateQueries({ queryKey: ["admin-interest-groups"] });
     },
-    onError: () => {
-      toast.error("Failed to update interest group");
+    onError: (error) => {
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to update interest group",
+      );
     },
   });
 
@@ -77,8 +90,12 @@ export function useInterestGroupsAdmin() {
       toast.success("Interest Group deleted successfully");
       queryClient.invalidateQueries({ queryKey: ["admin-interest-groups"] });
     },
-    onError: () => {
-      toast.error("Failed to delete interest group");
+    onError: (error) => {
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to delete interest group",
+      );
     },
   });
 

@@ -20,6 +20,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import type { UserResult } from "@/hooks/use-search";
+import { ApiError } from "@/api";
 import { useDeleteIgChapter, useUpdateIgChapter } from "../hooks";
 import type { IgChapter } from "../types";
 
@@ -82,8 +83,12 @@ export function IgChapterEditSheet({
           toast.success("Chapter updated");
           setOpen(false);
         },
-        onError: () => {
-          toast.error("Failed to update chapter");
+        onError: (error) => {
+          toast.error(
+            error instanceof ApiError
+              ? error.message
+              : "Failed to update chapter",
+          );
         },
       },
     );
@@ -96,8 +101,12 @@ export function IgChapterEditSheet({
         setOpen(false);
         setDeleteConfirmOpen(false);
       },
-      onError: () => {
-        toast.error("Failed to delete chapter");
+      onError: (error) => {
+        toast.error(
+          error instanceof ApiError
+            ? error.message
+            : "Failed to delete chapter",
+        );
         setDeleteConfirmOpen(false);
       },
     });

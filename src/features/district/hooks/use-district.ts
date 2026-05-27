@@ -2,6 +2,7 @@
 
 import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { ApiError } from "@/api";
 import {
   type DistrictCollegeDetailsParams,
   type DistrictStudentDetailsParams,
@@ -84,8 +85,12 @@ export function useDownloadDistrictStudentDetailsCsv() {
       downloadBlob(blob, "District Student Details.csv");
       toast.success("Downloaded district student details CSV");
     },
-    onError: () => {
-      toast.error("Failed to download district student details CSV");
+    onError: (error) => {
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to download district student details CSV",
+      );
     },
   });
 }
@@ -114,8 +119,12 @@ export function useDownloadDistrictCollegeDetailsCsv() {
       downloadBlob(blob, "District College Details.csv");
       toast.success("Downloaded district college details CSV");
     },
-    onError: () => {
-      toast.error("Failed to download district college details CSV");
+    onError: (error) => {
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to download district college details CSV",
+      );
     },
   });
 }

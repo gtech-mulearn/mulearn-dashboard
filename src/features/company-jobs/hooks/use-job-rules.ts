@@ -10,6 +10,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { ApiError } from "@/api";
 import { createJobRule, deleteJobRule, updateJobRule } from "../api";
 import type { CreateRulePayload, Job, UpdateRulePayload } from "../types";
 import { JOBS_KEYS } from "./use-jobs";
@@ -49,11 +50,15 @@ export function useCreateJobRule(jobId: string) {
 
       return { previousJob };
     },
-    onError: (_err, _payload, context) => {
+    onError: (error, _payload, context) => {
       if (context?.previousJob) {
         queryClient.setQueryData(JOBS_KEYS.detail(jobId), context.previousJob);
       }
-      toast.error("Failed to add eligibility rule");
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to add eligibility rule",
+      );
     },
     onSettled: () => {
       // Always refetch to get the server-canonical data
@@ -109,11 +114,15 @@ export function useUpdateJobRule(jobId: string) {
 
       return { previousJob };
     },
-    onError: (_err, _vars, context) => {
+    onError: (error, _vars, context) => {
       if (context?.previousJob) {
         queryClient.setQueryData(JOBS_KEYS.detail(jobId), context.previousJob);
       }
-      toast.error("Failed to update eligibility rule");
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to update eligibility rule",
+      );
     },
     onSettled: () => {
       queryClient.invalidateQueries({
@@ -152,11 +161,15 @@ export function useDeleteJobRule(jobId: string) {
 
       return { previousJob };
     },
-    onError: (_err, _ruleId, context) => {
+    onError: (error, _ruleId, context) => {
       if (context?.previousJob) {
         queryClient.setQueryData(JOBS_KEYS.detail(jobId), context.previousJob);
       }
-      toast.error("Failed to remove eligibility rule");
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to remove eligibility rule",
+      );
     },
     onSettled: () => {
       queryClient.invalidateQueries({

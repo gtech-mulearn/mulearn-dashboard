@@ -12,6 +12,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { ApiError } from "@/api";
 import {
   createDynamicRole,
   createDynamicUser,
@@ -37,8 +38,12 @@ export function useCreateDynamicRole() {
       queryClient.invalidateQueries({ queryKey: dynamicTypeKeys.roles() });
       toast.success("Role mapping created successfully");
     },
-    onError: () => {
-      toast.error("Failed to create role mapping");
+    onError: (error) => {
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to create role mapping",
+      );
     },
   });
 }
@@ -53,8 +58,12 @@ export function useUpdateDynamicRole() {
       queryClient.invalidateQueries({ queryKey: dynamicTypeKeys.roles() });
       toast.success("Role mapping updated successfully");
     },
-    onError: () => {
-      toast.error("Failed to update role mapping");
+    onError: (error) => {
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to update role mapping",
+      );
     },
   });
 }
@@ -78,14 +87,18 @@ export function useDeleteDynamicRole() {
       return { previous };
     },
     onError: (
-      _err: unknown,
+      error: unknown,
       _id: string,
       context: { previous: DynamicRoleItem[] | undefined } | undefined,
     ) => {
       if (context?.previous) {
         queryClient.setQueryData(dynamicTypeKeys.roles(), context.previous);
       }
-      toast.error("Failed to delete role mapping");
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to delete role mapping",
+      );
     },
     onSuccess: () => {
       toast.success("Role mapping deleted");
@@ -110,8 +123,12 @@ export function useCreateDynamicUser() {
       queryClient.invalidateQueries({ queryKey: dynamicTypeKeys.users() });
       toast.success("User mapping created successfully");
     },
-    onError: () => {
-      toast.error("Failed to create user mapping");
+    onError: (error) => {
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to create user mapping",
+      );
     },
   });
 }
@@ -126,8 +143,12 @@ export function useUpdateDynamicUser() {
       queryClient.invalidateQueries({ queryKey: dynamicTypeKeys.users() });
       toast.success("User mapping updated successfully");
     },
-    onError: () => {
-      toast.error("Failed to update user mapping");
+    onError: (error) => {
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to update user mapping",
+      );
     },
   });
 }
@@ -151,14 +172,18 @@ export function useDeleteDynamicUser() {
       return { previous };
     },
     onError: (
-      _err: unknown,
+      error: unknown,
       _id: string,
       context: { previous: DynamicUserItem[] | undefined } | undefined,
     ) => {
       if (context?.previous) {
         queryClient.setQueryData(dynamicTypeKeys.users(), context.previous);
       }
-      toast.error("Failed to delete user mapping");
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to delete user mapping",
+      );
     },
     onSuccess: () => {
       toast.success("User mapping deleted");

@@ -2,6 +2,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
+import { ApiError } from "@/api";
 import { endpoints } from "@/api/endpoints";
 import { authStore } from "@/lib/auth";
 import {
@@ -23,7 +24,8 @@ export function useDeleteKarmaVoucher() {
       qc.invalidateQueries({ queryKey: karmaVoucherKeys.lists() });
       toast.success("Voucher deleted");
     },
-    onError: () => toast.error("Delete failed"),
+    onError: (error) =>
+      toast.error(error instanceof ApiError ? error.message : "Delete failed"),
   });
 
   return {
@@ -62,7 +64,8 @@ export function useExportVouchersCsv() {
       downloadBlob(blob, "karma-vouchers.csv");
       toast.success("Export successful");
     },
-    onError: () => toast.error("Export failed"),
+    onError: (error) =>
+      toast.error(error instanceof ApiError ? error.message : "Export failed"),
   });
 
   return {
@@ -80,7 +83,10 @@ export function useDownloadTemplate() {
       downloadBlob(blob, "karma-voucher-template.xlsx");
       toast.success("Template downloaded");
     },
-    onError: () => toast.error("Template download failed"),
+    onError: (error) =>
+      toast.error(
+        error instanceof ApiError ? error.message : "Template download failed",
+      ),
   });
 
   return {

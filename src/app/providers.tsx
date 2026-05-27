@@ -34,15 +34,7 @@ function makeQueryClient() {
           return failureCount < 3;
         },
       },
-      mutations: {
-        onError: (error) => {
-          // Global fallback for mutations without their own onError handler.
-          // Individual mutations can override this by providing their own onError.
-          const message =
-            error instanceof Error ? error.message : "Something went wrong";
-          toast.error(message);
-        },
-      },
+      mutations: {},
     },
   });
 }

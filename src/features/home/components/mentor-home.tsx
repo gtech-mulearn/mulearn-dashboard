@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { ApiError } from "@/api";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -272,8 +273,12 @@ export function MentorHome() {
         setSavedSchedule(localSchedule);
         toast.success("Availability updated");
       },
-      onError: () => {
-        toast.error("Failed to save availability");
+      onError: (error) => {
+        toast.error(
+          error instanceof ApiError
+            ? error.message
+            : "Failed to save availability",
+        );
       },
     });
   }

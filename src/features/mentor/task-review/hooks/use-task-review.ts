@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { ApiError } from "@/api";
 import {
   fetchReviewQueue,
   fetchReviewSubmission,
@@ -58,8 +59,10 @@ export function useReviewItem() {
       void queryClient.invalidateQueries({ queryKey: reviewKeys.all });
       toast.success("Review submitted");
     },
-    onError: () => {
-      toast.error("Failed to submit review");
+    onError: (error) => {
+      toast.error(
+        error instanceof ApiError ? error.message : "Failed to submit review",
+      );
     },
   });
 }

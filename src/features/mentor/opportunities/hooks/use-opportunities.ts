@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { ApiError } from "@/api";
 import {
   createOpportunity,
   deleteOpportunity,
@@ -43,7 +44,12 @@ export function useCreateOpportunity() {
       void queryClient.invalidateQueries({ queryKey: opportunityKeys.all });
       toast.success("Opportunity created");
     },
-    onError: () => toast.error("Failed to create opportunity"),
+    onError: (error) =>
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to create opportunity",
+      ),
   });
 }
 
@@ -56,7 +62,12 @@ export function useUpdateOpportunity(id: string) {
       void queryClient.invalidateQueries({ queryKey: opportunityKeys.all });
       toast.success("Opportunity updated");
     },
-    onError: () => toast.error("Failed to update opportunity"),
+    onError: (error) =>
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to update opportunity",
+      ),
   });
 }
 
@@ -68,6 +79,11 @@ export function useDeleteOpportunity() {
       void queryClient.invalidateQueries({ queryKey: opportunityKeys.all });
       toast.success("Opportunity deleted");
     },
-    onError: () => toast.error("Failed to delete opportunity"),
+    onError: (error) =>
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to delete opportunity",
+      ),
   });
 }

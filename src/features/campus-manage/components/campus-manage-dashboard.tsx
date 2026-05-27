@@ -87,6 +87,7 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import { ApiError } from "@/api";
 import {
   useAddExecomMember,
   useCampusEvents,
@@ -1030,9 +1031,11 @@ export function CampusManageDashboard() {
                                                 ? "Marked as active student"
                                                 : "Marked as alumni",
                                             ),
-                                          onError: () =>
+                                          onError: (error) =>
                                             toast.error(
-                                              "Failed to update student type",
+                                              error instanceof ApiError
+                                                ? error.message
+                                                : "Failed to update student type",
                                             ),
                                         },
                                       )

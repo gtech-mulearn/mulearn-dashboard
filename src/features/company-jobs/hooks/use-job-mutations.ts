@@ -10,6 +10,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { ApiError } from "@/api";
 import { createJob, deleteJob, updateJob } from "../api";
 import type {
   CreateJobPayload,
@@ -95,14 +96,16 @@ export function useDeleteJob() {
 
       return { previousQueries };
     },
-    onError: (_err, _jobId, context) => {
+    onError: (error, _jobId, context) => {
       // Rollback all caches to their previous state
       if (context?.previousQueries) {
         for (const [queryKey, data] of context.previousQueries) {
           queryClient.setQueryData(queryKey, data);
         }
       }
-      toast.error("Failed to delete job");
+      toast.error(
+        error instanceof ApiError ? error.message : "Failed to delete job",
+      );
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: JOBS_KEYS.all });

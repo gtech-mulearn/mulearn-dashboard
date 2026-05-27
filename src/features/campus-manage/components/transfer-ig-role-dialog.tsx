@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { UserResult } from "@/hooks/use-search";
+import { ApiError } from "@/api";
 import { useIgCodes, useTransferIgRole } from "../hooks";
 
 const schema = z.object({
@@ -74,8 +75,12 @@ export function TransferIgRoleDialog({
           form.reset({ muid: "", igCode: defaultIgCode ?? "" });
           setSelectedUser(null);
         },
-        onError: () => {
-          toast.error("Failed to transfer IG lead role");
+        onError: (error) => {
+          toast.error(
+            error instanceof ApiError
+              ? error.message
+              : "Failed to transfer IG lead role",
+          );
         },
       },
     );

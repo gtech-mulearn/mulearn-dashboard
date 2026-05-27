@@ -2,6 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { ApiError } from "@/api";
 import {
   bulkIssueAchievements,
   createAchievement,
@@ -72,11 +73,15 @@ export function useDeleteAchievement() {
       );
       return { previous };
     },
-    onError: (_err, _id, context) => {
+    onError: (error, _id, context) => {
       if (context?.previous) {
         queryClient.setQueryData(ACHIEVEMENT_KEYS.list(), context.previous);
       }
-      toast.error("Failed to delete achievement");
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to delete achievement",
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ACHIEVEMENT_KEYS.list() });

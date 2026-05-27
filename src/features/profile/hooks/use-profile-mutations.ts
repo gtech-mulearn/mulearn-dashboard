@@ -8,6 +8,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { ApiError } from "@/api";
 import { authKeys } from "@/features/auth/hooks/query-keys";
 import {
   deleteCoverPic,
@@ -44,8 +45,12 @@ export function useTogglePublicProfile() {
       queryClient.invalidateQueries({ queryKey: profileKeys.profile() });
       toast.success("Profile visibility updated");
     },
-    onError: () => {
-      toast.error("Failed to update profile visibility");
+    onError: (error) => {
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to update profile visibility",
+      );
     },
   });
 }
@@ -63,8 +68,12 @@ export function useUpdateSocials() {
       queryClient.invalidateQueries({ queryKey: profileKeys.socials() });
       toast.success("Social links updated");
     },
-    onError: () => {
-      toast.error("Failed to update social links");
+    onError: (error) => {
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to update social links",
+      );
     },
   });
 }
@@ -83,8 +92,12 @@ export function useUpdatePreferences() {
       queryClient.invalidateQueries({ queryKey: profileKeys.preferences() });
       toast.success("Preferences updated");
     },
-    onError: () => {
-      toast.error("Failed to update preferences");
+    onError: (error) => {
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to update preferences",
+      );
     },
   });
 }
@@ -113,8 +126,12 @@ export function useUpdateProfileImage() {
       queryClient.invalidateQueries({ queryKey: authKeys.userInfo() });
       toast.success("Profile image updated");
     },
-    onError: () => {
-      toast.error("Failed to update profile image");
+    onError: (error) => {
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to update profile image",
+      );
     },
   });
 }
@@ -195,8 +212,10 @@ export function useUpdateProfile() {
       queryClient.invalidateQueries({ queryKey: authKeys.userInfo() });
       toast.success("Profile updated");
     },
-    onError: () => {
-      toast.error("Failed to update profile");
+    onError: (error) => {
+      toast.error(
+        error instanceof ApiError ? error.message : "Failed to update profile",
+      );
     },
   });
 }
@@ -233,8 +252,12 @@ export function useIssueVCMutation() {
       queryClient.invalidateQueries({ queryKey: profileKeys.profile() });
       toast.success("Verifiable Credential issued successfully!");
     },
-    onError: () => {
-      toast.error("Failed to issue Verifiable Credential");
+    onError: (error) => {
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to issue Verifiable Credential",
+      );
     },
   });
 }

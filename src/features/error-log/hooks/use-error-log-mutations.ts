@@ -18,6 +18,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { ApiError } from "@/api";
 import { clearLog, dismissLogEntry, downloadLogFile } from "../api";
 import type { ErrorLogEntry, LogType } from "../schemas";
 import { errorLogKeys } from "./query-keys";
@@ -96,14 +97,18 @@ export function useDismissLogEntry() {
     },
 
     onError: (
-      _err: unknown,
+      error: unknown,
       _id: string,
       context: { previous: ErrorLogEntry[] | undefined } | undefined,
     ) => {
       if (context?.previous) {
         queryClient.setQueryData(errorLogKeys.list(), context.previous);
       }
-      toast.error("Failed to dismiss log entry");
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to dismiss log entry",
+      );
     },
 
     onSuccess: () => {

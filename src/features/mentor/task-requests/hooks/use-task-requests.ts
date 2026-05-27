@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { ApiError } from "@/api";
 import {
   createTaskRequest,
   fetchTaskRequest,
@@ -48,7 +49,12 @@ export function useCreateTaskRequest() {
       void queryClient.invalidateQueries({ queryKey: taskRequestKeys.all });
       toast.success("Task request created");
     },
-    onError: () => toast.error("Failed to create task request"),
+    onError: (error) =>
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to create task request",
+      ),
   });
 }
 
@@ -61,7 +67,12 @@ export function useReviewTaskRequest() {
       void queryClient.invalidateQueries({ queryKey: taskRequestKeys.all });
       toast.success("Task request updated");
     },
-    onError: () => toast.error("Failed to update task request"),
+    onError: (error) =>
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to update task request",
+      ),
   });
 }
 
