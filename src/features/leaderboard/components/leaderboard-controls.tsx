@@ -47,7 +47,7 @@ export function LeaderboardControls({
           Leaderboard
         </h1>
         <p className="text-sm md:text-base text-muted-foreground mt-2">
-          Recognizing top contributors in the µLearn community.
+          Recognizing top learners in the µLearn community.
         </p>
       </div>
 
