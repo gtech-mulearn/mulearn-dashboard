@@ -1,5 +1,4 @@
 import { Calendar, Trophy } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import type { GeneralToggleProps, TimeFrame } from "@/features/leaderboard";
 
 export function TimeFrameToggle({
@@ -7,23 +6,31 @@ export function TimeFrameToggle({
   onChange,
 }: GeneralToggleProps<TimeFrame>) {
   return (
-    <div className="inline-flex gap-3">
-      <Button
-        variant={selected === "monthly" ? "default" : "outline"}
+    <div className="inline-flex items-center gap-1 bg-muted rounded-full p-1">
+      <button
+        type="button"
         onClick={() => onChange("monthly")}
-        className={`flex items-center gap-3 font-semibold uppercase tracking-tight`}
+        className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 ${
+          selected === "monthly"
+            ? "bg-card text-foreground shadow-sm"
+            : "text-muted-foreground hover:text-foreground"
+        }`}
       >
-        <Calendar className="w-5 h-5" />
+        <Calendar className="w-3.5 h-3.5" />
         <span>Monthly</span>
-      </Button>
-      <Button
-        variant={selected === "overall" ? "default" : "outline"}
+      </button>
+      <button
+        type="button"
         onClick={() => onChange("overall")}
-        className={`flex items-center gap-3 font-semibold uppercase tracking-tight`}
+        className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 ${
+          selected === "overall"
+            ? "bg-card text-foreground shadow-sm"
+            : "text-muted-foreground hover:text-foreground"
+        }`}
       >
-        <Trophy className="w-5 h-5" />
+        <Trophy className="w-3.5 h-3.5" />
         <span>Overall</span>
-      </Button>
+      </button>
     </div>
   );
 }
