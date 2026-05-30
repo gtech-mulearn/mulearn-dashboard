@@ -40,24 +40,42 @@ export function LeaderboardControls({
   };
 
   return (
-    <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-center justify-between mb-8 md:mb-16">
-      {category === "mentors" ? (
-        <div />
-      ) : category === "wadhwani" ? (
-        <WadhwaniTimeFrameToggle
-          selected={wadhwaniTimeframe}
-          onChange={(val) => updateParam("wadhwaniTimeframe", val)}
+    <div className="mb-8 md:mb-10">
+      {/* Page header */}
+      <div className="text-center mb-8 md:mb-10">
+        <h1 className="text-2xl md:text-4xl font-black text-foreground tracking-tight">
+          Leaderboard
+        </h1>
+        <p className="text-sm md:text-base text-muted-foreground mt-2">
+          Recognizing top learners in the µLearn community.
+        </p>
+      </div>
+
+      {/* Controls row */}
+      <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
+        {/* Left: timeframe toggle */}
+        <div>
+          {category === "mentors" ? (
+            <div />
+          ) : category === "wadhwani" ? (
+            <WadhwaniTimeFrameToggle
+              selected={wadhwaniTimeframe}
+              onChange={(val) => updateParam("wadhwaniTimeframe", val)}
+            />
+          ) : (
+            <TimeFrameToggle
+              selected={timeframe}
+              onChange={(val) => updateParam("timeframe", val)}
+            />
+          )}
+        </div>
+
+        {/* Right: category selector */}
+        <CategorySelector
+          selected={category}
+          onChange={(val) => updateParam("category", val)}
         />
-      ) : (
-        <TimeFrameToggle
-          selected={timeframe}
-          onChange={(val) => updateParam("timeframe", val)}
-        />
-      )}
-      <CategorySelector
-        selected={category}
-        onChange={(val) => updateParam("category", val)}
-      />
+      </div>
     </div>
   );
 }
