@@ -83,7 +83,12 @@ function Medal({ rank }: { rank: number }) {
       />
 
       {/* Medal Shadow behind circle */}
-      <circle cx="32" cy="30" r="17" fill="rgba(0,0,0,0.15)" />
+      <circle
+        cx="32"
+        cy="30"
+        r="17"
+        fill="color-mix(in srgb, var(--foreground) 15%, transparent)"
+      />
 
       {/* Medal Circle */}
       <circle
