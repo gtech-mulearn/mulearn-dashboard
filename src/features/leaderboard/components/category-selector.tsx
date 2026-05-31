@@ -1,5 +1,6 @@
 import { Award, Building2, GraduationCap, Users } from "lucide-react";
 import type { ReactNode } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -59,9 +60,11 @@ export function CategorySelector({
         {categories.map((category) => {
           const isSelected = selected === category.value;
           return (
-            <button
+            <Button
               key={category.value}
               type="button"
+              variant={null}
+              size={null}
               onClick={() => onChange(category.value)}
               className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 ${
                 isSelected
@@ -71,7 +74,7 @@ export function CategorySelector({
             >
               {category.icon}
               <span>{category.label}</span>
-            </button>
+            </Button>
           );
         })}
       </div>

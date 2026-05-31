@@ -1,4 +1,5 @@
 import { Calendar, Trophy } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import type { GeneralToggleProps, TimeFrame } from "@/features/leaderboard";
 
 export function TimeFrameToggle({
@@ -7,8 +8,10 @@ export function TimeFrameToggle({
 }: GeneralToggleProps<TimeFrame>) {
   return (
     <div className="inline-flex items-center gap-1 bg-muted rounded-full p-1">
-      <button
+      <Button
         type="button"
+        variant={null}
+        size={null}
         onClick={() => onChange("monthly")}
         className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 ${
           selected === "monthly"
@@ -18,9 +21,11 @@ export function TimeFrameToggle({
       >
         <Calendar className="w-3.5 h-3.5" />
         <span>Monthly</span>
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
+        variant={null}
+        size={null}
         onClick={() => onChange("overall")}
         className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 ${
           selected === "overall"
@@ -30,7 +35,7 @@ export function TimeFrameToggle({
       >
         <Trophy className="w-3.5 h-3.5" />
         <span>Overall</span>
-      </button>
+      </Button>
     </div>
   );
 }
