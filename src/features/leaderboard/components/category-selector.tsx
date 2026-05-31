@@ -56,21 +56,17 @@ export function CategorySelector({
       </div>
 
       {/* Desktop: pill segment group */}
-      <div className="hidden md:inline-flex items-center gap-1 bg-muted rounded-full p-1">
+      <div className="hidden md:inline-flex items-center gap-1 rounded-full p-1">
         {categories.map((category) => {
           const isSelected = selected === category.value;
           return (
             <Button
               key={category.value}
               type="button"
-              variant={null}
-              size={null}
+              variant={isSelected ? "default" : "outline"}
               onClick={() => onChange(category.value)}
-              className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 ${
-                isSelected
-                  ? "bg-card text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
+              aria-pressed={isSelected}
+              className="font-semibold"
             >
               {category.icon}
               <span>{category.label}</span>
