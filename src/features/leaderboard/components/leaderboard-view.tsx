@@ -1,6 +1,7 @@
 "use client";
 
 import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLeaderboard } from "../hooks/use-leaderboard";
 import type { Category, TimeFrame, WadhwaniTimeFrame } from "../types";
@@ -54,9 +55,13 @@ export function LeaderboardView({
           </div>
         </div>
       ) : isError ? (
-        <div className="min-h-[50vh] flex flex-col items-center justify-center text-destructive gap-2">
-          <AlertCircle className="w-8 h-8" />
-          <p>Failed to load leaderboard data.</p>
+        <div className="min-h-[50vh] flex flex-col items-center justify-center px-4">
+          <Alert variant="destructive" className="max-w-sm">
+            <AlertCircle />
+            <AlertDescription>
+              Failed to load leaderboard data.
+            </AlertDescription>
+          </Alert>
         </div>
       ) : data && data.length > 0 ? (
         <div className="space-y-8">
