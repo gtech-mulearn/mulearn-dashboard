@@ -203,7 +203,8 @@ export function TaskDetailPanel({
               {/* Submit Proof of Work Button */}
               <div className="pt-6">
                 <Button
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-base h-11 rounded-lg cursor-pointer px-8"
+                  variant="default"
+                  className="h-11 rounded-lg text-base font-semibold px-8"
                   onClick={() => {
                     window.open(
                       "https://discord.com/channels/771670169691881483/782353185552465951",
