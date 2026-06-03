@@ -135,7 +135,10 @@ function buildColumnOrder(
         row: Record<string, unknown>,
       ) => {
         const status = row.status as CompanyStatus;
-        const isPending = status === "pending_verification";
+        const isPending =
+          status === "pending_verification" ||
+          (status as string) === "pending" ||
+          !status;
         return (
           <div className="flex items-center gap-1">
             <button
@@ -153,10 +156,10 @@ function buildColumnOrder(
                   type="button"
                   onClick={() => onApproveRow(id)}
                   className="inline-flex items-center gap-1 rounded-lg border border-success/40 bg-success/10 px-2 py-1 text-xs font-semibold text-success transition-colors hover:bg-success/20"
-                  title="Approve"
+                  title="Verify"
                 >
                   <CheckCircle className="h-3 w-3" />
-                  <span className="hidden sm:inline">Approve</span>
+                  <span className="hidden sm:inline">Verify</span>
                 </button>
                 <button
                   type="button"

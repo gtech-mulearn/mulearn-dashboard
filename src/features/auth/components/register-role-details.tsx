@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import { TagInput } from "@/components/ui/tag-input";
 import {
   useCountries,
   useDistricts,
@@ -157,7 +158,9 @@ const companyDetailsSchema = z.object({
     .string()
     .min(1, "Company name is required")
     .max(75, "Max 75 characters"),
-  companyDescription: z.string().optional(),
+  companyDescription: z.string().min(1, "Description is required"),
+  logo: z.string().url("Please enter a valid URL").or(z.literal("")).optional(),
+  shortPitch: z.string().optional(),
   industrySector: z.string().optional(),
   companySize: z.string().optional(),
   // Contact & Online Presence
@@ -166,17 +169,14 @@ const companyDetailsSchema = z.object({
     .url("Please enter a valid URL")
     .or(z.literal(""))
     .optional(),
+  email: z.string().email("Invalid email address").or(z.literal("")).optional(),
   linkedinUrl: z
     .string()
     .url("Please enter a valid LinkedIn URL")
     .or(z.literal(""))
     .optional(),
-  pocPhone: z
-    .string()
-    .regex(/^\+?[0-9]{8,15}$/, "Enter a valid phone number (8–15 digits)")
-    .or(z.literal(""))
-    .optional(),
-  // Location (Country → State → District cascade; only districtId sent to API)
+  // Location
+  location: z.string().optional(),
   countryId: z.string().optional(),
   stateId: z.string().optional(),
   districtId: z.string().optional(),
@@ -184,11 +184,13 @@ const companyDetailsSchema = z.object({
   legalName: z.string().optional(),
   registrationNumber: z.string().optional(),
   taxId: z.string().optional(),
-  verificationDocumentUrl: z
-    .string()
-    .url("Please enter a valid URL")
-    .or(z.literal(""))
-    .optional(),
+  foundedYear: z.number().optional(),
+  remotePolicy: z.string().optional(),
+  cultureText: z.string().optional(),
+  techStack: z.array(z.string()).optional(),
+  perks: z.array(z.string()).optional(),
+  testimonials: z.array(z.any()).optional(),
+  gallery: z.array(z.any()).optional(),
 });
 
 type RoleDetailsValues =
@@ -200,18 +202,27 @@ type RoleDetailsValues =
 export interface CompanyDetailsValues {
   companyName?: string;
   companyDescription?: string;
+  logo?: string;
+  shortPitch?: string;
   industrySector?: string;
   companySize?: string;
   websiteLink?: string;
+  email?: string;
   linkedinUrl?: string;
-  pocPhone?: string;
+  location?: string;
   countryId?: string;
   stateId?: string;
   districtId?: string;
   legalName?: string;
   registrationNumber?: string;
   taxId?: string;
-  verificationDocumentUrl?: string;
+  foundedYear?: number;
+  remotePolicy?: string;
+  cultureText?: string;
+  techStack?: string[];
+  perks?: string[];
+  testimonials?: any[];
+  gallery?: any[];
 }
 
 interface RegisterRoleDetailsProps {
@@ -285,18 +296,27 @@ export function RegisterRoleDetails({
     return {
       companyName: "",
       companyDescription: "",
+      logo: "",
+      shortPitch: "",
       industrySector: "",
       companySize: "",
       websiteLink: "",
+      email: "",
       linkedinUrl: "",
-      pocPhone: "",
+      location: "",
       countryId: "",
       stateId: "",
       districtId: "",
       legalName: "",
       registrationNumber: "",
       taxId: "",
-      verificationDocumentUrl: "",
+      foundedYear: undefined,
+      remotePolicy: "",
+      cultureText: "",
+      techStack: [],
+      perks: [],
+      testimonials: [],
+      gallery: [],
     };
   };
 
@@ -314,7 +334,7 @@ export function RegisterRoleDetails({
 
   // Company stepper state
   const [companyStep, setCompanyStep] = useState(1);
-  const COMPANY_STEPS = ["Basic Info", "Contact", "Location", "Legal"];
+  const COMPANY_STEPS = ["Basic Info", "Contact", "Location", "Legal Info"];
 
   // Location cascading state (company form only)
   const [selectedCountryId, setSelectedCountryId] = useState<
@@ -849,18 +869,63 @@ export function RegisterRoleDetails({
 
                   <FormField
                     control={form.control}
-                    name="companyDescription"
+                    name="logo"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-sm font-medium">
-                          Description{" "}
+                          Logo URL{" "}
                           <span className="text-muted-foreground">
                             (optional)
                           </span>
                         </FormLabel>
                         <FormControl>
                           <Input
+                            placeholder="https://example.com/logo.png"
+                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
+                            disabled={isLoading}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="companyDescription"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          Description
+                        </FormLabel>
+                        <FormControl>
+                          <Input
                             placeholder="Brief description of your company"
+                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
+                            disabled={isLoading}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="shortPitch"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          Short Pitch{" "}
+                          <span className="text-muted-foreground">
+                            (optional)
+                          </span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="A short pitch under 150 words"
                             className="h-12 rounded-xl border-border bg-muted/50 px-4"
                             disabled={isLoading}
                             {...field}
@@ -928,19 +993,19 @@ export function RegisterRoleDetails({
                 <>
                   <FormField
                     control={form.control}
-                    name="pocPhone"
+                    name="email"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-sm font-medium">
-                          Contact Phone{" "}
+                          Contact Email{" "}
                           <span className="text-muted-foreground">
                             (optional)
                           </span>
                         </FormLabel>
                         <FormControl>
                           <Input
-                            type="tel"
-                            placeholder="+91 98765 43210"
+                            type="email"
+                            placeholder="contact@acme.com"
                             className="h-12 rounded-xl border-border bg-muted/50 px-4"
                             disabled={isLoading}
                             {...field}
@@ -1004,6 +1069,29 @@ export function RegisterRoleDetails({
               {/* Step 3: Location */}
               {companyStep === 3 && (
                 <>
+                  <FormField
+                    control={form.control}
+                    name="location"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          Location{" "}
+                          <span className="text-muted-foreground">
+                            (optional)
+                          </span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="e.g., Kochi, Kerala"
+                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
+                            disabled={isLoading}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   <FormField
                     control={form.control}
                     name="countryId"
@@ -1187,18 +1275,75 @@ export function RegisterRoleDetails({
 
                   <FormField
                     control={form.control}
-                    name="verificationDocumentUrl"
+                    name="foundedYear"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-sm font-medium">
-                          Verification Document URL{" "}
+                          Founded Year{" "}
                           <span className="text-muted-foreground">
                             (optional)
                           </span>
                         </FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="https://drive.google.com/..."
+                            type="number"
+                            placeholder="e.g., 2018"
+                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
+                            disabled={isLoading}
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(
+                                e.target.value
+                                  ? parseInt(e.target.value, 10)
+                                  : undefined,
+                              )
+                            }
+                            value={field.value || ""}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="remotePolicy"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          Remote Policy{" "}
+                          <span className="text-muted-foreground">
+                            (optional)
+                          </span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="e.g., Hybrid, Fully Remote"
+                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
+                            disabled={isLoading}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="cultureText"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          Culture Text{" "}
+                          <span className="text-muted-foreground">
+                            (optional)
+                          </span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="e.g., We move fast and care deeply."
                             className="h-12 rounded-xl border-border bg-muted/50 px-4"
                             disabled={isLoading}
                             {...field}

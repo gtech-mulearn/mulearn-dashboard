@@ -40,7 +40,7 @@ export async function fetchCompanyVerificationRequests(
   if (params.dateTo) query.set("dateTo", params.dateTo);
 
   const response = await apiClient.get(
-    `${endpoints.company.verificationRequests}?${query.toString()}`,
+    `${endpoints.company.list}?${query.toString()}`,
     CompanyVerificationListResponseSchema,
   );
 
@@ -56,7 +56,7 @@ export async function verifyCompany(
   payload: VerificationActionFormValues,
 ): Promise<void> {
   await apiClient.patch(
-    endpoints.company.verificationAction(companyId),
+    endpoints.company.verify(companyId),
     payload,
     VerificationActionResponseSchema,
   );

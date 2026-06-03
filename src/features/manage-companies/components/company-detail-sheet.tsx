@@ -112,7 +112,10 @@ export function CompanyDetailSheet({
 }: CompanyDetailSheetProps) {
   if (!company) return null;
 
-  const canAct = company.status === "pending_verification";
+  const canAct =
+    company.status === "pending_verification" ||
+    (company.status as string) === "pending" ||
+    !company.status;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>

@@ -180,7 +180,7 @@ export async function fetchPublicUserProfile(
  */
 export async function fetchCompanyOnboardingStatus() {
   const response = await apiClient.get(
-    endpoints.company.onboardingStatus,
+    endpoints.company.status,
     CompanyOnboardingStatusResponseSchema,
   );
   return response.response;

@@ -77,7 +77,7 @@ export async function fetchJobs(
 
 export async function fetchJobDetail(jobId: string): Promise<Job> {
   const res = await apiClient.get(
-    endpoints.company.jobDetails(jobId),
+    endpoints.company.jobDetail(jobId),
     JobDetailResponseSchema,
   );
   return res.response.job;
@@ -87,7 +87,7 @@ export async function createJob(
   payload: CreateJobPayload,
 ): Promise<CreateJobResponse> {
   const res = await apiClient.post(
-    endpoints.company.createJob,
+    endpoints.company.jobs,
     payload,
     CreateJobResponseSchema,
   );
@@ -99,7 +99,7 @@ export async function updateJob(
   payload: UpdateJobPayload,
 ): Promise<UpdateJobResponse> {
   const res = await apiClient.patch(
-    endpoints.company.updateJob(jobId),
+    endpoints.company.jobDetail(jobId),
     payload,
     UpdateJobResponseSchema,
   );
@@ -108,7 +108,7 @@ export async function updateJob(
 
 export async function deleteJob(jobId: string): Promise<DeleteJobResponse> {
   const res = await apiClient.delete(
-    endpoints.company.deleteJob(jobId),
+    endpoints.company.jobDetail(jobId),
     undefined,
     DeleteJobResponseSchema,
   );
@@ -196,8 +196,8 @@ export async function fetchPublicJobs(
 
   const queryString = query.toString();
   const url = queryString
-    ? `${endpoints.company.publicJobs}?${queryString}`
-    : endpoints.company.publicJobs;
+    ? `${endpoints.company.jobsAll}?${queryString}`
+    : endpoints.company.jobsAll;
 
   const res = await publicApiClient.get(url, PublicJobsResponseSchema);
   return res.response;
@@ -218,8 +218,8 @@ export async function fetchLearnerApplications(params?: {
 
   const queryString = query.toString();
   const url = queryString
-    ? `${endpoints.company.learnerApplications}?${queryString}`
-    : endpoints.company.learnerApplications;
+    ? `${endpoints.company.myApplications}?${queryString}`
+    : endpoints.company.myApplications;
 
   const res = await apiClient.get(url, LearnerApplicationsResponseSchema);
   return res.response;
@@ -259,8 +259,8 @@ export async function fetchJobApplicants(
 
   const queryString = query.toString();
   const url = queryString
-    ? `${endpoints.company.jobApplicants(jobId)}?${queryString}`
-    : endpoints.company.jobApplicants(jobId);
+    ? `${endpoints.company.jobApplications(jobId)}?${queryString}`
+    : endpoints.company.jobApplications(jobId);
 
   const res = await apiClient.get(url, JobApplicantsResponseSchema);
   return res.response;
@@ -272,7 +272,7 @@ export async function updateApplicantStatus(
   status: string,
 ): Promise<UpdateApplicantStatusResponse> {
   const res = await apiClient.patch(
-    endpoints.company.updateApplicantStatus(jobId, appId),
+    endpoints.company.applicationStatus(appId),
     { status },
     UpdateApplicantStatusResponseSchema,
   );
@@ -304,8 +304,8 @@ export async function fetchLearnerDiscovery(
 
   const queryString = query.toString();
   const url = queryString
-    ? `${endpoints.company.learners}?${queryString}`
-    : endpoints.company.learners;
+    ? `${endpoints.company.mulearners}?${queryString}`
+    : endpoints.company.mulearners;
 
   const res = await apiClient.get(url, LearnerDiscoveryResponseSchema);
   return res.response;
