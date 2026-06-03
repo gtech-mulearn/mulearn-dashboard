@@ -275,8 +275,9 @@ export function SessionsPage() {
   const upcomingSessions = all?.data?.filter(
     (s) => s.status === "SCHEDULED" || s.status === "PENDING_APPROVAL",
   );
-  const { data: pending, isLoading: pendingLoading } =
+  const { data: pendingResult, isLoading: pendingLoading } =
     usePendingSessions(isAdmin);
+  const pending = pendingResult?.data;
 
   const sharedHandlers = {
     onEdit: setEditSession,

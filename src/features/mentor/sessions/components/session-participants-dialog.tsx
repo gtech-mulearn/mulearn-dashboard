@@ -42,7 +42,7 @@ import {
 import {
   useAddParticipant,
   useParticipants,
-  useRemoveParticipant,
+  useUpdateParticipant,
 } from "../hooks/use-sessions";
 import {
   AddParticipantFormSchema,
@@ -75,11 +75,11 @@ export function SessionParticipantsDialog({
   const sessionId = session?.id ?? "";
   const { data: participants, isLoading } = useParticipants(sessionId);
   const { mutate: addP, isPending: isAdding } = useAddParticipant(sessionId);
-  const { mutate: removeP, isPending: isRemoving } =
-    useRemoveParticipant(sessionId);
+  const { mutate: updateP, isPending: isRemoving } =
+    useUpdateParticipant(sessionId);
 
   const [removeTarget, setRemoveTarget] = useState<{
-    userId: string;
+    linkId: string;
     name: string;
     participantRole: "MENTOR" | "CO_MENTOR" | "MENTEE";
   } | null>(null);
@@ -126,7 +126,9 @@ export function SessionParticipantsDialog({
             <TableBody>
               {participants.map((p) => (
                 <TableRow key={p.user_id}>
-                  <TableCell className="font-medium">{p.full_name}</TableCell>
+                  <TableCell className="font-medium">
+                    {p.user_full_name ?? p.full_name ?? p.user_id}
+                  </TableCell>
                   <TableCell>
                     <Badge variant="secondary">
                       {ROLE_LABELS[p.participant_role] ?? p.participant_role}
@@ -155,8 +157,8 @@ export function SessionParticipantsDialog({
                       className="h-8 w-8 text-destructive hover:bg-destructive/10"
                       onClick={() =>
                         setRemoveTarget({
-                          userId: p.user_id,
-                          name: p.full_name,
+                          linkId: p.id ?? p.user_id,
+                          name: p.user_full_name ?? p.full_name ?? p.user_id,
                           participantRole: p.participant_role,
                         })
                       }
@@ -228,10 +230,12 @@ export function SessionParticipantsDialog({
         description={`Remove ${removeTarget?.name} from this session?`}
         onConfirm={() => {
           if (removeTarget) {
-            removeP(
+            // Doc endpoint #21: PATCH /session/participant/update/<link_id>/
+            // Mark attendance as ABSENT to effectively remove from active list
+            updateP(
               {
-                userId: removeTarget.userId,
-                participantRole: removeTarget.participantRole,
+                linkId: removeTarget.linkId,
+                data: { attendance_status: "ABSENT" },
               },
               { onSuccess: () => setRemoveTarget(null) },
             );

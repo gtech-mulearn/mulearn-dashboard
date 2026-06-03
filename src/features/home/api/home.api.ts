@@ -1,5 +1,6 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
+
 import {
   CalendarEventsResponseSchema,
   CampusCircleHealthResponseSchema,
@@ -13,7 +14,6 @@ import {
   LearnerStreakResponseSchema,
   MentorIgRolesResponseSchema,
   MentorMenteesResponseSchema,
-  MentorMyIgsResponseSchema,
   MentorOverviewResponseSchema,
   MentorPersonaSwitchResponseSchema,
   MentorSessionsResponseSchema,
@@ -62,7 +62,7 @@ export async function getCalendarEvents() {
 
 export async function getMentorOverview() {
   const response = await apiClient.get(
-    endpoints.mentor.overview,
+    "/api/v1/dashboard/mentor/overview/",
     MentorOverviewResponseSchema,
     { skipAuthRedirectOn403: true },
   );
@@ -74,7 +74,8 @@ export async function getMentorOverview() {
 // ============================================
 
 export async function getMentorSessions(status = "SCHEDULED") {
-  const url = `${endpoints.mentor.sessions}?status=${status}`;
+  // Doc #12: GET /session/list/ with status query param
+  const url = `${endpoints.mentor.sessionList}?status=${status}`;
   const response = await apiClient.get(url, MentorSessionsResponseSchema, {
     skipAuthRedirectOn403: true,
   });
@@ -87,7 +88,7 @@ export async function getMentorSessions(status = "SCHEDULED") {
 
 export async function getMentorMentees() {
   const response = await apiClient.get(
-    endpoints.mentor.mentees,
+    "/api/v1/dashboard/mentor/mentees/",
     MentorMenteesResponseSchema,
     { skipAuthRedirectOn403: true },
   );
@@ -100,7 +101,7 @@ export async function getMentorMentees() {
 
 export async function getMentorIgRoles() {
   const response = await apiClient.get(
-    endpoints.mentor.personaIgRoles,
+    "/api/v1/dashboard/mentor/persona/ig-roles/",
     MentorIgRolesResponseSchema,
   );
   return response.response.ig_roles;
@@ -108,7 +109,7 @@ export async function getMentorIgRoles() {
 
 export async function switchMentorPersona(roleLinkId: string) {
   const response = await apiClient.post(
-    endpoints.mentor.personaSwitch,
+    "/api/v1/dashboard/mentor/persona/switch/",
     { active_role_link_id: roleLinkId },
     MentorPersonaSwitchResponseSchema,
   );
@@ -292,8 +293,9 @@ export async function acceptSessionRequest(
   sessionId: string,
   userId: string,
 ): Promise<void> {
+  // Doc #20: POST /session/participant/list/<session_id>/ to add a participant
   await apiClient.post(
-    endpoints.mentor.sessionParticipants(sessionId),
+    endpoints.mentor.sessionParticipantList(sessionId),
     { user: userId, participant_role: "MENTOR", attendance_status: "INVITED" },
     undefined,
     { skipAuthRedirectOn403: true },
@@ -302,25 +304,14 @@ export async function acceptSessionRequest(
 
 export async function declineSessionRequest(
   sessionId: string,
-  userId: string,
+  _userId: string,
 ): Promise<void> {
-  await apiClient.delete(
-    endpoints.mentor.sessionParticipant(sessionId, userId, "MENTOR"),
-    undefined,
+  // Doc #17: PATCH /session/admin/verify/<session_id>/ with status REJECTED
+  // The old DELETE endpoint no longer exists in the doc.
+  await apiClient.patch(
+    endpoints.mentor.sessionAdminVerify(sessionId),
+    { status: "REJECTED" },
     undefined,
     { skipAuthRedirectOn403: true },
   );
-}
-
-// ============================================
-// My IGs (Mentor)
-// ============================================
-
-export async function getMentorMyIgs() {
-  const res = await apiClient.get(
-    endpoints.mentor.myIgs,
-    MentorMyIgsResponseSchema,
-    { skipAuthRedirectOn403: true },
-  );
-  return res.response.igs;
 }

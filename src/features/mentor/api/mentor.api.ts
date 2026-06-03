@@ -7,7 +7,7 @@ import type {
   WeeklySchedule,
 } from "../types";
 
-// ─── Schemas ────────────────────────────────────────────────
+// ─── Schemas ─────────────────────────────────────────────────────────────────
 
 const ApiResponseOf = <T extends z.ZodTypeAny>(dataSchema: T) =>
   z.object({
@@ -17,12 +17,19 @@ const ApiResponseOf = <T extends z.ZodTypeAny>(dataSchema: T) =>
     response: dataSchema,
   });
 
-// Backend returns paginated list of individual slot records
+// Doc: weekday 1=Monday … 7=Sunday
 const BackendSlotSchema = z.object({
   id: z.string(),
-  weekday: z.coerce.number().int().min(0).max(6),
+  weekday: z.coerce.number().int().min(1).max(7),
   start_time: z.string(), // "HH:MM:SS"
   end_time: z.string(),
+  ig: z.string().nullable().optional(),
+  ig_id: z.string().nullable().optional(),
+  ig_name: z.string().nullable().optional(),
+  timezone: z.string().optional().default("Asia/Kolkata"),
+  is_active: z.boolean().optional().default(true),
+  valid_from: z.string().nullable().optional(),
+  valid_to: z.string().nullable().optional(),
 });
 
 const AvailabilityListResponseSchema = ApiResponseOf(
@@ -32,14 +39,14 @@ const AvailabilityListResponseSchema = ApiResponseOf(
   }),
 );
 
-const AvailabilityCalendarSlotSchema = z.object({
+export const AvailabilityCalendarSlotSchema = z.object({
   id: z.string(),
   mentor_user_id: z.string(),
   mentor_full_name: z.string().optional(),
   mentor_name: z.string().optional(),
   ig_id: z.string().nullable().optional(),
   ig_name: z.string().nullable().optional(),
-  weekday: z.coerce.number().int().min(0).max(6),
+  weekday: z.coerce.number().int().min(1).max(7), // doc: 1–7
   start_time: z.string(),
   end_time: z.string(),
   timezone: z.string().optional().default("Asia/Kolkata"),
@@ -47,13 +54,14 @@ const AvailabilityCalendarSlotSchema = z.object({
   valid_from: z.string().nullable().optional(),
   valid_to: z.string().nullable().optional(),
   created_at: z.string().optional(),
+  updated_at: z.string().optional(),
 });
 
 const AvailabilityCalendarResponseSchema = ApiResponseOf(
   z.array(AvailabilityCalendarSlotSchema),
 );
 
-// ─── Time format helpers ────────────────────────────────────
+// ─── Time format helpers ──────────────────────────────────────────────────────
 
 function toHHmm(t: string): string {
   // backend "HH:MM:SS" → "HH:MM"
@@ -65,8 +73,9 @@ function toHHmmss(t: string): string {
   return t.length === 5 ? `${t}:00` : t;
 }
 
-// ─── API Functions ──────────────────────────────────────────
+// ─── API Functions ────────────────────────────────────────────────────────────
 
+// ─── #9 GET /availability/ — paginated slot list ─────────────────────────────
 export async function getAvailabilitySlots(): Promise<WeeklySchedule> {
   const res = await apiClient.get(
     `${endpoints.mentor.availabilitySlots}?perPage=200`,
@@ -75,7 +84,7 @@ export async function getAvailabilitySlots(): Promise<WeeklySchedule> {
   );
   const slots = Array.isArray(res.response?.data) ? res.response.data : [];
 
-  // Group slots by weekday
+  // Group slots by weekday (1=Mon … 7=Sun per doc)
   const byDay = new Map<number, TimeSlot[]>();
   for (const s of slots) {
     const arr = byDay.get(s.weekday) ?? [];
@@ -83,21 +92,13 @@ export async function getAvailabilitySlots(): Promise<WeeklySchedule> {
     byDay.set(s.weekday, arr);
   }
 
-  return Array.from(byDay.entries()).map(([day, slots]) => ({ day, slots }));
+  return Array.from(byDay.entries()).map(([day, daySlots]) => ({
+    day,
+    slots: daySlots,
+  }));
 }
 
-export async function fetchAvailabilityCalendar(): Promise<
-  AvailabilityCalendarSlot[]
-> {
-  const res = await apiClient.get(
-    endpoints.mentor.availabilityCalendar,
-    AvailabilityCalendarResponseSchema,
-    { skipAuthRedirectOn403: true },
-  );
-  return res.response;
-}
-
-// Fetch raw slot records with their backend IDs (used for deletion)
+// Fetch raw slot records with their backend IDs (used for delete-all strategy)
 async function getRawSlots(): Promise<{ id: string }[]> {
   const res = await apiClient.get(
     `${endpoints.mentor.availabilitySlots}?perPage=200`,
@@ -107,16 +108,19 @@ async function getRawSlots(): Promise<{ id: string }[]> {
   return Array.isArray(res.response?.data) ? res.response.data : [];
 }
 
+// ─── #9 POST + #10 DELETE — Full-replace strategy ────────────────────────────
+// Deletes all existing slots then creates new ones from the schedule.
+// Each slot now includes the `ig` field required by the doc.
 export async function createAvailabilitySlots(
   schedule: WeeklySchedule,
+  igId?: string,
 ): Promise<void> {
-  // Full-replace strategy: delete existing slots, then create new ones.
+  // Step 1: delete all existing slots
   const existing = await getRawSlots();
-
   await Promise.all(
     existing.map((slot) =>
       apiClient.delete(
-        `${endpoints.mentor.availabilitySlots}${slot.id}/`,
+        endpoints.mentor.availabilitySlot(slot.id),
         undefined,
         z.unknown(),
         { skipAuthRedirectOn403: true },
@@ -124,18 +128,22 @@ export async function createAvailabilitySlots(
     ),
   );
 
-  // Flatten schedule into per-slot POSTs
+  // Step 2: create new slots
   const posts: Promise<unknown>[] = [];
   for (const day of schedule) {
     for (const slot of day.slots) {
+      const payload: Record<string, unknown> = {
+        weekday: day.day, // 1–7 (Mon–Sun per doc)
+        start_time: toHHmmss(slot.start),
+        end_time: toHHmmss(slot.end),
+        timezone: "Asia/Kolkata",
+        is_active: true,
+      };
+      if (igId) payload.ig = igId; // required by doc when posting
       posts.push(
         apiClient.post(
           endpoints.mentor.availabilitySlots,
-          {
-            weekday: day.day,
-            start_time: toHHmmss(slot.start),
-            end_time: toHHmmss(slot.end),
-          },
+          payload,
           z.unknown(),
           { skipAuthRedirectOn403: true },
         ),
@@ -144,4 +152,41 @@ export async function createAvailabilitySlots(
   }
 
   await Promise.all(posts);
+}
+
+// ─── #9 POST /availability/ — Create a single slot ───────────────────────────
+export interface CreateSlotPayload {
+  ig: string; // required by doc
+  weekday: number; // 1–7
+  start_time: string; // HH:MM:SS
+  end_time: string; // HH:MM:SS
+  timezone?: string;
+  is_active?: boolean;
+  valid_from?: string;
+  valid_to?: string;
+}
+
+export async function createAvailabilitySlot(
+  payload: CreateSlotPayload,
+): Promise<void> {
+  await apiClient.post(
+    endpoints.mentor.availabilitySlots,
+    payload,
+    z.unknown(),
+    { skipAuthRedirectOn403: true },
+  );
+}
+
+// ─── #10 GET /availability/<slot_id>/ — Single slot detail ───────────────────
+export async function fetchAvailabilityCalendar(): Promise<
+  AvailabilityCalendarSlot[]
+> {
+  // Doc: public availability uses /public/availability/<mentor_id>/
+  // This function is kept for the mentor's own slot list view
+  const res = await apiClient.get(
+    endpoints.mentor.availabilitySlots,
+    AvailabilityCalendarResponseSchema,
+    { skipAuthRedirectOn403: true },
+  );
+  return res.response;
 }

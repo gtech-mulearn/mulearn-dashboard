@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery } from "@tanstack/react-query";
+
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -27,7 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { getMentorMyIgs } from "@/features/home/api/home.api";
+import { useTaskIgDropdown } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
 import { useApproveSession } from "../hooks/use-sessions";
 import type { Session } from "../schemas";
 
@@ -51,27 +51,21 @@ export function ApproveSessionDialog({
   onOpenChange,
 }: ApproveSessionDialogProps) {
   const { mutate: approve, isPending } = useApproveSession();
-  const { data: myIgs = [] } = useQuery({
-    queryKey: ["mentor-my-igs"],
-    queryFn: getMentorMyIgs,
-  });
+  const { data: myIgs = [] } = useTaskIgDropdown();
 
   const form = useForm<ApproveFormValues>({
     resolver: zodResolver(ApproveFormSchema),
     defaultValues: { ig_id: "GLOBAL", remarks: "" },
   });
 
-  function onSubmit(values: ApproveFormValues) {
+  function onSubmit(_values: ApproveFormValues) {
     if (!session) return;
-    const igId =
-      values.ig_id && values.ig_id !== "GLOBAL" ? values.ig_id : undefined;
+    // Doc payload: { status: "SCHEDULED" } to approve, { status: "REJECTED" } to reject
     approve(
       {
         id: session.id,
         data: {
-          action,
-          ig_id: igId,
-          remarks: values.remarks,
+          status: isApprove ? "SCHEDULED" : "REJECTED",
         },
       },
       { onSuccess: () => onOpenChange(false) },
@@ -107,8 +101,8 @@ export function ApproveSessionDialog({
                       <SelectContent>
                         <SelectItem value="GLOBAL">Keep as global</SelectItem>
                         {myIgs.map((ig) => (
-                          <SelectItem key={ig.ig_id} value={ig.ig_id}>
-                            {ig.ig_name}
+                          <SelectItem key={ig.id} value={ig.id}>
+                            {ig.name}
                           </SelectItem>
                         ))}
                       </SelectContent>

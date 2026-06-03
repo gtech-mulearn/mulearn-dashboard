@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery } from "@tanstack/react-query";
+
 import { CheckCircle, Plus, XCircle } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -47,7 +47,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { getMentorMyIgs } from "@/features/home/api/home.api";
+import { useTaskIgDropdown } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
 import {
   useCreateTaskRequest,
   useReviewTaskRequest,
@@ -68,10 +68,7 @@ function CreateTaskRequestDialog({
   open: boolean;
   onOpenChange: (v: boolean) => void;
 }) {
-  const { data: myIgs = [] } = useQuery({
-    queryKey: ["mentor-my-igs"],
-    queryFn: getMentorMyIgs,
-  });
+  const { data: myIgs = [] } = useTaskIgDropdown();
 
   const { mutate: create, isPending } = useCreateTaskRequest();
   const form = useForm<TaskRequestFormValues>({
@@ -142,8 +139,8 @@ function CreateTaskRequestDialog({
                     </FormControl>
                     <SelectContent>
                       {myIgs.map((ig) => (
-                        <SelectItem key={ig.ig_id} value={ig.ig_id}>
-                          {ig.ig_name}
+                        <SelectItem key={ig.id} value={ig.id}>
+                          {ig.name}
                         </SelectItem>
                       ))}
                     </SelectContent>

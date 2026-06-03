@@ -1,66 +1,29 @@
-import { apiClient } from "@/api/client";
-import { endpoints } from "@/api/endpoints";
+// ─── Mentees & Activity Log API ───────────────────────────────────────────────
+// NOTE: The mentees (/mentor/mentees/...) and activity-log
+// (/mentor/activity-log/...) endpoints are NOT part of the 22 documented
+// mentor APIs. These stubs return empty data so the feature continues to
+// compile while the alternate API is being wired up.
+// ─────────────────────────────────────────────────────────────────────────────
+
 import type { ActivityLogItem, Mentee, MenteeDetail } from "../schemas";
-import {
-  ActivityLogResponseSchema,
-  MenteeDetailResponseSchema,
-  MenteeListResponseSchema,
-} from "../schemas";
 
-const OPT = { skipAuthRedirectOn403: true } as const;
-
-interface ListParams {
-  page?: number;
-  search?: string;
+// #stub – no documented endpoint exists for mentor mentees yet
+export async function fetchMentees(
+  _params: { page?: number; search?: string } = {},
+): Promise<{ data: Mentee[]; totalPages: number; totalItems: number }> {
+  return { data: [], totalPages: 1, totalItems: 0 };
 }
 
-export async function fetchMentees(params: ListParams = {}): Promise<{
-  data: Mentee[];
-  totalPages: number;
-  totalItems: number;
-}> {
-  const q = new URLSearchParams();
-  if (params.page) q.set("page", String(params.page));
-  if (params.search) q.set("search", params.search);
-
-  const url =
-    params.page || params.search
-      ? `${endpoints.mentor.mentees}?${q}`
-      : endpoints.mentor.mentees;
-
-  const res = await apiClient.get(url, MenteeListResponseSchema, OPT);
-  return {
-    data: res.response.data,
-    totalPages: res.response.pagination?.totalPages ?? 1,
-    totalItems: res.response.pagination?.count ?? res.response.data.length,
-  };
+// #stub – no documented endpoint exists for mentee detail yet
+export async function fetchMenteeDetail(
+  _userId: string,
+): Promise<MenteeDetail> {
+  throw new Error("fetchMenteeDetail: endpoint not yet available");
 }
 
-export async function fetchMenteeDetail(userId: string): Promise<MenteeDetail> {
-  const res = await apiClient.get(
-    endpoints.mentor.menteeDetail(userId),
-    MenteeDetailResponseSchema,
-    OPT,
-  );
-  return res.response.mentee;
-}
-
-export async function fetchActivityLog(params: ListParams = {}): Promise<{
-  data: ActivityLogItem[];
-  totalPages: number;
-}> {
-  const q = new URLSearchParams();
-  if (params.page) q.set("page", String(params.page));
-  if (params.search) q.set("search", params.search);
-
-  const url =
-    params.page || params.search
-      ? `${endpoints.mentor.activityLog}?${q}`
-      : endpoints.mentor.activityLog;
-
-  const res = await apiClient.get(url, ActivityLogResponseSchema, OPT);
-  return {
-    data: res.response.data,
-    totalPages: res.response.pagination?.totalPages ?? 1,
-  };
+// #stub – no documented endpoint exists for activity log yet
+export async function fetchActivityLog(
+  _params: { page?: number; search?: string } = {},
+): Promise<{ data: ActivityLogItem[]; totalPages: number }> {
+  return { data: [], totalPages: 1 };
 }

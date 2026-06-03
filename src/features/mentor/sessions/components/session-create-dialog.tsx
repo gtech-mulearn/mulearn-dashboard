@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery } from "@tanstack/react-query";
+
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,7 +32,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { getMentorMyIgs } from "@/features/home/api/home.api";
+import { useTaskIgDropdown } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
 import { useCreateSession } from "../hooks/use-sessions";
 import { SessionFormSchema, type SessionFormValues } from "../schemas";
 
@@ -45,10 +45,7 @@ export function SessionCreateDialog({
   open,
   onOpenChange,
 }: SessionCreateDialogProps) {
-  const { data: myIgs = [] } = useQuery({
-    queryKey: ["mentor-my-igs"],
-    queryFn: getMentorMyIgs,
-  });
+  const { data: myIgs = [] } = useTaskIgDropdown();
 
   const { mutate: create, isPending } = useCreateSession();
 
@@ -58,9 +55,10 @@ export function SessionCreateDialog({
       title: "",
       description: "",
       ig_id: "GLOBAL",
+      mode: "ONLINE",
       starts_at: "",
       ends_at: "",
-      meet_link: "",
+      meeting_link: "",
     },
   });
 
@@ -148,8 +146,8 @@ export function SessionCreateDialog({
                               Global session
                             </SelectItem>
                             {myIgs.map((ig) => (
-                              <SelectItem key={ig.ig_id} value={ig.ig_id}>
-                                {ig.ig_name}
+                              <SelectItem key={ig.id} value={ig.id}>
+                                {ig.name}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -204,10 +202,10 @@ export function SessionCreateDialog({
 
             <FormField
               control={form.control}
-              name="meet_link"
+              name="meeting_link"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Meet Link</FormLabel>
+                  <FormLabel>Meeting Link</FormLabel>
                   <FormControl>
                     <Input
                       type="url"

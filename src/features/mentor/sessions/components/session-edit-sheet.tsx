@@ -30,7 +30,7 @@ const EditSchema = z
     description: z.string().optional(),
     starts_at: z.string().min(1, "Start time is required"),
     ends_at: z.string().min(1, "End time is required"),
-    meet_link: z
+    meeting_link: z
       .string()
       .url("Must be a valid URL")
       .optional()
@@ -62,7 +62,7 @@ export function SessionEditSheet({
       description: "",
       starts_at: "",
       ends_at: "",
-      meet_link: "",
+      meeting_link: "",
     },
   });
 
@@ -73,7 +73,7 @@ export function SessionEditSheet({
         description: session.description ?? "",
         starts_at: session.starts_at?.slice(0, 16) ?? "",
         ends_at: session.ends_at?.slice(0, 16) ?? "",
-        meet_link: session.meeting_link ?? "",
+        meeting_link: session.meeting_link ?? "",
       });
     }
   }, [session, open, form]);
@@ -154,10 +154,10 @@ export function SessionEditSheet({
 
             <FormField
               control={form.control}
-              name="meet_link"
+              name="meeting_link"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Meet Link</FormLabel>
+                  <FormLabel>Meeting Link</FormLabel>
                   <FormControl>
                     <Input type="url" placeholder="https://..." {...field} />
                   </FormControl>

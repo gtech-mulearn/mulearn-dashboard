@@ -1,74 +1,45 @@
-import { publicApiClient } from "@/api/client";
+// Doc: all public mentor endpoints require Bearer auth (not truly "public")
+// Auth is handled by apiClient (not publicApiClient)
+import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import type {
-  PublicMentorAvailabilityResponse,
-  PublicMentorCard,
-  PublicMentorSession,
+  PublicMentorAvailabilitySlot,
+  PublicMentorProfile,
 } from "../schemas";
 import {
   PublicMentorAvailabilityResponseSchema,
-  PublicMentorCardResponseSchema,
-  PublicMentorSessionsResponseSchema,
+  PublicMentorProfileResponseSchema,
 } from "../schemas";
 
-export interface PublicMentorSessionsParams {
-  ig_id?: string;
-  mode?: "ONLINE" | "OFFLINE" | "HYBRID" | string;
-  sort_by?: "starts_at" | "title" | string;
-  pageIndex?: number;
-  perPage?: number;
-  search?: string;
-}
-
-export async function fetchPublicMentorCard(
-  muid: string,
-): Promise<PublicMentorCard> {
-  const res = await publicApiClient.get(
-    endpoints.mentor.publicCard(muid),
-    PublicMentorCardResponseSchema,
+// ─── #7 GET /public/profile/<mentor_id>/ ─────────────────────────────────────
+// Param: mentor_id is the UserMentor UUID (not muid)
+// Auth: Bearer token required
+export async function fetchPublicMentorProfile(
+  mentorId: string,
+): Promise<PublicMentorProfile> {
+  const res = await apiClient.get(
+    endpoints.mentor.publicProfile(mentorId),
+    PublicMentorProfileResponseSchema,
+    { skipAuthRedirectOn403: true },
   );
   return res.response;
 }
 
-export async function fetchPublicMentorSessions(
-  muid: string,
-  params: PublicMentorSessionsParams = {},
-): Promise<{
-  data: PublicMentorSession[];
-  totalPages: number;
-  totalItems: number;
-}> {
-  const q = new URLSearchParams();
-  if (params.ig_id) q.set("ig_id", params.ig_id);
-  if (params.mode) q.set("mode", params.mode);
-  if (params.sort_by) q.set("sort_by", params.sort_by);
-  if (params.pageIndex) q.set("pageIndex", String(params.pageIndex));
-  if (params.perPage) q.set("perPage", String(params.perPage));
-  if (params.search) q.set("search", params.search);
-
-  const query = q.toString();
-  const url = query
-    ? `${endpoints.mentor.publicSessions(muid)}?${query}`
-    : endpoints.mentor.publicSessions(muid);
-
-  const res = await publicApiClient.get(
-    url,
-    PublicMentorSessionsResponseSchema,
-  );
-  return {
-    data: res.response.data,
-    totalPages: res.response.pagination?.totalPages ?? 1,
-    totalItems: res.response.pagination?.count ?? res.response.data.length,
-  };
-}
-
+// ─── #8 GET /public/availability/<mentor_id>/ ────────────────────────────────
+// Param: mentor_id is the UserMentor UUID (not muid)
+// Auth: Bearer token required
+// Returns: flat array of slot objects (not paginated, not wrapped in {mentor, availability})
 export async function fetchPublicMentorAvailability(
-  muid: string,
-  igId?: string,
-): Promise<PublicMentorAvailabilityResponse> {
-  const res = await publicApiClient.get(
-    endpoints.mentor.publicAvailability(muid, igId),
+  mentorId: string,
+): Promise<PublicMentorAvailabilitySlot[]> {
+  const res = await apiClient.get(
+    endpoints.mentor.publicAvailability(mentorId),
     PublicMentorAvailabilityResponseSchema,
+    { skipAuthRedirectOn403: true },
   );
   return res.response;
 }
+
+// ─── Backward compat alias ────────────────────────────────────────────────────
+// Old code called fetchPublicMentorCard(muid) — now wraps the correct UUID-based call
+export const fetchPublicMentorCard = fetchPublicMentorProfile;

@@ -149,7 +149,13 @@ export function MentorHome() {
             )}
           </AlertDescription>
         </Alert>
-        <MentorOnboardingForm existing={application} isEdit />
+        {/* Cast to unknown to allow passing partial data to form for editing */}
+        <MentorOnboardingForm
+          existing={
+            application as unknown as import("@/features/mentor/onboarding/schemas").MentorApplication
+          }
+          isEdit
+        />
       </div>
     );
   }
@@ -194,19 +200,17 @@ export function MentorHome() {
             <CardTitle>Your Application</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              {application?.about}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {(Array.isArray(application?.expertise)
-                ? application.expertise
-                : []
-              ).map((tag) => (
-                <Badge key={tag} variant="secondary">
-                  {tag}
-                </Badge>
-              ))}
-            </div>
+            {/* Show any text the user may have provided; status obj may not have about */}
+            {!!(application as Record<string, unknown>)?.about && (
+              <p className="text-sm text-muted-foreground">
+                {(application as Record<string, unknown>).about as string}
+              </p>
+            )}
+            {!!(application as Record<string, unknown>)?.expertise && (
+              <p className="text-sm text-foreground">
+                {(application as Record<string, unknown>).expertise as string}
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>

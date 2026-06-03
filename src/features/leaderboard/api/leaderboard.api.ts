@@ -81,7 +81,7 @@ export async function fetchMentorLeaderboard(): Promise<
   MentorLeaderboardEntry[]
 > {
   const response = await apiClient.get(
-    endpoints.mentor.leaderboard,
+    "/api/v1/dashboard/mentor/leaderboard/",
     MentorLeaderboardResponseSchema,
     { skipAuthRedirectOn403: true },
   );
