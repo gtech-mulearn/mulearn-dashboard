@@ -235,12 +235,8 @@ export default function LearnerJobsPage() {
             />
           ) : (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {jobs.map((job, index) => (
-                <PublicJobCard
-                  key={`${job.id}-${index}`}
-                  job={job}
-                  onView={setSelectedJob}
-                />
+              {jobs.map((job) => (
+                <PublicJobCard key={job.id} job={job} onView={setSelectedJob} />
               ))}
             </div>
           )}
@@ -274,11 +270,8 @@ export default function LearnerJobsPage() {
           ) : (
             <>
               <div className="space-y-3">
-                {applications.map((app, index) => (
-                  <ApplicationRow
-                    key={`${app.id}-${index}`}
-                    application={app}
-                  />
+                {applications.map((app) => (
+                  <ApplicationRow key={app.id} application={app} />
                 ))}
               </div>
 

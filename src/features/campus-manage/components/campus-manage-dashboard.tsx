@@ -1760,9 +1760,9 @@ export function CampusManageDashboard() {
                           execom.length > 2 ? "lg:grid-cols-3" : ""
                         }`}
                       >
-                        {execom.map((member, index) => (
+                        {execom.map((member) => (
                           <div
-                            key={`${member.roleLinkId}-${member.muid}-${member.role}-${index}`}
+                            key={`${member.roleLinkId}-${member.muid}-${member.role}`}
                             className="group relative flex items-center gap-4 rounded-2xl border border-border/60 bg-card p-4 transition-all duration-300 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5"
                           >
                             <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-border/40 bg-muted shadow-sm transition-transform group-hover:scale-105">
