@@ -139,7 +139,7 @@ export function EventsSliderCard() {
             <div className="flex gap-1.5">
               {eventsData.map((event, dotIndex) => (
                 <button
-                  key={`${event.id}-${dotIndex}`}
+                  key={event.id}
                   type="button"
                   onClick={() => setIndex(dotIndex)}
                   className={cn(

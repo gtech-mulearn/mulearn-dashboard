@@ -229,9 +229,9 @@ export function MuVoyage({
 
                   {/* Tasks List */}
                   <ul className="max-h-96 overflow-y-auto">
-                    {level.tasks.map((task, taskIndex) => (
+                    {level.tasks.map((task) => (
                       <li
-                        key={`${level.name}-${taskIndex}`}
+                        key={`${level.name}-${task.task_name}`}
                         className="flex items-center gap-3 px-4 py-3"
                       >
                         {/* Checkbox */}
