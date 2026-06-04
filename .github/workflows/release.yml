@@ -1,0 +1,49 @@
+name: Release
+
+on:
+  push:
+    branches: [dev]
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Create release PR or version/tag
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          version: bunx changeset version
+          publish: bunx changeset tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push changelog to GitBook docs repo
+        if: steps.changesets.outputs.hasChangesets == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.DOCS_REPO_TOKEN }}
+        run: |
+          git clone https://x-access-token:$GH_TOKEN@github.com/gtech-mulearn/changelog-gitbooks.git docs
+          cp CHANGELOG.md docs/dashboard.md
+          cd docs
+          git config user.name  "changelog-bot"
+          git config user.email "bot@mulearn.org"
+          git add dashboard.md
+          git commit -m "changelog: dashboard ${{ steps.changesets.outputs.publishedPackages }}" || exit 0
+          git push

@@ -8,7 +8,7 @@ import {
 import { ApiResponseSchema } from "@/lib/schemas/api-response";
 
 // ─── Re-export for convenience ────────────────────────────────
-export { CompanyProfileSchema, CompanyProfileResponseSchema };
+export { CompanyProfileResponseSchema, CompanyProfileSchema };
 
 // ─── Update mutation response ─────────────────────────────────
 export const UpdateProfileResponseSchema =
