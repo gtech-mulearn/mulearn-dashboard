@@ -8,14 +8,18 @@
  * Shown on the dashboard home for unverified Company, Mentor, and Enabler users.
  * - Company: fetches live verification status from the onboarding-status API.
  * - Mentor: fetches the profile verification status.
- * - Enabler: shows a static pending banner (no user-facing status endpoint).
+ * - Enabler: fetches the profile verification status.
  */
 
 import { AlertCircle, Clock, XCircle } from "lucide-react";
 import { useCompanyOnboardingStatus } from "@/features/auth/hooks";
+import { useUserProfile } from "@/features/auth/hooks/use-session";
 import { useMentorApplication } from "@/features/mentor/onboarding/hooks/use-onboarding";
 import { ROLES } from "@/lib/auth/roles";
-import { shouldShowMentorPendingBanner } from "./verification-status-banner.logic";
+import {
+  shouldShowEnablerPendingBanner,
+  shouldShowMentorPendingBanner,
+} from "./verification-status-banner.logic";
 
 interface VerificationStatusBannerProps {
   roles: string[];
@@ -27,6 +31,9 @@ export function VerificationStatusBanner({
   const isCompany = roles.includes(ROLES.COMPANY);
   const isMentor = roles.includes(ROLES.MENTOR);
   const isEnabler = roles.includes(ROLES.ENABLER);
+
+  const { data: userProfile, isLoading: isUserProfileLoading } =
+    useUserProfile();
 
   const companyStatus = useCompanyOnboardingStatus(isCompany);
   const mentorApplication = useMentorApplication(isMentor);
@@ -102,8 +109,14 @@ export function VerificationStatusBanner({
   }
 
   // ── Enabler ─────────────────────────────────────────────────────
-  // No verification status endpoint exists; keep the static banner.
   if (isEnabler) {
+    const showPending = shouldShowEnablerPendingBanner({
+      isLoading: isUserProfileLoading,
+      userProfile,
+    });
+
+    if (!showPending) return null;
+
     return (
       <div className="flex items-start gap-3 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
         <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />

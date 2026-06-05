@@ -47,7 +47,7 @@ export const routeAccessMap: Record<string, RouteConfig> = {
 
   // ── Campus Lead Dashboard ────────────────────────────────
   "/dashboard/campus/manage": {
-    roles: [ROLES.CAMPUS_LEAD, ROLES.LEAD_ENABLER],
+    roles: [ROLES.CAMPUS_LEAD, ROLES.LEAD_ENABLER, ROLES.ENABLER],
   },
 
   // ── Zonal Dashboard ──────────────────────────────────────

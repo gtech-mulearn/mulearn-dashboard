@@ -125,6 +125,7 @@ export const UserInfoSchema = z.object({
   user_endgoals: z.array(z.string()),
   interested_in_work: z.boolean().optional(),
   interested_in_gig_work: z.boolean().optional(),
+  is_verified: z.boolean().optional(),
 });
 
 export const UserInfoResponseSchema = ApiResponseSchema(UserInfoSchema);
@@ -157,11 +158,12 @@ export const UserProfileSchema = z.object({
   karma: z.number(),
   rank: z.number(),
   muid: z.string(),
-  level: z.string(),
+  level: z.string().nullable(),
   profile_pic: z.string().nullable(),
   is_public: z.boolean(),
   percentile: z.number(),
   roles: z.array(z.string()),
+  is_verified: z.boolean().optional(),
 });
 
 export const UserProfileResponseSchema = ApiResponseSchema(UserProfileSchema);
