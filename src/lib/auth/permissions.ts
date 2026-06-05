@@ -34,9 +34,18 @@ export const PERMISSIONS = {
   "orgs:transfer": [ROLES.ADMIN],
 
   // ── Campus Management ────────────────────────────────────
-  "campus:manage": [ROLES.CAMPUS_LEAD, ROLES.LEAD_ENABLER],
-  "campus:view_dashboard": [ROLES.CAMPUS_LEAD, ROLES.LEAD_ENABLER, ROLES.ADMIN],
-  "campus:change_student_type": [ROLES.CAMPUS_LEAD, ROLES.LEAD_ENABLER],
+  "campus:manage": [ROLES.CAMPUS_LEAD, ROLES.LEAD_ENABLER, ROLES.ENABLER],
+  "campus:view_dashboard": [
+    ROLES.CAMPUS_LEAD,
+    ROLES.LEAD_ENABLER,
+    ROLES.ENABLER,
+    ROLES.ADMIN,
+  ],
+  "campus:change_student_type": [
+    ROLES.CAMPUS_LEAD,
+    ROLES.LEAD_ENABLER,
+    ROLES.ENABLER,
+  ],
   "campus:transfer_role": [ROLES.CAMPUS_LEAD],
 
   // ── Zonal & District ─────────────────────────────────────
