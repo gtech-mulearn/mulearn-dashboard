@@ -8,6 +8,7 @@
  */
 
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { authStore } from "@/lib/auth";
 import {
   editCollege,
   getBadges,
@@ -44,10 +45,15 @@ const PROFILE_STALE_TIME = 5 * 60 * 1000;
  * Data is cached and deduplicated across components.
  */
 export function useUserProfile() {
+  const hasToken =
+    typeof window !== "undefined"
+      ? !!(authStore.getAccessToken() || authStore.getRefreshToken())
+      : false;
   return useQuery({
     queryKey: profileKeys.profile(),
     queryFn: getUserProfile,
     staleTime: PROFILE_STALE_TIME,
+    enabled: hasToken,
   });
 }
 

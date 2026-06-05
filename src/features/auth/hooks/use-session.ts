@@ -9,6 +9,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { authStore } from "@/lib/auth";
 import {
   fetchCompanyOnboardingStatus,
   fetchPublicUserProfile,
@@ -22,11 +23,16 @@ import { authKeys } from "./query-keys";
  * Use this for checking auth state and basic user data
  */
 export function useUserInfo() {
+  const hasToken =
+    typeof window !== "undefined"
+      ? !!(authStore.getAccessToken() || authStore.getRefreshToken())
+      : false;
   return useQuery({
     queryKey: authKeys.userInfo(),
     queryFn: fetchUserInfo,
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 1,
+    enabled: hasToken,
   });
 }
 
@@ -35,10 +41,15 @@ export function useUserInfo() {
  * Use this when you need detailed profile data
  */
 export function useUserProfile() {
+  const hasToken =
+    typeof window !== "undefined"
+      ? !!(authStore.getAccessToken() || authStore.getRefreshToken())
+      : false;
   return useQuery({
     queryKey: authKeys.userProfile(),
     queryFn: fetchUserProfile,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    enabled: hasToken,
   });
 }
 

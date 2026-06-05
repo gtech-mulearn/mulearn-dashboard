@@ -7,7 +7,7 @@
  * Returns the inner response data (not the wrapper).
  */
 
-import { ApiError, apiClient } from "@/api/client";
+import { ApiError, apiClient, publicApiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import { authStore } from "@/lib/auth";
 import {
@@ -72,7 +72,7 @@ export async function getEditableUserProfile(): Promise<EditableProfile> {
 
 /** Get public user profile by muid */
 export async function getPublicUserProfile(muid: string): Promise<UserProfile> {
-  const response = await apiClient.get(
+  const response = await publicApiClient.get(
     endpoints.user.publicProfile(muid),
     UserProfileResponseSchema,
   );
@@ -94,7 +94,7 @@ export async function getUserLog(): Promise<UserLogData> {
 
 /** Get public user's activity log */
 export async function getPublicUserLog(muid: string): Promise<UserLogData> {
-  const response = await apiClient.get(
+  const response = await publicApiClient.get(
     endpoints.user.publicLog(muid),
     UserLogResponseSchema,
   );
@@ -118,7 +118,7 @@ export async function getUserLevels(): Promise<UserLevelsData> {
 export async function getPublicUserLevels(
   muid: string,
 ): Promise<UserLevelsData> {
-  const response = await apiClient.get(
+  const response = await publicApiClient.get(
     endpoints.user.publicLevels(muid),
     UserLevelsResponseSchema,
   );

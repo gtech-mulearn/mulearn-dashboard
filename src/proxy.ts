@@ -167,6 +167,17 @@ function isOnboardingRoute(pathname: string): boolean {
 }
 
 function isProtectedRoute(pathname: string): boolean {
+  // Exclude public profile pages: /dashboard/profile/[slug]
+  // Note: /dashboard/profile/ (with optional trailing slash) is protected, but /dashboard/profile/some-slug is public
+  const parts = pathname.split("/").filter(Boolean);
+  if (
+    parts.length === 3 &&
+    parts[0] === "dashboard" &&
+    parts[1] === "profile"
+  ) {
+    return false;
+  }
+
   return (
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/profile") ||

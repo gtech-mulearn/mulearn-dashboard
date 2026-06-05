@@ -11,7 +11,7 @@
  * - Enabler: shows a static pending banner (no user-facing status endpoint).
  */
 
-import { AlertCircle, Clock, XCircle, CheckCircle, X } from "lucide-react";
+import { AlertCircle, CheckCircle, Clock, X, XCircle } from "lucide-react";
 import { useState } from "react";
 import { useCompanyOnboardingStatus } from "@/features/auth/hooks";
 import { useMentorApplication } from "@/features/mentor/onboarding/hooks/use-onboarding";

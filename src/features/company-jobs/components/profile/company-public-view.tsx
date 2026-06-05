@@ -2,7 +2,7 @@
 
 import type { UserProfile } from "@/features/profile/schemas";
 import { usePublicCompanyJobs, usePublicCompanyProfile } from "../../hooks";
-import type { CompanyProfile } from "../../types";
+import type { PublicCompanyProfile } from "../../schemas";
 import { CompanyCredibilitySection } from "./company-credibility-section";
 import { CompanyCultureSection } from "./company-culture-section";
 import { CompanyJobsSection } from "./company-jobs-section";
@@ -10,12 +10,14 @@ import { CompanyProfileHeader } from "./company-profile-header";
 import { CompanyTestimonialsSection } from "./company-testimonials-section";
 
 interface CompanyPublicViewProps {
-  userProfile: UserProfile;
+  userProfile?: UserProfile;
+  slug: string;
 }
 
-export function CompanyPublicView({ userProfile }: CompanyPublicViewProps) {
-  // Pre-existing: muid used as company slug — backend must match
-  const slug = userProfile.muid;
+export function CompanyPublicView({
+  userProfile,
+  slug,
+}: CompanyPublicViewProps) {
   const {
     data: apiProfile,
     isLoading: profileLoading,
@@ -39,22 +41,31 @@ export function CompanyPublicView({ userProfile }: CompanyPublicViewProps) {
     );
   }
 
-  const companyProfile: CompanyProfile = apiProfile ?? {
-    id: userProfile.id,
-    name: userProfile.full_name,
-    slug: userProfile.muid,
-    logo: userProfile.profile_pic ?? null,
+  const companyProfile: PublicCompanyProfile = apiProfile ?? {
+    id: userProfile?.id ?? "",
+    name: userProfile?.full_name ?? "",
+    slug: userProfile?.muid ?? slug,
+    status: "verified",
+    logo: userProfile?.profile_pic ?? null,
     description: null,
     industry_sector: null,
     website_link: null,
-    email: userProfile.email ?? null,
+    email: userProfile?.email ?? null,
     location: null,
     company_size: null,
     linkedin_url: null,
-    created_at: userProfile.joined,
+    created_at: userProfile?.joined,
+    tech_stack: [],
+    perks: [],
+    testimonials: [],
+    gallery: [],
+    hire_count: 0,
+    alumni_count: 0,
+    avg_karma_of_hires: 0,
+    campus_events_count: 0,
   };
 
-  const publicJobs = jobsData?.jobs ?? [];
+  const publicJobs = jobsData?.data ?? [];
 
   return (
     <div className="space-y-5">
@@ -78,7 +89,7 @@ export function CompanyPublicView({ userProfile }: CompanyPublicViewProps) {
         hireCount={apiProfile?.hire_count ?? 0}
         avgKarmaOfHires={apiProfile?.avg_karma_of_hires ?? 0}
         campusEventsCount={apiProfile?.campus_events_count ?? 0}
-        memberSince={userProfile.joined}
+        memberSince={userProfile?.joined ?? apiProfile?.created_at}
       />
 
       <CompanyTestimonialsSection

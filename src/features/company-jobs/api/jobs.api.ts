@@ -1,6 +1,6 @@
 import { apiClient, publicApiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
-import type { PublicJobsBySlugData } from "../schemas";
+import type { PublicCompanyProfile, PublicJobsBySlugData } from "../schemas";
 import {
   ApplyJobResponseSchema,
   CompanyProfileResponseSchema,
@@ -158,8 +158,8 @@ export async function deleteJobRule(
 
 export async function fetchPublicCompanyProfile(
   slug: string,
-): Promise<CompanyProfile> {
-  const res = await apiClient.get(
+): Promise<PublicCompanyProfile> {
+  const res = await publicApiClient.get(
     endpoints.company.publicProfile(slug),
     PublicCompanyProfileResponseSchema,
   );
@@ -168,17 +168,23 @@ export async function fetchPublicCompanyProfile(
 
 export async function fetchPublicCompanyJobsBySlug(
   slug: string,
-  params?: { pageIndex?: number; perPage?: number; search?: string },
+  params?: {
+    pageIndex?: number;
+    perPage?: number;
+    search?: string;
+    sortBy?: "title" | "created_at";
+  },
 ): Promise<PublicJobsBySlugData> {
   const query = new URLSearchParams();
   if (params?.pageIndex) query.set("pageIndex", String(params.pageIndex));
   if (params?.perPage) query.set("perPage", String(params.perPage));
   if (params?.search?.trim()) query.set("search", params.search.trim());
+  if (params?.sortBy) query.set("sortBy", params.sortBy);
   const qs = query.toString();
   const url = qs
     ? `${endpoints.company.publicJobsBySlug(slug)}?${qs}`
     : endpoints.company.publicJobsBySlug(slug);
-  const res = await apiClient.get(url, PublicJobsBySlugResponseSchema);
+  const res = await publicApiClient.get(url, PublicJobsBySlugResponseSchema);
   return res.response;
 }
 

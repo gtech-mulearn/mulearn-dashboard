@@ -332,40 +332,51 @@ export const CompanyProfileSchema = z.object({
 export const CompanyProfileResponseSchema =
   DjangoResponse(CompanyProfileSchema);
 
-// Public company profile response (no auth — same CompanyProfile shape, now with extended fields)
-export const PublicCompanyProfileResponseSchema =
-  DjangoResponse(CompanyProfileSchema);
+// Public company profile schema — extends CompanyProfileSchema with public-only fields
+export const PublicCompanyProfileSchema = CompanyProfileSchema.extend({
+  short_pitch: z.string().nullable().optional(),
+  district_name: z.string().nullable().optional(),
+  state_name: z.string().nullable().optional(),
+  country_name: z.string().nullable().optional(),
+});
+export type PublicCompanyProfile = z.infer<typeof PublicCompanyProfileSchema>;
 
-// Public jobs by slug
+export const PublicCompanyProfileResponseSchema = DjangoResponse(
+  PublicCompanyProfileSchema,
+);
+
+// Public jobs by slug — matches GET /profile/public/<slug>/jobs/ response
+export const PublicJobRuleSchema = z.object({
+  id: z.string(),
+  rule_type: z.string(),
+  rule_value: z.string(),
+});
+
 export const PublicJobBySlugSchema = z.object({
   id: z.string(),
+  company_name: z.string().optional().nullable(),
+  company_logo: z.string().optional().nullable(),
   title: z.string(),
-  job_type: z.string().optional(),
-  location: z.string().optional(),
-  salary_range: z.string(),
+  experience: z.string().optional().nullable(),
+  job_description: z.string().optional().nullable(),
+  location: z.string().optional().nullable(),
+  salary_range: z.string().optional().nullable(),
+  job_type: z.string().optional().nullable(),
+  status: z.string().optional().nullable(),
+  duration_value: z.number().optional().nullable(),
+  duration_unit: z.string().optional().nullable(),
+  hourly_rate: z.string().optional().nullable(),
+  deliverables: z.string().optional().nullable(),
+  stipend: z.string().optional().nullable(),
+  certificate_provided: z.boolean().optional().nullable(),
+  rules: z.array(PublicJobRuleSchema).default([]),
   created_at: z.string(),
-  is_active: z.boolean().optional(),
-  min_karma: z.number().optional(),
-  min_level: z.number().optional(),
-  tags: z.array(z.string()).optional().default([]),
 });
 export type PublicJobBySlug = z.infer<typeof PublicJobBySlugSchema>;
 
-export const PublicJobsPaginationSchema = z.object({
-  count: z.number(),
-  totalPages: z.number(),
-  isFirst: z.boolean(),
-  isLast: z.boolean(),
-});
-
 export const PublicJobsBySlugDataSchema = z.object({
-  company: z.object({
-    id: z.string(),
-    name: z.string(),
-    slug: z.string(),
-  }),
-  jobs: z.array(PublicJobBySlugSchema),
-  pagination: PublicJobsPaginationSchema,
+  data: z.array(PublicJobBySlugSchema),
+  pagination: PaginationSchema,
 });
 export type PublicJobsBySlugData = z.infer<typeof PublicJobsBySlugDataSchema>;
 

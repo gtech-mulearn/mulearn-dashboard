@@ -134,14 +134,14 @@ function PublicJobCard({ job }: { job: PublicJobBySlug }) {
         </span>
       </div>
 
-      {job.tags.length > 0 && (
+      {job.rules.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1.5">
-          {job.tags.map((tag) => (
+          {job.rules.map((rule) => (
             <span
-              key={tag}
+              key={rule.id}
               className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground"
             >
-              {tag}
+              {rule.rule_type}: {rule.rule_value}
             </span>
           ))}
         </div>
