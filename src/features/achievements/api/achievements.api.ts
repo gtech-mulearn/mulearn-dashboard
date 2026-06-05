@@ -1,7 +1,5 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
-import { authStore } from "@/lib/auth";
-import { env } from "../../../../config/env";
 import type {
   Achievement,
   AchievementRule,
@@ -23,43 +21,6 @@ import {
 } from "../schemas";
 
 // ==========================================
-// Multipart upload helper (for icon file uploads)
-// ==========================================
-
-async function uploadRequest<T>(
-  endpoint: string,
-  method: "POST" | "PUT" | "PATCH",
-  formData: FormData,
-): Promise<T> {
-  const token = authStore.getAccessToken();
-  const headers: HeadersInit = {};
-  if (token) headers.Authorization = `Bearer ${token}`;
-
-  const res = await fetch(`${env.NEXT_PUBLIC_DJANGO_API_URL}${endpoint}`, {
-    method,
-    headers,
-    body: formData,
-  });
-
-  const rawData = await res.json().catch(() => null);
-
-  if (!res.ok) {
-    throw new Error(
-      (rawData as { message?: string })?.message ??
-        `Request failed: ${endpoint}`,
-    );
-  }
-
-  // Unwrap Django response wrapper
-  const data =
-    rawData && typeof rawData === "object" && "response" in rawData
-      ? (rawData as { response: T }).response
-      : (rawData as T);
-
-  return data;
-}
-
-// ==========================================
 // Achievement CRUD
 // ==========================================
 
@@ -74,10 +35,11 @@ export async function fetchAchievements(): Promise<Achievement[]> {
 export async function createAchievement(
   formData: FormData,
 ): Promise<Achievement> {
-  return uploadRequest<Achievement>(
+  return apiClient.post<Achievement>(
     endpoints.achievements.create,
-    "POST",
     formData,
+    undefined,
+    { isFormData: true },
   );
 }
 
@@ -85,10 +47,11 @@ export async function updateAchievement(
   id: string,
   formData: FormData,
 ): Promise<Achievement> {
-  return uploadRequest<Achievement>(
+  return apiClient.patch<Achievement>(
     endpoints.achievements.update(id),
-    "PATCH",
     formData,
+    undefined,
+    { isFormData: true },
   );
 }
 
@@ -179,25 +142,20 @@ export async function revokeAchievement(data: RevokeRequest): Promise<void> {
 // ==========================================
 
 export async function bulkIssueAchievements(formData: FormData): Promise<void> {
-  await uploadRequest<unknown>(
+  await apiClient.post<unknown>(
     endpoints.achievements.bulkIssue,
-    "POST",
     formData,
+    undefined,
+    { isFormData: true },
   );
 }
 
 export async function downloadBulkTemplate(): Promise<Blob> {
-  const token = authStore.getAccessToken();
-  const headers: HeadersInit = {};
-  if (token) headers.Authorization = `Bearer ${token}`;
-
-  const res = await fetch(
-    `${env.NEXT_PUBLIC_DJANGO_API_URL}${endpoints.achievements.bulkIssueTemplate}`,
-    { method: "GET", headers },
+  return apiClient.get<Blob>(
+    endpoints.achievements.bulkIssueTemplate,
+    undefined,
+    { responseType: "blob" },
   );
-
-  if (!res.ok) throw new Error("Failed to download template");
-  return res.blob();
 }
 
 // ==========================================

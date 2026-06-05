@@ -28,7 +28,8 @@ import { useUIStore } from "@/stores/ui-store";
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { isSidebarExpanded, toggleSidebar } = useUIStore();
+  const isSidebarExpanded = useUIStore((s) => s.isSidebarExpanded);
+  const toggleSidebar = useUIStore((s) => s.toggleSidebar);
   const { mainItems, managementItems, bottomItems } = useFilteredNav();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);

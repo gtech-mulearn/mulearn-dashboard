@@ -10,7 +10,24 @@
       "Bash(bun add *)",
       "PowerShell(Get-Command node, npm, pnpm, yarn -ErrorAction SilentlyContinue)",
       "PowerShell(cd \"d:\\\\Awin\\\\mulearn-dashboard\"; npx biome check --max-diagnostics=50 2>&1 | Select-String \"error|\\\\.tsx|\\\\.ts\" | Where-Object { $_ -notmatch \"warning|Found\" } | Select-Object -First 30)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(grep -E '\\\\.\\(ts|tsx|js|jsx|css|mjs|cjs\\)$')",
+      "Bash(grep -E '\\\\.\\(ts|tsx|css\\)$')",
+      "Bash(sed -E 's/.*\\\\.//')",
+      "Bash(grep -E '\\\\.\\(ts|tsx\\)$')",
+      "Bash(grep -E 'src/.*\\\\.\\(ts|tsx\\)$')",
+      "Bash(xargs wc -l)",
+      "Bash(grep -vE \"refetch|//|\\\\* \")",
+      "PowerShell(npx tsc --noEmit 2>&1)",
+      "PowerShell(npx vitest run src/lib/auth/route-access.test.ts 2>&1)",
+      "PowerShell(npx biome check src/hooks/use-csv-download.ts src/features/karma-voucher/hooks/use-karma-vouchers-mutation.ts src/features/role-verification/hooks/use-role-verification.ts src/features/manage-users/hooks/use-manage-users.ts src/features/achievements/api/achievements.api.ts src/api/client.ts src/api/server.ts src/api/errors.ts src/proxy.ts src/lib/auth/route-access.ts 2>&1)",
+      "PowerShell(npx biome check src/features/manage-users/hooks/use-manage-users.ts src/features/achievements/api/achievements.api.ts src/features/role-verification/hooks/use-role-verification.ts 2>&1)",
+      "PowerShell(npx vitest run 2>&1)",
+      "Bash(awk 'NR>=203' src/features/events/hooks/events.hooks.ts)",
+      "PowerShell(npx biome check src/features/events/hooks/ 2>&1)",
+      "PowerShell(npx biome check --write src/features/events/hooks/ 2>&1)",
+      "Bash(npx --yes madge@latest --circular --extensions ts,tsx --ts-config tsconfig.json src)",
+      "PowerShell(npx vitest run src/lib/auth/route-access.test.ts src/features/profile/components/badges.test.tsx 2>&1)"
     ]
   }
 }
