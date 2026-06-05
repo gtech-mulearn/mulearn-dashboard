@@ -33,12 +33,17 @@ export function useUserInfo() {
 /**
  * Hook for fetching full user profile
  * Use this when you need detailed profile data
+ *
+ * @param options.enabled - When false, the query is skipped entirely (no network request).
+ *   Defaults to true. Pass `{ enabled: false }` to conditionally disable for users
+ *   where profile data is not needed (e.g. non-Enabler users on the home dashboard).
  */
-export function useUserProfile() {
+export function useUserProfile(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: authKeys.userProfile(),
     queryFn: fetchUserProfile,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    enabled: options?.enabled ?? true,
   });
 }
 

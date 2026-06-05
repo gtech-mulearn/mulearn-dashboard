@@ -52,7 +52,11 @@ const ROLE_VALUES = {
 const ROLE_PROTECTED_ROUTES: Record<string, RouteConfig> = {
   // Campus Lead
   "/dashboard/campus/manage": {
-    roles: [ROLE_VALUES.CAMPUS_LEAD, ROLE_VALUES.LEAD_ENABLER],
+    roles: [
+      ROLE_VALUES.CAMPUS_LEAD,
+      ROLE_VALUES.LEAD_ENABLER,
+      ROLE_VALUES.ENABLER,
+    ],
   },
 
   // Zonal/District
