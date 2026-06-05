@@ -62,14 +62,7 @@ export function PublicJobCard({ job, onView }: PublicJobCardProps) {
 
       {/* Requirement badges — uses semantic CSS variables only */}
       <div className="mt-3 flex flex-wrap gap-1.5">
-        <Badge variant="secondary" className="gap-1 text-xs">
-          <Sparkles className="h-3 w-3" />
-          Karma ≥ {job.min_karma}
-        </Badge>
-        <Badge variant="secondary" className="gap-1 text-xs">
-          <Star className="h-3 w-3" />
-          Level ≥ {job.min_level}
-        </Badge>
+        {/* Empty placeholder if no stipend or cert, since badges are optional now */}
         {job.stipend && (
           <Badge variant="outline" className="text-xs">
             Stipend: {job.stipend}

@@ -73,23 +73,30 @@ export default function CompanyJobsPage() {
         )}
 
         {/* Empty state */}
-        {!isLoading && !isError && data && data.jobs.length === 0 && (
-          <JobsEmptyState
-            onCreateJob={handleCreateJob}
-            hasSearchFilter={!!debouncedSearch}
-          />
-        )}
+        {!isLoading &&
+          !isError &&
+          data &&
+          (!data.jobs || data.jobs.length === 0) && (
+            <JobsEmptyState
+              onCreateJob={handleCreateJob}
+              hasSearchFilter={!!debouncedSearch}
+            />
+          )}
 
         {/* Job list */}
-        {!isLoading && !isError && data && data.jobs.length > 0 && (
-          <JobsList
-            jobs={data.jobs}
-            pagination={data.pagination}
-            currentPage={page}
-            onPageChange={setPage}
-            onViewJob={handleViewJob}
-          />
-        )}
+        {!isLoading &&
+          !isError &&
+          data &&
+          data.jobs &&
+          data.jobs.length > 0 && (
+            <JobsList
+              jobs={data.jobs}
+              pagination={data.pagination}
+              currentPage={page}
+              onPageChange={setPage}
+              onViewJob={handleViewJob}
+            />
+          )}
       </div>
     </CompanyStatusGuard>
   );

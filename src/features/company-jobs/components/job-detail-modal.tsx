@@ -124,14 +124,6 @@ export function JobDetailModal({
           {/* Requirements */}
           <Section title="Requirements">
             <div className="flex flex-wrap gap-2">
-              <div className="flex items-center gap-2 rounded-lg bg-muted px-3 py-2 text-sm">
-                <Sparkles className="h-4 w-4 text-primary" />
-                <span className="font-medium">Karma ≥ {job.min_karma}</span>
-              </div>
-              <div className="flex items-center gap-2 rounded-lg bg-muted px-3 py-2 text-sm">
-                <Star className="h-4 w-4 text-primary" />
-                <span className="font-medium">Level ≥ {job.min_level}</span>
-              </div>
               {job.experience && (
                 <div className="flex items-center gap-2 rounded-lg bg-muted px-3 py-2 text-sm">
                   <Timer className="h-4 w-4 text-primary" />
@@ -223,7 +215,7 @@ export function JobDetailModal({
                   <li key={rule.id} className="flex items-start gap-2 text-sm">
                     <span className="mt-2 h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
                     <span>
-                      {rule.rule_name}
+                      {rule.rule_value}
                       {rule.rule_type && (
                         <span className="ml-1.5 text-xs text-muted-foreground capitalize">
                           ({rule.rule_type.replace(/_/g, " ")})

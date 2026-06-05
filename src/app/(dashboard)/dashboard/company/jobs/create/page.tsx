@@ -14,7 +14,7 @@ import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { createJobRule } from "@/features/company-jobs/api";
+
 import {
   CompanyStatusGuard,
   JobStepper,
@@ -41,8 +41,7 @@ export default function CreateJobPage() {
           location: values.location,
           salary_range: values.salary_range,
           job_type: values.job_type,
-          min_karma: values.min_karma,
-          min_level: values.min_level,
+
           // Advanced options — only include if set
           ...(values.karma_reward !== undefined && {
             karma_reward: values.karma_reward,
@@ -58,26 +57,15 @@ export default function CreateJobPage() {
             values.certificate_provided !== false && {
               certificate_provided: values.certificate_provided,
             }),
+          ...(rules.length > 0 && {
+            rules: rules.map((r) => ({
+              rule_type: r.rule_type,
+              rule_value: r.rule_value,
+            })),
+          }),
         });
 
-        const jobId = result.job.id;
-
-        // Create rules sequentially (if any were added during creation)
-        if (rules.length > 0) {
-          for (const rule of rules) {
-            try {
-              await createJobRule(jobId, {
-                rule_type: rule.rule_type,
-                rule_type_id: rule.rule_type_id,
-              });
-            } catch {
-              // Individual rule failure shouldn't block navigation
-              toast.error(
-                `Failed to add rule "${rule.rule_name}". You can add it from the job detail page.`,
-              );
-            }
-          }
-        }
+        const jobId = result.id;
 
         router.push(`/dashboard/company/jobs/${jobId}`);
       } catch {

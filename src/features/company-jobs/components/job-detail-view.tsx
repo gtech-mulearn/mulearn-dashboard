@@ -158,24 +158,7 @@ export function JobDetailView({
               {job.salary_range}
             </div>
           </div>
-          <div>
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Min Karma
-            </p>
-            <div className="mt-1 flex items-center gap-1.5 text-sm text-foreground">
-              <Sparkles className="h-3.5 w-3.5 text-muted-foreground" />
-              {job.min_karma}
-            </div>
-          </div>
-          <div>
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Min Level
-            </p>
-            <div className="mt-1 flex items-center gap-1.5 text-sm text-foreground">
-              <Star className="h-3.5 w-3.5 text-muted-foreground" />
-              Level {job.min_level}
-            </div>
-          </div>
+
           {job.experience && (
             <div>
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">

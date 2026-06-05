@@ -85,55 +85,6 @@ export function StepRequirements({ form }: StepRequirementsProps) {
             </FormItem>
           )}
         />
-
-        <FormField
-          control={form.control}
-          name="min_karma"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Minimum Karma</FormLabel>
-              <FormControl>
-                <Input
-                  {...field}
-                  type="number"
-                  min={0}
-                  max={10000}
-                  placeholder="0"
-                  onChange={(e) => field.onChange(Number(e.target.value))}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="min_level"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Minimum Level</FormLabel>
-              <Select
-                value={String(field.value)}
-                onValueChange={(val) => field.onChange(Number(val))}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select level" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {MIN_LEVEL_OPTIONS.map((opt) => (
-                    <SelectItem key={opt.value} value={String(opt.value)}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
       </div>
 
       {/* Advanced options collapsible */}

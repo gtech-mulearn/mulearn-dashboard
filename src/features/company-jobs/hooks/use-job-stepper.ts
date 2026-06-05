@@ -32,8 +32,6 @@ const DEFAULT_VALUES: JobFormValues = {
   salary_range: "",
   experience: "",
   job_description: "",
-  min_karma: 0,
-  min_level: 1,
   karma_reward: undefined,
   duration_value: undefined,
   duration_unit: undefined,
@@ -51,8 +49,6 @@ function jobToFormValues(job: Job): JobFormValues {
     salary_range: job.salary_range,
     experience: job.experience ?? "",
     job_description: job.job_description ?? "",
-    min_karma: job.min_karma,
-    min_level: job.min_level,
     karma_reward: job.karma_reward ?? undefined,
     duration_value: job.duration_value ?? undefined,
     duration_unit: job.duration_unit ?? undefined,
@@ -111,7 +107,7 @@ export function useJobStepper(
   const STEP_FIELDS: Record<string, (keyof JobFormValues)[]> = useMemo(
     () => ({
       "basic-info": ["title", "job_type", "location", "salary_range"],
-      requirements: ["experience", "job_description", "min_karma", "min_level"],
+      requirements: ["experience", "job_description"],
       rules: [],
       review: [],
     }),

@@ -72,14 +72,6 @@ export function ApplyJobDialog({
 
         {/* Requirements */}
         <div className="flex flex-wrap gap-2">
-          <Badge variant="secondary" className="gap-1 text-xs">
-            <Sparkles className="h-3 w-3" />
-            Karma ≥ {job.min_karma}
-          </Badge>
-          <Badge variant="secondary" className="gap-1 text-xs">
-            <Star className="h-3 w-3" />
-            Level ≥ {job.min_level}
-          </Badge>
           {job.karma_reward ? (
             <Badge className="gap-1 border bg-primary/10 text-primary text-xs border-primary/20">
               +{job.karma_reward} karma reward

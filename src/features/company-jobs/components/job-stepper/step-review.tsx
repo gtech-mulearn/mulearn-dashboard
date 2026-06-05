@@ -133,16 +133,6 @@ export function StepReview({
             label="Experience"
             value={values.experience || "—"}
           />
-          <ReviewField
-            icon={Sparkles}
-            label="Min Karma"
-            value={values.min_karma}
-          />
-          <ReviewField
-            icon={Star}
-            label="Min Level"
-            value={`Level ${values.min_level}`}
-          />
         </div>
         {values.job_description && (
           <div className="mt-4 border-t border-border pt-4">

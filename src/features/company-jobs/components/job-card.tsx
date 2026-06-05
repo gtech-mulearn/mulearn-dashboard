@@ -64,14 +64,6 @@ export function JobCard({ job, onView }: JobCardProps) {
 
       {/* Tags */}
       <div className="mt-3 flex flex-wrap gap-1.5">
-        <Badge variant="secondary" className="text-xs gap-1">
-          <Sparkles className="h-3 w-3" />
-          Karma ≥ {job.min_karma}
-        </Badge>
-        <Badge variant="secondary" className="text-xs gap-1">
-          <Star className="h-3 w-3" />
-          Level ≥ {job.min_level}
-        </Badge>
         {job.rules.length > 0 && (
           <Badge variant="outline" className="text-xs">
             {job.rules.length} rule{job.rules.length > 1 ? "s" : ""}

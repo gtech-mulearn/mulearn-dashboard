@@ -36,7 +36,7 @@ export function useCompanyProfile() {
   return {
     ...query,
     profile: query.data,
-    isActive: query.data?.status === "active",
+    isActive: query.data?.status === "verified",
     status: query.data?.status,
   };
 }

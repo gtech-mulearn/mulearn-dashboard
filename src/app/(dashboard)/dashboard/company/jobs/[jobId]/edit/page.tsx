@@ -45,8 +45,6 @@ export default function EditJobPage() {
             location: values.location,
             salary_range: values.salary_range,
             job_type: values.job_type,
-            min_karma: values.min_karma,
-            min_level: values.min_level,
             // Advanced options — always send to allow clearing values
             karma_reward: values.karma_reward,
             duration_value: values.duration_value,

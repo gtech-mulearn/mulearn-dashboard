@@ -21,6 +21,10 @@ export const JOB_TYPE_OPTIONS = [
 // ─── Rule Type Options ──────────────────────────────────────
 
 export const RULE_TYPE_OPTIONS = [
+  { value: "min_karma", label: "Min Karma" },
+  { value: "max_karma", label: "Max Karma" },
+  { value: "min_level", label: "Min Level" },
+  { value: "max_level", label: "Max Level" },
   { value: "skill", label: "Skill" },
   { value: "interest_group", label: "Interest Group" },
   { value: "achievement", label: "Achievement" },
@@ -79,14 +83,14 @@ export const JOBS_DEFAULT_PAGE_INDEX = 1;
 // ─── Status Display Config ──────────────────────────────────
 
 export const COMPANY_STATUS_CONFIG = {
-  active: {
+  verified: {
     label: "Active",
     color: "text-emerald-600",
     bgColor: "bg-emerald-50",
     borderColor: "border-emerald-200",
     message: "Your company is verified and active.",
   },
-  pending_verification: {
+  pending: {
     label: "Pending Verification",
     color: "text-amber-600",
     bgColor: "bg-amber-50",

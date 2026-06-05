@@ -65,17 +65,6 @@ function OwnJobCard({ job }: { job: Job }) {
         </span>
       </div>
 
-      <div className="mt-3 flex flex-wrap gap-1.5">
-        <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
-          <Sparkles className="size-3" />
-          Karma ≥ {job.min_karma}
-        </span>
-        <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
-          <Star className="size-3" />
-          Level ≥ {job.min_level}
-        </span>
-      </div>
-
       <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
         <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
           {job.status}

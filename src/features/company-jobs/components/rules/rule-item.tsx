@@ -15,22 +15,34 @@ interface RuleItemProps {
   readOnly?: boolean;
 }
 
-const RULE_TYPE_ICONS: Record<RuleType, React.ElementType> = {
+const RULE_TYPE_ICONS: Record<string, React.ElementType> = {
   skill: Sparkles,
   interest_group: BookOpen,
   achievement: Award,
+  min_karma: Sparkles,
+  max_karma: Sparkles,
+  min_level: Award,
+  max_level: Award,
 };
 
-const RULE_TYPE_LABELS: Record<RuleType, string> = {
+const RULE_TYPE_LABELS: Record<string, string> = {
   skill: "Skill",
   interest_group: "Interest Group",
   achievement: "Achievement",
+  min_karma: "Min Karma",
+  max_karma: "Max Karma",
+  min_level: "Min Level",
+  max_level: "Max Level",
 };
 
-const RULE_TYPE_COLORS: Record<RuleType, string> = {
+const RULE_TYPE_COLORS: Record<string, string> = {
   skill: "bg-brand-blue/10 text-brand-blue border-brand-blue/30",
   interest_group: "bg-brand-purple/10 text-brand-purple border-brand-purple/30",
   achievement: "bg-warning/10 text-warning border-warning/30",
+  min_karma: "bg-emerald-500/10 text-emerald-600 border-emerald-500/30",
+  max_karma: "bg-emerald-500/10 text-emerald-600 border-emerald-500/30",
+  min_level: "bg-amber-500/10 text-amber-600 border-amber-500/30",
+  max_level: "bg-amber-500/10 text-amber-600 border-amber-500/30",
 };
 
 export function RuleItem({
@@ -39,10 +51,10 @@ export function RuleItem({
   isDeleting,
   readOnly,
 }: RuleItemProps) {
-  const Icon = RULE_TYPE_ICONS[rule.rule_type as RuleType] ?? Sparkles;
-  const label = RULE_TYPE_LABELS[rule.rule_type as RuleType] ?? rule.rule_type;
+  const Icon = RULE_TYPE_ICONS[rule.rule_type] ?? Sparkles;
+  const label = RULE_TYPE_LABELS[rule.rule_type] ?? rule.rule_type;
   const colorClass =
-    RULE_TYPE_COLORS[rule.rule_type as RuleType] ??
+    RULE_TYPE_COLORS[rule.rule_type] ??
     "bg-muted text-muted-foreground border-border";
 
   return (
@@ -55,7 +67,7 @@ export function RuleItem({
           {label}
         </span>
         <span className="break-words text-sm font-medium text-foreground">
-          {rule.rule_name}
+          {rule.rule_value}
         </span>
       </div>
 

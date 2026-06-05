@@ -19,19 +19,14 @@ export type JobStatus = "Active" | "Inactive" | "Draft";
 
 export type RuleType = "skill" | "interest_group" | "achievement";
 
-export type CompanyStatus =
-  | "active"
-  | "pending_verification"
-  | "rejected"
-  | "inactive";
+export type CompanyStatus = "verified" | "pending" | "rejected" | "inactive";
 
 // ─── Core Entities ──────────────────────────────────────────
 
 export interface JobRule {
   id: string;
   rule_type: string;
-  rule_type_id: string;
-  rule_name: string;
+  rule_value: string;
 }
 
 export interface Job {
@@ -42,10 +37,10 @@ export interface Job {
   job_type: string;
   location: string;
   salary_range: string;
-  min_karma: number;
-  min_level: number;
   status: string;
   created_at: string;
+  company_name?: string | null;
+  company_logo?: string | null;
   updated_at: string;
   rules: JobRule[];
   // Advanced options
@@ -85,8 +80,6 @@ export interface PublicJob {
   experience?: string | null;
   job_description?: string | null;
   salary_range?: string | null;
-  min_karma: number;
-  min_level: number;
   status: string;
   created_at: string;
   updated_at: string;
@@ -172,8 +165,6 @@ export interface CreateJobPayload {
   location: string;
   salary_range: string;
   job_type: string;
-  min_karma: number;
-  min_level: number;
   // Advanced options
   karma_reward?: number;
   duration_value?: number;
@@ -182,6 +173,7 @@ export interface CreateJobPayload {
   deliverables?: string[];
   stipend?: string;
   certificate_provided?: boolean;
+  rules?: { rule_type: string; rule_value: string | number }[];
 }
 
 export interface UpdateJobPayload {
@@ -191,8 +183,6 @@ export interface UpdateJobPayload {
   location?: string;
   salary_range?: string;
   job_type?: string;
-  min_karma?: number;
-  min_level?: number;
   // Advanced options
   karma_reward?: number;
   duration_value?: number;
@@ -205,25 +195,17 @@ export interface UpdateJobPayload {
 
 export interface CreateRulePayload {
   rule_type: string;
-  rule_type_id: string;
+  rule_value: string;
 }
 
 export interface UpdateRulePayload {
   rule_type: string;
-  rule_type_id: string;
+  rule_value: string;
 }
 
 // ─── API Mutation Responses ─────────────────────────────────
 
-export interface CreateJobResponse {
-  job: {
-    id: string;
-    company_id: string;
-    title: string;
-    job_type: string;
-    created_at: string;
-  };
-}
+export type CreateJobResponse = Job;
 
 export interface UpdateJobResponse {
   job_id: string;
@@ -240,7 +222,7 @@ export interface CreateRuleResponse {
     id: string;
     job_id: string;
     rule_type: string;
-    rule_type_id: string;
+    rule_value: string;
     created_at: string;
   };
 }
