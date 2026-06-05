@@ -1,3 +1,5 @@
+import { ROLES } from "@/lib/auth/roles";
+
 type MentorVerificationSnapshot = {
   is_verified?: boolean;
 };
@@ -34,7 +36,7 @@ export function shouldShowEnablerPendingBanner({
 }: EnablerPendingBannerInput): boolean {
   if (isLoading) return false;
   const is_verified = userProfile?.role_verification?.find(
-    (v) => v.role === "Enabler",
+    (v) => v.role === ROLES.ENABLER,
   )?.is_verified;
   if (is_verified === true) return false;
   return true;

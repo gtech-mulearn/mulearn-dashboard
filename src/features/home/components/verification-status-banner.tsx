@@ -32,8 +32,9 @@ export function VerificationStatusBanner({
   const isMentor = roles.includes(ROLES.MENTOR);
   const isEnabler = roles.includes(ROLES.ENABLER);
 
-  const { data: userProfile, isLoading: isUserProfileLoading } =
-    useUserProfile();
+  const { data: userProfile, isLoading: isUserProfileLoading } = useUserProfile(
+    { enabled: isEnabler },
+  );
 
   const companyStatus = useCompanyOnboardingStatus(isCompany);
   const mentorApplication = useMentorApplication(isMentor);
