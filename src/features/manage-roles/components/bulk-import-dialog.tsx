@@ -182,9 +182,9 @@ export function BulkImportDialog({
 
                 {/* Error Details */}
                 <div className="max-h-48 space-y-2 overflow-y-auto rounded-xl border border-border bg-muted/30 p-3">
-                  {importResult.errors?.map((err, idx) => (
+                  {importResult.errors?.map((err) => (
                     <div
-                      key={`${err.muid}-${err.role}-${idx}`}
+                      key={`${err.muid}-${err.role}`}
                       className="rounded-lg border border-border bg-card p-3 text-sm"
                     >
                       <div className="flex items-start justify-between gap-2">
