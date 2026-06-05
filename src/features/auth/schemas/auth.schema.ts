@@ -164,6 +164,9 @@ export const UserProfileSchema = z.object({
   percentile: z.number(),
   roles: z.array(z.string()),
   is_verified: z.boolean().optional(),
+  role_verification: z
+    .array(z.object({ role: z.string(), is_verified: z.boolean() }))
+    .optional(),
 });
 
 export const UserProfileResponseSchema = ApiResponseSchema(UserProfileSchema);
