@@ -10,7 +10,7 @@ import { cookies } from "next/headers";
 import type { z } from "zod";
 import { refreshAccessToken } from "@/features/auth/api/auth.api";
 import { env } from "../../config/env";
-import { ApiError, extractDjangoMessage } from "./errors";
+import { ApiError, extractDjangoMessage, logSchemaMismatch } from "./errors";
 
 // ─── URL + Headers ──────────────────────────────────────────────────────────
 
@@ -77,11 +77,19 @@ interface RequestOptions<T> {
   schema?: z.ZodSchema<T>;
   headers?: HeadersInit;
   next?: NextFetchRequestConfig;
+  /**
+   * When true, a Zod schema-parse failure throws an `ApiError` instead of
+   * returning the unvalidated raw payload. Default is lenient (returns raw,
+   * but the mismatch is always logged).
+   */
+  strictSchema?: boolean;
 }
 
 type ServerOptions = {
   headers?: HeadersInit;
   next?: NextFetchRequestConfig;
+  /** See RequestOptions.strictSchema */
+  strictSchema?: boolean;
 };
 
 // ─── Core request fn ────────────────────────────────────────────────────────
@@ -124,10 +132,12 @@ async function request<T>(
           if (options.schema) {
             const parsed = options.schema.safeParse(retryData);
             if (!parsed.success) {
-              if (process.env.NODE_ENV === "development") {
-                console.error(
-                  `⚠️ API schema mismatch (server) [${endpoint}]`,
-                  parsed.error.issues,
+              logSchemaMismatch(`${endpoint} (server)`, parsed.error.issues);
+              if (options.strictSchema) {
+                throw new ApiError(
+                  retryRes.status,
+                  `Schema validation failed: ${endpoint}`,
+                  retryData,
                 );
               }
               return retryData as T;
@@ -158,13 +168,15 @@ async function request<T>(
   if (options.schema) {
     const parsed = options.schema.safeParse(rawData);
     if (!parsed.success) {
-      if (process.env.NODE_ENV === "development") {
-        console.error(
-          `⚠️ API schema mismatch (server) [${endpoint}]`,
-          parsed.error.issues,
+      logSchemaMismatch(`${endpoint} (server)`, parsed.error.issues);
+      if (options.strictSchema) {
+        throw new ApiError(
+          res.status,
+          `Schema validation failed: ${endpoint}`,
+          rawData,
         );
       }
-      // Return raw data preserving the full envelope shape.
+      // Lenient default: return the raw payload preserving the envelope shape.
       return rawData as T;
     }
     return parsed.data;

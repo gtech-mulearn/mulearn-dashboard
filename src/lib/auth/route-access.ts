@@ -81,16 +81,19 @@ export const routeAccessMap: Record<string, RouteConfig> = {
   "/dashboard/management": {
     roles: [ROLES.ADMIN],
   },
-  "/dashboard/management/user-management": {
+  "/dashboard/management/manage-users": {
     roles: [ROLES.ADMIN],
   },
-  "/dashboard/management/user-role-verification": {
+  "/dashboard/management/role-verification": {
+    roles: [ROLES.ADMIN],
+  },
+  "/dashboard/management/mentor-verification": {
     roles: [ROLES.ADMIN],
   },
   "/dashboard/management/manage-achievements": {
     roles: [ROLES.ADMIN],
   },
-  "/dashboard/management/manage-intern": {
+  "/dashboard/management/manage-interns": {
     roles: [ROLES.ADMIN, ROLES.ASSOCIATE],
   },
   "/dashboard/management/manage-interest-groups": {

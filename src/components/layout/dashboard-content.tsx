@@ -19,7 +19,7 @@ interface DashboardContentProps {
 }
 
 export function DashboardContent({ children }: DashboardContentProps) {
-  const { isSidebarExpanded } = useUIStore();
+  const isSidebarExpanded = useUIStore((s) => s.isSidebarExpanded);
 
   return (
     <main
