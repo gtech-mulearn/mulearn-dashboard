@@ -7,21 +7,25 @@ export function TimeFrameToggle({
   onChange,
 }: GeneralToggleProps<TimeFrame>) {
   return (
-    <div className="inline-flex gap-3">
+    <div className="inline-flex items-center gap-1 rounded-full p-1">
       <Button
+        type="button"
         variant={selected === "monthly" ? "default" : "outline"}
         onClick={() => onChange("monthly")}
-        className={`flex items-center gap-3 font-semibold uppercase tracking-tight`}
+        aria-pressed={selected === "monthly"}
+        className="font-semibold"
       >
-        <Calendar className="w-5 h-5" />
+        <Calendar className="w-3.5 h-3.5" />
         <span>Monthly</span>
       </Button>
       <Button
+        type="button"
         variant={selected === "overall" ? "default" : "outline"}
         onClick={() => onChange("overall")}
-        className={`flex items-center gap-3 font-semibold uppercase tracking-tight`}
+        aria-pressed={selected === "overall"}
+        className="font-semibold"
       >
-        <Trophy className="w-5 h-5" />
+        <Trophy className="w-3.5 h-3.5" />
         <span>Overall</span>
       </Button>
     </div>

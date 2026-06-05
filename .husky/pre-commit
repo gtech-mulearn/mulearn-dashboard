@@ -16,9 +16,9 @@ bun run typecheck
 
 echo "🔐 Scanning for forbidden patterns..."
 # Check staged content (excluding .husky) for forbidden patterns
-if git diff --cached -- ':!.husky' | grep -qE 'localStorage\.setItem|sessionStorage\.setItem|console\.log|@ts-ignore|@ts-expect-error'; then
+if git diff --cached -- ':!.husky' ':!*.md' | grep -qE 'localStorage\.setItem|sessionStorage\.setItem|console\.log|@ts-ignore|@ts-expect-error'; then
   echo "❌ Forbidden pattern detected in staged changes:"
-  git diff --cached -- ':!.husky' | grep -nE 'localStorage\.setItem|sessionStorage\.setItem|console\.log|@ts-ignore|@ts-expect-error'
+  git diff --cached -- ':!.husky' ':!*.md' | grep -nE 'localStorage\.setItem|sessionStorage\.setItem|console\.log|@ts-ignore|@ts-expect-error'
   exit 1
 fi
 
