@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { apiClient } from "@/api/client";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 const SkillSchema = z.object({
@@ -129,16 +130,17 @@ export function ProjectSkillPicker({ value, onChange }: Props) {
             className="gap-1 pl-2.5 pr-1 py-0.5 text-xs"
           >
             {skill.name}
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="icon"
+              className="ml-0.5 h-4 w-4 rounded-full p-0"
               onClick={(e) => {
                 e.stopPropagation();
                 removeSkill(skill.id);
               }}
-              className="ml-0.5 rounded-full hover:bg-muted-foreground/20 p-0.5"
             >
               <X className="h-3 w-3" />
-            </button>
+            </Button>
           </Badge>
         ))}
         <Input
@@ -168,16 +170,16 @@ export function ProjectSkillPicker({ value, onChange }: Props) {
             <ul className="py-1">
               {filtered.slice(0, 12).map((skill) => (
                 <li key={skill.id}>
-                  <button
-                    type="button"
-                    className="w-full px-3 py-2 text-left text-sm hover:bg-muted transition-colors flex items-center justify-between"
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-between px-3 py-2 h-auto text-sm rounded-none"
                     onClick={() => addSkill(skill)}
                   >
                     <span>{skill.name}</span>
                     <span className="text-xs text-muted-foreground">
                       {skill.code}
                     </span>
-                  </button>
+                  </Button>
                 </li>
               ))}
             </ul>
