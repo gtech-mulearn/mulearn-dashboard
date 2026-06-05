@@ -88,13 +88,6 @@ const MOCK_TOP_PERFORMERS = [
   },
 ];
 
-interface Performer {
-  id: string;
-  rank: number;
-  name: string;
-  points: number;
-}
-
 export default function InternDashboardPage() {
   const performerColumns = [
     {

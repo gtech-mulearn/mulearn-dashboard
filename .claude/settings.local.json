@@ -6,7 +6,11 @@
       "Bash(grep -E \"^typescript$\")",
       "Bash(bun install *)",
       "Bash(Get-ChildItem -Path \"d:\\\\Repos\\\\mulearn-dashboard\\\\src\" -Recurse -Include \"*type*\", \"*schema*\")",
-      "Bash(Select-Object -ExpandProperty FullName)"
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(bun add *)",
+      "PowerShell(Get-Command node, npm, pnpm, yarn -ErrorAction SilentlyContinue)",
+      "PowerShell(cd \"d:\\\\Awin\\\\mulearn-dashboard\"; npx biome check --max-diagnostics=50 2>&1 | Select-String \"error|\\\\.tsx|\\\\.ts\" | Where-Object { $_ -notmatch \"warning|Found\" } | Select-Object -First 30)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }
