@@ -92,10 +92,12 @@ export function JobDetailModal({
         <div className="px-6 pt-6 pb-4 border-b border-border shrink-0">
           <div className="pr-8">
             <div className="flex flex-wrap items-center gap-2 mb-2">
-              <Badge variant="secondary" className="capitalize text-xs">
-                <Briefcase className="h-3 w-3 mr-1" />
-                {job.job_type.replace(/_/g, " ")}
-              </Badge>
+              {job.job_type && (
+                <Badge variant="secondary" className="capitalize text-xs">
+                  <Briefcase className="h-3 w-3 mr-1" />
+                  {job.job_type.replace(/_/g, " ")}
+                </Badge>
+              )}
               {job.karma_reward ? (
                 <Badge className="gap-1 bg-primary/10 text-primary border border-primary/20 text-xs">
                   <Sparkles className="h-3 w-3" />+{job.karma_reward} karma
@@ -106,14 +108,24 @@ export function JobDetailModal({
               {job.title}
             </h2>
             <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <MapPin className="h-3.5 w-3.5" />
-                {job.location}
-              </span>
-              <span className="flex items-center gap-1">
-                <Calendar className="h-3.5 w-3.5" />
-                Posted {formatDate(job.created_at)}
-              </span>
+              {job.company_name && (
+                <span className="flex items-center gap-1 font-medium text-foreground">
+                  <Briefcase className="h-3.5 w-3.5" />
+                  {job.company_name}
+                </span>
+              )}
+              {job.location && (
+                <span className="flex items-center gap-1">
+                  <MapPin className="h-3.5 w-3.5" />
+                  {job.location}
+                </span>
+              )}
+              {job.created_at && (
+                <span className="flex items-center gap-1">
+                  <Calendar className="h-3.5 w-3.5" />
+                  Posted {formatDate(job.created_at)}
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -181,16 +193,23 @@ export function JobDetailModal({
           )}
 
           {/* Deliverables */}
-          {job.deliverables && job.deliverables.length > 0 && (
+          {job.deliverables && (
             <Section title="Deliverables">
-              <ul className="space-y-1.5">
-                {job.deliverables.map((d) => (
-                  <li key={d} className="flex items-start gap-2 text-sm">
-                    <Package className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
-                    <span>{d}</span>
-                  </li>
-                ))}
-              </ul>
+              {Array.isArray(job.deliverables) ? (
+                <ul className="space-y-1.5">
+                  {job.deliverables.map((d) => (
+                    <li key={d} className="flex items-start gap-2 text-sm">
+                      <Package className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+                      <span>{d}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="flex items-start gap-2 text-sm">
+                  <Package className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+                  <span>{job.deliverables}</span>
+                </div>
+              )}
             </Section>
           )}
 

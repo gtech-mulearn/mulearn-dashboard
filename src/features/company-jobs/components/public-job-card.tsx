@@ -40,14 +40,31 @@ export function PublicJobCard({ job, onView }: PublicJobCardProps) {
 
       {/* Title + meta */}
       <div className="pr-20">
+        {job.company_name && (
+          <div className="mb-1 text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+            {job.company_logo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={job.company_logo}
+                alt={job.company_name}
+                className="h-4 w-4 rounded object-cover"
+              />
+            ) : (
+              <Briefcase className="h-3 w-3" />
+            )}
+            {job.company_name}
+          </div>
+        )}
         <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-1">
           {job.title}
         </h3>
         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1 capitalize">
-            <Briefcase className="h-3 w-3" />
-            {job.job_type.replace(/_/g, " ")}
-          </span>
+          {job.job_type && (
+            <span className="flex items-center gap-1 capitalize">
+              <Briefcase className="h-3 w-3" />
+              {job.job_type.replace(/_/g, " ")}
+            </span>
+          )}
           <span className="flex items-center gap-1">
             <MapPin className="h-3 w-3" />
             {job.location}
@@ -78,10 +95,14 @@ export function PublicJobCard({ job, onView }: PublicJobCardProps) {
 
       {/* Footer */}
       <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
-        <span className="flex items-center gap-1 text-xs text-muted-foreground">
-          <Calendar className="h-3 w-3" />
-          {formatDate(job.created_at)}
-        </span>
+        {job.created_at ? (
+          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Calendar className="h-3 w-3" />
+            {formatDate(job.created_at)}
+          </span>
+        ) : (
+          <span />
+        )}
         <span className="text-xs font-medium text-primary group-hover:underline">
           View details →
         </span>

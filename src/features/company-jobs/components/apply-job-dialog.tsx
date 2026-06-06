@@ -66,7 +66,7 @@ export function ApplyJobDialog({
         <DialogHeader>
           <DialogTitle className="text-base font-bold">{job.title}</DialogTitle>
           <DialogDescription className="capitalize text-sm">
-            {job.job_type.replace(/_/g, " ")} · {job.location}
+            {job.job_type?.replace(/_/g, " ")} · {job.location}
           </DialogDescription>
         </DialogHeader>
 

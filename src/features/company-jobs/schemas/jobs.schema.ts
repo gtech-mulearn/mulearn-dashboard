@@ -62,7 +62,11 @@ export const JobSchema = z.object({
   karma_reward: z.number().optional().nullable(),
   duration_value: z.number().optional().nullable(),
   duration_unit: z.string().optional().nullable(),
-  hourly_rate: z.string().optional().nullable(),
+  hourly_rate: z
+    .union([z.string(), z.number()])
+    .optional()
+    .nullable()
+    .transform((v) => (v != null ? String(v) : null)),
   deliverables: z
     .union([z.array(z.string()), z.string()])
     .optional()
@@ -148,23 +152,64 @@ export const JobDetailResponseSchema = DjangoResponse(JobDetailDataSchema);
 
 export const PublicJobSchema = z.object({
   id: z.string(),
+  company_name: z.string().optional().nullable(),
+  company_logo: z.string().optional().nullable(),
   title: z.string(),
-  job_type: z.string(),
-  location: z.string(),
-  experience: z.string().optional().nullable(),
+  job_type: z.string().optional().nullable(),
+  location: z.string().optional().nullable(),
+  experience: z
+    .union([z.string(), z.number()])
+    .optional()
+    .nullable()
+    .transform((v) => (v != null ? String(v) : null)),
   job_description: z.string().optional().nullable(),
-  salary_range: z.string().optional().nullable(),
-  status: z.string(),
-  created_at: z.string(),
-  updated_at: z.string(),
-  karma_reward: z.number().optional().nullable(),
-  duration_value: z.number().optional().nullable(),
+  salary_range: z
+    .union([z.string(), z.number()])
+    .optional()
+    .nullable()
+    .transform((v) => (v != null ? String(v) : null)),
+  status: z.string().optional().nullable(),
+  created_at: z.string().optional().nullable(),
+  updated_at: z.string().optional().nullable(),
+  karma_reward: z
+    .union([z.number(), z.string()])
+    .optional()
+    .nullable()
+    .transform((v) => (v != null ? Number(v) : null)),
+  duration_value: z
+    .union([z.number(), z.string()])
+    .optional()
+    .nullable()
+    .transform((v) => (v != null ? Number(v) : null)),
   duration_unit: z.string().optional().nullable(),
-  hourly_rate: z.string().optional().nullable(),
-  deliverables: z.array(z.string()).optional().nullable(),
-  stipend: z.string().optional().nullable(),
-  certificate_provided: z.boolean().optional().nullable(),
-  rules: z.array(JobRuleSchema).default([]),
+  hourly_rate: z
+    .union([z.string(), z.number()])
+    .optional()
+    .nullable()
+    .transform((v) => (v != null ? String(v) : null)),
+  deliverables: z
+    .union([z.array(z.string()), z.string()])
+    .optional()
+    .nullable(),
+  stipend: z
+    .union([z.string(), z.number()])
+    .optional()
+    .nullable()
+    .transform((v) => (v != null ? String(v) : null)),
+  certificate_provided: z
+    .union([z.boolean(), z.string(), z.number()])
+    .optional()
+    .nullable()
+    .transform((v) => {
+      if (v === "true" || v === "1" || v === 1) return true;
+      if (v === "false" || v === "0" || v === 0) return false;
+      if (typeof v === "boolean") return v;
+      return null;
+    }),
+  rules: z
+    .array(JobRuleSchema)
+    .nullish()
+    .transform((v) => v ?? []),
 });
 
 export const LearnerApplicationSchema = z.object({
@@ -288,16 +333,36 @@ export const PublicJobsResponseSchema = DjangoResponse(
     .object({
       data: z.array(PublicJobSchema).nullish(),
       jobs: z.array(PublicJobSchema).nullish(),
-      pagination: PaginationSchema.nullish().transform(
-        (v) =>
-          v ?? {
-            count: 0,
-            totalPages: 1,
-            isNext: false,
-            isPrev: false,
-            nextPage: null,
-          },
-      ),
+      pagination: z
+        .object({
+          count: z
+            .number()
+            .nullish()
+            .transform((v) => v ?? 0),
+          total_pages: z
+            .number()
+            .nullish()
+            .transform((v) => v ?? 1),
+          current_page: z
+            .number()
+            .nullish()
+            .transform((v) => v ?? 1),
+          per_page: z
+            .number()
+            .nullish()
+            .transform((v) => v ?? 10),
+          next: z.string().nullable().optional(),
+          previous: z.string().nullable().optional(),
+        })
+        .passthrough()
+        .optional()
+        .transform((v) => ({
+          count: v?.count ?? 0,
+          totalPages: v?.total_pages ?? 1,
+          isNext: !!v?.next,
+          isPrev: !!v?.previous,
+          nextPage: v?.next ? (v.current_page ?? 1) + 1 : null,
+        })),
     })
     .transform((val) => ({
       jobs: val.jobs ?? val.data ?? [],
@@ -560,11 +625,18 @@ export const PublicJobBySlugSchema = z.object({
   status: z.string().optional().nullable(),
   duration_value: z.number().optional().nullable(),
   duration_unit: z.string().optional().nullable(),
-  hourly_rate: z.string().optional().nullable(),
+  hourly_rate: z
+    .union([z.string(), z.number()])
+    .optional()
+    .nullable()
+    .transform((v) => (v != null ? String(v) : null)),
   deliverables: z.string().optional().nullable(),
   stipend: z.string().optional().nullable(),
   certificate_provided: z.boolean().optional().nullable(),
-  rules: z.array(PublicJobRuleSchema).default([]),
+  rules: z
+    .array(PublicJobRuleSchema)
+    .nullish()
+    .transform((v) => v ?? []),
   created_at: z.string(),
 });
 export type PublicJobBySlug = z.infer<typeof PublicJobBySlugSchema>;

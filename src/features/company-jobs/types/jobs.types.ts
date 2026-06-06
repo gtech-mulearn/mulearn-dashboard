@@ -74,20 +74,22 @@ export interface JobDetailResponse {
 
 export interface PublicJob {
   id: string;
+  company_name?: string | null;
+  company_logo?: string | null;
   title: string;
-  job_type: string;
-  location: string;
+  job_type?: string | null;
+  location?: string | null;
   experience?: string | null;
   job_description?: string | null;
   salary_range?: string | null;
-  status: string;
-  created_at: string;
-  updated_at: string;
+  status?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
   karma_reward?: number | null;
   duration_value?: number | null;
   duration_unit?: string | null;
   hourly_rate?: string | null;
-  deliverables?: string[] | null;
+  deliverables?: string[] | string | null;
   stipend?: string | null;
   certificate_provided?: boolean | null;
   rules: JobRule[];

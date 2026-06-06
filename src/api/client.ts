@@ -280,7 +280,7 @@ async function request<T>(
       if (process.env.NODE_ENV === "development") {
         console.error(
           `⚠️ API schema mismatch [${endpoint}]`,
-          parsed.error.issues,
+          JSON.stringify(parsed.error.issues, null, 2),
         );
       }
       // Return raw data preserving the full envelope shape.

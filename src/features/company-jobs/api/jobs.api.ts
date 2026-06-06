@@ -229,7 +229,7 @@ export async function fetchPublicJobs(
     ? `${endpoints.company.jobsAll}?${queryString}`
     : endpoints.company.jobsAll;
 
-  const res = await publicApiClient.get(url, PublicJobsResponseSchema);
+  const res = await apiClient.get(url, PublicJobsResponseSchema);
   return res.response;
 }
 
