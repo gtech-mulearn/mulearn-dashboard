@@ -282,26 +282,27 @@ export function ProjectWizard({
                   return (
                     <Fragment key={label}>
                       <div className="flex items-center gap-3">
-                        <button
+                        <Button
                           type="button"
-                          disabled={!isCompleted}
+                          size="icon-sm"
                           onClick={() =>
                             isCompleted && setCurrentStep(stepIndex)
                           }
-                          className={`flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-semibold transition-colors ${
+                          variant={
+                            isActive || isCompleted ? "default" : "secondary"
+                          }
+                          className={
                             isActive
-                              ? "border-primary bg-primary text-primary-foreground ring-2 ring-primary ring-offset-2"
-                              : isCompleted
-                                ? "border-primary bg-primary text-primary-foreground"
-                                : "border-border bg-background text-muted-foreground"
-                          }`}
+                              ? "ring-2 ring-primary ring-offset-2"
+                              : undefined
+                          }
                         >
                           {isCompleted ? (
                             <Check className="h-4 w-4" />
                           ) : (
                             <Icon className="h-3.5 w-3.5" />
                           )}
-                        </button>
+                        </Button>
                         <div className="min-w-0 pt-1">
                           <p
                             className={`text-xs whitespace-nowrap leading-none ${
@@ -530,17 +531,19 @@ export function ProjectWizard({
                               alt={file.name}
                               className="h-full w-full object-cover"
                             />
-                            <button
+                            <Button
                               type="button"
+                              size="icon-sm"
+                              variant="destructive"
                               onClick={() =>
                                 setImages((prev) =>
                                   prev.filter((f) => f !== file),
                                 )
                               }
-                              className="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                              className="absolute top-1 right-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                             >
                               <X className="h-3 w-3" />
-                            </button>
+                            </Button>
                           </div>
                         ))}
                       </div>
@@ -769,35 +772,21 @@ export function ProjectWizard({
           {!showSuccess && (
             <div className="flex items-center justify-between border-t border-border bg-card/80 p-4 backdrop-blur-sm">
               <div className="mx-auto flex w-full max-w-3xl items-center justify-between">
-                <Button
-                  variant="ghost"
-                  className="text-muted-foreground hover:text-foreground"
-                  onClick={requestClose}
-                >
+                <Button variant="ghost" onClick={requestClose}>
                   Cancel
                 </Button>
 
                 <div className="flex items-center gap-2">
                   {currentStep > 1 && (
-                    <Button
-                      variant="outline"
-                      className="border-border"
-                      onClick={goBack}
-                    >
+                    <Button variant="outline" onClick={goBack}>
                       Back
                     </Button>
                   )}
 
                   {currentStep < totalSteps ? (
-                    <Button
-                      className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
-                      onClick={goNext}
-                    >
-                      Next
-                    </Button>
+                    <Button onClick={goNext}>Next</Button>
                   ) : (
                     <Button
-                      className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
                       disabled={form.formState.isSubmitting}
                       onClick={handleSubmit}
                     >
