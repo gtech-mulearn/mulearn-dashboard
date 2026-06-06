@@ -172,6 +172,25 @@ export const endpoints = {
     /** DELETE - Hard delete eligibility rule (JWT required) */
     deleteJobRule: (jobId: string, ruleId: string) =>
       `/api/v1/dashboard/company/jobs/${jobId}/rules/${ruleId}/delete/`,
+    /** GET - Admin Summary Dashboard */
+    adminSummary: "/api/v1/dashboard/company/summary/",
+    /** GET/POST - List company tasks / Create a company task */
+    tasks: "/api/v1/dashboard/company/tasks/",
+    /** GET/PUT/DELETE - Get / Update / Delete task detail */
+    taskDetail: (taskId: string) =>
+      `/api/v1/dashboard/company/tasks/${taskId}/`,
+    /** POST - Nominate a Company Mentor */
+    mentorNominate: "/api/v1/dashboard/company/mentor/nominate/",
+    /** GET - List Company Mentor Nominations */
+    mentorList: "/api/v1/dashboard/company/mentor/list/",
+    /** POST - Track Job View */
+    trackJobView: (jobId: string) =>
+      `/api/v1/dashboard/company/jobs/${jobId}/view/`,
+    /** GET - Company Job Engagement Analytics */
+    jobAnalytics: (jobId: string) =>
+      `/api/v1/dashboard/company/jobs/${jobId}/analytics/`,
+    /** GET - Company Talent Pool Analytics */
+    talentPoolAnalytics: "/api/v1/dashboard/company/talent-pool/analytics/",
   },
 
   // ============================================

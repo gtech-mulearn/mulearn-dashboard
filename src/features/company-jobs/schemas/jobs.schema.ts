@@ -630,3 +630,210 @@ export const RuleFormSchema = z.object({
 });
 
 export type RuleFormValues = z.infer<typeof RuleFormSchema>;
+
+// ─── Company Tasks Schemas ───────────────────────────────────
+
+export const SkillSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  code: z.string(),
+});
+
+export const TaskSchema = z.object({
+  id: z.string(),
+  hashtag: z.string(),
+  discord_link: z.string().nullable().optional(),
+  title: z.string(),
+  description: z.string(),
+  karma: z.number(),
+  channel: z.string().nullable().optional(),
+  type: z.string(),
+  active: z.boolean(),
+  variable_karma: z.boolean(),
+  usage_count: z.number(),
+  level: z.string().nullable().optional(),
+  org: z.string().nullable().optional(),
+  ig: z.string().nullable().optional(),
+  event: z.string().nullable().optional(),
+  bonus_karma: z.number(),
+  bonus_time: z.string().nullable().optional(),
+  approval_status: z.string(),
+  rejection_reason: z.string().nullable().optional(),
+  reviewed_at: z.string().nullable().optional(),
+  requested_by_name: z.string().nullable().optional(),
+  requested_at: z.string().nullable().optional(),
+  skills: z.array(SkillSchema).default([]),
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+
+export const TasksListResponseSchema = DjangoResponse(
+  z.object({
+    data: z.array(TaskSchema),
+    pagination: z.object({
+      count: z
+        .number()
+        .nullish()
+        .transform((v) => v ?? 0),
+      total_pages: z
+        .number()
+        .nullish()
+        .transform((v) => v ?? 1),
+      current_page: z
+        .number()
+        .nullish()
+        .transform((v) => v ?? 1),
+      per_page: z
+        .number()
+        .nullish()
+        .transform((v) => v ?? 10),
+      next: z.string().nullable().optional(),
+      previous: z.string().nullable().optional(),
+    }),
+  }),
+);
+
+export const TaskDetailResponseSchema = DjangoResponse(TaskSchema);
+
+export const GenericTaskMutationResponseSchema = DjangoResponse(
+  z.object({}).passthrough(),
+);
+
+// ─── Company Mentor Nomination Schemas ──────────────────────
+
+export const MentorNominationSchema = z.object({
+  id: z.string(),
+  user_id: z.string(),
+  user_name: z.string(),
+  user_email: z.string().email().optional().nullable(),
+  org_name: z.string(),
+  mentor_tier: z.string(),
+  status: z.string(),
+  reason: z.string(),
+  verification_note: z.string().nullable().optional(),
+  verified_at: z.string().nullable().optional(),
+});
+
+export const NominateMentorResponseSchema = DjangoResponse(
+  MentorNominationSchema,
+);
+
+export const ListMentorNominationsResponseSchema = DjangoResponse(
+  z.array(MentorNominationSchema),
+);
+
+// ─── Analytics Schemas ────────────────────────────────────────
+
+export const GigAnalyticsSchema = z.object({
+  total_gigs_posted: z.number(),
+  active_gigs: z.number(),
+  closed_gigs: z.number(),
+  average_hourly_rate: z.number(),
+  application_funnel: z.record(z.string(), z.number()),
+  conversion_rate: z.string(),
+});
+
+export const GigAnalyticsResponseSchema = DjangoResponse(GigAnalyticsSchema);
+
+export const CompanyDashboardSummarySchema = z.object({
+  company: z.object({
+    id: z.string(),
+    name: z.string(),
+    slug: z.string(),
+    status: z.string(),
+    logo: z.string().nullable().optional(),
+  }),
+  quick_stats: z.object({
+    jobs_posted: z.number(),
+    total_views: z.number(),
+    applications: z.number(),
+    hired: z.number(),
+  }),
+  stat_cards: z.array(
+    z.object({
+      key: z.string(),
+      label: z.string(),
+      value: z.number(),
+      delta: z.number(),
+      delta_type: z.string(),
+      period: z.string(),
+    }),
+  ),
+  talent_pool: z.object({
+    total_learners: z.number(),
+    level_distribution: z.array(
+      z.object({
+        level_id: z.string(),
+        level_name: z.string(),
+        level_order: z.number(),
+        count: z.number(),
+        percentage: z.number(),
+      }),
+    ),
+    top_interest_groups: z.array(
+      z.object({
+        ig_id: z.string(),
+        name: z.string(),
+        learner_count: z.number(),
+        total_karma: z.number(),
+      }),
+    ),
+  }),
+});
+
+export const CompanyDashboardSummaryResponseSchema = DjangoResponse(
+  CompanyDashboardSummarySchema,
+);
+
+export const TrackJobViewResponseSchema = DjangoResponse(
+  z.object({}).passthrough(),
+);
+
+export const JobEngagementAnalyticsSchema = z.object({
+  job_id: z.string(),
+  job_title: z.string(),
+  total_views: z.number(),
+  total_applications: z.number(),
+  total_hired: z.number(),
+  conversion_rate_percentage: z.number(),
+});
+
+export const JobEngagementAnalyticsResponseSchema = DjangoResponse(
+  JobEngagementAnalyticsSchema,
+);
+
+export const TalentPoolAnalyticsSchema = z.object({
+  total_learners: z.number(),
+  level_distribution: z.array(
+    z.object({
+      level_id: z.string(),
+      level_name: z.string(),
+      level_order: z.number(),
+      count: z.number(),
+      percentage: z.number(),
+    }),
+  ),
+  top_interest_groups: z.array(
+    z.object({
+      ig_id: z.string(),
+      name: z.string(),
+      learner_count: z.number(),
+      total_karma: z.number(),
+    }),
+  ),
+});
+
+export const TalentPoolAnalyticsResponseSchema = DjangoResponse(
+  TalentPoolAnalyticsSchema,
+);
+
+export const AdminSummarySchema = z.object({
+  total_companies: z.number(),
+  verified_companies: z.number(),
+  pending_companies: z.number(),
+  rejected_companies: z.number(),
+  total_jobs: z.number(),
+  total_company_tasks: z.number(),
+});
+
+export const AdminSummaryResponseSchema = DjangoResponse(AdminSummarySchema);

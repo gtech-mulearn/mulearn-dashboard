@@ -1,0 +1,95 @@
+"use client";
+
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import {
+  fetchCompanyTasks,
+  fetchCompanyTaskDetail,
+  createCompanyTask,
+  updateCompanyTask,
+  deleteCompanyTask,
+} from "../api";
+import type {
+  TasksListParams,
+  CreateTaskPayload,
+  UpdateTaskPayload,
+} from "../types";
+
+export const COMPANY_TASKS_KEYS = {
+  all: ["company-tasks"] as const,
+  list: (params?: TasksListParams) =>
+    [...COMPANY_TASKS_KEYS.all, "list", params ?? {}] as const,
+  detail: (taskId: string) =>
+    [...COMPANY_TASKS_KEYS.all, "detail", taskId] as const,
+};
+
+export function useCompanyTasks(params?: TasksListParams) {
+  return useQuery({
+    queryKey: COMPANY_TASKS_KEYS.list(params),
+    queryFn: () => fetchCompanyTasks(params),
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useCompanyTaskDetail(taskId: string) {
+  return useQuery({
+    queryKey: COMPANY_TASKS_KEYS.detail(taskId),
+    queryFn: () => fetchCompanyTaskDetail(taskId),
+    enabled: !!taskId,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useCreateCompanyTask() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: CreateTaskPayload) => createCompanyTask(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: COMPANY_TASKS_KEYS.all });
+      toast.success("Task submitted for approval successfully");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message ?? "Failed to submit task");
+    },
+  });
+}
+
+export function useUpdateCompanyTask() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      taskId,
+      payload,
+    }: {
+      taskId: string;
+      payload: UpdateTaskPayload;
+    }) => updateCompanyTask(taskId, payload),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: COMPANY_TASKS_KEYS.all });
+      queryClient.invalidateQueries({
+        queryKey: COMPANY_TASKS_KEYS.detail(variables.taskId),
+      });
+      toast.success("Task updated and re-submitted for approval successfully");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message ?? "Failed to update task");
+    },
+  });
+}
+
+export function useDeleteCompanyTask() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (taskId: string) => deleteCompanyTask(taskId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: COMPANY_TASKS_KEYS.all });
+      toast.success("Task deleted successfully");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message ?? "Failed to delete task");
+    },
+  });
+}

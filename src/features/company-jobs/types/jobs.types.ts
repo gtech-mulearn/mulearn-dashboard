@@ -344,3 +344,198 @@ export interface LearnerDiscoveryParams {
   pageIndex?: number;
   perPage?: number;
 }
+
+// ─── Company Tasks Types ─────────────────────────────────────
+
+export interface Skill {
+  id: string;
+  name: string;
+  code: string;
+}
+
+export interface CompanyTask {
+  id: string;
+  hashtag: string;
+  discord_link?: string | null;
+  title: string;
+  description: string;
+  karma: number;
+  channel?: string | null;
+  type: string;
+  active: boolean;
+  variable_karma: boolean;
+  usage_count: number;
+  level?: string | null;
+  org?: string | null;
+  ig?: string | null;
+  event?: string | null;
+  bonus_karma: number;
+  bonus_time?: string | null;
+  approval_status: string;
+  rejection_reason?: string | null;
+  reviewed_at?: string | null;
+  requested_by_name?: string | null;
+  requested_at?: string | null;
+  skills: Skill[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TasksListParams {
+  approval_status?: string;
+  search?: string;
+  sort_by?: string;
+  sort_order?: "asc" | "desc";
+  page?: number;
+  per_page?: number;
+}
+
+export interface TasksListResponse {
+  data: CompanyTask[];
+  pagination: {
+    count: number;
+    total_pages: number;
+    current_page: number;
+    per_page: number;
+    next?: string | null;
+    previous?: string | null;
+  };
+}
+
+export interface CreateTaskPayload {
+  hashtag: string;
+  title: string;
+  karma: number;
+  usage_count?: number;
+  description: string;
+  type: string;
+  level?: string;
+  created_by?: string;
+  updated_by?: string;
+  skill_ids?: string[];
+}
+
+export interface UpdateTaskPayload {
+  hashtag?: string;
+  title?: string;
+  karma?: number;
+  description?: string;
+  type?: string;
+  level?: string;
+  skill_ids?: string[];
+}
+
+// ─── Company Mentor Nomination Types ────────────────────────
+
+export interface MentorNomination {
+  id: string;
+  user_id: string;
+  user_name: string;
+  user_email?: string | null;
+  org_name: string;
+  mentor_tier: string;
+  status: string;
+  reason: string;
+  verification_note?: string | null;
+  verified_at?: string | null;
+}
+
+export interface NominateMentorPayload {
+  muid: string;
+  reason: string;
+}
+
+// ─── Analytics Types ─────────────────────────────────────────
+
+export interface GigAnalytics {
+  total_gigs_posted: number;
+  active_gigs: number;
+  closed_gigs: number;
+  average_hourly_rate: number;
+  application_funnel: Record<string, number>;
+  conversion_rate: string;
+}
+
+export interface CompanyDashboardSummary {
+  company: {
+    id: string;
+    name: string;
+    slug: string;
+    status: string;
+    logo?: string | null;
+  };
+  quick_stats: {
+    jobs_posted: number;
+    total_views: number;
+    applications: number;
+    hired: number;
+  };
+  stat_cards: Array<{
+    key: string;
+    label: string;
+    value: number;
+    delta: number;
+    delta_type: string;
+    period: string;
+  }>;
+  talent_pool: {
+    total_learners: number;
+    level_distribution: Array<{
+      level_id: string;
+      level_name: string;
+      level_order: number;
+      count: number;
+      percentage: number;
+    }>;
+    top_interest_groups: Array<{
+      ig_id: string;
+      name: string;
+      learner_count: number;
+      total_karma: number;
+    }>;
+  };
+}
+
+export interface JobEngagementAnalytics {
+  job_id: string;
+  job_title: string;
+  total_views: number;
+  total_applications: number;
+  total_hired: number;
+  conversion_rate_percentage: number;
+}
+
+export interface TalentPoolAnalytics {
+  total_learners: number;
+  level_distribution: Array<{
+    level_id: string;
+    level_name: string;
+    level_order: number;
+    count: number;
+    percentage: number;
+  }>;
+  top_interest_groups: Array<{
+    ig_id: string;
+    name: string;
+    learner_count: number;
+    total_karma: number;
+  }>;
+}
+
+export interface TalentPoolAnalyticsParams {
+  karma_min?: number;
+  karma_max?: number;
+  level_order_min?: number;
+  interested_in_work?: boolean;
+  interested_in_gig_work?: boolean;
+  ig_ids?: string;
+}
+
+export interface AdminSummary {
+  total_companies: number;
+  verified_companies: number;
+  pending_companies: number;
+  rejected_companies: number;
+  total_jobs: number;
+  total_company_tasks: number;
+}
