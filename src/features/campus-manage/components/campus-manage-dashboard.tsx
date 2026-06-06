@@ -212,6 +212,82 @@ const formatDateRange = (start?: string, end?: string) => {
   return `${format(startDate, "MMM d")} - ${format(endDate, "MMM d, yyyy")}`;
 };
 
+const normalizeSocialUrl = (platformId: string, input: string): string => {
+  const value = input.trim();
+  if (!value) return "";
+
+  // If it already looks like a URL (starts with http:// or https://)
+  // return it unchanged to avoid double-wrapping like https://github.com/https://github.com/...
+  if (/^(f|ht)tps?:\/\//i.test(value)) {
+    return value;
+  }
+
+  // Generate URL based on platform rules
+  switch (platformId) {
+    case "instagram":
+      return `https://instagram.com/${value.replace(/^@/, "")}`;
+    case "linkedin":
+      if (value.startsWith("in/")) {
+        return `https://linkedin.com/${value}`;
+      }
+      if (value.startsWith("company/")) {
+        return `https://linkedin.com/${value}`;
+      }
+      return `https://linkedin.com/in/${value}`;
+    case "twitter":
+      return `https://twitter.com/${value.replace(/^@/, "")}`;
+    case "facebook":
+      return `https://facebook.com/${value}`;
+    case "youtube":
+      return `https://youtube.com/${value.startsWith("@") ? value : "@" + value}`;
+    case "discord":
+      if (value.includes("discord.gg") || value.includes("discord.com")) {
+        return value;
+      }
+      return `https://discord.gg/${value}`;
+    case "github":
+      return `https://github.com/${value}`;
+    default:
+      return value;
+  }
+};
+
+/** Derives a clean, human-readable display label from a full social URL. */
+const getSocialDisplayLabel = (platformId: string, url: string): string => {
+  if (!url) return "";
+  try {
+    const u = new URL(url);
+    // Strip leading/trailing slashes from the path
+    const path = u.pathname.replace(/^\//, "").replace(/\/$/, "");
+    switch (platformId) {
+      case "instagram":
+      case "twitter":
+        // Natural handle format: @username
+        return `@${path}`;
+      case "youtube":
+        // YouTube channels use @handle
+        return path.startsWith("@") ? path : `@${path}`;
+      case "linkedin":
+        // Strip the "in/" or "company/" prefix → show just the slug
+        return path.replace(/^(in|company)\//, "");
+      case "github":
+        // Just the org/username, no leading slash
+        return path;
+      case "facebook":
+        // Just the page name
+        return path;
+      case "discord":
+        return path ? `discord.gg/${path}` : u.hostname;
+      default:
+        // For websites: show hostname + path (without trailing slash)
+        return u.hostname + (path ? `/${path}` : "");
+    }
+  } catch {
+    // If URL parsing fails, return as-is
+    return url;
+  }
+};
+
 // ─── Reusable sub-components ────────────────────────────────────────────────
 
 function SectionTitle({
@@ -243,7 +319,7 @@ function FilterSelect({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="h-9 w-full min-w-[140px] appearance-none rounded-full border border-border/60 bg-background pl-4 pr-10 text-[11px] font-semibold uppercase tracking-wider transition-all hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20"
+        className="h-9 w-full min-w-[140px] appearance-none rounded-full border border-border/60 bg-background pl-4 pr-10 text-[11px] font-semibold uppercase tracking-wider text-foreground transition-all hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20"
       >
         {options.map((opt) => (
           <option key={opt.value} value={opt.value}>
@@ -332,6 +408,7 @@ function StatCard({
   featured = false,
   accent,
   accentText,
+  valueClassName,
 }: {
   title: string;
   value: string | number;
@@ -339,6 +416,7 @@ function StatCard({
   featured?: boolean;
   accent?: string;
   accentText?: string;
+  valueClassName?: string;
 }) {
   if (featured) {
     return (
@@ -374,8 +452,11 @@ function StatCard({
             </span>
           </div>
           <p
-            className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight"
-            style={{ color: accentText ?? accent }}
+            className={cn(
+              "text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight",
+              valueClassName,
+            )}
+            style={valueClassName ? undefined : { color: accentText ?? accent }}
           >
             {value}
           </p>
@@ -730,6 +811,7 @@ export function CampusManageDashboard() {
                       icon={<Zap className="h-4 w-4" />}
                       featured
                       accent="#0d9488"
+                      valueClassName="text-teal-600 dark:text-teal-400"
                     />
                   </div>
                   <div className="sm:col-span-1 md:col-span-2">
@@ -739,7 +821,7 @@ export function CampusManageDashboard() {
                       icon={<Trophy className="h-4 w-4" />}
                       featured
                       accent="#f59e0b"
-                      accentText="#b45309"
+                      valueClassName="text-amber-700 dark:text-amber-400"
                     />
                   </div>
                 </div>
@@ -818,13 +900,15 @@ export function CampusManageDashboard() {
                           />
                           <XAxis
                             dataKey="label"
-                            tick={{ fontSize: 10 }}
+                            tick={{ fontSize: 10, fill: "currentColor" }}
+                            className="text-muted-foreground"
                             tickLine={false}
                             axisLine={false}
                           />
                           <YAxis
                             allowDecimals={false}
-                            tick={{ fontSize: 10 }}
+                            tick={{ fontSize: 10, fill: "currentColor" }}
+                            className="text-muted-foreground"
                             tickLine={false}
                             axisLine={false}
                             width={36}
@@ -953,11 +1037,11 @@ export function CampusManageDashboard() {
                               <div
                                 className={`mx-auto flex h-9 w-9 items-center justify-center rounded-full text-xs font-black shadow-sm transition-all duration-300 ${
                                   student.rank === 1
-                                    ? "bg-warning/10 text-warning ring-2 ring-warning/50"
+                                    ? "bg-amber-100 text-amber-700 ring-2 ring-amber-500/30 dark:bg-amber-950/35 dark:text-amber-400 dark:ring-amber-500/20"
                                     : student.rank === 2
-                                      ? "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                                      ? "bg-slate-100 text-slate-700 ring-2 ring-slate-400/30 dark:bg-slate-800/80 dark:text-slate-300 dark:ring-slate-700/50"
                                       : student.rank === 3
-                                        ? "bg-orange-100 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400"
+                                        ? "bg-orange-100 text-orange-800 ring-2 ring-orange-400/30 dark:bg-orange-950/35 dark:text-orange-400 dark:ring-orange-500/20"
                                         : "bg-background text-muted-foreground border border-border/50"
                                 }`}
                               >
@@ -1164,7 +1248,11 @@ export function CampusManageDashboard() {
                                       type="number"
                                       domain={[0, clusterAxisMax]}
                                       ticks={clusterAxisTicks}
-                                      tick={{ fontSize: 10 }}
+                                      tick={{
+                                        fontSize: 10,
+                                        fill: "currentColor",
+                                      }}
+                                      className="text-muted-foreground"
                                       axisLine={{
                                         stroke: "hsl(var(--border))",
                                         strokeOpacity: 0.8,
@@ -1181,7 +1269,9 @@ export function CampusManageDashboard() {
                                         fontSize: 10,
                                         fontWeight: 700,
                                         textAnchor: "start",
+                                        fill: "currentColor",
                                       }}
+                                      className="text-muted-foreground"
                                       width={120}
                                       dx={-116}
                                       tickFormatter={formatClusterTick}
@@ -1227,7 +1317,7 @@ export function CampusManageDashboard() {
                                       radius={[0, 6, 6, 0]}
                                       barSize={18}
                                       background={{
-                                        fill: "#f0fdf4",
+                                        fill: "rgba(5, 150, 105, 0.06)",
                                         radius: 6,
                                       }}
                                     >
@@ -1278,7 +1368,7 @@ export function CampusManageDashboard() {
                                               x={textX}
                                               y={textY}
                                               textAnchor="start"
-                                              fill="#059669"
+                                              fill="currentColor"
                                               fontSize={11}
                                               fontWeight={800}
                                             >
@@ -1853,21 +1943,31 @@ export function CampusManageDashboard() {
                     ) : chapters.length > 0 ? (
                       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                         {chapters.map((chapter) => (
-                          <Card key={chapter.id} className="border-border/60">
-                            <CardHeader className="pb-2">
-                              <div className="flex items-center justify-between gap-2">
-                                <div className="flex items-center gap-2">
-                                  <BookOpen className="h-4 w-4 text-primary" />
-                                  <CardTitle className="text-base">
-                                    {chapter.name}
-                                  </CardTitle>
+                          <Card
+                            key={chapter.id}
+                            className="flex flex-col border-border/60 transition-all duration-300 hover:border-primary/45 hover:shadow-lg hover:shadow-primary/[0.02]"
+                          >
+                            <CardHeader className="pb-3 border-b border-border/40">
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex items-center gap-3 min-w-0">
+                                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/5 text-primary">
+                                    <BookOpen className="h-4 w-4" />
+                                  </div>
+                                  <div className="min-w-0 space-y-0.5">
+                                    <CardTitle className="truncate text-sm font-bold leading-tight text-foreground">
+                                      {chapter.name}
+                                    </CardTitle>
+                                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                                      {chapter.code || "IG CHAPTER"}
+                                    </p>
+                                  </div>
                                 </div>
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
                                     <Button
                                       variant="ghost"
                                       size="icon"
-                                      className="h-7 w-7"
+                                      className="h-7 w-7 shrink-0 rounded-lg hover:bg-muted"
                                     >
                                       <MoreHorizontal className="h-4 w-4" />
                                       <span className="sr-only">
@@ -1900,26 +2000,35 @@ export function CampusManageDashboard() {
                                 </DropdownMenu>
                               </div>
                             </CardHeader>
-                            <CardContent className="space-y-2">
-                              <div className="flex items-center justify-between text-sm">
-                                <span className="text-muted-foreground">
+                            <CardContent className="flex flex-1 flex-col gap-3 pt-4">
+                              <div className="flex items-center justify-between gap-2 border-b border-border/30 pb-3 text-xs">
+                                <span className="shrink-0 text-muted-foreground font-medium">
                                   Lead
                                 </span>
-                                <span className="font-medium">
+                                <span
+                                  className={cn(
+                                    "min-w-0 truncate text-right font-bold text-foreground",
+                                    chapter.lead === "No Lead Assigned" &&
+                                      "text-muted-foreground/50 italic font-medium",
+                                  )}
+                                >
                                   {chapter.lead}
                                 </span>
                               </div>
-                              <div className="flex items-center justify-between text-sm">
-                                <span className="text-muted-foreground">
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="text-muted-foreground font-medium">
                                   Members
                                 </span>
-                                <Badge variant="secondary">
+                                <Badge
+                                  variant="secondary"
+                                  className="font-bold"
+                                >
                                   {chapter.membersCount}
                                 </Badge>
                               </div>
                               {chapter.execomMembers.length > 0 && (
-                                <div className="pt-1">
-                                  <p className="mb-1 text-xs text-muted-foreground">
+                                <div className="mt-auto pt-3 border-t border-border/30">
+                                  <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                                     Execom
                                   </p>
                                   <div className="flex flex-wrap gap-1">
@@ -1927,7 +2036,7 @@ export function CampusManageDashboard() {
                                       <Badge
                                         key={name}
                                         variant="outline"
-                                        className="text-xs"
+                                        className="text-[10px] font-medium"
                                       >
                                         {name}
                                       </Badge>
@@ -1959,48 +2068,67 @@ export function CampusManageDashboard() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="flex flex-col gap-3 p-4 pt-0">
-                    <div className="flex flex-col gap-2">
+                    {/* Existing platforms list */}
+                    <div className="flex flex-col gap-1">
                       {SOCIAL_PLATFORMS.map((platform) => {
                         const linkData = socialLinks?.[
                           platform.id as keyof SocialLinks
                         ] as SocialLink | undefined;
 
+                        // Show row only if the link exists OR we're currently editing this platform
                         if (!linkData && editingPlatform !== platform.id)
                           return null;
 
                         const isEditing = editingPlatform === platform.id;
+                        const displayLabel = linkData?.url
+                          ? getSocialDisplayLabel(platform.id, linkData.url)
+                          : "";
 
                         return (
                           <div
                             key={platform.id}
-                            className="group flex items-start gap-3 rounded-xl border border-transparent p-1.5 transition-all hover:border-border/60 hover:bg-muted/30"
+                            className="group flex items-center gap-3 rounded-xl border border-transparent px-2 py-2 transition-all hover:border-border/60 hover:bg-muted/30"
                           >
+                            {/* Platform icon */}
                             <div
                               className={cn(
-                                "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg shadow-sm transition-transform group-hover:scale-105",
+                                "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg shadow-sm transition-transform group-hover:scale-105",
                                 platform.bg,
                                 platform.color,
                               )}
                             >
-                              <platform.icon className="h-4.5 w-4.5" />
+                              <platform.icon className="h-4 w-4" />
                             </div>
 
                             {isEditing ? (
-                              <div className="flex min-w-0 flex-1 items-center gap-1.5 animate-in fade-in slide-in-from-right-2">
+                              /* Edit mode: inline input + save/cancel */
+                              <div className="flex min-w-0 flex-1 items-center gap-1 animate-in fade-in slide-in-from-right-2">
                                 <Input
                                   value={socialValue}
                                   onChange={(e) =>
                                     setSocialValue(e.target.value)
                                   }
-                                  placeholder={`Enter ${platform.label} URL...`}
-                                  className="h-8 text-[11px] font-medium"
+                                  placeholder={
+                                    platform.id === "website" ||
+                                    platform.id === "other"
+                                      ? `Full URL (https://...)`
+                                      : `Username or full URL`
+                                  }
+                                  className="h-8 min-w-0 text-[11px] font-medium"
                                   autoFocus
                                   onKeyDown={(e) => {
-                                    if (e.key === "Enter" && socialValue) {
+                                    if (
+                                      e.key === "Enter" &&
+                                      socialValue.trim()
+                                    ) {
+                                      const normalizedUrl = normalizeSocialUrl(
+                                        platform.id,
+                                        socialValue,
+                                      );
                                       upsertSocial(
                                         {
                                           platform: platform.id,
-                                          url: socialValue,
+                                          url: normalizedUrl,
                                         },
                                         {
                                           onSuccess: () =>
@@ -2012,17 +2140,24 @@ export function CampusManageDashboard() {
                                       setEditingPlatform(null);
                                   }}
                                 />
-                                <div className="flex shrink-0 items-center gap-0.5 self-start">
+                                <div className="flex shrink-0 items-center gap-0.5">
                                   <Button
                                     size="icon"
                                     variant="ghost"
                                     className="h-7 w-7 text-success hover:bg-success/10"
-                                    disabled={isUpsertingSocial || !socialValue}
+                                    disabled={
+                                      isUpsertingSocial || !socialValue.trim()
+                                    }
+                                    title="Save"
                                     onClick={() => {
+                                      const normalizedUrl = normalizeSocialUrl(
+                                        platform.id,
+                                        socialValue,
+                                      );
                                       upsertSocial(
                                         {
                                           platform: platform.id,
-                                          url: socialValue,
+                                          url: normalizedUrl,
                                         },
                                         {
                                           onSuccess: () =>
@@ -2041,6 +2176,7 @@ export function CampusManageDashboard() {
                                     size="icon"
                                     variant="ghost"
                                     className="h-7 w-7 text-muted-foreground hover:bg-muted"
+                                    title="Cancel"
                                     onClick={() => setEditingPlatform(null)}
                                   >
                                     <X className="h-3.5 w-3.5" />
@@ -2048,42 +2184,45 @@ export function CampusManageDashboard() {
                                 </div>
                               </div>
                             ) : (
+                              /* View mode: platform label + display handle + edit/delete */
                               <>
-                                <div className="flex flex-1 flex-col overflow-hidden">
-                                  <span className="text-[11px] font-black uppercase tracking-tight text-foreground/80">
+                                <div className="flex min-w-0 flex-1 flex-col">
+                                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
                                     {platform.label}
                                   </span>
                                   <a
                                     href={linkData?.url}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="break-all text-[10px] font-medium text-muted-foreground transition-colors hover:text-primary hover:underline"
+                                    className="block truncate text-[11px] font-semibold text-foreground/80 transition-colors hover:text-primary hover:underline"
+                                    title={linkData?.url}
                                   >
-                                    {linkData?.url}
+                                    {displayLabel}
                                   </a>
                                 </div>
-                                <div className="flex shrink-0 items-center gap-0.5 opacity-100 transition-all duration-200 lg:opacity-0 lg:group-focus-within:opacity-100 lg:group-hover:translate-x-0 lg:group-hover:opacity-100">
+                                <div className="flex shrink-0 items-center gap-0.5">
                                   <Button
                                     size="icon"
                                     variant="ghost"
-                                    className="h-7 w-7 hover:bg-muted"
+                                    className="h-7 w-7 text-muted-foreground hover:bg-muted hover:text-foreground"
+                                    title={`Edit ${platform.label}`}
                                     onClick={() => {
                                       setEditingPlatform(platform.id);
+                                      // Pre-fill with the raw URL so the user can see it
                                       setSocialValue(linkData?.url || "");
                                     }}
-                                    title={`Edit ${platform.label}`}
                                   >
-                                    <Pencil className="h-3 w-3" />
+                                    <Pencil className="h-3.5 w-3.5" />
                                   </Button>
                                   <Button
                                     size="icon"
                                     variant="ghost"
                                     className="h-7 w-7 text-destructive hover:bg-destructive/10"
                                     disabled={isDeletingSocial}
+                                    title={`Remove ${platform.label}`}
                                     onClick={() =>
                                       linkData && deleteSocial(linkData.id)
                                     }
-                                    title={`Remove ${platform.label}`}
                                   >
                                     {isDeletingSocial ? (
                                       <Loader2 className="h-3 w-3 animate-spin" />
@@ -2099,7 +2238,7 @@ export function CampusManageDashboard() {
                       })}
                     </div>
 
-                    {/* FIX: correct empty-state check — socialLinks is a keyed object */}
+                    {/* Empty state */}
                     {!hasAnySocialLink &&
                       !editingPlatform &&
                       !isAddingNewSocial && (
@@ -2116,8 +2255,9 @@ export function CampusManageDashboard() {
                         </div>
                       )}
 
+                    {/* Add new social link */}
                     {isAddingNewSocial ? (
-                      <div className="flex flex-col gap-2 rounded-xl border border-dashed border-border/60 bg-muted/10 p-2 animate-in fade-in slide-in-from-bottom-2">
+                      <div className="mt-1 flex flex-col gap-2 rounded-xl border border-dashed border-border/60 bg-muted/10 p-2 animate-in fade-in slide-in-from-bottom-2">
                         <Select
                           onValueChange={(val) => {
                             setEditingPlatform(val);
@@ -2126,7 +2266,7 @@ export function CampusManageDashboard() {
                           }}
                         >
                           <SelectTrigger className="h-9 rounded-lg text-xs font-black uppercase tracking-tight">
-                            <SelectValue placeholder="PLATFORM" />
+                            <SelectValue placeholder="Choose a platform" />
                           </SelectTrigger>
                           <SelectContent className="rounded-xl">
                             {SOCIAL_PLATFORMS.filter(

@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import {
   Bar,
   BarChart,
@@ -16,6 +17,38 @@ import { useStudentLevels } from "../hooks";
 export function StudentLevelsCard() {
   const { data: levels = [], isLoading } = useStudentLevels();
 
+  // Sort levels strictly in ascending order (Level 1 to Level 7)
+  const sortedLevels = useMemo(() => {
+    return [...levels].sort((a, b) => {
+      const getNum = (val: string) => {
+        const match = val.match(/\d+/);
+        return match ? parseInt(match[0], 10) : 0;
+      };
+      return getNum(a.level) - getNum(b.level);
+    });
+  }, [levels]);
+
+  // Generate integer ticks for YAxis to prevent decimals or skips
+  const maxCount = useMemo(() => {
+    return Math.max(...levels.map((l) => l.count), 0);
+  }, [levels]);
+
+  const yAxisTicks = useMemo(() => {
+    if (maxCount <= 0) return [0];
+    if (maxCount <= 6) {
+      return Array.from({ length: maxCount + 1 }, (_, i) => i);
+    }
+    const step = Math.ceil(maxCount / 5);
+    const ticks = [];
+    for (let i = 0; i <= maxCount; i += step) {
+      ticks.push(i);
+    }
+    if (ticks[ticks.length - 1] < maxCount) {
+      ticks.push(ticks[ticks.length - 1] + step);
+    }
+    return ticks;
+  }, [maxCount]);
+
   return (
     <Card className="min-w-0 overflow-hidden border-border/60 shadow-sm transition-shadow hover:shadow-md">
       <CardHeader className="pb-2">
@@ -29,14 +62,14 @@ export function StudentLevelsCard() {
       <CardContent className="overflow-hidden p-2">
         {isLoading ? (
           <Skeleton className="m-4 h-48 w-full rounded-xl" />
-        ) : levels.length === 0 ? (
+        ) : sortedLevels.length === 0 ? (
           <div className="flex h-48 items-center justify-center text-sm text-muted-foreground">
             No level data available
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={192}>
             <BarChart
-              data={levels}
+              data={sortedLevels}
               margin={{ top: 4, right: 4, bottom: 0, left: -20 }}
             >
               <CartesianGrid
@@ -46,24 +79,39 @@ export function StudentLevelsCard() {
               />
               <XAxis
                 dataKey="level"
-                tick={{ fontSize: 11 }}
+                tick={{ fontSize: 11, fill: "currentColor" }}
+                className="text-muted-foreground"
                 tickLine={false}
                 axisLine={false}
               />
               <YAxis
-                tick={{ fontSize: 11 }}
+                tick={{ fontSize: 11, fill: "currentColor" }}
+                className="text-muted-foreground"
+                ticks={yAxisTicks}
+                domain={[0, "auto"]}
                 tickLine={false}
                 axisLine={false}
                 allowDecimals={false}
               />
               <Tooltip
-                contentStyle={{
-                  background: "hsl(var(--card))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: 8,
-                  fontSize: 12,
+                cursor={{ fill: "hsl(var(--muted))", opacity: 0.15 }}
+                content={({ active, payload }) => {
+                  if (active && payload && payload.length) {
+                    const data = payload[0].payload;
+                    return (
+                      <div className="rounded-xl border border-border/60 bg-background/95 p-2.5 shadow-xl backdrop-blur-sm text-xs font-semibold">
+                        <p className="mb-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                          {data.level}
+                        </p>
+                        <p className="text-sm font-black text-primary">
+                          {data.count}{" "}
+                          {data.count === 1 ? "Student" : "Students"}
+                        </p>
+                      </div>
+                    );
+                  }
+                  return null;
                 }}
-                formatter={(value) => [Number(value) || 0, "Students"]}
               />
               <Bar
                 dataKey="count"
