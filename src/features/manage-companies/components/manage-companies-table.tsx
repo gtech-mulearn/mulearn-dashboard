@@ -43,9 +43,17 @@ const STATUS_CONFIG: Record<
   CompanyStatus,
   { label: string; className: string }
 > = {
+  "": {
+    label: "Pending",
+    className: "border-warning/50 bg-warning/10 text-warning",
+  },
   pending_verification: {
     label: "Pending",
     className: "border-warning/50 bg-warning/10 text-warning",
+  },
+  verified: {
+    label: "Verified",
+    className: "border-success/50 bg-success/10 text-success",
   },
   active: {
     label: "Active",

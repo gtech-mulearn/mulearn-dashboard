@@ -29,6 +29,8 @@ export const CompanyStatusSchema = z.enum([
   "active",
   "rejected",
   "inactive",
+  "verified",
+  "",
 ]);
 
 // ─── Company Verification Item ────────────────────────────────────────────────
@@ -41,9 +43,14 @@ export const CompanyVerificationItemSchema = z.object({
   poc_name: z.string().nullable().optional(),
   poc_email: z.string().nullable().optional(),
   poc_phone: z.string().nullable().optional(),
+  email: z.string().nullable().optional(),
+  company_size: z.string().nullable().optional(),
   website_link: z.string().nullable().optional(),
   industry_sector: z.string().nullable().optional(),
   location: z.string().nullable().optional(),
+  district_name: z.string().nullable().optional(),
+  state_name: z.string().nullable().optional(),
+  country_name: z.string().nullable().optional(),
   verification_requested_at: z.string().nullable().optional(),
   verified_at: z.string().nullable().optional(),
   rejection_reason: z.string().nullable().optional(),
@@ -56,9 +63,54 @@ export const CompanyVerificationListDataSchema = z.object({
   pagination: PaginationSchema,
 });
 
-export const CompanyVerificationListResponseSchema = ApiResponseSchema(
-  CompanyVerificationListDataSchema,
-);
+export const CompanyVerificationListResponseSchema = z.union([
+  // Case A: Standard envelope { hasError, statusCode, response: { data, pagination } }
+  ApiResponseSchema(CompanyVerificationListDataSchema),
+
+  // Case B: Envelope but response is an array { hasError, statusCode, response: [...] }
+  ApiResponseSchema(z.array(CompanyVerificationItemSchema)).transform(
+    (val) => ({
+      hasError: val.hasError,
+      statusCode: val.statusCode,
+      message: val.message,
+      response: {
+        data: val.response,
+        pagination: { count: val.response.length, totalPages: 1 },
+      },
+    }),
+  ),
+
+  // Case C: Flat array [...]
+  z.array(CompanyVerificationItemSchema).transform((arr) => ({
+    hasError: false,
+    statusCode: 200,
+    response: {
+      data: arr,
+      pagination: { count: arr.length, totalPages: 1 },
+    },
+  })),
+
+  // Case D: Envelope with { results, count } inside response
+  ApiResponseSchema(
+    z
+      .object({
+        results: z.array(CompanyVerificationItemSchema).optional(),
+        count: z.number().optional(),
+      })
+      .passthrough(),
+  ).transform((val) => ({
+    hasError: val.hasError,
+    statusCode: val.statusCode,
+    message: val.message,
+    response: {
+      data: val.response.results ?? [],
+      pagination: {
+        count: val.response.count ?? val.response.results?.length ?? 0,
+        totalPages: 1,
+      },
+    },
+  })),
+]);
 
 export const VerificationActionResponseSchema = ApiResponseSchema(
   z.object({
