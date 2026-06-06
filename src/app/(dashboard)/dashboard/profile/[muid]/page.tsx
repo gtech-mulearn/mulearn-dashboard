@@ -34,11 +34,18 @@ import { ROLES } from "@/lib/auth/roles";
 
 export default function PublicProfilePage() {
   const params = useParams();
-  const muid = params.muid as string;
+  const muidParam = params.muid as string;
+
+  // Companies use slugs (e.g. techcorp-india), users use MUIDs (e.g. john@mulearn)
+  // MUIDs always contain an '@'. Slugs never do.
+  const isCompanySlug = !muidParam.includes("@");
+
+  const companySlug = isCompanySlug ? muidParam.toLowerCase() : "";
+  const muid = isCompanySlug ? "" : muidParam;
 
   const [activeTab, setActiveTab] = useState<ProfileTab>("basic-details");
 
-  const companyQuery = usePublicCompanyProfile(muid);
+  const companyQuery = usePublicCompanyProfile(companySlug);
   const studentQuery = usePublicProfile(muid);
 
   const { data: userLog, isLoading: isLoadingLog } = usePublicUserLog(muid);
@@ -67,16 +74,16 @@ export default function PublicProfilePage() {
 
   // 1. Render company view immediately if company data loaded successfully
   if (companyQuery.data) {
-    return <CompanyPublicView slug={muid} />;
+    return <CompanyPublicView slug={companySlug || muidParam} />;
   }
 
   // 2. Wait if company query is still loading
-  if (companyQuery.isLoading) {
+  if (companyQuery.isLoading && isCompanySlug) {
     return <Loader />;
   }
 
   // 3. Wait if student query is still loading
-  if (studentQuery.isLoading) {
+  if (studentQuery.isLoading && !isCompanySlug) {
     return <Loader />;
   }
 

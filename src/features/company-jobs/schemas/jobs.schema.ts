@@ -517,7 +517,18 @@ export const CompanyProfileResponseSchema =
   DjangoResponse(CompanyProfileSchema);
 
 // Public company profile schema — extends CompanyProfileSchema with public-only fields
-export const PublicCompanyProfileSchema = CompanyProfileSchema.extend({
+export const PublicCompanyProfileSchema = CompanyProfileSchema.omit({
+  company_user_id: true,
+  status: true,
+  legal_name: true,
+  registration_number: true,
+  tax_id: true,
+  verification_document_url: true,
+  verification_requested_at: true,
+  verified_at: true,
+  verified_by: true,
+  rejection_reason: true,
+}).extend({
   short_pitch: z.string().nullable().optional(),
   district_name: z.string().nullable().optional(),
   state_name: z.string().nullable().optional(),
@@ -560,7 +571,29 @@ export type PublicJobBySlug = z.infer<typeof PublicJobBySlugSchema>;
 
 export const PublicJobsBySlugDataSchema = z.object({
   data: z.array(PublicJobBySlugSchema),
-  pagination: PaginationSchema,
+  pagination: z
+    .object({
+      count: z
+        .number()
+        .nullish()
+        .transform((v) => v ?? 0),
+      total_pages: z
+        .number()
+        .nullish()
+        .transform((v) => v ?? 1),
+      current_page: z
+        .number()
+        .nullish()
+        .transform((v) => v ?? 1),
+      per_page: z
+        .number()
+        .nullish()
+        .transform((v) => v ?? 10),
+      next: z.string().nullable().optional(),
+      previous: z.string().nullable().optional(),
+    })
+    .passthrough()
+    .optional(),
 });
 export type PublicJobsBySlugData = z.infer<typeof PublicJobsBySlugDataSchema>;
 

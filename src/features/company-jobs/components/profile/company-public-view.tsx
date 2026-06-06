@@ -45,7 +45,6 @@ export function CompanyPublicView({
     id: userProfile?.id ?? "",
     name: userProfile?.full_name ?? "",
     slug: userProfile?.muid ?? slug,
-    status: "verified",
     logo: userProfile?.profile_pic ?? null,
     description: null,
     industry_sector: null,
@@ -71,7 +70,7 @@ export function CompanyPublicView({
     <div className="space-y-5">
       <CompanyProfileHeader
         profile={companyProfile}
-        activeJobsCount={jobsData?.pagination.count ?? publicJobs.length}
+        activeJobsCount={jobsData?.pagination?.count ?? publicJobs.length}
         isOwnProfile={false}
         foundedYear={apiProfile?.founded_year ?? null}
         remotePolicy={apiProfile?.remote_policy ?? null}
