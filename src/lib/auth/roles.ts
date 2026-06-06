@@ -86,6 +86,7 @@ export const MANAGEMENT_ROLES = [ROLES.ADMIN, ROLES.ASSOCIATE] as const;
 export const CAMPUS_MANAGEMENT_ROLES = [
   ROLES.CAMPUS_LEAD,
   ROLES.LEAD_ENABLER,
+  ROLES.ENABLER,
 ] as const;
 
 /** Roles that can view zonal dashboards */
