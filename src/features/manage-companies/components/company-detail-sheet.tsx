@@ -23,6 +23,8 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useCompanyDetails } from "../hooks/use-manage-companies";
 import type { CompanyVerificationItem } from "../schemas";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -110,6 +112,10 @@ export function CompanyDetailSheet({
   onApprove,
   onReject,
 }: CompanyDetailSheetProps) {
+  const { data: details, isLoading } = useCompanyDetails(
+    open ? (company?.id ?? null) : null,
+  );
+
   if (!company) return null;
 
   const canAct =
@@ -135,122 +141,276 @@ export function CompanyDetailSheet({
         </SheetHeader>
 
         <div className="flex-1 space-y-6 overflow-y-auto py-6">
-          {/* Point of Contact */}
-          <section className="space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Point of Contact
-            </h3>
-            <div className="space-y-3">
-              <DetailRow
-                icon={<Building2 className="h-4 w-4" />}
-                label="Name"
-                value={company.poc_name}
-              />
-              <DetailRow
-                icon={<Mail className="h-4 w-4" />}
-                label="Email"
-                value={
-                  company.poc_email ? (
-                    <a
-                      href={`mailto:${company.poc_email}`}
-                      className="text-primary hover:underline"
-                    >
-                      {company.poc_email}
-                    </a>
-                  ) : null
-                }
-              />
-              <DetailRow
-                icon={<Phone className="h-4 w-4" />}
-                label="Phone"
-                value={company.poc_phone}
-              />
+          {isLoading ? (
+            <div className="space-y-6 px-1">
+              <Skeleton className="h-24 w-full rounded-xl" />
+              <Skeleton className="h-32 w-full rounded-xl" />
+              <Skeleton className="h-32 w-full rounded-xl" />
             </div>
-          </section>
-
-          <Separator />
-
-          {/* Company Details */}
-          <section className="space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Company Details
-            </h3>
-            <div className="space-y-3">
-              <DetailRow
-                icon={<Building2 className="h-4 w-4" />}
-                label="Industry"
-                value={company.industry_sector}
-              />
-              <DetailRow
-                icon={<MapPin className="h-4 w-4" />}
-                label="Location"
-                value={company.location}
-              />
-              {company.website_link && (
-                <DetailRow
-                  icon={<Globe className="h-4 w-4" />}
-                  label="Website"
-                  value={
-                    <a
-                      href={company.website_link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-primary hover:underline"
-                    >
-                      {company.website_link}
-                      <ExternalLink className="h-3 w-3 shrink-0" />
-                    </a>
-                  }
-                />
+          ) : (
+            <>
+              {details?.description && (
+                <section className="space-y-2">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    About
+                  </h3>
+                  <p className="text-sm text-foreground">
+                    {details.description}
+                  </p>
+                </section>
               )}
-              {company.poc_email && (
-                <DetailRow
-                  icon={<Linkedin className="h-4 w-4" />}
-                  label="LinkedIn"
-                  value="—"
-                />
+              {details?.short_pitch && (
+                <section className="space-y-2">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Pitch
+                  </h3>
+                  <p className="text-sm text-foreground italic">
+                    "{details.short_pitch}"
+                  </p>
+                </section>
               )}
-            </div>
-          </section>
 
-          <Separator />
+              <Separator />
 
-          {/* Verification Timeline */}
-          <section className="space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Verification Timeline
-            </h3>
-            <div className="space-y-3">
-              <DetailRow
-                icon={<Calendar className="h-4 w-4" />}
-                label="Registered On"
-                value={formatDate(company.created_at)}
-              />
-              <DetailRow
-                icon={<Clock className="h-4 w-4" />}
-                label="Verification Requested"
-                value={formatDate(company.verification_requested_at)}
-              />
-              {company.verified_at && (
-                <DetailRow
-                  icon={<CheckCircle className="h-4 w-4 text-success" />}
-                  label="Verified At"
-                  value={formatDate(company.verified_at)}
-                />
-              )}
-              {company.rejection_reason && (
-                <DetailRow
-                  icon={<XCircle className="h-4 w-4 text-destructive" />}
-                  label="Rejection Reason"
-                  value={
-                    <span className="text-destructive">
-                      {company.rejection_reason}
-                    </span>
-                  }
-                />
-              )}
-            </div>
-          </section>
+              {/* Point of Contact */}
+              <section className="space-y-3">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Point of Contact
+                </h3>
+                <div className="space-y-3">
+                  <DetailRow
+                    icon={<Building2 className="h-4 w-4" />}
+                    label="Name"
+                    value={company.poc_name || details?.company_user_name}
+                  />
+                  <DetailRow
+                    icon={<Mail className="h-4 w-4" />}
+                    label="Email"
+                    value={
+                      company.poc_email || details?.company_user_email ? (
+                        <a
+                          href={`mailto:${company.poc_email || details?.company_user_email}`}
+                          className="text-primary hover:underline"
+                        >
+                          {company.poc_email || details?.company_user_email}
+                        </a>
+                      ) : null
+                    }
+                  />
+                  <DetailRow
+                    icon={<Phone className="h-4 w-4" />}
+                    label="Phone"
+                    value={company.poc_phone}
+                  />
+                </div>
+              </section>
+
+              <Separator />
+
+              {/* Company Details */}
+              <section className="space-y-3">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Company Details
+                </h3>
+                <div className="space-y-3">
+                  <DetailRow
+                    icon={<Building2 className="h-4 w-4" />}
+                    label="Industry & Size"
+                    value={`${details?.industry_sector || company.industry_sector || "—"} • ${details?.company_size || company.company_size || "—"} Employees`}
+                  />
+                  <DetailRow
+                    icon={<MapPin className="h-4 w-4" />}
+                    label="Location"
+                    value={`${details?.location || company.location || "—"}${details?.district_name ? `, ${details.district_name}` : ""}`}
+                  />
+                  <DetailRow
+                    icon={<Building2 className="h-4 w-4" />}
+                    label="Legal Name & Tax ID"
+                    value={
+                      details?.legal_name ||
+                      details?.registration_number ||
+                      details?.tax_id
+                        ? `${details?.legal_name || "—"} (Reg: ${details?.registration_number || "—"}, Tax: ${details?.tax_id || "—"})`
+                        : "—"
+                    }
+                  />
+                  <DetailRow
+                    icon={<Globe className="h-4 w-4" />}
+                    label="Website"
+                    value={
+                      details?.website_link || company.website_link ? (
+                        <a
+                          href={
+                            details?.website_link || company.website_link || ""
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-primary hover:underline"
+                        >
+                          {details?.website_link || company.website_link}
+                          <ExternalLink className="h-3 w-3 shrink-0" />
+                        </a>
+                      ) : (
+                        "—"
+                      )
+                    }
+                  />
+                  <DetailRow
+                    icon={<Linkedin className="h-4 w-4" />}
+                    label="LinkedIn"
+                    value={
+                      details?.linkedin_url ? (
+                        <a
+                          href={details.linkedin_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-primary hover:underline"
+                        >
+                          View Profile
+                          <ExternalLink className="h-3 w-3 shrink-0" />
+                        </a>
+                      ) : (
+                        "—"
+                      )
+                    }
+                  />
+                  <DetailRow
+                    icon={<Calendar className="h-4 w-4" />}
+                    label="Founded Year"
+                    value={details?.founded_year?.toString() || "—"}
+                  />
+                  <DetailRow
+                    icon={<Clock className="h-4 w-4" />}
+                    label="Remote Policy"
+                    value={details?.remote_policy || "—"}
+                  />
+                </div>
+              </section>
+
+              <Separator />
+
+              {/* Culture & Tech */}
+              {details?.culture_text ||
+              details?.tech_stack?.length ||
+              details?.perks?.length ? (
+                <>
+                  <section className="space-y-3">
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Culture & Tech
+                    </h3>
+                    <div className="space-y-3">
+                      {details.culture_text && (
+                        <div className="space-y-1">
+                          <p className="text-xs font-medium text-muted-foreground">
+                            Culture
+                          </p>
+                          <p className="text-sm text-foreground">
+                            {details.culture_text}
+                          </p>
+                        </div>
+                      )}
+                      {details.tech_stack && details.tech_stack.length > 0 && (
+                        <div className="space-y-1">
+                          <p className="text-xs font-medium text-muted-foreground">
+                            Tech Stack
+                          </p>
+                          <div className="flex flex-wrap gap-1">
+                            {details.tech_stack.map((t) => (
+                              <Badge
+                                key={t}
+                                variant="secondary"
+                                className="text-xs font-normal"
+                              >
+                                {t}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {details.perks && details.perks.length > 0 && (
+                        <div className="space-y-1">
+                          <p className="text-xs font-medium text-muted-foreground">
+                            Perks
+                          </p>
+                          <div className="flex flex-wrap gap-1">
+                            {details.perks.map((p) => (
+                              <Badge
+                                key={p}
+                                variant="outline"
+                                className="text-xs font-normal"
+                              >
+                                {p}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </section>
+                  <Separator />
+                </>
+              ) : null}
+
+              {/* Verification Timeline */}
+              <section className="space-y-3">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Verification Timeline
+                </h3>
+                <div className="space-y-3">
+                  <DetailRow
+                    icon={<Calendar className="h-4 w-4" />}
+                    label="Registered On"
+                    value={formatDate(
+                      details?.created_at || company.created_at,
+                    )}
+                  />
+                  <DetailRow
+                    icon={<Clock className="h-4 w-4" />}
+                    label="Verification Requested"
+                    value={formatDate(
+                      details?.verification_requested_at ||
+                        company.verification_requested_at,
+                    )}
+                  />
+                  {(details?.verified_at || company.verified_at) && (
+                    <DetailRow
+                      icon={<CheckCircle className="h-4 w-4 text-success" />}
+                      label="Verified At"
+                      value={formatDate(
+                        details?.verified_at || company.verified_at,
+                      )}
+                    />
+                  )}
+                  {details?.verified_by && (
+                    <DetailRow
+                      icon={<CheckCircle className="h-4 w-4 text-success" />}
+                      label="Verified By"
+                      value={details.verified_by}
+                    />
+                  )}
+                  {(details?.rejection_reason || company.rejection_reason) && (
+                    <DetailRow
+                      icon={<XCircle className="h-4 w-4 text-destructive" />}
+                      label="Rejection Reason"
+                      value={
+                        <span className="text-destructive">
+                          {details?.rejection_reason ||
+                            company.rejection_reason}
+                        </span>
+                      }
+                    />
+                  )}
+                  <DetailRow
+                    icon={<Clock className="h-4 w-4" />}
+                    label="Last Updated"
+                    value={formatDate(
+                      details?.updated_at || company.updated_at,
+                    )}
+                  />
+                </div>
+              </section>
+            </>
+          )}
         </div>
 
         {/* Actions Footer */}

@@ -18,7 +18,6 @@ import {
   Package,
   Plus,
   Sparkles,
-  Star,
   Timer,
   Trash2,
   Wallet,

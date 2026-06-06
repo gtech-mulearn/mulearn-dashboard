@@ -19,7 +19,6 @@ import {
   MapPin,
   Package,
   Sparkles,
-  Star,
   Timer,
 } from "lucide-react";
 import { useState } from "react";

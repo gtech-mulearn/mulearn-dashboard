@@ -28,7 +28,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { TagInput } from "@/components/ui/tag-input";
 import { cn } from "@/lib/utils";
-import { DURATION_UNIT_OPTIONS, MIN_LEVEL_OPTIONS } from "../../constants";
+import { DURATION_UNIT_OPTIONS } from "../../constants";
 import type { JobFormValues } from "../../schemas";
 
 interface StepRequirementsProps {

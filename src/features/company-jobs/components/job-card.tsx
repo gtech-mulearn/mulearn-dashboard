@@ -1,11 +1,4 @@
-import {
-  Briefcase,
-  Calendar,
-  MapPin,
-  Sparkles,
-  Star,
-  Wallet,
-} from "lucide-react";
+import { Briefcase, Calendar, MapPin, Wallet } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { JOB_STATUS_CONFIG } from "../constants";

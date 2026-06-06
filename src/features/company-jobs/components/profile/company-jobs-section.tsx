@@ -10,14 +10,7 @@
  * - Public view: accepts pre-fetched jobs or MOCK_PUBLIC_JOBS, Apply CTA
  */
 
-import {
-  BriefcaseBusiness,
-  MapPin,
-  Plus,
-  Sparkles,
-  Star,
-  Wallet,
-} from "lucide-react";
+import { BriefcaseBusiness, MapPin, Plus, Wallet } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

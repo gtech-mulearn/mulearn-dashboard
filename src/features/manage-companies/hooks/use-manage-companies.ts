@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
+  fetchCompanyDetails,
   fetchCompanyVerificationRequests,
   verifyCompany,
 } from "../api/manage-companies.api";
@@ -64,5 +65,14 @@ export function useVerifyCompany() {
     onError: (err: Error) => {
       toast.error(err.message ?? "Failed to update company verification.");
     },
+  });
+}
+
+export function useCompanyDetails(companyId: string | null) {
+  return useQuery({
+    queryKey: manageCompaniesKeys.detail(companyId ?? ""),
+    queryFn: () => fetchCompanyDetails(companyId ?? ""),
+    enabled: !!companyId,
+    staleTime: 5 * 60 * 1000,
   });
 }

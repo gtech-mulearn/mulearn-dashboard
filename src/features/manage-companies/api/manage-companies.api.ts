@@ -1,6 +1,8 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
+  type CompanyDetails,
+  CompanyDetailsResponseSchema,
   type CompanyVerificationListData,
   CompanyVerificationListResponseSchema,
   type VerificationActionFormValues,
@@ -60,4 +62,18 @@ export async function verifyCompany(
     payload,
     VerificationActionResponseSchema,
   );
+}
+
+/**
+ * Admin: Get detailed information for a single company.
+ */
+export async function fetchCompanyDetails(
+  companyId: string,
+): Promise<CompanyDetails> {
+  const response = await apiClient.get(
+    endpoints.company.detail(companyId),
+    CompanyDetailsResponseSchema,
+  );
+
+  return response.response;
 }

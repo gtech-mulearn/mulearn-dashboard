@@ -6,15 +6,7 @@
  * 📍 src/features/company-jobs/components/job-stepper/step-review.tsx
  */
 
-import {
-  Briefcase,
-  Edit2,
-  MapPin,
-  Sparkles,
-  Star,
-  Timer,
-  Wallet,
-} from "lucide-react";
+import { Briefcase, Edit2, MapPin, Timer, Wallet } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";

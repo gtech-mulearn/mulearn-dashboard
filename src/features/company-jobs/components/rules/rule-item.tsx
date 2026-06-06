@@ -6,7 +6,7 @@
 
 import { Award, BookOpen, Sparkles, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { JobRule, RuleType } from "../../types";
+import type { JobRule } from "../../types";
 
 interface RuleItemProps {
   rule: JobRule;
