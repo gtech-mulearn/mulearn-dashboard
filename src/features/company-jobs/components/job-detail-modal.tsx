@@ -18,7 +18,6 @@ import {
   DollarSign,
   MapPin,
   Package,
-  Sparkles,
   Timer,
 } from "lucide-react";
 import { useState } from "react";
@@ -98,11 +97,6 @@ export function JobDetailModal({
                   {job.job_type.replace(/_/g, " ")}
                 </Badge>
               )}
-              {job.karma_reward ? (
-                <Badge className="gap-1 bg-primary/10 text-primary border border-primary/20 text-xs">
-                  <Sparkles className="h-3 w-3" />+{job.karma_reward} karma
-                </Badge>
-              ) : null}
             </div>
             <h2 className="text-xl font-bold text-foreground leading-tight">
               {job.title}

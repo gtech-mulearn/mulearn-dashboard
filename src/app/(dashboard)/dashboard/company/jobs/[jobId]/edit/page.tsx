@@ -46,13 +46,18 @@ export default function EditJobPage() {
             salary_range: values.salary_range,
             job_type: values.job_type,
             // Advanced options — always send to allow clearing values
-            karma_reward: values.karma_reward,
+
             duration_value: values.duration_value,
             duration_unit: values.duration_unit,
             hourly_rate: values.hourly_rate || undefined,
             deliverables: values.deliverables || undefined,
             stipend: values.stipend || undefined,
-            certificate_provided: values.certificate_provided,
+            certificate_provided:
+              values.certificate_provided != null
+                ? values.certificate_provided
+                  ? "Yes"
+                  : "No"
+                : undefined,
           },
         });
 

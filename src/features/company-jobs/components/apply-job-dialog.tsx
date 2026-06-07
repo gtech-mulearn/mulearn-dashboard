@@ -10,7 +10,6 @@
 
 import { CheckCircle } from "lucide-react";
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -69,15 +68,6 @@ export function ApplyJobDialog({
             {job.job_type?.replace(/_/g, " ")} · {job.location}
           </DialogDescription>
         </DialogHeader>
-
-        {/* Requirements */}
-        <div className="flex flex-wrap gap-2">
-          {job.karma_reward ? (
-            <Badge className="gap-1 border bg-primary/10 text-primary text-xs border-primary/20">
-              +{job.karma_reward} karma reward
-            </Badge>
-          ) : null}
-        </div>
 
         {/* Cover note */}
         <div className="space-y-1.5">

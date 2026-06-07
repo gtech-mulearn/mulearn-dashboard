@@ -17,7 +17,6 @@ import {
   MapPin,
   Package,
   Plus,
-  Sparkles,
   Timer,
   Trash2,
   Wallet,
@@ -65,14 +64,21 @@ export function JobDetailView({
     JOB_STATUS_CONFIG[job.status as keyof typeof JOB_STATUS_CONFIG] ??
     JOB_STATUS_CONFIG.Active;
 
-  const formattedCreated = new Date(job.created_at).toLocaleDateString(
-    "en-IN",
-    { day: "numeric", month: "long", year: "numeric" },
-  );
-  const formattedUpdated = new Date(job.updated_at).toLocaleDateString(
-    "en-IN",
-    { day: "numeric", month: "long", year: "numeric" },
-  );
+  const formattedCreated = job.created_at
+    ? new Date(job.created_at).toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : "N/A";
+
+  const formattedUpdated = job.updated_at
+    ? new Date(job.updated_at).toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : null;
 
   return (
     <div className="space-y-6">
@@ -166,17 +172,6 @@ export function JobDetailView({
               <div className="mt-1 flex items-center gap-1.5 text-sm text-foreground">
                 <Timer className="h-3.5 w-3.5 text-muted-foreground" />
                 {job.experience}
-              </div>
-            </div>
-          )}
-          {job.karma_reward != null && job.karma_reward > 0 && (
-            <div>
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Karma Reward
-              </p>
-              <div className="mt-1 flex items-center gap-1.5 text-sm text-foreground">
-                <Sparkles className="h-3.5 w-3.5 text-muted-foreground" />+
-                {job.karma_reward}
               </div>
             </div>
           )}

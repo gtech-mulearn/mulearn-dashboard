@@ -25,8 +25,14 @@ export const JobRuleSchema = z.object({
 
 export const JobSchema = z.object({
   id: z.string(),
+  company_name: z.string().optional().nullable(),
+  company_logo: z.string().optional().nullable(),
   title: z.string(),
-  experience: z.string().optional().nullable(),
+  experience: z
+    .union([z.string(), z.number()])
+    .optional()
+    .nullable()
+    .transform((v) => (v != null ? String(v) : null)),
   job_description: z.string().optional().nullable(),
   job_type: z
     .string()
@@ -37,15 +43,14 @@ export const JobSchema = z.object({
     .nullish()
     .transform((v) => v ?? ""),
   salary_range: z
-    .string()
-    .nullish()
-    .transform((v) => v ?? ""),
+    .union([z.string(), z.number()])
+    .optional()
+    .nullable()
+    .transform((v) => (v != null ? String(v) : null)),
   status: z
     .string()
     .nullish()
     .transform((v) => v ?? ""),
-  company_name: z.string().optional().nullable(),
-  company_logo: z.string().optional().nullable(),
   created_at: z
     .string()
     .nullish()
@@ -59,8 +64,12 @@ export const JobSchema = z.object({
     .nullish()
     .transform((v) => v ?? []),
   // Advanced options
-  karma_reward: z.number().optional().nullable(),
-  duration_value: z.number().optional().nullable(),
+
+  duration_value: z
+    .union([z.number(), z.string()])
+    .optional()
+    .nullable()
+    .transform((v) => (v != null ? Number(v) : null)),
   duration_unit: z.string().optional().nullable(),
   hourly_rate: z
     .union([z.string(), z.number()])
@@ -72,7 +81,16 @@ export const JobSchema = z.object({
     .optional()
     .nullable(),
   stipend: z.string().optional().nullable(),
-  certificate_provided: z.boolean().optional().nullable(),
+  certificate_provided: z
+    .union([z.boolean(), z.string(), z.number()])
+    .optional()
+    .nullable()
+    .transform((v) => {
+      if (v === "true" || v === "1" || v === 1 || v === "Yes") return true;
+      if (v === "false" || v === "0" || v === 0 || v === "No") return false;
+      if (typeof v === "boolean") return v;
+      return null;
+    }),
 });
 
 export const PaginationSchema = z.object({
@@ -122,31 +140,62 @@ export const JobsListDataSchema = z
       .transform((v) => v ?? ""),
     data: z.array(JobSchema).nullish(),
     jobs: z.array(JobSchema).nullish(),
-    pagination: PaginationSchema.nullish().transform(
-      (v) =>
-        v ?? {
-          count: 0,
-          totalPages: 1,
-          isNext: false,
-          isPrev: false,
-          nextPage: null,
-        },
-    ),
+    pagination: z
+      .object({
+        count: z
+          .number()
+          .nullish()
+          .transform((v) => v ?? 0),
+        total_pages: z
+          .number()
+          .nullish()
+          .transform((v) => v ?? 1),
+        current_page: z
+          .number()
+          .nullish()
+          .transform((v) => v ?? 1),
+        per_page: z
+          .number()
+          .nullish()
+          .transform((v) => v ?? 10),
+        next: z.string().nullable().optional(),
+        previous: z.string().nullable().optional(),
+      })
+      .passthrough()
+      .optional()
+      .transform((v) => ({
+        count: v?.count ?? 0,
+        totalPages: v?.total_pages ?? 1,
+        isNext: !!v?.next,
+        isPrev: !!v?.previous,
+        nextPage: v?.next ? (v.current_page ?? 1) + 1 : null,
+      })),
   })
   .transform((val) => ({
     company_id: val.company_id,
     company_name: val.company_name,
     jobs: val.jobs ?? val.data ?? [],
-    pagination: val.pagination,
+    pagination: val.pagination ?? {
+      count: 0,
+      totalPages: 1,
+      isNext: false,
+      isPrev: false,
+      nextPage: null,
+    },
   }));
 
 export const JobsListResponseSchema = DjangoResponse(JobsListDataSchema);
 
 // ─── Job Detail Response ────────────────────────────────────
 
-export const JobDetailDataSchema = z.object({
-  job: JobSchema,
-});
+export const JobDetailDataSchema = z
+  .union([z.object({ job: JobSchema }), JobSchema])
+  .transform((val) => {
+    if ("job" in val) {
+      return { job: val.job };
+    }
+    return { job: val };
+  });
 
 export const JobDetailResponseSchema = DjangoResponse(JobDetailDataSchema);
 
@@ -171,11 +220,7 @@ export const PublicJobSchema = z.object({
   status: z.string().optional().nullable(),
   created_at: z.string().optional().nullable(),
   updated_at: z.string().optional().nullable(),
-  karma_reward: z
-    .union([z.number(), z.string()])
-    .optional()
-    .nullable()
-    .transform((v) => (v != null ? Number(v) : null)),
+
   duration_value: z
     .union([z.number(), z.string()])
     .optional()
@@ -201,8 +246,8 @@ export const PublicJobSchema = z.object({
     .optional()
     .nullable()
     .transform((v) => {
-      if (v === "true" || v === "1" || v === 1) return true;
-      if (v === "false" || v === "0" || v === 0) return false;
+      if (v === "true" || v === "1" || v === 1 || v === "Yes") return true;
+      if (v === "false" || v === "0" || v === 0 || v === "No") return false;
       if (typeof v === "boolean") return v;
       return null;
     }),
@@ -701,12 +746,7 @@ export const RequirementsStepSchema = z.object({
     .min(10, "Description must be at least 10 characters")
     .max(5000, "Description must be 5000 characters or fewer"),
   // Advanced options — all optional
-  karma_reward: z
-    .number()
-    .int("Must be a whole number")
-    .min(0, "Must be 0 or more")
-    .max(10000, "Must be 10000 or fewer")
-    .optional(),
+
   duration_value: z
     .number()
     .int("Must be a whole number")

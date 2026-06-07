@@ -108,7 +108,11 @@ export function useDeleteJob() {
       );
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: JOBS_KEYS.all });
+      // Invalidate the list so it refetches, but DO NOT invalidate the detail query
+      // because invalidating the detail query while still on the page causes a 404 refetch.
+      queryClient.invalidateQueries({
+        queryKey: [...JOBS_KEYS.all, "list"],
+      });
     },
     onSuccess: () => {
       toast.success("Job deleted successfully");

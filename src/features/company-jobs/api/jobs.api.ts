@@ -104,7 +104,18 @@ export async function fetchJobDetail(jobId: string): Promise<Job> {
     endpoints.company.jobDetail(jobId),
     JobDetailResponseSchema,
   );
-  return res.response.job;
+
+  const data = res.response;
+  if (!data) throw new Error("No data returned from API");
+
+  // Safely extract job object whether nested in .job or returned at root
+  const job = data.job ?? data;
+
+  if (!job) {
+    throw new Error("Job data could not be parsed or found in response");
+  }
+
+  return job as Job;
 }
 
 export async function createJob(
@@ -297,7 +308,6 @@ export async function fetchJobApplicants(
 }
 
 export async function updateApplicantStatus(
-  jobId: string,
   appId: string,
   status: string,
 ): Promise<UpdateApplicantStatusResponse> {

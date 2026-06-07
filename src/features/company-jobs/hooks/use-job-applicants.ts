@@ -41,12 +41,11 @@ export function useUpdateApplicantStatus() {
     mutationFn: ({
       jobId,
       appId,
-      status,
     }: {
       jobId: string;
       appId: string;
       status: string;
-    }) => updateApplicantStatus(jobId, appId, status),
+    }) => updateApplicantStatus(jobId, appId),
     onSuccess: () => {
       // Invalidate specific job applicants query
       queryClient.invalidateQueries({ queryKey: JOB_APPLICANTS_KEYS.all });

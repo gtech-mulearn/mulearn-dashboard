@@ -32,7 +32,7 @@ const DEFAULT_VALUES: JobFormValues = {
   salary_range: "",
   experience: "",
   job_description: "",
-  karma_reward: undefined,
+
   duration_value: undefined,
   duration_unit: undefined,
   hourly_rate: "",
@@ -46,10 +46,10 @@ function jobToFormValues(job: Job): JobFormValues {
     title: job.title,
     job_type: job.job_type,
     location: job.location,
-    salary_range: job.salary_range,
+    salary_range: job.salary_range ?? "",
     experience: job.experience ?? "",
     job_description: job.job_description ?? "",
-    karma_reward: job.karma_reward ?? undefined,
+
     duration_value: job.duration_value ?? undefined,
     duration_unit: job.duration_unit ?? undefined,
     hourly_rate: job.hourly_rate ?? "",

@@ -36,7 +36,7 @@ export interface Job {
   job_description?: string | null;
   job_type: string;
   location: string;
-  salary_range: string;
+  salary_range?: string | null;
   status: string;
   created_at: string;
   company_name?: string | null;
@@ -44,7 +44,7 @@ export interface Job {
   updated_at: string;
   rules: JobRule[];
   // Advanced options
-  karma_reward?: number | null;
+
   duration_value?: number | null;
   duration_unit?: string | null;
   hourly_rate?: string | null;
@@ -62,8 +62,8 @@ export interface Pagination {
 }
 
 export interface JobsListResponse {
-  company_id: string;
-  company_name: string;
+  company_id?: string;
+  company_name?: string;
   jobs: Job[];
   pagination: Pagination;
 }
@@ -85,7 +85,7 @@ export interface PublicJob {
   status?: string | null;
   created_at?: string | null;
   updated_at?: string | null;
-  karma_reward?: number | null;
+
   duration_value?: number | null;
   duration_unit?: string | null;
   hourly_rate?: string | null;
@@ -168,13 +168,13 @@ export interface CreateJobPayload {
   salary_range: string;
   job_type: string;
   // Advanced options
-  karma_reward?: number;
+
   duration_value?: number;
   duration_unit?: string;
   hourly_rate?: string;
   deliverables?: string[];
   stipend?: string;
-  certificate_provided?: boolean;
+  certificate_provided?: boolean | string;
   rules?: { rule_type: string; rule_value: string | number }[];
 }
 
@@ -186,13 +186,13 @@ export interface UpdateJobPayload {
   salary_range?: string;
   job_type?: string;
   // Advanced options
-  karma_reward?: number;
+
   duration_value?: number;
   duration_unit?: string;
   hourly_rate?: string;
   deliverables?: string[];
   stipend?: string;
-  certificate_provided?: boolean;
+  certificate_provided?: boolean | string;
 }
 
 export interface CreateRulePayload {

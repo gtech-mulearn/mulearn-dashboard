@@ -43,9 +43,7 @@ export default function CreateJobPage() {
           job_type: values.job_type,
 
           // Advanced options — only include if set
-          ...(values.karma_reward !== undefined && {
-            karma_reward: values.karma_reward,
-          }),
+
           ...(values.duration_value !== undefined && {
             duration_value: values.duration_value,
           }),
@@ -55,7 +53,7 @@ export default function CreateJobPage() {
           ...(values.stipend && { stipend: values.stipend }),
           ...(values.certificate_provided !== undefined &&
             values.certificate_provided !== false && {
-              certificate_provided: values.certificate_provided,
+              certificate_provided: values.certificate_provided ? "Yes" : "No",
             }),
           ...(rules.length > 0 && {
             rules: rules.map((r) => ({

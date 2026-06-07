@@ -31,13 +31,6 @@ export function PublicJobCard({ job, onView }: PublicJobCardProps) {
       onClick={() => onView(job)}
       className="group relative w-full rounded-2xl border border-border bg-card p-5 text-left transition-all duration-200 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5"
     >
-      {/* Karma reward pill */}
-      {job.karma_reward ? (
-        <div className="absolute right-4 top-4 flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
-          <Sparkles className="h-3 w-3" />+{job.karma_reward}
-        </div>
-      ) : null}
-
       {/* Title + meta */}
       <div className="pr-20">
         {job.company_name && (
