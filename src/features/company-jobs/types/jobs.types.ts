@@ -97,30 +97,24 @@ export interface PublicJob {
 
 export interface LearnerApplication {
   id: string;
-  status: "applied" | "shortlisted" | "accepted" | "rejected";
-  cover_note?: string | null;
-  job_title: string;
-  job_type: string;
-  company_name: string;
-  company_id: string;
-  created_at: string;
-  updated_at: string;
+  job: Job;
+  resume_link?: string | null;
+  cover_letter?: string | null;
+  status: string;
+  rejection_reason?: string | null;
+  applied_at: string;
 }
 
 export interface JobApplicant {
   id: string;
-  status: "applied" | "shortlisted" | "accepted" | "rejected";
-  cover_note?: string | null;
-  applicant_id: string;
-  full_name: string;
-  muid: string;
-  district?: string | null;
-  karma: number;
-  level: { id: string; name: string; level_order: number };
-  reviewed_by_id?: string | null;
-  reviewed_at?: string | null;
-  created_at: string;
-  updated_at: string;
+  job: string;
+  applicant_name: string;
+  applicant_email: string;
+  resume_link?: string | null;
+  cover_letter?: string | null;
+  status: string;
+  rejection_reason?: string | null;
+  applied_at: string;
 }
 
 export interface LearnerProfile {
@@ -248,13 +242,7 @@ export interface ApplyJobResponse {
   applied_at: string;
 }
 
-export interface UpdateApplicantStatusResponse {
-  application_id: string;
-  applicant_id: string;
-  new_status: string;
-  reviewed_by: string;
-  reviewed_at: string;
-}
+export interface UpdateApplicantStatusResponse extends JobApplicant {}
 
 // ─── Company Profile Sub-types ──────────────────────────────
 

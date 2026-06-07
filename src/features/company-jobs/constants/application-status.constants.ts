@@ -12,52 +12,57 @@ import type { JobApplicant } from "../types";
 export type AppStatus = JobApplicant["status"];
 
 /** FSM: allowed next states from each status */
-export const APP_STATUS_TRANSITIONS: Record<AppStatus, AppStatus[]> = {
-  applied: ["shortlisted", "rejected"],
-  shortlisted: ["accepted", "rejected"],
-  accepted: [],
+export const APP_STATUS_TRANSITIONS: Record<string, string[]> = {
+  pending: ["in-review", "rejected"],
+  "in-review": ["shortlisted", "rejected"],
+  shortlisted: ["interview", "rejected"],
+  interview: ["selected", "rejected"],
+  selected: [],
   rejected: [],
 };
 
-/**
- * Display metadata for each applicant status.
- *
- * Colour strategy:
- *   - applied    → brand-blue  (--brand-blue)
- *   - shortlisted → warning    (--warning)
- *   - accepted   → success     (--success)
- *   - rejected   → destructive (--destructive)
- *
- * We use inline `style` for the token-level colours and CSS custom properties
- * so we never reference the raw Tailwind palette (blue-*, amber-*, etc.).
- */
 export const APP_STATUS_META: Record<
-  AppStatus,
+  string,
   {
     label: string;
-    /** Tailwind bg/text built from CSS variable via color-mix in globals */
+    backendStatus: string;
     badgeClass: string;
-    /** Inline style for the status dot colour */
     dotVar: string;
   }
 > = {
-  applied: {
-    label: "Applied",
+  pending: {
+    label: "Pending",
+    backendStatus: "Pending",
+    badgeClass: "app-status-applied",
+    dotVar: "var(--brand-blue)",
+  },
+  "in-review": {
+    label: "In Review",
+    backendStatus: "In-Review",
     badgeClass: "app-status-applied",
     dotVar: "var(--brand-blue)",
   },
   shortlisted: {
     label: "Shortlisted",
+    backendStatus: "Shortlisted",
     badgeClass: "app-status-shortlisted",
     dotVar: "var(--warning)",
   },
-  accepted: {
-    label: "Accepted",
+  interview: {
+    label: "Interview",
+    backendStatus: "Interview",
+    badgeClass: "app-status-shortlisted",
+    dotVar: "var(--warning)",
+  },
+  selected: {
+    label: "Selected",
+    backendStatus: "Selected",
     badgeClass: "app-status-accepted",
     dotVar: "var(--success)",
   },
   rejected: {
     label: "Rejected",
+    backendStatus: "Rejected",
     badgeClass: "app-status-rejected",
     dotVar: "var(--destructive)",
   },

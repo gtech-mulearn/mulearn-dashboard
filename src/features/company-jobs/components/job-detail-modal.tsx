@@ -23,11 +23,16 @@ import {
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { useApplyJob } from "../hooks";
+import {
+  useApplyJob,
+  useLearnerApplications,
+  useResubmitApplication,
+} from "../hooks";
 import type { PublicJob } from "../types";
 
 interface JobDetailModalProps {
@@ -67,17 +72,67 @@ export function JobDetailModal({
   onOpenChange,
 }: JobDetailModalProps) {
   const [coverNote, setCoverNote] = useState("");
-  const { mutate: apply, isPending, isSuccess, reset } = useApplyJob();
+  const [resumeLink, setResumeLink] = useState("");
+  const {
+    mutate: apply,
+    isPending: isApplying,
+    isSuccess: applySuccess,
+  } = useApplyJob();
+  const {
+    mutate: resubmit,
+    isPending: isResubmitting,
+    isSuccess: resubmitSuccess,
+  } = useResubmitApplication();
+
+  const { data: appsResponse } = useLearnerApplications();
+  const existingApp = appsResponse?.applications.find(
+    (app) => app.job.id === job?.id,
+  );
+  const isRejected = existingApp?.status === "rejected";
+  const isAlreadyApplied = existingApp && !isRejected;
+  const isPending = isApplying || isResubmitting;
+  const isSuccess = applySuccess || resubmitSuccess;
 
   const handleApply = () => {
-    if (!job) return;
-    apply({ jobId: job.id, coverNote: coverNote.trim() || undefined });
+    if (!job || !resumeLink.trim() || isAlreadyApplied) return;
+
+    const onSuccessOptions = {
+      onSuccess: () => {
+        setTimeout(() => {
+          onOpenChange(false);
+          setCoverNote("");
+          setResumeLink("");
+        }, 1200);
+      },
+    };
+
+    if (isRejected && existingApp) {
+      resubmit(
+        {
+          appId: existingApp.id,
+          payload: {
+            resume_link: resumeLink.trim(),
+            cover_letter: coverNote.trim() || undefined,
+          },
+        },
+        onSuccessOptions,
+      );
+    } else {
+      apply(
+        {
+          jobId: job.id,
+          resume_link: resumeLink.trim(),
+          cover_letter: coverNote.trim() || undefined,
+        },
+        onSuccessOptions,
+      );
+    }
   };
 
   const handleClose = (open: boolean) => {
     if (!open) {
       setCoverNote("");
-      reset();
+      setResumeLink("");
     }
     onOpenChange(open);
   };
@@ -87,6 +142,7 @@ export function JobDetailModal({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
+        <DialogTitle className="sr-only">{job.title}</DialogTitle>
         {/* Header */}
         <div className="px-6 pt-6 pb-4 border-b border-border shrink-0">
           <div className="pr-8">
@@ -256,23 +312,48 @@ export function JobDetailModal({
               </div>
             </div>
           ) : (
-            <div className="space-y-1.5">
-              <label
-                htmlFor="modal-cover-note"
-                className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-              >
-                Cover note{" "}
-                <span className="font-normal normal-case">(optional)</span>
-              </label>
-              <Textarea
-                id="modal-cover-note"
-                placeholder="Tell the company why you're a great fit…"
-                rows={3}
-                value={coverNote}
-                onChange={(e) => setCoverNote(e.target.value)}
-                className="resize-none"
-                disabled={isPending}
-              />
+            <div className="space-y-4">
+              {/* Resume Link */}
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="modal-resume-link"
+                  className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                >
+                  Resume Link{" "}
+                  <span className="text-destructive font-normal normal-case">
+                    *
+                  </span>
+                </label>
+                <Input
+                  id="modal-resume-link"
+                  type="url"
+                  placeholder="e.g., Google Drive, Notion, Portfolio URL…"
+                  value={resumeLink}
+                  onChange={(e) => setResumeLink(e.target.value)}
+                  disabled={isPending}
+                  required
+                />
+              </div>
+
+              {/* Cover note */}
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="modal-cover-note"
+                  className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                >
+                  Cover note{" "}
+                  <span className="font-normal normal-case">(optional)</span>
+                </label>
+                <Textarea
+                  id="modal-cover-note"
+                  placeholder="Tell the company why you're a great fit…"
+                  rows={3}
+                  value={coverNote}
+                  onChange={(e) => setCoverNote(e.target.value)}
+                  className="resize-none"
+                  disabled={isPending}
+                />
+              </div>
             </div>
           )}
         </div>
@@ -283,8 +364,19 @@ export function JobDetailModal({
             {isSuccess ? "Close" : "Cancel"}
           </Button>
           {!isSuccess && (
-            <Button onClick={handleApply} disabled={isPending}>
-              {isPending ? "Applying…" : "Apply Now"}
+            <Button
+              onClick={handleApply}
+              disabled={isPending || !resumeLink.trim() || isAlreadyApplied}
+            >
+              {isAlreadyApplied
+                ? "Already Applied"
+                : isPending
+                  ? isRejected
+                    ? "Resubmitting…"
+                    : "Applying…"
+                  : isRejected
+                    ? "Resubmit Application"
+                    : "Apply Now"}
             </Button>
           )}
         </div>

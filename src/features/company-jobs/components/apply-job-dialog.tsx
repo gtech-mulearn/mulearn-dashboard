@@ -19,8 +19,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useApplyJob } from "../hooks";
+import {
+  useApplyJob,
+  useLearnerApplications,
+  useResubmitApplication,
+} from "../hooks";
 import type { PublicJob } from "../types";
 
 interface ApplyJobDialogProps {
@@ -35,25 +40,67 @@ export function ApplyJobDialog({
   onOpenChange,
 }: ApplyJobDialogProps) {
   const [coverNote, setCoverNote] = useState("");
-  const { mutate: apply, isPending, isSuccess } = useApplyJob();
+  const [resumeLink, setResumeLink] = useState("");
+  const {
+    mutate: apply,
+    isPending: isApplying,
+    isSuccess: applySuccess,
+  } = useApplyJob();
+  const {
+    mutate: resubmit,
+    isPending: isResubmitting,
+    isSuccess: resubmitSuccess,
+  } = useResubmitApplication();
+
+  const { data: appsResponse } = useLearnerApplications();
+  const existingApp = appsResponse?.applications.find(
+    (app) => app.job.id === job?.id,
+  );
+  const isRejected = existingApp?.status === "rejected";
+  const isPending = isApplying || isResubmitting;
+  const isSuccess = applySuccess || resubmitSuccess;
 
   const handleApply = () => {
-    if (!job) return;
-    apply(
-      { jobId: job.id, coverNote: coverNote.trim() || undefined },
-      {
-        onSuccess: () => {
-          setTimeout(() => {
-            onOpenChange(false);
-            setCoverNote("");
-          }, 1200);
-        },
+    if (!job || !resumeLink.trim()) return;
+
+    const onSuccessOptions = {
+      onSuccess: () => {
+        setTimeout(() => {
+          onOpenChange(false);
+          setCoverNote("");
+          setResumeLink("");
+        }, 1200);
       },
-    );
+    };
+
+    if (isRejected && existingApp) {
+      resubmit(
+        {
+          appId: existingApp.id,
+          payload: {
+            resume_link: resumeLink.trim(),
+            cover_letter: coverNote.trim() || undefined,
+          },
+        },
+        onSuccessOptions,
+      );
+    } else {
+      apply(
+        {
+          jobId: job.id,
+          resume_link: resumeLink.trim(),
+          cover_letter: coverNote.trim() || undefined,
+        },
+        onSuccessOptions,
+      );
+    }
   };
 
   const handleClose = (open: boolean) => {
-    if (!open) setCoverNote("");
+    if (!open) {
+      setCoverNote("");
+      setResumeLink("");
+    }
     onOpenChange(open);
   };
 
@@ -69,25 +116,45 @@ export function ApplyJobDialog({
           </DialogDescription>
         </DialogHeader>
 
-        {/* Cover note */}
-        <div className="space-y-1.5">
-          <label
-            htmlFor="cover-note"
-            className="text-sm font-medium text-foreground"
-          >
-            Cover note{" "}
-            <span className="text-muted-foreground font-normal">
-              (optional)
-            </span>
-          </label>
-          <Textarea
-            id="cover-note"
-            placeholder="Tell the company why you're a great fit…"
-            rows={4}
-            value={coverNote}
-            onChange={(e) => setCoverNote(e.target.value)}
-            className="resize-none"
-          />
+        <div className="space-y-4">
+          {/* Resume Link */}
+          <div className="space-y-1.5">
+            <label
+              htmlFor="resume-link"
+              className="text-sm font-medium text-foreground"
+            >
+              Resume Link <span className="text-destructive">*</span>
+            </label>
+            <Input
+              id="resume-link"
+              type="url"
+              placeholder="e.g., Google Drive, Notion, Portfolio URL…"
+              value={resumeLink}
+              onChange={(e) => setResumeLink(e.target.value)}
+              required
+            />
+          </div>
+
+          {/* Cover note */}
+          <div className="space-y-1.5">
+            <label
+              htmlFor="cover-note"
+              className="text-sm font-medium text-foreground"
+            >
+              Cover note{" "}
+              <span className="text-muted-foreground font-normal">
+                (optional)
+              </span>
+            </label>
+            <Textarea
+              id="cover-note"
+              placeholder="Tell the company why you're a great fit…"
+              rows={4}
+              value={coverNote}
+              onChange={(e) => setCoverNote(e.target.value)}
+              className="resize-none"
+            />
+          </div>
         </div>
 
         <DialogFooter>
@@ -97,15 +164,21 @@ export function ApplyJobDialog({
           <Button
             id="submit-application"
             onClick={handleApply}
-            disabled={isPending || isSuccess}
+            disabled={isPending || isSuccess || !resumeLink.trim()}
           >
             {isSuccess ? (
               <>
                 <CheckCircle className="h-4 w-4 mr-2" />
-                Applied!
+                {isRejected ? "Resubmitted!" : "Applied!"}
               </>
             ) : isPending ? (
-              "Applying…"
+              isRejected ? (
+                "Resubmitting…"
+              ) : (
+                "Applying…"
+              )
+            ) : isRejected ? (
+              "Resubmit Application"
             ) : (
               "Apply Now"
             )}

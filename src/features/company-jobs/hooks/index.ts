@@ -22,6 +22,8 @@ export { JOBS_KEYS, useJobs, useJobsQueryClient } from "./use-jobs";
 export {
   LEARNER_APPLICATIONS_KEYS,
   useLearnerApplications,
+  useWithdrawApplication,
+  useResubmitApplication,
 } from "./use-learner-applications";
 export {
   LEARNER_DISCOVERY_KEYS,

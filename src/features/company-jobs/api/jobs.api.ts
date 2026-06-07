@@ -10,6 +10,7 @@ import {
   CreateRuleResponseSchema,
   DeleteJobResponseSchema,
   DeleteRuleResponseSchema,
+  GenericResponseSchema,
   GenericTaskMutationResponseSchema,
   GigAnalyticsResponseSchema,
   JobApplicantsResponseSchema,
@@ -268,14 +269,31 @@ export async function fetchLearnerApplications(params?: {
 
 export async function applyToJob(
   jobId: string,
-  coverNote?: string,
-): Promise<ApplyJobResponse> {
-  const res = await apiClient.post(
+  payload: { resume_link: string; cover_letter?: string },
+): Promise<void> {
+  await apiClient.post(
     endpoints.company.applyJob(jobId),
-    coverNote ? { cover_note: coverNote } : {},
+    payload,
     ApplyJobResponseSchema,
   );
-  return res.response;
+}
+
+export async function withdrawApplication(appId: string): Promise<void> {
+  await apiClient.delete(
+    endpoints.company.applicationWithdraw(appId),
+    GenericResponseSchema,
+  );
+}
+
+export async function resubmitApplication(
+  appId: string,
+  payload: { resume_link?: string; cover_letter?: string },
+): Promise<void> {
+  await apiClient.patch(
+    endpoints.company.applicationResubmit(appId),
+    payload,
+    GenericResponseSchema,
+  );
 }
 
 // ─── Company Applicant Management & Talent Pool ──────────────
@@ -309,11 +327,11 @@ export async function fetchJobApplicants(
 
 export async function updateApplicantStatus(
   appId: string,
-  status: string,
+  payload: { status: string; rejection_reason?: string },
 ): Promise<UpdateApplicantStatusResponse> {
   const res = await apiClient.patch(
     endpoints.company.applicationStatus(appId),
-    { status },
+    payload,
     UpdateApplicantStatusResponseSchema,
   );
   return res.response;

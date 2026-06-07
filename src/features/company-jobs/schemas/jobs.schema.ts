@@ -258,15 +258,32 @@ export const PublicJobSchema = z.object({
 });
 
 export const LearnerApplicationSchema = z.object({
-  id: z.string(),
-  status: z.enum(["applied", "shortlisted", "accepted", "rejected"]),
-  cover_note: z.string().optional().nullable(),
-  job_title: z.string(),
-  job_type: z.string(),
-  company_name: z.string(),
-  company_id: z.string(),
-  created_at: z.string(),
-  updated_at: z.string(),
+  id: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? ""),
+  job: JobSchema,
+  resume_link: z.string().optional().nullable(),
+  cover_letter: z.string().optional().nullable(),
+  status: z
+    .string()
+    .nullish()
+    .transform((v) => {
+      if (!v) return "pending";
+      const lower = v.toLowerCase();
+      if (lower === "pending") return "pending";
+      if (lower === "in-review") return "in-review";
+      if (lower === "shortlisted") return "shortlisted";
+      if (lower === "interview") return "interview";
+      if (lower === "selected" || lower === "accepted") return "selected";
+      if (lower === "rejected") return "rejected";
+      return "pending";
+    }),
+  rejection_reason: z.string().optional().nullable(),
+  applied_at: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? ""),
 });
 
 export const LevelSchema = z.object({
@@ -289,38 +306,36 @@ export const JobApplicantSchema = z.object({
     .string()
     .nullish()
     .transform((v) => v ?? ""),
+  job: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? ""),
+  applicant_name: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? ""),
+  applicant_email: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? ""),
+  resume_link: z.string().optional().nullable(),
+  cover_letter: z.string().optional().nullable(),
   status: z
-    .enum(["applied", "shortlisted", "accepted", "rejected"])
-    .nullish()
-    .transform((v) => v ?? "applied"),
-  cover_note: z.string().optional().nullable(),
-  applicant_id: z
     .string()
     .nullish()
-    .transform((v) => v ?? ""),
-  full_name: z
-    .string()
-    .nullish()
-    .transform((v) => v ?? ""),
-  muid: z
-    .string()
-    .nullish()
-    .transform((v) => v ?? ""),
-  district: z.string().optional().nullable(),
-  karma: z
-    .number()
-    .nullish()
-    .transform((v) => v ?? 0),
-  level: LevelSchema.nullish().transform(
-    (v) => v ?? { id: "", name: "", level_order: 0 },
-  ),
-  reviewed_by_id: z.string().optional().nullable(),
-  reviewed_at: z.string().optional().nullable(),
-  created_at: z
-    .string()
-    .nullish()
-    .transform((v) => v ?? ""),
-  updated_at: z
+    .transform((v) => {
+      if (!v) return "pending";
+      const lower = v.toLowerCase();
+      if (lower === "pending") return "pending";
+      if (lower === "in-review") return "in-review";
+      if (lower === "shortlisted") return "shortlisted";
+      if (lower === "interview") return "interview";
+      if (lower === "selected" || lower === "accepted") return "selected";
+      if (lower === "rejected") return "rejected";
+      return "pending";
+    }),
+  rejection_reason: z.string().optional().nullable(),
+  applied_at: z
     .string()
     .nullish()
     .transform((v) => v ?? ""),
@@ -537,24 +552,11 @@ export const DeleteRuleResponseSchema = DjangoResponse(
 );
 
 export const ApplyJobResponseSchema = DjangoResponse(
-  z.object({
-    application_id: z.string(),
-    job_id: z.string(),
-    job_title: z.string(),
-    status: z.string(),
-    applied_at: z.string(),
-  }),
+  z.object({}).passthrough().optional().nullable(),
 );
 
-export const UpdateApplicantStatusResponseSchema = DjangoResponse(
-  z.object({
-    application_id: z.string(),
-    applicant_id: z.string(),
-    new_status: z.string(),
-    reviewed_by: z.string(),
-    reviewed_at: z.string(),
-  }),
-);
+export const UpdateApplicantStatusResponseSchema =
+  DjangoResponse(JobApplicantSchema);
 
 export const GenericResponseSchema = DjangoResponse(z.unknown());
 

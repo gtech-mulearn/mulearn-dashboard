@@ -35,9 +35,11 @@ type FilterTab = AppStatus | "all";
 
 const FILTER_TABS: Array<{ key: FilterTab; label: string }> = [
   { key: "all", label: "All" },
-  { key: "applied", label: APP_STATUS_META.applied.label },
+  { key: "pending", label: APP_STATUS_META.pending.label },
+  { key: "in-review", label: APP_STATUS_META["in-review"].label },
   { key: "shortlisted", label: APP_STATUS_META.shortlisted.label },
-  { key: "accepted", label: APP_STATUS_META.accepted.label },
+  { key: "interview", label: APP_STATUS_META.interview.label },
+  { key: "selected", label: APP_STATUS_META.selected.label },
   { key: "rejected", label: APP_STATUS_META.rejected.label },
 ];
 
