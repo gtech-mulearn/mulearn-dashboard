@@ -18,6 +18,7 @@ import {
   MapPin,
   MessageSquare,
   MoreHorizontal,
+  MoreVertical,
   Pencil,
   Plus,
   PlusCircle,
@@ -106,10 +107,11 @@ import type {
   CampusEventFilters,
   CampusLeaderboardFilters,
   ClusterKarmaPoint,
+  IgChapter,
   SocialLink,
   SocialLinks,
 } from "../types";
-import { IgChapterEditSheet } from "./ig-chapter-edit-sheet";
+import { IgChapterEditDialog } from "./ig-chapter-edit-dialog";
 import { IgChapterFormDialog } from "./ig-chapter-form-dialog";
 import { StudentLevelsCard } from "./student-levels-card";
 import { TransferEnablerDialog } from "./transfer-enabler-dialog";
@@ -552,6 +554,9 @@ export function CampusManageDashboard() {
     useRemoveExecomMember();
   const { mutate: changeStudentType, isPending: isChangingType } =
     useChangeStudentType();
+
+  // ─── Chapter editing state ──
+  const [editingChapter, setEditingChapter] = useState<IgChapter | null>(null);
 
   // ─── Social presence state ──
   const [editingPlatform, setEditingPlatform] = useState<string | null>(null);
@@ -1953,7 +1958,7 @@ export function CampusManageDashboard() {
                         {chapters.map((chapter) => (
                           <Card
                             key={chapter.id}
-                            className="flex flex-col border-border/60 transition-all duration-300 hover:border-primary/45 hover:shadow-lg hover:shadow-primary/[0.02]"
+                            className="flex h-full flex-col border-border/60 transition-all duration-300 hover:border-primary/45 hover:shadow-lg hover:shadow-primary/[0.02]"
                           >
                             <CardHeader className="pb-3 border-b border-border/40">
                               <div className="flex items-start justify-between gap-2">
@@ -1966,46 +1971,22 @@ export function CampusManageDashboard() {
                                       {chapter.name}
                                     </CardTitle>
                                     <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
-                                      {chapter.code || "IG CHAPTER"}
+                                      {chapter.membersCount}{" "}
+                                      {chapter.membersCount === 1
+                                        ? "Student"
+                                        : "Students"}
                                     </p>
                                   </div>
                                 </div>
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-7 w-7 shrink-0 rounded-lg hover:bg-muted"
-                                    >
-                                      <MoreHorizontal className="h-4 w-4" />
-                                      <span className="sr-only">
-                                        Chapter actions
-                                      </span>
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <IgChapterEditSheet
-                                      chapter={chapter}
-                                      trigger={
-                                        <DropdownMenuItem
-                                          onSelect={(e) => e.preventDefault()}
-                                        >
-                                          Edit Chapter
-                                        </DropdownMenuItem>
-                                      }
-                                    />
-                                    <TransferIgRoleDialog
-                                      trigger={
-                                        <DropdownMenuItem
-                                          onSelect={(e) => e.preventDefault()}
-                                        >
-                                          Transfer IG Lead
-                                        </DropdownMenuItem>
-                                      }
-                                      defaultIgCode={chapter.code}
-                                    />
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7 shrink-0 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
+                                  onClick={() => setEditingChapter(chapter)}
+                                >
+                                  <MoreVertical className="h-4 w-4" />
+                                  <span className="sr-only">Edit Chapter</span>
+                                </Button>
                               </div>
                             </CardHeader>
                             <CardContent className="flex flex-1 flex-col gap-3 pt-4">
@@ -2023,17 +2004,18 @@ export function CampusManageDashboard() {
                                   {chapter.lead}
                                 </span>
                               </div>
-                              <div className="flex items-center justify-between text-xs">
-                                <span className="text-muted-foreground font-medium">
-                                  Members
-                                </span>
-                                <Badge
-                                  variant="secondary"
-                                  className="font-bold"
+                              {chapter.description ? (
+                                <p
+                                  className="text-xs text-muted-foreground line-clamp-2"
+                                  title={chapter.description}
                                 >
-                                  {chapter.membersCount}
-                                </Badge>
-                              </div>
+                                  {chapter.description}
+                                </p>
+                              ) : (
+                                <p className="text-xs text-muted-foreground/50 italic">
+                                  No description provided
+                                </p>
+                              )}
                               {chapter.execomMembers.length > 0 && (
                                 <div className="mt-auto pt-3 border-t border-border/30">
                                   <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
@@ -2062,6 +2044,18 @@ export function CampusManageDashboard() {
                           No IG chapters found for this campus.
                         </CardContent>
                       </Card>
+                    )}
+
+                    {/* Controlled chapter edit dialog */}
+                    {editingChapter && (
+                      <IgChapterEditDialog
+                        chapter={editingChapter}
+                        open
+                        onOpenChange={(open) => {
+                          if (!open) setEditingChapter(null);
+                        }}
+                        trigger={null}
+                      />
                     )}
                   </TabsContent>
                 </Tabs>
