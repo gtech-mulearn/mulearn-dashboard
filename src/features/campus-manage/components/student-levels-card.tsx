@@ -88,7 +88,7 @@ export function StudentLevelsCard() {
                 tick={{ fontSize: 11, fill: "currentColor" }}
                 className="text-muted-foreground"
                 ticks={yAxisTicks}
-                domain={[0, "auto"]}
+                domain={[0, yAxisTicks[yAxisTicks.length - 1] || "auto"]}
                 tickLine={false}
                 axisLine={false}
                 allowDecimals={false}
@@ -99,7 +99,7 @@ export function StudentLevelsCard() {
                   if (active && payload && payload.length) {
                     const data = payload[0].payload;
                     return (
-                      <div className="rounded-xl border border-border/60 bg-background/95 p-2.5 shadow-xl backdrop-blur-sm text-xs font-semibold">
+                      <div className="rounded-xl border border-border/60 bg-white/95 dark:bg-zinc-800/95 p-2.5 shadow-xl backdrop-blur-sm text-xs font-semibold">
                         <p className="mb-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
                           {data.level}
                         </p>

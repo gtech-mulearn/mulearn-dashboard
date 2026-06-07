@@ -222,6 +222,14 @@ const normalizeSocialUrl = (platformId: string, input: string): string => {
     return value;
   }
 
+  // Treat domain-like inputs without a scheme as URLs
+  if (
+    /^[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+(?:\/|$)/.test(value) &&
+    !value.startsWith("@")
+  ) {
+    return `https://${value}`;
+  }
+
   // Generate URL based on platform rules
   switch (platformId) {
     case "instagram":
@@ -239,7 +247,7 @@ const normalizeSocialUrl = (platformId: string, input: string): string => {
     case "facebook":
       return `https://facebook.com/${value}`;
     case "youtube":
-      return `https://youtube.com/${value.startsWith("@") ? value : "@" + value}`;
+      return `https://youtube.com/${value.startsWith("@") ? value : `@${value}`}`;
     case "discord":
       if (value.includes("discord.gg") || value.includes("discord.com")) {
         return value;
@@ -2149,6 +2157,7 @@ export function CampusManageDashboard() {
                                       isUpsertingSocial || !socialValue.trim()
                                     }
                                     title="Save"
+                                    aria-label="Save"
                                     onClick={() => {
                                       const normalizedUrl = normalizeSocialUrl(
                                         platform.id,
@@ -2177,6 +2186,7 @@ export function CampusManageDashboard() {
                                     variant="ghost"
                                     className="h-7 w-7 text-muted-foreground hover:bg-muted"
                                     title="Cancel"
+                                    aria-label="Cancel"
                                     onClick={() => setEditingPlatform(null)}
                                   >
                                     <X className="h-3.5 w-3.5" />
@@ -2206,6 +2216,7 @@ export function CampusManageDashboard() {
                                     variant="ghost"
                                     className="h-7 w-7 text-muted-foreground hover:bg-muted hover:text-foreground"
                                     title={`Edit ${platform.label}`}
+                                    aria-label={`Edit ${platform.label}`}
                                     onClick={() => {
                                       setEditingPlatform(platform.id);
                                       // Pre-fill with the raw URL so the user can see it
@@ -2220,6 +2231,7 @@ export function CampusManageDashboard() {
                                     className="h-7 w-7 text-destructive hover:bg-destructive/10"
                                     disabled={isDeletingSocial}
                                     title={`Remove ${platform.label}`}
+                                    aria-label={`Remove ${platform.label}`}
                                     onClick={() =>
                                       linkData && deleteSocial(linkData.id)
                                     }

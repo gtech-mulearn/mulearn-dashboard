@@ -19,9 +19,9 @@ export const MenteeSchema = z.preprocess(
     if ("full_name" in r) return r;
     return {
       user_id: r.user_id,
-      full_name: r["user__full_name"] ?? "",
-      muid: r["user__muid"] ?? "",
-      email: r["user__email"] ?? "",
+      full_name: r.user__full_name ?? "",
+      muid: r.user__muid ?? "",
+      email: r.user__email ?? "",
       total_sessions: r.total_sessions ?? 0,
     };
   },

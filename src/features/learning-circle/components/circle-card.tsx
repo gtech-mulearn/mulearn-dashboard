@@ -273,6 +273,7 @@ export function CircleCard({ circle }: CircleCardProps) {
                 hover:shadow-md hover:scale-110
                 active:scale-95 disabled:opacity-40"
               title="Join circle"
+              aria-label="Join circle"
             >
               {joinCircle.isPending ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
