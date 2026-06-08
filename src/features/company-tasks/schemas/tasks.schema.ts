@@ -29,7 +29,7 @@ export const CompanyTaskSchema = z.object({
   org: z.string().optional().nullable(),
   ig: z.string().optional().nullable(),
   event: z.string().optional().nullable(),
-  bonus_karma: z.number().optional().default(0),
+  bonus_karma: z.number().nullable().optional().default(0),
   bonus_time: z.string().optional().nullable(),
   approval_status: z.enum(["pending", "approved", "rejected"]),
   rejection_reason: z.string().optional().nullable(),
@@ -42,10 +42,10 @@ export const CompanyTaskSchema = z.object({
 });
 
 export const CompanyTasksPaginationSchema = z.object({
-  count: z.number(),
-  total_pages: z.number(),
-  current_page: z.number(),
-  per_page: z.number(),
+  count: z.number().optional().default(0),
+  total_pages: z.number().optional().default(1),
+  current_page: z.number().optional().default(1),
+  per_page: z.number().optional().default(10),
   next: z.string().nullable().optional(),
   previous: z.string().nullable().optional(),
 });

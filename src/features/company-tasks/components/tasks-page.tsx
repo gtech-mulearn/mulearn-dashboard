@@ -12,12 +12,33 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
 import { CreateTaskModal } from "./create-task-modal";
+import { TaskDetailModal } from "./task-detail-modal";
+import type { CompanyTask } from "../types/tasks.types";
+import { useDeleteCompanyTask } from "../hooks/use-company-tasks";
+import { MoreVertical, Edit2, Trash2 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function CompanyTasksPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const { data, isLoading, error } = useCompanyTasks();
+  const [taskToEdit, setTaskToEdit] = useState<CompanyTask | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+
+  const { mutate: deleteTask, isPending: isDeleting } = useDeleteCompanyTask();
+
+  const queryParams =
+    statusFilter === "all"
+      ? { page: 1, per_page: 50 }
+      : { approval_status: statusFilter as any, page: 1, per_page: 50 };
+  const { data, isLoading, error } = useCompanyTasks(queryParams);
 
   if (isLoading) {
     return (
@@ -46,7 +67,15 @@ export function CompanyTasksPage() {
     );
   }
 
-  const tasks = data?.data || [];
+  const tasks = Array.isArray(data)
+    ? data
+    : data?.data || (data as any)?.results || [];
+
+  // No need to locally filter anymore since the API does it, but we can leave it as a fallback.
+  const filteredTasks = tasks.filter((task: CompanyTask) => {
+    if (statusFilter === "all") return true;
+    return task.approval_status === statusFilter;
+  });
 
   return (
     <div className="space-y-6">
@@ -68,24 +97,29 @@ export function CompanyTasksPage() {
         </Button>
       </div>
 
-      {tasks.length === 0 ? (
+      <Tabs
+        defaultValue="all"
+        value={statusFilter}
+        onValueChange={setStatusFilter}
+        className="w-full"
+      >
+        <TabsList className="grid w-full grid-cols-4 lg:w-[400px]">
+          <TabsTrigger value="all">All Tasks</TabsTrigger>
+          <TabsTrigger value="approved">Approved</TabsTrigger>
+          <TabsTrigger value="pending">Pending</TabsTrigger>
+          <TabsTrigger value="rejected">Rejected</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      {tasks.length === 0 || filteredTasks.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed p-12 text-center">
-          <h3 className="mt-4 text-lg font-semibold">No Tasks Found</h3>
-          <p className="mt-2 text-sm text-muted-foreground max-w-sm">
-            You haven't created any tasks yet. Tasks allow the community to
-            engage with your company.
-          </p>
-          <Button
-            className="mt-6 gap-2"
-            onClick={() => setIsCreateModalOpen(true)}
-          >
-            <Plus className="h-4 w-4" />
-            Create First Task
-          </Button>
+          <h3 className="text-lg font-semibold text-muted-foreground">
+            No tasks found.
+          </h3>
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {tasks.map((task) => (
+          {filteredTasks.map((task: CompanyTask) => (
             <Card key={task.id} className="flex flex-col h-full">
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start gap-4">
@@ -100,18 +134,60 @@ export function CompanyTasksPage() {
                       {task.hashtag}
                     </CardDescription>
                   </div>
-                  <Badge
-                    variant={
-                      task.approval_status === "approved"
-                        ? "default"
-                        : task.approval_status === "rejected"
-                          ? "destructive"
-                          : "secondary"
-                    }
-                    className="capitalize shrink-0"
-                  >
-                    {task.approval_status}
-                  </Badge>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Badge
+                      variant={
+                        task.approval_status === "approved"
+                          ? "default"
+                          : task.approval_status === "rejected"
+                            ? "destructive"
+                            : "secondary"
+                      }
+                      className="capitalize"
+                    >
+                      {task.approval_status}
+                    </Badge>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="h-8 w-8 p-0 shrink-0"
+                        >
+                          <span className="sr-only">Open menu</span>
+                          <MoreVertical className="h-4 w-4 text-muted-foreground" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setTaskToEdit(task);
+                            setIsCreateModalOpen(true);
+                          }}
+                        >
+                          <Edit2 className="mr-2 h-4 w-4" />
+                          <span>Edit Task</span>
+                        </DropdownMenuItem>
+                        {task.approval_status === "pending" && (
+                          <DropdownMenuItem
+                            onClick={() => {
+                              if (
+                                window.confirm(
+                                  "Are you sure you want to delete this task?",
+                                )
+                              ) {
+                                deleteTask(task.id);
+                              }
+                            }}
+                            disabled={isDeleting}
+                            className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            <span>Delete Task</span>
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="flex-1 flex flex-col justify-between space-y-4">
@@ -133,6 +209,14 @@ export function CompanyTasksPage() {
                       Active
                     </Badge>
                   )}
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="ml-auto h-7 text-xs"
+                    onClick={() => setSelectedTaskId(task.id)}
+                  >
+                    View Details
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -142,7 +226,15 @@ export function CompanyTasksPage() {
 
       <CreateTaskModal
         open={isCreateModalOpen}
-        onOpenChange={setIsCreateModalOpen}
+        onOpenChange={(open) => {
+          setIsCreateModalOpen(open);
+          if (!open) setTaskToEdit(null);
+        }}
+        taskToEdit={taskToEdit}
+      />
+      <TaskDetailModal
+        taskId={selectedTaskId}
+        onClose={() => setSelectedTaskId(null)}
       />
     </div>
   );

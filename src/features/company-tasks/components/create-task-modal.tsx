@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,17 +19,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useCreateCompanyTask, useTaskTypes } from "../hooks/use-company-tasks";
+import {
+  useCreateCompanyTask,
+  useUpdateCompanyTask,
+  useTaskTypes,
+} from "../hooks/use-company-tasks";
+import type { CompanyTask } from "../types/tasks.types";
 
 interface CreateTaskModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  taskToEdit?: CompanyTask | null;
 }
 
-export function CreateTaskModal({ open, onOpenChange }: CreateTaskModalProps) {
+export function CreateTaskModal({
+  open,
+  onOpenChange,
+  taskToEdit,
+}: CreateTaskModalProps) {
   const { data: taskTypesResponse } = useTaskTypes();
   const taskTypes = taskTypesResponse?.data || [];
-  const { mutate: createTask, isPending } = useCreateCompanyTask();
+  const { mutate: createTask, isPending: isCreating } = useCreateCompanyTask();
+  const { mutate: updateTask, isPending: isUpdating } = useUpdateCompanyTask();
+
+  const isPending = isCreating || isUpdating;
 
   const [title, setTitle] = useState("");
   const [hashtag, setHashtag] = useState("");
@@ -37,30 +50,62 @@ export function CreateTaskModal({ open, onOpenChange }: CreateTaskModalProps) {
   const [type, setType] = useState("");
   const [description, setDescription] = useState("");
 
+  useEffect(() => {
+    if (open) {
+      if (taskToEdit) {
+        setTitle(taskToEdit.title || "");
+        setHashtag(taskToEdit.hashtag || "");
+        setKarma(taskToEdit.karma?.toString() || "");
+
+        // The API returns the type title (e.g. "Task"), but the Select needs the type ID.
+        // So we find the matching type from the taskTypes list.
+        if (taskTypes.length > 0) {
+          const matchingType = taskTypes.find(
+            (t: any) => t.title === taskToEdit.type || t.id === taskToEdit.type,
+          );
+          setType(matchingType ? matchingType.id : "");
+        }
+
+        setDescription(taskToEdit.description || "");
+      } else {
+        setTitle("");
+        setHashtag("");
+        setKarma("");
+        setType("");
+        setDescription("");
+      }
+    }
+  }, [open, taskToEdit, taskTypes]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !hashtag.trim() || !karma || !description.trim())
       return;
 
-    createTask(
-      {
-        title: title.trim(),
-        hashtag: hashtag.trim(),
-        karma: Number(karma),
-        type: type.trim() || undefined,
-        description: description.trim(),
-      },
-      {
+    const payload = {
+      title: title.trim(),
+      hashtag: hashtag.trim(),
+      karma: Number(karma),
+      type: type.trim() || undefined,
+      description: description.trim(),
+    };
+
+    if (taskToEdit) {
+      updateTask(
+        { taskId: taskToEdit.id, payload },
+        {
+          onSuccess: () => {
+            onOpenChange(false);
+          },
+        },
+      );
+    } else {
+      createTask(payload, {
         onSuccess: () => {
           onOpenChange(false);
-          setTitle("");
-          setHashtag("");
-          setKarma("");
-          setType("");
-          setDescription("");
         },
-      },
-    );
+      });
+    }
   };
 
   const handleClose = () => {
@@ -73,10 +118,13 @@ export function CreateTaskModal({ open, onOpenChange }: CreateTaskModalProps) {
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Create Company Task</DialogTitle>
+          <DialogTitle>
+            {taskToEdit ? "Edit Company Task" : "Create Company Task"}
+          </DialogTitle>
           <DialogDescription>
-            Submit a new task for community engagement. It will be reviewed by
-            an admin.
+            {taskToEdit
+              ? "Update your task. Note: Updating will revert its status back to pending."
+              : "Submit a new task for community engagement. It will be reviewed by an admin."}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-4">
@@ -168,7 +216,11 @@ export function CreateTaskModal({ open, onOpenChange }: CreateTaskModalProps) {
               Cancel
             </Button>
             <Button type="submit" disabled={isPending}>
-              {isPending ? "Submitting..." : "Submit Task"}
+              {isPending
+                ? "Submitting..."
+                : taskToEdit
+                  ? "Save Changes"
+                  : "Submit Task"}
             </Button>
           </DialogFooter>
         </form>
