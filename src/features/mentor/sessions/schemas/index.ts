@@ -40,15 +40,22 @@ export const SessionParticipantSchema = z.object({
 export type SessionParticipant = z.infer<typeof SessionParticipantSchema>;
 
 // ─── Session — matches doc response shape ─────────────────────────────────────
-// Doc fields: id, ig_id, ig_name, title, description, mode, starts_at, ends_at,
-//             status, created_by_id, created_by_name, created_at, max_participants,
+// Doc fields: id, ig_id, ig_name, entity_id, entity_name, session_type,
+//             title, description, mode, starts_at, ends_at, status,
+//             created_by_id, created_by_name, created_at, max_participants,
 //             meeting_link, venue
+// session_type discriminates ig_session vs company_session (§4.2)
 export const SessionSchema = z.object({
   id: z.string(),
   title: z.string(),
   description: z.string().nullable().optional(),
+  // IG session fields (legacy + backward compat)
   ig_id: z.string().nullable().optional(),
   ig_name: z.string().nullable().optional(),
+  // §4.2 — entity fields present in /session/available/ response
+  entity_id: z.string().nullable().optional(),
+  entity_name: z.string().nullable().optional(),
+  session_type: z.enum(["ig_session", "company_session"]).nullable().optional(),
   mode: z.string().optional(),
   starts_at: z.string().nullable(),
   ends_at: z.string().nullable(),
@@ -68,6 +75,13 @@ export const SessionSchema = z.object({
   created_by: z.string().optional(),
   is_global: z.boolean().optional().default(false),
   created_at: z.string().optional(),
+  // Recurrence fields
+  is_recurring: z.boolean().optional().default(false),
+  parent_session_id: z.string().nullable().optional(),
+  child_session_ids: z.array(z.string()).optional(),
+  recurrence_type: z.enum(["DAILY", "WEEKLY", "MONTHLY"]).nullable().optional(),
+  recurrence_interval: z.number().nullable().optional(),
+  recurrence_end_date: z.string().nullable().optional(),
 });
 export type Session = z.infer<typeof SessionSchema>;
 
@@ -90,32 +104,75 @@ export const ParticipantsListResponseSchema = ApiResponseSchema(
 
 // ─── Session form schema — POST /session/create/ and PATCH /session/update/<id>/ ──
 // Doc fields: ig, title, description, mode, starts_at, ends_at, meeting_link, venue, max_participants
-export const SessionFormSchema = z
-  .object({
-    title: z.string().min(1, "Title is required").max(150),
-    description: z.string().optional(),
-    ig_id: z.string().optional(),
-    mode: z.enum(["ONLINE", "OFFLINE", "HYBRID"]),
-    starts_at: z.string().min(1, "Start time is required"),
-    ends_at: z.string().min(1, "End time is required"),
-    meeting_link: z
-      .string()
-      .url("Must be a valid URL")
-      .optional()
-      .or(z.literal("")),
-    venue: z.string().optional(),
-    max_participants: z.number().min(1).optional(),
-  })
-  .refine((v) => new Date(v.ends_at) > new Date(v.starts_at), {
-    message: "End time must be after start time",
-    path: ["ends_at"],
-  });
-export type SessionFormValues = z.infer<typeof SessionFormSchema>;
+export const SessionFormBaseSchema = z.object({
+  title: z.string().min(1, "Title is required").max(150),
+  description: z.string().optional(),
+  ig_id: z.string().optional(),
+  mode: z.enum(["ONLINE", "OFFLINE", "HYBRID"]),
+  starts_at: z.string().min(1, "Start time is required"),
+  ends_at: z.string().min(1, "End time is required"),
+  meeting_link: z
+    .string()
+    .url("Must be a valid URL")
+    .optional()
+    .or(z.literal("")),
+  venue: z.string().optional(),
+  max_participants: z.number().min(1).optional(),
+  is_recurring: z.boolean().optional().default(false),
+  recurrence_type: z.enum(["DAILY", "WEEKLY", "MONTHLY"]).optional(),
+  recurrence_interval: z.number().min(1).optional(),
+  recurrence_end_date: z.string().optional(),
+});
+
+export type SessionFormValues = z.infer<typeof SessionFormBaseSchema>;
+
+export const SessionFormSchema = SessionFormBaseSchema.superRefine((v, ctx) => {
+  // Basic end_at vs starts_at
+  if (new Date(v.ends_at) <= new Date(v.starts_at)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "End time must be after start time",
+      path: ["ends_at"],
+    });
+  }
+
+  // Recurrence validation
+  if (v.is_recurring) {
+    if (!v.recurrence_type) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Recurrence type is required when recurring",
+        path: ["recurrence_type"],
+      });
+    }
+    if (!v.recurrence_interval || v.recurrence_interval < 1) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Interval must be at least 1",
+        path: ["recurrence_interval"],
+      });
+    }
+    if (!v.recurrence_end_date) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "End date is required for recurring sessions",
+        path: ["recurrence_end_date"],
+      });
+    } else if (new Date(v.recurrence_end_date) <= new Date(v.starts_at)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Recurrence end date must be after session start date",
+        path: ["recurrence_end_date"],
+      });
+    }
+  }
+});
 
 // ─── Admin session verify — PATCH /session/admin/verify/<id>/ ─────────────────
 // Doc payload: { status: "SCHEDULED" } or { status: "REJECTED" }
 export const AdminVerifySessionSchema = z.object({
   status: z.enum(["SCHEDULED", "REJECTED"]),
+  apply_to_series: z.boolean().optional().default(false),
 });
 export type AdminVerifySessionValues = z.infer<typeof AdminVerifySessionSchema>;
 

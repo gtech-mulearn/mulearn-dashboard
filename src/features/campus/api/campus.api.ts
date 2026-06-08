@@ -1,9 +1,8 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
-import type { CampusInfo, WeeklyKarma } from "../types";
 import type {
-  CampusSessionCreateValues,
   CampusSessionCreated,
+  CampusSessionCreateValues,
   CampusSessionItem,
 } from "../schemas";
 import {
@@ -11,6 +10,7 @@ import {
   CampusSessionCreateResponseSchema,
   CampusSessionListResponseSchema,
 } from "../schemas";
+import type { CampusInfo, WeeklyKarma } from "../types";
 
 const OPT = { skipAuthRedirectOn403: true } as const;
 

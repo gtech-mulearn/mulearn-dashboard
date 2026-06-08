@@ -147,8 +147,10 @@ export const endpoints = {
     jobApplicants: (jobId: string) =>
       `/api/v1/dashboard/company/jobs/${jobId}/applications/`,
     /** PATCH - Company update applicant status */
-    updateApplicantStatus: (jobId: string, appId: string) =>
-      `/api/v1/dashboard/company/jobs/${jobId}/applications/${appId}/`,
+    updateApplicantStatus: (appId: string) =>
+      `/api/v1/dashboard/company/applications/${appId}/status/`,
+    /** GET - Browse MuLearner directory (public profiles only) */
+    mulearners: "/api/v1/dashboard/company/mulearners/",
     /** GET - Learner discovery (Talent Pool) */
     learners: "/api/v1/dashboard/company/learners/",
     /** POST - Create job (JWT required, active company only) */
@@ -169,6 +171,22 @@ export const endpoints = {
     /** DELETE - Hard delete eligibility rule (JWT required) */
     deleteJobRule: (jobId: string, ruleId: string) =>
       `/api/v1/dashboard/company/jobs/${jobId}/rules/${ruleId}/delete/`,
+
+    // ── Company Mentor Nomination ────────────────────────────────────────────
+    /** POST - Nominate a platform user as Company Mentor (Company role + verified company) */
+    mentorNominate: "/api/v1/dashboard/company/mentor/nominate/",
+    /** GET - List all Company Mentor nominations for the authenticated company */
+    mentorList: "/api/v1/dashboard/company/mentor/list/",
+
+    // ── Company Tasks ────────────────────────────────────────────────────────
+    /** GET/POST - List or submit company tasks (scoped to requesting user) */
+    tasks: "/api/v1/dashboard/company/tasks/",
+    /** GET/PUT/DELETE - Single company task by ID */
+    task: (taskId: string) => `/api/v1/dashboard/company/tasks/${taskId}/`,
+
+    // ── Gig Analytics ────────────────────────────────────────────────────────
+    /** GET - Gig-type job analytics for the authenticated company */
+    gigAnalytics: "/api/v1/dashboard/company/analytics/gigs/",
   },
 
   // ============================================
@@ -528,6 +546,28 @@ export const endpoints = {
     wadhwaniCollege: "/api/v1/leaderboard/wadhwani-college/",
     /** GET - Wadhwani zonal leaderboard */
     wadhwaniZonal: "/api/v1/leaderboard/wadhwani-zonal/",
+    /** GET - IG Mentor leaderboard ranked by completed sessions in that IG (public) */
+    igMentor: (igId: string) => `/api/v1/leaderboard/ig-mentor/${igId}/`,
+    /** GET - Campus Mentor leaderboard ranked by completed campus sessions (public) */
+    campusMentor: (campusId: string) =>
+      `/api/v1/leaderboard/campus-mentor/${campusId}/`,
+  },
+
+  // ============================================
+  // Calendar Endpoints
+  // Base: /api/v1/calendar/
+  // All endpoints are public (no auth required)
+  // ============================================
+  calendar: {
+    /** GET - Company session calendar by org UUID (public) — query: month (YYYY-MM), status */
+    companySessions: (companyOrgId: string) =>
+      `/api/v1/calendar/company/${companyOrgId}/sessions/`,
+    /** GET - IG Mentor session calendar by IG UUID (public) — query: month (YYYY-MM), status */
+    igMentorSessions: (igId: string) =>
+      `/api/v1/calendar/ig-mentor/${igId}/sessions/`,
+    /** GET - Campus Mentor session calendar by campus UUID (public) — query: month (YYYY-MM), status */
+    campusMentorSessions: (campusId: string) =>
+      `/api/v1/calendar/campus-mentor/${campusId}/sessions/`,
   },
 
   // ============================================

@@ -3,8 +3,8 @@ import { endpoints } from "@/api/endpoints";
 import type { OnboardingFormValues } from "../schemas";
 import {
   type MentorApplication,
-  type MentorStatusData,
   MentorApplicationResponseSchema,
+  type MentorStatusData,
   MentorStatusResponseSchema,
 } from "../schemas";
 

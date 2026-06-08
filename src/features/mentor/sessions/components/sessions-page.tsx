@@ -72,7 +72,30 @@ function SessionRow({
 
   return (
     <TableRow>
-      <TableCell className="font-medium">{session.title}</TableCell>
+      <TableCell className="font-medium">
+        <div className="flex flex-col gap-1">
+          <span>{session.title}</span>
+          {session.is_recurring && (
+            <div className="flex items-center gap-1">
+              {!session.parent_session_id ? (
+                <Badge
+                  variant="outline"
+                  className="text-[10px] h-4 px-1 py-0 bg-blue-50 text-blue-700 hover:bg-blue-50"
+                >
+                  <span className="mr-1">🔄</span> Series Parent
+                </Badge>
+              ) : (
+                <Badge
+                  variant="outline"
+                  className="text-[10px] h-4 px-1 py-0 text-muted-foreground"
+                >
+                  ↳ Series Child
+                </Badge>
+              )}
+            </div>
+          )}
+        </div>
+      </TableCell>
       <TableCell>
         {session.ig_name ? (
           session.ig_name

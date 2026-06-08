@@ -204,14 +204,6 @@ export const NAV_ITEMS: readonly NavItem[] = [
     roles: [ROLES.MENTOR],
   },
   {
-    id: "mentor-opportunities",
-    title: "Opportunities",
-    href: "/dashboard/mentor/opportunities",
-    icon: Briefcase,
-    section: "management",
-    roles: [ROLES.MENTOR],
-  },
-  {
     id: "mentor-task-requests",
     title: "Task Requests",
     href: "/dashboard/mentor/task-requests",

@@ -39,14 +39,14 @@ export function useUpdateApplicantStatus() {
 
   return useMutation({
     mutationFn: ({
-      jobId,
       appId,
       status,
+      rejection_reason,
     }: {
-      jobId: string;
       appId: string;
       status: string;
-    }) => updateApplicantStatus(jobId, appId, status),
+      rejection_reason?: string | null;
+    }) => updateApplicantStatus(appId, status, rejection_reason),
     onSuccess: () => {
       // Invalidate specific job applicants query
       queryClient.invalidateQueries({ queryKey: JOB_APPLICANTS_KEYS.all });

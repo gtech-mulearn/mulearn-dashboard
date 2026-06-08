@@ -1,16 +1,26 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-
-import { CheckCircle, Plus, XCircle } from "lucide-react";
-import { useState } from "react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  Edit2,
+  Hash,
+  Loader2,
+  Plus,
+  Trash2,
+  XCircle,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -49,138 +59,314 @@ import {
 } from "@/components/ui/tooltip";
 import { useTaskIgDropdown } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
 import {
-  useCreateTaskRequest,
-  useReviewTaskRequest,
-  useTaskRequests,
-} from "../hooks/use-task-requests";
-import type { TaskRequest } from "../schemas";
-import { TaskRequestFormSchema, type TaskRequestFormValues } from "../schemas";
+  useCreateMentorTask,
+  useDeleteMentorTask,
+  useMentorTasks,
+  useUpdateMentorTask,
+} from "@/features/mentor/tasks/hooks/use-mentor-tasks";
+import type {
+  MentorTask,
+  MentorTaskFormValues,
+} from "@/features/mentor/tasks/schemas";
+import { MentorTaskFormSchema } from "@/features/mentor/tasks/schemas";
 
-const RejectSchema = z.object({
-  admin_note: z.string().min(1, "Reason is required"),
-});
-type RejectValues = z.infer<typeof RejectSchema>;
+// ─── Status Config ─────────────────────────────────────────────────────────────
+const STATUS_CONFIG: Record<
+  string,
+  {
+    label: string;
+    variant: "default" | "secondary" | "destructive" | "outline";
+    icon: React.ComponentType<{ className?: string }>;
+    className: string;
+  }
+> = {
+  pending: {
+    label: "Pending",
+    variant: "secondary",
+    icon: Clock,
+    className: "text-amber-600 bg-amber-50 border-amber-200",
+  },
+  approved: {
+    label: "Approved",
+    variant: "default",
+    icon: CheckCircle2,
+    className: "text-emerald-700 bg-emerald-50 border-emerald-200",
+  },
+  rejected: {
+    label: "Rejected",
+    variant: "destructive",
+    icon: XCircle,
+    className: "text-red-600 bg-red-50 border-red-200",
+  },
+};
 
-function CreateTaskRequestDialog({
+// ─── Task Form Dialog (Create + Edit) ─────────────────────────────────────────
+function TaskFormDialog({
   open,
   onOpenChange,
+  task,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
+  task?: MentorTask | null;
 }) {
+  const isEdit = !!task;
   const { data: myIgs = [] } = useTaskIgDropdown();
+  const { mutate: create, isPending: isCreating } = useCreateMentorTask();
+  const { mutate: update, isPending: isUpdating } = useUpdateMentorTask(
+    task?.id ?? "",
+  );
+  const isPending = isCreating || isUpdating;
 
-  const { mutate: create, isPending } = useCreateTaskRequest();
-  const form = useForm<TaskRequestFormValues>({
-    resolver: zodResolver(TaskRequestFormSchema),
+  const form = useForm<MentorTaskFormValues>({
+    resolver: zodResolver(MentorTaskFormSchema) as any,
     defaultValues: {
-      title: "",
       hashtag: "",
-      ig_id: "",
-      karma: 10,
+      title: "",
+      karma: 100,
+      usage_count: 1,
       description: "",
-    },
+      type: "",
+      level: "",
+      ig: "",
+      skill_ids: [],
+    } as any,
   });
 
-  function onSubmit(values: TaskRequestFormValues) {
-    create(values, {
-      onSuccess: () => {
-        form.reset();
-        onOpenChange(false);
-      },
-    });
+  // Populate form when editing
+  useEffect(() => {
+    if (task && open) {
+      form.reset({
+        hashtag: task.hashtag ?? "",
+        title: task.title ?? "",
+        karma: task.karma ?? 100,
+        usage_count: task.usage_count ?? 1,
+        description: task.description ?? "",
+        type: task.type ?? "",
+        level: task.level ?? "",
+        ig: task.ig ?? "",
+        skill_ids: [],
+      });
+    } else if (!task && open) {
+      form.reset({
+        hashtag: "",
+        title: "",
+        karma: 100,
+        usage_count: 1,
+        description: "",
+        type: "",
+        level: "",
+        ig: "",
+        skill_ids: [],
+      });
+    }
+  }, [task, open, form]);
+
+  function onSubmit(values: MentorTaskFormValues) {
+    const payload = {
+      ...values,
+      hashtag: values.hashtag.startsWith("#")
+        ? values.hashtag
+        : `#${values.hashtag}`,
+    };
+
+    if (isEdit) {
+      update(payload, {
+        onSuccess: () => {
+          onOpenChange(false);
+        },
+      });
+    } else {
+      create(payload, {
+        onSuccess: () => {
+          form.reset();
+          onOpenChange(false);
+        },
+      });
+    }
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>New Task Request</DialogTitle>
+          <DialogTitle>{isEdit ? "Edit Task" : "Submit New Task"}</DialogTitle>
+          <DialogDescription>
+            {isEdit
+              ? "Update the task details. It will be re-submitted for admin approval."
+              : "Submit a new task for admin review and approval."}
+          </DialogDescription>
         </DialogHeader>
+
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form
+            onSubmit={form.handleSubmit(onSubmit as any)}
+            className="space-y-4"
+          >
+            {/* Title */}
             <FormField
-              control={form.control}
+              control={form.control as any}
               name="title"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Task Title</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. Build a REST API" {...field} />
+                    <Input placeholder="e.g. Design a PR Campaign" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+            {/* Hashtag */}
             <FormField
-              control={form.control}
+              control={form.control as any}
               name="hashtag"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Hashtag</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. #build-rest-api" {...field} />
+                    <div className="relative">
+                      <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        className="pl-9"
+                        placeholder="pr-campaign-design"
+                        {...field}
+                        onChange={(e) => {
+                          let val = e.target.value;
+                          if (val.startsWith("#")) val = val.slice(1);
+                          field.onChange(val);
+                        }}
+                      />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="ig_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Interest Group</FormLabel>
-                  <Select value={field.value} onValueChange={field.onChange}>
+
+            {/* IG + Karma row */}
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control as any}
+                name="ig"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Interest Group</FormLabel>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select IG" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {myIgs.map((ig) => (
+                          <SelectItem key={ig.id} value={ig.id}>
+                            {ig.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control as any}
+                name="karma"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Karma Points</FormLabel>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select an IG" />
-                      </SelectTrigger>
+                      <Input
+                        type="number"
+                        min={1}
+                        {...field}
+                        onChange={(e) =>
+                          field.onChange(e.target.valueAsNumber || 0)
+                        }
+                      />
                     </FormControl>
-                    <SelectContent>
-                      {myIgs.map((ig) => (
-                        <SelectItem key={ig.id} value={ig.id}>
-                          {ig.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Type + Level row */}
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control as any}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Task Type ID</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Type UUID" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control as any}
+                name="level"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Level ID (optional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Level UUID" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Usage Count */}
             <FormField
-              control={form.control}
-              name="karma"
+              control={form.control as any}
+              name="usage_count"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Karma Points</FormLabel>
+                  <FormLabel>Usage Count</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
                       min={1}
                       {...field}
-                      onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                      onChange={(e) =>
+                        field.onChange(e.target.valueAsNumber || 1)
+                      }
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+            {/* Description */}
             <FormField
-              control={form.control}
+              control={form.control as any}
               name="description"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Description (optional)</FormLabel>
                   <FormControl>
-                    <Textarea rows={2} {...field} />
+                    <Textarea
+                      rows={3}
+                      placeholder="Describe what the mentee should do..."
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <div className="flex justify-end gap-2">
+
+            <DialogFooter>
               <Button
                 type="button"
                 variant="outline"
@@ -189,9 +375,16 @@ function CreateTaskRequestDialog({
                 Cancel
               </Button>
               <Button type="submit" disabled={isPending}>
-                {isPending ? "Creating..." : "Create"}
+                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isPending
+                  ? isEdit
+                    ? "Updating..."
+                    : "Submitting..."
+                  : isEdit
+                    ? "Update & Re-submit"
+                    : "Submit Task"}
               </Button>
-            </div>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>
@@ -199,102 +392,88 @@ function CreateTaskRequestDialog({
   );
 }
 
-function RejectDialog({
-  item,
+// ─── Delete Confirmation Dialog ───────────────────────────────────────────────
+function DeleteConfirmDialog({
+  task,
   open,
   onOpenChange,
 }: {
-  item: TaskRequest | null;
+  task: MentorTask | null;
   open: boolean;
   onOpenChange: (v: boolean) => void;
 }) {
-  const { mutate: review, isPending } = useReviewTaskRequest();
-  const form = useForm<RejectValues>({
-    resolver: zodResolver(RejectSchema),
-    defaultValues: { admin_note: "" },
-  });
+  const { mutate: deleteTask, isPending } = useDeleteMentorTask();
 
-  function onSubmit(values: RejectValues) {
-    if (!item) return;
-    review(
-      {
-        id: item.id,
-        data: { status: "REJECTED", admin_note: values.admin_note },
-      },
-      {
-        onSuccess: () => {
-          form.reset();
-          onOpenChange(false);
-        },
-      },
-    );
+  function onConfirm() {
+    if (!task) return;
+    deleteTask(task.id, {
+      onSuccess: () => onOpenChange(false),
+    });
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>Reject Task Request</DialogTitle>
+          <DialogTitle className="flex items-center gap-2 text-destructive">
+            <AlertCircle className="h-5 w-5" />
+            Delete Task
+          </DialogTitle>
+          <DialogDescription>
+            Are you sure you want to permanently delete{" "}
+            <strong>&ldquo;{task?.title}&rdquo;</strong>? This action cannot be
+            undone. Only pending tasks can be deleted.
+          </DialogDescription>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="admin_note"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Reason</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      rows={3}
-                      placeholder="Explain the rejection..."
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" variant="destructive" disabled={isPending}>
-                {isPending ? "Rejecting..." : "Reject"}
-              </Button>
-            </div>
-          </form>
-        </Form>
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isPending}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={onConfirm}
+            disabled={isPending}
+          >
+            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isPending ? "Deleting..." : "Delete"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
 
-const STATUS_BADGE: Record<
-  string,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
-  PENDING: "secondary",
-  APPROVED: "default",
-  REJECTED: "destructive",
-};
+// ─── Status Badge ─────────────────────────────────────────────────────────────
+function TaskStatusBadge({ status }: { status: string }) {
+  const config = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending;
+  const Icon = config.icon;
+  return (
+    <Badge
+      variant="outline"
+      className={`gap-1 text-xs font-medium ${config.className}`}
+    >
+      <Icon className="h-3 w-3" />
+      {config.label}
+    </Badge>
+  );
+}
 
-function RequestTable({
-  items,
+// ─── Tasks Table ──────────────────────────────────────────────────────────────
+function TasksTable({
+  tasks,
   isLoading,
-  showActions,
+  onEdit,
+  onDelete,
 }: {
-  items: TaskRequest[] | undefined;
+  tasks: MentorTask[] | undefined;
   isLoading: boolean;
-  showActions: boolean;
+  onEdit: (t: MentorTask) => void;
+  onDelete: (t: MentorTask) => void;
 }) {
-  const { mutate: review, isPending } = useReviewTaskRequest();
-  const [rejectTarget, setRejectTarget] = useState<TaskRequest | null>(null);
-
   if (isLoading) {
     return (
       <div className="space-y-2">
@@ -305,159 +484,235 @@ function RequestTable({
     );
   }
 
-  if (!items || items.length === 0) {
+  if (!tasks || tasks.length === 0) {
     return (
-      <div className="flex min-h-[200px] flex-col items-center justify-center gap-2 text-muted-foreground">
-        <CheckCircle className="h-8 w-8" />
-        <p className="text-sm">No task requests found.</p>
+      <div className="flex min-h-[220px] flex-col items-center justify-center gap-2 rounded-lg border border-dashed text-muted-foreground">
+        <CheckCircle2 className="h-8 w-8 opacity-40" />
+        <p className="text-sm">No tasks found.</p>
       </div>
     );
   }
 
   return (
-    <>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Task</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead>IG</TableHead>
-            <TableHead>Karma</TableHead>
-            <TableHead>Status</TableHead>
-            {showActions && <TableHead>Actions</TableHead>}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {items.map((req) => (
-            <TableRow key={req.id}>
-              <TableCell className="font-medium">
-                {req.title}
-                {req.hashtag && (
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    {req.hashtag}
-                  </p>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Task</TableHead>
+          <TableHead>IG</TableHead>
+          <TableHead className="text-right">Karma</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead>Submitted</TableHead>
+          <TableHead>Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {tasks.map((task) => (
+          <TableRow key={task.id}>
+            {/* Title + hashtag */}
+            <TableCell className="font-medium">
+              <div className="flex flex-col gap-0.5">
+                <span>{task.title}</span>
+                {task.hashtag && (
+                  <span className="text-xs text-muted-foreground">
+                    {task.hashtag.startsWith("#")
+                      ? task.hashtag
+                      : `#${task.hashtag}`}
+                  </span>
                 )}
-              </TableCell>
-              <TableCell>
-                {req.description ? req.description.slice(0, 100) + "..." : "—"}
-              </TableCell>
-              <TableCell className="text-sm text-muted-foreground">
-                {req.ig_name ?? "—"}
-              </TableCell>
-              <TableCell>
-                <Badge variant="outline">{req.karma} pts</Badge>
-              </TableCell>
-              <TableCell>
-                <Badge variant={STATUS_BADGE[req.status] ?? "secondary"}>
-                  {req.status}
-                </Badge>
-                {req.admin_note && (
-                  <p className="mt-0.5 max-w-[160px] truncate text-xs text-muted-foreground">
-                    {req.admin_note}
-                  </p>
-                )}
-              </TableCell>
-              {showActions && (
-                <TableCell>
-                  <div className="flex items-center gap-1">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950"
-                          disabled={isPending}
-                          onClick={() =>
-                            review({ id: req.id, data: { status: "APPROVED" } })
-                          }
-                        >
-                          <CheckCircle className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Approve</TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                          onClick={() => setRejectTarget(req)}
-                        >
-                          <XCircle className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Reject</TooltipContent>
-                    </Tooltip>
-                  </div>
-                </TableCell>
-              )}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+              </div>
+            </TableCell>
 
-      <RejectDialog
-        item={rejectTarget}
-        open={!!rejectTarget}
-        onOpenChange={(v) => !v && setRejectTarget(null)}
-      />
-    </>
+            {/* IG */}
+            <TableCell className="text-sm text-muted-foreground">
+              {task.ig ?? "—"}
+            </TableCell>
+
+            {/* Karma */}
+            <TableCell className="text-right">
+              <Badge variant="outline" className="font-mono">
+                {task.karma} pts
+              </Badge>
+            </TableCell>
+
+            {/* Status + rejection reason */}
+            <TableCell>
+              <div className="flex flex-col gap-1">
+                <TaskStatusBadge status={task.approval_status} />
+                {task.approval_status === "rejected" &&
+                  task.rejection_reason && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <p className="max-w-[140px] truncate text-xs text-destructive cursor-help">
+                          {task.rejection_reason}
+                        </p>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <p className="text-xs">{task.rejection_reason}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+              </div>
+            </TableCell>
+
+            {/* Submitted date */}
+            <TableCell className="text-sm text-muted-foreground">
+              {task.requested_at
+                ? new Date(task.requested_at).toLocaleDateString()
+                : task.created_at
+                  ? new Date(task.created_at).toLocaleDateString()
+                  : "—"}
+            </TableCell>
+
+            {/* Actions */}
+            <TableCell>
+              <div className="flex items-center gap-1">
+                {/* Edit — available for pending and rejected tasks */}
+                {(task.approval_status === "pending" ||
+                  task.approval_status === "rejected") && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => onEdit(task)}
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Edit & Re-submit</TooltipContent>
+                  </Tooltip>
+                )}
+
+                {/* Delete — only for pending tasks */}
+                {task.approval_status === "pending" && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                        onClick={() => onDelete(task)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Delete (pending only)</TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 }
 
+// ─── Main Page ─────────────────────────────────────────────────────────────────
 export function TaskRequestsPage() {
   const [createOpen, setCreateOpen] = useState(false);
+  const [editTask, setEditTask] = useState<MentorTask | null>(null);
+  const [deleteTask, setDeleteTask] = useState<MentorTask | null>(null);
 
-  const { data: pending, isLoading: pendingLoading } = useTaskRequests({
-    status: "PENDING",
+  const { data: allResult, isLoading: allLoading } = useMentorTasks({});
+  const { data: pendingResult, isLoading: pendingLoading } = useMentorTasks({
+    approval_status: "pending",
   });
-  const { data: all, isLoading: allLoading } = useTaskRequests({});
+  const { data: approvedResult, isLoading: approvedLoading } = useMentorTasks({
+    approval_status: "approved",
+  });
+  const { data: rejectedResult, isLoading: rejectedLoading } = useMentorTasks({
+    approval_status: "rejected",
+  });
+
+  const pendingCount = pendingResult?.data?.length ?? 0;
 
   return (
     <TooltipProvider delayDuration={200}>
       <div className="space-y-6">
+        {/* Header */}
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Task Requests</h1>
+          <div>
+            <h1 className="text-2xl font-bold">My Tasks</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Submit and track tasks you've requested for admin approval.
+            </p>
+          </div>
           <Button onClick={() => setCreateOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
-            New Request
+            Submit Task
           </Button>
         </div>
 
-        <Tabs defaultValue="pending">
+        {/* Tabs */}
+        <Tabs defaultValue="all">
           <TabsList>
+            <TabsTrigger value="all">All Tasks</TabsTrigger>
             <TabsTrigger value="pending">
               Pending
-              {pending && pending.data.length > 0 && (
+              {pendingCount > 0 && (
                 <Badge variant="secondary" className="ml-2">
-                  {pending.data.length}
+                  {pendingCount}
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="all">All</TabsTrigger>
+            <TabsTrigger value="approved">Approved</TabsTrigger>
+            <TabsTrigger value="rejected">Rejected</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="pending" className="mt-4">
-            <RequestTable
-              items={pending?.data}
-              isLoading={pendingLoading}
-              showActions
+          <TabsContent value="all" className="mt-4">
+            <TasksTable
+              tasks={allResult?.data}
+              isLoading={allLoading}
+              onEdit={setEditTask}
+              onDelete={setDeleteTask}
             />
           </TabsContent>
 
-          <TabsContent value="all" className="mt-4">
-            <RequestTable
-              items={all?.data}
-              isLoading={allLoading}
-              showActions={false}
+          <TabsContent value="pending" className="mt-4">
+            <TasksTable
+              tasks={pendingResult?.data}
+              isLoading={pendingLoading}
+              onEdit={setEditTask}
+              onDelete={setDeleteTask}
+            />
+          </TabsContent>
+
+          <TabsContent value="approved" className="mt-4">
+            <TasksTable
+              tasks={approvedResult?.data}
+              isLoading={approvedLoading}
+              onEdit={setEditTask}
+              onDelete={setDeleteTask}
+            />
+          </TabsContent>
+
+          <TabsContent value="rejected" className="mt-4">
+            <TasksTable
+              tasks={rejectedResult?.data}
+              isLoading={rejectedLoading}
+              onEdit={setEditTask}
+              onDelete={setDeleteTask}
             />
           </TabsContent>
         </Tabs>
 
-        <CreateTaskRequestDialog
-          open={createOpen}
-          onOpenChange={setCreateOpen}
+        {/* Create Dialog */}
+        <TaskFormDialog open={createOpen} onOpenChange={setCreateOpen} />
+
+        {/* Edit Dialog */}
+        <TaskFormDialog
+          open={!!editTask}
+          onOpenChange={(v) => !v && setEditTask(null)}
+          task={editTask}
+        />
+
+        {/* Delete Confirm Dialog */}
+        <DeleteConfirmDialog
+          task={deleteTask}
+          open={!!deleteTask}
+          onOpenChange={(v) => !v && setDeleteTask(null)}
         />
       </div>
     </TooltipProvider>

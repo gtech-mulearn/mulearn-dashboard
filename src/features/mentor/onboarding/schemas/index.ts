@@ -30,16 +30,40 @@ export const MentorApplicationSchema = z.object({
 export type MentorApplication = z.infer<typeof MentorApplicationSchema>;
 
 // ─── GET /status/ response ────────────────────────────────────────────────────
-// Backend returns a single object. Status may arrive in any case; we normalise
-// to uppercase so deriveOnboardingState comparisons always work.
+// The backend response shape for this endpoint varies in practice:
+//   • { status, verification_note, mentor_id }  (object)
+//   • [{ status, verification_note, mentor_id }] (array with one item)
+//   • null / undefined (no application yet)
+// Using z.unknown() + manual transform makes the schema accept every shape
+// without ever throwing a validation error.
+function normaliseMentorStatus(raw: unknown): MentorStatusData {
+  // Unwrap array if the backend returned [{...}]
+  const item = Array.isArray(raw) ? raw[0] : raw;
+
+  if (item && typeof item === "object") {
+    const obj = item as Record<string, unknown>;
+    const rawStatus =
+      typeof obj.status === "string" ? obj.status.toUpperCase() : "PENDING";
+    const status =
+      rawStatus === "APPROVED" || rawStatus === "REJECTED"
+        ? rawStatus
+        : "PENDING";
+    return {
+      status: status as MentorStatusData["status"],
+      verification_note:
+        typeof obj.verification_note === "string"
+          ? obj.verification_note
+          : null,
+      mentor_id: typeof obj.mentor_id === "string" ? obj.mentor_id : null,
+    };
+  }
+
+  // Fallback: no application / unexpected shape
+  return { status: "PENDING", verification_note: null, mentor_id: null };
+}
+
 export const MentorStatusResponseSchema = ApiResponseSchema(
-  z.object({
-    status: z
-      .string()
-      .transform((v) => v.toUpperCase() as "PENDING" | "APPROVED" | "REJECTED"),
-    verification_note: z.string().nullable().optional(),
-    mentor_id: z.string().nullable().optional(),
-  }),
+  z.unknown().transform(normaliseMentorStatus),
 );
 export type MentorStatusData = {
   status: "PENDING" | "APPROVED" | "REJECTED";

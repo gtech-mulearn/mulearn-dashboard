@@ -28,11 +28,59 @@ interface ListParams {
 }
 
 // ─── Helper: map frontend form → backend payload ─────────────────────────────
+// • Passes ig_id as-is (backend field name is ig_id, omit when undefined for global session)
+// • Converts datetime-local strings ("YYYY-MM-DDTHH:mm") to full ISO-8601
+//   ("YYYY-MM-DDTHH:mm:ss") — Django rejects the truncated format with 400.
+// • Drops empty-string values for optional fields (meeting_link, description,
+//   venue) so Django's URLField / CharField does not receive invalid input.
+function toISO(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  // datetime-local gives "YYYY-MM-DDTHH:mm" (16 chars); append ":00" if needed
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) return `${value}:00`;
+  return value;
+}
+
 function toBackendPayload(data: Partial<SessionFormValues>) {
-  const { ig_id, meeting_link, ...rest } = data;
-  const payload: Record<string, unknown> = { ...rest };
-  if (ig_id !== undefined) payload.ig = ig_id; // backend expects "ig" not "ig_id"
-  if (meeting_link !== undefined) payload.meeting_link = meeting_link;
+  const {
+    ig_id,
+    meeting_link,
+    description,
+    venue,
+    starts_at,
+    ends_at,
+    is_recurring,
+    recurrence_type,
+    recurrence_interval,
+    recurrence_end_date,
+    ...rest
+  } = data;
+  const payload: Record<string, unknown> = { ...rest, is_recurring };
+
+  // Include ig_id only when set (undefined = global session, omit the field)
+  if (ig_id !== undefined) payload.ig_id = ig_id;
+
+  // Normalise datetime strings to full ISO-8601
+  if (starts_at !== undefined) payload.starts_at = toISO(starts_at);
+  if (ends_at !== undefined) payload.ends_at = toISO(ends_at);
+
+  // Only include optional text/URL fields when they have actual content
+  if (meeting_link && meeting_link.trim() !== "")
+    payload.meeting_link = meeting_link.trim();
+  if (description && description.trim() !== "")
+    payload.description = description.trim();
+  if (venue && (venue as string).trim() !== "")
+    payload.venue = (venue as string).trim();
+
+  if (is_recurring) {
+    payload.recurrence_type = recurrence_type;
+    payload.recurrence_interval = recurrence_interval;
+    payload.recurrence_end_date = recurrence_end_date;
+  } else {
+    payload.recurrence_type = null;
+    payload.recurrence_interval = null;
+    payload.recurrence_end_date = null;
+  }
+
   return payload;
 }
 

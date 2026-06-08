@@ -6,8 +6,8 @@ import {
   fetchAvailabilityCalendar,
   getAvailabilitySlots,
 } from "../api";
-import { mentorKeys } from "./query-keys";
 import type { WeeklySchedule } from "../types";
+import { mentorKeys } from "./query-keys";
 
 const no403Retry = (failureCount: number, error: unknown) => {
   if (

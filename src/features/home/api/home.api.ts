@@ -13,7 +13,6 @@ import {
   LearnerHomeSummaryResponseSchema,
   LearnerStreakResponseSchema,
   MentorIgRolesResponseSchema,
-  MentorMenteesResponseSchema,
   MentorOverviewResponseSchema,
   MentorPersonaSwitchResponseSchema,
   MentorSessionsResponseSchema,
@@ -66,7 +65,8 @@ export async function getMentorOverview() {
     MentorOverviewResponseSchema,
     { skipAuthRedirectOn403: true },
   );
-  return response.response.overview;
+  // New API returns response directly (scopes + metrics)
+  return response.response;
 }
 
 // ============================================
@@ -74,24 +74,10 @@ export async function getMentorOverview() {
 // ============================================
 
 export async function getMentorSessions(status = "SCHEDULED") {
-  // Doc #12: GET /session/list/ with status query param
   const url = `${endpoints.mentor.sessionList}?status=${status}`;
   const response = await apiClient.get(url, MentorSessionsResponseSchema, {
     skipAuthRedirectOn403: true,
   });
-  return response.response.data;
-}
-
-// ============================================
-// Mentor Mentees
-// ============================================
-
-export async function getMentorMentees() {
-  const response = await apiClient.get(
-    "/api/v1/dashboard/mentor/mentees/",
-    MentorMenteesResponseSchema,
-    { skipAuthRedirectOn403: true },
-  );
   return response.response.data;
 }
 
@@ -146,79 +132,21 @@ export async function getLearnerHomeSummary() {
 // ============================================
 
 export async function getMentorHomeSummary() {
-  // Backend's home-summary endpoint is aliased to /mentor/overview/
-  // and returns { overview: {...} }. Adapt to legacy MentorHomeSummaryData shape
-  // so the existing dashboard cards keep working without a rewrite.
-  const overview = await getMentorOverview();
-
-  const mapSession = (s: (typeof overview.sessions.upcoming)[number]) => ({
-    id: s.id,
-    title: s.title,
-    ig_name: s.ig_name ?? null,
-    mode: s.mode ?? "",
-    starts_at: s.starts_at,
-    ends_at: s.ends_at,
-    status: s.status,
-    meeting_link: s.meeting_link ?? null,
-    participants: [],
-  });
-
-  const counts = overview.sessions.counts;
-  const totalMentees =
-    "total_unique" in overview.mentees ? overview.mentees.total_unique : 0;
-
-  const next = overview.sessions.upcoming[0] ?? null;
-
+  // /mentor/overview/ no longer returns sessions/task_requests.
+  // Return safe empty defaults; individual sub-queries (sessions) are fetched separately.
   return {
-    next_session: next
-      ? {
-          id: next.id,
-          title: next.title,
-          mentee_name: "",
-          mentee_muid: "",
-          starts_at: next.starts_at,
-          mode: next.mode ?? "",
-          meeting_link: next.meeting_link ?? null,
-        }
-      : null,
-    stat_cards: [
-      {
-        key: "sessions_scheduled",
-        label: "Scheduled Sessions",
-        value: counts.scheduled,
-        delta: 0,
-        delta_type: "neutral" as const,
-        period: "all_time",
-      },
-      {
-        key: "sessions_completed",
-        label: "Completed Sessions",
-        value: counts.completed,
-        delta: 0,
-        delta_type: "neutral" as const,
-        period: "all_time",
-      },
-      {
-        key: "pending_approvals",
-        label: "Pending Approvals",
-        value: overview.task_requests.pending,
-        delta: 0,
-        delta_type: "neutral" as const,
-        period: "all_time",
-      },
-      {
-        key: "total_mentees",
-        label: "Unique Mentees",
-        value: totalMentees,
-        delta: 0,
-        delta_type: "neutral" as const,
-        period: "all_time",
-      },
-    ],
-    upcoming_sessions: overview.sessions.upcoming.map(mapSession),
-    session_requests: overview.sessions.pending_global.map(mapSession),
-    mentee_progress: [],
-    expertise_tags: [],
+    next_session: null,
+    stat_cards: [] as {
+      key: string;
+      label: string;
+      value: number;
+      delta: number;
+      delta_type: "positive" | "negative" | "neutral";
+      period: string;
+    }[],
+    upcoming_sessions: [] as import("../schemas").MentorSession[],
+    session_requests: [] as import("../schemas").MentorSession[],
+    expertise_tags: [] as string[],
   };
 }
 

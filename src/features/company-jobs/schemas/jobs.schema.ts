@@ -445,3 +445,47 @@ export const RuleFormSchema = z.object({
 });
 
 export type RuleFormValues = z.infer<typeof RuleFormSchema>;
+
+// ─── MuLearner Directory Schema ─────────────────────────────
+
+export const MuLearnerSchema = z.object({
+  id: z.string(),
+  full_name: z.string(),
+  muid: z.string(),
+  email: z.string(),
+  karma: z.coerce.number(),
+  level: z.coerce.number(),
+  college: z.string().nullable().optional(),
+  department: z.string().nullable().optional(),
+  graduation_year: z.coerce.number().nullable().optional(),
+});
+
+export const MuLearnersResponseSchema = DjangoResponse(
+  z.object({
+    data: z.array(MuLearnerSchema),
+    pagination: PaginationSchema,
+  }),
+);
+
+// ─── Gig Analytics Schema ────────────────────────────────────
+
+export const GigAnalyticsFunnelSchema = z.object({
+  Total: z.coerce.number().default(0),
+  Pending: z.coerce.number().default(0),
+  "In-Review": z.coerce.number().default(0),
+  Shortlisted: z.coerce.number().default(0),
+  Interview: z.coerce.number().default(0),
+  Selected: z.coerce.number().default(0),
+  Rejected: z.coerce.number().default(0),
+});
+
+export const GigAnalyticsSchema = z.object({
+  total_gigs_posted: z.coerce.number().default(0),
+  active_gigs: z.coerce.number().default(0),
+  closed_gigs: z.coerce.number().default(0),
+  average_hourly_rate: z.coerce.number().default(0),
+  application_funnel: GigAnalyticsFunnelSchema,
+  conversion_rate: z.string().default("0%"),
+});
+
+export const GigAnalyticsResponseSchema = DjangoResponse(GigAnalyticsSchema);

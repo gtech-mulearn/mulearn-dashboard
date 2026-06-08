@@ -43,17 +43,6 @@ export function MuJourneyDashboard({
     { id: "events", label: "Events" },
   ];
 
-  // Calculate stats - if we have data (public or private), use it.
-  // Note: User might be loading if this is a private route CSR.
-  const levels = levelsData?.response || [];
-  const totalKarma = levels.reduce((sum, level) => sum + (level.karma || 0), 0);
-
-  // Calculate current level
-  const currentLevel =
-    levels.length > 0
-      ? parseInt(levels[levels.length - 1].name.match(/\d+/)?.[0] || "1", 10)
-      : undefined;
-
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -65,9 +54,6 @@ export function MuJourneyDashboard({
         <JourneyHeader
           title="MuJourney"
           subtitle="Your Learning Path - Complete tasks, earn karma, level up"
-          currentLevel={currentLevel}
-          totalKarma={totalKarma}
-          showProgress={isAuthenticated && !!currentLevel}
         />
       </motion.div>
 

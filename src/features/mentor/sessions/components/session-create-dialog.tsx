@@ -19,6 +19,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -50,7 +51,7 @@ export function SessionCreateDialog({
   const { mutate: create, isPending } = useCreateSession();
 
   const form = useForm<SessionFormValues>({
-    resolver: zodResolver(SessionFormSchema),
+    resolver: zodResolver(SessionFormSchema) as any,
     defaultValues: {
       title: "",
       description: "",
@@ -59,12 +60,17 @@ export function SessionCreateDialog({
       starts_at: "",
       ends_at: "",
       meeting_link: "",
-    },
+      is_recurring: false,
+      recurrence_type: "WEEKLY",
+      recurrence_interval: 1,
+      recurrence_end_date: "",
+    } as any,
   });
 
   const watchedIgId = form.watch("ig_id");
   const selectedIgId =
     watchedIgId && watchedIgId !== "GLOBAL" ? watchedIgId : "";
+  const isRecurring = form.watch("is_recurring");
 
   function onSubmit(values: SessionFormValues) {
     const igId =
@@ -90,9 +96,12 @@ export function SessionCreateDialog({
           <DialogTitle>New Session</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form
+            onSubmit={form.handleSubmit(onSubmit as any)}
+            className="space-y-4"
+          >
             <FormField
-              control={form.control}
+              control={form.control as any}
               name="title"
               render={({ field }) => (
                 <FormItem>
@@ -106,7 +115,7 @@ export function SessionCreateDialog({
             />
 
             <FormField
-              control={form.control}
+              control={form.control as any}
               name="description"
               render={({ field }) => (
                 <FormItem>
@@ -124,7 +133,7 @@ export function SessionCreateDialog({
             />
 
             <FormField
-              control={form.control}
+              control={form.control as any}
               name="ig_id"
               render={({ field }) => (
                 <FormItem>
@@ -173,7 +182,7 @@ export function SessionCreateDialog({
 
             <div className="grid grid-cols-2 gap-4">
               <FormField
-                control={form.control}
+                control={form.control as any}
                 name="starts_at"
                 render={({ field }) => (
                   <FormItem>
@@ -186,7 +195,7 @@ export function SessionCreateDialog({
                 )}
               />
               <FormField
-                control={form.control}
+                control={form.control as any}
                 name="ends_at"
                 render={({ field }) => (
                   <FormItem>
@@ -201,7 +210,7 @@ export function SessionCreateDialog({
             </div>
 
             <FormField
-              control={form.control}
+              control={form.control as any}
               name="meeting_link"
               render={({ field }) => (
                 <FormItem>
@@ -217,6 +226,98 @@ export function SessionCreateDialog({
                 </FormItem>
               )}
             />
+
+            <FormField
+              control={form.control as any}
+              name="is_recurring"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base">
+                      Recurring Session
+                    </FormLabel>
+                    <div className="text-sm text-muted-foreground">
+                      Repeat this session on a schedule.
+                    </div>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            {isRecurring && (
+              <div className="grid grid-cols-2 gap-4 rounded-lg border p-4 bg-muted/20">
+                <FormField
+                  control={form.control as any}
+                  name="recurrence_type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Frequency</FormLabel>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select..." />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="DAILY">Daily</SelectItem>
+                          <SelectItem value="WEEKLY">Weekly</SelectItem>
+                          <SelectItem value="MONTHLY">Monthly</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control as any}
+                  name="recurrence_interval"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Every X{" "}
+                        {form.watch("recurrence_type")?.toLowerCase() ||
+                          "weeks"}
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min={1}
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(parseInt(e.target.value) || 1)
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control as any}
+                  name="recurrence_end_date"
+                  render={({ field }) => (
+                    <FormItem className="col-span-2">
+                      <FormLabel>End Series On</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
 
             <div className="flex justify-end gap-2 pt-2">
               <Button

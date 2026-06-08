@@ -15,6 +15,7 @@ import { AlertCircle, Clock, XCircle } from "lucide-react";
 import { useCompanyOnboardingStatus } from "@/features/auth/hooks";
 import { useMentorApplication } from "@/features/mentor/onboarding/hooks/use-onboarding";
 import { ROLES } from "@/lib/auth/roles";
+import { useMentorOverview } from "../hooks";
 import { shouldShowMentorPendingBanner } from "./verification-status-banner.logic";
 
 interface VerificationStatusBannerProps {
@@ -30,6 +31,7 @@ export function VerificationStatusBanner({
 
   const companyStatus = useCompanyOnboardingStatus(isCompany);
   const mentorApplication = useMentorApplication(isMentor);
+  const mentorOverview = useMentorOverview();
 
   // ── Company ─────────────────────────────────────────────────────
   if (isCompany) {
@@ -79,7 +81,17 @@ export function VerificationStatusBanner({
 
   // ── Mentor ──────────────────────────────────────────────────────
   // Hide while loading; suppress when the mentor profile is verified.
+  // A mentor is considered verified if the overview API returns any active scopes
+  // (same check used by the MentorHome dashboard). This is more reliable than
+  // the /status/ endpoint, whose fallback defaults to "PENDING" on unexpected shapes.
   if (isMentor) {
+    // If the overview is still loading, wait — don't flash the banner.
+    if (mentorOverview.isLoading) return null;
+
+    // If scopes exist the mentor is verified — no banner needed.
+    const isVerifiedByScopes = (mentorOverview.data?.scopes.length ?? 0) > 0;
+    if (isVerifiedByScopes) return null;
+
     const showPending = shouldShowMentorPendingBanner({
       isLoading: mentorApplication.isLoading,
       mentorApplication: mentorApplication.data,
