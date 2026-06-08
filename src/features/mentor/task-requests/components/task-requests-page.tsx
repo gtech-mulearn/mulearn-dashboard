@@ -85,19 +85,19 @@ const STATUS_CONFIG: Record<
     label: "Pending",
     variant: "secondary",
     icon: Clock,
-    className: "text-amber-600 bg-amber-50 border-amber-200",
+    className: "text-amber-600",
   },
   approved: {
     label: "Approved",
     variant: "default",
     icon: CheckCircle2,
-    className: "text-emerald-700 bg-emerald-50 border-emerald-200",
+    className: "text-emerald-700",
   },
   rejected: {
     label: "Rejected",
     variant: "destructive",
     icon: XCircle,
-    className: "text-red-600 bg-red-50 border-red-200",
+    className: "text-red-600",
   },
 };
 
@@ -284,9 +284,12 @@ function TaskFormDialog({
                       <Input
                         type="number"
                         min={1}
+                        className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         {...field}
                         onChange={(e) =>
-                          field.onChange(e.target.valueAsNumber || 0)
+                          field.onChange(
+                            e.target.value === "" ? "" : Number(e.target.value),
+                          )
                         }
                       />
                     </FormControl>
@@ -355,7 +358,9 @@ function TaskFormDialog({
                       min={1}
                       {...field}
                       onChange={(e) =>
-                        field.onChange(e.target.valueAsNumber || 1)
+                        field.onChange(
+                          e.target.value === "" ? "" : Number(e.target.value),
+                        )
                       }
                     />
                   </FormControl>
@@ -469,13 +474,12 @@ function TaskStatusBadge({ status }: { status: string }) {
   const config = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending;
   const Icon = config.icon;
   return (
-    <Badge
-      variant="outline"
-      className={`gap-1 text-xs font-medium ${config.className}`}
+    <span
+      className={`flex items-center gap-1.5 text-xs font-medium ${config.className}`}
     >
-      <Icon className="h-3 w-3" />
+      <Icon className="h-3.5 w-3.5" />
       {config.label}
-    </Badge>
+    </span>
   );
 }
 
@@ -514,12 +518,12 @@ function TasksTable({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Task</TableHead>
-          <TableHead>IG</TableHead>
-          <TableHead className="text-right">Karma</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Submitted</TableHead>
-          <TableHead>Actions</TableHead>
+          <TableHead className="w-1/6">Task</TableHead>
+          <TableHead className="w-1/6">IG</TableHead>
+          <TableHead className="w-1/6">Karma</TableHead>
+          <TableHead className="w-1/6">Status</TableHead>
+          <TableHead className="w-1/6">Submitted</TableHead>
+          <TableHead className="w-1/6 text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -545,10 +549,10 @@ function TasksTable({
             </TableCell>
 
             {/* Karma */}
-            <TableCell className="text-right">
-              <Badge variant="outline" className="font-mono">
+            <TableCell>
+              <span className="font-mono text-sm font-medium">
                 {task.karma} pts
-              </Badge>
+              </span>
             </TableCell>
 
             {/* Status + rejection reason */}
@@ -581,8 +585,8 @@ function TasksTable({
             </TableCell>
 
             {/* Actions */}
-            <TableCell>
-              <div className="flex items-center gap-1">
+            <TableCell className="text-right">
+              <div className="flex items-center justify-end gap-1">
                 {/* Edit — available for pending and rejected tasks */}
                 {(task.approval_status === "pending" ||
                   task.approval_status === "rejected") && (
@@ -591,13 +595,13 @@ function TasksTable({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8"
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
                         onClick={() => onEdit(task)}
                       >
                         <Edit2 className="h-4 w-4" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Edit & Re-submit</TooltipContent>
+                    <TooltipContent>Edit</TooltipContent>
                   </Tooltip>
                 )}
 
@@ -614,7 +618,7 @@ function TasksTable({
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Delete (pending only)</TooltipContent>
+                    <TooltipContent>Delete</TooltipContent>
                   </Tooltip>
                 )}
               </div>
