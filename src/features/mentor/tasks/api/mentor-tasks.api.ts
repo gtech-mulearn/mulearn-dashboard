@@ -5,6 +5,7 @@ import type {
   MentorTask,
   MentorTaskFormValues,
   TaskIg,
+  TaskType,
 } from "../schemas";
 import {
   ActivityListResponseSchema,
@@ -13,6 +14,7 @@ import {
   MentorTaskGenericResponseSchema,
   MentorTaskListResponseSchema,
   TaskIgDropdownResponseSchema,
+  TaskTypeListResponseSchema,
 } from "../schemas";
 
 const OPT = { skipAuthRedirectOn403: true } as const;
@@ -41,6 +43,16 @@ export async function fetchTaskIgDropdown(): Promise<TaskIg[]> {
     OPT,
   );
   return res.response;
+}
+
+// ─── GET /task/list-task-type/ — list all available task types ───────────────
+export async function fetchTaskTypes(): Promise<TaskType[]> {
+  const res = await apiClient.get(
+    endpoints.adminTask.taskTypeList,
+    TaskTypeListResponseSchema,
+    OPT,
+  );
+  return res.response.data;
 }
 
 // ─── #2 GET /tasks/ — list mentor-submitted tasks ────────────────────────────

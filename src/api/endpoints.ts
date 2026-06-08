@@ -325,6 +325,10 @@ export const endpoints = {
     // ── #6 PATCH  task/<task_id>/review/ ─────────────────────────────────
     /** PATCH - Admin: approve or reject a pending task */
     review: (taskId: string) => `/api/v1/dashboard/task/${taskId}/review/`,
+
+    // ── GET  task/list-task-type/ ─────────────────────────────────────────
+    /** GET - List all available task types (used for the type dropdown) */
+    taskTypeList: "/api/v1/dashboard/task/list-task-type/",
   },
 
   // ============================================

@@ -10,6 +10,7 @@ import {
   fetchMentorTask,
   fetchMentorTasks,
   fetchTaskIgDropdown,
+  fetchTaskTypes,
   updateMentorTask,
 } from "../api/mentor-tasks.api";
 import type { MentorTaskFormValues } from "../schemas";
@@ -18,6 +19,7 @@ import type { MentorTaskFormValues } from "../schemas";
 const mentorTaskKeys = {
   all: ["mentor-tasks"] as const,
   igDropdown: () => [...mentorTaskKeys.all, "ig-dropdown"] as const,
+  taskTypes: () => [...mentorTaskKeys.all, "task-types"] as const,
   list: (params: Record<string, unknown>) =>
     [...mentorTaskKeys.all, "list", params] as const,
   detail: (taskId: string) =>
@@ -42,6 +44,16 @@ export function useTaskIgDropdown() {
     queryKey: mentorTaskKeys.igDropdown(),
     queryFn: fetchTaskIgDropdown,
     staleTime: 5 * 60 * 1000,
+    retry: no403Retry,
+  });
+}
+
+// ─── GET /task/list-task-type/ — task types for dropdown ─────────────────────
+export function useTaskTypes() {
+  return useQuery({
+    queryKey: mentorTaskKeys.taskTypes(),
+    queryFn: fetchTaskTypes,
+    staleTime: 10 * 60 * 1000, // task types change rarely
     retry: no403Retry,
   });
 }

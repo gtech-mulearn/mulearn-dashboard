@@ -62,6 +62,7 @@ import {
   useCreateMentorTask,
   useDeleteMentorTask,
   useMentorTasks,
+  useTaskTypes,
   useUpdateMentorTask,
 } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
 import type {
@@ -112,6 +113,7 @@ function TaskFormDialog({
 }) {
   const isEdit = !!task;
   const { data: myIgs = [] } = useTaskIgDropdown();
+  const { data: taskTypes = [], isLoading: taskTypesLoading } = useTaskTypes();
   const { mutate: create, isPending: isCreating } = useCreateMentorTask();
   const { mutate: update, isPending: isUpdating } = useUpdateMentorTask(
     task?.id ?? "",
@@ -301,10 +303,25 @@ function TaskFormDialog({
                 name="type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Task Type ID</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Type UUID" {...field} />
-                    </FormControl>
+                    <FormLabel>Task Type</FormLabel>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <FormControl>
+                        <SelectTrigger disabled={taskTypesLoading}>
+                          <SelectValue
+                            placeholder={
+                              taskTypesLoading ? "Loading..." : "Select type"
+                            }
+                          />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {taskTypes.map((t) => (
+                          <SelectItem key={t.id} value={t.id}>
+                            {t.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}

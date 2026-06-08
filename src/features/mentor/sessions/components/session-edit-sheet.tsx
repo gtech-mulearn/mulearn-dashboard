@@ -20,6 +20,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { useUpdateSession } from "../hooks/use-sessions";
 import type { Session } from "../schemas";
@@ -86,100 +87,108 @@ export function SessionEditSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle>Edit Session</SheetTitle>
+      <SheetContent
+        side="right"
+        className="w-full sm:max-w-lg flex flex-col overflow-y-auto p-0"
+      >
+        <SheetHeader className="px-6 py-5 border-b">
+          <SheetTitle className="text-xl">Edit Session</SheetTitle>
         </SheetHeader>
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-4 mt-6"
-          >
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Title</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea rows={3} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-2 gap-4">
+        <div className="flex-1 overflow-y-auto px-6 py-6">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
               <FormField
                 control={form.control}
-                name="starts_at"
+                name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Starts At</FormLabel>
+                    <FormLabel>Title</FormLabel>
                     <FormControl>
-                      <Input type="datetime-local" {...field} />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
-                name="ends_at"
+                name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Ends At</FormLabel>
+                    <FormLabel>Description</FormLabel>
                     <FormControl>
-                      <Input type="datetime-local" {...field} />
+                      <Textarea rows={3} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            </div>
 
-            <FormField
-              control={form.control}
-              name="meeting_link"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Meeting Link</FormLabel>
-                  <FormControl>
-                    <Input type="url" placeholder="https://..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="starts_at"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Starts At</FormLabel>
+                      <FormControl>
+                        <Input type="datetime-local" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="ends_at"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Ends At</FormLabel>
+                      <FormControl>
+                        <Input type="datetime-local" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-            <div className="flex justify-end gap-2 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isPending}>
-                {isPending ? "Saving..." : "Save Changes"}
-              </Button>
-            </div>
-          </form>
-        </Form>
+              <FormField
+                control={form.control}
+                name="meeting_link"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Meeting Link</FormLabel>
+                    <FormControl>
+                      <Input type="url" placeholder="https://..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <Separator />
+              <div className="flex justify-end gap-3 pt-2 pb-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="rounded-full px-6"
+                  onClick={() => onOpenChange(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isPending}
+                  className="rounded-full px-6"
+                >
+                  {isPending ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </div>
       </SheetContent>
     </Sheet>
   );

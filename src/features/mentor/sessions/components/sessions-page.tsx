@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Pencil, Plus, Star, Users } from "lucide-react";
+import { Pencil, Plus, Star, Users } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,11 +28,7 @@ import {
 } from "@/components/ui/tooltip";
 import { usePermissions } from "@/hooks/use-permissions";
 import { MANAGEMENT_ROLES } from "@/lib/auth/roles";
-import {
-  usePendingSessions,
-  useRemindSession,
-  useSessions,
-} from "../hooks/use-sessions";
+import { usePendingSessions, useSessions } from "../hooks/use-sessions";
 import type { Session } from "../schemas";
 import { ApproveSessionDialog } from "./approve-session-dialog";
 import { KarmaAwardDialog } from "./karma-award-dialog";
@@ -68,8 +64,6 @@ function SessionRow({
   onApprove: (s: Session, action: "approve" | "reject") => void;
   onKarma: (s: Session) => void;
 }) {
-  const { mutate: remind, isPending: isReminding } = useRemindSession();
-
   return (
     <TableRow>
       <TableCell className="font-medium">
@@ -113,14 +107,14 @@ function SessionRow({
           {session.status.replace(/_/g, " ")}
         </Badge>
       </TableCell>
-      <TableCell>
-        <div className="flex items-center gap-1">
+      <TableCell className="text-right">
+        <div className="flex items-center justify-end gap-1">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground"
                 onClick={() => onEdit(session)}
                 disabled={TERMINAL.has(session.status)}
               >
@@ -135,7 +129,7 @@ function SessionRow({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground"
                 onClick={() => onParticipants(session)}
               >
                 <Users className="w-4 h-4" />
@@ -144,32 +138,13 @@ function SessionRow({
             <TooltipContent>Participants</TooltipContent>
           </Tooltip>
 
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                disabled={TERMINAL.has(session.status) || isReminding}
-                onClick={() => remind(session.id)}
-              >
-                <Bell className="w-4 h-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              {TERMINAL.has(session.status)
-                ? "Cannot remind for this status"
-                : "Send reminder"}
-            </TooltipContent>
-          </Tooltip>
-
           {isAdmin && session.status === "COMPLETED" && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8"
+                  className="h-8 w-8 text-amber-500 hover:text-amber-600 hover:bg-amber-50"
                   onClick={() => onKarma(session)}
                 >
                   <Star className="w-4 h-4" />
@@ -260,7 +235,7 @@ function SessionTable({
           <TableHead>IG</TableHead>
           <TableHead>Starts At</TableHead>
           <TableHead>Status</TableHead>
-          <TableHead>Actions</TableHead>
+          <TableHead className="text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

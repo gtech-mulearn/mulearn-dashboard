@@ -22,6 +22,27 @@ export const TaskIgDropdownResponseSchema = ApiResponseSchema(
   z.array(TaskIgSchema),
 );
 
+// ─── task/list-task-type/ — task type dropdown ────────────────────────────────
+export const TaskTypeSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+});
+export type TaskType = z.infer<typeof TaskTypeSchema>;
+
+export const TaskTypeListResponseSchema = ApiResponseSchema(
+  z.object({
+    data: z.array(TaskTypeSchema),
+    pagination: z
+      .object({
+        count: z.number().optional(),
+        totalPages: z.coerce.number().default(1),
+        isNext: z.boolean().optional(),
+        isPrev: z.boolean().optional(),
+      })
+      .optional(),
+  }),
+);
+
 // ─── #2 / #3 tasks/ and tasks/<id>/ — Skill sub-object ───────────────────────
 export const TaskSkillSchema = z.object({
   id: z.string(),
