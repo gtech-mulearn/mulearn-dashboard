@@ -17,128 +17,13 @@
 
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { findRouteConfig } from "@/lib/auth/route-access";
 
-// ─── Inline Route Access Map ───────────────────────────────
-// We inline the route config here because middleware runs on the edge
-// and cannot import from arbitrary modules in all deployment targets.
-// This is kept in sync with src/lib/auth/route-access.ts.
-
-interface RouteConfig {
-  roles: readonly string[];
-}
-
-const ROLE_VALUES = {
-  ADMIN: "Admins",
-  DISCORD_MODERATOR: "Discord Moderator",
-  FELLOW: "Fellow",
-  ASSOCIATE: "Associate",
-  ZONAL_CAMPUS_LEAD: "Zonal Campus Lead",
-  DISTRICT_CAMPUS_LEAD: "District Campus Lead",
-  CAMPUS_LEAD: "Campus Lead",
-  LEAD_ENABLER: "Lead Enabler",
-  ENABLER: "Enabler",
-  TECH_TEAM: "Tech Team",
-  IG_LEAD: "IG Lead",
-  INTERN: "Intern",
-  COMPANY: "Company",
-  MENTOR: "Mentor",
-} as const;
-
-/**
- * Routes that require specific roles.
- * Routes NOT listed here but under /dashboard = any authenticated user.
- * Empty roles array = any authenticated user.
- */
-const ROLE_PROTECTED_ROUTES: Record<string, RouteConfig> = {
-  // Campus Lead
-  "/dashboard/campus/manage": {
-    roles: [ROLE_VALUES.CAMPUS_LEAD, ROLE_VALUES.LEAD_ENABLER],
-  },
-
-  // Zonal/District
-  "/dashboard/zonal": {
-    roles: [ROLE_VALUES.ADMIN, ROLE_VALUES.ZONAL_CAMPUS_LEAD],
-  },
-  "/dashboard/district": {
-    roles: [ROLE_VALUES.ADMIN, ROLE_VALUES.DISTRICT_CAMPUS_LEAD],
-  },
-
-  // Intern
-  "/dashboard/intern": {
-    roles: [ROLE_VALUES.ADMIN, ROLE_VALUES.INTERN],
-  },
-
-  // Admin-only
-  "/dashboard/admin": { roles: [ROLE_VALUES.ADMIN] },
-
-  // Management
-  "/dashboard/management": { roles: [ROLE_VALUES.ADMIN] },
-  "/dashboard/management/user-management": { roles: [ROLE_VALUES.ADMIN] },
-  "/dashboard/management/manage-achievements": { roles: [ROLE_VALUES.ADMIN] },
-  "/dashboard/management/manage-intern": {
-    roles: [ROLE_VALUES.ADMIN, ROLE_VALUES.ASSOCIATE],
-  },
-  "/dashboard/management/manage-interest-groups": {
-    roles: [ROLE_VALUES.ADMIN],
-  },
-  "/dashboard/management/manage-roles": { roles: [ROLE_VALUES.ADMIN] },
-  "/dashboard/management/organizations": { roles: [ROLE_VALUES.ADMIN] },
-  "/dashboard/management/college-levels": { roles: [ROLE_VALUES.ADMIN] },
-  "/dashboard/management/manage-locations": { roles: [ROLE_VALUES.ADMIN] },
-  "/dashboard/management/channels": { roles: [ROLE_VALUES.ADMIN] },
-  "/dashboard/management/error-log": {
-    roles: [ROLE_VALUES.ADMIN, ROLE_VALUES.TECH_TEAM],
-  },
-  "/dashboard/management/discord-moderation": {
-    roles: [ROLE_VALUES.ADMIN, ROLE_VALUES.DISCORD_MODERATOR],
-  },
-  "/dashboard/management/dynamic-type": { roles: [ROLE_VALUES.ADMIN] },
-  "/dashboard/management/manage-skills": { roles: [ROLE_VALUES.ADMIN] },
-  "/dashboard/management/manage-launchpad": { roles: [ROLE_VALUES.ADMIN] },
-  "/dashboard/management/manage-departments": { roles: [ROLE_VALUES.ADMIN] },
-  "/dashboard/management/affiliation": { roles: [ROLE_VALUES.ADMIN] },
-  "/dashboard/management/organization-transfer": {
-    roles: [ROLE_VALUES.ADMIN],
-  },
-
-  // URL Shortener (broader access)
-  "/dashboard/url-shortener": {
-    roles: [ROLE_VALUES.ADMIN, ROLE_VALUES.ASSOCIATE],
-  },
-
-  "/dashboard/edit-ig": {
-    roles: [ROLE_VALUES.ADMIN],
-    // dynamic: any "{code} IGLead" role — handled in middleware below
-  },
-
-  // Tasks
-  "/dashboard/tasks": { roles: [ROLE_VALUES.ADMIN] },
-
-  // Events Management
-  "/dashboard/manage-events": {
-    roles: [
-      ROLE_VALUES.ADMIN,
-      ROLE_VALUES.CAMPUS_LEAD,
-      ROLE_VALUES.LEAD_ENABLER,
-      ROLE_VALUES.COMPANY,
-      ROLE_VALUES.ENABLER,
-      ROLE_VALUES.MENTOR,
-      ROLE_VALUES.ZONAL_CAMPUS_LEAD,
-      ROLE_VALUES.DISTRICT_CAMPUS_LEAD,
-    ],
-    // dynamic: any "{code} IGLead" or "{code} CampusLead" — handled in middleware below
-  },
-
-  // Company Dashboard
-  "/dashboard/company": {
-    roles: [ROLE_VALUES.COMPANY],
-  },
-
-  // Mentor Dashboard
-  "/dashboard/mentor": {
-    roles: [ROLE_VALUES.MENTOR],
-  },
-};
+// ─── Single Source of Truth ────────────────────────────────
+// The route→role map and role constants live in src/lib/auth (route-access.ts,
+// roles.ts) and are imported here. Both modules are pure TS object literals with
+// no Node/edge-incompatible dependencies, so they bundle safely into the proxy.
+// Do NOT re-inline the map here — keep one source of truth.
 
 // ─── Route Classification ──────────────────────────────────
 
@@ -209,24 +94,6 @@ function extractRolesFromToken(token: string): string[] {
   }
 }
 
-/**
- * Find the most specific route config for a pathname.
- * Uses longest-prefix matching.
- */
-function findRouteConfig(pathname: string): RouteConfig | null {
-  // Exact match first
-  if (ROLE_PROTECTED_ROUTES[pathname]) {
-    return ROLE_PROTECTED_ROUTES[pathname];
-  }
-
-  // Longest prefix match
-  const matches = Object.keys(ROLE_PROTECTED_ROUTES)
-    .filter((route) => pathname.startsWith(`${route}/`) || pathname === route)
-    .sort((a, b) => b.length - a.length);
-
-  return matches.length > 0 ? ROLE_PROTECTED_ROUTES[matches[0]] : null;
-}
-
 // ─── Middleware ─────────────────────────────────────────────
 
 export function proxy(request: NextRequest) {
@@ -274,16 +141,10 @@ export function proxy(request: NextRequest) {
         const hasStaticRole = routeConfig.roles.some((r) =>
           userRoles.includes(r),
         );
-        // Dynamic check: per-IG/campus roles like "{code} IGLead" / "{code} CampusLead"
-        const hasIgLead =
-          pathname.startsWith("/dashboard/edit-ig") &&
-          userRoles.some((r) => r.endsWith(" IGLead"));
-        const hasEventsDynamic =
-          pathname.startsWith("/dashboard/manage-events") &&
-          userRoles.some(
-            (r) => r.endsWith(" IGLead") || r.endsWith(" CampusLead"),
-          );
-        const hasAccess = hasStaticRole || hasIgLead || hasEventsDynamic;
+        // Dynamic check: per-IG/campus roles like "{code} IGLead" /
+        // "{code} CampusLead" — defined alongside the route in route-access.ts.
+        const hasDynamicRole = routeConfig.dynamicCheck?.(userRoles) ?? false;
+        const hasAccess = hasStaticRole || hasDynamicRole;
 
         if (!hasAccess) {
           // Redirect to dashboard with unauthorized flag

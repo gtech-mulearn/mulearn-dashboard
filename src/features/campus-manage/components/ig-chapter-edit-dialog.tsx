@@ -8,21 +8,22 @@ import { z } from "zod";
 import { ApiError } from "@/api";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { MuidSearchInput } from "@/components/ui/muid-search-input";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { MuidSearchInput } from "@/components/ui/muid-search-input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import type { UserResult } from "@/hooks/use-search";
 import { useDeleteIgChapter, useUpdateIgChapter } from "../hooks";
 import type { IgChapter } from "../types";
+import { TransferIgRoleDialog } from "./transfer-ig-role-dialog";
 
 const schema = z.object({
   description: z.string().optional(),
@@ -31,17 +32,35 @@ const schema = z.object({
 });
 type FormValues = z.infer<typeof schema>;
 
-interface IgChapterEditSheetProps {
+interface IgChapterEditDialogProps {
   chapter: IgChapter;
-  trigger: React.ReactNode;
+  trigger?: React.ReactNode;
+  /** Controlled open state. When provided, the dialog is controlled externally. */
+  open?: boolean;
+  /** Called when the dialog open state should change. Required when `open` is provided. */
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function IgChapterEditSheet({
+export function IgChapterEditDialog({
   chapter,
   trigger,
-}: IgChapterEditSheetProps) {
-  const [open, setOpen] = useState(false);
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
+}: IgChapterEditDialogProps) {
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+
+  // Support both controlled (passed from outside) and uncontrolled (own state) modes.
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : uncontrolledOpen;
+  const setOpen = (value: boolean) => {
+    if (isControlled) {
+      controlledOnOpenChange?.(value);
+    } else {
+      setUncontrolledOpen(value);
+    }
+  };
+
   const [selectedUser, setSelectedUser] = useState<{
     muid: string;
     name: string;
@@ -114,16 +133,16 @@ export function IgChapterEditSheet({
 
   return (
     <>
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetTrigger asChild>{trigger}</SheetTrigger>
-        <SheetContent>
-          <SheetHeader>
-            <SheetTitle>Edit {chapter.name}</SheetTitle>
-            <SheetDescription>Update chapter details.</SheetDescription>
-          </SheetHeader>
+      <Dialog open={open} onOpenChange={setOpen}>
+        {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit {chapter.name}</DialogTitle>
+            <DialogDescription>Update chapter details.</DialogDescription>
+          </DialogHeader>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="mt-6 space-y-5"
+            className="mt-4 space-y-5"
           >
             <div className="space-y-1.5">
               <label
@@ -139,41 +158,74 @@ export function IgChapterEditSheet({
                 rows={3}
               />
             </div>
-            <div className="space-y-1.5">
-              <p className="text-sm font-medium">Lead</p>
-              <MuidSearchInput
-                onSelectUser={handleSelectUser}
-                selectedUser={selectedUser}
-                onClear={handleClear}
-                keepOpen
-                placeholder="Search for lead..."
-                disabled={isUpdating}
-              />
-            </div>
-            <div className="flex items-center justify-between">
+            {chapter.lead === "No Lead Assigned" ? (
+              <div className="space-y-1.5">
+                <p className="text-sm font-medium">Assign Lead</p>
+                <MuidSearchInput
+                  onSelectUser={handleSelectUser}
+                  selectedUser={selectedUser}
+                  onClear={handleClear}
+                  keepOpen
+                  placeholder="Search for lead..."
+                  disabled={isUpdating}
+                />
+              </div>
+            ) : (
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+                <div className="space-y-0.5">
+                  <p className="text-sm font-medium">Transfer Lead Role</p>
+                  <p className="text-xs text-muted-foreground">
+                    Currently:{" "}
+                    <span className="font-semibold text-foreground">
+                      {chapter.lead}
+                    </span>
+                  </p>
+                </div>
+                <TransferIgRoleDialog
+                  defaultIgCode={chapter.code}
+                  trigger={
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="w-full sm:w-auto"
+                    >
+                      Transfer Lead
+                    </Button>
+                  }
+                />
+              </div>
+            )}
+
+            <div className="flex items-center justify-between pt-2">
               <p className="text-sm font-medium">Active</p>
               <Switch
                 checked={form.watch("is_active")}
                 onCheckedChange={(val) => form.setValue("is_active", val)}
               />
             </div>
-            <SheetFooter className="gap-2">
+
+            <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-between gap-2 sm:gap-0 mt-6">
               <Button
                 type="button"
                 variant="destructive"
-                size="sm"
                 disabled={isDeleting || isUpdating}
                 onClick={() => setDeleteConfirmOpen(true)}
+                className="w-full sm:w-auto"
               >
                 Delete
               </Button>
-              <Button type="submit" disabled={isUpdating}>
+              <Button
+                type="submit"
+                disabled={isUpdating}
+                className="w-full sm:w-auto"
+              >
                 {isUpdating ? "Saving..." : "Save changes"}
               </Button>
-            </SheetFooter>
+            </DialogFooter>
           </form>
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
 
       <ConfirmDialog
         open={deleteConfirmOpen}

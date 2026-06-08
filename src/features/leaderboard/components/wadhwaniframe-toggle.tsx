@@ -7,21 +7,25 @@ export function WadhwaniTimeFrameToggle({
   onChange,
 }: WadhwaniToggleProps) {
   return (
-    <div className="inline-flex gap-3">
+    <div className="inline-flex items-center gap-1 rounded-full p-1">
       <Button
+        type="button"
         variant={selected === "campus" ? "default" : "outline"}
         onClick={() => onChange("campus")}
-        className="flex items-center gap-3 font-semibold uppercase tracking-tight"
+        aria-pressed={selected === "campus"}
+        className="font-semibold"
       >
-        <Building2 className="w-5 h-5" />
+        <Building2 className="w-3.5 h-3.5" />
         <span>Campus</span>
       </Button>
       <Button
+        type="button"
         variant={selected === "zonal" ? "default" : "outline"}
         onClick={() => onChange("zonal")}
-        className="flex items-center gap-3 font-semibold uppercase tracking-tight"
+        aria-pressed={selected === "zonal"}
+        className="font-semibold"
       >
-        <Globe className="w-5 h-5" />
+        <Globe className="w-3.5 h-3.5" />
         <span>Zonal</span>
       </Button>
     </div>

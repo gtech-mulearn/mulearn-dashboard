@@ -14,8 +14,9 @@ import Image from "next/image";
 import { Spinner } from "@/components/ui/spinner";
 import {
   type CirclePermissions,
-  useApproveMember,
   useCircleMembers,
+  useJoinRequests,
+  useRespondToJoinRequest,
 } from "../hooks";
 
 // TODO: avatar gradient palette — no semantic token for multi-color identity gradients; needs design decision
@@ -79,14 +80,22 @@ export function MemberList({
 }: MemberListProps) {
   const { data: membersData, isLoading } = useCircleMembers(circleId);
   const members = membersData?.members ?? [];
-  const approveMember = useApproveMember(circleId);
 
-  const handleApprove = (muid: string) => {
-    approveMember.mutate({ muid, flag: true });
+  // Only the lead/creator may view and action pending join requests (mirrors the
+  // backend `_is_lead_or_creator` gate on GET/PATCH join/<id>/).
+  const canManageRequests =
+    permissions.role === "owner" || permissions.role === "lead";
+  const { data: joinRequests = [] } = useJoinRequests(
+    circleId,
+    canManageRequests,
+  );
+  const respondToRequest = useRespondToJoinRequest(circleId);
+
+  const handleAccept = (linkId: string) => {
+    respondToRequest.mutate({ link_id: linkId, action: "accept" });
   };
-
-  const handleReject = (muid: string) => {
-    approveMember.mutate({ muid, flag: false });
+  const handleRejectRequest = (linkId: string) => {
+    respondToRequest.mutate({ link_id: linkId, action: "reject" });
   };
 
   if (isLoading) {
@@ -100,7 +109,7 @@ export function MemberList({
     );
   }
 
-  if (!membersData || members.length === 0) {
+  if (!membersData || (members.length === 0 && joinRequests.length === 0)) {
     return (
       <div className="lc-fade-in flex flex-col items-center justify-center rounded-[16px] bg-muted px-8 py-14">
         <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-card shadow-md">
@@ -116,6 +125,57 @@ export function MemberList({
 
   return (
     <div className="grid grid-cols-1 gap-x-3 gap-y-5 sm:grid-cols-1">
+      {/* Pending join requests — visible to the lead/creator only */}
+      {canManageRequests && joinRequests.length > 0 && (
+        <div className="rounded-[16px] border border-warning/30 bg-warning/5 p-3">
+          <p className="mb-2 text-[12px] font-bold uppercase tracking-wide text-warning">
+            Pending requests ({joinRequests.length})
+          </p>
+          <div className="flex flex-col gap-3">
+            {joinRequests.map((req) => (
+              <div
+                key={req.link_id}
+                className="flex items-center justify-between gap-2"
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-[#6366F1] to-[#4F46E5] text-[13px] font-bold text-primary-foreground">
+                    {req.full_name.charAt(0)}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate text-[13px] font-semibold text-foreground">
+                      {req.full_name}
+                    </p>
+                    <p className="truncate text-[11px] text-muted-foreground">
+                      {req.muid}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex shrink-0 gap-1">
+                  <button
+                    type="button"
+                    onClick={() => handleAccept(req.link_id)}
+                    disabled={respondToRequest.isPending}
+                    className="flex h-7 w-7 items-center justify-center rounded-full bg-success/10 text-success transition-colors hover:bg-success/20 active:scale-95 disabled:opacity-40"
+                    title="Accept"
+                  >
+                    <Check className="h-3.5 w-3.5" strokeWidth={2.5} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleRejectRequest(req.link_id)}
+                    disabled={respondToRequest.isPending}
+                    className="flex h-7 w-7 items-center justify-center rounded-full bg-destructive/10 text-destructive transition-colors hover:bg-destructive/20 active:scale-95 disabled:opacity-40"
+                    title="Reject"
+                  >
+                    <X className="h-3.5 w-3.5" strokeWidth={2.5} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Invite Member Button acts as first list item */}
       {permissions.canSendInvites && (
         <div className="flex items-center gap-3">
@@ -183,32 +243,6 @@ export function MemberList({
                 </p>
               </div>
             </div>
-
-            {/* Actions — reveal on hover */}
-            {permissions.canManageMembers && !member.is_leader && (
-              <div className="flex shrink-0 gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                <button
-                  type="button"
-                  className="flex h-6 w-6 items-center justify-center rounded-full bg-success/10 text-success
-                    transition-colors hover:bg-success/20 active:scale-95 disabled:opacity-40"
-                  onClick={() => handleApprove(member.muid)}
-                  disabled={approveMember.isPending}
-                  title="Approve"
-                >
-                  <Check className="h-3.5 w-3.5" strokeWidth={2.5} />
-                </button>
-                <button
-                  type="button"
-                  className="flex h-6 w-6 items-center justify-center rounded-full bg-destructive/10 text-destructive
-                    transition-colors hover:bg-destructive/20 active:scale-95 disabled:opacity-40"
-                  onClick={() => handleReject(member.muid)}
-                  disabled={approveMember.isPending}
-                  title="Remove"
-                >
-                  <X className="h-3.5 w-3.5" strokeWidth={2.5} />
-                </button>
-              </div>
-            )}
           </div>
         );
       })}

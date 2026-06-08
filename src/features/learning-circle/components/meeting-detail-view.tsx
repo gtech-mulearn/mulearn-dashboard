@@ -84,10 +84,11 @@ function getStatus(meeting: {
   is_started: boolean;
   is_recurring?: boolean;
 }) {
-  if (meeting.is_started && !meeting.is_ended && !meeting.is_recurring)
-    return STATUS_CONFIG.live;
-  if (meeting.is_recurring) return STATUS_CONFIG.recurring;
+  // "Ended" takes precedence over "Recurring": an occurrence that has ended is
+  // shown as Ended even when the meeting is part of a recurring series.
   if (meeting.is_ended) return STATUS_CONFIG.ended;
+  if (meeting.is_started) return STATUS_CONFIG.live;
+  if (meeting.is_recurring) return STATUS_CONFIG.recurring;
   return STATUS_CONFIG.upcoming;
 }
 
@@ -171,11 +172,20 @@ export function MeetingDetailView({
   const pendingJoinAttendees =
     meeting?.attendees.filter((a) => !a.is_joined) ?? [];
 
+  // Only circle members can RSVP/join a meeting (mirrors the backend member
+  // gate). is_member comes from the meeting detail serializer.
   const canJoin = Boolean(
-    meeting?.is_started && !meeting?.is_ended && !hasJoined,
+    meeting?.is_started &&
+      !meeting?.is_ended &&
+      !hasJoined &&
+      meeting?.is_member,
   );
   const isJoinWaitingForStart = Boolean(
-    meeting && !meeting.is_started && !meeting.is_ended && !hasJoined,
+    meeting &&
+      !meeting.is_started &&
+      !meeting.is_ended &&
+      !hasJoined &&
+      meeting.is_member,
   );
 
   useEffect(() => {
@@ -194,8 +204,10 @@ export function MeetingDetailView({
 
   const meetTime = parseLocalTime(meeting.meet_time);
   const isOnline = meeting.mode === "online";
-  const isActive = meeting.is_recurring || !meeting.is_ended;
-  const canRsvp = isActive && !hasAttendeeRecord;
+  // A meeting occurrence is active only until it ends — being recurring does NOT
+  // keep an ended occurrence active (RSVP/join/leave must close once it ends).
+  const isActive = !meeting.is_ended;
+  const canRsvp = isActive && !hasAttendeeRecord && meeting.is_member;
   const canCancelAttendance = hasAttendeeRecord && !hasJoined && isActive;
   const canLeave = hasJoined && isActive;
   const status = getStatus(meeting);

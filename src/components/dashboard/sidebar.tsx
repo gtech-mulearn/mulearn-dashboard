@@ -18,6 +18,7 @@ import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/app/theme-toggle";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { VersionBadge } from "@/components/ui/version-badge";
 import { useFilteredNav } from "@/hooks/use-filtered-nav";
 import { authStore } from "@/lib/auth";
 import type { NavItem } from "@/lib/nav-config";
@@ -27,7 +28,8 @@ import { useUIStore } from "@/stores/ui-store";
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { isSidebarExpanded, toggleSidebar } = useUIStore();
+  const isSidebarExpanded = useUIStore((s) => s.isSidebarExpanded);
+  const toggleSidebar = useUIStore((s) => s.toggleSidebar);
   const { mainItems, managementItems, bottomItems } = useFilteredNav();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
@@ -229,6 +231,13 @@ export function Sidebar() {
           )}
         >
           {bottomItems.map(renderNavItem)}
+
+          {/* Version badge — only visible when sidebar is expanded */}
+          {!isCollapsed && (
+            <div className="px-3 pb-1">
+              <VersionBadge />
+            </div>
+          )}
 
           {/* Logout Button */}
           <button
