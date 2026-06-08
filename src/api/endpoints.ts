@@ -155,7 +155,8 @@ export const endpoints = {
     /** 17. PATCH - Resubmit a rejected application */
     applicationResubmit: (appId: string) =>
       `/api/v1/dashboard/company/applications/${appId}/resubmit/`,
-    /** 18. GET - Talent directory of public muLearn users */
+
+    /** 19. GET - Talent directory of public muLearn users */
     mulearners: "/api/v1/dashboard/company/mulearners/",
     /** 19. GET - Analytics for gig-type jobs posted by the company */
     analyticsGigs: "/api/v1/dashboard/company/analytics/gigs/",
@@ -814,6 +815,23 @@ export const endpoints = {
         `/api/v1/dashboard/user/verification/${linkId}/`,
       /** GET - Download CSV of unverified links */
       csv: "/api/v1/dashboard/user/verification/csv/",
+    },
+
+    tasks: {
+      /** GET/POST - List tasks or Create task */
+      base: "/api/v1/dashboard/task/",
+      /** GET - Retrieve Task Public List */
+      publicList: "/api/v1/dashboard/task/list/",
+      /** GET/PUT/DELETE - Single task operations */
+      detail: (taskId: string) => `/api/v1/dashboard/task/${taskId}/`,
+      /** GET - List tasks awaiting admin review */
+      pending: "/api/v1/dashboard/task/pending/",
+      /** PATCH - Approve a pending task */
+      approve: (taskId: string) => `/api/v1/dashboard/task/${taskId}/approve/`,
+      /** PATCH - Reject a pending task */
+      reject: (taskId: string) => `/api/v1/dashboard/task/${taskId}/reject/`,
+      /** GET/POST/PUT/DELETE - Task Types CRUD */
+      taskTypes: "/api/v1/dashboard/task/list-task-type/",
     },
 
     interestGroups: {

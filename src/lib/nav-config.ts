@@ -230,7 +230,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   {
     id: "company-jobs",
     title: "Company",
-    href: "/dashboard/company/jobs",
+    href: "/dashboard/company",
     icon: Briefcase,
     section: "management",
     roles: [ROLES.COMPANY],
