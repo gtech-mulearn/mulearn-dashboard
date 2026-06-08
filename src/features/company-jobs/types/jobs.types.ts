@@ -119,15 +119,14 @@ export interface JobApplicant {
 
 export interface LearnerProfile {
   id: string;
-  muid: string;
   full_name: string;
-  gender?: string | null;
-  district?: string | null;
+  muid: string;
+  email?: string | null;
   karma: number;
-  level: { id: string; name: string; level_order: number };
-  interest_groups: { id: string; name: string }[];
-  interested_in_work: boolean;
-  interested_in_gig_work: boolean;
+  level?: number | null;
+  college?: string | null;
+  department?: string | null;
+  graduation_year?: string | null;
 }
 
 export interface PublicJobsResponse {
@@ -322,17 +321,21 @@ export interface JobsListParams {
 }
 
 export interface LearnerDiscoveryParams {
-  karma_min?: number;
-  karma_max?: number;
-  ig_ids?: string;
-  achievement_ids?: string;
-  level_order_min?: number;
-  interested_in_work?: boolean;
-  interested_in_gig_work?: boolean;
+  min_karma?: number;
+  max_karma?: number;
+  level?: number;
+  college?: string;
+  department?: string;
+  graduation_year?: string;
+  ig?: string;
+  skill?: string;
+  achievement?: string;
+  task?: string;
   search?: string;
-  sortBy?: string;
-  pageIndex?: number;
-  perPage?: number;
+  sort_by?: string;
+  sort_order?: "asc" | "desc";
+  page?: number;
+  per_page?: number;
 }
 
 // ─── Company Tasks Types ─────────────────────────────────────

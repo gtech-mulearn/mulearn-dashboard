@@ -342,23 +342,24 @@ export async function fetchLearnerDiscovery(
 ): Promise<LearnerDiscoveryResponse> {
   const query = new URLSearchParams();
 
-  if (params?.karma_min !== undefined)
-    query.set("karma_min", String(params.karma_min));
-  if (params?.karma_max !== undefined)
-    query.set("karma_max", String(params.karma_max));
-  if (params?.ig_ids) query.set("ig_ids", params.ig_ids);
-  if (params?.achievement_ids)
-    query.set("achievement_ids", params.achievement_ids);
-  if (params?.level_order_min !== undefined)
-    query.set("level_order_min", String(params.level_order_min));
-  if (params?.interested_in_work !== undefined)
-    query.set("interested_in_work", String(params.interested_in_work));
-  if (params?.interested_in_gig_work !== undefined)
-    query.set("interested_in_gig_work", String(params.interested_in_gig_work));
-  if (params?.pageIndex) query.set("pageIndex", String(params.pageIndex));
-  if (params?.perPage) query.set("perPage", String(params.perPage));
+  if (params?.min_karma !== undefined)
+    query.set("min_karma", String(params.min_karma));
+  if (params?.max_karma !== undefined)
+    query.set("max_karma", String(params.max_karma));
+  if (params?.level !== undefined) query.set("level", String(params.level));
+  if (params?.college) query.set("college", params.college);
+  if (params?.department) query.set("department", params.department);
+  if (params?.graduation_year)
+    query.set("graduation_year", params.graduation_year);
+  if (params?.ig) query.set("ig", params.ig);
+  if (params?.skill) query.set("skill", params.skill);
+  if (params?.achievement) query.set("achievement", params.achievement);
+  if (params?.task) query.set("task", params.task);
   if (params?.search?.trim()) query.set("search", params.search.trim());
-  if (params?.sortBy) query.set("sortBy", params.sortBy);
+  if (params?.sort_by) query.set("sort_by", params.sort_by);
+  if (params?.sort_order) query.set("sort_order", params.sort_order);
+  if (params?.page) query.set("page", String(params.page));
+  if (params?.per_page) query.set("per_page", String(params.per_page));
 
   const queryString = query.toString();
   const url = queryString

@@ -61,13 +61,16 @@ function LearnerCardSkeleton() {
 // ─── Filters panel ───────────────────────────────────────────────────────────
 
 interface ActiveFilters {
-  interested_in_work?: boolean;
-  interested_in_gig_work?: boolean;
-  karma_min?: number;
-  karma_max?: number;
-  level_order_min?: number;
-  ig_ids?: string;
-  achievement_ids?: string;
+  min_karma?: number;
+  max_karma?: number;
+  level?: number;
+  college?: string;
+  department?: string;
+  graduation_year?: string;
+  ig?: string;
+  skill?: string;
+  achievement?: string;
+  task?: string;
   sortBy?: string;
 }
 
@@ -97,28 +100,6 @@ function FiltersDropdown({ filters, onChange }: FiltersDropdownProps) {
         align="end"
         className="w-64 max-h-[80vh] overflow-y-auto"
       >
-        <DropdownMenuLabel>Work Intent</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuCheckboxItem
-          checked={!!filters.interested_in_work}
-          onCheckedChange={(v) =>
-            onChange({ ...filters, interested_in_work: v || undefined })
-          }
-        >
-          <Briefcase className="h-3.5 w-3.5 mr-2" />
-          Open to Full-time
-        </DropdownMenuCheckboxItem>
-        <DropdownMenuCheckboxItem
-          checked={!!filters.interested_in_gig_work}
-          onCheckedChange={(v) =>
-            onChange({ ...filters, interested_in_gig_work: v || undefined })
-          }
-        >
-          <Sparkles className="h-3.5 w-3.5 mr-2" />
-          Open to Gig Work
-        </DropdownMenuCheckboxItem>
-
-        <DropdownMenuSeparator />
         <DropdownMenuLabel>Sort By</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuRadioGroup
@@ -138,11 +119,11 @@ function FiltersDropdown({ filters, onChange }: FiltersDropdownProps) {
         <div className="flex gap-2 p-2">
           <Input
             placeholder="Min"
-            value={filters.karma_min || ""}
+            value={filters.min_karma || ""}
             onChange={(e) =>
               onChange({
                 ...filters,
-                karma_min: e.target.value
+                min_karma: e.target.value
                   ? parseInt(e.target.value, 10)
                   : undefined,
               })
@@ -151,11 +132,11 @@ function FiltersDropdown({ filters, onChange }: FiltersDropdownProps) {
           />
           <Input
             placeholder="Max"
-            value={filters.karma_max || ""}
+            value={filters.max_karma || ""}
             onChange={(e) =>
               onChange({
                 ...filters,
-                karma_max: e.target.value
+                max_karma: e.target.value
                   ? parseInt(e.target.value, 10)
                   : undefined,
               })
@@ -169,11 +150,11 @@ function FiltersDropdown({ filters, onChange }: FiltersDropdownProps) {
         <div className="p-2">
           <Input
             placeholder="Min Level Order"
-            value={filters.level_order_min || ""}
+            value={filters.level || ""}
             onChange={(e) =>
               onChange({
                 ...filters,
-                level_order_min: e.target.value
+                level: e.target.value
                   ? parseInt(e.target.value, 10)
                   : undefined,
               })
@@ -186,10 +167,10 @@ function FiltersDropdown({ filters, onChange }: FiltersDropdownProps) {
         <DropdownMenuLabel>Interest Groups</DropdownMenuLabel>
         <div className="p-2">
           <Input
-            placeholder="UUID1,UUID2..."
-            value={filters.ig_ids || ""}
+            placeholder="Interest Group Name"
+            value={filters.ig || ""}
             onChange={(e) =>
-              onChange({ ...filters, ig_ids: e.target.value || undefined })
+              onChange({ ...filters, ig: e.target.value || undefined })
             }
             className="h-8 text-xs"
           />
@@ -199,12 +180,12 @@ function FiltersDropdown({ filters, onChange }: FiltersDropdownProps) {
         <DropdownMenuLabel>Achievements</DropdownMenuLabel>
         <div className="p-2">
           <Input
-            placeholder="UUID1,UUID2..."
-            value={filters.achievement_ids || ""}
+            placeholder="Achievement UUID"
+            value={filters.achievement || ""}
             onChange={(e) =>
               onChange({
                 ...filters,
-                achievement_ids: e.target.value || undefined,
+                achievement: e.target.value || undefined,
               })
             }
             className="h-8 text-xs"
@@ -225,16 +206,19 @@ export default function TalentPoolPage() {
 
   const params: LearnerDiscoveryParams = {
     search: debouncedSearch || undefined,
-    interested_in_work: filters.interested_in_work,
-    interested_in_gig_work: filters.interested_in_gig_work,
-    karma_min: filters.karma_min,
-    karma_max: filters.karma_max,
-    level_order_min: filters.level_order_min,
-    ig_ids: filters.ig_ids,
-    achievement_ids: filters.achievement_ids,
-    sortBy: filters.sortBy,
-    pageIndex: pageIndex,
-    perPage: 24,
+    min_karma: filters.min_karma,
+    max_karma: filters.max_karma,
+    level: filters.level,
+    college: filters.college,
+    department: filters.department,
+    graduation_year: filters.graduation_year,
+    ig: filters.ig,
+    skill: filters.skill,
+    achievement: filters.achievement,
+    task: filters.task,
+    sort_by: filters.sortBy,
+    page: pageIndex,
+    per_page: 24,
   };
 
   const { data, isLoading, isError } = useLearnerDiscovery(params);
@@ -256,7 +240,7 @@ export default function TalentPoolPage() {
           Talent Pool
         </h1>
         <p className="text-sm text-muted-foreground">
-          Discover learners by karma, level, and work intent.
+          Discover learners by karma, level, and details.
         </p>
       </div>
 
@@ -269,20 +253,6 @@ export default function TalentPoolPage() {
               {total.toLocaleString()}
             </span>
             <span className="text-muted-foreground">learners found</span>
-          </div>
-          <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm">
-            <CheckCircle className="h-4 w-4 text-emerald-500" />
-            <span className="font-semibold text-foreground">
-              {learners.filter((l) => l.interested_in_work).length}
-            </span>
-            <span className="text-muted-foreground">open to work</span>
-          </div>
-          <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm">
-            <Sparkles className="h-4 w-4 text-blue-500" />
-            <span className="font-semibold text-foreground">
-              {learners.filter((l) => l.interested_in_gig_work).length}
-            </span>
-            <span className="text-muted-foreground">open to gigs</span>
           </div>
         </div>
       )}

@@ -346,46 +346,23 @@ export const LearnerProfileSchema = z.object({
     .string()
     .nullish()
     .transform((v) => v ?? ""),
-  muid: z
-    .string()
-    .nullish()
-    .transform((v) => v ?? ""),
   full_name: z
     .string()
     .nullish()
     .transform((v) => v ?? ""),
-  gender: z.string().optional().nullable(),
-  district: z.string().optional().nullable(),
+  muid: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? ""),
+  email: z.string().optional().nullable(),
   karma: z
     .number()
     .nullish()
     .transform((v) => v ?? 0),
-  level: LevelSchema.nullish().transform(
-    (v) => v ?? { id: "", name: "", level_order: 0 },
-  ),
-  interest_groups: z
-    .array(
-      z.object({
-        id: z
-          .string()
-          .nullish()
-          .transform((v) => v ?? ""),
-        name: z
-          .string()
-          .nullish()
-          .transform((v) => v ?? ""),
-      }),
-    )
-    .nullish()
-    .transform((v) => v ?? []),
-  interested_in_work: z
-    .boolean()
-    .nullish()
-    .transform((v) => v ?? false),
-  interested_in_gig_work: z
-    .boolean()
-    .nullish()
-    .transform((v) => v ?? false),
+  level: z.number().optional().nullable(),
+  college: z.string().optional().nullable(),
+  department: z.string().optional().nullable(),
+  graduation_year: z.string().optional().nullable(),
 });
 
 export const PublicJobsResponseSchema = DjangoResponse(
