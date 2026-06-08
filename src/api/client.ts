@@ -6,10 +6,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { z } from "zod";
-import { refreshAccessToken } from "@/features/auth";
+// Import the specific module, not the @/features/auth barrel: importing the
+// barrel pulls the entire auth feature (components, hooks) into the API layer
+// and creates a circular dependency (api/client → features/auth → … → api/client).
+import { refreshAccessToken } from "@/features/auth/api/auth.api";
 import { env } from "../../config/env";
 import { authStore } from "../lib/auth";
-import { ApiError, extractDjangoMessage } from "./errors";
+import { ApiError, extractDjangoMessage, logSchemaMismatch } from "./errors";
 
 // Re-export so existing `import { ApiError } from "@/api/client"` still works.
 export { ApiError } from "./errors";
@@ -77,6 +80,13 @@ interface RequestOptions<T> {
    * not "invalid credentials".
    */
   skipAuthRedirectOn403?: boolean;
+  /**
+   * When true, a Zod schema-parse failure throws an `ApiError` instead of
+   * returning the unvalidated raw payload. Default is lenient (returns raw,
+   * but the mismatch is always logged). Opt in for endpoints where a malformed
+   * response should fail loudly rather than flow through as an unchecked cast.
+   */
+  strictSchema?: boolean;
 }
 
 type ClientOptions = {
@@ -86,6 +96,8 @@ type ClientOptions = {
   isFormData?: boolean;
   /** See RequestOptions.skipAuthRedirectOn403 */
   skipAuthRedirectOn403?: boolean;
+  /** See RequestOptions.strictSchema */
+  strictSchema?: boolean;
 };
 
 // ─── Core request fn (shared by both gateways) ─────────────────────────────
@@ -121,7 +133,49 @@ async function request<T>(
   });
 
   if (options.responseType === "blob") {
-    return (await res.blob()) as T;
+    if (res.ok) {
+      return (await res.blob()) as T;
+    }
+
+    // Non-OK blob request: for authenticated calls, attempt one token refresh +
+    // retry so long-idle downloads succeed instead of saving an error body as a
+    // file. On any other failure, throw a real ApiError (the caller must NOT
+    // write the response to disk).
+    if (options.authenticated && (res.status === 401 || res.status === 403)) {
+      const refreshToken = authStore.getRefreshToken();
+      if (refreshToken) {
+        try {
+          const { accessToken: newAccessToken } =
+            await refreshAccessToken(refreshToken);
+          if (newAccessToken) {
+            authStore.setTokens(newAccessToken, refreshToken);
+            const retryRes = await fetch(
+              `${env.NEXT_PUBLIC_DJANGO_API_URL}${endpoint}`,
+              {
+                method: options.method,
+                headers: {
+                  ...requestHeaders,
+                  Authorization: `Bearer ${newAccessToken}`,
+                  ...options.headers,
+                },
+              },
+            );
+            if (retryRes.ok) {
+              return (await retryRes.blob()) as T;
+            }
+          }
+        } catch {
+          // fall through to the error throw below
+        }
+      }
+    }
+
+    const errData = await res.json().catch(() => null);
+    throw new ApiError(
+      res.status,
+      extractDjangoMessage(errData) || `Request failed: ${endpoint}`,
+      errData,
+    );
   }
 
   const rawData = await res.json().catch(() => null);
@@ -209,10 +263,12 @@ async function request<T>(
         if (options.schema) {
           const parsed = options.schema.safeParse(retryData);
           if (!parsed.success) {
-            if (process.env.NODE_ENV === "development") {
-              console.error(
-                `⚠️ API schema mismatch [${endpoint}]`,
-                parsed.error.issues,
+            logSchemaMismatch(endpoint, parsed.error.issues);
+            if (options.strictSchema) {
+              throw new ApiError(
+                retryRes.status,
+                `Schema validation failed: ${endpoint}`,
+                retryData,
               );
             }
             return retryData as T;
@@ -278,14 +334,17 @@ async function request<T>(
   if (options.schema) {
     const parsed = options.schema.safeParse(rawData);
     if (!parsed.success) {
-      if (process.env.NODE_ENV === "development") {
-        console.error(
-          `⚠️ API schema mismatch [${endpoint}]`,
-          parsed.error.issues,
+      logSchemaMismatch(endpoint, parsed.error.issues);
+      if (options.strictSchema) {
+        throw new ApiError(
+          res.status,
+          `Schema validation failed: ${endpoint}`,
+          rawData,
         );
       }
-      // Return raw data preserving the full envelope shape.
-      // Schemas are defensive — a mismatch should not crash the UI.
+      // Lenient default: return the raw payload preserving the envelope shape.
+      // Schemas are defensive — a mismatch should not crash the UI — but it IS
+      // now logged unconditionally (see logSchemaMismatch).
       return rawData as T;
     }
     return parsed.data;

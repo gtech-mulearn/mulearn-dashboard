@@ -127,15 +127,10 @@ export function TaskCard({
         {/* Action Button - Montserrat */}
         <div className="mt-auto pt-5">
           <Button
+            variant="default"
             className={cn(
-              "w-full rounded-lg font-semibold text-primary-foreground transition-all duration-200 h-11 text-base cursor-pointer",
-              // Blue background for all tasks
-              // Primary background for active tasks
-              status === "pending" && "bg-primary hover:bg-primary/90",
-              // Dimmed primary for completed tasks
-              status === "completed" &&
-                "bg-primary/60 hover:bg-primary/70 opacity-80",
-              // Muted for locked tasks
+              "w-full rounded-lg font-semibold transition-all duration-200 h-11 text-base",
+              status === "completed" && "opacity-80",
               status === "locked" &&
                 "bg-muted text-muted-foreground cursor-not-allowed",
             )}

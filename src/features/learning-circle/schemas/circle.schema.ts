@@ -183,6 +183,34 @@ export const InviteListResponseSchema = ApiResponseSchema(
 
 export const InviteByLinkResponseSchema = ApiResponseSchema(InviteSchema);
 
+// ============================================
+// Join Request Schemas (lead/creator view of pending join requests)
+// Matches backend CircleJoinRequestSerializer (GET join/<circle_id>/).
+// ============================================
+
+export const JoinRequestSchema = z.object({
+  link_id: z.string(),
+  user_id: z.string(),
+  full_name: z.string(),
+  profile_pic: z.string().nullable().optional(),
+  muid: z.string(),
+  requested_at: z.string().nullable().optional(),
+});
+
+export type JoinRequest = z.infer<typeof JoinRequestSchema>;
+
+export const JoinRequestListResponseSchema = ApiResponseSchema(
+  z.array(JoinRequestSchema),
+);
+
+/** Body for PATCH join/<circle_id>/ — accept or reject a pending request. */
+export const RespondJoinRequestSchema = z.object({
+  link_id: z.string(),
+  action: z.enum(["accept", "reject"]),
+});
+
+export type RespondJoinRequest = z.infer<typeof RespondJoinRequestSchema>;
+
 /**
  * Pagination shape returned by Django
  */

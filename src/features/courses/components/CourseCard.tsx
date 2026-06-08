@@ -164,7 +164,8 @@ export function CourseCard({
 
       <CardFooter className="pt-2 pb-6 grid grid-cols-2 gap-3 shrink-0">
         <Button
-          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-md transition-all hover:shadow-lg rounded-xl h-11 col-span-2"
+          variant="default"
+          className="w-full rounded-xl h-11 col-span-2"
           onClick={handleEnroll}
           disabled={isEnrolling}
         >
@@ -181,8 +182,8 @@ export function CourseCard({
 
         {course.source === "wadhwani" && (
           <Button
-            variant="outline"
-            className="w-full border-border hover:bg-muted text-muted-foreground rounded-xl h-11 col-span-2 mt-[-6px]"
+            variant="secondary"
+            className="w-full rounded-xl h-11 col-span-2 mt-[-6px]"
             onClick={handleSubmit}
           >
             <ExternalLink className="w-4 h-4 mr-2" />

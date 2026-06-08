@@ -174,12 +174,8 @@ export function BecomeExpertTab({
         !error &&
         (expertLevels.length > 0 ? (
           <div className="space-y-10">
-            {expertLevels.map((level: UserLevelData, index: number) => (
-              <LevelCard
-                key={`${level.name}-${index}`}
-                level={level}
-                isLocked={false}
-              />
+            {expertLevels.map((level: UserLevelData) => (
+              <LevelCard key={level.name} level={level} isLocked={false} />
             ))}
           </div>
         ) : (

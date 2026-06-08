@@ -1,6 +1,49 @@
 import { z } from "zod";
 import { ApiResponseSchema } from "@/lib/schemas/api-response";
 
+// Backend returns raw queryset rows with Django ORM field paths
+// (`.values("user_id", "user__full_name", ...)`).
+// We re-shape into camel-clean fields via z.preprocess.
+const MenteeRawSchema = z.object({
+  user_id: z.string(),
+  user__full_name: z.string().nullable().optional(),
+  user__muid: z.string().nullable().optional(),
+  user__email: z.string().nullable().optional(),
+  total_sessions: z.coerce.number().default(0),
+});
+
+export const MenteeSchema = z.preprocess(
+  (raw) => {
+    if (!raw || typeof raw !== "object") return raw;
+    const r = raw as Record<string, unknown>;
+    // Allow already-flattened records to pass through unchanged
+    if ("full_name" in r) return r;
+    return {
+      user_id: r.user_id,
+      full_name: r.user__full_name ?? "",
+      muid: r.user__muid ?? "",
+      email: r.user__email ?? "",
+      total_sessions: r.total_sessions ?? 0,
+    };
+  },
+  z.object({
+    user_id: z.string(),
+    full_name: z.string().default(""),
+    muid: z.string().default(""),
+    email: z.string().default(""),
+    total_sessions: z.coerce.number().default(0),
+  }),
+);
+export type Mentee = z.infer<typeof MenteeSchema>;
+export type MenteeRaw = z.infer<typeof MenteeRawSchema>;
+
+export const MenteeListResponseSchema = ApiResponseSchema(
+  z.object({
+    data: z.array(MenteeSchema),
+    pagination: z.record(z.string(), z.unknown()).optional(),
+  }),
+);
+
 // ─── Session Participant Feedback ──────────────────────────────────────────────
 // PATCH /api/v1/dashboard/mentor/session/participant/feedback/{session_id}/
 

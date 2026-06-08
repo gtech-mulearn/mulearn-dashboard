@@ -167,8 +167,10 @@ export function ProjectDetailModal({
                   Edit
                 </Button>
               )}
-              <button
-                type="button"
+              <Button
+                variant={userVote?.vote === "upvote" ? "default" : "outline"}
+                size="sm"
+                className="h-10 rounded-xl px-4 text-[14px] font-semibold"
                 disabled={!currentUserId}
                 onClick={() => {
                   if (userVote?.vote === "upvote") {
@@ -177,12 +179,6 @@ export function ProjectDetailModal({
                     vote.mutate("upvote");
                   }
                 }}
-                className={[
-                  "flex items-center gap-2 h-10 rounded-xl px-4 text-[14px] font-semibold transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50 select-none",
-                  userVote?.vote === "upvote"
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "border border-primary/25 bg-primary/5 text-primary hover:bg-primary hover:text-primary-foreground hover:border-transparent",
-                ].join(" ")}
               >
                 <ChevronUp className="h-4 w-4 stroke-[2.5] shrink-0" />
                 <span>Upvote</span>
@@ -191,7 +187,7 @@ export function ProjectDetailModal({
                     {upvoteCount}
                   </span>
                 )}
-              </button>
+              </Button>
             </div>
           </div>
         </DialogHeader>
@@ -352,7 +348,7 @@ export function ProjectDetailModal({
                                 <Button
                                   size="icon"
                                   variant="ghost"
-                                  className="h-7 w-7 shrink-0 opacity-0 group-hover/comment:opacity-100 transition-opacity text-destructive hover:bg-destructive/10"
+                                  className="h-7 w-7 shrink-0 opacity-0 group-hover/comment:opacity-100 transition-opacity"
                                   onClick={() => deleteComment.mutate(c.id)}
                                 >
                                   <Trash2 className="h-3.5 w-3.5" />

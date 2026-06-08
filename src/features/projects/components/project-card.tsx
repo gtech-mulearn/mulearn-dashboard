@@ -25,7 +25,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
 import { useDeleteVote, useVoteProject } from "../hooks";
 import type { Project } from "../schemas";
 
@@ -162,21 +161,16 @@ export function ProjectCard({
           onClick={(e) => e.stopPropagation()}
           onKeyDown={(e) => e.stopPropagation()}
         >
-          <button
-            type="button"
+          <Button
+            variant={hasUpvoted ? "default" : "secondary"}
+            size="sm"
+            className="rounded-full h-7 px-2.5"
             onClick={handleUpvote}
             disabled={!currentUserId || isPendingVote}
-            className={cn(
-              "flex items-center gap-1 rounded-full border px-2.5 py-1 text-[12px] font-semibold transition-colors",
-              hasUpvoted
-                ? "border-primary/40 bg-primary/10 text-primary"
-                : "border-border/50 bg-muted/50 text-muted-foreground hover:border-primary/30 hover:text-primary/70",
-              (!currentUserId || isPendingVote) && "cursor-default opacity-70",
-            )}
           >
             <ArrowUp className="h-3 w-3" />
             {upvotes}
-          </button>
+          </Button>
 
           {canEdit && (
             <DropdownMenu>
@@ -184,7 +178,7 @@ export function ProjectCard({
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="h-7 w-7 rounded-full text-muted-foreground hover:text-foreground"
+                  className="h-7 w-7 rounded-full"
                 >
                   <MoreHorizontal className="h-3.5 w-3.5" />
                 </Button>
