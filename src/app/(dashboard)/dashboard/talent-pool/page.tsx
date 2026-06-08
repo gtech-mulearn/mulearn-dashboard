@@ -12,7 +12,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -143,7 +143,7 @@ function FiltersDropdown({ filters, onChange }: FiltersDropdownProps) {
               onChange({
                 ...filters,
                 karma_min: e.target.value
-                  ? parseInt(e.target.value)
+                  ? parseInt(e.target.value, 10)
                   : undefined,
               })
             }
@@ -156,7 +156,7 @@ function FiltersDropdown({ filters, onChange }: FiltersDropdownProps) {
               onChange({
                 ...filters,
                 karma_max: e.target.value
-                  ? parseInt(e.target.value)
+                  ? parseInt(e.target.value, 10)
                   : undefined,
               })
             }
@@ -174,7 +174,7 @@ function FiltersDropdown({ filters, onChange }: FiltersDropdownProps) {
               onChange({
                 ...filters,
                 level_order_min: e.target.value
-                  ? parseInt(e.target.value)
+                  ? parseInt(e.target.value, 10)
                   : undefined,
               })
             }

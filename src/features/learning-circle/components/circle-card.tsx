@@ -42,93 +42,104 @@ interface CategoryTheme {
 
 const CATEGORY_THEMES: Record<string, CategoryTheme> = {
   cloud: {
-    cardBg: "from-[#EEF4FF] via-[#F5F8FF] to-[#FAFCFF]",
-    pillBg: "bg-card/80 backdrop-blur-sm",
-    pillText: "text-[#3B82F6]",
+    cardBg:
+      "from-[#EEF4FF] via-[#F5F8FF] to-[#FAFCFF] dark:from-blue-950/45 dark:via-slate-900/40 dark:to-card/30",
+    pillBg: "bg-card/80 dark:bg-white/10 backdrop-blur-sm",
+    pillText: "text-[#3B82F6] dark:text-[#60A5FA]",
     accent: "#3B82F6",
-    titleHover: "group-hover:text-[#2563EB]",
+    titleHover: "group-hover:text-[#2563EB] dark:group-hover:text-[#60A5FA]",
     icon: Cloud,
   },
   devops: {
-    cardBg: "from-[#EEF2FF] via-[#F5F3FF] to-[#FAF9FF]",
-    pillBg: "bg-card/80 backdrop-blur-sm",
-    pillText: "text-[#6366F1]",
+    cardBg:
+      "from-[#EEF2FF] via-[#F5F3FF] to-[#FAF9FF] dark:from-indigo-950/45 dark:via-slate-900/40 dark:to-card/30",
+    pillBg: "bg-card/80 dark:bg-white/10 backdrop-blur-sm",
+    pillText: "text-[#6366F1] dark:text-[#818CF8]",
     accent: "#6366F1",
-    titleHover: "group-hover:text-[#4F46E5]",
+    titleHover: "group-hover:text-[#4F46E5] dark:group-hover:text-[#818CF8]",
     icon: Cloud,
   },
   web: {
-    cardBg: "from-[#ECFDF5] via-[#F0FFF6] to-[#F9FFFC]",
-    pillBg: "bg-card/80 backdrop-blur-sm",
-    pillText: "text-[#059669]",
+    cardBg:
+      "from-[#ECFDF5] via-[#F0FFF6] to-[#F9FFFC] dark:from-emerald-950/40 dark:via-slate-900/40 dark:to-card/30",
+    pillBg: "bg-card/80 dark:bg-white/10 backdrop-blur-sm",
+    pillText: "text-[#059669] dark:text-[#34D399]",
     accent: "#059669",
-    titleHover: "group-hover:text-[#047857]",
+    titleHover: "group-hover:text-[#047857] dark:group-hover:text-[#34D399]",
     icon: Code2,
   },
   product: {
-    cardBg: "from-[#F3EEFF] via-[#F8F5FF] to-[#FDFCFF]",
-    pillBg: "bg-card/80 backdrop-blur-sm",
-    pillText: "text-[#7C3AED]",
+    cardBg:
+      "from-[#F3EEFF] via-[#F8F5FF] to-[#FDFCFF] dark:from-violet-950/45 dark:via-slate-900/40 dark:to-card/30",
+    pillBg: "bg-card/80 dark:bg-white/10 backdrop-blur-sm",
+    pillText: "text-[#7C3AED] dark:text-[#A78BFA]",
     accent: "#7C3AED",
-    titleHover: "group-hover:text-[#6D28D9]",
+    titleHover: "group-hover:text-[#6D28D9] dark:group-hover:text-[#A78BFA]",
     icon: BarChart3,
   },
   design: {
-    cardBg: "from-[#FFF1E6] via-[#FFF8F2] to-[#FFFCF9]",
-    pillBg: "bg-card/80 backdrop-blur-sm",
-    pillText: "text-[#EA580C]",
+    cardBg:
+      "from-[#FFF1E6] via-[#FFF8F2] to-[#FFFCF9] dark:from-orange-950/30 dark:via-slate-900/40 dark:to-card/30",
+    pillBg: "bg-card/80 dark:bg-white/10 backdrop-blur-sm",
+    pillText: "text-[#EA580C] dark:text-[#FB923C]",
     accent: "#EA580C",
-    titleHover: "group-hover:text-[#C2410C]",
+    titleHover: "group-hover:text-[#C2410C] dark:group-hover:text-[#FB923C]",
     icon: Palette,
   },
   mobile: {
-    cardBg: "from-[#E6F7FF] via-[#F0FAFF] to-[#F9FDFF]",
-    pillBg: "bg-card/80 backdrop-blur-sm",
-    pillText: "text-[#0284C7]",
+    cardBg:
+      "from-[#E6F7FF] via-[#F0FAFF] to-[#F9FDFF] dark:from-sky-950/45 dark:via-slate-900/40 dark:to-card/30",
+    pillBg: "bg-card/80 dark:bg-white/10 backdrop-blur-sm",
+    pillText: "text-[#0284C7] dark:text-[#38BDF8]",
     accent: "#0284C7",
-    titleHover: "group-hover:text-[#0369A1]",
+    titleHover: "group-hover:text-[#0369A1] dark:group-hover:text-[#38BDF8]",
     icon: Smartphone,
   },
   ai: {
-    cardBg: "from-[#FDF2F8] via-[#FFF5FA] to-[#FFFAFC]",
-    pillBg: "bg-card/80 backdrop-blur-sm",
-    pillText: "text-[#DB2777]",
+    cardBg:
+      "from-[#FDF2F8] via-[#FFF5FA] to-[#FFFAFC] dark:from-pink-950/35 dark:via-slate-900/40 dark:to-card/30",
+    pillBg: "bg-card/80 dark:bg-white/10 backdrop-blur-sm",
+    pillText: "text-[#DB2777] dark:text-[#F472B6]",
     accent: "#DB2777",
-    titleHover: "group-hover:text-[#BE185D]",
+    titleHover: "group-hover:text-[#BE185D] dark:group-hover:text-[#F472B6]",
     icon: Cpu,
   },
   cyber: {
-    cardBg: "from-[#FEF2F2] via-[#FFF5F5] to-[#FFFAFA]",
-    pillBg: "bg-card/80 backdrop-blur-sm",
-    pillText: "text-[#DC2626]",
+    cardBg:
+      "from-[#FEF2F2] via-[#FFF5F5] to-[#FFFAFA] dark:from-red-950/35 dark:via-slate-900/40 dark:to-card/30",
+    pillBg: "bg-card/80 dark:bg-white/10 backdrop-blur-sm",
+    pillText: "text-[#DC2626] dark:text-[#F87171]",
     accent: "#DC2626",
-    titleHover: "group-hover:text-[#B91C1C]",
+    titleHover: "group-hover:text-[#B91C1C] dark:group-hover:text-[#F87171]",
     icon: Shield,
   },
   data: {
-    cardBg: "from-[#FEF9C3] via-[#FFFBEB] to-[#FFFEF5]",
-    pillBg: "bg-card/80 backdrop-blur-sm",
-    pillText: "text-[#CA8A04]",
+    cardBg:
+      "from-[#FEF9C3] via-[#FFFBEB] to-[#FFFEF5] dark:from-amber-950/30 dark:via-slate-900/40 dark:to-card/30",
+    pillBg: "bg-card/80 dark:bg-white/10 backdrop-blur-sm",
+    pillText: "text-[#CA8A04] dark:text-[#FBBF24]",
     accent: "#D97706",
-    titleHover: "group-hover:text-[#B45309]",
+    titleHover: "group-hover:text-[#B45309] dark:group-hover:text-[#FBBF24]",
     icon: Database,
   },
   iot: {
-    cardBg: "from-[#E6FFFA] via-[#F0FFFE] to-[#F9FFFE]",
-    pillBg: "bg-card/80 backdrop-blur-sm",
-    pillText: "text-[#0D9488]",
+    cardBg:
+      "from-[#E6FFFA] via-[#F0FFFE] to-[#F9FFFE] dark:from-teal-950/45 dark:via-slate-900/40 dark:to-card/30",
+    pillBg: "bg-card/80 dark:bg-white/10 backdrop-blur-sm",
+    pillText: "text-[#0D9488] dark:text-[#2DD4BF]",
     accent: "#0D9488",
-    titleHover: "group-hover:text-[#0F766E]",
+    titleHover: "group-hover:text-[#0F766E] dark:group-hover:text-[#2DD4BF]",
     icon: Blocks,
   },
 };
 
 const DEFAULT_THEME: CategoryTheme = {
-  cardBg: "from-[#F3F4F6] via-[#F9FAFB] to-[#FEFEFE]",
-  pillBg: "bg-card/80 backdrop-blur-sm",
-  pillText: "text-[#374151]",
+  cardBg:
+    "from-[#F3F4F6] via-[#F9FAFB] to-[#FEFEFE] dark:from-zinc-900/60 dark:via-zinc-950/40 dark:to-card/30",
+  pillBg: "bg-card/80 dark:bg-white/10 backdrop-blur-sm",
+  pillText: "text-[#374151] dark:text-[#D4D4D8]",
   accent: "#6B7280",
-  titleHover: "group-hover:text-[#4F46E5]",
+  titleHover: "group-hover:text-[#4F46E5] dark:group-hover:text-[#818CF8]",
   icon: Globe,
 };
 
@@ -213,6 +224,7 @@ export function CircleCard({ circle }: CircleCardProps) {
     <Link href={`/dashboard/learning-circle/${circle.id}`}>
       <div
         className={`group relative overflow-hidden rounded-[22px] bg-gradient-to-br ${theme.cardBg}
+          border border-black/[0.04] dark:border-white/[0.08]
           shadow-[0_2px_8px_rgba(0,0,0,0.06),0_0_1px_rgba(0,0,0,0.04)]
           transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
           hover:-translate-y-1.5 hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)]`}
@@ -254,11 +266,14 @@ export function CircleCard({ circle }: CircleCardProps) {
               onClick={handleJoin}
               disabled={joinCircle.isPending}
               className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full
-                bg-card/90 backdrop-blur-sm text-muted-foreground shadow-sm
+                bg-card/90 dark:bg-white/10 dark:hover:bg-white/20 dark:text-foreground
+                backdrop-blur-sm text-muted-foreground shadow-sm
+                border border-black/[0.04] dark:border-white/[0.08]
                 transition-all duration-200
                 hover:shadow-md hover:scale-110
                 active:scale-95 disabled:opacity-40"
               title="Join circle"
+              aria-label="Join circle"
             >
               {joinCircle.isPending ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
