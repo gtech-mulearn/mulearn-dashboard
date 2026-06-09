@@ -248,11 +248,10 @@ async function request<T>(
       rawData,
     );
     if (process.env.NODE_ENV === "development") {
-      console.error("[API Client] Business error:", {
-        endpoint,
-        status: res.status,
-        message: backendMsg,
-      });
+      console.error(
+        `[API Client] Business error: [Status ${res.status}] ${endpoint}\nMessage: ${backendMsg}`,
+        rawData,
+      );
     }
     throw error;
   }
@@ -265,11 +264,10 @@ async function request<T>(
       rawData,
     );
     if (process.env.NODE_ENV === "development") {
-      console.error("[API Client] HTTP error:", {
-        endpoint,
-        status: res.status,
-        message: backendMsg,
-      });
+      console.error(
+        `[API Client] HTTP error: [Status ${res.status}] ${endpoint}\nMessage: ${backendMsg}`,
+        rawData,
+      );
     }
     throw error;
   }

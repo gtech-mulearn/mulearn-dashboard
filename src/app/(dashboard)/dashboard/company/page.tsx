@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Briefcase, ClipboardList } from "lucide-react";
+import { Briefcase, ClipboardList, BarChart2 } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -101,6 +101,26 @@ export default function CompanyDashboardPage() {
             <CardContent>
               <div className="text-sm font-medium text-primary flex items-center">
                 View Mentors →
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/dashboard/company/analytics" className="block group">
+          <Card className="h-full transition-colors hover:bg-muted/50">
+            <CardHeader>
+              <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                <BarChart2 className="h-6 w-6 text-primary" />
+              </div>
+              <CardTitle>Analytics & Performance</CardTitle>
+              <CardDescription>
+                Track job view rates, gig funnel stages, conversion indexes, and
+                view ecosystem talent distribution.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-sm font-medium text-primary flex items-center">
+                View Analytics →
               </div>
             </CardContent>
           </Card>

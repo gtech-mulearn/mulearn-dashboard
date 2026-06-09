@@ -28,6 +28,10 @@ export function useCreateJob() {
     mutationFn: (payload: CreateJobPayload) => createJob(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: JOBS_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: ["company-analytics"] });
+      queryClient.invalidateQueries({
+        queryKey: ["home", "company", "home-summary"],
+      });
       toast.success("Job created successfully");
     },
     onError: (err: Error) => {
@@ -53,6 +57,10 @@ export function useUpdateJob() {
       queryClient.invalidateQueries({ queryKey: JOBS_KEYS.all });
       queryClient.invalidateQueries({
         queryKey: JOBS_KEYS.detail(variables.jobId),
+      });
+      queryClient.invalidateQueries({ queryKey: ["company-analytics"] });
+      queryClient.invalidateQueries({
+        queryKey: ["home", "company", "home-summary"],
       });
       toast.success("Job updated successfully");
     },
@@ -115,6 +123,10 @@ export function useDeleteJob() {
       });
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["company-analytics"] });
+      queryClient.invalidateQueries({
+        queryKey: ["home", "company", "home-summary"],
+      });
       toast.success("Job deleted successfully");
     },
   });

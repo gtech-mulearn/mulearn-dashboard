@@ -17,8 +17,8 @@ export const homeKeys = {
   learnerHomeSummary: () =>
     [...homeKeys.all, "learner", "home-summary"] as const,
   learnerStreak: () => [...homeKeys.all, "learner", "streak"] as const,
-  companyHomeSummary: () =>
-    [...homeKeys.all, "company", "home-summary"] as const,
+  companyHomeSummary: (params?: Record<string, any>) =>
+    [...homeKeys.all, "company", "home-summary", params ?? {}] as const,
   campusHomeSummary: () => [...homeKeys.all, "campus", "home-summary"] as const,
   campusMemberFunnel: () =>
     [...homeKeys.all, "campus", "member-funnel"] as const,

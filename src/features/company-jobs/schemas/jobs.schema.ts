@@ -466,20 +466,46 @@ export const LearnerDiscoveryResponseSchema = DjangoResponse(
     .object({
       data: z.array(LearnerProfileSchema).nullish(),
       learners: z.array(LearnerProfileSchema).nullish(),
-      pagination: PaginationSchema.nullish().transform(
-        (v) =>
-          v ?? {
-            count: 0,
-            totalPages: 1,
-            isNext: false,
-            isPrev: false,
-            nextPage: null,
-          },
-      ),
+      pagination: z
+        .object({
+          count: z
+            .number()
+            .nullish()
+            .transform((v) => v ?? 0),
+          total_pages: z
+            .number()
+            .nullish()
+            .transform((v) => v ?? 1),
+          current_page: z
+            .number()
+            .nullish()
+            .transform((v) => v ?? 1),
+          per_page: z
+            .number()
+            .nullish()
+            .transform((v) => v ?? 10),
+          next: z.string().nullable().optional(),
+          previous: z.string().nullable().optional(),
+        })
+        .passthrough()
+        .optional()
+        .transform((v) => ({
+          count: v?.count ?? 0,
+          totalPages: v?.total_pages ?? 1,
+          isNext: !!v?.next,
+          isPrev: !!v?.previous,
+          nextPage: v?.next ? (v.current_page ?? 1) + 1 : null,
+        })),
     })
     .transform((val) => ({
       learners: val.learners ?? val.data ?? [],
-      pagination: val.pagination,
+      pagination: val.pagination ?? {
+        count: 0,
+        totalPages: 1,
+        isNext: false,
+        isPrev: false,
+        nextPage: null,
+      },
     })),
 );
 

@@ -225,12 +225,37 @@ export async function getMentorHomeSummary() {
 // Company Home Summary
 // ============================================
 
-export async function getCompanyHomeSummary() {
-  const response = await apiClient.get(
-    endpoints.company.homeSummary,
-    CompanyHomeSummaryResponseSchema,
-    { skipAuthRedirectOn403: true },
-  );
+export async function getCompanyHomeSummary(params?: {
+  period?: string;
+  karma_min?: number;
+  karma_max?: number;
+  level_order_min?: number;
+  interested_in_work?: boolean;
+  interested_in_gig_work?: boolean;
+  ig_ids?: string;
+}) {
+  const query = new URLSearchParams();
+  if (params?.period) query.set("period", params.period);
+  if (params?.karma_min !== undefined)
+    query.set("karma_min", String(params.karma_min));
+  if (params?.karma_max !== undefined)
+    query.set("karma_max", String(params.karma_max));
+  if (params?.level_order_min !== undefined)
+    query.set("level_order_min", String(params.level_order_min));
+  if (params?.interested_in_work !== undefined)
+    query.set("interested_in_work", String(params.interested_in_work));
+  if (params?.interested_in_gig_work !== undefined)
+    query.set("interested_in_gig_work", String(params.interested_in_gig_work));
+  if (params?.ig_ids) query.set("ig_ids", params.ig_ids);
+
+  const queryString = query.toString();
+  const url = queryString
+    ? `${endpoints.company.homeSummary}?${queryString}`
+    : endpoints.company.homeSummary;
+
+  const response = await apiClient.get(url, CompanyHomeSummaryResponseSchema, {
+    skipAuthRedirectOn403: true,
+  });
   return response.response;
 }
 
