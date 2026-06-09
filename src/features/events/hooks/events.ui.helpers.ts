@@ -35,7 +35,8 @@ export function formatEventDateRange(startIso: string, endIso: string): string {
   return `${start.toLocaleString("en-IN", { month: "short", day: "numeric" })} - ${end.toLocaleString("en-IN", { month: "short", day: "numeric" })}, ${sameYear ? start.getFullYear() : `${start.getFullYear()}-${end.getFullYear()}`}`;
 }
 
-export function organizerTypeLabel(type: string): string {
+export function organizerTypeLabel(type?: string): string {
+  if (!type) return "";
   return type.replace(/_/g, " ");
 }
 

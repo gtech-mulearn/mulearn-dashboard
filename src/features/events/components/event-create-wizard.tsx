@@ -544,23 +544,36 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
               return (
                 <Fragment key={label}>
                   <div className="flex items-center gap-3">
-                    <button
-                      type="button"
-                      disabled={!isCompleted}
-                      onClick={() => isCompleted && setCurrentStep(stepIndex)}
-                      className={`flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-semibold transition-colors ${
-                        isActive
-                          ? "border-primary bg-primary text-primary-foreground ring-2 ring-primary ring-offset-2"
-                          : isCompleted
-                            ? "border-primary bg-primary text-primary-foreground"
-                            : "border-border bg-background text-muted-foreground"
-                      }`}
-                    >
-                      {isCompleted ? <Check className="h-4 w-4" /> : stepIndex}
-                    </button>
+                    {isActive ? (
+                      <Button
+                        variant="default"
+                        size="icon-sm"
+                        className="ring-2 ring-brand-blue ring-offset-2"
+                        disabled
+                      >
+                        {stepIndex}
+                      </Button>
+                    ) : isCompleted ? (
+                      <Button
+                        variant="default"
+                        size="icon-sm"
+                        onClick={() => setCurrentStep(stepIndex)}
+                      >
+                        <Check className="h-4 w-4" />
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="icon-sm"
+                        disabled
+                        className="!border-border !text-muted-foreground"
+                      >
+                        {stepIndex}
+                      </Button>
+                    )}
                     <div className="min-w-0 pt-1">
                       <p
-                        className={`text-xs whitespace-nowrap leading-none ${isActive ? "font-medium text-primary" : "text-muted-foreground"}`}
+                        className={`text-xs whitespace-nowrap leading-none ${isActive ? "font-medium text-foreground" : "text-muted-foreground"}`}
                       >
                         {label}
                       </p>
@@ -719,18 +732,15 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                           {EVENT_SCOPE_OPTIONS.map((item) => {
                             const active = field.value === item.value;
                             return (
-                              <button
+                              <Button
                                 key={item.value}
                                 type="button"
-                                className={`rounded-full border px-4 py-1.5 text-sm transition-colors ${
-                                  active
-                                    ? "border-primary bg-primary text-primary-foreground"
-                                    : "border-border bg-background text-muted-foreground hover:border-primary hover:text-primary"
-                                }`}
+                                variant={active ? "default" : "outline"}
+                                size="sm"
                                 onClick={() => field.onChange(item.value)}
                               >
                                 {item.label}
-                              </button>
+                              </Button>
                             );
                           })}
                         </div>
@@ -1003,11 +1013,7 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
 
           <div className="flex items-center justify-between border-t border-border bg-card/80 p-4 backdrop-blur-sm">
             <div className="mx-auto flex w-full max-w-5xl items-center justify-between">
-              <Button
-                variant="ghost"
-                className="text-muted-foreground hover:text-foreground"
-                onClick={requestClose}
-              >
+              <Button variant="ghost" onClick={requestClose}>
                 Cancel
               </Button>
 
@@ -1015,7 +1021,6 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                 {currentStep > 1 ? (
                   <Button
                     variant="outline"
-                    className="border-border"
                     onClick={() =>
                       setCurrentStep((value) => Math.max(1, value - 1))
                     }
@@ -1026,7 +1031,6 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
 
                 {currentStep < 6 ? (
                   <Button
-                    className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
                     onClick={async () => {
                       const ok = await validateCurrentStep();
                       if (!ok) return;
@@ -1039,7 +1043,6 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                   <>
                     <Button
                       variant="outline"
-                      className="border-border"
                       disabled={createEvent.isPending}
                       onClick={() => submitWizard("draft")}
                     >
@@ -1049,7 +1052,6 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                       Save as Draft
                     </Button>
                     <Button
-                      className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
                       disabled={
                         createEvent.isPending ||
                         !watch("start_datetime") ||
