@@ -125,10 +125,15 @@ function SessionRow({
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                onClick={() => {
+                onClick={(e) => {
+                  if (status !== "SCHEDULED") {
+                    e.preventDefault();
+                    return;
+                  }
                   navigator.clipboard.writeText(session.id);
                   toast.success("Session ID copied to clipboard!");
                 }}
+                disabled={status !== "SCHEDULED"}
               >
                 <Copy className="w-4 h-4" />
               </Button>
