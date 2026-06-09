@@ -136,10 +136,9 @@ export default function ManageEventsDashboard() {
         <div className="flex items-center gap-2">
           {pendingInviteCount > 0 ? (
             <Button
-              type="button"
               variant="outline"
               onClick={() => setInvitesOpen(true)}
-              className="gap-2 border-border text-foreground hover:border-primary hover:text-primary"
+              className="gap-2"
             >
               Invites
               <span className="inline-flex min-w-6 items-center justify-center rounded-full bg-primary px-2 py-0.5 text-xs font-semibold text-primary-foreground">
@@ -148,7 +147,6 @@ export default function ManageEventsDashboard() {
             </Button>
           ) : null}
           <Button
-            className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
             onClick={() => {
               setShowWizard(true);
             }}
@@ -211,14 +209,10 @@ export default function ManageEventsDashboard() {
           return (
             <Button
               key={pill.value}
-              variant="outline"
               size="sm"
+              variant={active ? "default" : "outline"}
               aria-pressed={active}
-              className={cn(
-                "rounded-full border border-border bg-background px-4 py-1.5 text-sm text-muted-foreground hover:border-primary hover:text-primary",
-                active &&
-                  "border-primary bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground",
-              )}
+              className="rounded-full"
               onClick={() => {
                 setStatusFilter(pill.value);
                 setPage(1);

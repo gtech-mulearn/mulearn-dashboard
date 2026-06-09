@@ -35,13 +35,8 @@ export function InterestButton({
 
   return (
     <Button
-      type="button"
       variant="outline"
-      className={
-        isInterested
-          ? "w-full rounded-full border-success/30 bg-success/15 text-success hover:bg-success/20"
-          : "w-full rounded-full"
-      }
+      className="w-full rounded-full"
       disabled={disabled || mutation.isPending}
       onClick={handleClick}
     >

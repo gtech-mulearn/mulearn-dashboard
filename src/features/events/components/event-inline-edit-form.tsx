@@ -271,18 +271,14 @@ export function EventInlineEditForm({
                 {EVENT_SCOPE_OPTIONS.map((item) => {
                   const active = field.value === item.value;
                   return (
-                    <button
+                    <Button
                       key={item.value}
                       type="button"
-                      className={`rounded-full border px-4 py-1.5 text-sm transition-colors ${
-                        active
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-border bg-background text-muted-foreground hover:border-primary hover:text-primary"
-                      }`}
+                      variant={active ? "default" : "outline"}
                       onClick={() => field.onChange(item.value)}
                     >
                       {item.label}
-                    </button>
+                    </Button>
                   );
                 })}
               </div>
@@ -520,7 +516,9 @@ export function EventInlineEditForm({
             {(watch("tags") ?? []).map((tag) => (
               <Badge key={tag} variant="outline" className="gap-1">
                 {tag}
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon"
                   type="button"
                   onClick={() => {
                     const next = (watch("tags") ?? []).filter(
@@ -530,7 +528,7 @@ export function EventInlineEditForm({
                   }}
                 >
                   <X className="h-3 w-3" />
-                </button>
+                </Button>
               </Badge>
             ))}
           </div>
@@ -538,10 +536,10 @@ export function EventInlineEditForm({
       </section>
 
       <div className="hidden">
-        <button type="submit">Save</button>
-        <button type="button" onClick={onDiscard}>
+        <Button type="submit">Save</Button>
+        <Button variant="ghost" type="button" onClick={onDiscard}>
           Discard
-        </button>
+        </Button>
       </div>
     </form>
   );
