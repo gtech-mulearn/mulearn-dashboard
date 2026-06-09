@@ -47,14 +47,9 @@ export function EventsFilters({
           return (
             <Button
               key={cluster.value}
-              type="button"
               size="sm"
-              variant="outline"
-              className={`rounded-full border border-border bg-background px-4 py-1.5 text-sm text-muted-foreground transition-colors hover:border-primary hover:text-primary ${
-                active
-                  ? "border-primary bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground"
-                  : ""
-              }`}
+              variant={active ? "default" : "outline"}
+              className="rounded-full px-4 py-1.5 text-sm"
               onClick={() => onClusterChange?.(cluster.value)}
             >
               {cluster.label}
@@ -69,14 +64,9 @@ export function EventsFilters({
           return (
             <Button
               key={item.value}
-              type="button"
               size="sm"
-              variant="outline"
-              className={`rounded-full border border-border bg-background px-4 py-1.5 text-sm text-muted-foreground transition-colors hover:border-primary hover:text-primary ${
-                active
-                  ? "border-primary bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground"
-                  : ""
-              }`}
+              variant={active ? "default" : "outline"}
+              className="rounded-full px-4 py-1.5 text-sm"
               onClick={() =>
                 onEventTypeChange?.(item.value as EventType | "all")
               }

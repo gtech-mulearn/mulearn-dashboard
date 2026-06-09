@@ -342,7 +342,7 @@ function RequestTable({
                 )}
               </TableCell>
               <TableCell>
-                {req.description ? req.description.slice(0, 100) + "..." : "—"}
+                {req.description ? `${req.description.slice(0, 100)}...` : "—"}
               </TableCell>
               <TableCell className="text-sm text-muted-foreground">
                 {req.ig_name ?? "—"}

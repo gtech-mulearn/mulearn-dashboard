@@ -91,10 +91,7 @@ export function EventRegistrationCard({
     if (!event.viewer_can_access_registration) {
       return (
         <div className="space-y-1">
-          <Button
-            disabled
-            className="w-full rounded-full bg-primary/20 text-primary"
-          >
+          <Button disabled className="w-full rounded-full">
             Karma Requirement Not Met
           </Button>
           {event.viewer_access_blocked_reason && (
@@ -107,10 +104,7 @@ export function EventRegistrationCard({
     }
 
     return (
-      <Button
-        asChild
-        className="w-full rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
-      >
+      <Button asChild className="w-full rounded-full">
         <a href={event.registration_url} target="_blank" rel="noreferrer">
           Register Now
         </a>

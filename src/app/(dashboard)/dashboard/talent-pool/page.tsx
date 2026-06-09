@@ -12,7 +12,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -342,8 +342,8 @@ export default function TalentPoolPage() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-          {learners.map((learner, index) => (
-            <LearnerCard key={`${learner.id}-${index}`} learner={learner} />
+          {learners.map((learner) => (
+            <LearnerCard key={learner.id} learner={learner} />
           ))}
         </div>
       )}

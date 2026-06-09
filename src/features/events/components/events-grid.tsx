@@ -34,7 +34,8 @@ export function EventsGrid({
         </p>
         {isManageView && onCreateEvent ? (
           <Button
-            className="mt-4 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+            variant="default"
+            className="mt-4 rounded-xl"
             onClick={onCreateEvent}
           >
             Create Event

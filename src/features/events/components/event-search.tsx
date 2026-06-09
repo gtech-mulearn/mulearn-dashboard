@@ -237,14 +237,8 @@ function InviteMode(props: EventSearchInviteProps) {
           return (
             <Button
               key={option.value}
-              type="button"
               size="sm"
               variant={isActive ? "default" : "outline"}
-              className={
-                isActive
-                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                  : ""
-              }
               onClick={() => setSelectedType(option.value)}
             >
               {option.label}

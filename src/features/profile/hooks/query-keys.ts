@@ -27,6 +27,8 @@ export const profileKeys = {
 
   // Socials
   socials: () => [...profileKeys.all, "socials"] as const,
+  publicSocials: (muid: string) =>
+    [...profileKeys.all, "public-socials", muid] as const,
 
   // Preferences
   preferences: () => [...profileKeys.all, "preferences"] as const,

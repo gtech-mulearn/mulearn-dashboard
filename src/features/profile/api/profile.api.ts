@@ -129,10 +129,19 @@ export async function getPublicUserLevels(
 // Socials
 // ============================================
 
-/** Get user's social links */
+/** Get current user's social links */
 export async function getSocials(): Promise<Socials> {
   const response = await apiClient.get(
     endpoints.user.socials,
+    SocialsResponseSchema,
+  );
+  return response.response;
+}
+
+/** Get another user's public social links by muid */
+export async function getPublicSocials(muid: string): Promise<Socials> {
+  const response = await apiClient.get(
+    endpoints.user.publicSocials(muid),
     SocialsResponseSchema,
   );
   return response.response;

@@ -3,6 +3,8 @@
 import { FileText } from "lucide-react";
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
+
 interface EventAboutSectionProps {
   description: string | null;
 }
@@ -33,13 +35,14 @@ export function EventAboutSection({ description }: EventAboutSectionProps) {
           <div className="pointer-events-none absolute inset-x-0 bottom-5 h-16 bg-gradient-to-t from-card to-transparent" />
         )}
 
-        <button
-          type="button"
+        <Button
+          variant="link"
+          size="sm"
           onClick={() => setIsExpanded(!isExpanded)}
-          className="relative z-10 mt-2 text-xs font-semibold text-primary hover:underline"
+          className="relative z-10 mt-2 px-0 text-xs font-semibold"
         >
           {isExpanded ? "Read less" : "Read more"}
-        </button>
+        </Button>
       </div>
     </div>
   );

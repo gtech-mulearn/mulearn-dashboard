@@ -16,6 +16,19 @@ export class ApiError extends Error {
 }
 
 /**
+ * Log an API response/schema validation mismatch.
+ *
+ * Logged UNCONDITIONALLY (including production) so silent backend shape drift is
+ * visible in monitoring instead of being swallowed in dev-only branches. The
+ * gateways still return the raw payload by default (lenient), but callers can
+ * opt into strict mode (`strictSchema: true`) to turn a mismatch into an
+ * `ApiError`. See src/api/client.ts / server.ts.
+ */
+export function logSchemaMismatch(endpoint: string, issues: unknown): void {
+  console.error(`⚠️ API schema mismatch [${endpoint}]`, issues);
+}
+
+/**
  * Extract a human-readable error message from Django's standard error envelope.
  *
  * Handles:

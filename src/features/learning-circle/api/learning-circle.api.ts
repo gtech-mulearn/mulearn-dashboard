@@ -28,6 +28,8 @@ import {
   InviteListResponseSchema,
   type InviteResponseRequest,
   type JoinMeetingRequest,
+  type JoinRequest,
+  JoinRequestListResponseSchema,
   type LearningCircle,
   type LearningCircleDetail,
   type Meeting,
@@ -38,6 +40,7 @@ import {
   MeetingReportResponseSchema,
   type PublicMeetingListResponse,
   PublicMeetingListResponseSchema,
+  type RespondJoinRequest,
   type SendInviteRequest,
   type TransferLeadRequest,
   type UserBasic,
@@ -167,6 +170,29 @@ export async function joinCircle(circleId: string): Promise<void> {
   await apiClient.post(
     endpoints.learningCircle.join(circleId),
     {},
+    EmptyResponseSchema,
+  );
+}
+
+/** Lead/creator: list pending join requests for a circle (GET join/<id>/) */
+export async function getJoinRequests(
+  circleId: string,
+): Promise<JoinRequest[]> {
+  const response = await apiClient.get(
+    endpoints.learningCircle.join(circleId),
+    JoinRequestListResponseSchema,
+  );
+  return response.response;
+}
+
+/** Lead/creator: accept or reject a pending join request (PATCH join/<id>/) */
+export async function respondToJoinRequest(
+  circleId: string,
+  data: RespondJoinRequest,
+): Promise<void> {
+  await apiClient.patch(
+    endpoints.learningCircle.join(circleId),
+    data,
     EmptyResponseSchema,
   );
 }

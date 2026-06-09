@@ -52,7 +52,7 @@ export function EventsPagination({
             size="icon"
             onClick={() => onPageChange(currentPage - 1)}
             disabled={!pagination.isPrev}
-            className="h-8 w-8 rounded-full border-border bg-background text-foreground hover:border-primary hover:text-primary disabled:opacity-40"
+            className="h-8 w-8 rounded-full"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -63,18 +63,14 @@ export function EventsPagination({
               variant={page === currentPage ? "default" : "outline"}
               size="icon"
               onClick={() => onPageChange(page)}
-              className={`h-8 w-8 rounded-full ${
-                page === currentPage
-                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                  : "border-border bg-background text-foreground hover:border-primary hover:text-primary"
-              }`}
+              className={`h-8 w-8 rounded-full ${page === currentPage ? "" : ""}`}
             >
               {page}
             </Button>
           ))}
 
           {pagination.totalPages > currentPage + 1 && (
-            <span className="px-2">...</span>
+            <span className="px-2 text-brand-blue">...</span>
           )}
 
           {pagination.totalPages > currentPage + 2 && (
@@ -82,7 +78,7 @@ export function EventsPagination({
               variant="outline"
               size="icon"
               onClick={() => onPageChange(pagination.totalPages)}
-              className="h-8 w-8 rounded-full border-border bg-background text-foreground hover:border-primary hover:text-primary"
+              className="h-8 w-8 rounded-full"
             >
               {pagination.totalPages}
             </Button>
@@ -93,7 +89,7 @@ export function EventsPagination({
             size="icon"
             onClick={() => onPageChange(currentPage + 1)}
             disabled={!pagination.isNext}
-            className="h-8 w-8 rounded-full border-border bg-background text-foreground hover:border-primary hover:text-primary disabled:opacity-40"
+            className="h-8 w-8 rounded-full"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>

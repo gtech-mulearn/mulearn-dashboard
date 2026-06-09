@@ -19,6 +19,7 @@ import {
   getEditableUserProfile,
   getInterestGroupsList,
   getOrganizationsAndDepartments,
+  getPublicSocials,
   getPublicUserLevels,
   getPublicUserLog,
   getPublicUserProfile,
@@ -131,12 +132,23 @@ export function usePublicUserLevels(muid: string) {
 // Socials Hook
 // ============================================
 
-/** Fetch user's social links */
-export function useSocials() {
+/** Fetch the current user's social links. */
+export function useSocials(enabled = true) {
   return useQuery({
     queryKey: profileKeys.socials(),
     queryFn: getSocials,
     staleTime: PROFILE_STALE_TIME,
+    enabled,
+  });
+}
+
+/** Fetch another user's public social links by muid. */
+export function usePublicSocials(muid: string, enabled = true) {
+  return useQuery({
+    queryKey: profileKeys.publicSocials(muid),
+    queryFn: () => getPublicSocials(muid),
+    staleTime: PROFILE_STALE_TIME,
+    enabled: enabled && !!muid,
   });
 }
 

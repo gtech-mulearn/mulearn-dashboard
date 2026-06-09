@@ -13,7 +13,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { type ReactNode, useEffect } from "react";
 import { useUserInfo } from "@/features/auth";
 import { ROLES } from "@/lib/auth";
-import { useAuthStore } from "@/stores/auth-store";
 import Loader from "../loading";
 
 interface OnboardingGuardProps {
@@ -24,18 +23,10 @@ export function OnboardingGuard({ children }: OnboardingGuardProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { data: user, isLoading, isError } = useUserInfo();
-  const { setRole } = useAuthStore();
 
   const parts = pathname.split("/").filter(Boolean);
   const isPublicProfile =
     parts.length === 3 && parts[0] === "dashboard" && parts[1] === "profile";
-
-  useEffect(() => {
-    if (user?.roles) {
-      const primaryRole = user.roles[0]?.toLowerCase();
-      if (primaryRole) setRole(primaryRole);
-    }
-  }, [user, setRole]);
 
   useEffect(() => {
     if (isPublicProfile) return;

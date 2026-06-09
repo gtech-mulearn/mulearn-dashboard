@@ -81,9 +81,9 @@ export function KarmaHistory({ userLog, isLoading }: KarmaHistoryProps) {
 
       {/* Card Grid */}
       <div className="grid max-h-[450px] gap-5 overflow-y-auto sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {filteredLog.map((entry, index) => (
+        {filteredLog.map((entry) => (
           <div
-            key={`${entry.task_name}-${entry.created_date}-${index}`}
+            key={`${entry.task_name}-${entry.created_date}`}
             className="relative min-h-[220px] overflow-hidden rounded-xl border border-primary/20 bg-linear-to-br from-primary/5 to-primary/10 p-5 shadow-sm transition-shadow hover:shadow-md"
           >
             {/* Background Karma Icon */}

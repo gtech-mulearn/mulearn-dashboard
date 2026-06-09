@@ -304,11 +304,7 @@ export function ManageEventDetailView({
     <div className="mx-auto w-full max-w-7xl space-y-6 px-1 pb-24 sm:pb-0 lc-fade-in">
       <div className="rounded-2xl border border-border bg-card p-3 lc-card-shadow">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <Button
-            variant="ghost"
-            className="text-muted-foreground hover:text-foreground"
-            onClick={requestBack}
-          >
+          <Button variant="ghost" onClick={requestBack}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Back
           </Button>
 
@@ -316,23 +312,16 @@ export function ManageEventDetailView({
             {!isEditing ? (
               <>
                 <Button
-                  type="button"
                   variant="outline"
-                  className="border-border text-foreground hover:border-primary hover:text-primary"
                   onClick={() => setPeoplePanelOpen((value) => !value)}
                 >
                   {peoplePanelOpen ? "Hide People" : "People"}
                 </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="border-border text-foreground hover:border-primary hover:text-primary"
-                  onClick={enterEditMode}
-                >
+                <Button variant="outline" onClick={enterEditMode}>
                   <Pencil className="mr-2 h-4 w-4" /> Edit
                 </Button>
                 <Button
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  variant="destructive"
                   onClick={() => setConfirmCancelOpen(true)}
                 >
                   <Trash2 className="mr-2 h-4 w-4" /> Cancel Event
@@ -344,15 +333,10 @@ export function ManageEventDetailView({
                   type="submit"
                   form={`event-inline-edit-form-${event.id}`}
                   disabled={!isEditSaveArmed}
-                  className="bg-primary text-primary-foreground hover:bg-primary/90"
                 >
                   Save Changes
                 </Button>
-                <Button
-                  variant="outline"
-                  className="border-border text-foreground"
-                  onClick={handleDiscard}
-                >
+                <Button variant="outline" onClick={handleDiscard}>
                   Discard
                 </Button>
               </>
@@ -368,9 +352,8 @@ export function ManageEventDetailView({
               People Access
             </CardTitle>
             <Button
-              type="button"
-              variant="ghost"
-              className="text-muted-foreground hover:text-foreground"
+              variant="link"
+              className="underline-offset-0"
               onClick={() => setPeoplePanelOpen(false)}
             >
               Close
@@ -476,12 +459,7 @@ export function ManageEventDetailView({
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 p-3 backdrop-blur sm:hidden">
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-2">
           {!isEditing ? (
-            <Button
-              type="button"
-              variant="outline"
-              className="border-border text-foreground"
-              onClick={enterEditMode}
-            >
+            <Button variant="outline" onClick={enterEditMode}>
               <Pencil className="mr-2 h-4 w-4" /> Edit
             </Button>
           ) : (
@@ -490,15 +468,10 @@ export function ManageEventDetailView({
                 type="submit"
                 form={`event-inline-edit-form-${event.id}`}
                 disabled={!isEditSaveArmed}
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 Save Changes
               </Button>
-              <Button
-                variant="outline"
-                className="border-border text-foreground"
-                onClick={handleDiscard}
-              >
+              <Button variant="outline" onClick={handleDiscard}>
                 Discard
               </Button>
             </>
@@ -513,7 +486,7 @@ export function ManageEventDetailView({
             Panels
           </Button>
           <Button
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            variant="destructive"
             onClick={() => setConfirmCancelOpen(true)}
           >
             Cancel
