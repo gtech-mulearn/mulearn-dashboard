@@ -1,6 +1,7 @@
 import { ChevronLeft, Star } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import type { EventDetail } from "../types";
 
 interface EventHeroBannerProps {
@@ -39,14 +40,15 @@ export function EventHeroBanner({
       <div className="absolute inset-0 bg-gradient-to-t from-foreground/75 via-foreground/30 to-transparent" />
 
       {/* Top Row Controls */}
-      <button
-        type="button"
+      <Button
+        variant="default"
+        size="icon"
         onClick={() => router.back()}
-        className="absolute left-4 top-4 z-20 flex size-8 items-center justify-center rounded-full border border-primary-foreground/15 bg-foreground/30 text-primary-foreground backdrop-blur-sm"
+        className="absolute left-4 top-4 z-20"
         aria-label="Go back"
       >
         <ChevronLeft className="size-4" />
-      </button>
+      </Button>
 
       {/* Top Right: Status Pill */}
       <div className="absolute right-4 top-4 z-20">
