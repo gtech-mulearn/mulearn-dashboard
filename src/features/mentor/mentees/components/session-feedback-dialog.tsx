@@ -76,10 +76,7 @@ export function SessionFeedbackDialog({
 
         <div className="space-y-3 py-2">
           <Label htmlFor="session-feedback" className="text-sm font-medium">
-            Your feedback{" "}
-            <span className="text-muted-foreground font-normal">
-              (optional)
-            </span>
+            Your feedback
           </Label>
           <Textarea
             id="session-feedback"

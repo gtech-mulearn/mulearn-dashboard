@@ -1,7 +1,8 @@
 "use client";
 
-import { Pencil, Plus, Star, Trash, Users } from "lucide-react";
+import { Copy, Pencil, Plus, Star, Trash, Users } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -71,6 +72,8 @@ function SessionRow({
   onKarma: (s: Session) => void;
   onDelete: (id: string) => void;
 }) {
+  const status = session.status || "PENDING_APPROVAL";
+
   return (
     <TableRow>
       <TableCell className="font-medium">
@@ -110,8 +113,8 @@ function SessionRow({
           : "Not scheduled"}
       </TableCell>
       <TableCell>
-        <Badge variant={STATUS_VARIANT[session.status] ?? "secondary"}>
-          {session.status.replace(/_/g, " ")}
+        <Badge variant={STATUS_VARIANT[status] ?? "secondary"}>
+          {status.replace(/_/g, " ")}
         </Badge>
       </TableCell>
       <TableCell className="text-right">
@@ -122,8 +125,25 @@ function SessionRow({
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                onClick={() => {
+                  navigator.clipboard.writeText(session.id);
+                  toast.success("Session ID copied to clipboard!");
+                }}
+              >
+                <Copy className="w-4 h-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Copy Session ID</TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground"
                 onClick={() => onEdit(session)}
-                disabled={TERMINAL.has(session.status)}
+                disabled={TERMINAL.has(status)}
               >
                 <Pencil className="w-4 h-4" />
               </Button>
@@ -159,7 +179,7 @@ function SessionRow({
             <TooltipContent>Delete</TooltipContent>
           </Tooltip>
 
-          {isAdmin && session.status === "COMPLETED" && (
+          {isAdmin && status === "COMPLETED" && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -183,8 +203,7 @@ function SessionRow({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                {session.status === "SCHEDULED" ||
-                session.status === "PENDING_APPROVAL" ? (
+                {status === "SCHEDULED" || status === "PENDING_APPROVAL" ? (
                   <>
                     <DropdownMenuItem
                       onClick={() => onApprove(session, "approve")}

@@ -157,10 +157,7 @@ export function JoinSessionDialog({
           <div className="space-y-4 py-2">
             <div className="space-y-2">
               <Label htmlFor="join-session-id" className="text-sm font-medium">
-                Session ID{" "}
-                <span className="text-muted-foreground font-normal">
-                  (required)
-                </span>
+                Session ID
               </Label>
               <Input
                 id="join-session-id"
