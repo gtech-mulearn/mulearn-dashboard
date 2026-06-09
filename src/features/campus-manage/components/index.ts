@@ -1,5 +1,5 @@
 export * from "./campus-manage-dashboard";
-export { IgChapterEditSheet } from "./ig-chapter-edit-sheet";
+export { IgChapterEditDialog } from "./ig-chapter-edit-dialog";
 export { IgChapterFormDialog } from "./ig-chapter-form-dialog";
 export { StudentLevelsCard } from "./student-levels-card";
 export { TransferEnablerDialog } from "./transfer-enabler-dialog";

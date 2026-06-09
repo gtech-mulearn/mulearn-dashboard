@@ -64,7 +64,7 @@ export function ProfileSidebar({
 
       {/* Socials */}
       <div className="rounded-2xl bg-card p-4 shadow-sm">
-        <SocialsDisplay isOwnProfile={isOwnProfile} />
+        <SocialsDisplay isOwnProfile={isOwnProfile} muid={profile.muid} />
       </div>
 
       {/* Roles */}

@@ -186,12 +186,8 @@ export function ApplicantsSection({ jobId }: ApplicantsSectionProps) {
               : `No ${APP_STATUS_META[statusFilter as AppStatus]?.label.toLowerCase()} applicants.`}
           </p>
         ) : (
-          applicants.map((a, index) => (
-            <ApplicantRow
-              key={`${a.id}-${index}`}
-              applicant={a}
-              jobId={jobId}
-            />
+          applicants.map((a) => (
+            <ApplicantRow key={a.id} applicant={a} jobId={jobId} />
           ))
         )}
 

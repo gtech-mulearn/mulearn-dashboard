@@ -1,10 +1,9 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { endpoints } from "@/api/endpoints";
-import { authStore } from "@/lib/auth";
+import { useCsvDownload } from "@/hooks/use-csv-download";
 import {
   deleteRoleVerification,
   fetchRoleVerifications,
@@ -68,44 +67,5 @@ export function useDeleteRoleVerification() {
 export function useRoleVerificationCsvDownload(
   csvPath: string = endpoints.admin.roleVerification.csv,
 ) {
-  const [isDownloading, setIsDownloading] = useState(false);
-
-  const downloadCsv = useCallback(async () => {
-    const token = authStore.getAccessToken();
-    if (!token) {
-      throw new Error("Please login again to download CSV");
-    }
-
-    setIsDownloading(true);
-    try {
-      const base = process.env.NEXT_PUBLIC_DJANGO_API_URL;
-      const response = await fetch(base ? `${base}${csvPath}` : csvPath, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to download CSV");
-      }
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
-      anchor.href = url;
-      anchor.download = "role-verification.csv";
-      document.body.appendChild(anchor);
-      anchor.click();
-      anchor.remove();
-      window.URL.revokeObjectURL(url);
-    } finally {
-      setIsDownloading(false);
-    }
-  }, [csvPath]);
-
-  return {
-    downloadCsv,
-    isDownloading,
-  };
+  return useCsvDownload(csvPath, "role-verification.csv");
 }

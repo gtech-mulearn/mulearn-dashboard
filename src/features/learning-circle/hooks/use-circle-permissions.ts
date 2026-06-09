@@ -107,8 +107,10 @@ export function useCirclePermissions(
       canSendInvites: isOwner,
       canTransferLead: isOwner,
 
+      // Any accepted member (incl. lead/owner) can create a meeting — mirrors
+      // the backend gate (_is_member_or_creator).
+      canCreateMeeting: role !== null,
       // Owner OR Lead
-      canCreateMeeting: isOwnerOrLead,
       canEditMeeting: isOwnerOrLead,
       canDeleteMeeting: isOwnerOrLead,
       canSubmitReport: isOwnerOrLead,

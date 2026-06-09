@@ -25,11 +25,13 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import Loader from "@/app/loading";
 import { updateSocials } from "../api";
-import { useSocials } from "../hooks";
+import { usePublicSocials, useSocials } from "../hooks";
 import { profileKeys } from "../hooks/query-keys";
 
 interface SocialsDisplayProps {
   isOwnProfile: boolean;
+  /** muid of the profile owner — used to fetch socials on a public profile. */
+  muid?: string;
 }
 
 type SocialIcon = ElementType<{ className?: string }>;
@@ -139,8 +141,15 @@ type SocialFormValues = {
   medium: string;
 };
 
-export function SocialsDisplay({ isOwnProfile }: SocialsDisplayProps) {
-  const { data: socials, isLoading } = useSocials();
+export function SocialsDisplay({ isOwnProfile, muid }: SocialsDisplayProps) {
+  // Use the current user's own socials, or the profile owner's PUBLIC socials by
+  // muid — never the self endpoint on someone else's profile (that would show
+  // the viewer's links instead of the owner's).
+  const ownSocials = useSocials(isOwnProfile);
+  const publicSocials = usePublicSocials(muid ?? "", !isOwnProfile);
+  const { data: socials, isLoading } = isOwnProfile
+    ? ownSocials
+    : publicSocials;
   const queryClient = useQueryClient();
 
   const [editMode, setEditMode] = useState(false);

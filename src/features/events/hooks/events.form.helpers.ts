@@ -1,6 +1,6 @@
-import { toISOWithOffset } from "../hooks/events.hooks";
 import type { CreateEventSchema } from "../schemas";
 import type { EventDetailManage, EventPatchBody } from "../types";
+import { toISOWithOffset } from "./events.transforms";
 
 export type ComparablePatchPayload = Partial<EventPatchBody>;
 

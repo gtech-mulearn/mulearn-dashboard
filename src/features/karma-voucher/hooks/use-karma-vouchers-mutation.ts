@@ -1,10 +1,10 @@
 "use client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { ApiError } from "@/api";
 import { endpoints } from "@/api/endpoints";
-import { authStore } from "@/lib/auth";
+import { useCsvDownload } from "@/hooks/use-csv-download";
+import { downloadBlob } from "@/lib/download";
 import {
   deleteKarmaVoucher,
   downloadTemplate,
@@ -95,51 +95,11 @@ export function useDownloadTemplate() {
   };
 }
 
-// ─── CSV download hook (callback-based, mirrors useManageUsersCsvDownload) ──
+// ─── CSV download hook ──────────────────────────────────────────────────────
 
 export function useKarmaVoucherCsvDownload() {
-  const [isDownloading, setIsDownloading] = useState(false);
-
-  const downloadCsv = useCallback(async () => {
-    const token = authStore.getAccessToken();
-    if (!token) {
-      throw new Error("Please login again to download CSV");
-    }
-
-    setIsDownloading(true);
-    try {
-      const base = process.env.NEXT_PUBLIC_DJANGO_API_URL;
-      const csvPath = endpoints.admin.karmaVoucher.exportCSV;
-      const response = await fetch(base ? `${base}${csvPath}` : csvPath, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to download CSV");
-      }
-
-      const blob = await response.blob();
-      downloadBlob(blob, "karma-vouchers.csv");
-    } finally {
-      setIsDownloading(false);
-    }
-  }, []);
-
-  return { downloadCsv, isDownloading };
-}
-
-// ─── Helper ─────────────────────────────────────────────────────────────────
-
-function downloadBlob(blob: Blob, filename: string) {
-  const url = window.URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = filename;
-  document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
-  window.URL.revokeObjectURL(url);
+  return useCsvDownload(
+    endpoints.admin.karmaVoucher.exportCSV,
+    "karma-vouchers.csv",
+  );
 }
