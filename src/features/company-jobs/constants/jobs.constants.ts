@@ -15,7 +15,7 @@ export const JOB_TYPE_OPTIONS = [
   { value: "Part-Time", label: "Part-Time" },
   { value: "Internship", label: "Internship" },
   { value: "Contract", label: "Contract" },
-  { value: "Freelance", label: "Freelance" },
+  { value: "Gig", label: "Gig" },
 ] as const;
 
 // ─── Rule Type Options ──────────────────────────────────────

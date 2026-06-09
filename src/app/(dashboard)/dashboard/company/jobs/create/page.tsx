@@ -31,36 +31,49 @@ export default function CreateJobPage() {
     router.push("/dashboard/company/jobs");
   }, [router]);
 
+  const parseNumber = useCallback((val: string | number | undefined | null) => {
+    if (val === undefined || val === null || val === "") return undefined;
+    if (typeof val === "number") return val;
+    const clean = val.replace(/[^0-9.]/g, "");
+    const parsed = parseFloat(clean);
+    return isNaN(parsed) ? undefined : parsed;
+  }, []);
+
   const handleSubmit = useCallback(
     async (values: JobFormValues, rules: JobRule[]) => {
       try {
+        const isGig = values.job_type === "Gig";
         const result = await createJobMutation.mutateAsync({
           title: values.title,
           experience: values.experience,
           job_description: values.job_description,
           location: values.location,
-          salary_range: values.salary_range,
           job_type: values.job_type,
+          status: "Active",
+          certificate_provided: values.certificate_provided ? "Yes" : "No",
+          rules: rules.map((r) => ({
+            rule_type: r.rule_type,
+            rule_value: r.rule_value,
+          })),
 
-          // Advanced options — only include if set
-
-          ...(values.duration_value !== undefined && {
-            duration_value: values.duration_value,
-          }),
-          ...(values.duration_unit && { duration_unit: values.duration_unit }),
-          ...(values.hourly_rate && { hourly_rate: values.hourly_rate }),
-          ...(values.deliverables && { deliverables: values.deliverables }),
-          ...(values.stipend && { stipend: values.stipend }),
-          ...(values.certificate_provided !== undefined &&
-            values.certificate_provided !== false && {
-              certificate_provided: values.certificate_provided ? "Yes" : "No",
-            }),
-          ...(rules.length > 0 && {
-            rules: rules.map((r) => ({
-              rule_type: r.rule_type,
-              rule_value: r.rule_value,
-            })),
-          }),
+          // Distinguish Gig vs Other Jobs
+          ...(isGig
+            ? {
+                duration_value:
+                  values.duration_value != null
+                    ? Number(values.duration_value)
+                    : undefined,
+                duration_unit: values.duration_unit || undefined,
+                hourly_rate: parseNumber(values.hourly_rate),
+                deliverables:
+                  values.deliverables && values.deliverables.length > 0
+                    ? values.deliverables.join(", ")
+                    : undefined,
+                stipend: parseNumber(values.stipend),
+              }
+            : {
+                salary_range: values.salary_range,
+              }),
         });
 
         const jobId = result.id;
@@ -70,7 +83,7 @@ export default function CreateJobPage() {
         // Error is handled by the mutation's onError handler
       }
     },
-    [createJobMutation, router],
+    [createJobMutation, router, parseNumber],
   );
 
   return (

@@ -12,11 +12,10 @@ import {
 } from "../schemas";
 import type { Job, StepId } from "../types";
 
+import type { z } from "zod";
+
 // Per-step validation schemas
-const STEP_SCHEMAS: Record<
-  string,
-  typeof BasicInfoStepSchema | typeof RequirementsStepSchema | null
-> = {
+const STEP_SCHEMAS: Record<string, z.ZodTypeAny | null> = {
   "basic-info": BasicInfoStepSchema,
   requirements: RequirementsStepSchema,
   rules: null, // Rules step has its own validation via the rule dialog

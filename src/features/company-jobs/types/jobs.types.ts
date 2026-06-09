@@ -13,7 +13,8 @@ export type JobType =
   | "Part-Time"
   | "Internship"
   | "Contract"
-  | "Freelance";
+  | "Freelance"
+  | "Gig";
 
 export type JobStatus = "Active" | "Inactive" | "Draft";
 
@@ -158,15 +159,16 @@ export interface CreateJobPayload {
   experience: string;
   job_description: string;
   location: string;
-  salary_range: string;
+  salary_range?: string;
   job_type: string;
+  status?: string;
   // Advanced options
 
   duration_value?: number;
   duration_unit?: string;
-  hourly_rate?: string;
-  deliverables?: string[];
-  stipend?: string;
+  hourly_rate?: string | number;
+  deliverables?: string[] | string;
+  stipend?: string | number;
   certificate_provided?: boolean | string;
   rules?: { rule_type: string; rule_value: string | number }[];
 }
@@ -176,16 +178,17 @@ export interface UpdateJobPayload {
   experience?: string;
   job_description?: string;
   location?: string;
-  salary_range?: string;
+  salary_range?: string | null;
   job_type?: string;
+  status?: string;
   // Advanced options
 
-  duration_value?: number;
-  duration_unit?: string;
-  hourly_rate?: string;
-  deliverables?: string[];
-  stipend?: string;
-  certificate_provided?: boolean | string;
+  duration_value?: number | null;
+  duration_unit?: string | null;
+  hourly_rate?: string | number | null;
+  deliverables?: string[] | string | null;
+  stipend?: string | number | null;
+  certificate_provided?: boolean | string | null;
 }
 
 export interface CreateRulePayload {

@@ -7,7 +7,7 @@
  */
 
 import { ChevronDown, Settings2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import {
   FormControl,
@@ -36,7 +36,16 @@ interface StepRequirementsProps {
 }
 
 export function StepRequirements({ form }: StepRequirementsProps) {
+  const jobType = form.watch("job_type");
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [hasOpenedGig, setHasOpenedGig] = useState(false);
+
+  useEffect(() => {
+    if (jobType === "Gig" && !hasOpenedGig) {
+      setShowAdvanced(true);
+      setHasOpenedGig(true);
+    }
+  }, [jobType, hasOpenedGig]);
 
   return (
     <div className="space-y-6">

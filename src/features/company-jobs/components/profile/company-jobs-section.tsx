@@ -24,6 +24,7 @@ const JOB_TYPE_STYLES: Record<string, string> = {
   Internship: "bg-brand-purple/15 text-brand-purple",
   "Part-Time": "bg-brand-blue/15 text-brand-blue",
   Contract: "bg-warning/15 text-warning",
+  Gig: "bg-success/15 text-success",
   Freelance: "bg-success/15 text-success",
 };
 

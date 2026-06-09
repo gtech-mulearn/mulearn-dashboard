@@ -94,11 +94,48 @@ export function StepReview({
             label="Location"
             value={values.location || "—"}
           />
-          <ReviewField
-            icon={Wallet}
-            label="Salary Range"
-            value={values.salary_range || "—"}
-          />
+          {values.job_type !== "Gig" ? (
+            <ReviewField
+              icon={Wallet}
+              label="Salary Range"
+              value={values.salary_range || "—"}
+            />
+          ) : (
+            <>
+              {(values.duration_value || values.duration_unit) && (
+                <ReviewField
+                  icon={Timer}
+                  label="Duration"
+                  value={
+                    values.duration_value && values.duration_unit
+                      ? `${values.duration_value} ${values.duration_unit}`
+                      : values.duration_value || values.duration_unit || "—"
+                  }
+                />
+              )}
+              {values.hourly_rate && (
+                <ReviewField
+                  icon={Wallet}
+                  label="Hourly Rate"
+                  value={values.hourly_rate}
+                />
+              )}
+              {values.stipend && (
+                <ReviewField
+                  icon={Wallet}
+                  label="Stipend"
+                  value={values.stipend}
+                />
+              )}
+              <ReviewField
+                icon={Briefcase}
+                label="Certificate"
+                value={
+                  values.certificate_provided ? "Provided" : "Not Provided"
+                }
+              />
+            </>
+          )}
         </div>
       </div>
 

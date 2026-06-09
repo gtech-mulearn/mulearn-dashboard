@@ -725,7 +725,7 @@ export const PublicJobsBySlugResponseSchema = DjangoResponse(
 
 // ─── Form Schemas (per-step validation) ─────────────────────
 
-export const BasicInfoStepSchema = z.object({
+export const BasicInfoStepObjectSchema = z.object({
   title: z
     .string()
     .min(1, "Job title is required")
@@ -737,9 +737,22 @@ export const BasicInfoStepSchema = z.object({
     .max(100, "Location must be 100 characters or fewer"),
   salary_range: z
     .string()
-    .min(1, "Salary range is required")
-    .max(50, "Salary range must be 50 characters or fewer"),
+    .max(50, "Salary range must be 50 characters or fewer")
+    .optional(),
 });
+
+export const BasicInfoStepSchema = BasicInfoStepObjectSchema.refine(
+  (data) => {
+    if (data.job_type !== "Gig") {
+      return !!data.salary_range && data.salary_range.trim().length > 0;
+    }
+    return true;
+  },
+  {
+    message: "Salary range is required for non-gig jobs",
+    path: ["salary_range"],
+  },
+);
 
 export const RequirementsStepSchema = z.object({
   experience: z
@@ -766,7 +779,20 @@ export const RequirementsStepSchema = z.object({
 });
 
 /** Combined form schema for create / edit */
-export const JobFormSchema = BasicInfoStepSchema.merge(RequirementsStepSchema);
+export const JobFormSchema = BasicInfoStepObjectSchema.merge(
+  RequirementsStepSchema,
+).refine(
+  (data) => {
+    if (data.job_type !== "Gig") {
+      return !!data.salary_range && data.salary_range.trim().length > 0;
+    }
+    return true;
+  },
+  {
+    message: "Salary range is required for non-gig jobs",
+    path: ["salary_range"],
+  },
+);
 
 export type JobFormValues = z.infer<typeof JobFormSchema>;
 export type BasicInfoStepValues = z.infer<typeof BasicInfoStepSchema>;
