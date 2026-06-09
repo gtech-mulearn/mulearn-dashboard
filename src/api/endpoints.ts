@@ -195,6 +195,14 @@ export const endpoints = {
   // Base: /api/v1/dashboard/mentor/
   // ============================================
   mentor: {
+    // ── Overview & Persona ──────────────────────────────────────────────────
+    /** GET - Mentor overview (scopes + metrics) */
+    overview: "/api/v1/dashboard/mentor/overview/",
+    /** GET - Mentor persona IG roles */
+    personaIgRoles: "/api/v1/dashboard/mentor/persona/ig-roles/",
+    /** POST - Switch mentor persona */
+    personaSwitch: "/api/v1/dashboard/mentor/persona/switch/",
+
     // ── #1 POST/PATCH  register/ ─────────────────────────────────────────────
     /** POST/PATCH - Submit or update a mentor application */
     register: "/api/v1/dashboard/mentor/register/",

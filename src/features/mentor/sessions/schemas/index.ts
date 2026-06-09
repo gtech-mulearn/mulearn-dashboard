@@ -107,7 +107,7 @@ export const ParticipantsListResponseSchema = ApiResponseSchema(
 export const SessionFormBaseSchema = z.object({
   title: z.string().min(1, "Title is required").max(150),
   description: z.string().optional(),
-  ig_id: z.string().optional(),
+  ig_id: z.string().min(1, "Interest Group is required"),
   mode: z.enum(["ONLINE", "OFFLINE", "HYBRID"]),
   starts_at: z.string().min(1, "Start time is required"),
   ends_at: z.string().min(1, "End time is required"),

@@ -5,11 +5,11 @@ import { endpoints } from "@/api/endpoints";
 import type { MenteeView } from "../schemas";
 import {
   GenericResponseSchema,
+  type JoinSessionParticipant,
   JoinSessionResponseSchema,
   ParticipantHistoryResponseSchema,
   SessionFeedbackResponseSchema,
   SessionParticipantListResponseSchema,
-  type JoinSessionParticipant,
   type UpdateParticipantValues,
 } from "../schemas";
 

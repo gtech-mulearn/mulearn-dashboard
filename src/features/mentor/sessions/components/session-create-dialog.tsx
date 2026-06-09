@@ -1,9 +1,11 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
 
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
+import { CustomDateTimePicker } from "@/components/ui/custom-datetime-picker";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +21,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -27,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Tooltip,
@@ -55,7 +57,7 @@ export function SessionCreateDialog({
     defaultValues: {
       title: "",
       description: "",
-      ig_id: "GLOBAL",
+      ig_id: "",
       mode: "ONLINE",
       starts_at: "",
       ends_at: "",
@@ -67,31 +69,38 @@ export function SessionCreateDialog({
     } as any,
   });
 
-  const watchedIgId = form.watch("ig_id");
-  const selectedIgId =
-    watchedIgId && watchedIgId !== "GLOBAL" ? watchedIgId : "";
   const isRecurring = form.watch("is_recurring");
 
+  useEffect(() => {
+    if (open) {
+      const now = new Date();
+      const startsAt = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+        .toISOString()
+        .slice(0, 16);
+      const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
+      const endsAt = new Date(
+        oneHourLater.getTime() - oneHourLater.getTimezoneOffset() * 60000,
+      )
+        .toISOString()
+        .slice(0, 16);
+
+      form.setValue("starts_at", startsAt);
+      form.setValue("ends_at", endsAt);
+    }
+  }, [open, form]);
+
   function onSubmit(values: SessionFormValues) {
-    const igId =
-      values.ig_id && values.ig_id !== "GLOBAL" ? values.ig_id : undefined;
-    create(
-      {
-        ...values,
-        ig_id: igId,
+    create(values, {
+      onSuccess: () => {
+        onOpenChange(false);
+        form.reset();
       },
-      {
-        onSuccess: () => {
-          onOpenChange(false);
-          form.reset();
-        },
-      },
-    );
+    });
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>New Session</DialogTitle>
         </DialogHeader>
@@ -137,7 +146,7 @@ export function SessionCreateDialog({
               name="ig_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Interest Group (optional)</FormLabel>
+                  <FormLabel>Interest Group</FormLabel>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <div>
@@ -147,13 +156,10 @@ export function SessionCreateDialog({
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Global session (no IG)" />
+                              <SelectValue placeholder="Select Interest Group" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="GLOBAL">
-                              Global session
-                            </SelectItem>
                             {myIgs.map((ig) => (
                               <SelectItem key={ig.id} value={ig.id}>
                                 {ig.name}
@@ -169,45 +175,43 @@ export function SessionCreateDialog({
                       </TooltipContent>
                     )}
                   </Tooltip>
-                  {!selectedIgId && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      This will be submitted as a global session pending admin
-                      approval.
-                    </p>
-                  )}
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control as any}
-                name="starts_at"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Starts At</FormLabel>
-                    <FormControl>
-                      <Input type="datetime-local" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control as any}
-                name="ends_at"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Ends At</FormLabel>
-                    <FormControl>
-                      <Input type="datetime-local" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control as any}
+              name="starts_at"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Starts At</FormLabel>
+                  <FormControl>
+                    <CustomDateTimePicker
+                      value={field.value}
+                      onChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control as any}
+              name="ends_at"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Ends At</FormLabel>
+                  <FormControl>
+                    <CustomDateTimePicker
+                      value={field.value}
+                      onChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control as any}
@@ -310,7 +314,11 @@ export function SessionCreateDialog({
                     <FormItem className="col-span-2">
                       <FormLabel>End Series On</FormLabel>
                       <FormControl>
-                        <Input type="date" {...field} />
+                        <CustomDateTimePicker
+                          value={field.value}
+                          onChange={field.onChange}
+                          hideTime
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

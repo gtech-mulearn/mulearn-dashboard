@@ -1,9 +1,10 @@
 "use client";
 
-import { Pencil, Plus, Star, Users } from "lucide-react";
+import { Pencil, Plus, Star, Trash, Users } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,7 +29,11 @@ import {
 } from "@/components/ui/tooltip";
 import { usePermissions } from "@/hooks/use-permissions";
 import { MANAGEMENT_ROLES } from "@/lib/auth/roles";
-import { usePendingSessions, useSessions } from "../hooks/use-sessions";
+import {
+  useDeleteSession,
+  usePendingSessions,
+  useSessions,
+} from "../hooks/use-sessions";
 import type { Session } from "../schemas";
 import { ApproveSessionDialog } from "./approve-session-dialog";
 import { KarmaAwardDialog } from "./karma-award-dialog";
@@ -56,6 +61,7 @@ function SessionRow({
   onParticipants,
   onApprove,
   onKarma,
+  onDelete,
 }: {
   session: Session;
   isAdmin: boolean;
@@ -63,6 +69,7 @@ function SessionRow({
   onParticipants: (s: Session) => void;
   onApprove: (s: Session, action: "approve" | "reject") => void;
   onKarma: (s: Session) => void;
+  onDelete: (id: string) => void;
 }) {
   return (
     <TableRow>
@@ -138,6 +145,20 @@ function SessionRow({
             <TooltipContent>Participants</TooltipContent>
           </Tooltip>
 
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                onClick={() => onDelete(session.id)}
+              >
+                <Trash className="w-4 h-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Delete</TooltipContent>
+          </Tooltip>
+
           {isAdmin && session.status === "COMPLETED" && (
             <Tooltip>
               <TooltipTrigger asChild>
@@ -199,6 +220,7 @@ function SessionTable({
   onParticipants,
   onApprove,
   onKarma,
+  onDelete,
 }: {
   sessions: Session[] | undefined;
   isLoading: boolean;
@@ -207,6 +229,7 @@ function SessionTable({
   onParticipants: (s: Session) => void;
   onApprove: (s: Session, action: "approve" | "reject") => void;
   onKarma: (s: Session) => void;
+  onDelete: (id: string) => void;
 }) {
   if (isLoading) {
     return (
@@ -248,6 +271,7 @@ function SessionTable({
             onParticipants={onParticipants}
             onApprove={onApprove}
             onKarma={onKarma}
+            onDelete={onDelete}
           />
         ))}
       </TableBody>
@@ -268,6 +292,7 @@ export function SessionsPage() {
     action: "approve" | "reject";
   } | null>(null);
   const [karmaSession, setKarmaSession] = useState<Session | null>(null);
+  const [deleteSessionId, setDeleteSessionId] = useState<string | null>(null);
 
   const { data: all, isLoading: allLoading } = useSessions({});
   const upcomingSessions = all?.data?.filter(
@@ -277,12 +302,15 @@ export function SessionsPage() {
     usePendingSessions(isAdmin);
   const pending = pendingResult?.data;
 
+  const { mutate: deleteSession, isPending: isDeleting } = useDeleteSession();
+
   const sharedHandlers = {
     onEdit: setEditSession,
     onParticipants: setParticipantsSession,
     onApprove: (s: Session, action: "approve" | "reject") =>
       setApproveState({ session: s, action }),
     onKarma: setKarmaSession,
+    onDelete: setDeleteSessionId,
   };
 
   return (
@@ -363,6 +391,22 @@ export function SessionsPage() {
           session={karmaSession}
           open={!!karmaSession}
           onOpenChange={(v) => !v && setKarmaSession(null)}
+        />
+        <ConfirmDialog
+          open={!!deleteSessionId}
+          onOpenChange={(v) => !v && setDeleteSessionId(null)}
+          title="Delete Session"
+          description="Are you sure you want to delete this session? This action cannot be undone."
+          confirmLabel="Delete"
+          cancelLabel="Cancel"
+          isPending={isDeleting}
+          onConfirm={() => {
+            if (deleteSessionId) {
+              deleteSession(deleteSessionId, {
+                onSuccess: () => setDeleteSessionId(null),
+              });
+            }
+          }}
         />
       </div>
     </TooltipProvider>

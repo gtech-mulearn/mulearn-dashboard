@@ -61,7 +61,7 @@ export async function getCalendarEvents() {
 
 export async function getMentorOverview() {
   const response = await apiClient.get(
-    "/api/v1/dashboard/mentor/overview/",
+    endpoints.mentor.overview,
     MentorOverviewResponseSchema,
     { skipAuthRedirectOn403: true },
   );
@@ -87,7 +87,7 @@ export async function getMentorSessions(status = "SCHEDULED") {
 
 export async function getMentorIgRoles() {
   const response = await apiClient.get(
-    "/api/v1/dashboard/mentor/persona/ig-roles/",
+    endpoints.mentor.personaIgRoles,
     MentorIgRolesResponseSchema,
   );
   return response.response.ig_roles;
@@ -95,7 +95,7 @@ export async function getMentorIgRoles() {
 
 export async function switchMentorPersona(roleLinkId: string) {
   const response = await apiClient.post(
-    "/api/v1/dashboard/mentor/persona/switch/",
+    endpoints.mentor.personaSwitch,
     { active_role_link_id: roleLinkId },
     MentorPersonaSwitchResponseSchema,
   );

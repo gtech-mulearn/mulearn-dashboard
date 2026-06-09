@@ -56,8 +56,12 @@ function toBackendPayload(data: Partial<SessionFormValues>) {
   } = data;
   const payload: Record<string, unknown> = { ...rest, is_recurring };
 
-  // Include ig_id only when set (undefined = global session, omit the field)
-  if (ig_id !== undefined) payload.ig_id = ig_id;
+  // Map frontend ig_id to all possible backend fields to ensure compatibility
+  if (ig_id !== undefined) {
+    payload.ig = ig_id;
+    payload.entity_id = ig_id;
+    payload.session_type = "ig_session";
+  }
 
   // Normalise datetime strings to full ISO-8601
   if (starts_at !== undefined) payload.starts_at = toISO(starts_at);
@@ -74,7 +78,9 @@ function toBackendPayload(data: Partial<SessionFormValues>) {
   if (is_recurring) {
     payload.recurrence_type = recurrence_type;
     payload.recurrence_interval = recurrence_interval;
-    payload.recurrence_end_date = recurrence_end_date;
+    payload.recurrence_end_date = recurrence_end_date
+      ? recurrence_end_date.split("T")[0]
+      : null;
   } else {
     payload.recurrence_type = null;
     payload.recurrence_interval = null;
