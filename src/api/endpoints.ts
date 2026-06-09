@@ -311,8 +311,11 @@ export const endpoints = {
       `/api/v1/dashboard/profile/get-user-levels/${muid}/`,
     /** PUT - Toggle profile public/private */
     shareProfile: "/api/v1/dashboard/profile/share-user-profile/",
-    /** GET - User socials */
+    /** GET - User socials (current user) */
     socials: "/api/v1/dashboard/profile/socials/",
+    /** GET - Public socials of another user by muid */
+    publicSocials: (muid: string) =>
+      `/api/v1/dashboard/profile/socials/${muid}/`,
     /** PUT - Update user socials */
     socialsEdit: "/api/v1/dashboard/profile/socials/edit/",
     /** PATCH - Update user's interest groups */
