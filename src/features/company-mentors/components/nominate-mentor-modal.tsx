@@ -82,6 +82,10 @@ export function NominateMentorModal({
                   <FormControl>
                     <Input placeholder="e.g. arjun-menon@mulearn" {...field} />
                   </FormControl>
+                  <p className="text-[11px] text-muted-foreground mt-1">
+                    Enter the user's unique platform μLearn ID (MUID), not their
+                    email address.
+                  </p>
                   <FormMessage />
                 </FormItem>
               )}
