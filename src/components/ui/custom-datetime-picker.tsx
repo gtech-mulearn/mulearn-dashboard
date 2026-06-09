@@ -11,6 +11,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
 interface CustomDateTimePickerProps {
@@ -363,5 +368,62 @@ export function CustomDateTimePicker({
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+export function ScrollableTimePicker({
+  value,
+  onChange,
+  disabled,
+  className,
+  "aria-label": ariaLabel,
+}: {
+  value: string; // "HH:mm"
+  onChange: (val: string) => void;
+  disabled?: boolean;
+  className?: string;
+  "aria-label"?: string;
+}) {
+  const [hourStr, minStr] = (value || "09:00").split(":");
+  const selectedHour = hourStr || "09";
+  const selectedMinute = minStr || "00";
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          disabled={disabled}
+          aria-label={ariaLabel}
+          className={cn(
+            "focus:outline-none disabled:opacity-50 text-left",
+            className,
+          )}
+        >
+          {selectedHour}:{selectedMinute}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="center">
+        <div className="flex justify-center gap-4 py-4 px-6 select-none bg-zinc-50 dark:bg-zinc-900/50 rounded-md">
+          <TimeWheel
+            items={HOURS}
+            selectedValue={selectedHour}
+            onChange={(val) => {
+              onChange(`${val}:${selectedMinute}`);
+            }}
+          />
+          <div className="text-xl font-bold flex items-center justify-center -mt-8">
+            :
+          </div>
+          <TimeWheel
+            items={MINUTES}
+            selectedValue={selectedMinute}
+            onChange={(val) => {
+              onChange(`${selectedHour}:${val}`);
+            }}
+          />
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }

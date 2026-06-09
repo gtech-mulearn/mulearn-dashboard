@@ -43,7 +43,13 @@ export function useAvailabilityCalendar() {
 export function useCreateAvailabilitySlots() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (schedule: WeeklySchedule) => createAvailabilitySlots(schedule),
+    mutationFn: ({
+      schedule,
+      igId,
+    }: {
+      schedule: WeeklySchedule;
+      igId?: string;
+    }) => createAvailabilitySlots(schedule, igId),
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: mentorKeys.availability(),

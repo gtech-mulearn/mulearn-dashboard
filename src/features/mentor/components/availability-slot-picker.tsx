@@ -2,6 +2,7 @@
 
 import { Plus, Trash2 } from "lucide-react";
 import { useId } from "react";
+import { ScrollableTimePicker } from "@/components/ui/custom-datetime-picker";
 import { cn } from "@/lib/utils";
 import type { TimeSlot, WeeklySchedule } from "../types";
 
@@ -140,34 +141,32 @@ export function AvailabilitySlotPicker({ value, onChange, disabled }: Props) {
                         className="group relative rounded-xl border border-border bg-background p-2 transition-shadow hover:shadow-sm"
                       >
                         <div className="space-y-1">
-                          <input
-                            type="time"
+                          <ScrollableTimePicker
                             value={slot.start}
                             aria-label={`${label} slot ${idx + 1} start`}
                             disabled={disabled}
-                            onChange={(e) =>
+                            onChange={(val) =>
                               onChange(
                                 updateSlot(value, num, idx, {
-                                  start: e.target.value,
+                                  start: val,
                                 }),
                               )
                             }
-                            className="w-full bg-transparent text-[11px] font-semibold text-foreground focus:outline-none disabled:opacity-50"
+                            className="w-full bg-transparent text-[11px] font-semibold text-foreground focus:outline-none disabled:opacity-50 cursor-pointer"
                           />
                           <div className="mx-0.5 h-px bg-border" />
-                          <input
-                            type="time"
+                          <ScrollableTimePicker
                             value={slot.end}
                             aria-label={`${label} slot ${idx + 1} end`}
                             disabled={disabled}
-                            onChange={(e) =>
+                            onChange={(val) =>
                               onChange(
                                 updateSlot(value, num, idx, {
-                                  end: e.target.value,
+                                  end: val,
                                 }),
                               )
                             }
-                            className="w-full bg-transparent text-[11px] text-muted-foreground focus:outline-none disabled:opacity-50"
+                            className="w-full bg-transparent text-[11px] text-muted-foreground focus:outline-none disabled:opacity-50 cursor-pointer"
                           />
                         </div>
                         {/* Delete button — visible on hover */}
@@ -189,7 +188,7 @@ export function AvailabilitySlotPicker({ value, onChange, disabled }: Props) {
                     type="button"
                     onClick={() => onChange(addSlot(value, num))}
                     disabled={disabled}
-                    className="flex items-center justify-center gap-1 rounded-xl border border-dashed border-primary/30 py-1.5 text-[11px] font-medium text-primary/60 transition-colors hover:border-primary/60 hover:text-primary disabled:pointer-events-none disabled:opacity-40"
+                    className="flex items-center justify-center gap-1 rounded-xl border border-dashed border-primary/30 py-1.5 text-[11px] font-medium text-primary/60 transition-colors hover:border-primary/60 hover:text-primary disabled:pointer-events-none disabled:opacity-40 cursor-pointer"
                   >
                     <Plus className="size-3" />
                     Add

@@ -24,6 +24,7 @@ import { MentorHeroCard } from "./mentor/mentor-hero-card";
 import { MentorSetupPrompt } from "./mentor/mentor-setup-prompt";
 import { MentorStatCards } from "./mentor/mentor-stat-cards";
 import { MyIgsCard } from "./mentor/my-igs-card";
+import { useTaskIgDropdown } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
 import { SessionRequestsCard } from "./mentor/session-requests-card";
 import { UpcomingSessionsCard } from "./mentor/upcoming-sessions-card";
 
@@ -60,6 +61,7 @@ export function MentorHome() {
     useAvailabilitySlots();
   const { mutate: saveSchedule, isPending: isSaving } =
     useCreateAvailabilitySlots();
+  const { data: igRoles } = useTaskIgDropdown();
 
   const [localSchedule, setLocalSchedule] = useState<WeeklySchedule>([]);
   const [savedSchedule, setSavedSchedule] = useState<WeeklySchedule>([]);
@@ -199,19 +201,24 @@ export function MentorHome() {
     : null;
 
   function handleSave() {
-    saveSchedule(localSchedule, {
-      onSuccess: () => {
-        setSavedSchedule(localSchedule);
-        toast.success("Availability updated");
+    const igId = igRoles?.[0]?.id;
+
+    saveSchedule(
+      { schedule: localSchedule, igId },
+      {
+        onSuccess: () => {
+          setSavedSchedule(localSchedule);
+          toast.success("Availability updated");
+        },
+        onError: (error) => {
+          toast.error(
+            error instanceof ApiError
+              ? error.message
+              : "Failed to save availability",
+          );
+        },
       },
-      onError: (error) => {
-        toast.error(
-          error instanceof ApiError
-            ? error.message
-            : "Failed to save availability",
-        );
-      },
-    });
+    );
   }
 
   function handleDiscard() {
@@ -291,7 +298,7 @@ export function MentorHome() {
                 size="sm"
                 onClick={handleDiscard}
                 disabled={isSaving}
-                className="rounded-full px-3 text-muted-foreground"
+                className="rounded-full px-3 text-muted-foreground cursor-pointer"
               >
                 Discard
               </Button>
@@ -300,7 +307,7 @@ export function MentorHome() {
                 size="sm"
                 onClick={handleSave}
                 disabled={isSaving}
-                className="rounded-full px-4"
+                className="rounded-full px-4 cursor-pointer"
               >
                 {isSaving && (
                   <Loader2 className="mr-1.5 size-3.5 animate-spin" />
