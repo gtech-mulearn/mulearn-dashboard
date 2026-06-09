@@ -869,12 +869,11 @@ export const CompanyDashboardSummarySchema = z.object({
   }),
   quick_stats: z
     .object({
-      jobs_posted: z.number().default(0).catch(0),
-      total_views: z.number().default(0).catch(0),
-      applications: z.number().default(0).catch(0),
-      hired: z.number().default(0).catch(0),
+      jobs_posted: z.number().catch(0),
+      total_views: z.number().catch(0),
+      applications: z.number().catch(0),
+      hired: z.number().catch(0),
     })
-    .default({ jobs_posted: 0, total_views: 0, applications: 0, hired: 0 })
     .catch({ jobs_posted: 0, total_views: 0, applications: 0, hired: 0 }),
   stat_cards: z.array(
     z.object({

@@ -464,10 +464,10 @@ export const MentorHomeSummaryResponseSchema = ApiResponseSchema(
 // ============================================
 
 export const CompanyQuickStatsSchema = z.object({
-  jobs_posted: z.number().default(0).catch(0),
-  total_views: z.number().default(0).catch(0),
-  applications: z.number().default(0).catch(0),
-  hired: z.number().default(0).catch(0),
+  jobs_posted: z.number().catch(0),
+  total_views: z.number().catch(0),
+  applications: z.number().catch(0),
+  hired: z.number().catch(0),
 });
 export type CompanyQuickStats = z.infer<typeof CompanyQuickStatsSchema>;
 
