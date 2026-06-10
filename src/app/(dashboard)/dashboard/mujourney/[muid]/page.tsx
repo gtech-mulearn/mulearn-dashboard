@@ -50,7 +50,7 @@ export default function PublicUserJourneyPage({
     );
   }
 
-  const { full_name, current_level, total_karma, levels } = data.response;
+  const { full_name, levels } = data.response;
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl space-y-8">
@@ -66,9 +66,6 @@ export default function PublicUserJourneyPage({
       <JourneyHeader
         title={`${full_name}'s Journey`}
         subtitle={`MUID: ${muid}`}
-        currentLevel={current_level}
-        totalKarma={total_karma}
-        showProgress={true}
       />
 
       {/* Levels */}

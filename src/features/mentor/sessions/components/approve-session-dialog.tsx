@@ -1,10 +1,11 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery } from "@tanstack/react-query";
+
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -27,13 +28,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { getMentorMyIgs } from "@/features/home/api/home.api";
+import { useTaskIgDropdown } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
 import { useApproveSession } from "../hooks/use-sessions";
 import type { Session } from "../schemas";
 
 const ApproveFormSchema = z.object({
   ig_id: z.string().optional(),
   remarks: z.string().optional(),
+  apply_to_series: z.boolean().optional().default(false),
 });
 type ApproveFormValues = z.infer<typeof ApproveFormSchema>;
 
@@ -51,27 +53,26 @@ export function ApproveSessionDialog({
   onOpenChange,
 }: ApproveSessionDialogProps) {
   const { mutate: approve, isPending } = useApproveSession();
-  const { data: myIgs = [] } = useQuery({
-    queryKey: ["mentor-my-igs"],
-    queryFn: getMentorMyIgs,
-  });
+  const { data: myIgs = [] } = useTaskIgDropdown();
 
   const form = useForm<ApproveFormValues>({
-    resolver: zodResolver(ApproveFormSchema),
-    defaultValues: { ig_id: "GLOBAL", remarks: "" },
+    resolver: zodResolver(ApproveFormSchema) as any,
+    defaultValues: {
+      ig_id: "GLOBAL",
+      remarks: "",
+      apply_to_series: false,
+    } as any,
   });
 
   function onSubmit(values: ApproveFormValues) {
     if (!session) return;
-    const igId =
-      values.ig_id && values.ig_id !== "GLOBAL" ? values.ig_id : undefined;
+    // Doc payload: { status: "SCHEDULED" } to approve, { status: "REJECTED" } to reject
     approve(
       {
         id: session.id,
         data: {
-          action,
-          ig_id: igId,
-          remarks: values.remarks,
+          status: isApprove ? "SCHEDULED" : "REJECTED",
+          apply_to_series: values.apply_to_series,
         },
       },
       { onSuccess: () => onOpenChange(false) },
@@ -90,7 +91,10 @@ export function ApproveSessionDialog({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form
+            onSubmit={form.handleSubmit(onSubmit as any)}
+            className="space-y-4"
+          >
             {isApprove && (
               <FormField
                 control={form.control}
@@ -107,8 +111,8 @@ export function ApproveSessionDialog({
                       <SelectContent>
                         <SelectItem value="GLOBAL">Keep as global</SelectItem>
                         {myIgs.map((ig) => (
-                          <SelectItem key={ig.ig_id} value={ig.ig_id}>
-                            {ig.ig_name}
+                          <SelectItem key={ig.id} value={ig.id}>
+                            {ig.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -140,6 +144,30 @@ export function ApproveSessionDialog({
                 </FormItem>
               )}
             />
+
+            {session?.is_recurring && (
+              <FormField
+                control={form.control}
+                name="apply_to_series"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>Apply to entire series</FormLabel>
+                      <p className="text-sm text-muted-foreground">
+                        This will {isApprove ? "approve" : "reject"} the current
+                        session and all linked pending child sessions.
+                      </p>
+                    </div>
+                  </FormItem>
+                )}
+              />
+            )}
 
             <div className="flex justify-end gap-2">
               <Button

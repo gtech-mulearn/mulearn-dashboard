@@ -4,60 +4,70 @@ import type { OnboardingFormValues } from "../schemas";
 import {
   type MentorApplication,
   MentorApplicationResponseSchema,
+  type MentorStatusData,
+  MentorStatusResponseSchema,
 } from "../schemas";
 
-function serializePayload(data: Partial<OnboardingFormValues>) {
-  return {
-    ...data,
-    ...(data.expertise !== undefined && {
-      expertise: JSON.stringify(data.expertise),
-    }),
-  };
-}
-
-function normalizeMentor(raw: MentorApplication): MentorApplication {
-  const exp = (raw as Record<string, unknown>).expertise;
-  let expertise: string[];
-  if (Array.isArray(exp)) expertise = exp as string[];
-  else if (typeof exp === "string") {
-    try {
-      expertise = JSON.parse(exp);
-    } catch {
-      expertise = [];
-    }
-  } else expertise = [];
-  return { ...raw, expertise };
-}
-
-export async function getMentorApplication(): Promise<MentorApplication> {
+// ─── GET /status/ ─────────────────────────────────────────────────────────────
+// Returns status, verification_note, mentor_id for the authenticated user.
+export async function getMentorApplicationStatus(): Promise<MentorStatusData> {
   const res = await apiClient.get(
-    endpoints.mentor.onboarding,
-    MentorApplicationResponseSchema,
+    endpoints.mentor.status,
+    MentorStatusResponseSchema,
     { skipAuthRedirectOn403: true },
   );
-  return normalizeMentor(res.response.mentor);
+  return res.response;
 }
 
+// ─── POST /register/ ──────────────────────────────────────────────────────────
+// Submit a new mentor application.
 export async function submitMentorApplication(
   data: OnboardingFormValues,
 ): Promise<MentorApplication> {
   const res = await apiClient.post(
-    endpoints.mentor.onboarding,
-    serializePayload(data),
+    endpoints.mentor.register,
+    data,
     MentorApplicationResponseSchema,
     { skipAuthRedirectOn403: true },
   );
-  return normalizeMentor(res.response.mentor);
+  return res.response;
 }
 
+// ─── PATCH /register/ ─────────────────────────────────────────────────────────
+// Update a PENDING or REJECTED application (re-submits rejected ones as PENDING).
 export async function updateMentorApplication(
   data: Partial<OnboardingFormValues>,
 ): Promise<MentorApplication> {
   const res = await apiClient.patch(
-    endpoints.mentor.onboarding,
-    serializePayload(data),
+    endpoints.mentor.register,
+    data,
     MentorApplicationResponseSchema,
     { skipAuthRedirectOn403: true },
   );
-  return normalizeMentor(res.response.mentor);
+  return res.response;
+}
+
+// ─── GET /profile/ ────────────────────────────────────────────────────────────
+// Full profile — only available for APPROVED mentors.
+export async function getMentorProfile(): Promise<MentorApplication> {
+  const res = await apiClient.get(
+    endpoints.mentor.profile,
+    MentorApplicationResponseSchema,
+    { skipAuthRedirectOn403: true },
+  );
+  return res.response;
+}
+
+// ─── PATCH /profile/ ──────────────────────────────────────────────────────────
+// Update approved mentor profile.
+export async function updateMentorProfile(
+  data: Partial<OnboardingFormValues>,
+): Promise<MentorApplication> {
+  const res = await apiClient.patch(
+    endpoints.mentor.profile,
+    data,
+    MentorApplicationResponseSchema,
+    { skipAuthRedirectOn403: true },
+  );
+  return res.response;
 }

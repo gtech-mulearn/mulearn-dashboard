@@ -1,34 +1,19 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
-import type {
-  MentorApplicationListItem,
-  TierUpdateValues,
-  VerifyActionValues,
-} from "../schemas";
+import type { MentorApplicationListItem, VerifyActionValues } from "../schemas";
 import { GenericResponseSchema, MentorListResponseSchema } from "../schemas";
 
 interface ListParams {
   search?: string;
   page?: number;
   status?: string;
+  mentor_tier?: string;
+  pageIndex?: number;
+  perPage?: number;
+  sortBy?: string;
 }
 
-function normalizeMentorItem(
-  raw: MentorApplicationListItem,
-): MentorApplicationListItem {
-  const exp = (raw as Record<string, unknown>).expertise;
-  let expertise: string[];
-  if (Array.isArray(exp)) expertise = exp as string[];
-  else if (typeof exp === "string") {
-    try {
-      expertise = JSON.parse(exp);
-    } catch {
-      expertise = [];
-    }
-  } else expertise = [];
-  return { ...raw, expertise };
-}
-
+// ─── GET /list/ ───────────────────────────────────────────────────────────────
 export async function fetchMentorList(params: ListParams = {}): Promise<{
   data: MentorApplicationListItem[];
   totalPages: number;
@@ -36,41 +21,48 @@ export async function fetchMentorList(params: ListParams = {}): Promise<{
 }> {
   const q = new URLSearchParams();
   if (params.search) q.set("search", params.search);
-  if (params.page) q.set("page", String(params.page));
+  // Doc uses pageIndex / perPage pagination params
+  if (params.pageIndex) q.set("pageIndex", String(params.pageIndex));
+  if (params.page) q.set("pageIndex", String(params.page)); // compat alias
+  if (params.perPage) q.set("perPage", String(params.perPage));
   if (params.status) q.set("status", params.status);
+  if (params.mentor_tier) q.set("mentor_tier", params.mentor_tier);
+  if (params.sortBy) q.set("sortBy", params.sortBy);
 
-  const url =
-    params.search || params.page || params.status
-      ? `${endpoints.mentor.list}?${q}`
-      : endpoints.mentor.list;
+  const query = q.toString();
+  const url = query
+    ? `${endpoints.mentor.list}?${query}`
+    : endpoints.mentor.list;
 
   const res = await apiClient.get(url, MentorListResponseSchema);
   const rawData = Array.isArray(res.response?.data) ? res.response.data : [];
-  const data = rawData.map(normalizeMentorItem);
   return {
-    data,
+    data: rawData,
     totalPages: res.response?.pagination?.totalPages ?? 1,
-    totalItems: res.response?.pagination?.count ?? data.length,
+    totalItems: res.response?.pagination?.count ?? rawData.length,
   };
 }
 
+// ─── GET /detail/<mentor_id>/ ─────────────────────────────────────────────────
+export async function fetchMentorDetail(
+  mentorId: string,
+): Promise<MentorApplicationListItem> {
+  const res = await apiClient.get(
+    endpoints.mentor.detail(mentorId),
+    MentorListResponseSchema,
+  );
+  // Detail endpoint returns a single object in response, not paginated
+  return res.response as unknown as MentorApplicationListItem;
+}
+
+// ─── PATCH /verify/<mentor_id>/ ───────────────────────────────────────────────
+// Payload: { status: "APPROVED" } or { status: "REJECTED", verification_note: "..." }
 export async function verifyMentor(
   mentorId: string,
   data: VerifyActionValues,
 ): Promise<void> {
   await apiClient.patch(
     endpoints.mentor.verify(mentorId),
-    data,
-    GenericResponseSchema,
-  );
-}
-
-export async function updateMentorTier(
-  mentorId: string,
-  data: TierUpdateValues,
-): Promise<void> {
-  await apiClient.patch(
-    endpoints.mentor.tier(mentorId),
     data,
     GenericResponseSchema,
   );

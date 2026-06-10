@@ -94,7 +94,7 @@ export function ApplicantRow({ applicant, jobId }: ApplicantRowProps) {
                   <DropdownMenuItem
                     key={next}
                     onClick={() =>
-                      updateStatus({ jobId, appId: applicant.id, status: next })
+                      updateStatus({ appId: applicant.id, status: next })
                     }
                     className="gap-2 text-xs"
                   >

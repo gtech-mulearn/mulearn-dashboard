@@ -4,40 +4,43 @@ import { useQuery } from "@tanstack/react-query";
 import { mentorKeys } from "@/features/mentor/hooks/query-keys";
 import {
   fetchPublicMentorAvailability,
-  fetchPublicMentorCard,
-  fetchPublicMentorSessions,
-  type PublicMentorSessionsParams,
+  fetchPublicMentorProfile,
 } from "../api/public-mentor.api";
 
-export function usePublicMentorCard(muid: string | null | undefined) {
+// ─── #7 GET /public/profile/<mentor_id>/ ─────────────────────────────────────
+// Renamed: was usePublicMentorCard (used muid), now uses mentor UUID
+export function usePublicMentorProfile(mentorId: string | null | undefined) {
   return useQuery({
-    queryKey: mentorKeys.public.card(muid ?? ""),
-    queryFn: () => fetchPublicMentorCard(muid as string),
-    enabled: !!muid,
+    queryKey: mentorKeys.public.profile(mentorId ?? ""),
+    queryFn: () => fetchPublicMentorProfile(mentorId as string),
+    enabled: !!mentorId,
   });
 }
 
-export function usePublicMentorSessions(
-  muid: string | null | undefined,
-  params: PublicMentorSessionsParams = {},
-) {
-  return useQuery({
-    queryKey: mentorKeys.public.sessions(
-      muid ?? "",
-      params as Record<string, unknown>,
-    ),
-    queryFn: () => fetchPublicMentorSessions(muid as string, params),
-    enabled: !!muid,
-  });
-}
+// Backward compat alias — components that used usePublicMentorCard still work
+export const usePublicMentorCard = usePublicMentorProfile;
 
+// ─── #8 GET /public/availability/<mentor_id>/ ────────────────────────────────
+// Doc: single path param, no igId — cleaned up signature
 export function usePublicMentorAvailability(
-  muid: string | null | undefined,
-  igId?: string,
+  mentorId: string | null | undefined,
 ) {
   return useQuery({
-    queryKey: mentorKeys.public.availability(muid ?? "", igId),
-    queryFn: () => fetchPublicMentorAvailability(muid as string, igId),
-    enabled: !!muid,
+    queryKey: mentorKeys.public.availability(mentorId ?? ""),
+    queryFn: () => fetchPublicMentorAvailability(mentorId as string),
+    enabled: !!mentorId,
+  });
+}
+
+// ─── Removed: usePublicMentorSessions — not in doc, no backend endpoint ──────
+// Kept as stub to prevent broken imports in pages that still reference it
+export function usePublicMentorSessions(
+  _mentorId: string | null | undefined,
+  _params?: Record<string, unknown>,
+) {
+  return useQuery({
+    queryKey: ["public-mentor-sessions-stub"],
+    queryFn: async () => ({ data: [] as unknown[], totalPages: 1 }),
+    enabled: false,
   });
 }
