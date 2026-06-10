@@ -61,7 +61,7 @@ export function ApplicantRow({ applicant, jobId }: ApplicantRowProps) {
       return;
     }
     updateStatus({
-      jobId,
+      // jobId,
       appId: applicant.id,
       status: APP_STATUS_META[next]?.backendStatus || next,
     });
@@ -70,7 +70,7 @@ export function ApplicantRow({ applicant, jobId }: ApplicantRowProps) {
   const handleRejectSubmit = () => {
     updateStatus(
       {
-        jobId,
+        // jobId,
         appId: applicant.id,
         status: "Rejected",
         rejection_reason: rejectReason.trim() || undefined,
@@ -149,7 +149,9 @@ export function ApplicantRow({ applicant, jobId }: ApplicantRowProps) {
                 return (
                   <DropdownMenuItem
                     key={next}
-                    onClick={() => handleStatusChange(next as AppStatus)}
+                    onClick={() =>
+                      updateStatus({ appId: applicant.id, status: next })
+                    }
                     className="gap-2 text-xs"
                   >
                     <span

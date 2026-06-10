@@ -4,7 +4,11 @@ export type TimeSlot = {
 };
 
 export type DayAvailability = {
-  day: number; // 0=Sun, 1=Mon, ..., 6=Sat
+  /**
+   * Weekday number per doc: 1=Monday … 7=Sunday
+   * (previously used 0–6 which was incorrect)
+   */
+  day: number;
   slots: TimeSlot[];
 };
 
@@ -17,6 +21,7 @@ export type AvailabilityCalendarSlot = {
   mentor_name?: string;
   ig_id?: string | null;
   ig_name?: string | null;
+  /** 1=Monday … 7=Sunday (per doc) */
   weekday: number;
   start_time: string;
   end_time: string;
@@ -25,4 +30,5 @@ export type AvailabilityCalendarSlot = {
   valid_from?: string | null;
   valid_to?: string | null;
   created_at?: string;
+  updated_at?: string;
 };

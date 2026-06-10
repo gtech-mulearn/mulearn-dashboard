@@ -46,7 +46,7 @@ export async function fetchCompanyVerificationRequests(
     CompanyVerificationListResponseSchema,
   );
 
-  return response.response;
+  return (response as any).response ?? response;
 }
 
 /**

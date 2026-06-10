@@ -39,12 +39,10 @@ export function useUpdateApplicantStatus() {
 
   return useMutation({
     mutationFn: ({
-      jobId,
       appId,
       status,
       rejection_reason,
     }: {
-      jobId: string;
       appId: string;
       status: string;
       rejection_reason?: string;

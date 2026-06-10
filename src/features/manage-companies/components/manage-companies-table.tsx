@@ -84,7 +84,7 @@ function buildColumnOrder(
       width: "min-w-[180px]",
     },
     {
-      column: "poc_name",
+      column: "company_user_name",
       Label: "POC",
       isSortable: false,
       width: "min-w-[140px] hidden md:table-cell",
@@ -214,8 +214,8 @@ export default function ManageCompaniesTable() {
   });
 
   const rows = (data?.data ?? []) as CompanyVerificationItem[];
-  const totalPages = data?.pagination.totalPages ?? 0;
-  const totalCount = data?.pagination.count;
+  const totalPages = data?.pagination?.totalPages ?? 0;
+  const totalCount = data?.pagination?.count;
 
   // ── Handlers ──────────────────────────────────────────────────
 
@@ -359,7 +359,7 @@ export default function ManageCompaniesTable() {
           <div className="w-full overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
             <div className="min-w-200">
               <Table
-                rows={rows}
+                rows={rows as any}
                 isloading={isLoading}
                 page={currentPage}
                 perPage={perPage}

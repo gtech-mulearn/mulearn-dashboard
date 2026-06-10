@@ -97,9 +97,9 @@ export function MentorsPage() {
                   </div>
                   <Badge
                     variant={
-                      mentor.status === "Approved"
+                      mentor.status === "APPROVED"
                         ? "default"
-                        : mentor.status === "Rejected"
+                        : mentor.status === "REJECTED"
                           ? "destructive"
                           : "secondary"
                     }
@@ -112,7 +112,7 @@ export function MentorsPage() {
               <CardContent className="flex-1 flex flex-col justify-between space-y-4">
                 <p
                   className="text-sm text-muted-foreground line-clamp-3"
-                  title={mentor.reason}
+                  title={mentor.reason || undefined}
                 >
                   {mentor.reason}
                 </p>

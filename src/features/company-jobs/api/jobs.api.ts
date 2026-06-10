@@ -11,7 +11,6 @@ import {
   DeleteJobResponseSchema,
   DeleteRuleResponseSchema,
   GenericResponseSchema,
-  GenericTaskMutationResponseSchema,
   GigAnalyticsResponseSchema,
   JobApplicantsResponseSchema,
   JobDetailResponseSchema,
@@ -19,14 +18,10 @@ import {
   JobsListResponseSchema,
   LearnerApplicationsResponseSchema,
   LearnerDiscoveryResponseSchema,
-  ListMentorNominationsResponseSchema,
-  NominateMentorResponseSchema,
   PublicCompanyProfileResponseSchema,
   PublicJobsBySlugResponseSchema,
   PublicJobsResponseSchema,
   TalentPoolAnalyticsResponseSchema,
-  TaskDetailResponseSchema,
-  TasksListResponseSchema,
   TrackJobViewResponseSchema,
   UpdateApplicantStatusResponseSchema,
   UpdateJobResponseSchema,
@@ -37,12 +32,10 @@ import type {
   ApplyJobResponse,
   CompanyDashboardSummary,
   CompanyProfile,
-  CompanyTask,
   CreateJobPayload,
   CreateJobResponse,
   CreateRulePayload,
   CreateRuleResponse,
-  CreateTaskPayload,
   DeleteJobResponse,
   DeleteRuleResponse,
   GigAnalytics,
@@ -54,19 +47,14 @@ import type {
   LearnerApplicationsResponse,
   LearnerDiscoveryParams,
   LearnerDiscoveryResponse,
-  MentorNomination,
-  NominateMentorPayload,
   PublicJobsResponse,
   TalentPoolAnalytics,
   TalentPoolAnalyticsParams,
-  TasksListParams,
-  TasksListResponse,
   UpdateApplicantStatusResponse,
   UpdateJobPayload,
   UpdateJobResponse,
   UpdateRulePayload,
   UpdateRuleResponse,
-  UpdateTaskPayload,
 } from "../types";
 
 // ─── Company Profile ────────────────────────────────────────
@@ -329,9 +317,14 @@ export async function updateApplicantStatus(
   appId: string,
   payload: { status: string; rejection_reason?: string },
 ): Promise<UpdateApplicantStatusResponse> {
+  const { status, rejection_reason } = payload;
+
+  const body: Record<string, unknown> = { status };
+  if (rejection_reason !== undefined) body.rejection_reason = rejection_reason;
+
   const res = await apiClient.patch(
     endpoints.company.applicationStatus(appId),
-    payload,
+    body,
     UpdateApplicantStatusResponseSchema,
   );
   return res.response;
@@ -378,95 +371,6 @@ export async function fetchLearnerDiscovery(
     : endpoints.company.mulearners;
 
   const res = await apiClient.get(url, LearnerDiscoveryResponseSchema);
-  return res.response;
-}
-
-// ─── Company Tasks ──────────────────────────────────────────
-
-export async function fetchCompanyTasks(
-  params?: TasksListParams,
-): Promise<TasksListResponse> {
-  const query = new URLSearchParams();
-
-  if (params?.approval_status)
-    query.set("approval_status", params.approval_status);
-  if (params?.search?.trim()) query.set("search", params.search.trim());
-  if (params?.sort_by) query.set("sort_by", params.sort_by);
-  if (params?.sort_order) query.set("sort_order", params.sort_order);
-  if (params?.page) query.set("page", String(params.page));
-  if (params?.per_page) query.set("per_page", String(params.per_page));
-
-  const queryString = query.toString();
-  const url = queryString
-    ? `${endpoints.company.tasks}?${queryString}`
-    : endpoints.company.tasks;
-
-  const res = await apiClient.get(url, TasksListResponseSchema);
-  return res.response;
-}
-
-export async function createCompanyTask(
-  payload: CreateTaskPayload,
-): Promise<any> {
-  const res = await apiClient.post(
-    endpoints.company.tasks,
-    payload,
-    GenericTaskMutationResponseSchema,
-  );
-  return res;
-}
-
-export async function fetchCompanyTaskDetail(
-  taskId: string,
-): Promise<CompanyTask> {
-  const res = await apiClient.get(
-    endpoints.company.taskDetail(taskId),
-    TaskDetailResponseSchema,
-  );
-  return res.response;
-}
-
-export async function updateCompanyTask(
-  taskId: string,
-  payload: UpdateTaskPayload,
-): Promise<any> {
-  const res = await apiClient.put(
-    endpoints.company.taskDetail(taskId),
-    payload,
-    GenericTaskMutationResponseSchema,
-  );
-  return res;
-}
-
-export async function deleteCompanyTask(taskId: string): Promise<any> {
-  const res = await apiClient.delete(
-    endpoints.company.taskDetail(taskId),
-    undefined,
-    GenericTaskMutationResponseSchema,
-  );
-  return res;
-}
-
-// ─── Company Mentor Nominations ─────────────────────────────
-
-export async function nominateCompanyMentor(
-  payload: NominateMentorPayload,
-): Promise<MentorNomination> {
-  const res = await apiClient.post(
-    endpoints.company.mentorNominate,
-    payload,
-    NominateMentorResponseSchema,
-  );
-  return res.response;
-}
-
-export async function fetchCompanyMentorNominations(): Promise<
-  MentorNomination[]
-> {
-  const res = await apiClient.get(
-    endpoints.company.mentorList,
-    ListMentorNominationsResponseSchema,
-  );
   return res.response;
 }
 

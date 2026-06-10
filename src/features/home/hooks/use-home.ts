@@ -13,7 +13,6 @@ import {
   getLearnerStreak,
   getMentorHomeSummary,
   getMentorIgRoles,
-  getMentorMentees,
   getMentorOverview,
   getMentorSessions,
   getPublicJobsCount,
@@ -81,15 +80,6 @@ export function useMentorSessions(status = "SCHEDULED") {
     queryKey: homeKeys.mentorSessions(status),
     queryFn: () => getMentorSessions(status),
     staleTime: 2 * 60 * 1000,
-    retry: no403Retry,
-  });
-}
-
-export function useMentorMentees() {
-  return useQuery({
-    queryKey: homeKeys.mentorMentees(),
-    queryFn: getMentorMentees,
-    staleTime: HOME_STALE_TIME,
     retry: no403Retry,
   });
 }

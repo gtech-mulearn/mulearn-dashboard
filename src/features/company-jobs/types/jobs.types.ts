@@ -341,106 +341,6 @@ export interface LearnerDiscoveryParams {
   per_page?: number;
 }
 
-// ─── Company Tasks Types ─────────────────────────────────────
-
-export interface Skill {
-  id: string;
-  name: string;
-  code: string;
-}
-
-export interface CompanyTask {
-  id: string;
-  hashtag: string;
-  discord_link?: string | null;
-  title: string;
-  description: string;
-  karma: number;
-  channel?: string | null;
-  type: string;
-  active: boolean;
-  variable_karma: boolean;
-  usage_count: number;
-  level?: string | null;
-  org?: string | null;
-  ig?: string | null;
-  event?: string | null;
-  bonus_karma: number;
-  bonus_time?: string | null;
-  approval_status: string;
-  rejection_reason?: string | null;
-  reviewed_at?: string | null;
-  requested_by_name?: string | null;
-  requested_at?: string | null;
-  skills: Skill[];
-  created_at: string;
-  updated_at: string;
-}
-
-export interface TasksListParams {
-  approval_status?: string;
-  search?: string;
-  sort_by?: string;
-  sort_order?: "asc" | "desc";
-  page?: number;
-  per_page?: number;
-}
-
-export interface TasksListResponse {
-  data: CompanyTask[];
-  pagination: {
-    count: number;
-    total_pages: number;
-    current_page: number;
-    per_page: number;
-    next?: string | null;
-    previous?: string | null;
-  };
-}
-
-export interface CreateTaskPayload {
-  hashtag: string;
-  title: string;
-  karma: number;
-  usage_count?: number;
-  description: string;
-  type: string;
-  level?: string;
-  created_by?: string;
-  updated_by?: string;
-  skill_ids?: string[];
-}
-
-export interface UpdateTaskPayload {
-  hashtag?: string;
-  title?: string;
-  karma?: number;
-  description?: string;
-  type?: string;
-  level?: string;
-  skill_ids?: string[];
-}
-
-// ─── Company Mentor Nomination Types ────────────────────────
-
-export interface MentorNomination {
-  id: string;
-  user_id: string;
-  user_name: string;
-  user_email?: string | null;
-  org_name: string;
-  mentor_tier: string;
-  status: string;
-  reason: string;
-  verification_note?: string | null;
-  verified_at?: string | null;
-}
-
-export interface NominateMentorPayload {
-  muid: string;
-  reason: string;
-}
-
 // ─── Analytics Types ─────────────────────────────────────────
 
 export interface GigAnalytics {
@@ -534,4 +434,23 @@ export interface AdminSummary {
   rejected_companies: number;
   total_jobs: number;
   total_company_tasks: number;
+}
+
+// ─── MuLearner Directory ────────────────────────────────────
+
+export interface MuLearner {
+  id: string;
+  full_name: string;
+  muid: string;
+  email: string;
+  karma: number;
+  level: number;
+  college?: string | null;
+  department?: string | null;
+  graduation_year?: number | null;
+}
+
+export interface MuLearnersResponse {
+  data: MuLearner[];
+  pagination: Pagination;
 }

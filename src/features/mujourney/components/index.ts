@@ -9,7 +9,6 @@ export * from "./EventsTab";
 export * from "./JourneyHeader";
 export * from "./JourneyTabs";
 export * from "./LevelCard";
-export * from "./LevelProgress";
 export * from "./MuJourneyDashboard";
 export * from "./StartLearningTab";
 export * from "./TaskCard";

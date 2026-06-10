@@ -181,7 +181,11 @@ export function CompanyDetailSheet({
                   <DetailRow
                     icon={<Building2 className="h-4 w-4" />}
                     label="Name"
-                    value={company.poc_name || details?.company_user_name}
+                    value={
+                      company.company_user_name ||
+                      company.poc_name ||
+                      details?.company_user_name
+                    }
                   />
                   <DetailRow
                     icon={<Mail className="h-4 w-4" />}

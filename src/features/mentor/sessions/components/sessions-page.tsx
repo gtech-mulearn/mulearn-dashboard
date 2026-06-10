@@ -1,9 +1,11 @@
 "use client";
 
-import { Bell, Pencil, Plus, Star, Users } from "lucide-react";
+import { Copy, Pencil, Plus, Star, Trash, Users } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,8 +31,8 @@ import {
 import { usePermissions } from "@/hooks/use-permissions";
 import { MANAGEMENT_ROLES } from "@/lib/auth/roles";
 import {
+  useDeleteSession,
   usePendingSessions,
-  useRemindSession,
   useSessions,
 } from "../hooks/use-sessions";
 import type { Session } from "../schemas";
@@ -60,6 +62,7 @@ function SessionRow({
   onParticipants,
   onApprove,
   onKarma,
+  onDelete,
 }: {
   session: Session;
   isAdmin: boolean;
@@ -67,12 +70,36 @@ function SessionRow({
   onParticipants: (s: Session) => void;
   onApprove: (s: Session, action: "approve" | "reject") => void;
   onKarma: (s: Session) => void;
+  onDelete: (id: string) => void;
 }) {
-  const { mutate: remind, isPending: isReminding } = useRemindSession();
+  const status = session.status || "PENDING_APPROVAL";
 
   return (
     <TableRow>
-      <TableCell className="font-medium">{session.title}</TableCell>
+      <TableCell className="font-medium">
+        <div className="flex flex-col gap-1">
+          <span>{session.title}</span>
+          {session.is_recurring && (
+            <div className="flex items-center gap-1">
+              {!session.parent_session_id ? (
+                <Badge
+                  variant="outline"
+                  className="text-[10px] h-4 px-1 py-0 bg-blue-50 text-blue-700 hover:bg-blue-50"
+                >
+                  <span className="mr-1">🔄</span> Series Parent
+                </Badge>
+              ) : (
+                <Badge
+                  variant="outline"
+                  className="text-[10px] h-4 px-1 py-0 text-muted-foreground"
+                >
+                  ↳ Series Child
+                </Badge>
+              )}
+            </div>
+          )}
+        </div>
+      </TableCell>
       <TableCell>
         {session.ig_name ? (
           session.ig_name
@@ -86,20 +113,42 @@ function SessionRow({
           : "Not scheduled"}
       </TableCell>
       <TableCell>
-        <Badge variant={STATUS_VARIANT[session.status] ?? "secondary"}>
-          {session.status.replace(/_/g, " ")}
+        <Badge variant={STATUS_VARIANT[status] ?? "secondary"}>
+          {status.replace(/_/g, " ")}
         </Badge>
       </TableCell>
-      <TableCell>
-        <div className="flex items-center gap-1">
+      <TableCell className="text-right">
+        <div className="flex items-center justify-end gap-1">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                onClick={(e) => {
+                  if (status !== "SCHEDULED") {
+                    e.preventDefault();
+                    return;
+                  }
+                  navigator.clipboard.writeText(session.id);
+                  toast.success("Session ID copied to clipboard!");
+                }}
+                disabled={status !== "SCHEDULED"}
+              >
+                <Copy className="w-4 h-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Copy Session ID</TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground"
                 onClick={() => onEdit(session)}
-                disabled={TERMINAL.has(session.status)}
+                disabled={TERMINAL.has(status)}
               >
                 <Pencil className="w-4 h-4" />
               </Button>
@@ -112,7 +161,7 @@ function SessionRow({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground"
                 onClick={() => onParticipants(session)}
               >
                 <Users className="w-4 h-4" />
@@ -126,27 +175,22 @@ function SessionRow({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8"
-                disabled={TERMINAL.has(session.status) || isReminding}
-                onClick={() => remind(session.id)}
+                className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                onClick={() => onDelete(session.id)}
               >
-                <Bell className="w-4 h-4" />
+                <Trash className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>
-              {TERMINAL.has(session.status)
-                ? "Cannot remind for this status"
-                : "Send reminder"}
-            </TooltipContent>
+            <TooltipContent>Delete</TooltipContent>
           </Tooltip>
 
-          {isAdmin && session.status === "COMPLETED" && (
+          {isAdmin && status === "COMPLETED" && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8"
+                  className="h-8 w-8 text-amber-500 hover:text-amber-600 hover:bg-amber-50"
                   onClick={() => onKarma(session)}
                 >
                   <Star className="w-4 h-4" />
@@ -164,8 +208,7 @@ function SessionRow({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                {session.status === "SCHEDULED" ||
-                session.status === "PENDING_APPROVAL" ? (
+                {status === "SCHEDULED" || status === "PENDING_APPROVAL" ? (
                   <>
                     <DropdownMenuItem
                       onClick={() => onApprove(session, "approve")}
@@ -201,6 +244,7 @@ function SessionTable({
   onParticipants,
   onApprove,
   onKarma,
+  onDelete,
 }: {
   sessions: Session[] | undefined;
   isLoading: boolean;
@@ -209,6 +253,7 @@ function SessionTable({
   onParticipants: (s: Session) => void;
   onApprove: (s: Session, action: "approve" | "reject") => void;
   onKarma: (s: Session) => void;
+  onDelete: (id: string) => void;
 }) {
   if (isLoading) {
     return (
@@ -237,7 +282,7 @@ function SessionTable({
           <TableHead>IG</TableHead>
           <TableHead>Starts At</TableHead>
           <TableHead>Status</TableHead>
-          <TableHead>Actions</TableHead>
+          <TableHead className="text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -250,6 +295,7 @@ function SessionTable({
             onParticipants={onParticipants}
             onApprove={onApprove}
             onKarma={onKarma}
+            onDelete={onDelete}
           />
         ))}
       </TableBody>
@@ -270,13 +316,17 @@ export function SessionsPage() {
     action: "approve" | "reject";
   } | null>(null);
   const [karmaSession, setKarmaSession] = useState<Session | null>(null);
+  const [deleteSessionId, setDeleteSessionId] = useState<string | null>(null);
 
   const { data: all, isLoading: allLoading } = useSessions({});
   const upcomingSessions = all?.data?.filter(
     (s) => s.status === "SCHEDULED" || s.status === "PENDING_APPROVAL",
   );
-  const { data: pending, isLoading: pendingLoading } =
+  const { data: pendingResult, isLoading: pendingLoading } =
     usePendingSessions(isAdmin);
+  const pending = pendingResult?.data;
+
+  const { mutate: deleteSession, isPending: isDeleting } = useDeleteSession();
 
   const sharedHandlers = {
     onEdit: setEditSession,
@@ -284,6 +334,7 @@ export function SessionsPage() {
     onApprove: (s: Session, action: "approve" | "reject") =>
       setApproveState({ session: s, action }),
     onKarma: setKarmaSession,
+    onDelete: setDeleteSessionId,
   };
 
   return (
@@ -364,6 +415,22 @@ export function SessionsPage() {
           session={karmaSession}
           open={!!karmaSession}
           onOpenChange={(v) => !v && setKarmaSession(null)}
+        />
+        <ConfirmDialog
+          open={!!deleteSessionId}
+          onOpenChange={(v) => !v && setDeleteSessionId(null)}
+          title="Delete Session"
+          description="Are you sure you want to delete this session? This action cannot be undone."
+          confirmLabel="Delete"
+          cancelLabel="Cancel"
+          isPending={isDeleting}
+          onConfirm={() => {
+            if (deleteSessionId) {
+              deleteSession(deleteSessionId, {
+                onSuccess: () => setDeleteSessionId(null),
+              });
+            }
+          }}
         />
       </div>
     </TooltipProvider>

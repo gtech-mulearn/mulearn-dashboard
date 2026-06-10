@@ -1,19 +1,21 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  fetchActivityLog,
-  fetchMenteeDetail,
   fetchMentees,
+  fetchParticipantHistory,
+  fetchSessionParticipants,
+  joinSession,
+  submitSessionFeedback,
+  updateParticipant,
 } from "../api/mentees.api";
 
 const menteeKeys = {
   all: ["mentor-mentees"] as const,
-  list: (params: Record<string, unknown>) =>
-    [...menteeKeys.all, "list", params] as const,
-  detail: (userId: string) => [...menteeKeys.all, "detail", userId] as const,
-  activityLog: (params: Record<string, unknown>) =>
-    [...menteeKeys.all, "activity-log", params] as const,
+  list: () => [...menteeKeys.all, "list"] as const,
+  participantHistory: () => [...menteeKeys.all, "participant-history"] as const,
+  sessionParticipants: (sessionId: string) =>
+    [...menteeKeys.all, "session-participants", sessionId] as const,
 };
 
 const no403Retry = (failureCount: number, error: unknown) => {
@@ -21,32 +23,79 @@ const no403Retry = (failureCount: number, error: unknown) => {
   return failureCount < 2;
 };
 
-interface UseMenteesParams {
-  page?: number;
-  search?: string;
-}
-
-export function useMentees(params: UseMenteesParams = {}) {
+// Fetches mentees derived from participant history (deduplicates by user_id)
+export function useMentees() {
   return useQuery({
-    queryKey: menteeKeys.list(params as Record<string, unknown>),
-    queryFn: () => fetchMentees(params),
+    queryKey: menteeKeys.list(),
+    queryFn: fetchMentees,
     retry: no403Retry,
   });
 }
 
-export function useMenteeDetail(userId: string | null | undefined) {
-  return useQuery({
-    queryKey: menteeKeys.detail(userId ?? ""),
-    queryFn: () => fetchMenteeDetail(userId as string),
-    retry: no403Retry,
-    enabled: !!userId,
+export function useSubmitFeedback() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      sessionId,
+      feedback,
+    }: {
+      sessionId: string;
+      feedback: string | null;
+    }) => submitSessionFeedback(sessionId, feedback),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: menteeKeys.all });
+    },
   });
 }
 
-export function useActivityLog(params: UseMenteesParams = {}) {
+export function useParticipantHistory() {
   return useQuery({
-    queryKey: menteeKeys.activityLog(params as Record<string, unknown>),
-    queryFn: () => fetchActivityLog(params),
+    queryKey: menteeKeys.participantHistory(),
+    queryFn: fetchParticipantHistory,
     retry: no403Retry,
+  });
+}
+
+// Fetches all participants in a specific session via the mentor-view endpoint
+export function useSessionParticipants(sessionId: string | null) {
+  return useQuery({
+    queryKey: menteeKeys.sessionParticipants(sessionId ?? ""),
+    queryFn: () => fetchSessionParticipants(sessionId!),
+    enabled: !!sessionId,
+    retry: no403Retry,
+  });
+}
+
+export function useUpdateParticipant(sessionId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      linkId,
+      data,
+    }: {
+      linkId: string;
+      data: import("../schemas").UpdateParticipantValues;
+    }) => updateParticipant(linkId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: menteeKeys.sessionParticipants(sessionId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: menteeKeys.participantHistory(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: menteeKeys.list(),
+      });
+    },
+  });
+}
+
+export function useJoinSession() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (sessionId: string) => joinSession(sessionId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: menteeKeys.all });
+    },
   });
 }

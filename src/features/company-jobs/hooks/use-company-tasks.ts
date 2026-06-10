@@ -4,26 +4,23 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   fetchCompanyTasks,
-  fetchCompanyTaskDetail,
+  fetchCompanyTask,
   createCompanyTask,
   updateCompanyTask,
   deleteCompanyTask,
 } from "../api";
-import type {
-  TasksListParams,
-  CreateTaskPayload,
-  UpdateTaskPayload,
-} from "../types";
+import type { CompanyTaskListParams } from "../api/company-tasks.api";
+import type { CompanyTaskFormValues } from "../schemas/company-tasks.schema";
 
 export const COMPANY_TASKS_KEYS = {
   all: ["company-tasks"] as const,
-  list: (params?: TasksListParams) =>
+  list: (params?: CompanyTaskListParams) =>
     [...COMPANY_TASKS_KEYS.all, "list", params ?? {}] as const,
   detail: (taskId: string) =>
     [...COMPANY_TASKS_KEYS.all, "detail", taskId] as const,
 };
 
-export function useCompanyTasks(params?: TasksListParams) {
+export function useCompanyTasks(params?: CompanyTaskListParams) {
   return useQuery({
     queryKey: COMPANY_TASKS_KEYS.list(params),
     queryFn: () => fetchCompanyTasks(params),
@@ -34,7 +31,7 @@ export function useCompanyTasks(params?: TasksListParams) {
 export function useCompanyTaskDetail(taskId: string) {
   return useQuery({
     queryKey: COMPANY_TASKS_KEYS.detail(taskId),
-    queryFn: () => fetchCompanyTaskDetail(taskId),
+    queryFn: () => fetchCompanyTask(taskId),
     enabled: !!taskId,
     refetchOnWindowFocus: false,
   });
@@ -44,7 +41,7 @@ export function useCreateCompanyTask() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: CreateTaskPayload) => createCompanyTask(payload),
+    mutationFn: (payload: CompanyTaskFormValues) => createCompanyTask(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: COMPANY_TASKS_KEYS.all });
       toast.success("Task submitted for approval successfully");
@@ -64,7 +61,7 @@ export function useUpdateCompanyTask() {
       payload,
     }: {
       taskId: string;
-      payload: UpdateTaskPayload;
+      payload: Partial<CompanyTaskFormValues>;
     }) => updateCompanyTask(taskId, payload),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: COMPANY_TASKS_KEYS.all });

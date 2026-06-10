@@ -67,6 +67,21 @@ export function extractDjangoMessage(data: unknown): string | null {
         return val;
       }
     }
+
+    // { message: { field_name: ["..."], other_field: ["..."] } }
+    // — Django / DRF field-level validation errors
+    const parts: string[] = [];
+    for (const [field, errors] of Object.entries(msgObj)) {
+      if (Array.isArray(errors)) {
+        const joined = errors
+          .filter((e): e is string => typeof e === "string")
+          .join(", ");
+        if (joined) parts.push(`${field}: ${joined}`);
+      } else if (typeof errors === "string" && errors) {
+        parts.push(`${field}: ${errors}`);
+      }
+    }
+    if (parts.length > 0) return parts.join(" | ");
   }
 
   if (typeof msg === "string") return msg;

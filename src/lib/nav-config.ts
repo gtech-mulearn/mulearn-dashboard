@@ -110,6 +110,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     href: "/dashboard/mujourney",
     icon: MapIcon,
     section: "main",
+    dynamicCheck: (roles) => !roles.some((r) => r === ROLES.COMPANY),
   },
   {
     id: "interest-groups",
@@ -124,6 +125,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     href: "/dashboard/learning-circle",
     icon: BookOpen,
     section: "main",
+    dynamicCheck: (roles) => !roles.some((r) => r === ROLES.COMPANY),
   },
   {
     id: "courses",
@@ -195,22 +197,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     section: "management",
     roles: [ROLES.MENTOR],
   },
-  {
-    id: "mentor-task-review",
-    title: "Task Review",
-    href: "/dashboard/mentor/task-review",
-    icon: ClipboardCheck,
-    section: "management",
-    roles: [ROLES.MENTOR],
-  },
-  {
-    id: "mentor-opportunities",
-    title: "Opportunities",
-    href: "/dashboard/mentor/opportunities",
-    icon: Briefcase,
-    section: "management",
-    roles: [ROLES.MENTOR],
-  },
+
   {
     id: "mentor-task-requests",
     title: "Task Requests",
@@ -229,7 +216,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   },
   {
     id: "company-jobs",
-    title: "Job Control",
+    title: "Job Management",
     href: "/dashboard/company/jobs",
     icon: Briefcase,
     section: "management",
@@ -237,7 +224,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   },
   {
     id: "company-tasks",
-    title: "Task Control",
+    title: "Task Management",
     href: "/dashboard/company/tasks",
     icon: ClipboardCheck,
     section: "management",
@@ -245,7 +232,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   },
   {
     id: "company-mentors",
-    title: "Mentor Control",
+    title: "Mentor Management",
     href: "/dashboard/company/mentors",
     icon: Users,
     section: "management",

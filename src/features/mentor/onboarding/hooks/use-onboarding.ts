@@ -3,15 +3,18 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
-  getMentorApplication,
+  getMentorApplicationStatus,
+  getMentorProfile,
   submitMentorApplication,
   updateMentorApplication,
+  updateMentorProfile,
 } from "../api/onboarding.api";
 import type { OnboardingFormValues, OnboardingState } from "../schemas";
 
 const ONBOARDING_KEYS = {
   all: ["mentor-onboarding"] as const,
-  application: () => [...ONBOARDING_KEYS.all, "application"] as const,
+  status: () => [...ONBOARDING_KEYS.all, "status"] as const,
+  profile: () => [...ONBOARDING_KEYS.all, "profile"] as const,
 };
 
 const no403Retry = (failureCount: number, error: unknown) => {
@@ -24,22 +27,36 @@ const no403Retry = (failureCount: number, error: unknown) => {
   return failureCount < 2;
 };
 
-export function useMentorApplication(enabled = true) {
+// ─── GET /status/ ─────────────────────────────────────────────────────────────
+export function useMentorApplicationStatus(enabled = true) {
   return useQuery({
-    queryKey: ONBOARDING_KEYS.application(),
-    queryFn: getMentorApplication,
+    queryKey: ONBOARDING_KEYS.status(),
+    queryFn: getMentorApplicationStatus,
     retry: no403Retry,
     staleTime: 5 * 60 * 1000,
     enabled,
   });
 }
 
+// ─── GET /profile/ ────────────────────────────────────────────────────────────
+export function useMentorProfile(enabled = true) {
+  return useQuery({
+    queryKey: ONBOARDING_KEYS.profile(),
+    queryFn: getMentorProfile,
+    retry: no403Retry,
+    staleTime: 5 * 60 * 1000,
+    enabled,
+  });
+}
+
+// ─── Derive UI state from status string (PENDING | APPROVED | REJECTED) ───────
 export function deriveOnboardingState(
-  data: { is_verified: boolean; verified_by_name?: string | null } | undefined,
+  data: { status?: string; verification_note?: string | null } | undefined,
   error: Error | null,
 ): OnboardingState {
   if (!data && !error) return "loading";
 
+  // 400 = no application found yet
   if (
     error instanceof Error &&
     "status" in error &&
@@ -49,11 +66,14 @@ export function deriveOnboardingState(
 
   if (!data) return "not_applied";
 
-  if (data.is_verified) return "verified";
-  if (data.verified_by_name != null) return "rejected";
-  return "pending_verification";
+  if (data.status === "APPROVED") return "verified";
+  if (data.status === "REJECTED") return "rejected";
+  if (data.status === "PENDING") return "pending_verification";
+
+  return "not_applied";
 }
 
+// ─── POST /register/ ──────────────────────────────────────────────────────────
 export function useSubmitMentorApplication() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -67,6 +87,7 @@ export function useSubmitMentorApplication() {
   });
 }
 
+// ─── PATCH /register/ ─────────────────────────────────────────────────────────
 export function useUpdateMentorApplication() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -80,3 +101,21 @@ export function useUpdateMentorApplication() {
       toast.error(err.message ?? "Failed to update application"),
   });
 }
+
+// ─── PATCH /profile/ ──────────────────────────────────────────────────────────
+export function useUpdateMentorProfile() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<OnboardingFormValues>) =>
+      updateMentorProfile(data),
+    onSuccess: () => {
+      toast.success("Profile updated.");
+      void queryClient.invalidateQueries({ queryKey: ONBOARDING_KEYS.all });
+    },
+    onError: (err: Error) =>
+      toast.error(err.message ?? "Failed to update profile"),
+  });
+}
+
+// ─── Backward compat alias ────────────────────────────────────────────────────
+export const useMentorApplication = useMentorApplicationStatus;

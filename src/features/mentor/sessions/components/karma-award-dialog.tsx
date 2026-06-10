@@ -27,7 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useAwardKarma } from "../hooks/use-sessions";
+import { useAwardKarma, useParticipants } from "../hooks/use-sessions";
 import {
   KarmaAwardFormSchema,
   type KarmaAwardFormValues,
@@ -46,9 +46,11 @@ export function KarmaAwardDialog({
   onOpenChange,
 }: KarmaAwardDialogProps) {
   const { mutate: award, isPending } = useAwardKarma(session?.id ?? "");
+  const { data: participants = [] } = useParticipants(session?.id ?? "");
 
-  const mentorParticipants =
-    session?.participants?.filter((p) => p.participant_role === "MENTOR") ?? [];
+  const mentorParticipants = participants.filter(
+    (p) => p.participant_role === "MENTOR",
+  );
 
   const form = useForm<KarmaAwardFormValues>({
     resolver: zodResolver(KarmaAwardFormSchema),
@@ -95,7 +97,7 @@ export function KarmaAwardDialog({
                     <SelectContent>
                       {mentorParticipants.map((p) => (
                         <SelectItem key={p.user_id} value={p.user_id}>
-                          {p.full_name}
+                          {p.user_full_name ?? p.full_name ?? p.user_id}
                         </SelectItem>
                       ))}
                     </SelectContent>

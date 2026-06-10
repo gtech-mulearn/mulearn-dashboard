@@ -196,108 +196,144 @@ export const endpoints = {
 
   // ============================================
   // Mentor Dashboard Endpoints
+  // (Only the 22 endpoints from the provided API doc)
+  // Base: /api/v1/dashboard/mentor/
   // ============================================
   mentor: {
-    /** GET - Mentor overview (stats, profile, persona, mentees summary) */
+    // ── Overview & Persona ──────────────────────────────────────────────────
+    /** GET - Mentor overview (scopes + metrics) */
     overview: "/api/v1/dashboard/mentor/overview/",
-    /** GET - Mentor sessions list (?status=SCHEDULED|PENDING|COMPLETED) */
-    sessions: "/api/v1/dashboard/mentor/sessions/",
-    /** GET - Mentor's active mentees list */
-    mentees: "/api/v1/dashboard/mentor/mentees/",
-    /** POST - Switch mentor persona (active IG) */
-    personaSwitch: "/api/v1/dashboard/mentor/persona/switch/",
-    /** GET - Available IG mentor role assignments for the user */
+    /** GET - Mentor persona IG roles */
     personaIgRoles: "/api/v1/dashboard/mentor/persona/ig-roles/",
-    /** GET - Single-call mentor home summary */
-    homeSummary: "/api/v1/dashboard/mentor/overview/",
-    /** GET/POST - Mentor's weekly availability schedule */
-    availabilitySlots: "/api/v1/dashboard/mentor/availability/",
-    /** GET - Own mentor application status; POST to apply; PATCH to update */
-    onboarding: "/api/v1/dashboard/mentor/onboarding/",
-    /** GET - Admin: list of all mentor applications (supports ?search=<muid>) */
+    /** POST - Switch mentor persona */
+    personaSwitch: "/api/v1/dashboard/mentor/persona/switch/",
+
+    // ── #1 POST/PATCH  register/ ─────────────────────────────────────────────
+    /** POST/PATCH - Submit or update a mentor application */
+    register: "/api/v1/dashboard/mentor/register/",
+
+    // ── #2 GET  status/ ──────────────────────────────────────────────────────
+    /** GET - Check mentor application status */
+    status: "/api/v1/dashboard/mentor/status/",
+
+    // ── #3 GET/PATCH  profile/ ───────────────────────────────────────────────
+    /** GET/PATCH - Approved mentor's own full profile */
+    profile: "/api/v1/dashboard/mentor/profile/",
+
+    // ── #4 GET  list/ ────────────────────────────────────────────────────────
+    /** GET - Admin: paginated list of all mentor applications */
     list: "/api/v1/dashboard/mentor/list/",
+
+    // ── #5 GET  detail/<mentor_id>/ ──────────────────────────────────────────
+    /** GET - Admin: single mentor application detail */
+    detail: (mentorId: string) =>
+      `/api/v1/dashboard/mentor/detail/${mentorId}/`,
+
+    // ── #6 PATCH  verify/<mentor_id>/ ────────────────────────────────────────
     /** PATCH - Admin: approve or reject a mentor application */
     verify: (mentorId: string) =>
-      `/api/v1/dashboard/mentor/${mentorId}/verify/`,
-    /** GET/PATCH - Single session detail */
-    session: (id: string) => `/api/v1/dashboard/mentor/sessions/${id}/`,
-    /** PATCH - Update session status */
-    sessionStatus: (id: string) =>
-      `/api/v1/dashboard/mentor/sessions/${id}/status/`,
-    /** PATCH - Admin approve/reject a global session */
-    sessionApprove: (id: string) =>
-      `/api/v1/dashboard/mentor/sessions/${id}/approve/`,
-    /** GET - Admin: global session approval queue */
-    sessionsPending: "/api/v1/dashboard/mentor/sessions/pending/",
-    /** GET/POST - Session participants list */
-    sessionParticipants: (id: string) =>
-      `/api/v1/dashboard/mentor/sessions/${id}/participants/`,
-    /** DELETE - Remove a participant from a session. Backend requires participant_role query param. */
-    sessionParticipant: (
-      sessionId: string,
-      userId: string,
-      participantRole: "MENTOR" | "CO_MENTOR" | "MENTEE",
-    ) =>
-      `/api/v1/dashboard/mentor/sessions/${sessionId}/participants/${userId}/?participant_role=${participantRole}`,
-    /** POST - Award karma to mentor for a completed session */
-    sessionKarmaAward: (id: string) =>
-      `/api/v1/dashboard/mentor/sessions/${id}/karma-award/`,
-    /** POST - Send reminder to session participants */
-    sessionRemind: (id: string) =>
-      `/api/v1/dashboard/mentor/sessions/${id}/remind/`,
-    /** PATCH - Bulk update attendance for participants in a session */
-    sessionAttendance: (id: string) =>
-      `/api/v1/dashboard/mentor/sessions/${id}/attendance/`,
-    /** POST - Deep-clone a session (clears starts_at/ends_at) */
-    sessionClone: (id: string) =>
-      `/api/v1/dashboard/mentor/sessions/${id}/clone/`,
-    /** GET - Task review queue for mentor */
-    reviewQueue: "/api/v1/dashboard/mentor/review-queue/",
-    /** PATCH - Approve or reject a task review item */
-    reviewQueueItem: (kalId: string) =>
-      `/api/v1/dashboard/mentor/review-queue/${kalId}/`,
-    /** GET/POST - Mentor task requests (proposals) */
-    taskRequests: "/api/v1/dashboard/mentor/task-requests/",
-    /** GET/PATCH - Single task request */
-    taskRequest: (id: string) =>
-      `/api/v1/dashboard/mentor/task-requests/${id}/`,
-    /** GET/POST - Mentor opportunities */
-    opportunities: "/api/v1/dashboard/mentor/opportunities/",
-    /** GET/PATCH/DELETE - Single opportunity */
-    opportunity: (id: string) =>
-      `/api/v1/dashboard/mentor/opportunities/${id}/`,
-    /** GET - IGs linked to the authenticated mentor */
-    myIgs: "/api/v1/dashboard/mentor/my-igs/",
-    /** GET - IG mentor link requests */
-    igRequests: "/api/v1/dashboard/mentor/ig-requests/",
-    /** GET/PATCH - Single IG request */
-    igRequest: (id: string) => `/api/v1/dashboard/mentor/ig-requests/${id}/`,
-    /** GET - Mentor activity log */
-    activityLog: "/api/v1/dashboard/mentor/activity-log/",
-    /** GET - Mentor leaderboard (paginated) */
-    leaderboard: "/api/v1/dashboard/mentor/leaderboard/",
-    /** PATCH - Admin updates the tier of a verified mentor */
-    tier: (mentorId: string) =>
-      `/api/v1/dashboard/mentor/list/${mentorId}/tier/`,
-    /** GET - Mentee profile (sessions, karma, task review stats) */
-    menteeDetail: (userId: string) =>
-      `/api/v1/dashboard/mentor/mentees/${userId}/`,
-    /** GET - Single task submission detail for review */
-    reviewQueueDetail: (kalId: string) =>
-      `/api/v1/dashboard/mentor/review-queue/${kalId}/`,
-    /** GET - Calendar-friendly availability slots (flat, no pagination) */
-    availabilityCalendar: "/api/v1/dashboard/mentor/availability/calendar/",
-    /** GET - Public availability for a verified mentor (no auth) */
-    publicAvailability: (muid: string, igId?: string) => {
-      const q = new URLSearchParams({ mentor_muid: muid });
-      if (igId) q.set("ig_id", igId);
-      return `/api/v1/dashboard/mentor/availability/public/?${q}`;
-    },
-    /** GET - Public mentor profile card (no auth) */
-    publicCard: (muid: string) => `/api/v1/dashboard/mentor/${muid}/public/`,
-    /** GET - Public completed sessions for a mentor (no auth) */
-    publicSessions: (muid: string) =>
-      `/api/v1/dashboard/mentor/${muid}/public/sessions/`,
+      `/api/v1/dashboard/mentor/verify/${mentorId}/`,
+
+    // ── #7 GET  public/profile/<mentor_id>/ ──────────────────────────────────
+    /** GET - Public profile of an approved mentor (auth required) */
+    publicProfile: (mentorId: string) =>
+      `/api/v1/dashboard/mentor/public/profile/${mentorId}/`,
+
+    // ── #8 GET  public/availability/<mentor_id>/ ─────────────────────────────
+    /** GET - Public availability of an approved mentor (auth required) */
+    publicAvailability: (mentorId: string) =>
+      `/api/v1/dashboard/mentor/public/availability/${mentorId}/`,
+
+    // ── #9 GET/POST  availability/ ───────────────────────────────────────────
+    /** GET/POST - Mentor's own availability slots */
+    availabilitySlots: "/api/v1/dashboard/mentor/availability/",
+
+    // ── #10 GET/PATCH/DELETE  availability/<slot_id>/ ────────────────────────
+    /** GET/PATCH/DELETE - Single availability slot */
+    availabilitySlot: (slotId: string) =>
+      `/api/v1/dashboard/mentor/availability/${slotId}/`,
+
+    // ── #11 POST  session/create/ ────────────────────────────────────────────
+    /** POST - Create a mentorship session */
+    sessionCreate: "/api/v1/dashboard/mentor/session/create/",
+
+    // ── #12 GET  session/list/ ───────────────────────────────────────────────
+    /** GET - List sessions created by the logged-in mentor */
+    sessionList: "/api/v1/dashboard/mentor/session/list/",
+
+    // ── #13 GET  session/list/<session_id>/ ──────────────────────────────────
+    /** GET - Single session detail */
+    sessionDetail: (sessionId: string) =>
+      `/api/v1/dashboard/mentor/session/list/${sessionId}/`,
+
+    // ── #14 PATCH/DELETE  session/update/<session_id>/ ───────────────────────
+    /** PATCH/DELETE - Update or soft-delete a session */
+    sessionUpdate: (sessionId: string) =>
+      `/api/v1/dashboard/mentor/session/update/${sessionId}/`,
+
+    // ── #15 GET  session/available/ ──────────────────────────────────────────
+    /** GET - Learner: list SCHEDULED sessions for the user's IGs */
+    sessionAvailable: "/api/v1/dashboard/mentor/session/available/",
+
+    // ── #16 GET  session/admin/list/ ─────────────────────────────────────────
+    /** GET - Admin: list all non-deleted sessions */
+    sessionAdminList: "/api/v1/dashboard/mentor/session/admin/list/",
+
+    // ── #17 PATCH  session/admin/verify/<session_id>/ ────────────────────────
+    /** PATCH - Admin: approve or reject a PENDING_APPROVAL session */
+    sessionAdminVerify: (sessionId: string) =>
+      `/api/v1/dashboard/mentor/session/admin/verify/${sessionId}/`,
+
+    // ── #18 POST  session/participation/join/<session_id>/ ───────────────────
+    /** POST - Join a SCHEDULED session as a learner */
+    sessionJoin: (sessionId: string) =>
+      `/api/v1/dashboard/mentor/session/participation/join/${sessionId}/`,
+
+    // ── #19 GET  session/participant/history/ ────────────────────────────────
+    /** GET - Sessions the current user has joined (learner history) */
+    sessionParticipantHistory:
+      "/api/v1/dashboard/mentor/session/participant/history/",
+
+    // ── #20 GET/POST  session/participant/list/<session_id>/ ─────────────────
+    /** GET/POST - List or add participants for a session */
+    sessionParticipantList: (sessionId: string) =>
+      `/api/v1/dashboard/mentor/session/participant/list/${sessionId}/`,
+
+    // ── #21 PATCH  session/participant/update/<link_id>/ ─────────────────────
+    /** PATCH - Mentor updates attendance/progress for one participant */
+    sessionParticipantUpdate: (linkId: string) =>
+      `/api/v1/dashboard/mentor/session/participant/update/${linkId}/`,
+
+    // ── #22 PATCH  session/participant/feedback/<session_id>/ ────────────────
+    /** PATCH - Participant submits feedback after attending a session */
+    sessionParticipantFeedback: (sessionId: string) =>
+      `/api/v1/dashboard/mentor/session/participant/feedback/${sessionId}/`,
+
+    // ── Tasks: IG dropdown ───────────────────────────────────────────────
+    /** GET - IGs where the mentor has an active assignment (for task creation) */
+    tasksIgDropdown: "/api/v1/dashboard/mentor/tasks/ig-dropdown/",
+
+    // ── Tasks: list + create ─────────────────────────────────────────────
+    /** GET/POST - List mentor-submitted tasks or create a new task */
+    tasks: "/api/v1/dashboard/mentor/tasks/",
+
+    // ── Tasks: detail + update + delete ──────────────────────────────────
+    /** GET/PUT/DELETE - Single mentor task by ID */
+    task: (taskId: string) => `/api/v1/dashboard/mentor/tasks/${taskId}/`,
+
+    // ── Activity feed ────────────────────────────────────────────────────
+    /** GET - Merged timeline: sessions created + task submissions appraised */
+    activity: "/api/v1/dashboard/mentor/activity/",
+  },
+
+  // ============================================
+  // Admin Task Review Endpoints
+  // Base: /api/v1/dashboard/task/
+  // ============================================
+  adminTask: {
+    // ── GET  task/list-task-type/ ─────────────────────────────────────────
+    /** GET - List all available task types (used for the type dropdown) */
+    taskTypeList: "/api/v1/dashboard/task/list-task-type/",
   },
 
   // ============================================
@@ -423,6 +459,16 @@ export const endpoints = {
     /** GET - Campus weekly karma */
     weeklykarma: (campusId: string) =>
       `/api/v1/dashboard/campus/weekly-karma/${campusId}/`,
+
+    // ── Campus Mentor & Sessions ─────────────────────────────────────────────
+    /** POST - Nominate a student as a Campus Mentor (Campus Lead / Lead Enabler) */
+    assignMentor: "/api/v1/dashboard/campus/assign-mentor/",
+
+    /** POST - Campus mentor creates a new session (pending admin approval) */
+    sessionsCreate: "/api/v1/dashboard/campus/sessions/create/",
+
+    /** GET - List campus sessions for the authenticated user's college */
+    sessionsList: "/api/v1/dashboard/campus/sessions/list/",
   },
 
   // ============================================
@@ -512,6 +558,28 @@ export const endpoints = {
     wadhwaniCollege: "/api/v1/leaderboard/wadhwani-college/",
     /** GET - Wadhwani zonal leaderboard */
     wadhwaniZonal: "/api/v1/leaderboard/wadhwani-zonal/",
+    /** GET - IG Mentor leaderboard ranked by completed sessions in that IG (public) */
+    igMentor: (igId: string) => `/api/v1/leaderboard/ig-mentor/${igId}/`,
+    /** GET - Campus Mentor leaderboard ranked by completed campus sessions (public) */
+    campusMentor: (campusId: string) =>
+      `/api/v1/leaderboard/campus-mentor/${campusId}/`,
+  },
+
+  // ============================================
+  // Calendar Endpoints
+  // Base: /api/v1/calendar/
+  // All endpoints are public (no auth required)
+  // ============================================
+  calendar: {
+    /** GET - Company session calendar by org UUID (public) — query: month (YYYY-MM), status */
+    companySessions: (companyOrgId: string) =>
+      `/api/v1/calendar/company/${companyOrgId}/sessions/`,
+    /** GET - IG Mentor session calendar by IG UUID (public) — query: month (YYYY-MM), status */
+    igMentorSessions: (igId: string) =>
+      `/api/v1/calendar/ig-mentor/${igId}/sessions/`,
+    /** GET - Campus Mentor session calendar by campus UUID (public) — query: month (YYYY-MM), status */
+    campusMentorSessions: (campusId: string) =>
+      `/api/v1/calendar/campus-mentor/${campusId}/sessions/`,
   },
 
   // ============================================

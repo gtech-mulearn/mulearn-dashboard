@@ -2,8 +2,8 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { fetchCompanyMentorNominations, nominateCompanyMentor } from "../api";
-import type { NominateMentorPayload } from "../types";
+import { fetchCompanyMentors, nominateCompanyMentor } from "../api";
+import type { NominateMentorPayload } from "../api/company-mentor.api";
 
 export const COMPANY_MENTOR_KEYS = {
   all: ["company-mentor"] as const,
@@ -13,7 +13,7 @@ export const COMPANY_MENTOR_KEYS = {
 export function useCompanyMentorNominations() {
   return useQuery({
     queryKey: COMPANY_MENTOR_KEYS.nominations(),
-    queryFn: fetchCompanyMentorNominations,
+    queryFn: fetchCompanyMentors,
     refetchOnWindowFocus: false,
   });
 }
