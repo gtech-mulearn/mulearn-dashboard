@@ -18,6 +18,7 @@ import { useMemo, useState } from "react";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table, { type Data } from "@/components/dashboard/table/Table";
 import TableTop from "@/components/dashboard/table/TableTop";
+import THead from "@/components/dashboard/table/Thead";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -104,6 +105,10 @@ export default function ManageInternsPage() {
   const [perPage, setPerPage] = useState(10);
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [sortBy, setSortBy] = useState<string | undefined>(undefined);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc" | undefined>(
+    undefined,
+  );
 
   const debouncedSearch = useDebounce(searchText, 500);
 
@@ -126,7 +131,24 @@ export default function ManageInternsPage() {
     perPage,
     search: debouncedSearch || undefined,
     status: statusFilter === "all" ? undefined : statusFilter,
+    sortBy,
+    sortOrder,
   });
+
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      if (sortOrder === "asc") {
+        setSortOrder("desc");
+      } else {
+        setSortBy(undefined);
+        setSortOrder(undefined);
+      }
+    } else {
+      setSortBy(column);
+      setSortOrder("asc");
+    }
+    setPage(1);
+  };
 
   const { data: guilds = [] } = useGuilds();
   const guildOptions = useMemo(() => {
@@ -392,20 +414,26 @@ export default function ManageInternsPage() {
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
-            />
-
-            <div className="p-4 border-t border-border/20">
-              <Pagination
-                currentPage={page}
-                totalPages={totalPages}
-                perPage={perPage}
-                totalCount={totalCount}
-                handlePreviousClick={() => setPage((p) => Math.max(1, p - 1))}
-                handleNextClick={() =>
-                  setPage((p) => Math.min(totalPages, p + 1))
-                }
+            >
+              <THead
+                columnOrder={tableColumns}
+                onIconClick={handleSort}
+                action={true}
+                thClassName="bg-muted/20 border-b border-border/20 h-12 font-black uppercase text-[9px] tracking-[0.3em]"
               />
-            </div>
+              <div className="p-4 border-t border-border/20">
+                <Pagination
+                  currentPage={page}
+                  totalPages={totalPages}
+                  perPage={perPage}
+                  totalCount={totalCount}
+                  handlePreviousClick={() => setPage((p) => Math.max(1, p - 1))}
+                  handleNextClick={() =>
+                    setPage((p) => Math.min(totalPages, p + 1))
+                  }
+                />
+              </div>
+            </Table>
           </CardContent>
         </Card>
       </div>
