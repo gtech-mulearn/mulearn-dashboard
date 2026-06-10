@@ -243,7 +243,7 @@ export function Sidebar() {
           <button
             onClick={() => setIsLogoutDialogOpen(true)}
             className={cn(
-              "w-full flex items-center rounded-xl text-destructive hover:bg-destructive/10 transition-all py-2.5",
+              "w-full flex items-center cursor-pointer rounded-xl text-destructive hover:bg-destructive/10 transition-all py-2.5",
               // Base (Mobile/Expanded)
               "justify-start gap-3 px-3",
               // Desktop Collapsed override

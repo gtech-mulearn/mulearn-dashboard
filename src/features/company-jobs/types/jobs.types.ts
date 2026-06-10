@@ -362,3 +362,41 @@ export interface LearnerDiscoveryParams {
   pageIndex?: number;
   perPage?: number;
 }
+
+// ─── MuLearner Directory ────────────────────────────────────
+
+export interface MuLearner {
+  id: string;
+  full_name: string;
+  muid: string;
+  email: string;
+  karma: number;
+  level: number;
+  college?: string | null;
+  department?: string | null;
+  graduation_year?: number | null;
+}
+
+export interface MuLearnersResponse {
+  data: MuLearner[];
+  pagination: Pagination;
+}
+
+// ─── Gig Analytics ──────────────────────────────────────────
+
+export interface GigAnalytics {
+  total_gigs_posted: number;
+  active_gigs: number;
+  closed_gigs: number;
+  average_hourly_rate: number;
+  application_funnel: {
+    Total: number;
+    Pending: number;
+    "In-Review": number;
+    Shortlisted: number;
+    Interview: number;
+    Selected: number;
+    Rejected: number;
+  };
+  conversion_rate: string;
+}

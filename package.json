@@ -1,6 +1,6 @@
 {
   "name": "mulearn-dashboard",
-  "version": "4.6.1",
+  "version": "4.7.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -11,7 +11,7 @@
     "lint:circular": "madge --circular --extensions ts,tsx --ts-config tsconfig.json src",
     "format": "biome format --write",
     "prepare": "husky",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "node --max-semi-space-size=64 ./node_modules/typescript/bin/tsc --noEmit",
     "changeset": "changeset",
     "version-packages": "changeset version"
   },
@@ -38,7 +38,7 @@
     "framer-motion": "^12.34.0",
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.575.0",
-    "next": "^16.2.4",
+    "next": "^16.2.9",
     "next-themes": "^0.4.6",
     "radix-ui": "^1.4.3",
     "react": "^19.2.3",

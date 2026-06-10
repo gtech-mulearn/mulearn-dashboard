@@ -8,11 +8,13 @@ import {
   CreateRuleResponseSchema,
   DeleteJobResponseSchema,
   DeleteRuleResponseSchema,
+  GigAnalyticsResponseSchema,
   JobApplicantsResponseSchema,
   JobDetailResponseSchema,
   JobsListResponseSchema,
   LearnerApplicationsResponseSchema,
   LearnerDiscoveryResponseSchema,
+  MuLearnersResponseSchema,
   PublicCompanyProfileResponseSchema,
   PublicJobsBySlugResponseSchema,
   PublicJobsResponseSchema,
@@ -29,6 +31,7 @@ import type {
   CreateRuleResponse,
   DeleteJobResponse,
   DeleteRuleResponse,
+  GigAnalytics,
   Job,
   JobApplicantsResponse,
   JobsListParams,
@@ -36,6 +39,7 @@ import type {
   LearnerApplicationsResponse,
   LearnerDiscoveryParams,
   LearnerDiscoveryResponse,
+  MuLearnersResponse,
   PublicJobsResponse,
   UpdateApplicantStatusResponse,
   UpdateJobPayload,
@@ -267,13 +271,15 @@ export async function fetchJobApplicants(
 }
 
 export async function updateApplicantStatus(
-  jobId: string,
   appId: string,
   status: string,
+  rejection_reason?: string | null,
 ): Promise<UpdateApplicantStatusResponse> {
+  const body: Record<string, unknown> = { status };
+  if (rejection_reason !== undefined) body.rejection_reason = rejection_reason;
   const res = await apiClient.patch(
-    endpoints.company.updateApplicantStatus(jobId, appId),
-    { status },
+    endpoints.company.updateApplicantStatus(appId),
+    body,
     UpdateApplicantStatusResponseSchema,
   );
   return res.response;
@@ -308,5 +314,66 @@ export async function fetchLearnerDiscovery(
     : endpoints.company.learners;
 
   const res = await apiClient.get(url, LearnerDiscoveryResponseSchema);
+  return res.response;
+}
+
+// ─── MuLearner Directory ────────────────────────────────────────────────────────
+
+export interface MuLearnerParams {
+  min_karma?: number;
+  max_karma?: number;
+  level?: number;
+  college?: string;
+  department?: string;
+  graduation_year?: string;
+  ig?: string;
+  skill?: string;
+  achievement?: string;
+  task?: string;
+  search?: string;
+  sortBy?: string;
+  pageIndex?: number;
+  perPage?: number;
+}
+
+export async function fetchMuLearners(
+  params?: MuLearnerParams,
+): Promise<MuLearnersResponse> {
+  const query = new URLSearchParams();
+
+  if (params?.min_karma !== undefined)
+    query.set("min_karma", String(params.min_karma));
+  if (params?.max_karma !== undefined)
+    query.set("max_karma", String(params.max_karma));
+  if (params?.level !== undefined) query.set("level", String(params.level));
+  if (params?.college) query.set("college", params.college);
+  if (params?.department) query.set("department", params.department);
+  if (params?.graduation_year)
+    query.set("graduation_year", params.graduation_year);
+  if (params?.ig) query.set("ig", params.ig);
+  if (params?.skill) query.set("skill", params.skill);
+  if (params?.achievement) query.set("achievement", params.achievement);
+  if (params?.task) query.set("task", params.task);
+  if (params?.pageIndex) query.set("pageIndex", String(params.pageIndex));
+  if (params?.perPage) query.set("perPage", String(params.perPage));
+  if (params?.search?.trim()) query.set("search", params.search.trim());
+  if (params?.sortBy) query.set("sortBy", params.sortBy);
+
+  const queryString = query.toString();
+  const url = queryString
+    ? `${endpoints.company.mulearners}?${queryString}`
+    : endpoints.company.mulearners;
+
+  const res = await apiClient.get(url, MuLearnersResponseSchema);
+  return res.response;
+}
+
+// ─── Gig Analytics ───────────────────────────────────────────────────────────────
+
+export async function fetchGigAnalytics(): Promise<GigAnalytics> {
+  const res = await apiClient.get(
+    endpoints.company.gigAnalytics,
+    GigAnalyticsResponseSchema,
+  );
   return res.response;
 }

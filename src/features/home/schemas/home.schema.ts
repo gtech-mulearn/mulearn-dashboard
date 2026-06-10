@@ -133,23 +133,30 @@ export const PaginationSchema = z.object({
 
 // ============================================
 // Mentor Overview (/mentor/overview/)
-// Backend returns { overview: { mentors, sessions, task_requests, opportunities, mentees, recent_activity } }
+// New API shape: { scopes: [{scope_type, scope_id, scope_name}], metrics: any }
 // ============================================
 
-// Mentor self-stats (mentor user) vs aggregate (admin)
-const OverviewMentorsSelfSchema = z.object({
-  is_verified: z.boolean(),
-  mentor_tier: z.string().nullable(),
-  hours: z.number(),
+export const MentorOverviewScopeSchema = z.object({
+  scope_type: z.string(),
+  scope_id: z.string(),
+  scope_name: z.string().nullable(),
 });
-const OverviewMentorsAggregateSchema = z.object({
-  total: z.number(),
-  verified: z.number(),
-  unverified: z.number(),
-  pending_verification: z.number(),
-});
+export type MentorOverviewScope = z.infer<typeof MentorOverviewScopeSchema>;
 
-const OverviewSessionListItemSchema = z.object({
+export const MentorOverviewSchema = z.object({
+  scopes: z.array(MentorOverviewScopeSchema),
+  metrics: z.record(z.string(), z.unknown()).optional(),
+});
+export type MentorOverview = z.infer<typeof MentorOverviewSchema>;
+
+export const MentorOverviewResponseSchema =
+  ApiResponseSchema(MentorOverviewSchema);
+
+// ============================================
+// Legacy session/task-request types (used by getMentorHomeSummary adapter)
+// ============================================
+
+export const OverviewSessionListItemSchema = z.object({
   id: z.string(),
   title: z.string(),
   description: z.string().nullable().optional(),
@@ -169,20 +176,7 @@ export type OverviewSessionListItem = z.infer<
   typeof OverviewSessionListItemSchema
 >;
 
-const OverviewSessionsSchema = z.object({
-  counts: z.object({
-    pending_approval: z.number(),
-    scheduled: z.number(),
-    completed: z.number(),
-    cancelled: z.number(),
-    rejected: z.number(),
-    total: z.number(),
-  }),
-  upcoming: z.array(OverviewSessionListItemSchema).default([]),
-  pending_global: z.array(OverviewSessionListItemSchema).default([]),
-});
-
-const OverviewTaskRequestItemSchema = z.object({
+export const OverviewTaskRequestItemSchema = z.object({
   id: z.string(),
   title: z.string(),
   hashtag: z.string().optional(),
@@ -197,30 +191,7 @@ export type OverviewTaskRequestItem = z.infer<
   typeof OverviewTaskRequestItemSchema
 >;
 
-const OverviewTaskRequestsSchema = z.object({
-  pending: z.number(),
-  approved: z.number(),
-  rejected: z.number(),
-  recent_pending: z.array(OverviewTaskRequestItemSchema).default([]),
-});
-
-const OverviewOpportunitiesSchema = z.object({
-  total: z.number(),
-  published: z.number(),
-  draft: z.number(),
-  closed: z.number(),
-  by_ig: z
-    .array(
-      z.object({
-        ig_id: z.string().nullable(),
-        ig_name: z.string().nullable(),
-        count: z.number(),
-      }),
-    )
-    .default([]),
-});
-
-const OverviewActivityItemSchema = z.object({
+export const OverviewActivityItemSchema = z.object({
   id: z.string(),
   action_type: z.string(),
   actor_name: z.string().nullable().optional(),
@@ -235,77 +206,50 @@ const OverviewActivityItemSchema = z.object({
 });
 export type OverviewActivityItem = z.infer<typeof OverviewActivityItemSchema>;
 
-export const MentorOverviewSchema = z.object({
-  mentors: z.union([OverviewMentorsSelfSchema, OverviewMentorsAggregateSchema]),
-  sessions: OverviewSessionsSchema,
-  task_requests: OverviewTaskRequestsSchema,
-  opportunities: OverviewOpportunitiesSchema,
-  mentees: z.object({ total_unique: z.number() }),
-  recent_activity: z.array(OverviewActivityItemSchema).default([]),
-});
-export type MentorOverview = z.infer<typeof MentorOverviewSchema>;
-
-export const MentorOverviewResponseSchema = ApiResponseSchema(
-  z.object({ overview: MentorOverviewSchema }),
-);
-
 // ============================================
-// Mentor Sessions (/mentor/sessions/)
+// Mentor Sessions (/mentor/session/list/)
+// Response: { data: MentorSession[], pagination: {...} }
 // ============================================
-
-export const MentorSessionParticipantSchema = z.object({
-  user_id: z.string(),
-  full_name: z.string(),
-  participant_role: z.string(),
-  attendance_status: z.string().nullable(),
-});
 
 export const MentorSessionSchema = z.object({
-  id: z.string(),
-  ig_name: z.string().nullable(),
-  title: z.string(),
-  mode: z.string(),
+  id: z.string().max(36).optional(),
+  entity_id: z.string().max(36).nullable().optional(),
+  entity_name: z.string(),
+  session_type: z
+    .enum(["ig_session", "campus_session", "company_session"])
+    .optional(),
+  title: z.string().max(150),
+  mode: z.enum(["ONLINE", "OFFLINE", "HYBRID"]).optional(),
   starts_at: z.string(),
   ends_at: z.string(),
-  status: z.string(),
-  meeting_link: z.string().nullable(),
-  participants: z.array(MentorSessionParticipantSchema),
+  status: z.enum([
+    "SCHEDULED",
+    "PENDING_APPROVAL",
+    "COMPLETED",
+    "CANCELLED",
+    "REJECTED",
+  ]),
+  created_by_id: z.string(),
+  created_by_name: z.string(),
+  created_at: z.string(),
+  max_participants: z.number().nullable().optional(),
+  is_recurring: z.boolean().optional(),
+  parent_session_id: z.string().nullable(),
+  recurrence_type: z.enum(["DAILY", "WEEKLY", "MONTHLY"]).nullable().optional(),
+  recurrence_interval: z.number().nullable().optional(),
+  recurrence_end_date: z.string().nullable().optional(),
 });
 export type MentorSession = z.infer<typeof MentorSessionSchema>;
+/** @deprecated Use MentorSession instead */
+export type MentorSessionPartial = MentorSession;
 
 export const MentorSessionsResponseSchema = ApiResponseSchema(
   z.object({
     data: z.array(MentorSessionSchema),
-    pagination: PaginationSchema,
+    // Sessions API returns a different pagination shape — use passthrough to avoid mismatch
+    pagination: z.record(z.string(), z.unknown()).optional(),
   }),
 );
-
-// ============================================
-// Mentor Mentees (/mentor/mentees/)
-// ============================================
-
-export const MentorMenteeSchema = z.object({
-  user_id: z.string(),
-  full_name: z.string(),
-  muid: z.string(),
-  profile_pic: z.string().nullable(),
-  karma: z.number(),
-  level: z.string().nullable(),
-  ig_karma: z.number(),
-  ig_level: z.string().nullable(),
-  session_count: z.number(),
-  last_session_at: z.string().nullable(),
-});
-export type MentorMentee = z.infer<typeof MentorMenteeSchema>;
-
-export const MentorMenteesResponseSchema = ApiResponseSchema(
-  z.object({
-    active_ig_id: z.string().nullable(),
-    data: z.array(MentorMenteeSchema),
-    pagination: PaginationSchema,
-  }),
-);
-
 // ============================================
 // Public Jobs Count (/public/jobs/)
 // ============================================
@@ -447,13 +391,10 @@ export const MentorHomeSummaryDataSchema = z
     stat_cards: z.array(MentorStatCardSchema).optional().default([]),
     upcoming_sessions: z.array(MentorSessionSchema).optional().default([]),
     session_requests: z.array(MentorSessionSchema).optional().default([]),
-    mentee_progress: z.array(MentorMenteeSchema).optional().default([]),
     expertise_tags: z.array(z.string()).optional().default([]),
   })
   .passthrough();
 export type MentorHomeSummaryData = z.infer<typeof MentorHomeSummaryDataSchema>;
-/** @deprecated Use MentorSession instead */
-export type MentorSessionPartial = MentorSession;
 
 export const MentorHomeSummaryResponseSchema = ApiResponseSchema(
   MentorHomeSummaryDataSchema,
