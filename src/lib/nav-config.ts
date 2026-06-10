@@ -187,30 +187,15 @@ export const NAV_ITEMS: readonly NavItem[] = [
   },
   {
     id: "intern-dashboard",
-    title: "Intern Dashboard",
+    title: "Intern",
     href: "/dashboard/intern",
     icon: LayoutDashboard,
     section: "main",
     roles: [ROLES.INTERN, ROLES.ADMIN],
   },
-  {
-    id: "intern-leave",
-    title: "Leaves",
-    href: "/dashboard/intern/leave",
-    icon: Calendar,
-    section: "main",
-    roles: [ROLES.INTERN],
-  },
 
   // ── Management Section (role-gated) ───────────────────────
-  {
-    id: "intern-manage",
-    title: "Manage Interns",
-    href: "/dashboard/management/manage-interns",
-    icon: Users,
-    section: "management",
-    roles: [ROLES.ADMIN],
-  },
+
   {
     id: "mentor-sessions",
     title: "Sessions",

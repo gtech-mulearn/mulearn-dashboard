@@ -3,6 +3,7 @@
 import {
   Activity,
   AlertTriangle,
+  Calendar,
   CheckCircle2,
   Flame,
   Gem,
@@ -186,7 +187,7 @@ export default function ManageInternsPage() {
     },
     {
       column: "guild",
-      Label: "Alliance",
+      Label: "Team",
       isSortable: true,
       wrap: (data: string) => (
         <span className="text-xs font-bold uppercase text-muted-foreground tracking-wider">
@@ -250,7 +251,7 @@ export default function ManageInternsPage() {
             Oversee the realm of active learners and contributors.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Button
             onClick={() => setIsOnboardOpen(true)}
             className="gap-2 bg-gradient-to-r from-brand-blue to-brand-purple hover:scale-[1.02] transition-transform text-white font-black uppercase text-[10px] tracking-widest h-10 shadow-lg rounded-xl"
@@ -258,10 +259,22 @@ export default function ManageInternsPage() {
             <Plus className="w-4 h-4" />
             Onboard Intern
           </Button>
+          <Link href="/dashboard/management/manage-interns/timesheet-reviews">
+            <Button className="gap-2 bg-brand-blue hover:bg-brand-blue/90 text-white font-black uppercase text-[10px] tracking-widest h-10 shadow-lg rounded-xl">
+              <CheckCircle2 className="w-4 h-4" />
+              Timesheets
+            </Button>
+          </Link>
+          <Link href="/dashboard/management/manage-interns/leave-reviews">
+            <Button className="gap-2 bg-warning hover:bg-warning/90 text-warning-foreground font-black uppercase text-[10px] tracking-widest h-10 shadow-lg rounded-xl">
+              <Calendar className="w-4 h-4" />
+              Leaves
+            </Button>
+          </Link>
           <Link href="/dashboard/management/manage-interns/intern-report">
             <Button className="gap-2 bg-primary text-primary-foreground font-black uppercase text-[10px] tracking-widest h-10 shadow-lg rounded-xl">
               <Sparkles className="w-4 h-4" />
-              Generate Report
+              Reports
             </Button>
           </Link>
         </div>

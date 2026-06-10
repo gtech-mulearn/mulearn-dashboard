@@ -15,7 +15,7 @@ import { useLeaderboard, useLeaderboardMe } from "@/features/intern";
 export default function LeaderboardPage() {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
-  const [_searchText, setSearchText] = useState("");
+  const [searchText, setSearchText] = useState("");
 
   const { data: userInfo } = useUserInfo();
   const { data: profile } = useUserProfile();
@@ -31,6 +31,7 @@ export default function LeaderboardPage() {
   const { data: boardData, isLoading: isBoardLoading } = useLeaderboard({
     page,
     page_size: perPage,
+    search: searchText || undefined,
   });
 
   if (isPodiumLoading || isBoardLoading) {
@@ -100,7 +101,7 @@ export default function LeaderboardPage() {
             </AvatarFallback>
           </Avatar>
           <span className="font-medium">{data}</span>
-          {row.name === userDisplayName && (
+          {(row.id === profile?.id || row.name === userDisplayName) && (
             <Badge className="bg-brand-blue/10 text-brand-blue border-brand-blue/20 text-[10px] h-4">
               YOU
             </Badge>
@@ -132,9 +133,7 @@ export default function LeaderboardPage() {
     },
   ];
 
-  const others = listRows.filter((item) =>
-    item.name.toLowerCase().includes(_searchText.toLowerCase()),
-  );
+  const others = listRows;
 
   return (
     <div className="flex-1 space-y-8 p-8 pt-6 max-w-7xl mx-auto w-full bg-background/50">
@@ -148,16 +147,6 @@ export default function LeaderboardPage() {
             Compete with others and earn rewards.
           </p>
         </div>
-        <Tabs defaultValue="daily" className="w-full sm:w-auto">
-          <TabsList className="bg-muted/50 p-1">
-            <TabsTrigger value="daily" className="px-6">
-              Daily
-            </TabsTrigger>
-            <TabsTrigger value="monthly" className="px-6">
-              Monthly
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
       </div>
 
       {/* Podium Section */}
@@ -287,8 +276,14 @@ export default function LeaderboardPage() {
         <h3 className="text-xl font-bold">Rankings</h3>
 
         <TableTop
-          onSearchText={setSearchText}
-          onPerPageNumber={setPerPage}
+          onSearchText={(val) => {
+            setSearchText(val);
+            setPage(1);
+          }}
+          onPerPageNumber={(val) => {
+            setPerPage(val);
+            setPage(1);
+          }}
           CSV=""
           perPage={perPage}
           perPageOptions={[10, 20, 50]}

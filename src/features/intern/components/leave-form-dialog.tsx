@@ -116,7 +116,7 @@ export function LeaveFormDialog({ open, onOpenChange }: LeaveFormDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-card/95 backdrop-blur-xl border-border/60 max-w-md">
+      <DialogContent className="bg-card/95 backdrop-blur-xl border-border/60 w-full max-w-[calc(100%-2rem)] sm:max-w-md p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="text-xl font-black uppercase tracking-wider text-foreground">
             Apply for Leave
@@ -157,7 +157,7 @@ export function LeaveFormDialog({ open, onOpenChange }: LeaveFormDialogProps) {
             </Select>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
                 Start Date
@@ -187,7 +187,7 @@ export function LeaveFormDialog({ open, onOpenChange }: LeaveFormDialogProps) {
           </div>
 
           {daysCount > 0 && (
-            <div className="p-3 bg-muted/30 border border-border/20 rounded-xl flex items-center justify-between text-xs">
+            <div className="p-3 bg-muted/30 border border-border/20 rounded-xl flex items-center justify-between text-xs gap-2">
               <span className="font-bold text-muted-foreground uppercase">
                 Calculated Duration
               </span>
@@ -206,7 +206,7 @@ export function LeaveFormDialog({ open, onOpenChange }: LeaveFormDialogProps) {
               placeholder="Provide a clear description of the leave..."
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              className="min-h-[100px] bg-background/50 border-border/40 font-semibold focus:ring-brand-blue/30 resize-none p-4 text-xs"
+              className="min-h-[100px] bg-background/50 border-border/40 font-semibold focus:ring-brand-blue/30 resize-none p-3 sm:p-4 text-xs"
             />
           </div>
 
@@ -216,14 +216,14 @@ export function LeaveFormDialog({ open, onOpenChange }: LeaveFormDialogProps) {
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={submitMutation.isPending}
-              className="uppercase tracking-widest text-[10px] font-black border-border/50 rounded-xl"
+              className="w-full sm:w-auto uppercase tracking-widest text-[10px] font-black border-border/50 rounded-xl h-10"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={submitMutation.isPending}
-              className="bg-gradient-to-r from-warning to-destructive hover:scale-[1.02] transition-transform text-white uppercase tracking-widest text-[10px] font-black shadow-lg rounded-xl"
+              className="w-full sm:w-auto bg-gradient-to-r from-warning to-destructive hover:scale-[1.02] transition-transform text-white uppercase tracking-widest text-[10px] font-black shadow-lg rounded-xl h-10"
             >
               {submitMutation.isPending ? "Submitting..." : "Apply Leave"}
             </Button>

@@ -4,11 +4,28 @@ import { Sparkles, Trophy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useWeeklyReviewCurrent, WeeklyReviewForm } from "@/features/intern";
 
+function getISOWeekAndYear(date: Date = new Date()) {
+  const target = new Date(date.valueOf());
+  const dayNumber = (date.getDay() + 6) % 7;
+  target.setDate(target.getDate() - dayNumber + 3);
+  const firstThursday = target.valueOf();
+  target.setMonth(0, 1);
+  if (target.getDay() !== 4) {
+    target.setMonth(0, 1 + ((4 - target.getDay() + 7) % 7));
+  }
+  const week = 1 + Math.ceil((firstThursday - target.valueOf()) / 604800000);
+  const year = new Date(firstThursday).getFullYear();
+  return { week, year };
+}
+
 export default function WeeklyReviewPage() {
   const { data: currentReview } = useWeeklyReviewCurrent();
 
-  // If no review has been submitted for this week, we can guess the current week or show a default.
-  const weekNum = currentReview?.iso_week || 13;
+  const weekInfo = currentReview
+    ? { week: currentReview.iso_week, year: currentReview.iso_year }
+    : getISOWeekAndYear();
+  const weekNum = weekInfo.week;
+  const yearNum = weekInfo.year;
 
   return (
     <div className="flex-1 space-y-8 p-8 pt-6 max-w-7xl mx-auto w-full bg-background/50">
@@ -35,7 +52,7 @@ export default function WeeklyReviewPage() {
             </div>
             <div className="flex flex-col">
               <span className="text-sm font-black text-brand-purple uppercase tracking-widest">
-                Week {weekNum}
+                Week {weekNum} &bull; {yearNum}
               </span>
               <span className="text-[10px] font-bold text-muted-foreground uppercase">
                 Status: {currentReview ? "Submitted" : "Open"}

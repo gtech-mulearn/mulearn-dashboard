@@ -27,6 +27,11 @@ const baseWeeklyReviewSchema = z.object({
   hoursCommitted: z.string().optional(),
   blockers: z.string().optional(),
   leaveDays: z.string().optional(),
+  rating: z.string().optional(),
+  learnings: z.string().optional(),
+  challengesFaced: z.string().optional(),
+  nextWeekPlan: z.string().optional(),
+  suggestions: z.string().optional(),
 });
 
 export const weeklyReviewSchema = baseWeeklyReviewSchema.superRefine(

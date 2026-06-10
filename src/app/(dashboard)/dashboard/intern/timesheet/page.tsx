@@ -104,8 +104,10 @@ export default function TimesheetPage() {
         hours,
         description,
         blockers: blockers || "None",
-        task: linkedTaskId || undefined,
-        task_status: linkedTaskId ? taskStatus : undefined,
+        task:
+          linkedTaskId && linkedTaskId !== "none" ? linkedTaskId : undefined,
+        task_status:
+          linkedTaskId && linkedTaskId !== "none" ? taskStatus : undefined,
       },
       {
         onSuccess: () => {
@@ -343,18 +345,6 @@ export default function TimesheetPage() {
                             className="font-bold uppercase text-xs"
                           >
                             QA / Testing
-                          </SelectItem>
-                          <SelectItem
-                            value="LEARNING"
-                            className="font-bold uppercase text-xs"
-                          >
-                            Ancient Tomes (Learning)
-                          </SelectItem>
-                          <SelectItem
-                            value="MEETING"
-                            className="font-bold uppercase text-xs"
-                          >
-                            Council Meetings (Meeting)
                           </SelectItem>
                         </SelectContent>
                       </Select>

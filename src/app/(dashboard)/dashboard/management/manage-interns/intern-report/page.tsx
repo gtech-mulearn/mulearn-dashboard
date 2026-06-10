@@ -76,14 +76,14 @@ export default function WeeklyReportGeneratorPage() {
   const handleGenerateIndividual = () => {
     if (!individualMuid) return;
     router.push(
-      `/dashboard/admin/weekly-report-generator/individual?muid=${individualMuid}`,
+      `/dashboard/management/manage-interns/intern-report/individual?muid=${individualMuid}`,
     );
   };
 
   const handleGenerateTeam = () => {
     if (!teamName) return;
     router.push(
-      `/dashboard/admin/weekly-report-generator/team?team=${teamName}`,
+      `/dashboard/management/manage-interns/intern-report/team?team=${teamName}`,
     );
   };
 
@@ -110,7 +110,7 @@ export default function WeeklyReportGeneratorPage() {
     },
     {
       column: "team",
-      Label: "Alliance",
+      Label: "Team",
       isSortable: true,
       wrap: (data: string) => (
         <Badge
@@ -255,13 +255,13 @@ export default function WeeklyReportGeneratorPage() {
           <Dialog>
             <DialogTrigger asChild>
               <Button className="w-full sm:w-auto bg-brand-purple hover:bg-brand-purple/90 font-black uppercase text-[10px] tracking-widest h-12 px-6 shadow-lg shadow-brand-purple/20 rounded-xl">
-                Alliance Scroll
+                Team Scroll
               </Button>
             </DialogTrigger>
             <DialogContent className="bg-card border-border/60">
               <DialogHeader>
                 <DialogTitle className="font-black uppercase tracking-widest">
-                  Alliance Report
+                  Team Report
                 </DialogTitle>
               </DialogHeader>
               <div className="py-6 space-y-4">
@@ -270,7 +270,7 @@ export default function WeeklyReportGeneratorPage() {
                     htmlFor="team"
                     className="text-[10px] font-black uppercase tracking-widest opacity-60"
                   >
-                    Enter Alliance Name
+                    Enter Team Name
                   </Label>
                   <Input
                     id="team"
@@ -322,7 +322,7 @@ export default function WeeklyReportGeneratorPage() {
 
             <div className="w-full lg:w-72">
               <Label className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
-                Alliance Filter
+                Team Filter
               </Label>
               <Select
                 value={teamFilter}
@@ -332,11 +332,11 @@ export default function WeeklyReportGeneratorPage() {
                 }}
               >
                 <SelectTrigger className="h-14 bg-background/50 border-border/50 font-black uppercase text-[10px] tracking-widest rounded-xl">
-                  <SelectValue placeholder="All Alliances" />
+                  <SelectValue placeholder="All Teams" />
                 </SelectTrigger>
                 <SelectContent className="bg-card font-bold border-border/60">
                   <SelectItem value="ALL" className="uppercase text-[10px]">
-                    All Alliances
+                    All Teams
                   </SelectItem>
                   {uniqueTeams.map((team) => (
                     <SelectItem
@@ -431,7 +431,7 @@ export default function WeeklyReportGeneratorPage() {
                 </div>
                 <div>
                   <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
-                    Alliance / Week
+                    Team / Week
                   </span>
                   <span className="font-bold text-foreground">
                     {selectedReview.team} - W{selectedReview.iso_week}{" "}
