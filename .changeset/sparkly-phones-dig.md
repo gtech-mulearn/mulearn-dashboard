@@ -1,3 +1,7 @@
+---
+"mulearn-dashboard": minor
+---
+
 ### Home Page
 
 * Added a status banner to display the mentor application status.
