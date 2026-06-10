@@ -20,7 +20,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { MultiSelect } from "@/components/ui/multi-select";
-import { TagInput } from "@/components/ui/tag-input";
 import { Textarea } from "@/components/ui/textarea";
 import { useInterestGroupsList } from "@/features/home/hooks";
 import {
@@ -51,8 +50,14 @@ export function MentorOnboardingForm({
     resolver: zodResolver(OnboardingFormSchema),
     defaultValues: {
       about: existing?.about ?? "",
-      expertise: existing?.expertise ?? [],
+      expertise:
+        typeof existing?.expertise === "string"
+          ? existing.expertise
+          : Array.isArray(existing?.expertise)
+            ? (existing.expertise as string[]).join(", ")
+            : "",
       reason: existing?.reason ?? "",
+      preferred_ig_ids: existing?.preferred_ig_ids ?? [],
     },
   });
 
@@ -101,27 +106,19 @@ export function MentorOnboardingForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Expertise Tags{" "}
+                    Expertise{" "}
                     <span className="text-muted-foreground font-normal">
-                      (max 10)
+                      (e.g. React, Python, Machine Learning)
                     </span>
                   </FormLabel>
                   <FormControl>
-                    <TagInput
-                      value={field.value}
-                      onChange={(tags) => {
-                        const capped = tags.slice(0, 10);
-                        field.onChange(capped);
-                      }}
-                      placeholder="Type a skill and press Enter or comma..."
+                    <Textarea
+                      placeholder="Describe your areas of expertise…"
+                      rows={2}
+                      {...field}
                     />
                   </FormControl>
-                  <div className="flex items-center justify-between">
-                    <FormMessage />
-                    <span className="text-xs text-muted-foreground ml-auto">
-                      {field.value.length}/10
-                    </span>
-                  </div>
+                  <FormMessage />
                 </FormItem>
               )}
             />

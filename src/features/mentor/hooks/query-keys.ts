@@ -1,23 +1,31 @@
 export const mentorKeys = {
   all: ["mentor"] as const,
   availability: () => [...mentorKeys.all, "availability"] as const,
-  availabilityCalendar: () =>
-    [...mentorKeys.all, "availability-calendar"] as const,
+  // Public mentor endpoints (auth required, by mentor UUID)
   public: {
-    card: (muid: string) =>
-      [...mentorKeys.all, "public", "card", muid] as const,
-    sessions: (muid: string, params: Record<string, unknown>) =>
-      [...mentorKeys.all, "public", "sessions", muid, params] as const,
-    availability: (muid: string, igId?: string) =>
-      [...mentorKeys.all, "public", "availability", muid, igId ?? ""] as const,
+    profile: (mentorId: string) =>
+      [...mentorKeys.all, "public", "profile", mentorId] as const,
+    availability: (mentorId: string) =>
+      [...mentorKeys.all, "public", "availability", mentorId] as const,
   },
   sessions: {
     all: ["mentor-sessions"] as const,
+    // #12 Mentor's own sessions
     list: (params: Record<string, unknown>) =>
       [...mentorKeys.sessions.all, "list", params] as const,
-    pending: () => [...mentorKeys.sessions.all, "pending"] as const,
+    // #13 Single session detail
     detail: (id: string) => [...mentorKeys.sessions.all, "detail", id] as const,
+    // #15 Available sessions (learner discovery)
+    available: (params: Record<string, unknown>) =>
+      [...mentorKeys.sessions.all, "available", params] as const,
+    // #16 Admin session list
+    adminList: (params: Record<string, unknown>) =>
+      [...mentorKeys.sessions.all, "admin-list", params] as const,
+    // #20 Participants for a session
     participants: (id: string) =>
       [...mentorKeys.sessions.all, "participants", id] as const,
+    // #19 Learner participation history
+    participantHistory: (params: Record<string, unknown>) =>
+      [...mentorKeys.sessions.all, "participant-history", params] as const,
   },
 };

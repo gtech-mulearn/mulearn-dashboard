@@ -1,12 +1,11 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { Users } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getMentorMyIgs } from "@/features/home/api/home.api";
+import { useTaskIgDropdown } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
 
 const no403Retry = (failureCount: number, error: unknown) => {
   if (
@@ -19,16 +18,7 @@ const no403Retry = (failureCount: number, error: unknown) => {
 };
 
 export function MyIgsCard() {
-  const {
-    data: igRoles,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ["mentor-my-igs"],
-    queryFn: getMentorMyIgs,
-    retry: no403Retry,
-    staleTime: 5 * 60 * 1000,
-  });
+  const { data: igRoles, isLoading, isError } = useTaskIgDropdown();
 
   return (
     <Card className="rounded-2xl border bg-card shadow-sm">
@@ -62,8 +52,8 @@ export function MyIgsCard() {
         ) : (
           <div className="flex flex-wrap gap-2">
             {igRoles.map((r) => (
-              <Badge key={r.ig_id} variant="outline" className="text-sm">
-                {r.ig_name}
+              <Badge key={r.id} variant="outline" className="text-sm">
+                {r.name}
               </Badge>
             ))}
           </div>

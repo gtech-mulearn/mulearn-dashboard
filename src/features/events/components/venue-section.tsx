@@ -6,6 +6,7 @@ import {
   type FieldErrors,
   type UseFormWatch,
 } from "react-hook-form";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { CreateEventSchema } from "../schemas";
 
@@ -42,16 +43,15 @@ export function VenueSection({
               ].map((item) => {
                 const active = field.value === item.value;
                 return (
-                  <button
+                  <Button
                     key={item.value}
                     type="button"
-                    className={`rounded-md border px-3 py-1.5 text-sm ${
-                      active ? "border-primary bg-primary/10 text-primary" : ""
-                    }`}
+                    size="sm"
+                    variant={active ? "default" : "outline"}
                     onClick={() => field.onChange(item.value)}
                   >
                     {item.label}
-                  </button>
+                  </Button>
                 );
               })}
             </div>

@@ -121,3 +121,56 @@ export const MentorLeaderboardResponseSchema = z.object({
       .optional(),
   }),
 });
+
+// ─── §6.1 IG Mentor Leaderboard ───────────────────────────────────────────────
+// Ranked by: completed_sessions desc, then total_karma desc (tiebreaker)
+// mentor_id = user UUID (not UserMentor.id), no muid field in response
+
+export const IgMentorLeaderboardEntrySchema = z.object({
+  rank: z.coerce.number().default(0),
+  mentor_id: z.string(),
+  mentor_name: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? ""),
+  profile_pic: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? undefined),
+  total_karma: z.coerce.number().default(0),
+  completed_sessions: z.coerce.number().default(0),
+  ig_name: z.string().optional().default(""),
+});
+export type IgMentorLeaderboardEntry = z.infer<
+  typeof IgMentorLeaderboardEntrySchema
+>;
+
+export const IgMentorLeaderboardResponseSchema = ApiResponseSchema(
+  z.array(IgMentorLeaderboardEntrySchema),
+);
+
+// ─── §6.2 Campus Mentor Leaderboard ──────────────────────────────────────────
+// Ranked by: completed campus sessions desc, then total_karma desc (tiebreaker)
+
+export const CampusMentorLeaderboardEntrySchema = z.object({
+  rank: z.coerce.number().default(0),
+  mentor_id: z.string(),
+  mentor_name: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? ""),
+  profile_pic: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? undefined),
+  total_karma: z.coerce.number().default(0),
+  completed_sessions: z.coerce.number().default(0),
+  campus_name: z.string().optional().default(""),
+});
+export type CampusMentorLeaderboardEntry = z.infer<
+  typeof CampusMentorLeaderboardEntrySchema
+>;
+
+export const CampusMentorLeaderboardResponseSchema = ApiResponseSchema(
+  z.array(CampusMentorLeaderboardEntrySchema),
+);

@@ -21,6 +21,8 @@ export const learningCircleKeys = {
     [...learningCircleKeys.circles(), "detail", id] as const,
   circleMembers: (id: string) =>
     [...learningCircleKeys.circles(), "members", id] as const,
+  joinRequests: (id: string) =>
+    [...learningCircleKeys.circles(), "joinRequests", id] as const,
 
   // Invite queries
   sentInvites: (circleId: string) =>

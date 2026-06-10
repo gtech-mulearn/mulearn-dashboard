@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery } from "@tanstack/react-query";
+
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { getMentorMyIgs } from "@/features/home/api/home.api";
+import { useTaskIgDropdown } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
 import {
   useCreateOpportunity,
   useUpdateOpportunity,
@@ -75,10 +75,7 @@ export function OpportunityFormDialog({
   );
   const isPending = isCreating || isUpdating;
 
-  const { data: myIgs = [] } = useQuery({
-    queryKey: ["mentor-my-igs"],
-    queryFn: getMentorMyIgs,
-  });
+  const { data: myIgs = [] } = useTaskIgDropdown();
 
   const form = useForm<OpportunityFormValues>({
     resolver: zodResolver(OpportunityFormSchema),
@@ -178,8 +175,8 @@ export function OpportunityFormDialog({
                     </FormControl>
                     <SelectContent>
                       {myIgs.map((ig) => (
-                        <SelectItem key={ig.ig_id} value={ig.ig_id}>
-                          {ig.ig_name}
+                        <SelectItem key={ig.id} value={ig.id}>
+                          {ig.name}
                         </SelectItem>
                       ))}
                     </SelectContent>

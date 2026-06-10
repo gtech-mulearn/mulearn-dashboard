@@ -18,7 +18,6 @@ import {
   Briefcase,
   Calendar,
   CalendarDays,
-  ClipboardCheck,
   FileText,
   Folder,
   Globe,
@@ -204,22 +203,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     section: "management",
     roles: [ROLES.MENTOR],
   },
-  {
-    id: "mentor-task-review",
-    title: "Task Review",
-    href: "/dashboard/mentor/task-review",
-    icon: ClipboardCheck,
-    section: "management",
-    roles: [ROLES.MENTOR],
-  },
-  {
-    id: "mentor-opportunities",
-    title: "Opportunities",
-    href: "/dashboard/mentor/opportunities",
-    icon: Briefcase,
-    section: "management",
-    roles: [ROLES.MENTOR],
-  },
+
   {
     id: "mentor-task-requests",
     title: "Task Requests",

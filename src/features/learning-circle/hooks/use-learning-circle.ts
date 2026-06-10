@@ -33,6 +33,7 @@ import {
   getCircles,
   getColleges,
   getInviteByLink,
+  getJoinRequests,
   getMeetingDetail,
   getMeetingReport,
   getMyPendingInvites,
@@ -44,6 +45,7 @@ import {
   leaveMeeting,
   respondToInvite,
   respondToInviteByLink,
+  respondToJoinRequest,
   rsvpMeeting,
   sendInvite,
   submitAttendeeReport,
@@ -59,6 +61,7 @@ import type {
   InviteResponseRequest,
   JoinMeetingRequest,
   MeetingReportRequest,
+  RespondJoinRequest,
   SendInviteRequest,
   TransferLeadRequest,
 } from "../schemas";
@@ -250,6 +253,49 @@ export function useApproveMember(circleId: string) {
         error instanceof ApiError
           ? error.message
           : "Failed to update member status",
+      );
+    },
+  });
+}
+
+/** Lead/creator: pending join requests for a circle. */
+export function useJoinRequests(circleId: string, enabled = true) {
+  return useQuery({
+    queryKey: learningCircleKeys.joinRequests(circleId),
+    queryFn: () => getJoinRequests(circleId),
+    enabled: enabled && !!circleId,
+    staleTime: STALE_TIME,
+  });
+}
+
+/** Lead/creator: accept or reject a pending join request. */
+export function useRespondToJoinRequest(circleId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: RespondJoinRequest) =>
+      respondToJoinRequest(circleId, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.joinRequests(circleId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.circleMembers(circleId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.circleDetail(circleId),
+      });
+      toast.success(
+        variables.action === "accept"
+          ? "Join request accepted"
+          : "Join request rejected",
+      );
+    },
+    onError: (error) => {
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to update join request",
       );
     },
   });
