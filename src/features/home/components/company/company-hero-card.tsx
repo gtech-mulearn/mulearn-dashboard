@@ -38,19 +38,6 @@ export function CompanyHeroCard({ jobsPosted, isLoading }: Props) {
           </Link>
         </div>
       </div>
-
-      <div className="shrink-0 space-y-3 md:min-w-52">
-        <div className="flex items-baseline justify-between gap-8">
-          <span className="text-sm text-background/60">Jobs Posted</span>
-          {isLoading ? (
-            <Skeleton className="h-6 w-12 bg-background/20" />
-          ) : (
-            <span className="text-xl font-bold text-background">
-              {jobsPosted}
-            </span>
-          )}
-        </div>
-      </div>
     </div>
   );
 }
