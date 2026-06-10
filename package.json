@@ -1,6 +1,6 @@
 {
   "name": "mulearn-dashboard",
-  "version": "4.6.1",
+  "version": "4.7.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -11,7 +11,7 @@
     "lint:circular": "madge --circular --extensions ts,tsx --ts-config tsconfig.json src",
     "format": "biome format --write",
     "prepare": "husky",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "node --max-semi-space-size=64 ./node_modules/typescript/bin/tsc --noEmit",
     "changeset": "changeset",
     "version-packages": "changeset version"
   },
