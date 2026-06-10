@@ -7,6 +7,10 @@
  * Public API only - internal implementation details not exported.
  */
 
-export { WeeklyReviewForm } from "./components";
+export * from "./api";
+export { LeaveFormDialog, WeeklyReviewForm } from "./components";
+export { internKeys } from "./hooks/query-keys";
+export * from "./hooks/use-intern";
+export * from "./hooks/use-manage-interns";
 export * from "./schemas";
 export * from "./types";

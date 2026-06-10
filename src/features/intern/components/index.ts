@@ -6,4 +6,5 @@
  * Barrel export for all intern-form components.
  */
 
+export { LeaveFormDialog } from "./leave-form-dialog";
 export { WeeklyReviewForm } from "./weekly-review-form";

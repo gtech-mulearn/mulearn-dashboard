@@ -1036,6 +1036,48 @@ export const endpoints = {
     /** GET - Standalone recent activity feed */
     recentActivity: "/api/v1/dashboard/campus/recent-activity/",
   },
+  intern: {
+    overviewStatus: "/api/v1/dashboard/intern/overview/status/",
+    overviewActivity: "/api/v1/dashboard/intern/overview/activity/",
+    topLeaderboard: "/api/v1/dashboard/intern/overview/leaderboard/top/",
+    timesheets: "/api/v1/dashboard/intern/timesheets/",
+    timesheetDetail: (id: string) =>
+      `/api/v1/dashboard/intern/timesheets/${id}/`,
+    timesheetToday: "/api/v1/dashboard/intern/timesheets/today/",
+    timesheetHistory: "/api/v1/dashboard/intern/timesheets/history/",
+    timesheetSummary: "/api/v1/dashboard/intern/timesheets/summary/",
+    reviews: "/api/v1/dashboard/intern/reviews/",
+    reviewDetail: (id: string) => `/api/v1/dashboard/intern/reviews/${id}/`,
+    reviewCurrent: "/api/v1/dashboard/intern/reviews/current/",
+    reviewHistory: "/api/v1/dashboard/intern/reviews/history/",
+    tasksMine: "/api/v1/dashboard/intern/tasks/mine/",
+    taskDetail: (id: string) => `/api/v1/dashboard/intern/tasks/${id}/`,
+    leave: "/api/v1/dashboard/intern/leave/",
+    leaveDetail: (id: string) => `/api/v1/dashboard/intern/leave/${id}/`,
+    leaveHistory: "/api/v1/dashboard/intern/leave/history/",
+    leaveBalance: "/api/v1/dashboard/intern/leave/balance/",
+    leaderboard: "/api/v1/dashboard/intern/leaderboard/",
+    leaderboardMe: "/api/v1/dashboard/intern/leaderboard/me/",
+    guilds: "/api/v1/dashboard/intern/guilds/",
+  },
+  manageInterns: {
+    interns: "/api/v1/dashboard/manage-interns/interns/",
+    internDetail: (id: string) =>
+      `/api/v1/dashboard/manage-interns/interns/${id}/`,
+    status: "/api/v1/dashboard/manage-interns/status/",
+    export: "/api/v1/dashboard/manage-interns/interns/export/",
+    tasks: "/api/v1/dashboard/manage-interns/tasks/",
+    taskDetail: (id: string) => `/api/v1/dashboard/manage-interns/tasks/${id}/`,
+    leave: "/api/v1/dashboard/manage-interns/leave/",
+    leaveReview: (id: string) =>
+      `/api/v1/dashboard/manage-interns/leave/${id}/review/`,
+    timesheetsReview: "/api/v1/dashboard/manage-interns/reviews/timesheets/",
+    timesheetReviewDetail: (id: string) =>
+      `/api/v1/dashboard/manage-interns/reviews/timesheets/${id}/review/`,
+    reviews: "/api/v1/dashboard/manage-interns/reviews/",
+    weeklyReviewDetail: (id: string) =>
+      `/api/v1/dashboard/manage-interns/reviews/reviews/${id}/review/`,
+  },
 } as const;
 
 // Type for type-safe endpoint access

@@ -1,8 +1,15 @@
+"use client";
+
 import { Sparkles, Trophy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { WeeklyReviewForm } from "@/features/intern";
+import { useWeeklyReviewCurrent, WeeklyReviewForm } from "@/features/intern";
 
 export default function WeeklyReviewPage() {
+  const { data: currentReview } = useWeeklyReviewCurrent();
+
+  // If no review has been submitted for this week, we can guess the current week or show a default.
+  const weekNum = currentReview?.iso_week || 13;
+
   return (
     <div className="flex-1 space-y-8 p-8 pt-6 max-w-7xl mx-auto w-full bg-background/50">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -28,10 +35,10 @@ export default function WeeklyReviewPage() {
             </div>
             <div className="flex flex-col">
               <span className="text-sm font-black text-brand-purple uppercase tracking-widest">
-                Week 13
+                Week {weekNum}
               </span>
               <span className="text-[10px] font-bold text-muted-foreground uppercase">
-                Status: Open
+                Status: {currentReview ? "Submitted" : "Open"}
               </span>
             </div>
           </div>

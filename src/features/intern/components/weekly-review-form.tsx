@@ -42,6 +42,11 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useUserInfo } from "@/features/auth";
+import {
+  useGuilds,
+  useSubmitWeeklyReview,
+  useWeeklyReviewCurrent,
+} from "@/features/intern";
 import { type WeeklyReviewFormValues, weeklyReviewSchema } from "../schemas";
 
 const DEFAULT_TEAMS = [
@@ -57,19 +62,24 @@ interface WeeklyReviewFormProps {
 }
 
 export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
-  const { data } = useUserInfo();
-  const [teams] = useState<string[]>(DEFAULT_TEAMS);
+  const { data: userData } = useUserInfo();
+  const { data: guildsList } = useGuilds();
+  const { data: currentReview, isLoading: isCurrentLoading } =
+    useWeeklyReviewCurrent();
+  const submitMutation = useSubmitWeeklyReview();
 
-  // Mock week info since API is removed
-  const weekInfo = { week: 13, year: 2026 };
-  const isSubmitted = false;
+  const teams = guildsList || DEFAULT_TEAMS;
+  const isSubmitted = !!currentReview;
+  const weekInfo = currentReview
+    ? { week: currentReview.iso_week, year: currentReview.iso_year }
+    : { week: 13, year: 2026 };
 
   const form = useForm<WeeklyReviewFormValues>({
     resolver: zodResolver(weeklyReviewSchema),
     defaultValues: {
-      fullName: data?.full_name || "",
-      muid: data?.muid || "",
-      email: data?.email || "",
+      fullName: userData?.full_name || "",
+      muid: userData?.muid || "",
+      email: userData?.email || "",
       team: "",
       isOnLeave: false,
       tasksAssigned: "",
@@ -83,19 +93,34 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
 
   const isOnLeave = form.watch("isOnLeave");
 
-  const onSubmit = async (_data: WeeklyReviewFormValues) => {
-    toast.loading("Publishing your weekly legend...", { id: "submit-review" });
-
-    // Simulate API call
-    setTimeout(() => {
-      toast.success("Epic Quest Complete! +50 Gems & Massive XP earned", {
-        id: "submit-review",
-        icon: <Sparkles className="w-4 h-4 text-warning" />,
-      });
-      form.reset();
-      onSuccess?.();
-    }, 1500);
+  const onSubmit = async (values: WeeklyReviewFormValues) => {
+    submitMutation.mutate(
+      {
+        team: values.team,
+        is_on_leave: values.isOnLeave,
+        hours_committed: values.isOnLeave ? 0 : Number(values.hoursCommitted),
+        tasks_assigned: values.isOnLeave ? "" : values.tasksAssigned,
+        tasks_completed: values.isOnLeave ? "" : values.tasksCompleted,
+        weekly_review: values.isOnLeave ? "" : values.worksDone,
+        blockers: values.isOnLeave ? "" : values.blockers,
+        leave_days: values.leaveDays ? Number(values.leaveDays) || 0 : 0,
+      },
+      {
+        onSuccess: () => {
+          form.reset();
+          onSuccess?.();
+        },
+      },
+    );
   };
+
+  if (isCurrentLoading) {
+    return (
+      <div className="flex justify-center p-12">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (isSubmitted) {
     return (

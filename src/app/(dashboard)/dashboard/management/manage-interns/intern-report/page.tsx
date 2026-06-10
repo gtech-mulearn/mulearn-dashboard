@@ -4,7 +4,7 @@ import { Search, Sparkles, Trophy } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Pagination from "@/components/dashboard/table/pagination";
-import Table from "@/components/dashboard/table/Table";
+import Table, { type Data } from "@/components/dashboard/table/Table";
 import THead from "@/components/dashboard/table/Thead";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -27,49 +28,50 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-const MOCK_RESPONSES = [
-  {
-    id: "1",
-    muid: "dev-1234",
-    full_name: "Alex Doe",
-    team: "Frontend",
-    week: "W13 2026",
-    tasks_completed: "Built dashboard UI",
-    hours_committed: "40",
-  },
-  {
-    id: "2",
-    muid: "dev-5678",
-    full_name: "Sarah Smith",
-    team: "Backend",
-    week: "W13 2026",
-    tasks_completed: "API integration",
-    hours_committed: "38",
-  },
-  {
-    id: "3",
-    muid: "dev-9012",
-    full_name: "Michael Chen",
-    team: "Design",
-    week: "W13 2026",
-    tasks_completed: "Figma prototypes",
-    hours_committed: "45",
-  },
-];
+import {
+  useManageWeeklyReviews,
+  useReviewWeeklyReview,
+} from "@/features/intern";
+import type { TWeeklyReview } from "@/features/intern/types";
 
 export default function WeeklyReportGeneratorPage() {
   const router = useRouter();
-  const responses = MOCK_RESPONSES;
-  const isLoading = false;
   const [searchText, setSearchText] = useState("");
-  const [perPage, _setPerPage] = useState(10);
+  const [perPage] = useState(10);
   const [page, setPage] = useState(1);
   const [teamFilter, setTeamFilter] = useState("ALL");
 
   // Dialog states
   const [individualMuid, setIndividualMuid] = useState("");
   const [teamName, setTeamName] = useState("");
+
+  // Review states
+  const [selectedReview, setSelectedReview] = useState<TWeeklyReview | null>(
+    null,
+  );
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
+  const [reviewNote, setReviewNote] = useState("");
+
+  // Queries & Mutations
+  const { data: listData, isLoading } = useManageWeeklyReviews({
+    page,
+    perPage,
+    search: searchText || undefined,
+  });
+
+  const reviewMutation = useReviewWeeklyReview(selectedReview?.id || "");
+
+  const totalPages = listData?.pagination?.totalPages ?? 1;
+  const totalCount = listData?.pagination?.count ?? 0;
+
+  const rows = (listData?.data ?? []) as unknown as Data[];
+  const filteredData = rows.filter((r) => {
+    return teamFilter === "ALL" || r.team === teamFilter;
+  });
+
+  const uniqueTeams = Array.from(
+    new Set((listData?.data || []).map((r) => r.team).filter(Boolean)),
+  );
 
   const handleGenerateIndividual = () => {
     if (!individualMuid) return;
@@ -85,32 +87,14 @@ export default function WeeklyReportGeneratorPage() {
     );
   };
 
-  const filteredData = (responses || []).filter((r) => {
-    const searchLower = searchText.toLowerCase();
-    const matchesSearch =
-      r.muid?.toLowerCase().includes(searchLower) ||
-      r.full_name?.toLowerCase().includes(searchLower);
-
-    const matchesTeam = teamFilter === "ALL" || r.team === teamFilter;
-
-    return matchesSearch && matchesTeam;
-  });
-
-  const uniqueTeams = Array.from(
-    new Set((responses || []).map((r) => r.team).filter(Boolean)),
-  );
-
-  const startIndex = (page - 1) * perPage;
-  const currentRows = filteredData.slice(startIndex, startIndex + perPage);
-
   const columnOrder = [
     {
-      column: "full_name",
+      column: "user_name",
       Label: "Hero Name",
       isSortable: true,
-      wrap: (data: string) => (
+      wrap: (data: string, _id: string, row: Data) => (
         <span className="font-bold uppercase text-[11px] tracking-tight">
-          {String(data)}
+          {String(data || row.full_name || "Unknown")}
         </span>
       ),
     },
@@ -137,13 +121,24 @@ export default function WeeklyReportGeneratorPage() {
         </Badge>
       ),
     },
-    { column: "week", Label: "Epoch", isSortable: true },
+    {
+      column: "iso_week",
+      Label: "Epoch",
+      isSortable: true,
+      wrap: (data: string, _id: string, row: Data) => (
+        <span className="font-bold text-[10px] font-mono">
+          W{row.iso_week} {row.iso_year}
+        </span>
+      ),
+    },
     {
       column: "tasks_completed",
       Label: "Achievements",
       isSortable: false,
       wrap: (data: string) => (
-        <span className="text-xs italic text-muted-foreground">"{data}"</span>
+        <span className="text-xs italic text-muted-foreground">
+          "{data || "-"}"
+        </span>
       ),
     },
     {
@@ -152,9 +147,45 @@ export default function WeeklyReportGeneratorPage() {
       isSortable: true,
       wrap: (data: string) => (
         <div className="flex items-center gap-1 font-black text-brand-blue">
-          {String(data)} <span className="text-[8px] opacity-50">XP</span>
+          {String(data)} <span className="text-[8px] opacity-50">HRS</span>
         </div>
       ),
+    },
+    {
+      column: "status",
+      Label: "Evaluation",
+      isSortable: true,
+      wrap: (data: string) => {
+        switch (data) {
+          case "APPROVED":
+            return (
+              <Badge
+                variant="outline"
+                className="border-success/30 text-success bg-success/10 text-[9px] uppercase tracking-wider font-black"
+              >
+                Approved
+              </Badge>
+            );
+          case "REJECTED":
+            return (
+              <Badge
+                variant="outline"
+                className="border-destructive/30 text-destructive bg-destructive/10 text-[9px] uppercase tracking-wider font-black"
+              >
+                Rejected
+              </Badge>
+            );
+          default:
+            return (
+              <Badge
+                variant="outline"
+                className="border-warning/30 text-warning bg-warning/10 text-[9px] uppercase tracking-wider font-black"
+              >
+                Pending
+              </Badge>
+            );
+        }
+      },
     },
   ];
 
@@ -174,7 +205,7 @@ export default function WeeklyReportGeneratorPage() {
         <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
           <Dialog>
             <DialogTrigger asChild>
-              <Button className="w-full sm:w-auto bg-brand-blue hover:bg-brand-blue/90 font-black uppercase text-[10px] tracking-widest h-12 px-6 shadow-lg shadow-brand-blue/20">
+              <Button className="w-full sm:w-auto bg-brand-blue hover:bg-brand-blue/90 font-black uppercase text-[10px] tracking-widest h-12 px-6 shadow-lg shadow-brand-blue/20 rounded-xl">
                 Individual Scroll
               </Button>
             </DialogTrigger>
@@ -197,7 +228,7 @@ export default function WeeklyReportGeneratorPage() {
                     placeholder="e.g. dev-1234"
                     value={individualMuid}
                     onChange={(e) => setIndividualMuid(e.target.value)}
-                    className="h-12 font-bold"
+                    className="h-12 font-bold rounded-xl"
                   />
                 </div>
               </div>
@@ -205,7 +236,7 @@ export default function WeeklyReportGeneratorPage() {
                 <DialogClose asChild>
                   <Button
                     variant="outline"
-                    className="font-bold uppercase text-[10px]"
+                    className="font-bold uppercase text-[10px] rounded-xl"
                   >
                     Cancel
                   </Button>
@@ -213,7 +244,7 @@ export default function WeeklyReportGeneratorPage() {
                 <Button
                   onClick={handleGenerateIndividual}
                   disabled={!individualMuid}
-                  className="bg-brand-blue font-black uppercase text-[10px] tracking-widest"
+                  className="bg-brand-blue font-black uppercase text-[10px] tracking-widest rounded-xl"
                 >
                   Summon Report
                 </Button>
@@ -223,7 +254,7 @@ export default function WeeklyReportGeneratorPage() {
 
           <Dialog>
             <DialogTrigger asChild>
-              <Button className="w-full sm:w-auto bg-brand-purple hover:bg-brand-purple/90 font-black uppercase text-[10px] tracking-widest h-12 px-6 shadow-lg shadow-brand-purple/20">
+              <Button className="w-full sm:w-auto bg-brand-purple hover:bg-brand-purple/90 font-black uppercase text-[10px] tracking-widest h-12 px-6 shadow-lg shadow-brand-purple/20 rounded-xl">
                 Alliance Scroll
               </Button>
             </DialogTrigger>
@@ -246,7 +277,7 @@ export default function WeeklyReportGeneratorPage() {
                     placeholder="e.g. Frontend"
                     value={teamName}
                     onChange={(e) => setTeamName(e.target.value)}
-                    className="h-12 font-bold"
+                    className="h-12 font-bold rounded-xl"
                   />
                 </div>
               </div>
@@ -254,7 +285,7 @@ export default function WeeklyReportGeneratorPage() {
                 <DialogClose asChild>
                   <Button
                     variant="outline"
-                    className="font-bold uppercase text-[10px]"
+                    className="font-bold uppercase text-[10px] rounded-xl"
                   >
                     Cancel
                   </Button>
@@ -262,7 +293,7 @@ export default function WeeklyReportGeneratorPage() {
                 <Button
                   onClick={handleGenerateTeam}
                   disabled={!teamName}
-                  className="bg-brand-purple font-black uppercase text-[10px] tracking-widest"
+                  className="bg-brand-purple font-black uppercase text-[10px] tracking-widest rounded-xl"
                 >
                   Summon Report
                 </Button>
@@ -284,7 +315,7 @@ export default function WeeklyReportGeneratorPage() {
                     setSearchText(e.target.value);
                     setPage(1);
                   }}
-                  className="pl-12 h-14 bg-background/50 border-border/50 font-bold focus:ring-primary/20 w-full max-w-xl text-lg"
+                  className="pl-12 h-14 bg-background/50 border-border/50 font-bold focus:ring-primary/20 w-full max-w-xl text-lg rounded-xl"
                 />
               </div>
             </div>
@@ -300,10 +331,10 @@ export default function WeeklyReportGeneratorPage() {
                   setPage(1);
                 }}
               >
-                <SelectTrigger className="h-14 bg-background/50 border-border/50 font-black uppercase text-[10px] tracking-widest">
+                <SelectTrigger className="h-14 bg-background/50 border-border/50 font-black uppercase text-[10px] tracking-widest rounded-xl">
                   <SelectValue placeholder="All Alliances" />
                 </SelectTrigger>
-                <SelectContent className="bg-card font-bold">
+                <SelectContent className="bg-card font-bold border-border/60">
                   <SelectItem value="ALL" className="uppercase text-[10px]">
                     All Alliances
                   </SelectItem>
@@ -323,30 +354,46 @@ export default function WeeklyReportGeneratorPage() {
         </CardHeader>
         <CardContent className="p-0">
           <Table
-            rows={currentRows}
+            rows={filteredData}
             isloading={isLoading}
             page={page}
             perPage={perPage}
             columnOrder={columnOrder}
             id={["id"]}
             slNoCellClassName="font-black text-muted-foreground/20 w-16"
+            customActionRender={(row) => (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  setSelectedReview(row as unknown as TWeeklyReview);
+                  setReviewNote((row.review_note as string) ?? "");
+                  setIsReviewOpen(true);
+                }}
+                className="uppercase tracking-widest text-[9px] font-black text-primary hover:bg-muted/50 border border-border/20 rounded-lg px-2.5 h-7.5"
+              >
+                Evaluate
+              </Button>
+            )}
           >
             <THead
               columnOrder={columnOrder}
               onIconClick={() => {}}
-              action={false}
+              action={true}
               thClassName="bg-muted/20 border-b border-border/20 h-14 font-black uppercase text-[9px] tracking-[0.3em]"
             />
-            {filteredData.length > 0 && (
+            <div className="p-4 border-t border-border/20">
               <Pagination
                 currentPage={page}
-                totalPages={Math.ceil(filteredData.length / perPage)}
+                totalPages={totalPages}
                 perPage={perPage}
-                totalCount={filteredData.length}
+                totalCount={totalCount}
                 handlePreviousClick={() => setPage((p) => Math.max(1, p - 1))}
-                handleNextClick={() => setPage((p) => p + 1)}
+                handleNextClick={() =>
+                  setPage((p) => Math.min(totalPages, p + 1))
+                }
               />
-            )}
+            </div>
           </Table>
         </CardContent>
       </Card>
@@ -355,6 +402,164 @@ export default function WeeklyReportGeneratorPage() {
         <Sparkles className="w-3 h-3" /> Data Sanctum{" "}
         <Sparkles className="w-3 h-3" />
       </div>
+
+      {/* Weekly Review Evaluation Dialog */}
+      <Dialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
+        <DialogContent className="bg-card/95 backdrop-blur-xl border-border/60 max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black uppercase tracking-wider text-foreground">
+              Evaluate Weekly Review
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Review accomplishments and submit approval/rejection.
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedReview && (
+            <div className="space-y-4 py-2 my-2 text-sm">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
+                    Intern
+                  </span>
+                  <span className="font-bold text-foreground">
+                    {selectedReview.user_name ||
+                      (selectedReview as any).full_name ||
+                      "Unknown"}{" "}
+                    ({selectedReview.muid})
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
+                    Alliance / Week
+                  </span>
+                  <span className="font-bold text-foreground">
+                    {selectedReview.team} - W{selectedReview.iso_week}{" "}
+                    {selectedReview.iso_year}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
+                  Tasks Completed (Achievements)
+                </span>
+                <p className="bg-muted/40 p-2.5 rounded-lg text-xs font-semibold italic text-foreground/80 mt-1 border border-border/20">
+                  {selectedReview.tasks_completed || "None reported."}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
+                    Hours Committed
+                  </span>
+                  <span className="font-black text-brand-blue font-mono">
+                    {selectedReview.hours_committed} Hours
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
+                    On Leave / Leave Days
+                  </span>
+                  <span className="font-bold">
+                    {selectedReview.is_on_leave
+                      ? `Yes (${selectedReview.leave_days} days)`
+                      : "No"}
+                  </span>
+                </div>
+              </div>
+
+              {selectedReview.blockers && (
+                <div>
+                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
+                    Blockers
+                  </span>
+                  <p className="bg-muted/20 p-2 rounded-lg text-xs text-muted-foreground mt-1 border border-border/20">
+                    {selectedReview.blockers}
+                  </p>
+                </div>
+              )}
+
+              {selectedReview.suggestions && (
+                <div>
+                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
+                    Suggestions
+                  </span>
+                  <p className="bg-muted/20 p-2 rounded-lg text-xs text-muted-foreground mt-1 border border-border/20">
+                    {selectedReview.suggestions}
+                  </p>
+                </div>
+              )}
+
+              <div className="space-y-2 pt-2 border-t border-border/20">
+                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+                  Evaluation Notes / Feedback
+                </Label>
+                <textarea
+                  value={reviewNote}
+                  onChange={(e) => setReviewNote(e.target.value)}
+                  placeholder="Feedback visible to the intern..."
+                  className="w-full min-h-[80px] bg-background/50 border border-border/40 rounded-lg p-3 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-primary/40 resize-none"
+                />
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="gap-2 sm:justify-between border-t border-border/20 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsReviewOpen(false)}
+              className="uppercase tracking-widest text-[10px] font-black border-border/50 rounded-xl"
+            >
+              Cancel
+            </Button>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                onClick={() => {
+                  if (!selectedReview) return;
+                  reviewMutation.mutate(
+                    { action: "reject", review_note: reviewNote },
+                    {
+                      onSuccess: () => {
+                        setIsReviewOpen(false);
+                        setReviewNote("");
+                        setSelectedReview(null);
+                      },
+                    },
+                  );
+                }}
+                disabled={reviewMutation.isPending}
+                className="bg-destructive hover:bg-destructive/95 text-white uppercase tracking-widest text-[10px] font-black rounded-xl"
+              >
+                Reject
+              </Button>
+              <Button
+                type="button"
+                onClick={() => {
+                  if (!selectedReview) return;
+                  reviewMutation.mutate(
+                    { action: "approve", review_note: reviewNote },
+                    {
+                      onSuccess: () => {
+                        setIsReviewOpen(false);
+                        setReviewNote("");
+                        setSelectedReview(null);
+                      },
+                    },
+                  );
+                }}
+                disabled={reviewMutation.isPending}
+                className="bg-success hover:bg-success/95 text-white uppercase tracking-widest text-[10px] font-black rounded-xl"
+              >
+                Approve
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

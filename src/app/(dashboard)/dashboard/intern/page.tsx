@@ -8,11 +8,13 @@ import {
   Flame,
   Gem,
   LineChart,
+  Loader2,
   Target,
   Trophy,
   Zap,
 } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 import Table, { type Data } from "@/components/dashboard/table/Table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,71 +25,62 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
-// Mock Data
-const MOCK_USER = {
-  name: "Alex Doe",
-  totalPoints: 1240,
-  currentStreak: 14,
-  rank: 3,
-  activeStatus: "ACTIVE",
-  level: 12,
-  exp: 75,
-};
-
-const MOCK_RECENT_ACTIVITY = [
-  {
-    id: 1,
-    type: "TIMESHEET",
-    points: "+10",
-    date: "Today, 10:00 AM",
-    title: "Daily Quest: Log Timesheet",
-  },
-  {
-    id: 2,
-    type: "TIMESHEET_QUALITY",
-    points: "+5",
-    date: "Today, 11:30 AM",
-    title: "Critical Hit: Detailed Update Bonus",
-  },
-  {
-    id: 3,
-    type: "TIMESHEET",
-    points: "+10",
-    date: "Yesterday, 09:45 AM",
-    title: "Daily Quest: Log Timesheet",
-  },
-  {
-    id: 4,
-    type: "WEEKLY_REVIEW",
-    points: "+30",
-    date: "Sunday, 11:20 PM",
-    title: "Epic Quest: Weekly Review",
-  },
-];
-
-const MOCK_TOP_PERFORMERS = [
-  {
-    id: "1",
-    rank: 1,
-    name: "Michael Chen",
-    points: 2100,
-  },
-  {
-    id: "2",
-    rank: 2,
-    name: "Jessica Wong",
-    points: 1950,
-  },
-  {
-    id: "3",
-    rank: 3,
-    name: "Alex Doe",
-    points: 1240,
-  },
-];
+import { useUserInfo, useUserProfile } from "@/features/auth";
+import {
+  LeaveFormDialog,
+  useInternActivityLog,
+  useInternOverview,
+  useLeaderboardMe,
+  useTopLeaderboard,
+} from "@/features/intern";
 
 export default function InternDashboardPage() {
+  const [isLeaveOpen, setIsLeaveOpen] = useState(false);
+  const { data: userInfo } = useUserInfo();
+  const { data: profile } = useUserProfile();
+  const { data: overview, isLoading: isOverviewLoading } = useInternOverview();
+  const { data: activityLog, isLoading: isActivityLoading } =
+    useInternActivityLog({ page: 1, perPage: 10 });
+  const { data: topLeaderboard, isLoading: isTopLoading } = useTopLeaderboard();
+  const { data: myLeaderboard } = useLeaderboardMe();
+
+  if (isOverviewLoading || isActivityLoading || isTopLoading) {
+    return (
+      <div className="flex h-[80vh] items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  const userDisplayName =
+    profile?.full_name || userInfo?.full_name || "Alex Doe";
+  const userRank = myLeaderboard?.rank || profile?.rank || 3;
+  const userScore = overview?.score ?? profile?.karma ?? 1240;
+  const userStreak = overview?.daily_streak ?? 14;
+  const userStatus = overview?.status || "ACTIVE";
+  const userGuild = overview?.guild || "DESIGN";
+  const userLevel = profile?.level || "12";
+  const userExp = profile?.percentile || 75;
+
+  const topRows = (topLeaderboard || []).map((item) => ({
+    id: item.user_id,
+    rank: item.rank,
+    name: item.full_name,
+    points: item.score,
+  }));
+
+  const recentActivities = (activityLog?.data || []).map((activity) => ({
+    id: activity.id,
+    title: activity.task_title,
+    date: new Date(activity.created_at).toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+    points: `+${activity.karma}`,
+  }));
+
   const performerColumns = [
     {
       column: "name",
@@ -100,7 +93,7 @@ export default function InternDashboardPage() {
       ) => (
         <div className="flex items-center gap-2">
           <span className="font-medium">{data}</span>
-          {(row.name as string) === "Alex Doe" && (
+          {(row.name as string) === userDisplayName && (
             <Badge
               variant="outline"
               className="text-[10px] bg-primary/10 text-primary border-primary/30 h-4"
@@ -131,7 +124,7 @@ export default function InternDashboardPage() {
         <div className="flex items-center gap-4">
           <div className="relative">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-purple to-brand-blue flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-              {MOCK_USER.level}
+              {userLevel}
             </div>
             <div className="absolute -bottom-1 -right-1 bg-background rounded-full p-1 border border-border">
               <div className="w-5 h-5 rounded-full bg-success flex items-center justify-center text-[10px] text-white font-bold">
@@ -141,28 +134,35 @@ export default function InternDashboardPage() {
           </div>
           <div>
             <h2 className="text-3xl font-black tracking-tight text-foreground flex items-center gap-2">
-              Welcome back, {MOCK_USER.name}
+              Welcome back, {userDisplayName}
             </h2>
             <div className="flex items-center gap-3 mt-1">
               <div className="w-48 h-2 bg-muted rounded-full overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-brand-purple to-brand-blue"
-                  style={{ width: `${MOCK_USER.exp}%` }}
+                  style={{ width: `${userExp}%` }}
                 />
               </div>
               <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
-                Level {MOCK_USER.level} &bull; {MOCK_USER.exp}% EXP
+                Level {userLevel} &bull; {userExp}% EXP
               </span>
             </div>
           </div>
         </div>
         <div className="flex items-center gap-3">
+          <Button
+            onClick={() => setIsLeaveOpen(true)}
+            className="font-bold bg-brand-purple hover:bg-brand-purple/90 text-white rounded-full px-5 py-2 text-xs uppercase tracking-wider shadow-md transition-all hover:scale-105"
+          >
+            <Calendar className="w-4 h-4 mr-2" />
+            Apply for Leave
+          </Button>
           <Badge
             variant="outline"
             className="px-4 py-1.5 text-sm font-bold border-success/30 text-success bg-success/5 rounded-full"
           >
             <div className="w-2 h-2 rounded-full bg-success mr-2 animate-pulse" />
-            {MOCK_USER.activeStatus}
+            {userStatus}
           </Badge>
         </div>
       </div>
@@ -181,10 +181,11 @@ export default function InternDashboardPage() {
           <CardContent>
             <div className="text-3xl font-black font-mono tracking-tighter text-foreground flex items-center gap-2">
               <Gem className="w-6 h-6 text-brand-blue" />
-              {MOCK_USER.totalPoints.toLocaleString()}
+              {userScore.toLocaleString()}
             </div>
             <p className="text-[10px] text-muted-foreground mt-2 font-bold uppercase tracking-widest flex items-center gap-1">
-              <span className="text-success">+45</span> earned in last 24h
+              Currently in <span className="text-success">{userGuild}</span>{" "}
+              guild
             </p>
           </CardContent>
         </Card>
@@ -200,7 +201,7 @@ export default function InternDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-black font-mono tracking-tighter text-foreground flex items-baseline gap-1">
-              {MOCK_USER.currentStreak}
+              {userStreak}
               <span className="text-sm font-bold text-muted-foreground uppercase">
                 DAYS
               </span>
@@ -208,11 +209,11 @@ export default function InternDashboardPage() {
             <div className="mt-2 h-1.5 w-full bg-muted overflow-hidden rounded-full p-[1px]">
               <div
                 className="h-full bg-gradient-to-r from-warning to-destructive rounded-full"
-                style={{ width: "46%" }}
+                style={{ width: `${Math.min(100, (userStreak / 30) * 100)}%` }}
               />
             </div>
             <p className="text-[10px] text-muted-foreground mt-2 font-bold uppercase tracking-widest">
-              Level up in 16 days (+50 Gems)
+              Weekly Streak: {overview?.weekly_streak || 0} Weeks
             </p>
           </CardContent>
         </Card>
@@ -228,11 +229,10 @@ export default function InternDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-black font-mono tracking-tighter text-foreground">
-              #{MOCK_USER.rank}
+              #{userRank}
             </div>
             <p className="text-[10px] text-success mt-2 font-bold uppercase tracking-widest flex items-center gap-1">
-              <ChevronRight className="w-3 h-3 -rotate-90" /> 2 POSITIONS
-              CLIMBED
+              Complexity score: {overview?.complexity_score || 0}
             </p>
           </CardContent>
         </Card>
@@ -248,21 +248,25 @@ export default function InternDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-black font-mono tracking-tighter text-foreground">
-              4/5
-              <span className="text-sm font-bold text-muted-foreground uppercase ml-1">
-                COMPLETE
+              {overview?.completed_tasks || 0}
+              <span className="text-xs font-bold text-muted-foreground uppercase ml-1">
+                COMPLETED TASKS
               </span>
             </div>
             <div className="mt-2 h-1.5 w-full bg-muted overflow-hidden rounded-full flex gap-1">
               {[1, 2, 3, 4, 5].map((day) => (
                 <div
                   key={day}
-                  className={`h-full flex-1 rounded-full ${day <= 4 ? "bg-success" : "bg-muted-foreground/20"}`}
+                  className={`h-full flex-1 rounded-full ${
+                    day <= (overview?.completed_tasks || 0)
+                      ? "bg-success"
+                      : "bg-muted-foreground/20"
+                  }`}
                 />
               ))}
             </div>
             <p className="text-[10px] text-muted-foreground mt-2 font-bold uppercase tracking-widest">
-              1 QUEST LEFT FOR BONUS CHEST
+              Log progress daily to keep streak
             </p>
           </CardContent>
         </Card>
@@ -360,7 +364,7 @@ export default function InternDashboardPage() {
             </CardHeader>
             <CardContent className="p-0">
               <Table
-                rows={MOCK_TOP_PERFORMERS}
+                rows={topRows}
                 page={1}
                 perPage={5}
                 columnOrder={performerColumns}
@@ -385,7 +389,7 @@ export default function InternDashboardPage() {
             </CardHeader>
             <CardContent className="p-0 flex-1">
               <div className="divide-y divide-border/20">
-                {MOCK_RECENT_ACTIVITY.map((activity) => (
+                {recentActivities.map((activity) => (
                   <div
                     key={activity.id}
                     className="p-4 hover:bg-muted/30 transition-all flex items-start justify-between gap-4 group"
@@ -403,19 +407,27 @@ export default function InternDashboardPage() {
                     </Badge>
                   </div>
                 ))}
+                {recentActivities.length === 0 && (
+                  <div className="p-8 text-center text-xs text-muted-foreground italic uppercase tracking-wider">
+                    No recent activity
+                  </div>
+                )}
               </div>
             </CardContent>
             <div className="p-4 border-t border-border/20">
-              <Button
-                variant="outline"
-                className="w-full text-[10px] font-black uppercase tracking-[0.2em] border-border/50 hover:bg-muted"
-              >
-                View History
-              </Button>
+              <Link href="/dashboard/intern/timesheet">
+                <Button
+                  variant="outline"
+                  className="w-full text-[10px] font-black uppercase tracking-[0.2em] border-border/50 hover:bg-muted"
+                >
+                  View History
+                </Button>
+              </Link>
             </div>
           </Card>
         </div>
       </div>
+      <LeaveFormDialog open={isLeaveOpen} onOpenChange={setIsLeaveOpen} />
     </div>
   );
 }
