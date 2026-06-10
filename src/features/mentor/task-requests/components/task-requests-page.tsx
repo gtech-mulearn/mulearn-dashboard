@@ -62,6 +62,7 @@ import {
   useDeleteMentorTask,
   useMentorTasks,
   useTaskIgDropdown,
+  useTaskLevels,
   useTaskTypes,
   useUpdateMentorTask,
 } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
@@ -114,6 +115,8 @@ function TaskFormDialog({
   const isEdit = !!task;
   const { data: myIgs = [] } = useTaskIgDropdown();
   const { data: taskTypes = [], isLoading: taskTypesLoading } = useTaskTypes();
+  const { data: levelsResponse, isLoading: levelsLoading } = useTaskLevels();
+  const levels = levelsResponse?.response || [];
   const { mutate: create, isPending: isCreating } = useCreateMentorTask();
   const { mutate: update, isPending: isUpdating } = useUpdateMentorTask(
     task?.id ?? "",
@@ -335,10 +338,31 @@ function TaskFormDialog({
                 name="level"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Level ID (optional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Level UUID" {...field} />
-                    </FormControl>
+                    <FormLabel>Level</FormLabel>
+                    <Select
+                      value={field.value || "none"}
+                      onValueChange={(val) =>
+                        field.onChange(val === "none" ? "" : val)
+                      }
+                    >
+                      <FormControl>
+                        <SelectTrigger disabled={levelsLoading}>
+                          <SelectValue
+                            placeholder={
+                              levelsLoading ? "Loading..." : "Select level"
+                            }
+                          />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
+                        {levels.map((lvl: any) => (
+                          <SelectItem key={lvl.name} value={lvl.name}>
+                            {lvl.name.replace(/lvl/i, "").trim()}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
