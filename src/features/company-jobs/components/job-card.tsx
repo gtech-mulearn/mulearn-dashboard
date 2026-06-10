@@ -14,11 +14,15 @@ export function JobCard({ job, onView }: JobCardProps) {
     JOB_STATUS_CONFIG[job.status as keyof typeof JOB_STATUS_CONFIG] ??
     JOB_STATUS_CONFIG.Active;
 
-  const formattedDate = new Date(job.created_at).toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+  const dateObj = job.created_at ? new Date(job.created_at) : null;
+  const formattedDate =
+    dateObj && !isNaN(dateObj.getTime())
+      ? dateObj.toLocaleDateString("en-IN", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        })
+      : "N/A";
 
   return (
     <div className="group relative rounded-xl border border-border bg-card p-5 transition-all duration-200 hover:border-primary/30 hover:shadow-md hover:shadow-primary/5">

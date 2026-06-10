@@ -11,7 +11,6 @@ import {
   Percent,
   TrendingDown,
   RefreshCw,
-  PlusCircle,
 } from "lucide-react";
 import {
   Card,
@@ -24,7 +23,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   useGigAnalytics,
   useCompanyDashboardSummary,
-  useTrackJobView,
   useJobEngagementAnalytics,
   useTalentPoolAnalytics,
   useJobs,
@@ -58,6 +56,7 @@ export default function CompanyAnalyticsPage() {
           community talent pool statistics.
         </p>
       </div>
+      {/* Tab triggers omitted for brevity but remain identical */}
 
       <Tabs
         value={activeTab}
@@ -530,36 +529,22 @@ function JobEngagementView() {
   const {
     data: analytics,
     isLoading: analyticsLoading,
-    refetch,
     isError,
     error,
+    refetch,
   } = useJobEngagementAnalytics(selectedJobId);
-  const { mutate: trackView, isPending: trackingPending } = useTrackJobView();
-  const [trackingSuccess, setTrackingSuccess] = useState(false);
 
   const jobsList = jobsResponse?.jobs ?? [];
-
-  const handleTrackView = () => {
-    if (!selectedJobId) return;
-    trackView(selectedJobId, {
-      onSuccess: () => {
-        setTrackingSuccess(true);
-        refetch();
-        setTimeout(() => setTrackingSuccess(false), 3000);
-      },
-    });
-  };
 
   return (
     <div className="space-y-6">
       <Card className="border border-border bg-card">
         <CardHeader>
           <CardTitle className="text-lg font-semibold">
-            Job Performance & Track View
+            Job Performance Analytics
           </CardTitle>
           <CardDescription>
-            Select a job listing to view granular view engagement analytics and
-            simulate click tracking
+            Select a job listing to view granular view engagement analytics
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -588,25 +573,7 @@ function JobEngagementView() {
                 </Select>
               )}
             </div>
-
-            <Button
-              onClick={handleTrackView}
-              disabled={!selectedJobId || trackingPending}
-              className="gap-2 h-10 px-5"
-            >
-              <PlusCircle className="h-4 w-4" />
-              {trackingPending ? "Tracking..." : "Simulate Job View (POST)"}
-            </Button>
           </div>
-
-          {trackingSuccess && (
-            <Badge
-              variant="outline"
-              className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 px-3 py-1 text-xs"
-            >
-              ✓ View logged successfully. Incrementing total view count.
-            </Badge>
-          )}
         </CardContent>
       </Card>
 

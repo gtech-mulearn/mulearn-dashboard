@@ -82,15 +82,18 @@ function PublicJobCard({ job }: { job: PublicJobBySlug }) {
   const chipStyle =
     JOB_TYPE_STYLES[job.job_type ?? "Full-Time"] ??
     JOB_TYPE_STYLES["Full-Time"];
-  const postedDaysAgo = Math.floor(
-    (Date.now() - new Date(job.created_at).getTime()) / (1000 * 60 * 60 * 24),
-  );
+  const createdTime = job.created_at ? new Date(job.created_at).getTime() : NaN;
+  const postedDaysAgo = !isNaN(createdTime)
+    ? Math.floor((Date.now() - createdTime) / (1000 * 60 * 60 * 24))
+    : null;
   const postedLabel =
-    postedDaysAgo === 0
-      ? "Today"
-      : postedDaysAgo === 1
-        ? "Yesterday"
-        : `${postedDaysAgo}d ago`;
+    postedDaysAgo === null
+      ? "N/A"
+      : postedDaysAgo === 0
+        ? "Today"
+        : postedDaysAgo === 1
+          ? "Yesterday"
+          : `${postedDaysAgo}d ago`;
 
   return (
     <div className="group rounded-xl border border-border bg-card p-4 transition-shadow hover:shadow-md">

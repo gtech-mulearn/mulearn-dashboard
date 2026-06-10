@@ -358,8 +358,19 @@ export async function fetchLearnerDiscovery(
   if (params?.search?.trim()) query.set("search", params.search.trim());
   if (params?.sort_by) query.set("sort_by", params.sort_by);
   if (params?.sort_order) query.set("sort_order", params.sort_order);
-  if (params?.page) query.set("page", String(params.page));
-  if (params?.per_page) query.set("per_page", String(params.per_page));
+
+  // Support both page/per_page and pageIndex/perPage query params
+  const page = params?.page ?? (params as any)?.pageIndex;
+  const perPage = params?.per_page ?? (params as any)?.perPage;
+
+  if (page !== undefined) {
+    query.set("page", String(page));
+    query.set("pageIndex", String(page));
+  }
+  if (perPage !== undefined) {
+    query.set("per_page", String(perPage));
+    query.set("perPage", String(perPage));
+  }
 
   const queryString = query.toString();
   const url = queryString

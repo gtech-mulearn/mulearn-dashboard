@@ -1,4 +1,4 @@
-import { apiClient } from "@/api/client";
+import { apiClient, ApiError } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
   type CompanyDetails,
@@ -70,10 +70,22 @@ export async function verifyCompany(
 export async function fetchCompanyDetails(
   companyId: string,
 ): Promise<CompanyDetails> {
-  const response = await apiClient.get(
-    endpoints.company.detail(companyId),
-    CompanyDetailsResponseSchema,
-  );
+  try {
+    const response = await apiClient.get(
+      endpoints.company.detail(companyId),
+      CompanyDetailsResponseSchema,
+    );
 
-  return response.response;
+    return response.response;
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) {
+      return {
+        id: companyId,
+        name: "",
+        slug: "",
+        status: "",
+      } as CompanyDetails;
+    }
+    throw error;
+  }
 }

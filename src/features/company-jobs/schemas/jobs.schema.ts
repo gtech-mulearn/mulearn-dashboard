@@ -80,7 +80,11 @@ export const JobSchema = z.object({
     .union([z.array(z.string()), z.string()])
     .optional()
     .nullable(),
-  stipend: z.string().optional().nullable(),
+  stipend: z
+    .union([z.string(), z.number()])
+    .optional()
+    .nullable()
+    .transform((v) => (v != null ? String(v) : null)),
   certificate_provided: z
     .union([z.boolean(), z.string(), z.number()])
     .optional()
@@ -472,30 +476,32 @@ export const LearnerDiscoveryResponseSchema = DjangoResponse(
             .number()
             .nullish()
             .transform((v) => v ?? 0),
-          total_pages: z
-            .number()
-            .nullish()
-            .transform((v) => v ?? 1),
-          current_page: z
-            .number()
-            .nullish()
-            .transform((v) => v ?? 1),
-          per_page: z
-            .number()
-            .nullish()
-            .transform((v) => v ?? 10),
+          total_pages: z.number().nullish(),
+          totalPages: z.number().nullish(),
+          current_page: z.number().nullish(),
+          currentPage: z.number().nullish(),
+          per_page: z.number().nullish(),
+          perPage: z.number().nullish(),
           next: z.string().nullable().optional(),
           previous: z.string().nullable().optional(),
+          isNext: z.boolean().optional(),
+          isPrev: z.boolean().optional(),
         })
         .passthrough()
         .optional()
-        .transform((v) => ({
-          count: v?.count ?? 0,
-          totalPages: v?.total_pages ?? 1,
-          isNext: !!v?.next,
-          isPrev: !!v?.previous,
-          nextPage: v?.next ? (v.current_page ?? 1) + 1 : null,
-        })),
+        .transform((v) => {
+          const totalPages = v?.total_pages ?? v?.totalPages ?? 1;
+          const currentPage = v?.current_page ?? v?.currentPage ?? 1;
+          const isNext = !!(v?.next || v?.isNext);
+          const isPrev = !!(v?.previous || v?.isPrev);
+          return {
+            count: v?.count ?? 0,
+            totalPages,
+            isNext,
+            isPrev,
+            nextPage: v?.next ? currentPage + 1 : null,
+          };
+        }),
     })
     .transform((val) => ({
       learners: val.learners ?? val.data ?? [],

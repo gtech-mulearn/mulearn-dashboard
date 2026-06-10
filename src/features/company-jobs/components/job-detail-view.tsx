@@ -64,21 +64,25 @@ export function JobDetailView({
     JOB_STATUS_CONFIG[job.status as keyof typeof JOB_STATUS_CONFIG] ??
     JOB_STATUS_CONFIG.Active;
 
-  const formattedCreated = job.created_at
-    ? new Date(job.created_at).toLocaleDateString("en-IN", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      })
-    : "N/A";
+  const createdDateObj = job.created_at ? new Date(job.created_at) : null;
+  const formattedCreated =
+    createdDateObj && !isNaN(createdDateObj.getTime())
+      ? createdDateObj.toLocaleDateString("en-IN", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })
+      : "N/A";
 
-  const formattedUpdated = job.updated_at
-    ? new Date(job.updated_at).toLocaleDateString("en-IN", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      })
-    : null;
+  const updatedDateObj = job.updated_at ? new Date(job.updated_at) : null;
+  const formattedUpdated =
+    updatedDateObj && !isNaN(updatedDateObj.getTime())
+      ? updatedDateObj.toLocaleDateString("en-IN", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })
+      : null;
 
   return (
     <div className="space-y-6">

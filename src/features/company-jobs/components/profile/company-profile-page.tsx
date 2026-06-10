@@ -122,18 +122,22 @@ function CompanyProfileSidebar({
               </span>
             </div>
           )}
-          {profile.created_at && (
-            <div className="flex items-center gap-3">
-              <CalendarDays className="size-4 shrink-0 text-muted-foreground" />
-              <span className="text-sm text-foreground">
-                Member since{" "}
-                {new Date(profile.created_at).toLocaleDateString("en-IN", {
-                  month: "long",
-                  year: "numeric",
-                })}
-              </span>
-            </div>
-          )}
+          {profile.created_at &&
+            (() => {
+              const d = new Date(profile.created_at);
+              return !isNaN(d.getTime()) ? (
+                <div className="flex items-center gap-3">
+                  <CalendarDays className="size-4 shrink-0 text-muted-foreground" />
+                  <span className="text-sm text-foreground">
+                    Member since{" "}
+                    {d.toLocaleDateString("en-IN", {
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </span>
+                </div>
+              ) : null;
+            })()}
           {profile.email && (
             <div className="flex items-center gap-3">
               <Mail className="size-4 shrink-0 text-muted-foreground" />

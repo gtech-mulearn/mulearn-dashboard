@@ -100,7 +100,14 @@ export function ApplicantRow({ applicant, jobId }: ApplicantRowProps) {
           <span>{applicant.applicant_email}</span>
           <span>·</span>
           <span>
-            Applied on {new Date(applicant.applied_at).toLocaleDateString()}
+            {(() => {
+              const d = applicant.applied_at
+                ? new Date(applicant.applied_at)
+                : null;
+              return d && !isNaN(d.getTime())
+                ? `Applied on ${d.toLocaleDateString()}`
+                : "Applied on N/A";
+            })()}
           </span>
           {applicant.resume_link && (
             <>

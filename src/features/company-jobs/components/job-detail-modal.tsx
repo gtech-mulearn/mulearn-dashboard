@@ -20,7 +20,7 @@ import {
   Package,
   Timer,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -32,6 +32,7 @@ import {
   useApplyJob,
   useLearnerApplications,
   useResubmitApplication,
+  useTrackJobView,
 } from "../hooks";
 import type { PublicJob } from "../types";
 
@@ -42,11 +43,14 @@ interface JobDetailModalProps {
 }
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+  const d = iso ? new Date(iso) : null;
+  return d && !isNaN(d.getTime())
+    ? d.toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      })
+    : "N/A";
 }
 
 function Section({
@@ -83,6 +87,7 @@ export function JobDetailModal({
     isPending: isResubmitting,
     isSuccess: resubmitSuccess,
   } = useResubmitApplication();
+  const { mutate: trackView } = useTrackJobView();
 
   const { data: appsResponse } = useLearnerApplications();
   const existingApp = appsResponse?.applications.find(
@@ -92,6 +97,12 @@ export function JobDetailModal({
   const isAlreadyApplied = existingApp && !isRejected;
   const isPending = isApplying || isResubmitting;
   const isSuccess = applySuccess || resubmitSuccess;
+
+  useEffect(() => {
+    if (open && job?.id) {
+      trackView(job.id);
+    }
+  }, [open, job?.id, trackView]);
 
   const handleApply = () => {
     if (!job || !resumeLink.trim() || isAlreadyApplied) return;
