@@ -520,17 +520,27 @@ export const LearnerDiscoveryResponseSchema = DjangoResponse(
 export const CreateJobResponseSchema = DjangoResponse(JobSchema);
 
 export const UpdateJobResponseSchema = DjangoResponse(
-  z.object({
-    job_id: z.string(),
-    updated_fields: z.array(z.string()),
-  }),
+  z.union([
+    z.object({
+      job_id: z.string(),
+      updated_fields: z.array(z.string()),
+    }),
+    JobSchema,
+    z.object({
+      job: JobSchema,
+    }),
+    z.record(z.string(), z.unknown()),
+  ]),
 );
 
 export const DeleteJobResponseSchema = DjangoResponse(
-  z.object({
-    job_id: z.string(),
-    deleted_at: z.string(),
-  }),
+  z.union([
+    z.object({
+      job_id: z.string(),
+      deleted_at: z.string(),
+    }),
+    z.record(z.string(), z.unknown()),
+  ]),
 );
 
 export const CreateRuleResponseSchema = DjangoResponse(

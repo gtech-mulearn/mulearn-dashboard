@@ -229,7 +229,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   },
   {
     id: "company-jobs",
-    title: "Job Control",
+    title: "Job Management",
     href: "/dashboard/company/jobs",
     icon: Briefcase,
     section: "management",
@@ -237,7 +237,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   },
   {
     id: "company-tasks",
-    title: "Task Control",
+    title: "Task Management",
     href: "/dashboard/company/tasks",
     icon: ClipboardCheck,
     section: "management",
@@ -245,7 +245,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   },
   {
     id: "company-mentors",
-    title: "Mentor Control",
+    title: "Mentor Management",
     href: "/dashboard/company/mentors",
     icon: Users,
     section: "management",
