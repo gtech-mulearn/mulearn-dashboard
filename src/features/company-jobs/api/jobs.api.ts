@@ -127,7 +127,7 @@ export async function updateJob(
     payload,
     UpdateJobResponseSchema,
   );
-  return res.response;
+  return res.response as UpdateJobResponse;
 }
 
 export async function deleteJob(jobId: string): Promise<DeleteJobResponse> {
@@ -136,7 +136,7 @@ export async function deleteJob(jobId: string): Promise<DeleteJobResponse> {
     undefined,
     DeleteJobResponseSchema,
   );
-  return res.response;
+  return res.response as DeleteJobResponse;
 }
 
 // ─── Job Rules CRUD ─────────────────────────────────────────
@@ -418,12 +418,20 @@ export async function fetchCompanyDashboardSummary(params?: {
 }
 
 export async function trackJobView(jobId: string): Promise<any> {
-  const res = await apiClient.post(
-    endpoints.company.trackJobView(jobId),
-    undefined,
-    TrackJobViewResponseSchema,
-  );
-  return res;
+  try {
+    const res = await apiClient.post(
+      endpoints.company.trackJobView(jobId),
+      undefined,
+      TrackJobViewResponseSchema,
+    );
+    return res;
+  } catch (error) {
+    console.warn(
+      `[trackJobView] Failed to track job view for ID ${jobId}:`,
+      error,
+    );
+    return null;
+  }
 }
 
 export async function fetchJobEngagementAnalytics(

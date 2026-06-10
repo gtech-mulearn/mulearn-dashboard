@@ -186,17 +186,6 @@ function CompanyProfileSidebar({
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <GraduationCap className="size-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">
-                Hires via muLearn
-              </span>
-            </div>
-            <span className="text-sm font-semibold text-foreground">
-              {profile.hire_count ?? 0}
-            </span>
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
               <Award className="size-4 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">
                 Avg. Hire Karma
@@ -250,20 +239,13 @@ export function CompanyProfilePage() {
       />
 
       {/* Stats row */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2">
         <StatCard
           icon={<FileText className="size-5" />}
           value={activeJobs.length}
           label="Open Roles"
           color="text-success"
           bg="bg-success/10"
-        />
-        <StatCard
-          icon={<GraduationCap className="size-5" />}
-          value={profile.hire_count ?? 0}
-          label="Hires via muLearn"
-          color="text-brand-blue"
-          bg="bg-brand-blue/10"
         />
         <StatCard
           icon={<Award className="size-5" />}
