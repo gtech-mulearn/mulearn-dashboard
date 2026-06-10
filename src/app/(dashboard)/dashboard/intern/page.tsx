@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { LeaveFormDialog } from "@/features/intern";
-import { ActiveQuests } from "./components/active-quests";
-import { EliteLeaders } from "./components/elite-leaders";
-import { InternHeader } from "./components/intern-header";
-import { InternStatsCards } from "./components/intern-stats-cards";
-import { QuestLog } from "./components/quest-log";
+import { ActiveQuests } from "../../../../features/intern/components/active-quests";
+import { EliteLeaders } from "../../../../features/intern/components/elite-leaders";
+import { InternHeader } from "../../../../features/intern/components/intern-header";
+import { InternStatsCards } from "../../../../features/intern/components/intern-stats-cards";
+import { QuestLog } from "../../../../features/intern/components/quest-log";
 
 export default function InternDashboardPage() {
   const [isLeaveOpen, setIsLeaveOpen] = useState(false);

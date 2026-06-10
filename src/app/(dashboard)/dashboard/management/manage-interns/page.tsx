@@ -43,9 +43,9 @@ import {
   useManageInternsList,
 } from "@/features/intern";
 import { useDebounce } from "@/hooks/use-debounce";
-import { InternsStats } from "./components/interns-stats";
-import { OnboardDialog } from "./components/onboard-dialog";
-import { UpdateDialog } from "./components/update-dialog";
+import { InternsStats } from "../../../../../features/intern/components/interns-stats";
+import { OnboardDialog } from "../../../../../features/intern/components/onboard-dialog";
+import { UpdateDialog } from "../../../../../features/intern/components/update-dialog";
 
 const getStatusBadge = (status: string) => {
   switch (status) {
