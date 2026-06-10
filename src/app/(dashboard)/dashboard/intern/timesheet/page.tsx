@@ -5,7 +5,6 @@ import {
   Clock,
   FileText,
   Flame,
-  Gem,
   Loader2,
   Sparkles,
   Zap,

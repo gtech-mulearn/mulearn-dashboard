@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock, Gem, Loader2, Trophy } from "lucide-react";
+import { Gem, Loader2, Trophy } from "lucide-react";
 import { useState } from "react";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table, { type Data } from "@/components/dashboard/table/Table";
@@ -8,7 +8,6 @@ import TableTop from "@/components/dashboard/table/TableTop";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUserInfo, useUserProfile } from "@/features/auth";
 import { useLeaderboard, useLeaderboardMe } from "@/features/intern";
 

@@ -1,15 +1,6 @@
 "use client";
 
-import {
-  ArrowLeft,
-  Calendar,
-  CheckCircle2,
-  Clock,
-  Gem,
-  Loader2,
-  Sparkles,
-  Trophy,
-} from "lucide-react";
+import { ArrowLeft, Clock, Loader2, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Badge } from "@/components/ui/badge";

@@ -125,7 +125,7 @@ export default function WeeklyReportGeneratorPage() {
       column: "iso_week",
       Label: "Epoch",
       isSortable: true,
-      wrap: (data: string, _id: string, row: Data) => (
+      wrap: (_data: string, _id: string, row: Data) => (
         <span className="font-bold text-[10px] font-mono">
           W{row.iso_week} {row.iso_year}
         </span>

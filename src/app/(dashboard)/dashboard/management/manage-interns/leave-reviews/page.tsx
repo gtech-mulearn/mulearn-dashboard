@@ -1,23 +1,13 @@
 "use client";
 
-import {
-  AlertCircle,
-  Calendar,
-  CheckCircle2,
-  Clock,
-  Loader2,
-  MoreHorizontal,
-  Search,
-  Sparkles,
-  Trophy,
-} from "lucide-react";
+import { Search, Sparkles, Trophy } from "lucide-react";
 import { useState } from "react";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table, { type Data } from "@/components/dashboard/table/Table";
 import THead from "@/components/dashboard/table/Thead";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -45,7 +35,7 @@ export default function LeaveReviewsPage() {
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState("PENDING");
   const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(10);
+  const [perPage, _setPerPage] = useState(10);
 
   // Review states
   const [selectedLeave, setSelectedLeave] = useState<TLeaveRequest | null>(

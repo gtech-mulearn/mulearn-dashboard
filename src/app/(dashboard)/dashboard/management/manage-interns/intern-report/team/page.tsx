@@ -1,15 +1,6 @@
 "use client";
 
-import {
-  ArrowLeft,
-  Calendar,
-  CheckCircle2,
-  Clock,
-  Loader2,
-  Sparkles,
-  Trophy,
-  Users,
-} from "lucide-react";
+import { ArrowLeft, Loader2, Sparkles, Users } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import Table, { type Data } from "@/components/dashboard/table/Table";
@@ -64,7 +55,7 @@ export default function TeamReportPage() {
       column: "iso_week",
       Label: "Epoch",
       isSortable: true,
-      wrap: (data: string, _id: string, row: Data) => (
+      wrap: (_data: string, _id: string, row: Data) => (
         <span className="font-bold text-[10px] font-mono">
           W{row.iso_week} {row.iso_year}
         </span>

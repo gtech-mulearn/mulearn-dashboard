@@ -3,20 +3,13 @@
 import {
   AlertCircle,
   AlertTriangle,
-  Calendar,
-  CheckCircle2,
-  Clock,
   FileText,
   Home,
   Loader2,
   PlaneTakeoff,
   Plus,
-  UserCheck,
-  X,
-  XCircle,
 } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
