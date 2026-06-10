@@ -133,7 +133,7 @@ export function UpdateParticipantDialog({
                       value={field.value ?? ""}
                       onChange={(e) =>
                         field.onChange(
-                          e.target.value ? parseInt(e.target.value) : null,
+                          e.target.value ? parseInt(e.target.value, 10) : null,
                         )
                       }
                       disabled={isPending}

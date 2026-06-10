@@ -85,27 +85,41 @@ export function MenteesPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Mentees</h1>
-          {data && (
-            <p className="text-sm text-muted-foreground">
-              {data.totalItems} mentee{data.totalItems !== 1 ? "s" : ""}
-            </p>
-          )}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">Mentees</h1>
+            {data && (
+              <p className="text-sm text-muted-foreground">
+                {data.totalItems} mentee{data.totalItems !== 1 ? "s" : ""}
+              </p>
+            )}
+          </div>
+          {/* Mobile Join Session Button */}
+          <Button
+            variant="outline"
+            className="md:hidden"
+            onClick={() => setJoinDialog({ open: true, sessionId: "" })}
+          >
+            <LogIn className="mr-2 h-4 w-4" />
+            Join Session
+          </Button>
         </div>
+
         <div className="flex items-center gap-2">
-          <div className="relative w-56">
+          <div className="relative w-full md:w-56">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search mentees..."
-              className="pl-8"
+              className="w-full pl-8"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
+          {/* Desktop Join Session Button */}
           <Button
             variant="outline"
+            className="hidden md:flex"
             onClick={() => setJoinDialog({ open: true, sessionId: "" })}
           >
             <LogIn className="mr-2 h-4 w-4" />

@@ -187,13 +187,17 @@ function TimeWheel({
         const scale = 1 - Math.abs(offset) * 0.15;
         const opacity = Math.max(0, 1 - Math.abs(offset) * 0.5);
         const isSelected = Math.abs(offset) < 0.5;
-        const color = isSelected ? "black" : "gray";
 
         return (
           <button
             key={logicalIndex}
             type="button"
-            className="absolute left-0 right-0 flex items-center justify-center select-none dark:text-white cursor-pointer"
+            className={cn(
+              "absolute left-0 right-0 flex items-center justify-center select-none cursor-pointer",
+              isSelected
+                ? "text-black font-bold dark:text-white"
+                : "text-gray-500 font-normal dark:text-gray-400",
+            )}
             onClick={() => {
               if (isDragging) return;
               const newPos = logicalIndex * ITEM_HEIGHT;
@@ -217,8 +221,6 @@ function TimeWheel({
               marginTop: -ITEM_HEIGHT / 2,
               transform: `translateY(${translateY}px) rotateX(${rotateX}deg) scale(${scale})`,
               opacity,
-              color,
-              fontWeight: isSelected ? "bold" : "normal",
               transition: isDragging
                 ? "none"
                 : "transform 0.2s ease-out, opacity 0.2s ease-out, color 0.2s ease-out",

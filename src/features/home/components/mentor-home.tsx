@@ -319,13 +319,15 @@ export function MentorHome() {
         </CardHeader>
         <CardContent className="px-5 pb-5 pt-0">
           {schedLoading ? (
-            <div className="grid min-w-145 grid-cols-7 gap-2">
-              {["sun", "mon", "tue", "wed", "thu", "fri", "sat"].map((d) => (
-                <div
-                  key={d}
-                  className="h-20 animate-pulse rounded-2xl border bg-muted"
-                />
-              ))}
+            <div className="grid grid-cols-2 gap-2 md:grid-cols-7">
+              {["sun", "mon", "tue", "wed", "thu", "fri", "sat"].map(
+                (d, index) => (
+                  <div
+                    key={d}
+                    className={`h-20 animate-pulse rounded-2xl border bg-muted ${index >= 2 ? "hidden md:block" : ""}`}
+                  />
+                ),
+              )}
             </div>
           ) : (
             <AvailabilitySlotPicker
