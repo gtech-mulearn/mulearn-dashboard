@@ -113,55 +113,57 @@ export const endpoints = {
   // Company Endpoints
   // ============================================
   company: {
-    /** POST - Company signup (AllowAny). Creates POC user + company record in pending_verification */
-    create: "/api/v1/dashboard/company/create/",
-    /** GET - Fetch own company onboarding/verification status (JWT required) */
-    onboardingStatus: "/api/v1/dashboard/company/onboarding/status/",
-    /** POST - Resubmit verification after rejection (JWT required) */
-    verificationResubmit: "/api/v1/dashboard/company/verification/resubmit/",
-    /** GET - Own company profile (JWT required) */
+    /** 1. POST/PATCH - Submit/Update company registration (Authenticated) */
+    register: "/api/v1/dashboard/company/register/",
+    /** 2. GET - Check onboarding status */
+    status: "/api/v1/dashboard/company/status/",
+    /** 3. GET/PATCH - Full company profile for logged-in company user */
     profile: "/api/v1/dashboard/company/profile/",
-    /** GET - Public profile by slug (AllowAny) */
+    /** 4. GET - Public company profile */
     publicProfile: (slug: string) =>
       `/api/v1/dashboard/company/profile/public/${slug}/`,
-    /** GET - Public company job listings by slug (no auth) */
+    /** 5. GET - Active jobs for a verified company (public) */
     publicJobsBySlug: (slug: string) =>
       `/api/v1/dashboard/company/profile/public/${slug}/jobs/`,
-    /** GET/POST/PATCH - Admin verification queue (JWT + Admin) */
-    verificationRequests: "/api/v1/dashboard/company/verification/requests/",
-    /** PATCH - Admin approve/reject a company (JWT + Admin) */
-    verificationAction: (companyId: string) =>
-      `/api/v1/dashboard/company/verification/requests/${companyId}/`,
-    /** GET - Company home dashboard summary */
-    homeSummary: "/api/v1/dashboard/company/home-summary/",
-    /** GET - List jobs for authenticated company (JWT required) */
+    /** 6. GET - Admin list of all companies with filters */
+    list: "/api/v1/dashboard/company/list/",
+    /** 7. GET - Admin detail view for one company */
+    detail: (companyId: string) => `/api/v1/dashboard/company/${companyId}/`,
+    /** 8. PATCH - Approve or reject a pending company */
+    verify: (companyId: string) =>
+      `/api/v1/dashboard/company/verify/${companyId}/`,
+    /** 9. GET/POST - List jobs for company / Create a job */
     jobs: "/api/v1/dashboard/company/jobs/",
-    /** GET - Public jobs list (AllowAny) */
-    publicJobs: "/api/v1/public/jobs/",
-    /** POST - Learner apply to job */
+    /** 10. GET - Public catalogue of all active jobs across companies */
+    jobsAll: "/api/v1/dashboard/company/jobs/all/",
+    /** 11. GET/PATCH/DELETE - Single job detail / Update / Soft-delete */
+    jobDetail: (jobId: string) => `/api/v1/dashboard/company/jobs/${jobId}/`,
+    /** 12. POST - Apply to an active job */
     applyJob: (jobId: string) =>
       `/api/v1/dashboard/company/jobs/${jobId}/apply/`,
-    /** GET - Learner applications list */
-    learnerApplications: "/api/v1/dashboard/company/applications/",
-    /** GET - Company view job applicants */
-    jobApplicants: (jobId: string) =>
+    /** 13. GET - List applicants for a job owned by the company */
+    jobApplications: (jobId: string) =>
       `/api/v1/dashboard/company/jobs/${jobId}/applications/`,
-    /** PATCH - Company update applicant status */
-    updateApplicantStatus: (appId: string) =>
+    /** 14. GET - List all jobs the current user has applied to */
+    myApplications: "/api/v1/dashboard/company/applications/me/",
+    /** 15. PATCH - Company updates an application's status */
+    applicationStatus: (appId: string) =>
       `/api/v1/dashboard/company/applications/${appId}/status/`,
-    /** GET - Browse MuLearner directory (public profiles only) */
+    /** 16. DELETE - Applicant withdraws their application */
+    applicationWithdraw: (appId: string) =>
+      `/api/v1/dashboard/company/applications/${appId}/withdraw/`,
+    /** 17. PATCH - Resubmit a rejected application */
+    applicationResubmit: (appId: string) =>
+      `/api/v1/dashboard/company/applications/${appId}/resubmit/`,
+
+    /** 19. GET - Talent directory of public muLearn users */
     mulearners: "/api/v1/dashboard/company/mulearners/",
-    /** GET - Learner discovery (Talent Pool) */
-    learners: "/api/v1/dashboard/company/learners/",
-    /** POST - Create job (JWT required, active company only) */
-    createJob: "/api/v1/dashboard/company/jobs/create/",
-    /** GET - Job details (JWT required) */
-    jobDetails: (jobId: string) =>
-      `/api/v1/dashboard/company/jobs/${jobId}/details/`,
-    /** PATCH - Update job (JWT required) */
-    updateJob: (jobId: string) => `/api/v1/dashboard/company/jobs/${jobId}/`,
-    /** DELETE - Soft delete job (JWT required) */
-    deleteJob: (jobId: string) => `/api/v1/dashboard/company/jobs/${jobId}/`,
+    /** 19. GET - Analytics for gig-type jobs posted by the company */
+    analyticsGigs: "/api/v1/dashboard/company/analytics/gigs/",
+
+    // --- Legacy / Undocumented endpoints needed for frontend build ---
+    /** GET - Company home dashboard summary */
+    homeSummary: "/api/v1/dashboard/company/home-summary/",
     /** POST - Add eligibility rule to job (JWT required) */
     createJobRule: (jobId: string) =>
       `/api/v1/dashboard/company/jobs/${jobId}/rules/create/`,
@@ -171,22 +173,25 @@ export const endpoints = {
     /** DELETE - Hard delete eligibility rule (JWT required) */
     deleteJobRule: (jobId: string, ruleId: string) =>
       `/api/v1/dashboard/company/jobs/${jobId}/rules/${ruleId}/delete/`,
-
-    // ── Company Mentor Nomination ────────────────────────────────────────────
-    /** POST - Nominate a platform user as Company Mentor (Company role + verified company) */
-    mentorNominate: "/api/v1/dashboard/company/mentor/nominate/",
-    /** GET - List all Company Mentor nominations for the authenticated company */
-    mentorList: "/api/v1/dashboard/company/mentor/list/",
-
-    // ── Company Tasks ────────────────────────────────────────────────────────
-    /** GET/POST - List or submit company tasks (scoped to requesting user) */
+    /** GET - Admin Summary Dashboard */
+    adminSummary: "/api/v1/dashboard/company/summary/",
+    /** GET/POST - List company tasks / Create a company task */
     tasks: "/api/v1/dashboard/company/tasks/",
-    /** GET/PUT/DELETE - Single company task by ID */
-    task: (taskId: string) => `/api/v1/dashboard/company/tasks/${taskId}/`,
-
-    // ── Gig Analytics ────────────────────────────────────────────────────────
-    /** GET - Gig-type job analytics for the authenticated company */
-    gigAnalytics: "/api/v1/dashboard/company/analytics/gigs/",
+    /** GET/PUT/DELETE - Get / Update / Delete task detail */
+    taskDetail: (taskId: string) =>
+      `/api/v1/dashboard/company/tasks/${taskId}/`,
+    /** POST - Nominate a Company Mentor */
+    mentorNominate: "/api/v1/dashboard/company/mentor/nominate/",
+    /** GET - List Company Mentor Nominations */
+    mentorList: "/api/v1/dashboard/company/mentor/list/",
+    /** POST - Track Job View */
+    trackJobView: (jobId: string) =>
+      `/api/v1/dashboard/company/jobs/${jobId}/view/`,
+    /** GET - Company Job Engagement Analytics */
+    jobAnalytics: (jobId: string) =>
+      `/api/v1/dashboard/company/jobs/${jobId}/analytics/`,
+    /** GET - Company Talent Pool Analytics */
+    talentPoolAnalytics: "/api/v1/dashboard/company/talent-pool/analytics/",
   },
 
   // ============================================
@@ -885,6 +890,23 @@ export const endpoints = {
         `/api/v1/dashboard/user/verification/${linkId}/`,
       /** GET - Download CSV of unverified links */
       csv: "/api/v1/dashboard/user/verification/csv/",
+    },
+
+    tasks: {
+      /** GET/POST - List tasks or Create task */
+      base: "/api/v1/dashboard/task/",
+      /** GET - Retrieve Task Public List */
+      publicList: "/api/v1/dashboard/task/list/",
+      /** GET/PUT/DELETE - Single task operations */
+      detail: (taskId: string) => `/api/v1/dashboard/task/${taskId}/`,
+      /** GET - List tasks awaiting admin review */
+      pending: "/api/v1/dashboard/task/pending/",
+      /** PATCH - Approve a pending task */
+      approve: (taskId: string) => `/api/v1/dashboard/task/${taskId}/approve/`,
+      /** PATCH - Reject a pending task */
+      reject: (taskId: string) => `/api/v1/dashboard/task/${taskId}/reject/`,
+      /** GET/POST/PUT/DELETE - Task Types CRUD */
+      taskTypes: "/api/v1/dashboard/task/list-task-type/",
     },
 
     interestGroups: {

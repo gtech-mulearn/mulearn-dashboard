@@ -33,9 +33,18 @@ export default function EditJobPage() {
     router.push(`/dashboard/company/jobs/${jobId}`);
   }, [router, jobId]);
 
+  const parseNumber = useCallback((val: string | number | undefined | null) => {
+    if (val === undefined || val === null || val === "") return undefined;
+    if (typeof val === "number") return val;
+    const clean = val.replace(/[^0-9.]/g, "");
+    const parsed = parseFloat(clean);
+    return isNaN(parsed) ? undefined : parsed;
+  }, []);
+
   const handleSubmit = useCallback(
     async (values: JobFormValues, _rules: JobRule[]) => {
       try {
+        const isGig = values.job_type === "Gig";
         await updateJobMutation.mutateAsync({
           jobId,
           payload: {
@@ -43,18 +52,31 @@ export default function EditJobPage() {
             experience: values.experience,
             job_description: values.job_description,
             location: values.location,
-            salary_range: values.salary_range,
             job_type: values.job_type,
-            min_karma: values.min_karma,
-            min_level: values.min_level,
-            // Advanced options — always send to allow clearing values
-            karma_reward: values.karma_reward,
-            duration_value: values.duration_value,
-            duration_unit: values.duration_unit,
-            hourly_rate: values.hourly_rate || undefined,
-            deliverables: values.deliverables || undefined,
-            stipend: values.stipend || undefined,
-            certificate_provided: values.certificate_provided,
+            certificate_provided: values.certificate_provided ? "Yes" : "No",
+            ...(isGig
+              ? {
+                  duration_value:
+                    values.duration_value != null
+                      ? Number(values.duration_value)
+                      : null,
+                  duration_unit: values.duration_unit || null,
+                  hourly_rate: parseNumber(values.hourly_rate) ?? null,
+                  deliverables:
+                    values.deliverables && values.deliverables.length > 0
+                      ? values.deliverables.join(", ")
+                      : null,
+                  stipend: parseNumber(values.stipend) ?? null,
+                  salary_range: null,
+                }
+              : {
+                  salary_range: values.salary_range,
+                  duration_value: null,
+                  duration_unit: null,
+                  hourly_rate: null,
+                  deliverables: null,
+                  stipend: null,
+                }),
           },
         });
 
@@ -63,7 +85,7 @@ export default function EditJobPage() {
         // Error handled by mutation's onError
       }
     },
-    [jobId, updateJobMutation, router],
+    [jobId, updateJobMutation, router, parseNumber],
   );
 
   return (

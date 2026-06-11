@@ -12,6 +12,7 @@ import { ShieldX } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import Loader from "@/app/loading";
+import { usePublicCompanyProfile } from "@/features/company-jobs";
 import { CompanyPublicView } from "@/features/company-jobs/components";
 import {
   Badges,
@@ -33,15 +34,20 @@ import { ROLES } from "@/lib/auth/roles";
 
 export default function PublicProfilePage() {
   const params = useParams();
-  const muid = params.muid as string;
+  const muidParam = decodeURIComponent(params.muid as string);
+
+  // Companies use slugs (e.g. techcorp-india), users use MUIDs (e.g. john@mulearn)
+  // MUIDs always contain an '@'. Slugs never do.
+  const isCompanySlug = !muidParam.includes("@");
+
+  const companySlug = isCompanySlug ? muidParam.toLowerCase() : "";
+  const muid = isCompanySlug ? "" : muidParam;
 
   const [activeTab, setActiveTab] = useState<ProfileTab>("basic-details");
 
-  const {
-    data: profile,
-    isLoading: isLoadingProfile,
-    isError,
-  } = usePublicProfile(muid);
+  const companyQuery = usePublicCompanyProfile(companySlug);
+  const studentQuery = usePublicProfile(muid);
+
   const { data: userLog, isLoading: isLoadingLog } = usePublicUserLog(muid);
   const { data: userLevels, isLoading: isLoadingLevels } =
     usePublicUserLevels(muid);
@@ -66,25 +72,39 @@ export default function PublicProfilePage() {
     return match ? Number.parseInt(match[0], 10) : 1;
   };
 
-  if (isLoadingProfile) {
+  // 1. Render company view immediately if company data loaded successfully
+  if (companyQuery.data) {
+    return <CompanyPublicView slug={companySlug || muidParam} />;
+  }
+
+  // 2. Wait if company query is still loading
+  if (companyQuery.isLoading && isCompanySlug) {
     return <Loader />;
   }
 
-  if (isError || !profile) {
+  // 3. Wait if student query is still loading
+  if (studentQuery.isLoading && !isCompanySlug) {
+    return <Loader />;
+  }
+
+  const profile = studentQuery.data;
+
+  // 4. Show 404/not found if student query failed and there is no company profile
+  if (studentQuery.isError || !profile) {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center text-center">
         <ShieldX className="h-16 w-16 text-muted-foreground/40" />
-        <p className="mt-4 text-lg font-medium">This profile is private</p>
+        <p className="mt-4 text-lg font-medium">Profile not found</p>
         <p className="mt-1 text-muted-foreground">
-          The user has chosen to keep their profile hidden.
+          The requested profile could not be found or is private.
         </p>
       </div>
     );
   }
 
-  // Company role — render company profile view instead of student profile
+  // 5. Fallback check for company role on student profile
   if (profile.roles.includes(ROLES.COMPANY)) {
-    return <CompanyPublicView userProfile={profile} />;
+    return <CompanyPublicView userProfile={profile} slug={muid} />;
   }
 
   const monthDifference = getMonthDifference(profile.joined);

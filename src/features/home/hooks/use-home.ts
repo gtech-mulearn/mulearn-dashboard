@@ -132,10 +132,18 @@ export function useLearnerHomeSummary() {
   });
 }
 
-export function useCompanyHomeSummary() {
+export function useCompanyHomeSummary(params?: {
+  period?: string;
+  karma_min?: number;
+  karma_max?: number;
+  level_order_min?: number;
+  interested_in_work?: boolean;
+  interested_in_gig_work?: boolean;
+  ig_ids?: string;
+}) {
   return useQuery({
-    queryKey: homeKeys.companyHomeSummary(),
-    queryFn: getCompanyHomeSummary,
+    queryKey: homeKeys.companyHomeSummary(params),
+    queryFn: () => getCompanyHomeSummary(params),
     staleTime: HOME_STALE_TIME,
     retry: no403Retry,
   });

@@ -46,12 +46,14 @@ export function CompanyCredibilitySection({
   campusEventsCount,
   memberSince,
 }: CompanyCredibilitySectionProps) {
-  const memberSinceLabel = memberSince
-    ? new Date(memberSince).toLocaleDateString("en-IN", {
-        month: "short",
-        year: "numeric",
-      })
-    : null;
+  const memberSinceDate = memberSince ? new Date(memberSince) : null;
+  const memberSinceLabel =
+    memberSinceDate && !isNaN(memberSinceDate.getTime())
+      ? memberSinceDate.toLocaleDateString("en-IN", {
+          month: "short",
+          year: "numeric",
+        })
+      : null;
 
   return (
     <Card className="rounded-2xl border bg-card shadow-sm">

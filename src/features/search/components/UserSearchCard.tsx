@@ -13,6 +13,7 @@ interface UserSearchCardProps {
 export function UserSearchCard({ user }: UserSearchCardProps) {
   const [imageError, setImageError] = useState(false);
   const firstLetter = user.full_name.charAt(0).toUpperCase();
+  const uniqueIgs = Array.from(new Set(user.interest_groups || []));
 
   return (
     <Link
@@ -66,9 +67,9 @@ export function UserSearchCard({ user }: UserSearchCardProps) {
 
         {/* Skills */}
         <div className="mt-6 flex-grow">
-          {user.interest_groups.length > 0 ? (
+          {uniqueIgs.length > 0 ? (
             <div className="flex flex-wrap gap-2">
-              {user.interest_groups.slice(0, 3).map((ig) => (
+              {uniqueIgs.slice(0, 3).map((ig) => (
                 <span
                   key={ig}
                   className="rounded-full bg-muted/50 px-3 py-1 text-xs font-bold text-muted-foreground ring-1 ring-border/50 transition-all duration-300 group-hover:bg-primary/10 group-hover:text-primary group-hover:ring-primary/30"
@@ -76,9 +77,9 @@ export function UserSearchCard({ user }: UserSearchCardProps) {
                   {ig}
                 </span>
               ))}
-              {user.interest_groups.length > 3 && (
+              {uniqueIgs.length > 3 && (
                 <span className="rounded-full bg-background px-2 py-1 text-xs font-bold text-muted-foreground ring-1 ring-border/50 transition-all duration-300 group-hover:border-primary/30">
-                  +{user.interest_groups.length - 3}
+                  +{uniqueIgs.length - 3}
                 </span>
               )}
             </div>

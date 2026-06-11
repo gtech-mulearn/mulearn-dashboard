@@ -10,14 +10,7 @@
  * - Public view: accepts pre-fetched jobs or MOCK_PUBLIC_JOBS, Apply CTA
  */
 
-import {
-  BriefcaseBusiness,
-  MapPin,
-  Plus,
-  Sparkles,
-  Star,
-  Wallet,
-} from "lucide-react";
+import { BriefcaseBusiness, MapPin, Plus, Wallet } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,6 +24,7 @@ const JOB_TYPE_STYLES: Record<string, string> = {
   Internship: "bg-brand-purple/15 text-brand-purple",
   "Part-Time": "bg-brand-blue/15 text-brand-blue",
   Contract: "bg-warning/15 text-warning",
+  Gig: "bg-success/15 text-success",
   Freelance: "bg-success/15 text-success",
 };
 
@@ -65,17 +59,6 @@ function OwnJobCard({ job }: { job: Job }) {
         </span>
       </div>
 
-      <div className="mt-3 flex flex-wrap gap-1.5">
-        <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
-          <Sparkles className="size-3" />
-          Karma ≥ {job.min_karma}
-        </span>
-        <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
-          <Star className="size-3" />
-          Level ≥ {job.min_level}
-        </span>
-      </div>
-
       <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
         <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
           {job.status}
@@ -99,15 +82,18 @@ function PublicJobCard({ job }: { job: PublicJobBySlug }) {
   const chipStyle =
     JOB_TYPE_STYLES[job.job_type ?? "Full-Time"] ??
     JOB_TYPE_STYLES["Full-Time"];
-  const postedDaysAgo = Math.floor(
-    (Date.now() - new Date(job.created_at).getTime()) / (1000 * 60 * 60 * 24),
-  );
+  const createdTime = job.created_at ? new Date(job.created_at).getTime() : NaN;
+  const postedDaysAgo = !isNaN(createdTime)
+    ? Math.floor((Date.now() - createdTime) / (1000 * 60 * 60 * 24))
+    : null;
   const postedLabel =
-    postedDaysAgo === 0
-      ? "Today"
-      : postedDaysAgo === 1
-        ? "Yesterday"
-        : `${postedDaysAgo}d ago`;
+    postedDaysAgo === null
+      ? "N/A"
+      : postedDaysAgo === 0
+        ? "Today"
+        : postedDaysAgo === 1
+          ? "Yesterday"
+          : `${postedDaysAgo}d ago`;
 
   return (
     <div className="group rounded-xl border border-border bg-card p-4 transition-shadow hover:shadow-md">
@@ -134,14 +120,14 @@ function PublicJobCard({ job }: { job: PublicJobBySlug }) {
         </span>
       </div>
 
-      {job.tags.length > 0 && (
+      {job.rules.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1.5">
-          {job.tags.map((tag) => (
+          {job.rules.map((rule) => (
             <span
-              key={tag}
+              key={rule.id}
               className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground"
             >
-              {tag}
+              {rule.rule_type}: {rule.rule_value}
             </span>
           ))}
         </div>

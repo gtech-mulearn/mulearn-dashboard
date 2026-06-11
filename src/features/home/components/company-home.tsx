@@ -21,8 +21,15 @@ export function CompanyHome() {
   const { data: summary, isLoading: summaryLoading } = useCompanyHomeSummary();
 
   const jobsPosted =
-    summary?.quick_stats.jobs_posted ?? jobsData?.pagination?.count ?? 0;
+    summary?.quick_stats?.jobs_posted ?? jobsData?.pagination?.count ?? 0;
   const companyName = profile?.name ?? undefined;
+
+  const quickStats = summary?.quick_stats ?? {
+    jobs_posted: jobsPosted,
+    total_views: 0,
+    applications: 0,
+    hired: 0,
+  };
 
   return (
     <div className="space-y-5">
@@ -31,10 +38,7 @@ export function CompanyHome() {
         jobsPosted={jobsPosted}
         isLoading={jobsLoading || profileLoading}
       />
-      <CompanyStatCards
-        quickStats={summary?.quick_stats}
-        isLoading={summaryLoading}
-      />
+      <CompanyStatCards quickStats={quickStats} isLoading={summaryLoading} />
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_296px]">
         <ActiveJobListingsCard />
         <TalentPoolCard

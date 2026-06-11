@@ -10,9 +10,9 @@ interface CompanyStatusGuardProps {
   children: ReactNode;
 }
 
-const STATUS_ICONS: Record<CompanyStatus, React.ElementType> = {
-  active: ShieldX,
-  pending_verification: Clock,
+const STATUS_ICONS: Record<string, React.ElementType> = {
+  verified: ShieldX,
+  pending: Clock,
   rejected: XCircle,
   inactive: AlertTriangle,
 };

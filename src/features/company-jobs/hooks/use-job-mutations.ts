@@ -28,6 +28,10 @@ export function useCreateJob() {
     mutationFn: (payload: CreateJobPayload) => createJob(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: JOBS_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: ["company-analytics"] });
+      queryClient.invalidateQueries({
+        queryKey: ["home", "company", "home-summary"],
+      });
       toast.success("Job created successfully");
     },
     onError: (err: Error) => {
@@ -53,6 +57,10 @@ export function useUpdateJob() {
       queryClient.invalidateQueries({ queryKey: JOBS_KEYS.all });
       queryClient.invalidateQueries({
         queryKey: JOBS_KEYS.detail(variables.jobId),
+      });
+      queryClient.invalidateQueries({ queryKey: ["company-analytics"] });
+      queryClient.invalidateQueries({
+        queryKey: ["home", "company", "home-summary"],
       });
       toast.success("Job updated successfully");
     },
@@ -108,9 +116,17 @@ export function useDeleteJob() {
       );
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: JOBS_KEYS.all });
+      // Invalidate the list so it refetches, but DO NOT invalidate the detail query
+      // because invalidating the detail query while still on the page causes a 404 refetch.
+      queryClient.invalidateQueries({
+        queryKey: [...JOBS_KEYS.all, "list"],
+      });
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["company-analytics"] });
+      queryClient.invalidateQueries({
+        queryKey: ["home", "company", "home-summary"],
+      });
       toast.success("Job deleted successfully");
     },
   });

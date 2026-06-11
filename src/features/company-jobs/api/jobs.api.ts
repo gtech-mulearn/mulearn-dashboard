@@ -1,29 +1,36 @@
 import { apiClient, publicApiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
-import type { PublicJobsBySlugData } from "../schemas";
+import type { PublicCompanyProfile, PublicJobsBySlugData } from "../schemas";
 import {
+  AdminSummaryResponseSchema,
   ApplyJobResponseSchema,
+  CompanyDashboardSummaryResponseSchema,
   CompanyProfileResponseSchema,
   CreateJobResponseSchema,
   CreateRuleResponseSchema,
   DeleteJobResponseSchema,
   DeleteRuleResponseSchema,
+  GenericResponseSchema,
   GigAnalyticsResponseSchema,
   JobApplicantsResponseSchema,
   JobDetailResponseSchema,
+  JobEngagementAnalyticsResponseSchema,
   JobsListResponseSchema,
   LearnerApplicationsResponseSchema,
   LearnerDiscoveryResponseSchema,
-  MuLearnersResponseSchema,
   PublicCompanyProfileResponseSchema,
   PublicJobsBySlugResponseSchema,
   PublicJobsResponseSchema,
+  TalentPoolAnalyticsResponseSchema,
+  TrackJobViewResponseSchema,
   UpdateApplicantStatusResponseSchema,
   UpdateJobResponseSchema,
   UpdateRuleResponseSchema,
 } from "../schemas";
 import type {
+  AdminSummary,
   ApplyJobResponse,
+  CompanyDashboardSummary,
   CompanyProfile,
   CreateJobPayload,
   CreateJobResponse,
@@ -34,13 +41,15 @@ import type {
   GigAnalytics,
   Job,
   JobApplicantsResponse,
+  JobEngagementAnalytics,
   JobsListParams,
   JobsListResponse,
   LearnerApplicationsResponse,
   LearnerDiscoveryParams,
   LearnerDiscoveryResponse,
-  MuLearnersResponse,
   PublicJobsResponse,
+  TalentPoolAnalytics,
+  TalentPoolAnalyticsParams,
   UpdateApplicantStatusResponse,
   UpdateJobPayload,
   UpdateJobResponse,
@@ -81,17 +90,28 @@ export async function fetchJobs(
 
 export async function fetchJobDetail(jobId: string): Promise<Job> {
   const res = await apiClient.get(
-    endpoints.company.jobDetails(jobId),
+    endpoints.company.jobDetail(jobId),
     JobDetailResponseSchema,
   );
-  return res.response.job;
+
+  const data = res.response;
+  if (!data) throw new Error("No data returned from API");
+
+  // Safely extract job object whether nested in .job or returned at root
+  const job = data.job ?? data;
+
+  if (!job) {
+    throw new Error("Job data could not be parsed or found in response");
+  }
+
+  return job as Job;
 }
 
 export async function createJob(
   payload: CreateJobPayload,
 ): Promise<CreateJobResponse> {
   const res = await apiClient.post(
-    endpoints.company.createJob,
+    endpoints.company.jobs,
     payload,
     CreateJobResponseSchema,
   );
@@ -103,20 +123,20 @@ export async function updateJob(
   payload: UpdateJobPayload,
 ): Promise<UpdateJobResponse> {
   const res = await apiClient.patch(
-    endpoints.company.updateJob(jobId),
+    endpoints.company.jobDetail(jobId),
     payload,
     UpdateJobResponseSchema,
   );
-  return res.response;
+  return res.response as UpdateJobResponse;
 }
 
 export async function deleteJob(jobId: string): Promise<DeleteJobResponse> {
   const res = await apiClient.delete(
-    endpoints.company.deleteJob(jobId),
+    endpoints.company.jobDetail(jobId),
     undefined,
     DeleteJobResponseSchema,
   );
-  return res.response;
+  return res.response as DeleteJobResponse;
 }
 
 // ─── Job Rules CRUD ─────────────────────────────────────────
@@ -162,8 +182,8 @@ export async function deleteJobRule(
 
 export async function fetchPublicCompanyProfile(
   slug: string,
-): Promise<CompanyProfile> {
-  const res = await apiClient.get(
+): Promise<PublicCompanyProfile> {
+  const res = await publicApiClient.get(
     endpoints.company.publicProfile(slug),
     PublicCompanyProfileResponseSchema,
   );
@@ -172,17 +192,23 @@ export async function fetchPublicCompanyProfile(
 
 export async function fetchPublicCompanyJobsBySlug(
   slug: string,
-  params?: { pageIndex?: number; perPage?: number; search?: string },
+  params?: {
+    pageIndex?: number;
+    perPage?: number;
+    search?: string;
+    sortBy?: "title" | "created_at";
+  },
 ): Promise<PublicJobsBySlugData> {
   const query = new URLSearchParams();
   if (params?.pageIndex) query.set("pageIndex", String(params.pageIndex));
   if (params?.perPage) query.set("perPage", String(params.perPage));
   if (params?.search?.trim()) query.set("search", params.search.trim());
+  if (params?.sortBy) query.set("sortBy", params.sortBy);
   const qs = query.toString();
   const url = qs
     ? `${endpoints.company.publicJobsBySlug(slug)}?${qs}`
     : endpoints.company.publicJobsBySlug(slug);
-  const res = await apiClient.get(url, PublicJobsBySlugResponseSchema);
+  const res = await publicApiClient.get(url, PublicJobsBySlugResponseSchema);
   return res.response;
 }
 
@@ -200,10 +226,10 @@ export async function fetchPublicJobs(
 
   const queryString = query.toString();
   const url = queryString
-    ? `${endpoints.company.publicJobs}?${queryString}`
-    : endpoints.company.publicJobs;
+    ? `${endpoints.company.jobsAll}?${queryString}`
+    : endpoints.company.jobsAll;
 
-  const res = await publicApiClient.get(url, PublicJobsResponseSchema);
+  const res = await apiClient.get(url, PublicJobsResponseSchema);
   return res.response;
 }
 
@@ -222,8 +248,8 @@ export async function fetchLearnerApplications(params?: {
 
   const queryString = query.toString();
   const url = queryString
-    ? `${endpoints.company.learnerApplications}?${queryString}`
-    : endpoints.company.learnerApplications;
+    ? `${endpoints.company.myApplications}?${queryString}`
+    : endpoints.company.myApplications;
 
   const res = await apiClient.get(url, LearnerApplicationsResponseSchema);
   return res.response;
@@ -231,14 +257,31 @@ export async function fetchLearnerApplications(params?: {
 
 export async function applyToJob(
   jobId: string,
-  coverNote?: string,
-): Promise<ApplyJobResponse> {
-  const res = await apiClient.post(
+  payload: { resume_link: string; cover_letter?: string },
+): Promise<void> {
+  await apiClient.post(
     endpoints.company.applyJob(jobId),
-    coverNote ? { cover_note: coverNote } : {},
+    payload,
     ApplyJobResponseSchema,
   );
-  return res.response;
+}
+
+export async function withdrawApplication(appId: string): Promise<void> {
+  await apiClient.delete(
+    endpoints.company.applicationWithdraw(appId),
+    GenericResponseSchema,
+  );
+}
+
+export async function resubmitApplication(
+  appId: string,
+  payload: { resume_link?: string; cover_letter?: string },
+): Promise<void> {
+  await apiClient.patch(
+    endpoints.company.applicationResubmit(appId),
+    payload,
+    GenericResponseSchema,
+  );
 }
 
 // ─── Company Applicant Management & Talent Pool ──────────────
@@ -263,8 +306,8 @@ export async function fetchJobApplicants(
 
   const queryString = query.toString();
   const url = queryString
-    ? `${endpoints.company.jobApplicants(jobId)}?${queryString}`
-    : endpoints.company.jobApplicants(jobId);
+    ? `${endpoints.company.jobApplications(jobId)}?${queryString}`
+    : endpoints.company.jobApplications(jobId);
 
   const res = await apiClient.get(url, JobApplicantsResponseSchema);
   return res.response;
@@ -272,13 +315,15 @@ export async function fetchJobApplicants(
 
 export async function updateApplicantStatus(
   appId: string,
-  status: string,
-  rejection_reason?: string | null,
+  payload: { status: string; rejection_reason?: string },
 ): Promise<UpdateApplicantStatusResponse> {
+  const { status, rejection_reason } = payload;
+
   const body: Record<string, unknown> = { status };
   if (rejection_reason !== undefined) body.rejection_reason = rejection_reason;
+
   const res = await apiClient.patch(
-    endpoints.company.updateApplicantStatus(appId),
+    endpoints.company.applicationStatus(appId),
     body,
     UpdateApplicantStatusResponseSchema,
   );
@@ -288,57 +333,6 @@ export async function updateApplicantStatus(
 export async function fetchLearnerDiscovery(
   params?: LearnerDiscoveryParams,
 ): Promise<LearnerDiscoveryResponse> {
-  const query = new URLSearchParams();
-
-  if (params?.karma_min !== undefined)
-    query.set("karma_min", String(params.karma_min));
-  if (params?.karma_max !== undefined)
-    query.set("karma_max", String(params.karma_max));
-  if (params?.ig_ids) query.set("ig_ids", params.ig_ids);
-  if (params?.achievement_ids)
-    query.set("achievement_ids", params.achievement_ids);
-  if (params?.level_order_min !== undefined)
-    query.set("level_order_min", String(params.level_order_min));
-  if (params?.interested_in_work !== undefined)
-    query.set("interested_in_work", String(params.interested_in_work));
-  if (params?.interested_in_gig_work !== undefined)
-    query.set("interested_in_gig_work", String(params.interested_in_gig_work));
-  if (params?.pageIndex) query.set("pageIndex", String(params.pageIndex));
-  if (params?.perPage) query.set("perPage", String(params.perPage));
-  if (params?.search?.trim()) query.set("search", params.search.trim());
-  if (params?.sortBy) query.set("sortBy", params.sortBy);
-
-  const queryString = query.toString();
-  const url = queryString
-    ? `${endpoints.company.learners}?${queryString}`
-    : endpoints.company.learners;
-
-  const res = await apiClient.get(url, LearnerDiscoveryResponseSchema);
-  return res.response;
-}
-
-// ─── MuLearner Directory ────────────────────────────────────────────────────────
-
-export interface MuLearnerParams {
-  min_karma?: number;
-  max_karma?: number;
-  level?: number;
-  college?: string;
-  department?: string;
-  graduation_year?: string;
-  ig?: string;
-  skill?: string;
-  achievement?: string;
-  task?: string;
-  search?: string;
-  sortBy?: string;
-  pageIndex?: number;
-  perPage?: number;
-}
-
-export async function fetchMuLearners(
-  params?: MuLearnerParams,
-): Promise<MuLearnersResponse> {
   const query = new URLSearchParams();
 
   if (params?.min_karma !== undefined)
@@ -354,26 +348,132 @@ export async function fetchMuLearners(
   if (params?.skill) query.set("skill", params.skill);
   if (params?.achievement) query.set("achievement", params.achievement);
   if (params?.task) query.set("task", params.task);
-  if (params?.pageIndex) query.set("pageIndex", String(params.pageIndex));
-  if (params?.perPage) query.set("perPage", String(params.perPage));
   if (params?.search?.trim()) query.set("search", params.search.trim());
-  if (params?.sortBy) query.set("sortBy", params.sortBy);
+  if (params?.sort_by) query.set("sort_by", params.sort_by);
+  if (params?.sort_order) query.set("sort_order", params.sort_order);
+
+  // Support both page/per_page and pageIndex/perPage query params
+  const page = params?.page ?? (params as any)?.pageIndex;
+  const perPage = params?.per_page ?? (params as any)?.perPage;
+
+  if (page !== undefined) {
+    query.set("page", String(page));
+    query.set("pageIndex", String(page));
+  }
+  if (perPage !== undefined) {
+    query.set("per_page", String(perPage));
+    query.set("perPage", String(perPage));
+  }
 
   const queryString = query.toString();
   const url = queryString
     ? `${endpoints.company.mulearners}?${queryString}`
     : endpoints.company.mulearners;
 
-  const res = await apiClient.get(url, MuLearnersResponseSchema);
+  const res = await apiClient.get(url, LearnerDiscoveryResponseSchema);
   return res.response;
 }
 
-// ─── Gig Analytics ───────────────────────────────────────────────────────────────
+// ─── Analytics & Summaries ──────────────────────────────────
 
 export async function fetchGigAnalytics(): Promise<GigAnalytics> {
   const res = await apiClient.get(
-    endpoints.company.gigAnalytics,
+    endpoints.company.analyticsGigs,
     GigAnalyticsResponseSchema,
+  );
+  return res.response;
+}
+
+export async function fetchCompanyDashboardSummary(params?: {
+  period?: string;
+  karma_min?: number;
+  karma_max?: number;
+  level_order_min?: number;
+  interested_in_work?: boolean;
+  interested_in_gig_work?: boolean;
+  ig_ids?: string;
+}): Promise<CompanyDashboardSummary> {
+  const query = new URLSearchParams();
+
+  if (params?.period) query.set("period", params.period);
+  if (params?.karma_min !== undefined)
+    query.set("karma_min", String(params.karma_min));
+  if (params?.karma_max !== undefined)
+    query.set("karma_max", String(params.karma_max));
+  if (params?.level_order_min !== undefined)
+    query.set("level_order_min", String(params.level_order_min));
+  if (params?.interested_in_work !== undefined)
+    query.set("interested_in_work", String(params.interested_in_work));
+  if (params?.interested_in_gig_work !== undefined)
+    query.set("interested_in_gig_work", String(params.interested_in_gig_work));
+  if (params?.ig_ids) query.set("ig_ids", params.ig_ids);
+
+  const queryString = query.toString();
+  const url = queryString
+    ? `${endpoints.company.homeSummary}?${queryString}`
+    : endpoints.company.homeSummary;
+
+  const res = await apiClient.get(url, CompanyDashboardSummaryResponseSchema);
+  return res.response;
+}
+
+export async function trackJobView(jobId: string): Promise<any> {
+  try {
+    const res = await apiClient.post(
+      endpoints.company.trackJobView(jobId),
+      undefined,
+      TrackJobViewResponseSchema,
+    );
+    return res;
+  } catch (error) {
+    console.warn(
+      `[trackJobView] Failed to track job view for ID ${jobId}:`,
+      error,
+    );
+    return null;
+  }
+}
+
+export async function fetchJobEngagementAnalytics(
+  jobId: string,
+): Promise<JobEngagementAnalytics> {
+  const res = await apiClient.get(
+    endpoints.company.jobAnalytics(jobId),
+    JobEngagementAnalyticsResponseSchema,
+  );
+  return res.response;
+}
+
+export async function fetchTalentPoolAnalytics(
+  params?: TalentPoolAnalyticsParams,
+): Promise<TalentPoolAnalytics> {
+  const query = new URLSearchParams();
+
+  if (params?.karma_min !== undefined)
+    query.set("karma_min", String(params.karma_min));
+  if (params?.karma_max !== undefined)
+    query.set("karma_max", String(params.karma_max));
+  if (params?.level_order_min !== undefined)
+    query.set("level_order_min", String(params.level_order_min));
+  if (params?.interested_in_work !== undefined)
+    query.set("interested_in_work", String(params.interested_in_work));
+  if (params?.interested_in_gig_work !== undefined)
+    query.set("interested_in_gig_work", String(params.interested_in_gig_work));
+  if (params?.ig_ids) query.set("ig_ids", params.ig_ids);
+
+  const queryString = query.toString();
+  const url = queryString
+    ? `${endpoints.company.talentPoolAnalytics}?${queryString}`
+    : endpoints.company.talentPoolAnalytics;
+
+  const res = await apiClient.get(url, TalentPoolAnalyticsResponseSchema);
+  return res.response;
+}
+
+export async function fetchAdminSummary(): Promise<AdminSummary> {
+  const res = await apiClient.get(
+    endpoints.company.adminSummary,
+    AdminSummaryResponseSchema,
   );
   return res.response;
 }
