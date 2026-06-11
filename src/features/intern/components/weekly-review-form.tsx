@@ -4,7 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   CheckCircle2,
   Gem,
-  Loader2,
   ShieldAlert,
   Sparkles,
   Target,
@@ -22,7 +21,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -40,6 +38,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useUserInfo } from "@/features/auth";
 import {
@@ -158,7 +158,7 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
   if (isCurrentLoading) {
     return (
       <div className="flex justify-center p-12">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <Spinner className="w-8 h-8 text-primary" />
       </div>
     );
   }
@@ -171,7 +171,7 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
           Weekly Chronicles
         </CardHeader>
         <CardContent className="px-4 md:px-6">
-          <Alert className="bg-success/10 text-success border-success/20 py-4 md:py-6 px-4 md:px-6 rounded-2xl">
+          <Alert className="bg-success/10 text-success border-success/20 py-4 md:py-6 px-4 md:px-6 rounded-xl">
             <CheckCircle2 className="h-6 w-6" />
             <div className="ml-2">
               <AlertTitle className="text-base md:text-lg font-black uppercase">
@@ -198,7 +198,7 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <Badge className="bg-brand-purple/10 text-brand-purple border-brand-purple/20 px-2 py-0.5 rounded-md font-black text-[10px] uppercase tracking-widest">
+                <Badge className="bg-brand-purple/10 text-brand-purple border-brand-purple/20 px-2 py-0.5 font-black text-[10px] uppercase tracking-widest">
                   Weekly Boss Quest
                 </Badge>
               </div>
@@ -210,7 +210,7 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
               </CardDescription>
             </div>
             {weekInfo && (
-              <div className="bg-brand-purple/20 border border-brand-purple/30 px-4 py-2 rounded-xl text-xs font-black text-brand-purple uppercase tracking-widest tabular-nums shadow-[0_0_15px_rgba(143,68,237,0.2)]">
+              <div className="bg-brand-purple/20 border border-brand-purple/30 px-4 py-2 rounded-full text-xs font-black text-brand-purple uppercase tracking-widest tabular-nums shadow-[0_0_15px_rgba(143,68,237,0.2)]">
                 Week {weekInfo.week} &bull; {weekInfo.year}
               </div>
             )}
@@ -239,7 +239,7 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
                         <Input
                           {...field}
                           readOnly
-                          className="bg-background/40 border-none font-bold text-foreground h-10 rounded-lg cursor-not-allowed"
+                          className="bg-background/40 border-none font-bold text-foreground h-10 rounded-md cursor-not-allowed"
                         />
                       </FormControl>
                       <FormMessage />
@@ -258,7 +258,7 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
                         <Input
                           {...field}
                           readOnly
-                          className="bg-background/40 border-none font-mono font-bold text-foreground h-10 rounded-lg cursor-not-allowed"
+                          className="bg-background/40 border-none font-mono font-bold text-foreground h-10 rounded-md cursor-not-allowed"
                         />
                       </FormControl>
                       <FormMessage />
@@ -280,7 +280,7 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
                         required
                       >
                         <FormControl>
-                          <SelectTrigger className="bg-background/60 border-border/50 h-10 font-bold rounded-lg focus:ring-brand-purple/30">
+                          <SelectTrigger className="bg-background/60 border-border/50 h-10 font-bold rounded-md focus:ring-brand-purple/30">
                             <SelectValue placeholder="Select Guild..." />
                           </SelectTrigger>
                         </FormControl>
@@ -309,10 +309,9 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center space-x-4 space-y-0 rounded-2xl border border-brand-blue/30 p-4 md:p-6 bg-brand-blue/5 transition-all hover:bg-brand-blue/10">
                     <FormControl>
-                      <Checkbox
+                      <Switch
                         checked={field.value}
                         onCheckedChange={field.onChange}
-                        className="h-6 w-6 rounded-md border-brand-blue/40 bg-background text-brand-blue focus:ring-brand-blue accent-brand-blue cursor-pointer data-[state=checked]:bg-brand-blue data-[state=checked]:text-white"
                       />
                     </FormControl>
                     <div className="space-y-1">
@@ -343,7 +342,7 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
                             <Textarea
                               {...field}
                               placeholder="What deeds were required of you?"
-                              className="min-h-[120px] bg-background/50 border-border/50 font-bold focus:ring-brand-purple/30 rounded-2xl p-4 resize-none"
+                              className="min-h-[120px] bg-background/50 border-border/50 font-bold focus:ring-brand-purple/30 rounded-md p-4 resize-none"
                             />
                           </FormControl>
                           <FormMessage />
@@ -362,7 +361,7 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
                             <Textarea
                               {...field}
                               placeholder="Which battles did you win?"
-                              className="min-h-[120px] bg-background/50 border-border/50 font-bold focus:ring-success/30 rounded-2xl p-4 resize-none"
+                              className="min-h-[120px] bg-background/50 border-border/50 font-bold focus:ring-success/30 rounded-md p-4 resize-none"
                             />
                           </FormControl>
                           <FormMessage />
@@ -383,7 +382,7 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
                           <Textarea
                             {...field}
                             placeholder="Detailed account of your legendary contributions..."
-                            className="min-h-[120px] bg-background/50 border-border/50 font-bold focus:ring-brand-purple/30 rounded-2xl p-4 resize-none"
+                            className="min-h-[120px] bg-background/50 border-border/50 font-bold focus:ring-brand-purple/30 rounded-md p-4 resize-none"
                           />
                         </FormControl>
                         <FormMessage />
@@ -407,7 +406,7 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
                                 {...field}
                                 type="text"
                                 placeholder="Total hours dedicated..."
-                                className="bg-background/50 border-border/50 h-12 font-bold px-4 rounded-xl focus:ring-brand-purple/30"
+                                className="bg-background/50 border-border/50 h-12 font-bold px-4 rounded-md focus:ring-brand-purple/30"
                               />
                               <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-muted-foreground/40 tracking-widest">
                                 XP
@@ -430,7 +429,7 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
                             <Textarea
                               {...field}
                               placeholder="Any monsters blocking your path?"
-                              className="min-h-[80px] bg-background/50 border-border/50 font-bold focus:ring-destructive/30 rounded-2xl p-4 resize-none"
+                              className="min-h-[80px] bg-background/50 border-border/50 font-bold focus:ring-destructive/30 rounded-md p-4 resize-none"
                             />
                           </FormControl>
                           <FormMessage />
@@ -453,7 +452,7 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
                             value={field.value}
                           >
                             <FormControl>
-                              <SelectTrigger className="bg-background/50 border-border/50 h-12 font-bold rounded-xl focus:ring-brand-purple/30">
+                              <SelectTrigger className="bg-background/50 border-border/50 h-12 font-bold rounded-md focus:ring-brand-purple/30">
                                 <SelectValue placeholder="How was your week?" />
                               </SelectTrigger>
                             </FormControl>
@@ -491,7 +490,7 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
                             <Textarea
                               {...field}
                               placeholder="What new wisdom or skills did you acquire?"
-                              className="min-h-[80px] bg-background/50 border-border/50 font-bold focus:ring-brand-purple/30 rounded-2xl p-4 resize-none"
+                              className="min-h-[80px] bg-background/50 border-border/50 font-bold focus:ring-brand-purple/30 rounded-md p-4 resize-none"
                             />
                           </FormControl>
                           <FormMessage />
@@ -513,7 +512,7 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
                             <Textarea
                               {...field}
                               placeholder="What obstacles did you face?"
-                              className="min-h-[80px] bg-background/50 border-border/50 font-bold focus:ring-destructive/30 rounded-2xl p-4 resize-none"
+                              className="min-h-[80px] bg-background/50 border-border/50 font-bold focus:ring-destructive/30 rounded-md p-4 resize-none"
                             />
                           </FormControl>
                           <FormMessage />
@@ -533,7 +532,7 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
                             <Textarea
                               {...field}
                               placeholder="What is your plan for the upcoming week?"
-                              className="min-h-[80px] bg-background/50 border-border/50 font-bold focus:ring-brand-blue/30 rounded-2xl p-4 resize-none"
+                              className="min-h-[80px] bg-background/50 border-border/50 font-bold focus:ring-brand-blue/30 rounded-md p-4 resize-none"
                             />
                           </FormControl>
                           <FormMessage />
@@ -554,7 +553,7 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
                           <Textarea
                             {...field}
                             placeholder="Any suggestions for improvement or things you want the council to know?"
-                            className="min-h-[80px] bg-background/50 border-border/50 font-bold focus:ring-brand-purple/30 rounded-2xl p-4 resize-none"
+                            className="min-h-[80px] bg-background/50 border-border/50 font-bold focus:ring-brand-purple/30 rounded-md p-4 resize-none"
                           />
                         </FormControl>
                         <FormMessage />
@@ -579,7 +578,7 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
                             {...field}
                             type="text"
                             placeholder="Number of leave days taken this week (e.g., 2). Enter 0 if none."
-                            className="bg-background/50 border-border/50 h-12 font-bold px-4 rounded-xl focus:ring-brand-blue/30"
+                            className="bg-background/50 border-border/50 h-12 font-bold px-4 rounded-md focus:ring-brand-blue/30"
                           />
                         </FormControl>
                         <FormMessage />
@@ -616,12 +615,13 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
 
                 <Button
                   type="submit"
-                  className="w-full h-14 md:h-16 bg-gradient-to-r from-brand-purple to-brand-blue hover:scale-[1.01] transition-all font-black uppercase tracking-[0.3em] text-xs md:text-sm shadow-[0_15px_30px_rgba(143,68,237,0.3)] rounded-2xl border-none"
+                  variant="trusty"
+                  className="w-full h-14 md:h-16 text-xs md:text-sm shadow-[0_15px_30px_rgba(143,68,237,0.3)]"
                   disabled={form.formState.isSubmitting}
                 >
                   {form.formState.isSubmitting ? (
                     <>
-                      <Loader2 className="mr-3 h-5 w-5 animate-spin" />
+                      <Spinner className="mr-3 h-5 w-5" />
                       Publishing Legend...
                     </>
                   ) : (

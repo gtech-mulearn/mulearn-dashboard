@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Loader2, Sparkles, Users } from "lucide-react";
+import { ArrowLeft, Sparkles, Users } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import Table, { type Data } from "@/components/dashboard/table/Table";
@@ -8,6 +8,7 @@ import THead from "@/components/dashboard/table/Thead";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 import { useManageWeeklyReviews } from "@/features/intern";
 
 export default function TeamReportPage() {
@@ -124,12 +125,15 @@ export default function TeamReportPage() {
     <div className="flex-1 space-y-8 p-8 pt-6 max-w-5xl mx-auto w-full bg-background/50">
       <div className="flex items-center gap-4">
         <Link href="/dashboard/management/manage-interns/intern-report">
-          <Button variant="ghost" size="icon" className="rounded-full">
+          <Button variant="ghost" size="icon">
             <ArrowLeft className="w-5 h-5" />
           </Button>
         </Link>
         <div>
-          <Badge className="bg-brand-purple/10 text-brand-purple border-brand-purple/20 px-3 py-1 rounded-full font-black text-[10px] uppercase tracking-widest">
+          <Badge
+            variant="outline"
+            className="font-black text-[10px] uppercase tracking-widest"
+          >
             Team Scroll
           </Badge>
           <h2 className="text-3xl font-black tracking-tighter text-foreground uppercase mt-1">
@@ -140,7 +144,7 @@ export default function TeamReportPage() {
 
       {isLoading ? (
         <div className="flex h-[40vh] items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <Spinner className="w-8 h-8 text-primary" />
         </div>
       ) : (
         <>

@@ -5,7 +5,6 @@ import {
   Clock,
   FileText,
   Flame,
-  Loader2,
   Sparkles,
   Zap,
 } from "lucide-react";
@@ -30,7 +29,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   useInternOverview,
   useInternTasks,
@@ -132,7 +138,7 @@ export default function TimesheetPage() {
   if (isTodayLoading || isHistoryLoading) {
     return (
       <div className="flex h-[80vh] items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <Spinner className="w-8 h-8 text-primary" />
       </div>
     );
   }
@@ -197,36 +203,45 @@ export default function TimesheetPage() {
                 <div>Fr</div>
                 <div>Sa</div>
               </div>
-              <div className="grid grid-cols-7 gap-2.5">
-                {Array.from({ length: days[0].date.getDay() }).map((_, i) => (
-                  <div key={String(i)} className="aspect-square opacity-0" />
-                ))}
-                {days.map((day, i) => {
-                  let styles =
-                    "bg-muted/30 text-muted-foreground/50 border-transparent";
-                  if (day.status === "submitted")
-                    styles =
-                      "bg-success/20 text-success border-success/30 shadow-[0_0_10px_rgba(76,175,80,0.1)]";
-                  if (day.status === "missing")
-                    styles =
-                      "bg-destructive/10 text-destructive border-destructive/20";
-                  if (day.status === "pending" || day.isToday)
-                    styles =
-                      "bg-warning/20 text-warning border-warning/50 ring-2 ring-warning/20 animate-pulse";
-                  if (day.status === "exempt")
-                    styles = "bg-muted/10 text-muted-foreground/30";
+              <TooltipProvider>
+                <div className="grid grid-cols-7 gap-2.5">
+                  {Array.from({ length: days[0].date.getDay() }).map((_, i) => (
+                    <div key={String(i)} className="aspect-square opacity-0" />
+                  ))}
+                  {days.map((day, i) => {
+                    let styles =
+                      "bg-muted/30 text-muted-foreground/50 border-transparent";
+                    if (day.status === "submitted")
+                      styles =
+                        "bg-success/20 text-success border-success/30 shadow-[0_0_10px_rgba(76,175,80,0.1)]";
+                    if (day.status === "missing")
+                      styles =
+                        "bg-destructive/10 text-destructive border-destructive/20";
+                    if (day.status === "pending" || day.isToday)
+                      styles =
+                        "bg-warning/20 text-warning border-warning/50 ring-2 ring-warning/20 animate-pulse";
+                    if (day.status === "exempt")
+                      styles = "bg-muted/10 text-muted-foreground/30";
 
-                  return (
-                    <div
-                      key={String(i)}
-                      className={`aspect-square flex items-center justify-center rounded-lg text-xs font-black border transition-all hover:scale-110 cursor-help ${styles}`}
-                      title={`${day.date.toLocaleDateString()} - ${day.status}`}
-                    >
-                      {day.date.getDate()}
-                    </div>
-                  );
-                })}
-              </div>
+                    return (
+                      <Tooltip key={String(i)}>
+                        <TooltipTrigger asChild>
+                          <div
+                            className={`aspect-square flex items-center justify-center rounded-lg text-xs font-black border transition-all hover:scale-110 cursor-help ${styles}`}
+                          >
+                            {day.date.getDate()}
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="font-bold text-xs uppercase tracking-wider">
+                            {day.date.toLocaleDateString()} &bull; {day.status}
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    );
+                  })}
+                </div>
+              </TooltipProvider>
 
               <div className="mt-8 grid grid-cols-2 gap-4">
                 <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
@@ -272,20 +287,22 @@ export default function TimesheetPage() {
         {/* Today's Form */}
         <div className="md:col-span-2">
           {hasSubmittedToday ? (
-            <Card className="border-border/40 bg-card/40 backdrop-blur-md shadow-2xl relative overflow-hidden p-8">
-              <Alert className="bg-success/10 text-success border-success/20 py-8 rounded-2xl flex items-start gap-4">
-                <CheckCircle2 className="h-8 w-8 text-success mt-1" />
-                <div className="space-y-2">
-                  <AlertTitle className="text-2xl font-black uppercase tracking-tight">
-                    Chronicle Sealed
-                  </AlertTitle>
-                  <AlertDescription className="font-bold opacity-80 text-sm">
-                    Awesome job! You have already submitted your daily quest
-                    timesheet for today. Keep up the consistency and maintain
-                    your streak tomorrow!
-                  </AlertDescription>
-                </div>
-              </Alert>
+            <Card className="border-border/40 bg-card/40 backdrop-blur-md shadow-2xl relative overflow-hidden">
+              <CardContent className="p-6">
+                <Alert className="bg-success/10 text-success border-success/20 py-6 px-6 rounded-xl flex items-start gap-4">
+                  <CheckCircle2 className="h-8 w-8 text-success mt-1" />
+                  <div className="space-y-2">
+                    <AlertTitle className="text-2xl font-black uppercase tracking-tight">
+                      Chronicle Sealed
+                    </AlertTitle>
+                    <AlertDescription className="font-bold opacity-80 text-sm">
+                      Awesome job! You have already submitted your daily quest
+                      timesheet for today. Keep up the consistency and maintain
+                      your streak tomorrow!
+                    </AlertDescription>
+                  </div>
+                </Alert>
+              </CardContent>
             </Card>
           ) : (
             <form onSubmit={handleSubmit}>
@@ -303,7 +320,7 @@ export default function TimesheetPage() {
                         Detail your heroic deeds for today
                       </CardDescription>
                     </div>
-                    <Badge className="bg-brand-blue/10 text-brand-blue border-brand-blue/30 px-4 py-1.5 rounded-xl font-black text-xs">
+                    <Badge className="bg-brand-blue/10 text-brand-blue border-brand-blue/30 px-4 py-1.5 font-black text-xs">
                       {new Date().toLocaleDateString(undefined, {
                         weekday: "long",
                         month: "short",
@@ -477,12 +494,13 @@ export default function TimesheetPage() {
                   <div className="pt-6">
                     <Button
                       type="submit"
+                      variant="trusty"
                       disabled={isSubmitting}
-                      className="w-full h-14 bg-gradient-to-r from-brand-blue to-brand-purple hover:scale-[1.02] transition-transform font-black uppercase tracking-[0.25em] text-sm shadow-[0_10px_20px_rgba(46,133,254,0.3)] rounded-2xl"
+                      className="w-full h-14 text-sm shadow-[0_10px_20px_rgba(46,133,254,0.3)]"
                     >
                       {isSubmitting ? (
                         <>
-                          <Loader2 className="mr-3 h-5 w-5 animate-spin" />
+                          <Spinner className="mr-3 h-5 w-5" />
                           Channeling Progress...
                         </>
                       ) : (

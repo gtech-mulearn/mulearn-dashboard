@@ -4,9 +4,6 @@ import {
   AlertTriangle,
   Calendar,
   CheckCircle2,
-  Flame,
-  Gem,
-  MoreHorizontal,
   PauseCircle,
   Pencil,
   Plus,
@@ -16,6 +13,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table, { type Data } from "@/components/dashboard/table/Table";
 import TableTop from "@/components/dashboard/table/TableTop";
@@ -24,12 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { SectionErrorFallback } from "@/components/ui/errors/SectionErrorFallback";
 import {
   Select,
   SelectContent,
@@ -53,37 +46,25 @@ const getStatusBadge = (status: string) => {
   switch (status) {
     case "ACTIVE":
       return (
-        <Badge
-          variant="outline"
-          className="border-success/30 text-success bg-success/10 gap-1.5"
-        >
+        <Badge variant="outline" className="intern-status-active gap-1.5">
           <CheckCircle2 className="w-3 h-3" /> Active
         </Badge>
       );
     case "AT_RISK":
       return (
-        <Badge
-          variant="outline"
-          className="border-warning/30 text-warning bg-warning/10 gap-1.5"
-        >
+        <Badge variant="outline" className="intern-status-at-risk gap-1.5">
           <AlertTriangle className="w-3 h-3" /> At Risk
         </Badge>
       );
     case "ON_LEAVE":
       return (
-        <Badge
-          variant="outline"
-          className="border-brand-blue/30 text-brand-blue bg-brand-blue/10 gap-1.5"
-        >
+        <Badge variant="outline" className="intern-status-on-leave gap-1.5">
           <PauseCircle className="w-3 h-3" /> On Leave
         </Badge>
       );
     case "INACTIVE":
       return (
-        <Badge
-          variant="outline"
-          className="border-muted-foreground/30 text-muted-foreground bg-muted/50 gap-1.5"
-        >
+        <Badge variant="outline" className="intern-status-inactive gap-1.5">
           <Shield className="w-3 h-3" /> Inactive
         </Badge>
       );
@@ -205,9 +186,12 @@ export default function ManageInternsPage() {
         Label: "Team",
         isSortable: true,
         wrap: (data: string) => (
-          <span className="text-xs font-bold uppercase text-muted-foreground tracking-wider">
+          <Badge
+            variant="outline"
+            className="font-bold uppercase text-muted-foreground/80 tracking-wider"
+          >
             {data}
-          </span>
+          </Badge>
         ),
       },
       {
@@ -249,25 +233,35 @@ export default function ManageInternsPage() {
         <div className="flex flex-wrap items-center gap-3">
           <Button
             onClick={() => setIsOnboardOpen(true)}
-            className="gap-2 bg-gradient-to-r from-brand-blue to-brand-purple hover:scale-[1.02] transition-transform text-white font-black uppercase text-[10px] tracking-widest h-10 shadow-lg rounded-xl"
+            variant="trusty"
+            className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
           >
             <Plus className="w-4 h-4" />
             Onboard Intern
           </Button>
           <Link href="/dashboard/management/manage-interns/timesheet-reviews">
-            <Button className="gap-2 bg-brand-blue hover:bg-brand-blue/90 text-white font-black uppercase text-[10px] tracking-widest h-10 shadow-lg rounded-xl">
+            <Button
+              variant="default"
+              className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
+            >
               <CheckCircle2 className="w-4 h-4" />
               Timesheets
             </Button>
           </Link>
           <Link href="/dashboard/management/manage-interns/leave-reviews">
-            <Button className="gap-2 bg-warning hover:bg-warning/90 text-warning-foreground font-black uppercase text-[10px] tracking-widest h-10 shadow-lg rounded-xl">
+            <Button
+              variant="default"
+              className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
+            >
               <Calendar className="w-4 h-4" />
               Leaves
             </Button>
           </Link>
           <Link href="/dashboard/management/manage-interns/intern-report">
-            <Button className="gap-2 bg-primary text-primary-foreground font-black uppercase text-[10px] tracking-widest h-10 shadow-lg rounded-xl">
+            <Button
+              variant="default"
+              className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
+            >
               <Sparkles className="w-4 h-4" />
               Reports
             </Button>
@@ -276,155 +270,161 @@ export default function ManageInternsPage() {
       </div>
 
       {/* Overview Stats */}
-      <InternsStats />
+      <ErrorBoundary FallbackComponent={SectionErrorFallback}>
+        <InternsStats />
+      </ErrorBoundary>
 
       {/* Interns Data Table Section */}
-      <div className="space-y-4">
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-          <div>
-            <h3 className="text-xl font-black uppercase tracking-widest">
-              Intern Directory
-            </h3>
-            <p className="text-[10px] font-bold uppercase text-muted-foreground/60 tracking-wider">
-              Manage profiles and track progress
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Select
-              value={statusFilter}
-              onValueChange={(val) => {
-                setStatusFilter(val);
-                setPage(1);
-              }}
-            >
-              <SelectTrigger className="w-[180px] h-10 font-black uppercase text-[10px] tracking-widest border-border/40 bg-card/40">
-                <SelectValue placeholder="Filter by Status" />
-              </SelectTrigger>
-              <SelectContent className="bg-card/95 backdrop-blur-xl border-border/60">
-                <SelectItem
-                  value="all"
-                  className="font-bold uppercase text-[10px]"
-                >
-                  All Statuses
-                </SelectItem>
-                <SelectItem
-                  value="ACTIVE"
-                  className="font-bold uppercase text-[10px]"
-                >
-                  Active
-                </SelectItem>
-                <SelectItem
-                  value="AT_RISK"
-                  className="font-bold uppercase text-[10px]"
-                >
-                  At Risk
-                </SelectItem>
-                <SelectItem
-                  value="ON_LEAVE"
-                  className="font-bold uppercase text-[10px]"
-                >
-                  On Leave
-                </SelectItem>
-                <SelectItem
-                  value="INACTIVE"
-                  className="font-bold uppercase text-[10px]"
-                >
-                  Inactive
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        <TableTop
-          onSearchText={(val) => {
-            setSearchText(val);
-            setPage(1);
-          }}
-          onPerPageNumber={(val) => {
-            setPerPage(val);
-            setPage(1);
-          }}
-          CSV="interns.csv"
-          perPage={perPage}
-          perPageOptions={[10, 20, 50]}
-          searchPlaceholder="Search heroes..."
-          searchSize="md"
-          searchPosition="left"
-          searchWrapperClassName="bg-card/40 border-border/40"
-          onCsvDownload={async () => {
-            await exportCsv();
-          }}
-          isCsvDownloading={isExporting}
-        />
-
-        <Card className="border-border/40 bg-card/40 backdrop-blur-xl shadow-2xl overflow-hidden py-0">
-          <CardContent className="p-0">
-            <Table
-              rows={rows}
-              isloading={isListLoading}
-              page={page}
-              perPage={perPage}
-              columnOrder={tableColumns}
-              id={["id"]}
-              slNoCellClassName="font-black text-muted-foreground/40 w-16"
-              customActionRender={(row) => (
-                <div className="flex items-center gap-1.5 justify-center">
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => {
-                      setUpdateIntern({
-                        id: String(row.id),
-                        name: String(row.full_name),
-                        guild: String(row.guild ?? ""),
-                        status: String(row.status ?? "ACTIVE"),
-                      });
-                    }}
-                    className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg"
-                    title="Edit Intern"
+      <ErrorBoundary FallbackComponent={SectionErrorFallback}>
+        <div className="space-y-4">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+            <div>
+              <h3 className="text-xl font-black uppercase tracking-widest">
+                Intern Directory
+              </h3>
+              <p className="text-[10px] font-bold uppercase text-muted-foreground/60 tracking-wider">
+                Manage profiles and track progress
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Select
+                value={statusFilter}
+                onValueChange={(val) => {
+                  setStatusFilter(val);
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger className="w-[180px] h-10 font-black uppercase text-[10px] tracking-widest border-border/40 bg-card/40">
+                  <SelectValue placeholder="Filter by Status" />
+                </SelectTrigger>
+                <SelectContent className="bg-card/95 backdrop-blur-xl border-border/60">
+                  <SelectItem
+                    value="all"
+                    className="font-bold uppercase text-[10px]"
                   >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => {
-                      setDeactivateIntern({
-                        id: String(row.id),
-                        name: String(row.full_name),
-                      });
-                    }}
-                    className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg"
-                    title="Deactivate Intern"
+                    All Statuses
+                  </SelectItem>
+                  <SelectItem
+                    value="ACTIVE"
+                    className="font-bold uppercase text-[10px]"
                   >
-                    <Shield className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-            >
-              <THead
+                    Active
+                  </SelectItem>
+                  <SelectItem
+                    value="AT_RISK"
+                    className="font-bold uppercase text-[10px]"
+                  >
+                    At Risk
+                  </SelectItem>
+                  <SelectItem
+                    value="ON_LEAVE"
+                    className="font-bold uppercase text-[10px]"
+                  >
+                    On Leave
+                  </SelectItem>
+                  <SelectItem
+                    value="INACTIVE"
+                    className="font-bold uppercase text-[10px]"
+                  >
+                    Inactive
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <TableTop
+            onSearchText={(val) => {
+              setSearchText(val);
+              setPage(1);
+            }}
+            onPerPageNumber={(val) => {
+              setPerPage(val);
+              setPage(1);
+            }}
+            CSV="interns.csv"
+            perPage={perPage}
+            perPageOptions={[10, 20, 50]}
+            searchPlaceholder="Search heroes..."
+            searchSize="md"
+            searchPosition="left"
+            searchWrapperClassName="bg-card/40 border-border/40"
+            onCsvDownload={async () => {
+              await exportCsv();
+            }}
+            isCsvDownloading={isExporting}
+          />
+
+          <Card className="border-border/40 bg-card/40 backdrop-blur-xl shadow-2xl overflow-hidden">
+            <CardContent className="p-0">
+              <Table
+                rows={rows}
+                isloading={isListLoading}
+                page={page}
+                perPage={perPage}
                 columnOrder={tableColumns}
-                onIconClick={handleSort}
-                action={true}
-                thClassName="bg-muted/20 border-b border-border/20 h-12 font-black uppercase text-[9px] tracking-[0.3em]"
-              />
-              <div className="p-4 border-t border-border/20">
-                <Pagination
-                  currentPage={page}
-                  totalPages={displayedTotalPages}
-                  perPage={perPage}
-                  totalCount={displayedTotalCount}
-                  handlePreviousClick={() => setPage((p) => Math.max(1, p - 1))}
-                  handleNextClick={() =>
-                    setPage((p) => Math.min(displayedTotalPages, p + 1))
-                  }
+                id={["id"]}
+                slNoCellClassName="font-black text-muted-foreground/40 w-16"
+                customActionRender={(row) => (
+                  <div className="flex items-center gap-1.5 justify-center">
+                    <Button
+                      size="icon-sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setUpdateIntern({
+                          id: String(row.id),
+                          name: String(row.full_name),
+                          guild: String(row.guild ?? ""),
+                          status: String(row.status ?? "ACTIVE"),
+                        });
+                      }}
+                      className="text-muted-foreground hover:text-primary hover:bg-primary/10"
+                      title="Edit Intern"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="icon-sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setDeactivateIntern({
+                          id: String(row.id),
+                          name: String(row.full_name),
+                        });
+                      }}
+                      className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                      title="Deactivate Intern"
+                    >
+                      <Shield className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              >
+                <THead
+                  columnOrder={tableColumns}
+                  onIconClick={handleSort}
+                  action={true}
+                  thClassName="bg-muted/20 border-b border-border/20 h-12 font-black uppercase text-[9px] tracking-[0.3em]"
                 />
-              </div>
-            </Table>
-          </CardContent>
-        </Card>
-      </div>
+                <div className="p-4 border-t border-border/20">
+                  <Pagination
+                    currentPage={page}
+                    totalPages={displayedTotalPages}
+                    perPage={perPage}
+                    totalCount={displayedTotalCount}
+                    handlePreviousClick={() =>
+                      setPage((p) => Math.max(1, p - 1))
+                    }
+                    handleNextClick={() =>
+                      setPage((p) => Math.min(displayedTotalPages, p + 1))
+                    }
+                  />
+                </div>
+              </Table>
+            </CardContent>
+          </Card>
+        </div>
+      </ErrorBoundary>
 
       {/* Onboard Intern Dialog */}
       <OnboardDialog

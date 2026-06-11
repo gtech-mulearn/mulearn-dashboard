@@ -3,7 +3,6 @@
 import { ChevronRight, Gem, Trophy } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
-import Table, { type Data } from "@/components/dashboard/table/Table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,6 +13,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useUserInfo, useUserProfile } from "@/features/auth";
 import { useTopLeaderboard } from "@/features/intern";
 
@@ -37,47 +44,9 @@ export function EliteLeaders() {
     }));
   }, [topLeaderboard]);
 
-  const performerColumns = useMemo(() => {
-    return [
-      {
-        column: "name",
-        Label: "Intern",
-        isSortable: false,
-        wrap: (
-          data: string | import("react").ReactElement,
-          _id: string,
-          row: Data,
-        ) => (
-          <div className="flex items-center gap-2">
-            <span className="font-medium">{data}</span>
-            {(row.name as string) === userDisplayName && (
-              <Badge
-                variant="outline"
-                className="text-[10px] bg-primary/10 text-primary border-primary/30 h-4"
-              >
-                YOU
-              </Badge>
-            )}
-          </div>
-        ),
-      },
-      {
-        column: "points",
-        Label: "Points",
-        isSortable: false,
-        wrap: (data: string | import("react").ReactElement) => (
-          <div className="flex items-center gap-1 font-mono font-bold">
-            <Gem className="w-3.5 h-3.5 text-brand-blue" />
-            {data}
-          </div>
-        ),
-      },
-    ];
-  }, [userDisplayName]);
-
   if (isLoading) {
     return (
-      <Card className="border-border/40 bg-card/40 backdrop-blur-md overflow-hidden py-0 gap-0 pt-6">
+      <Card className="border-border/40 bg-card/40 backdrop-blur-md overflow-hidden pt-6">
         <CardHeader className="flex flex-row items-center justify-between pb-4">
           <div>
             <CardTitle className="text-lg font-black uppercase tracking-widest flex items-center gap-2">
@@ -102,7 +71,7 @@ export function EliteLeaders() {
   }
 
   return (
-    <Card className="border-border/40 bg-card/40 backdrop-blur-md overflow-hidden py-0 gap-0 pt-6">
+    <Card className="border-border/40 bg-card/40 backdrop-blur-md overflow-hidden pt-6">
       <CardHeader className="flex flex-row items-center justify-between pb-4">
         <div>
           <CardTitle className="text-lg font-black uppercase tracking-widest flex items-center gap-2">
@@ -124,14 +93,64 @@ export function EliteLeaders() {
         </Link>
       </CardHeader>
       <CardContent className="p-0">
-        <Table
-          rows={topRows}
-          page={1}
-          perPage={5}
-          columnOrder={performerColumns}
-          id={["id"]}
-          slNoCellClassName="font-black text-muted-foreground w-12"
-        />
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/10 border-b border-border/20 hover:bg-transparent">
+              <TableHead className="font-black uppercase text-[9px] tracking-[0.3em] w-12 text-center text-muted-foreground">
+                Sl.no
+              </TableHead>
+              <TableHead className="font-black uppercase text-[9px] tracking-[0.3em] text-muted-foreground">
+                Intern
+              </TableHead>
+              <TableHead className="font-black uppercase text-[9px] tracking-[0.3em] text-right pr-6 text-muted-foreground w-24">
+                Points
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {topRows.map((row, index) => (
+              <TableRow
+                key={row.id}
+                className="odd:bg-muted/30 even:bg-transparent border-b border-border/10 hover:bg-muted/20 transition-all"
+              >
+                <TableCell className="font-black text-muted-foreground/60 text-xs text-center py-3">
+                  {index + 1}
+                </TableCell>
+                <TableCell className="py-3">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-xs text-foreground">
+                      {row.name}
+                    </span>
+                    {row.name === userDisplayName && (
+                      <Badge
+                        variant="outline"
+                        className="text-[9px] font-black tracking-wide bg-primary/10 text-primary border-primary/30 h-4 px-1"
+                      >
+                        YOU
+                      </Badge>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell className="py-3 text-right pr-6">
+                  <div className="flex items-center justify-end gap-1 font-mono font-bold text-xs text-foreground">
+                    <Gem className="w-3.5 h-3.5 text-brand-blue" />
+                    {row.points}
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+            {topRows.length === 0 && (
+              <TableRow>
+                <TableCell
+                  colSpan={3}
+                  className="text-center py-8 text-xs text-muted-foreground italic uppercase tracking-wider"
+                >
+                  No elite leaders this month
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </CardContent>
     </Card>
   );

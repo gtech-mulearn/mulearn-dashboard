@@ -4,7 +4,6 @@ import {
   AlertCircle,
   CheckCircle2,
   Clock,
-  Loader2,
   PlayCircle,
   Search,
   Sparkles,
@@ -27,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
 import { useInternTasks, useUpdateTaskStatus } from "@/features/intern";
 
 const getStatusIcon = (status: string) => {
@@ -140,7 +140,7 @@ export default function InternTasksPage() {
 
       {isLoading ? (
         <div className="flex h-[40vh] items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <Spinner className="w-8 h-8 text-primary" />
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

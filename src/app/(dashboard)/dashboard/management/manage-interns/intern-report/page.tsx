@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import {
   Select,
   SelectContent,
@@ -103,9 +104,9 @@ export default function WeeklyReportGeneratorPage() {
       Label: "MUID Token",
       isSortable: true,
       wrap: (data: string) => (
-        <span className="font-mono text-[10px] bg-muted/50 px-2 py-0.5 rounded">
+        <Badge variant="outline" className="font-mono text-[10px]">
           {String(data)}
-        </span>
+        </Badge>
       ),
     },
     {
@@ -205,11 +206,14 @@ export default function WeeklyReportGeneratorPage() {
         <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
           <Dialog>
             <DialogTrigger asChild>
-              <Button className="w-full sm:w-auto bg-brand-blue hover:bg-brand-blue/90 font-black uppercase text-[10px] tracking-widest h-12 px-6 shadow-lg shadow-brand-blue/20 rounded-xl">
+              <Button
+                variant="default"
+                className="w-full sm:w-auto font-black uppercase text-[10px] tracking-widest h-12 px-6"
+              >
                 Individual Scroll
               </Button>
             </DialogTrigger>
-            <DialogContent className="bg-card border-border/60">
+            <DialogContent className="bg-card/95 backdrop-blur-xl border-border/60">
               <DialogHeader>
                 <DialogTitle className="font-black uppercase tracking-widest">
                   Individual Report
@@ -228,7 +232,7 @@ export default function WeeklyReportGeneratorPage() {
                     placeholder="e.g. dev-1234"
                     value={individualMuid}
                     onChange={(e) => setIndividualMuid(e.target.value)}
-                    className="h-12 font-bold rounded-xl"
+                    className="h-12 font-bold rounded-md"
                   />
                 </div>
               </div>
@@ -236,7 +240,7 @@ export default function WeeklyReportGeneratorPage() {
                 <DialogClose asChild>
                   <Button
                     variant="outline"
-                    className="font-bold uppercase text-[10px] rounded-xl"
+                    className="font-bold uppercase text-[10px]"
                   >
                     Cancel
                   </Button>
@@ -244,7 +248,8 @@ export default function WeeklyReportGeneratorPage() {
                 <Button
                   onClick={handleGenerateIndividual}
                   disabled={!individualMuid}
-                  className="bg-brand-blue font-black uppercase text-[10px] tracking-widest rounded-xl"
+                  variant="default"
+                  className="font-black uppercase text-[10px] tracking-widest"
                 >
                   Summon Report
                 </Button>
@@ -254,11 +259,14 @@ export default function WeeklyReportGeneratorPage() {
 
           <Dialog>
             <DialogTrigger asChild>
-              <Button className="w-full sm:w-auto bg-brand-purple hover:bg-brand-purple/90 font-black uppercase text-[10px] tracking-widest h-12 px-6 shadow-lg shadow-brand-purple/20 rounded-xl">
+              <Button
+                variant="trusty"
+                className="w-full sm:w-auto font-black uppercase text-[10px] tracking-widest h-12 px-6"
+              >
                 Team Scroll
               </Button>
             </DialogTrigger>
-            <DialogContent className="bg-card border-border/60">
+            <DialogContent className="bg-card/95 backdrop-blur-xl border-border/60">
               <DialogHeader>
                 <DialogTitle className="font-black uppercase tracking-widest">
                   Team Report
@@ -277,7 +285,7 @@ export default function WeeklyReportGeneratorPage() {
                     placeholder="e.g. Frontend"
                     value={teamName}
                     onChange={(e) => setTeamName(e.target.value)}
-                    className="h-12 font-bold rounded-xl"
+                    className="h-12 font-bold rounded-md"
                   />
                 </div>
               </div>
@@ -285,7 +293,7 @@ export default function WeeklyReportGeneratorPage() {
                 <DialogClose asChild>
                   <Button
                     variant="outline"
-                    className="font-bold uppercase text-[10px] rounded-xl"
+                    className="font-bold uppercase text-[10px]"
                   >
                     Cancel
                   </Button>
@@ -293,7 +301,8 @@ export default function WeeklyReportGeneratorPage() {
                 <Button
                   onClick={handleGenerateTeam}
                   disabled={!teamName}
-                  className="bg-brand-purple font-black uppercase text-[10px] tracking-widest rounded-xl"
+                  variant="trusty"
+                  className="font-black uppercase text-[10px] tracking-widest"
                 >
                   Summon Report
                 </Button>
@@ -315,7 +324,7 @@ export default function WeeklyReportGeneratorPage() {
                     setSearchText(e.target.value);
                     setPage(1);
                   }}
-                  className="pl-12 h-14 bg-background/50 border-border/50 font-bold focus:ring-primary/20 w-full max-w-xl text-lg rounded-xl"
+                  className="pl-12 h-14 bg-background/50 border-border/50 font-bold focus:ring-primary/20 w-full max-w-xl text-lg rounded-md"
                 />
               </div>
             </div>
@@ -331,7 +340,7 @@ export default function WeeklyReportGeneratorPage() {
                   setPage(1);
                 }}
               >
-                <SelectTrigger className="h-14 bg-background/50 border-border/50 font-black uppercase text-[10px] tracking-widest rounded-xl">
+                <SelectTrigger className="h-14 bg-background/50 border-border/50 font-black uppercase text-[10px] tracking-widest rounded-md">
                   <SelectValue placeholder="All Teams" />
                 </SelectTrigger>
                 <SelectContent className="bg-card font-bold border-border/60">
@@ -370,7 +379,7 @@ export default function WeeklyReportGeneratorPage() {
                   setReviewNote((row.review_note as string) ?? "");
                   setIsReviewOpen(true);
                 }}
-                className="uppercase tracking-widest text-[9px] font-black text-primary hover:bg-muted/50 border border-border/20 rounded-lg px-2.5 h-7.5"
+                className="uppercase tracking-widest text-[9px] font-black text-primary hover:bg-muted/50 border border-border/20 px-2.5 h-7.5"
               >
                 Evaluate
               </Button>
@@ -405,7 +414,7 @@ export default function WeeklyReportGeneratorPage() {
 
       {/* Weekly Review Evaluation Dialog */}
       <Dialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
-        <DialogContent className="bg-card/95 backdrop-blur-xl border-border/60 max-w-lg">
+        <DialogContent className="bg-card/95 backdrop-blur-xl border-border/60">
           <DialogHeader>
             <DialogTitle className="text-xl font-black uppercase tracking-wider text-foreground">
               Evaluate Weekly Review
@@ -441,12 +450,21 @@ export default function WeeklyReportGeneratorPage() {
               </div>
 
               <div>
-                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
+                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block mb-1">
                   Tasks Completed (Achievements)
                 </span>
-                <p className="bg-muted/40 p-2.5 rounded-lg text-xs font-semibold italic text-foreground/80 mt-1 border border-border/20">
-                  {selectedReview.tasks_completed || "None reported."}
-                </p>
+                {selectedReview.tasks_completed ? (
+                  <div className="bg-muted/40 p-2.5 rounded-lg border border-border/20 max-h-40 overflow-y-auto">
+                    <MarkdownRenderer
+                      content={selectedReview.tasks_completed}
+                      className="text-xs"
+                    />
+                  </div>
+                ) : (
+                  <p className="text-xs italic text-muted-foreground">
+                    None reported.
+                  </p>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -511,13 +529,14 @@ export default function WeeklyReportGeneratorPage() {
               type="button"
               variant="outline"
               onClick={() => setIsReviewOpen(false)}
-              className="uppercase tracking-widest text-[10px] font-black border-border/50 rounded-xl"
+              className="uppercase tracking-widest text-[10px] font-black border-border/50"
             >
               Cancel
             </Button>
             <div className="flex gap-2">
               <Button
                 type="button"
+                variant="destructive"
                 onClick={() => {
                   if (!selectedReview) return;
                   reviewMutation.mutate(
@@ -532,7 +551,7 @@ export default function WeeklyReportGeneratorPage() {
                   );
                 }}
                 disabled={reviewMutation.isPending}
-                className="bg-destructive hover:bg-destructive/95 text-white uppercase tracking-widest text-[10px] font-black rounded-xl"
+                className="uppercase tracking-widest text-[10px] font-black"
               >
                 Reject
               </Button>
@@ -552,7 +571,7 @@ export default function WeeklyReportGeneratorPage() {
                   );
                 }}
                 disabled={reviewMutation.isPending}
-                className="bg-success hover:bg-success/95 text-white uppercase tracking-widest text-[10px] font-black rounded-xl"
+                className="bg-success hover:bg-success/95 text-white uppercase tracking-widest text-[10px] font-black"
               >
                 Approve
               </Button>

@@ -196,7 +196,7 @@ export default function LeaveReviewsPage() {
                     setSearchText(e.target.value);
                     setPage(1);
                   }}
-                  className="pl-12 h-12 bg-background/50 border-border/50 font-bold focus:ring-primary/20 w-full max-w-xl text-sm rounded-xl"
+                  className="pl-12 h-12 bg-background/50 border-border/50 font-bold focus:ring-primary/20 w-full max-w-xl text-sm rounded-md"
                 />
               </div>
             </div>
@@ -213,7 +213,7 @@ export default function LeaveReviewsPage() {
                     setPage(1);
                   }}
                 >
-                  <SelectTrigger className="h-12 bg-background/50 border-border/50 font-black uppercase text-[10px] tracking-widest rounded-xl">
+                  <SelectTrigger className="h-12 bg-background/50 border-border/50 font-black uppercase text-[10px] tracking-widest rounded-md">
                     <SelectValue placeholder="Pending" />
                   </SelectTrigger>
                   <SelectContent className="bg-card font-bold border-border/60">
@@ -268,7 +268,7 @@ export default function LeaveReviewsPage() {
                   setReviewNote(row.review_note ? String(row.review_note) : "");
                   setIsReviewOpen(true);
                 }}
-                className="uppercase tracking-widest text-[9px] font-black text-primary hover:bg-muted/50 border border-border/20 rounded-lg px-2.5 h-7.5"
+                className="uppercase tracking-widest text-[9px] font-black text-primary hover:bg-muted/50 border border-border/20 px-2.5 h-7.5"
               >
                 {row.status === "PENDING" ? "Evaluate" : "View"}
               </Button>
@@ -296,9 +296,8 @@ export default function LeaveReviewsPage() {
         </CardContent>
       </Card>
 
-      {/* Review Dialog */}
       <Dialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
-        <DialogContent className="bg-card border-border/60 max-w-lg">
+        <DialogContent className="bg-card/95 backdrop-blur-xl border-border/60">
           <DialogHeader>
             <DialogTitle className="text-xl font-black uppercase tracking-wider text-foreground">
               Evaluate Leave Request
@@ -439,7 +438,7 @@ export default function LeaveReviewsPage() {
               type="button"
               variant="outline"
               onClick={() => setIsReviewOpen(false)}
-              className="uppercase tracking-widest text-[10px] font-black border-border/50 rounded-xl"
+              className="uppercase tracking-widest text-[10px] font-black border-border/50"
             >
               Close
             </Button>
@@ -460,7 +459,8 @@ export default function LeaveReviewsPage() {
                     );
                   }}
                   disabled={reviewMutation.isPending}
-                  className="bg-destructive hover:bg-destructive/95 text-white uppercase tracking-widest text-[10px] font-black rounded-xl"
+                  variant="destructive"
+                  className="uppercase tracking-widest text-[10px] font-black"
                 >
                   Reject
                 </Button>
@@ -479,7 +479,7 @@ export default function LeaveReviewsPage() {
                     );
                   }}
                   disabled={reviewMutation.isPending}
-                  className="bg-success hover:bg-success/95 text-white uppercase tracking-widest text-[10px] font-black rounded-xl"
+                  className="bg-success hover:bg-success/90 text-white uppercase tracking-widest text-[10px] font-black"
                 >
                   Approve
                 </Button>

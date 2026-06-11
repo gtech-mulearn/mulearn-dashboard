@@ -1,18 +1,18 @@
 "use client";
 
-import { useState } from "react";
 import { Plus } from "lucide-react";
-import { useCompanyMentorNominations } from "@/features/company-jobs/hooks/use-mentor-nominate";
+import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useCompanyMentorNominations } from "@/features/company-jobs/hooks/use-mentor-nominate";
 import { NominateMentorModal } from "./nominate-mentor-modal";
 
 export function MentorsPage() {

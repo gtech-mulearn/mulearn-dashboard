@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import {
   Select,
   SelectContent,
@@ -186,7 +187,7 @@ export default function TimesheetReviewsPage() {
                     setSearchText(e.target.value);
                     setPage(1);
                   }}
-                  className="pl-12 h-12 bg-background/50 border-border/50 font-bold focus:ring-primary/20 w-full max-w-xl text-sm rounded-xl"
+                  className="pl-12 h-12 bg-background/50 border-border/50 font-bold focus:ring-primary/20 w-full max-w-xl text-sm rounded-md"
                 />
               </div>
             </div>
@@ -203,7 +204,7 @@ export default function TimesheetReviewsPage() {
                     setPage(1);
                   }}
                 >
-                  <SelectTrigger className="h-12 bg-background/50 border-border/50 font-black uppercase text-[10px] tracking-widest rounded-xl">
+                  <SelectTrigger className="h-12 bg-background/50 border-border/50 font-black uppercase text-[10px] tracking-widest rounded-md">
                     <SelectValue placeholder="Pending" />
                   </SelectTrigger>
                   <SelectContent className="bg-card font-bold border-border/60">
@@ -252,7 +253,7 @@ export default function TimesheetReviewsPage() {
                   setReviewNote(row.review_note ? String(row.review_note) : "");
                   setIsReviewOpen(true);
                 }}
-                className="uppercase tracking-widest text-[9px] font-black text-primary hover:bg-muted/50 border border-border/20 rounded-lg px-2.5 h-7.5"
+                className="uppercase tracking-widest text-[9px] font-black text-primary hover:bg-muted/50 border border-border/20 px-2.5 h-7.5"
               >
                 {row.status === "PENDING" ? "Evaluate" : "View"}
               </Button>
@@ -280,9 +281,8 @@ export default function TimesheetReviewsPage() {
         </CardContent>
       </Card>
 
-      {/* Review Dialog */}
       <Dialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
-        <DialogContent className="bg-card border-border/60 max-w-lg">
+        <DialogContent className="bg-card/95 backdrop-blur-xl border-border/60">
           <DialogHeader>
             <DialogTitle className="text-xl font-black uppercase tracking-wider text-foreground">
               Evaluate Daily Timesheet
@@ -344,12 +344,21 @@ export default function TimesheetReviewsPage() {
               </div>
 
               <div>
-                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
+                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block mb-1">
                   Log description
                 </span>
-                <p className="bg-muted/40 p-2.5 rounded-lg text-xs font-semibold text-foreground/80 mt-1 border border-border/20 max-h-40 overflow-y-auto leading-relaxed">
-                  {selectedTimesheet.description || "No description provided."}
-                </p>
+                {selectedTimesheet.description ? (
+                  <div className="bg-muted/40 p-2.5 rounded-lg border border-border/20 max-h-40 overflow-y-auto">
+                    <MarkdownRenderer
+                      content={selectedTimesheet.description}
+                      className="text-xs"
+                    />
+                  </div>
+                ) : (
+                  <p className="text-xs italic text-muted-foreground">
+                    No description provided.
+                  </p>
+                )}
               </div>
 
               {selectedTimesheet.blockers &&
@@ -396,7 +405,7 @@ export default function TimesheetReviewsPage() {
               type="button"
               variant="outline"
               onClick={() => setIsReviewOpen(false)}
-              className="uppercase tracking-widest text-[10px] font-black border-border/50 rounded-xl"
+              className="uppercase tracking-widest text-[10px] font-black border-border/50"
             >
               Close
             </Button>
@@ -417,7 +426,8 @@ export default function TimesheetReviewsPage() {
                     );
                   }}
                   disabled={reviewMutation.isPending}
-                  className="bg-destructive hover:bg-destructive/95 text-white uppercase tracking-widest text-[10px] font-black rounded-xl"
+                  variant="destructive"
+                  className="uppercase tracking-widest text-[10px] font-black"
                 >
                   Reject
                 </Button>
@@ -436,7 +446,7 @@ export default function TimesheetReviewsPage() {
                     );
                   }}
                   disabled={reviewMutation.isPending}
-                  className="bg-success hover:bg-success/95 text-white uppercase tracking-widest text-[10px] font-black rounded-xl"
+                  className="bg-success hover:bg-success/90 text-white uppercase tracking-widest text-[10px] font-black"
                 >
                   Approve
                 </Button>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Gem, Loader2, Trophy } from "lucide-react";
+import { Gem, Trophy } from "lucide-react";
 import { useState } from "react";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table, { type Data } from "@/components/dashboard/table/Table";
@@ -8,6 +8,7 @@ import TableTop from "@/components/dashboard/table/TableTop";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 import { useUserInfo, useUserProfile } from "@/features/auth";
 import { useLeaderboard, useLeaderboardMe } from "@/features/intern";
 
@@ -36,7 +37,7 @@ export default function LeaderboardPage() {
   if (isPodiumLoading || isBoardLoading) {
     return (
       <div className="flex h-[80vh] items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <Spinner className="w-8 h-8 text-primary" />
       </div>
     );
   }
