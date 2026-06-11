@@ -5,11 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useUserInfo } from "@/features/auth";
-import {
-  DiscordConnectDialog,
-  QseverseConnectDialog,
-  useQseverseInfo,
-} from "@/features/connect";
+import { DiscordConnectDialog } from "@/features/connect";
 import { useUIStore } from "@/stores/ui-store";
 import { Spinner } from "../ui/spinner";
 
@@ -22,8 +18,6 @@ export function ConnectAccountsBanner() {
     (state) => state.dismissConnectBanner,
   );
   const user = useUserInfo();
-  const qsverse = useQseverseInfo(user.data?.muid);
-  const [isQseverseDialogOpen, setIsQseverseDialogOpen] = useState(false);
   const [isDiscordDialogOpen, setIsDiscordDialogOpen] = useState(false);
   const ALLOWED_ROUTES = [
     "/dashboard/profile",
@@ -33,12 +27,11 @@ export function ConnectAccountsBanner() {
   const isAllowedRoute = ALLOWED_ROUTES.includes(pathname);
   if (!isAllowedRoute) return null;
   if (isConnectBannerDismissed) return null;
-  if (user.isLoading || qsverse.isLoading) {
+  if (user.isLoading) {
     return <Spinner className="h-8 w-8" />;
   }
   const discordConnected = user.data?.exist_in_guild === true;
-  const qsverseConnected = (qsverse.data?.dids?.length ?? 0) > 0;
-  const shouldShow = !discordConnected || !qsverseConnected;
+  const shouldShow = !discordConnected;
   if (!shouldShow) return null;
 
   return (
@@ -61,15 +54,6 @@ export function ConnectAccountsBanner() {
                 Connect Discord
               </Button>
             )}
-            {!qsverseConnected && (
-              <Button
-                variant="default"
-                className="h-9 flex-1 text-xs md:flex-none md:text-sm"
-                onClick={() => setIsQseverseDialogOpen(true)}
-              >
-                Connect Qseverse
-              </Button>
-            )}
             <Button
               variant="link"
               size="icon"
@@ -82,10 +66,6 @@ export function ConnectAccountsBanner() {
           </div>
         </div>
       </div>
-      <QseverseConnectDialog
-        open={isQseverseDialogOpen}
-        onOpenChange={setIsQseverseDialogOpen}
-      />
       <DiscordConnectDialog
         open={isDiscordDialogOpen}
         onOpenChange={setIsDiscordDialogOpen}
