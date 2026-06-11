@@ -45,8 +45,8 @@ export function useUpdateApplicantStatus() {
     }: {
       appId: string;
       status: string;
-      rejection_reason?: string | null;
-    }) => updateApplicantStatus(appId, status, rejection_reason),
+      rejection_reason?: string;
+    }) => updateApplicantStatus(appId, { status, rejection_reason }),
     onSuccess: () => {
       // Invalidate specific job applicants query
       queryClient.invalidateQueries({ queryKey: JOB_APPLICANTS_KEYS.all });

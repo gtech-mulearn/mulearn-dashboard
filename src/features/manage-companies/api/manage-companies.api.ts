@@ -1,6 +1,8 @@
-import { apiClient } from "@/api/client";
+import { apiClient, ApiError } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
+  type CompanyDetails,
+  CompanyDetailsResponseSchema,
   type CompanyVerificationListData,
   CompanyVerificationListResponseSchema,
   type VerificationActionFormValues,
@@ -40,11 +42,11 @@ export async function fetchCompanyVerificationRequests(
   if (params.dateTo) query.set("dateTo", params.dateTo);
 
   const response = await apiClient.get(
-    `${endpoints.company.verificationRequests}?${query.toString()}`,
+    `${endpoints.company.list}?${query.toString()}`,
     CompanyVerificationListResponseSchema,
   );
 
-  return response.response;
+  return (response as any).response ?? response;
 }
 
 /**
@@ -56,8 +58,34 @@ export async function verifyCompany(
   payload: VerificationActionFormValues,
 ): Promise<void> {
   await apiClient.patch(
-    endpoints.company.verificationAction(companyId),
+    endpoints.company.verify(companyId),
     payload,
     VerificationActionResponseSchema,
   );
+}
+
+/**
+ * Admin: Get detailed information for a single company.
+ */
+export async function fetchCompanyDetails(
+  companyId: string,
+): Promise<CompanyDetails> {
+  try {
+    const response = await apiClient.get(
+      endpoints.company.detail(companyId),
+      CompanyDetailsResponseSchema,
+    );
+
+    return response.response;
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) {
+      return {
+        id: companyId,
+        name: "",
+        slug: "",
+        status: "",
+      } as CompanyDetails;
+    }
+    throw error;
+  }
 }

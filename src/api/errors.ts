@@ -50,11 +50,22 @@ export function extractDjangoMessage(data: unknown): string | null {
   const msg = d.message;
   if (msg && typeof msg === "object") {
     const msgObj = msg as Record<string, unknown>;
-
-    // { message: { general: ["..."] } } — most common MuLearn shape
-    const general = msgObj.general;
-    if (Array.isArray(general) && typeof general[0] === "string") {
-      return general[0];
+    // Check for "general" first
+    if (
+      Array.isArray(msgObj.general) &&
+      typeof msgObj.general[0] === "string"
+    ) {
+      return msgObj.general[0];
+    }
+    // Fallback: take the first value from any other key in the message object
+    for (const key of Object.keys(msgObj)) {
+      const val = msgObj[key];
+      if (Array.isArray(val) && typeof val[0] === "string") {
+        return val[0];
+      }
+      if (typeof val === "string") {
+        return val;
+      }
     }
 
     // { message: { field_name: ["..."], other_field: ["..."] } }

@@ -6,15 +6,7 @@
  * 📍 src/features/company-jobs/components/job-stepper/step-review.tsx
  */
 
-import {
-  Briefcase,
-  Edit2,
-  MapPin,
-  Sparkles,
-  Star,
-  Timer,
-  Wallet,
-} from "lucide-react";
+import { Briefcase, Edit2, MapPin, Timer, Wallet } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
@@ -102,11 +94,48 @@ export function StepReview({
             label="Location"
             value={values.location || "—"}
           />
-          <ReviewField
-            icon={Wallet}
-            label="Salary Range"
-            value={values.salary_range || "—"}
-          />
+          {values.job_type !== "Gig" ? (
+            <ReviewField
+              icon={Wallet}
+              label="Salary Range"
+              value={values.salary_range || "—"}
+            />
+          ) : (
+            <>
+              {(values.duration_value || values.duration_unit) && (
+                <ReviewField
+                  icon={Timer}
+                  label="Duration"
+                  value={
+                    values.duration_value && values.duration_unit
+                      ? `${values.duration_value} ${values.duration_unit}`
+                      : values.duration_value || values.duration_unit || "—"
+                  }
+                />
+              )}
+              {values.hourly_rate && (
+                <ReviewField
+                  icon={Wallet}
+                  label="Hourly Rate"
+                  value={values.hourly_rate}
+                />
+              )}
+              {values.stipend && (
+                <ReviewField
+                  icon={Wallet}
+                  label="Stipend"
+                  value={values.stipend}
+                />
+              )}
+              <ReviewField
+                icon={Briefcase}
+                label="Certificate"
+                value={
+                  values.certificate_provided ? "Provided" : "Not Provided"
+                }
+              />
+            </>
+          )}
         </div>
       </div>
 
@@ -132,16 +161,6 @@ export function StepReview({
             icon={Timer}
             label="Experience"
             value={values.experience || "—"}
-          />
-          <ReviewField
-            icon={Sparkles}
-            label="Min Karma"
-            value={values.min_karma}
-          />
-          <ReviewField
-            icon={Star}
-            label="Min Level"
-            value={`Level ${values.min_level}`}
           />
         </div>
         {values.job_description && (

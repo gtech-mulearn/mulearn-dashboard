@@ -13,25 +13,21 @@ export type JobType =
   | "Part-Time"
   | "Internship"
   | "Contract"
-  | "Freelance";
+  | "Freelance"
+  | "Gig";
 
 export type JobStatus = "Active" | "Inactive" | "Draft";
 
 export type RuleType = "skill" | "interest_group" | "achievement";
 
-export type CompanyStatus =
-  | "active"
-  | "pending_verification"
-  | "rejected"
-  | "inactive";
+export type CompanyStatus = "verified" | "pending" | "rejected" | "inactive";
 
 // ─── Core Entities ──────────────────────────────────────────
 
 export interface JobRule {
   id: string;
   rule_type: string;
-  rule_type_id: string;
-  rule_name: string;
+  rule_value: string;
 }
 
 export interface Job {
@@ -41,15 +37,15 @@ export interface Job {
   job_description?: string | null;
   job_type: string;
   location: string;
-  salary_range: string;
-  min_karma: number;
-  min_level: number;
+  salary_range?: string | null;
   status: string;
   created_at: string;
+  company_name?: string | null;
+  company_logo?: string | null;
   updated_at: string;
   rules: JobRule[];
   // Advanced options
-  karma_reward?: number | null;
+
   duration_value?: number | null;
   duration_unit?: string | null;
   hourly_rate?: string | null;
@@ -67,8 +63,8 @@ export interface Pagination {
 }
 
 export interface JobsListResponse {
-  company_id: string;
-  company_name: string;
+  company_id?: string;
+  company_name?: string;
   jobs: Job[];
   pagination: Pagination;
 }
@@ -79,22 +75,22 @@ export interface JobDetailResponse {
 
 export interface PublicJob {
   id: string;
+  company_name?: string | null;
+  company_logo?: string | null;
   title: string;
-  job_type: string;
-  location: string;
+  job_type?: string | null;
+  location?: string | null;
   experience?: string | null;
   job_description?: string | null;
   salary_range?: string | null;
-  min_karma: number;
-  min_level: number;
-  status: string;
-  created_at: string;
-  updated_at: string;
-  karma_reward?: number | null;
+  status?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+
   duration_value?: number | null;
   duration_unit?: string | null;
   hourly_rate?: string | null;
-  deliverables?: string[] | null;
+  deliverables?: string[] | string | null;
   stipend?: string | null;
   certificate_provided?: boolean | null;
   rules: JobRule[];
@@ -102,43 +98,36 @@ export interface PublicJob {
 
 export interface LearnerApplication {
   id: string;
-  status: "applied" | "shortlisted" | "accepted" | "rejected";
-  cover_note?: string | null;
-  job_title: string;
-  job_type: string;
-  company_name: string;
-  company_id: string;
-  created_at: string;
-  updated_at: string;
+  job: Job;
+  resume_link?: string | null;
+  cover_letter?: string | null;
+  status: string;
+  rejection_reason?: string | null;
+  applied_at: string;
 }
 
 export interface JobApplicant {
   id: string;
-  status: "applied" | "shortlisted" | "accepted" | "rejected";
-  cover_note?: string | null;
-  applicant_id: string;
-  full_name: string;
-  muid: string;
-  district?: string | null;
-  karma: number;
-  level: { id: string; name: string; level_order: number };
-  reviewed_by_id?: string | null;
-  reviewed_at?: string | null;
-  created_at: string;
-  updated_at: string;
+  job: string;
+  applicant_name: string;
+  applicant_email: string;
+  resume_link?: string | null;
+  cover_letter?: string | null;
+  status: string;
+  rejection_reason?: string | null;
+  applied_at: string;
 }
 
 export interface LearnerProfile {
   id: string;
-  muid: string;
   full_name: string;
-  gender?: string | null;
-  district?: string | null;
+  muid: string;
+  email?: string | null;
   karma: number;
-  level: { id: string; name: string; level_order: number };
-  interest_groups: { id: string; name: string }[];
-  interested_in_work: boolean;
-  interested_in_gig_work: boolean;
+  level?: number | null;
+  college?: string | null;
+  department?: string | null;
+  graduation_year?: string | null;
 }
 
 export interface PublicJobsResponse {
@@ -170,18 +159,18 @@ export interface CreateJobPayload {
   experience: string;
   job_description: string;
   location: string;
-  salary_range: string;
+  salary_range?: string;
   job_type: string;
-  min_karma: number;
-  min_level: number;
+  status?: string;
   // Advanced options
-  karma_reward?: number;
+
   duration_value?: number;
   duration_unit?: string;
-  hourly_rate?: string;
-  deliverables?: string[];
-  stipend?: string;
-  certificate_provided?: boolean;
+  hourly_rate?: string | number;
+  deliverables?: string[] | string;
+  stipend?: string | number;
+  certificate_provided?: boolean | string;
+  rules?: { rule_type: string; rule_value: string | number }[];
 }
 
 export interface UpdateJobPayload {
@@ -189,41 +178,32 @@ export interface UpdateJobPayload {
   experience?: string;
   job_description?: string;
   location?: string;
-  salary_range?: string;
+  salary_range?: string | null;
   job_type?: string;
-  min_karma?: number;
-  min_level?: number;
+  status?: string;
   // Advanced options
-  karma_reward?: number;
-  duration_value?: number;
-  duration_unit?: string;
-  hourly_rate?: string;
-  deliverables?: string[];
-  stipend?: string;
-  certificate_provided?: boolean;
+
+  duration_value?: number | null;
+  duration_unit?: string | null;
+  hourly_rate?: string | number | null;
+  deliverables?: string[] | string | null;
+  stipend?: string | number | null;
+  certificate_provided?: boolean | string | null;
 }
 
 export interface CreateRulePayload {
   rule_type: string;
-  rule_type_id: string;
+  rule_value: string;
 }
 
 export interface UpdateRulePayload {
   rule_type: string;
-  rule_type_id: string;
+  rule_value: string;
 }
 
 // ─── API Mutation Responses ─────────────────────────────────
 
-export interface CreateJobResponse {
-  job: {
-    id: string;
-    company_id: string;
-    title: string;
-    job_type: string;
-    created_at: string;
-  };
-}
+export type CreateJobResponse = Job;
 
 export interface UpdateJobResponse {
   job_id: string;
@@ -240,7 +220,7 @@ export interface CreateRuleResponse {
     id: string;
     job_id: string;
     rule_type: string;
-    rule_type_id: string;
+    rule_value: string;
     created_at: string;
   };
 }
@@ -264,13 +244,7 @@ export interface ApplyJobResponse {
   applied_at: string;
 }
 
-export interface UpdateApplicantStatusResponse {
-  application_id: string;
-  applicant_id: string;
-  new_status: string;
-  reviewed_by: string;
-  reviewed_at: string;
-}
+export interface UpdateApplicantStatusResponse extends JobApplicant {}
 
 // ─── Company Profile Sub-types ──────────────────────────────
 
@@ -350,17 +324,116 @@ export interface JobsListParams {
 }
 
 export interface LearnerDiscoveryParams {
+  min_karma?: number;
+  max_karma?: number;
+  level?: number;
+  college?: string;
+  department?: string;
+  graduation_year?: string;
+  ig?: string;
+  skill?: string;
+  achievement?: string;
+  task?: string;
+  search?: string;
+  sort_by?: string;
+  sort_order?: "asc" | "desc";
+  page?: number;
+  per_page?: number;
+}
+
+// ─── Analytics Types ─────────────────────────────────────────
+
+export interface GigAnalytics {
+  total_gigs_posted: number;
+  active_gigs: number;
+  closed_gigs: number;
+  average_hourly_rate: number;
+  application_funnel: Record<string, number>;
+  conversion_rate: string;
+}
+
+export interface CompanyDashboardSummary {
+  company: {
+    id: string;
+    name: string;
+    slug: string;
+    status: string;
+    logo?: string | null;
+  };
+  quick_stats: {
+    jobs_posted: number;
+    total_views: number;
+    applications: number;
+    hired: number;
+  };
+  stat_cards: Array<{
+    key: string;
+    label: string;
+    value: number;
+    delta: number;
+    delta_type: string;
+    period: string;
+  }>;
+  talent_pool: {
+    total_learners: number;
+    level_distribution: Array<{
+      level_id: string;
+      level_name: string;
+      level_order: number;
+      count: number;
+      percentage: number;
+    }>;
+    top_interest_groups: Array<{
+      ig_id: string;
+      name: string;
+      learner_count: number;
+      total_karma: number;
+    }>;
+  };
+}
+
+export interface JobEngagementAnalytics {
+  job_id: string;
+  job_title: string;
+  total_views: number;
+  total_applications: number;
+  total_hired: number;
+  conversion_rate_percentage: number;
+}
+
+export interface TalentPoolAnalytics {
+  total_learners: number;
+  level_distribution: Array<{
+    level_id: string;
+    level_name: string;
+    level_order: number;
+    count: number;
+    percentage: number;
+  }>;
+  top_interest_groups: Array<{
+    ig_id: string;
+    name: string;
+    learner_count: number;
+    total_karma: number;
+  }>;
+}
+
+export interface TalentPoolAnalyticsParams {
   karma_min?: number;
   karma_max?: number;
-  ig_ids?: string;
-  achievement_ids?: string;
   level_order_min?: number;
   interested_in_work?: boolean;
   interested_in_gig_work?: boolean;
-  search?: string;
-  sortBy?: string;
-  pageIndex?: number;
-  perPage?: number;
+  ig_ids?: string;
+}
+
+export interface AdminSummary {
+  total_companies: number;
+  verified_companies: number;
+  pending_companies: number;
+  rejected_companies: number;
+  total_jobs: number;
+  total_company_tasks: number;
 }
 
 // ─── MuLearner Directory ────────────────────────────────────
@@ -380,23 +453,4 @@ export interface MuLearner {
 export interface MuLearnersResponse {
   data: MuLearner[];
   pagination: Pagination;
-}
-
-// ─── Gig Analytics ──────────────────────────────────────────
-
-export interface GigAnalytics {
-  total_gigs_posted: number;
-  active_gigs: number;
-  closed_gigs: number;
-  average_hourly_rate: number;
-  application_funnel: {
-    Total: number;
-    Pending: number;
-    "In-Review": number;
-    Shortlisted: number;
-    Interview: number;
-    Selected: number;
-    Rejected: number;
-  };
-  conversion_rate: string;
 }

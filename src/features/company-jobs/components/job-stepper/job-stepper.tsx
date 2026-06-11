@@ -62,8 +62,7 @@ export function JobStepper({
     const newRule: JobRule = {
       id: `local-${Date.now()}`,
       rule_type: values.rule_type as JobRule["rule_type"],
-      rule_type_id: values.rule_type_id,
-      rule_name: `${values.rule_type}: ${values.rule_type_id.slice(0, 8)}…`,
+      rule_value: values.rule_value,
     };
     setLocalRules((prev) => [...prev, newRule]);
   }, []);

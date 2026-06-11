@@ -98,41 +98,30 @@ export const RegisterResponseSchema = ApiResponseSchema(
  * Their email/name/password become the user account credentials.
  */
 export const CompanySignupRequestSchema = z.object({
-  /** Company's display name (max 75 chars) */
   name: z
     .string()
     .min(1, "Company name is required")
     .max(75, "Company name must be at most 75 characters"),
-  /** Full name of the point of contact */
-  poc_name: z
-    .string()
-    .min(1, "Contact name is required")
-    .max(150, "Contact name must be at most 150 characters"),
-  /** POC email — becomes the login email */
-  poc_email: z.string().email("Invalid email address"),
-  /** Login password */
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters")
-    .max(100, "Password must be at most 100 characters"),
-  /** Optional contact phone: +? followed by 8–15 digits */
-  poc_phone: z
-    .string()
-    .regex(/^\+?[0-9]{8,15}$/, "Enter a valid phone number")
-    .optional()
-    .or(z.literal("")),
+  description: z.string().min(1, "Description is required"),
+  logo: z.string().url().optional().or(z.literal("")),
+  short_pitch: z.string().optional(),
+  industry_sector: z.string().optional(),
   website_link: z
     .string()
     .url("Enter a valid URL")
     .optional()
     .or(z.literal("")),
-  description: z.string().optional(),
-  industry_sector: z.string().optional(),
+  email: z.string().email("Invalid email address").optional().or(z.literal("")),
   location: z.string().optional(),
-  /** Required by the backend when no matching company org exists in the DB */
   district_id: z
     .string()
     .uuid("Invalid district ID")
+    .optional()
+    .or(z.literal("")),
+  state_id: z.string().uuid("Invalid state ID").optional().or(z.literal("")),
+  country_id: z
+    .string()
+    .uuid("Invalid country ID")
     .optional()
     .or(z.literal("")),
   legal_name: z.string().optional(),
@@ -144,11 +133,13 @@ export const CompanySignupRequestSchema = z.object({
     .url("Enter a valid LinkedIn URL")
     .optional()
     .or(z.literal("")),
-  verification_document_url: z
-    .string()
-    .url("Enter a valid URL")
-    .optional()
-    .or(z.literal("")),
+  founded_year: z.number().optional(),
+  remote_policy: z.string().optional(),
+  culture_text: z.string().optional(),
+  tech_stack: z.array(z.string()).optional(),
+  perks: z.array(z.string()).optional(),
+  testimonials: z.array(z.any()).optional(),
+  gallery: z.array(z.any()).optional(),
 });
 
 /**
@@ -166,11 +157,29 @@ export const CompanySignupAuthSchema = z
   .passthrough();
 
 export const CompanySignupResponseDataSchema = z.object({
-  company_id: z.string(),
-  slug: z.string(),
-  muid: z.string(),
-  status: z.string(),
-  auth: CompanySignupAuthSchema,
+  name: z.string(),
+  description: z.string(),
+  logo: z.string().nullable().optional(),
+  short_pitch: z.string().nullable().optional(),
+  industry_sector: z.string().nullable().optional(),
+  website_link: z.string().nullable().optional(),
+  email: z.string().nullable().optional(),
+  location: z.string().nullable().optional(),
+  district_id: z.string().nullable().optional(),
+  state_id: z.string().nullable().optional(),
+  country_id: z.string().nullable().optional(),
+  legal_name: z.string().nullable().optional(),
+  registration_number: z.string().nullable().optional(),
+  tax_id: z.string().nullable().optional(),
+  company_size: z.string().nullable().optional(),
+  linkedin_url: z.string().nullable().optional(),
+  founded_year: z.number().nullable().optional(),
+  remote_policy: z.string().nullable().optional(),
+  culture_text: z.string().nullable().optional(),
+  tech_stack: z.array(z.string()).nullable().optional(),
+  perks: z.array(z.string()).nullable().optional(),
+  testimonials: z.array(z.any()).nullable().optional(),
+  gallery: z.array(z.any()).nullable().optional(),
 });
 
 export const CompanySignupResponseSchema = z

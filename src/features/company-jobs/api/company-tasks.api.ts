@@ -78,7 +78,7 @@ export async function createCompanyTask(
 
 export async function fetchCompanyTask(taskId: string): Promise<CompanyTask> {
   const res = await apiClient.get(
-    endpoints.company.task(taskId),
+    endpoints.company.taskDetail(taskId),
     CompanyTaskDetailResponseSchema,
     OPT,
   );
@@ -93,7 +93,7 @@ export async function updateCompanyTask(
   data: Partial<CompanyTaskFormValues>,
 ): Promise<void> {
   await apiClient.put(
-    endpoints.company.task(taskId),
+    endpoints.company.taskDetail(taskId),
     data,
     CompanyTaskGenericResponseSchema,
     OPT,
@@ -104,7 +104,7 @@ export async function updateCompanyTask(
 
 export async function deleteCompanyTask(taskId: string): Promise<void> {
   await apiClient.delete(
-    endpoints.company.task(taskId),
+    endpoints.company.taskDetail(taskId),
     undefined,
     CompanyTaskGenericResponseSchema,
     OPT,

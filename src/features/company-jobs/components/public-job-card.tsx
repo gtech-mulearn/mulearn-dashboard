@@ -31,23 +31,33 @@ export function PublicJobCard({ job, onView }: PublicJobCardProps) {
       onClick={() => onView(job)}
       className="group relative w-full rounded-2xl border border-border bg-card p-5 text-left transition-all duration-200 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5"
     >
-      {/* Karma reward pill */}
-      {job.karma_reward ? (
-        <div className="absolute right-4 top-4 flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
-          <Sparkles className="h-3 w-3" />+{job.karma_reward}
-        </div>
-      ) : null}
-
       {/* Title + meta */}
       <div className="pr-20">
+        {job.company_name && (
+          <div className="mb-1 text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+            {job.company_logo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={job.company_logo}
+                alt={job.company_name}
+                className="h-4 w-4 rounded object-cover"
+              />
+            ) : (
+              <Briefcase className="h-3 w-3" />
+            )}
+            {job.company_name}
+          </div>
+        )}
         <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-1">
           {job.title}
         </h3>
         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1 capitalize">
-            <Briefcase className="h-3 w-3" />
-            {job.job_type.replace(/_/g, " ")}
-          </span>
+          {job.job_type && (
+            <span className="flex items-center gap-1 capitalize">
+              <Briefcase className="h-3 w-3" />
+              {job.job_type.replace(/_/g, " ")}
+            </span>
+          )}
           <span className="flex items-center gap-1">
             <MapPin className="h-3 w-3" />
             {job.location}
@@ -62,14 +72,7 @@ export function PublicJobCard({ job, onView }: PublicJobCardProps) {
 
       {/* Requirement badges — uses semantic CSS variables only */}
       <div className="mt-3 flex flex-wrap gap-1.5">
-        <Badge variant="secondary" className="gap-1 text-xs">
-          <Sparkles className="h-3 w-3" />
-          Karma ≥ {job.min_karma}
-        </Badge>
-        <Badge variant="secondary" className="gap-1 text-xs">
-          <Star className="h-3 w-3" />
-          Level ≥ {job.min_level}
-        </Badge>
+        {/* Empty placeholder if no stipend or cert, since badges are optional now */}
         {job.stipend && (
           <Badge variant="outline" className="text-xs">
             Stipend: {job.stipend}
@@ -85,10 +88,14 @@ export function PublicJobCard({ job, onView }: PublicJobCardProps) {
 
       {/* Footer */}
       <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
-        <span className="flex items-center gap-1 text-xs text-muted-foreground">
-          <Calendar className="h-3 w-3" />
-          {formatDate(job.created_at)}
-        </span>
+        {job.created_at ? (
+          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Calendar className="h-3 w-3" />
+            {formatDate(job.created_at)}
+          </span>
+        ) : (
+          <span />
+        )}
         <span className="text-xs font-medium text-primary group-hover:underline">
           View details →
         </span>

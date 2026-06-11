@@ -41,8 +41,7 @@ export function useCreateJobRule(jobId: string) {
             {
               id: `temp-${Date.now()}`,
               rule_type: payload.rule_type,
-              rule_type_id: payload.rule_type_id,
-              rule_name: "Loading...",
+              rule_value: payload.rule_value,
             },
           ],
         };
@@ -104,8 +103,7 @@ export function useUpdateJobRule(jobId: string) {
               ? {
                   ...rule,
                   rule_type: payload.rule_type,
-                  rule_type_id: payload.rule_type_id,
-                  rule_name: "Updating...",
+                  rule_value: payload.rule_value,
                 }
               : rule,
           ),

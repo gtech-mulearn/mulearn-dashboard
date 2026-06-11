@@ -98,19 +98,21 @@ export function StepBasicInfo({ form }: StepBasicInfoProps) {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="salary_range"
-          render={({ field }) => (
-            <FormItem className="sm:col-span-2">
-              <FormLabel>Salary Range</FormLabel>
-              <FormControl>
-                <Input {...field} placeholder="e.g. 12-18 LPA, ₹30K-50K/mo" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {form.watch("job_type") !== "Gig" && (
+          <FormField
+            control={form.control}
+            name="salary_range"
+            render={({ field }) => (
+              <FormItem className="sm:col-span-2">
+                <FormLabel>Salary Range</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="e.g. 12-18 LPA, ₹30K-50K/mo" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
       </div>
     </div>
   );
