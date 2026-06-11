@@ -19,22 +19,6 @@ export function LearnerCard({ learner }: LearnerCardProps) {
 
   return (
     <Card className="group relative p-3 py-4">
-      {/* Work intent badges */}
-      <div className="absolute right-4 top-4 flex gap-1.5">
-        {learner.interested_in_work && (
-          <span className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold app-status-accepted border">
-            <Briefcase className="h-2.5 w-2.5" />
-            Work
-          </span>
-        )}
-        {learner.interested_in_gig_work && (
-          <span className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold app-status-applied border">
-            <Sparkles className="h-2.5 w-2.5" />
-            Gig
-          </span>
-        )}
-      </div>
-
       {/* Avatar + name */}
       <div className="flex items-start gap-3 pr-24">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-sm font-bold text-primary">
@@ -45,6 +29,14 @@ export function LearnerCard({ learner }: LearnerCardProps) {
             {learner.full_name}
           </p>
           <p className="text-xs text-muted-foreground">@{learner.muid}</p>
+          {learner.email && (
+            <p
+              className="text-[10px] text-muted-foreground truncate"
+              title={learner.email}
+            >
+              {learner.email}
+            </p>
+          )}
         </div>
       </div>
 
@@ -62,9 +54,9 @@ export function LearnerCard({ learner }: LearnerCardProps) {
           <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
             Level
           </p>
-          {learner.level ? (
+          {learner.level != null ? (
             <p className="mt-0.5 text-sm font-bold text-foreground truncate">
-              {learner.level?.name}
+              Level {learner.level}
             </p>
           ) : (
             <p className="mt-0.5 text-sm font-bold text-foreground truncate">
@@ -74,33 +66,31 @@ export function LearnerCard({ learner }: LearnerCardProps) {
         </div>
       </div>
 
-      {/* Location */}
-      {learner.district && (
-        <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
-          <MapPin className="h-3 w-3 shrink-0" />
-          {learner.district}
-        </div>
-      )}
-
-      {/* Interest groups */}
-      {learner.interest_groups.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-1">
-          {learner.interest_groups.slice(0, 3).map((ig) => (
-            <Badge
-              key={ig.id}
-              variant="default"
-              className="text-[10px] px-2 py-0.5"
-            >
-              {ig.name}
-            </Badge>
-          ))}
-          {learner.interest_groups.length > 3 && (
-            <Badge variant="outline" className="text-[10px] px-2 py-0.5">
-              +{learner.interest_groups.length - 3}
-            </Badge>
-          )}
-        </div>
-      )}
+      {/* Details */}
+      <div className="mt-3 space-y-1">
+        {learner.college && (
+          <div className="flex items-start gap-1.5 text-xs text-muted-foreground">
+            <MapPin className="h-3 w-3 shrink-0 mt-0.5" />
+            <span className="line-clamp-2" title={learner.college}>
+              {learner.college}
+            </span>
+          </div>
+        )}
+        {learner.department && (
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Briefcase className="h-3 w-3 shrink-0" />
+            <span className="truncate" title={learner.department}>
+              {learner.department}
+            </span>
+          </div>
+        )}
+        {learner.graduation_year && (
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Sparkles className="h-3 w-3 shrink-0" />
+            Class of {learner.graduation_year}
+          </div>
+        )}
+      </div>
 
       {/* View profile CTA */}
       <div className="mt-4 border-t border-border pt-3">

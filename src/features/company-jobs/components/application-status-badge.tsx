@@ -20,7 +20,7 @@ export function ApplicationStatusBadge({
   status,
   className,
 }: ApplicationStatusBadgeProps) {
-  const meta = APP_STATUS_META[status];
+  const meta = APP_STATUS_META[status] || APP_STATUS_META.pending;
 
   return (
     <span

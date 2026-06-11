@@ -159,32 +159,57 @@ export function RegisterClient({
   // ─── Company signup ──────────────────────────────────────────
 
   async function handleCompanySignup(values: CompanyDetailsValues) {
-    if (!basicData || !values.companyName) return;
+    if (!basicData || !values.companyName || !values.companyDescription) return;
 
+    const roleId = roles.getRoleId("Company");
+    if (!roleId) {
+      throw new Error(
+        `Role list has not loaded yet or "Company" not found. Please try again.`,
+      );
+    }
+
+    // 1. Register the user first to get authenticated
+    await register.mutateAsync({
+      user: {
+        full_name: basicData.fullName,
+        email: basicData.email,
+        password: basicData.password,
+        role: roleId,
+      },
+      referral: referralId ? { muid: referralId } : undefined,
+    });
+
+    // 2. Register the company
     await companyRegister.mutateAsync({
       name: values.companyName,
-      poc_name: basicData.fullName,
-      poc_email: basicData.email,
-      password: basicData.password,
-      poc_phone: values.pocPhone || undefined,
-      description: values.companyDescription || undefined,
+      description: values.companyDescription,
+      logo: values.logo || undefined,
+      short_pitch: values.shortPitch || undefined,
       industry_sector: values.industrySector || undefined,
       website_link: values.websiteLink || undefined,
-      linkedin_url: values.linkedinUrl || undefined,
-      company_size: values.companySize || undefined,
+      email: values.email || undefined,
+      location: values.location || undefined,
       district_id: values.districtId || undefined,
+      state_id: values.stateId || undefined,
+      country_id: values.countryId || undefined,
       legal_name: values.legalName || undefined,
       registration_number: values.registrationNumber || undefined,
       tax_id: values.taxId || undefined,
-      verification_document_url: values.verificationDocumentUrl || undefined,
+      company_size: values.companySize || undefined,
+      linkedin_url: values.linkedinUrl || undefined,
+      founded_year: values.foundedYear || undefined,
+      remote_policy: values.remotePolicy || undefined,
+      culture_text: values.cultureText || undefined,
+      tech_stack: values.techStack || undefined,
+      perks: values.perks || undefined,
+      testimonials: values.testimonials || undefined,
+      gallery: values.gallery || undefined,
     });
 
     toast.success(
       "Company registration submitted! Awaiting admin verification.",
     );
 
-    // Company users skip interests onboarding — go straight to dashboard.
-    // Their dashboard will show the pending verification status.
     router.push("/dashboard");
   }
 

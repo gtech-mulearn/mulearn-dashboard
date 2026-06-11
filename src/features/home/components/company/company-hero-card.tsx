@@ -11,7 +11,7 @@ export function CompanyHeroCard({ jobsPosted, isLoading }: Props) {
   return (
     <div className="flex flex-col gap-6 rounded-2xl bg-foreground p-6 md:flex-row md:items-center md:justify-between">
       <div className="space-y-4">
-        <div className="inline-flex items-center rounded-full bg-primary/20 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-primary">
+        <div className="inline-flex items-center rounded-full bg-primary/20 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-background">
           Company Dashboard
         </div>
         <h1 className="text-3xl font-black leading-tight text-background">
@@ -36,19 +36,6 @@ export function CompanyHeroCard({ jobsPosted, isLoading }: Props) {
             <Users className="size-4" />
             Browse Talent
           </Link>
-        </div>
-      </div>
-
-      <div className="shrink-0 space-y-3 md:min-w-52">
-        <div className="flex items-baseline justify-between gap-8">
-          <span className="text-sm text-background/60">Jobs Posted</span>
-          {isLoading ? (
-            <Skeleton className="h-6 w-12 bg-background/20" />
-          ) : (
-            <span className="text-xl font-bold text-background">
-              {jobsPosted}
-            </span>
-          )}
         </div>
       </div>
     </div>

@@ -68,7 +68,10 @@ export function VerificationActionDialog({
     if (!company) return;
     await verifyMutation.mutateAsync({
       companyId: company.id,
-      payload: values,
+      payload: {
+        status: values.action === "approve" ? "verified" : "rejected",
+        rejection_reason: values.reason || undefined,
+      } as any,
     });
     onOpenChange(false);
   };

@@ -54,7 +54,7 @@ export function RuleAddDialog({
     resolver: zodResolver(RuleFormSchema),
     defaultValues: {
       rule_type: "",
-      rule_type_id: "",
+      rule_value: "",
     },
   });
 
@@ -107,22 +107,14 @@ export function RuleAddDialog({
 
             <FormField
               control={form.control}
-              name="rule_type_id"
+              name="rule_value"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>
-                    {form.watch("rule_type") === "skill"
-                      ? "Skill ID"
-                      : form.watch("rule_type") === "interest_group"
-                        ? "Interest Group ID"
-                        : form.watch("rule_type") === "achievement"
-                          ? "Achievement ID"
-                          : "Value ID"}
-                  </FormLabel>
+                  <FormLabel>Rule Value</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
-                      placeholder="Enter the UUID of the skill, IG, or achievement"
+                      placeholder="Enter the value for the rule"
                     />
                   </FormControl>
                   <FormMessage />

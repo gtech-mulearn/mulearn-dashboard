@@ -43,9 +43,17 @@ const STATUS_CONFIG: Record<
   CompanyStatus,
   { label: string; className: string }
 > = {
+  "": {
+    label: "Pending",
+    className: "border-warning/50 bg-warning/10 text-warning",
+  },
   pending_verification: {
     label: "Pending",
     className: "border-warning/50 bg-warning/10 text-warning",
+  },
+  verified: {
+    label: "Verified",
+    className: "border-success/50 bg-success/10 text-success",
   },
   active: {
     label: "Active",
@@ -76,7 +84,7 @@ function buildColumnOrder(
       width: "min-w-[180px]",
     },
     {
-      column: "poc_name",
+      column: "company_user_name",
       Label: "POC",
       isSortable: false,
       width: "min-w-[140px] hidden md:table-cell",
@@ -135,7 +143,10 @@ function buildColumnOrder(
         row: Record<string, unknown>,
       ) => {
         const status = row.status as CompanyStatus;
-        const isPending = status === "pending_verification";
+        const isPending =
+          status === "pending_verification" ||
+          (status as string) === "pending" ||
+          !status;
         return (
           <div className="flex items-center gap-1">
             <button
@@ -153,10 +164,10 @@ function buildColumnOrder(
                   type="button"
                   onClick={() => onApproveRow(id)}
                   className="inline-flex items-center gap-1 rounded-lg border border-success/40 bg-success/10 px-2 py-1 text-xs font-semibold text-success transition-colors hover:bg-success/20"
-                  title="Approve"
+                  title="Verify"
                 >
                   <CheckCircle className="h-3 w-3" />
-                  <span className="hidden sm:inline">Approve</span>
+                  <span className="hidden sm:inline">Verify</span>
                 </button>
                 <button
                   type="button"
@@ -203,8 +214,8 @@ export default function ManageCompaniesTable() {
   });
 
   const rows = (data?.data ?? []) as CompanyVerificationItem[];
-  const totalPages = data?.pagination.totalPages ?? 0;
-  const totalCount = data?.pagination.count;
+  const totalPages = data?.pagination?.totalPages ?? 0;
+  const totalCount = data?.pagination?.count;
 
   // ── Handlers ──────────────────────────────────────────────────
 
@@ -348,7 +359,7 @@ export default function ManageCompaniesTable() {
           <div className="w-full overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
             <div className="min-w-200">
               <Table
-                rows={rows}
+                rows={rows as any}
                 isloading={isLoading}
                 page={currentPage}
                 perPage={perPage}

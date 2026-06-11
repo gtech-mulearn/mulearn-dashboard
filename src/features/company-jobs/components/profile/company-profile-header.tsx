@@ -49,12 +49,16 @@ export function CompanyProfileHeader({
     .join("")
     .toUpperCase();
 
-  const memberSince = profile.created_at
-    ? new Date(profile.created_at).toLocaleDateString("en-IN", {
-        month: "long",
-        year: "numeric",
-      })
+  const memberSinceDate = profile.created_at
+    ? new Date(profile.created_at)
     : null;
+  const memberSince =
+    memberSinceDate && !isNaN(memberSinceDate.getTime())
+      ? memberSinceDate.toLocaleDateString("en-IN", {
+          month: "long",
+          year: "numeric",
+        })
+      : null;
 
   return (
     <div className="relative w-full overflow-hidden rounded-2xl shadow-sm">

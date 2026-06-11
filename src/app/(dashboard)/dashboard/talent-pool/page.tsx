@@ -13,6 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -27,9 +28,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { LearnerCard } from "@/features/company-jobs/components";
 import { useLearnerDiscovery } from "@/features/company-jobs/hooks";
 import type { LearnerDiscoveryParams } from "@/features/company-jobs/types";
+import { getInterestGroupsList } from "@/features/interest-groups/api/interest-groups.api";
+import { fetchAchievements } from "@/features/achievements/api/achievements.api";
 import { useDebounce } from "@/hooks/use-debounce";
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
@@ -61,13 +71,16 @@ function LearnerCardSkeleton() {
 // ─── Filters panel ───────────────────────────────────────────────────────────
 
 interface ActiveFilters {
-  interested_in_work?: boolean;
-  interested_in_gig_work?: boolean;
-  karma_min?: number;
-  karma_max?: number;
-  level_order_min?: number;
-  ig_ids?: string;
-  achievement_ids?: string;
+  min_karma?: number;
+  max_karma?: number;
+  level?: number;
+  college?: string;
+  department?: string;
+  graduation_year?: string;
+  ig?: string;
+  skill?: string;
+  achievement?: string;
+  task?: string;
   sortBy?: string;
 }
 
@@ -78,6 +91,18 @@ interface FiltersDropdownProps {
 
 function FiltersDropdown({ filters, onChange }: FiltersDropdownProps) {
   const activeCount = Object.values(filters).filter(Boolean).length;
+
+  const { data: igResponse, isLoading: isLoadingIgs } = useQuery({
+    queryKey: ["interest-groups-list"],
+    queryFn: () => getInterestGroupsList(),
+  });
+  const interestGroups = igResponse?.response?.interestGroup || [];
+
+  const { data: achievements = [], isLoading: isLoadingAchievements } =
+    useQuery({
+      queryKey: ["achievements-list"],
+      queryFn: fetchAchievements,
+    });
 
   return (
     <DropdownMenu>
@@ -96,29 +121,19 @@ function FiltersDropdown({ filters, onChange }: FiltersDropdownProps) {
       <DropdownMenuContent
         align="end"
         className="w-64 max-h-[80vh] overflow-y-auto"
+        onInteractOutside={(event) => {
+          const target = event.target as HTMLElement;
+          if (
+            target &&
+            (target.closest("[data-radix-select-content]") ||
+              target.closest('[data-slot="select-content"]') ||
+              target.closest('div[role="listbox"]') ||
+              target.closest("[data-radix-portal]"))
+          ) {
+            event.preventDefault();
+          }
+        }}
       >
-        <DropdownMenuLabel>Work Intent</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuCheckboxItem
-          checked={!!filters.interested_in_work}
-          onCheckedChange={(v) =>
-            onChange({ ...filters, interested_in_work: v || undefined })
-          }
-        >
-          <Briefcase className="h-3.5 w-3.5 mr-2" />
-          Open to Full-time
-        </DropdownMenuCheckboxItem>
-        <DropdownMenuCheckboxItem
-          checked={!!filters.interested_in_gig_work}
-          onCheckedChange={(v) =>
-            onChange({ ...filters, interested_in_gig_work: v || undefined })
-          }
-        >
-          <Sparkles className="h-3.5 w-3.5 mr-2" />
-          Open to Gig Work
-        </DropdownMenuCheckboxItem>
-
-        <DropdownMenuSeparator />
         <DropdownMenuLabel>Sort By</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuRadioGroup
@@ -138,11 +153,11 @@ function FiltersDropdown({ filters, onChange }: FiltersDropdownProps) {
         <div className="flex gap-2 p-2">
           <Input
             placeholder="Min"
-            value={filters.karma_min || ""}
+            value={filters.min_karma || ""}
             onChange={(e) =>
               onChange({
                 ...filters,
-                karma_min: e.target.value
+                min_karma: e.target.value
                   ? parseInt(e.target.value, 10)
                   : undefined,
               })
@@ -151,11 +166,11 @@ function FiltersDropdown({ filters, onChange }: FiltersDropdownProps) {
           />
           <Input
             placeholder="Max"
-            value={filters.karma_max || ""}
+            value={filters.max_karma || ""}
             onChange={(e) =>
               onChange({
                 ...filters,
-                karma_max: e.target.value
+                max_karma: e.target.value
                   ? parseInt(e.target.value, 10)
                   : undefined,
               })
@@ -167,48 +182,142 @@ function FiltersDropdown({ filters, onChange }: FiltersDropdownProps) {
         <DropdownMenuSeparator />
         <DropdownMenuLabel>Min Level</DropdownMenuLabel>
         <div className="p-2">
-          <Input
-            placeholder="Min Level Order"
-            value={filters.level_order_min || ""}
-            onChange={(e) =>
+          <Select
+            value={filters.level ? String(filters.level) : "all"}
+            onValueChange={(val) =>
               onChange({
                 ...filters,
-                level_order_min: e.target.value
-                  ? parseInt(e.target.value, 10)
-                  : undefined,
+                level: val === "all" ? undefined : parseInt(val, 10),
               })
             }
-            className="h-8 text-xs"
-          />
+          >
+            <SelectTrigger className="w-full h-8 text-xs bg-transparent">
+              <SelectValue placeholder="Min Level Order" />
+            </SelectTrigger>
+            <SelectContent
+              position="popper"
+              className="w-60 z-50 max-h-60 overflow-y-auto"
+            >
+              <SelectItem value="all" className="text-xs">
+                Any Level
+              </SelectItem>
+              <SelectItem value="1" className="text-xs">
+                Level 1
+              </SelectItem>
+              <SelectItem value="2" className="text-xs">
+                Level 2
+              </SelectItem>
+              <SelectItem value="3" className="text-xs">
+                Level 3
+              </SelectItem>
+              <SelectItem value="4" className="text-xs">
+                Level 4
+              </SelectItem>
+              <SelectItem value="5" className="text-xs">
+                Level 5
+              </SelectItem>
+              <SelectItem value="6" className="text-xs">
+                Level 6
+              </SelectItem>
+              <SelectItem value="7" className="text-xs">
+                Level 7
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <DropdownMenuSeparator />
         <DropdownMenuLabel>Interest Groups</DropdownMenuLabel>
         <div className="p-2">
-          <Input
-            placeholder="UUID1,UUID2..."
-            value={filters.ig_ids || ""}
-            onChange={(e) =>
-              onChange({ ...filters, ig_ids: e.target.value || undefined })
+          <Select
+            value={filters.ig || "all"}
+            onValueChange={(val) =>
+              onChange({
+                ...filters,
+                ig: val === "all" ? undefined : val,
+              })
             }
-            className="h-8 text-xs"
-          />
+          >
+            <SelectTrigger className="w-full h-8 text-xs bg-transparent">
+              <SelectValue placeholder="Interest Group Name" />
+            </SelectTrigger>
+            <SelectContent
+              position="popper"
+              className="w-60 z-50 max-h-60 overflow-y-auto"
+            >
+              {isLoadingIgs ? (
+                <SelectItem value="loading" disabled className="text-xs">
+                  Loading...
+                </SelectItem>
+              ) : interestGroups.length === 0 ? (
+                <SelectItem value="empty" disabled className="text-xs">
+                  No interest groups found
+                </SelectItem>
+              ) : (
+                <>
+                  <SelectItem value="all" className="text-xs">
+                    Any Interest Group
+                  </SelectItem>
+                  {interestGroups.map((group) => (
+                    <SelectItem
+                      key={group.id}
+                      value={group.name}
+                      className="text-xs"
+                    >
+                      {group.name}
+                    </SelectItem>
+                  ))}
+                </>
+              )}
+            </SelectContent>
+          </Select>
         </div>
 
         <DropdownMenuSeparator />
         <DropdownMenuLabel>Achievements</DropdownMenuLabel>
         <div className="p-2">
-          <Input
-            placeholder="UUID1,UUID2..."
-            value={filters.achievement_ids || ""}
-            onChange={(e) =>
+          <Select
+            value={filters.achievement || "all"}
+            onValueChange={(val) =>
               onChange({
                 ...filters,
-                achievement_ids: e.target.value || undefined,
+                achievement: val === "all" ? undefined : val,
               })
             }
-            className="h-8 text-xs"
-          />
+          >
+            <SelectTrigger className="w-full h-8 text-xs bg-transparent">
+              <SelectValue placeholder="Achievement UUID" />
+            </SelectTrigger>
+            <SelectContent
+              position="popper"
+              className="w-60 z-50 max-h-60 overflow-y-auto"
+            >
+              {isLoadingAchievements ? (
+                <SelectItem value="loading" disabled className="text-xs">
+                  Loading...
+                </SelectItem>
+              ) : achievements.length === 0 ? (
+                <SelectItem value="empty" disabled className="text-xs">
+                  No achievements found
+                </SelectItem>
+              ) : (
+                <>
+                  <SelectItem value="all" className="text-xs">
+                    Any Achievement
+                  </SelectItem>
+                  {achievements.map((achievement) => (
+                    <SelectItem
+                      key={achievement.id}
+                      value={achievement.id}
+                      className="text-xs"
+                    >
+                      {achievement.name}
+                    </SelectItem>
+                  ))}
+                </>
+              )}
+            </SelectContent>
+          </Select>
         </div>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -225,16 +334,19 @@ export default function TalentPoolPage() {
 
   const params: LearnerDiscoveryParams = {
     search: debouncedSearch || undefined,
-    interested_in_work: filters.interested_in_work,
-    interested_in_gig_work: filters.interested_in_gig_work,
-    karma_min: filters.karma_min,
-    karma_max: filters.karma_max,
-    level_order_min: filters.level_order_min,
-    ig_ids: filters.ig_ids,
-    achievement_ids: filters.achievement_ids,
-    sortBy: filters.sortBy,
-    pageIndex: pageIndex,
-    perPage: 24,
+    min_karma: filters.min_karma,
+    max_karma: filters.max_karma,
+    level: filters.level,
+    college: filters.college,
+    department: filters.department,
+    graduation_year: filters.graduation_year,
+    ig: filters.ig,
+    skill: filters.skill,
+    achievement: filters.achievement,
+    task: filters.task,
+    sort_by: filters.sortBy,
+    page: pageIndex,
+    per_page: 24,
   };
 
   const { data, isLoading, isError } = useLearnerDiscovery(params);
@@ -244,6 +356,7 @@ export default function TalentPoolPage() {
   const clearFilters = () => {
     setSearch("");
     setFilters({});
+    setPageIndex(1);
   };
 
   const hasActive = !!search || Object.values(filters).some(Boolean);
@@ -256,7 +369,7 @@ export default function TalentPoolPage() {
           Talent Pool
         </h1>
         <p className="text-sm text-muted-foreground">
-          Discover learners by karma, level, and work intent.
+          Discover learners by karma, level, and details.
         </p>
       </div>
 
@@ -269,20 +382,6 @@ export default function TalentPoolPage() {
               {total.toLocaleString()}
             </span>
             <span className="text-muted-foreground">learners found</span>
-          </div>
-          <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm">
-            <CheckCircle className="h-4 w-4 text-emerald-500" />
-            <span className="font-semibold text-foreground">
-              {learners.filter((l) => l.interested_in_work).length}
-            </span>
-            <span className="text-muted-foreground">open to work</span>
-          </div>
-          <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm">
-            <Sparkles className="h-4 w-4 text-blue-500" />
-            <span className="font-semibold text-foreground">
-              {learners.filter((l) => l.interested_in_gig_work).length}
-            </span>
-            <span className="text-muted-foreground">open to gigs</span>
           </div>
         </div>
       )}

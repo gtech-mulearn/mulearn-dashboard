@@ -10,7 +10,12 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { authStore } from "@/lib/auth";
-import { companySignup, fetchUserInfo, registerUser } from "../api";
+import {
+  companySignup,
+  fetchUserInfo,
+  registerUser,
+  updateCompanyRegistration,
+} from "../api";
 import type { CompanySignupRequest, RegisterRequest } from "../schemas";
 import { authKeys } from "./query-keys";
 
@@ -55,49 +60,41 @@ export function useRegister() {
 /**
  * Hook for company-specific registration.
  *
- * Uses the dedicated POST /api/v1/dashboard/company/create/ endpoint.
- * Tokens are nested inside response.auth (either accessToken/refreshToken
- * or access/refresh depending on backend version — both are handled).
+ * Uses the dedicated POST /api/v1/dashboard/company/register/ endpoint.
+ * Tokens might be nested inside response.auth
  */
 export function useCompanyRegister() {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async (data: CompanySignupRequest) => {
-      // 1. Call the company-specific signup endpoint
-      const signupResponse = await companySignup(data);
-
-      // 2. Extract tokens — backend may use camelCase or snake_case keys
-      const auth = signupResponse.response.auth;
-      const accessToken = auth.accessToken ?? auth.access;
-      const refreshToken = auth.refreshToken ?? auth.refresh;
-
-      if (!accessToken || !refreshToken) {
-        throw new Error(
-          "Company signup succeeded but no auth tokens were returned.",
-        );
-      }
-
-      // 3. Persist tokens before fetching user info
-      authStore.setTokens(accessToken, refreshToken);
-
-      // 4. Fetch user info now that we have a valid session
-      const userInfoResponse = await fetchUserInfo();
-
-      return {
-        companyId: signupResponse.response.company_id,
-        slug: signupResponse.response.slug,
-        status: signupResponse.response.status,
-        userInfo: userInfoResponse,
-      };
-    },
-    onSuccess: (data) => {
-      queryClient.setQueryData(authKeys.userInfo(), data.userInfo);
+      const response = await companySignup(data);
+      return response.response;
     },
     onError: (error) => {
       if (process.env.NODE_ENV === "development") {
         console.error(
           "[useCompanyRegister] Error:",
+          error instanceof Error ? error.message : "Unknown error",
+        );
+      }
+    },
+  });
+}
+
+/**
+ * Hook for updating a pending or rejected company registration.
+ *
+ * Uses the dedicated PATCH /api/v1/dashboard/company/register/ endpoint.
+ */
+export function useUpdateCompanyRegister() {
+  return useMutation({
+    mutationFn: async (data: Partial<CompanySignupRequest>) => {
+      const response = await updateCompanyRegistration(data);
+      return response.response;
+    },
+    onError: (error) => {
+      if (process.env.NODE_ENV === "development") {
+        console.error(
+          "[useUpdateCompanyRegister] Error:",
           error instanceof Error ? error.message : "Unknown error",
         );
       }

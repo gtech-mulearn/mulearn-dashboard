@@ -405,10 +405,10 @@ export const MentorHomeSummaryResponseSchema = ApiResponseSchema(
 // ============================================
 
 export const CompanyQuickStatsSchema = z.object({
-  jobs_posted: z.number(),
-  total_views: z.number(),
-  applications: z.number(),
-  hired: z.number(),
+  jobs_posted: z.number().catch(0),
+  total_views: z.number().catch(0),
+  applications: z.number().catch(0),
+  hired: z.number().catch(0),
 });
 export type CompanyQuickStats = z.infer<typeof CompanyQuickStatsSchema>;
 
@@ -436,6 +436,16 @@ export const CompanyTalentPoolSchema = z.object({
 });
 export type CompanyTalentPool = z.infer<typeof CompanyTalentPoolSchema>;
 
+export const CompanyStatCardSchema = z.object({
+  key: z.string(),
+  label: z.string(),
+  value: z.number(),
+  delta: z.number(),
+  delta_type: z.string(),
+  period: z.string(),
+});
+export type CompanyStatCard = z.infer<typeof CompanyStatCardSchema>;
+
 export const CompanyHomeSummaryDataSchema = z.object({
   company: z.object({
     id: z.string(),
@@ -445,7 +455,7 @@ export const CompanyHomeSummaryDataSchema = z.object({
     logo: z.string().nullable(),
   }),
   quick_stats: CompanyQuickStatsSchema,
-  stat_cards: z.array(z.unknown()),
+  stat_cards: z.array(CompanyStatCardSchema),
   talent_pool: CompanyTalentPoolSchema,
 });
 export type CompanyHomeSummaryData = z.infer<
