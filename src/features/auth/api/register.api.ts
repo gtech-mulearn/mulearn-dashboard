@@ -55,11 +55,10 @@ export function registerUser(data: RegisterRequest) {
 
 /**
  * Company-specific signup.
- * Endpoint: POST /api/v1/dashboard/company/create/
- * Auth: AllowAny (no token needed).
+ * Endpoint: POST /api/v1/dashboard/company/register/
+ * Auth: AllowAny (no token needed) or Authenticated (if logged in).
  *
- * Creates a POC user account + company record in pending_verification status.
- * Returns auth tokens inside response.auth.
+ * Creates a company record in pending_verification status.
  */
 export function companySignup(data: CompanySignupRequest) {
   // Strip blank optional strings before sending so the backend doesn't
@@ -70,8 +69,29 @@ export function companySignup(data: CompanySignupRequest) {
     ),
   ) as CompanySignupRequest;
 
-  return publicApiClient.post(
-    endpoints.company.create,
+  return apiClient.post(
+    endpoints.company.register,
+    payload,
+    CompanySignupResponseSchema,
+  );
+}
+
+/**
+ * Update pending or rejected company registration.
+ * Endpoint: PATCH /api/v1/dashboard/company/register/
+ * Auth: Authenticated.
+ *
+ * Updates registration fields.
+ */
+export function updateCompanyRegistration(data: Partial<CompanySignupRequest>) {
+  const payload = Object.fromEntries(
+    Object.entries(data).filter(
+      ([, value]) => value !== undefined && value !== "",
+    ),
+  );
+
+  return apiClient.patch(
+    endpoints.company.register,
     payload,
     CompanySignupResponseSchema,
   );

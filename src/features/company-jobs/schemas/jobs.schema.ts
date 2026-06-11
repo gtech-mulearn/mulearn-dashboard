@@ -13,44 +13,111 @@ import { z } from "zod";
 
 export const JobRuleSchema = z.object({
   id: z.string(),
-  rule_type: z.string(),
-  rule_type_id: z.string(),
-  rule_name: z.string(),
+  rule_type: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? ""),
+  rule_value: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? ""),
 });
 
 export const JobSchema = z.object({
   id: z.string(),
+  company_name: z.string().optional().nullable(),
+  company_logo: z.string().optional().nullable(),
   title: z.string(),
-  experience: z.string().optional().nullable(),
+  experience: z
+    .union([z.string(), z.number()])
+    .optional()
+    .nullable()
+    .transform((v) => (v != null ? String(v) : null)),
   job_description: z.string().optional().nullable(),
-  job_type: z.string(),
-  location: z.string(),
-  salary_range: z.string(),
-  min_karma: z.number(),
-  min_level: z.number(),
-  status: z.string(),
-  created_at: z.string(),
-  updated_at: z.string(),
-  rules: z.array(JobRuleSchema).default([]),
+  job_type: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? ""),
+  location: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? ""),
+  salary_range: z
+    .union([z.string(), z.number()])
+    .optional()
+    .nullable()
+    .transform((v) => (v != null ? String(v) : null)),
+  status: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? ""),
+  created_at: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? ""),
+  updated_at: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? ""),
+  rules: z
+    .array(JobRuleSchema)
+    .nullish()
+    .transform((v) => v ?? []),
   // Advanced options
-  karma_reward: z.number().optional().nullable(),
-  duration_value: z.number().optional().nullable(),
+
+  duration_value: z
+    .union([z.number(), z.string()])
+    .optional()
+    .nullable()
+    .transform((v) => (v != null ? Number(v) : null)),
   duration_unit: z.string().optional().nullable(),
-  hourly_rate: z.string().optional().nullable(),
+  hourly_rate: z
+    .union([z.string(), z.number()])
+    .optional()
+    .nullable()
+    .transform((v) => (v != null ? String(v) : null)),
   deliverables: z
     .union([z.array(z.string()), z.string()])
     .optional()
     .nullable(),
-  stipend: z.string().optional().nullable(),
-  certificate_provided: z.boolean().optional().nullable(),
+  stipend: z
+    .union([z.string(), z.number()])
+    .optional()
+    .nullable()
+    .transform((v) => (v != null ? String(v) : null)),
+  certificate_provided: z
+    .union([z.boolean(), z.string(), z.number()])
+    .optional()
+    .nullable()
+    .transform((v) => {
+      if (v === "true" || v === "1" || v === 1 || v === "Yes") return true;
+      if (v === "false" || v === "0" || v === 0 || v === "No") return false;
+      if (typeof v === "boolean") return v;
+      return null;
+    }),
 });
 
 export const PaginationSchema = z.object({
-  count: z.number(),
-  totalPages: z.number(),
-  isNext: z.boolean(),
-  isPrev: z.boolean(),
-  nextPage: z.number().nullable(),
+  count: z
+    .number()
+    .nullish()
+    .transform((v) => v ?? 0),
+  totalPages: z
+    .number()
+    .nullish()
+    .transform((v) => v ?? 1),
+  isNext: z
+    .boolean()
+    .nullish()
+    .transform((v) => v ?? false),
+  isPrev: z
+    .boolean()
+    .nullish()
+    .transform((v) => v ?? false),
+  nextPage: z
+    .number()
+    .nullish()
+    .transform((v) => v ?? null),
 });
 
 // ─── API Response Wrapper ───────────────────────────────────
@@ -65,154 +132,415 @@ const DjangoResponse = <T extends z.ZodTypeAny>(dataSchema: T) =>
 
 // ─── Jobs List Response ─────────────────────────────────────
 
-export const JobsListDataSchema = z.object({
-  company_id: z.string(),
-  company_name: z.string(),
-  jobs: z.array(JobSchema),
-  pagination: PaginationSchema,
-});
+export const JobsListDataSchema = z
+  .object({
+    company_id: z
+      .string()
+      .nullish()
+      .transform((v) => v ?? ""),
+    company_name: z
+      .string()
+      .nullish()
+      .transform((v) => v ?? ""),
+    data: z.array(JobSchema).nullish(),
+    jobs: z.array(JobSchema).nullish(),
+    pagination: z
+      .object({
+        count: z
+          .number()
+          .nullish()
+          .transform((v) => v ?? 0),
+        total_pages: z
+          .number()
+          .nullish()
+          .transform((v) => v ?? 1),
+        current_page: z
+          .number()
+          .nullish()
+          .transform((v) => v ?? 1),
+        per_page: z
+          .number()
+          .nullish()
+          .transform((v) => v ?? 10),
+        next: z.string().nullable().optional(),
+        previous: z.string().nullable().optional(),
+      })
+      .passthrough()
+      .optional()
+      .transform((v) => ({
+        count: v?.count ?? 0,
+        totalPages: v?.total_pages ?? 1,
+        isNext: !!v?.next,
+        isPrev: !!v?.previous,
+        nextPage: v?.next ? (v.current_page ?? 1) + 1 : null,
+      })),
+  })
+  .transform((val) => ({
+    company_id: val.company_id,
+    company_name: val.company_name,
+    jobs: val.jobs ?? val.data ?? [],
+    pagination: val.pagination ?? {
+      count: 0,
+      totalPages: 1,
+      isNext: false,
+      isPrev: false,
+      nextPage: null,
+    },
+  }));
 
 export const JobsListResponseSchema = DjangoResponse(JobsListDataSchema);
 
 // ─── Job Detail Response ────────────────────────────────────
 
-export const JobDetailDataSchema = z.object({
-  job: JobSchema,
-});
+export const JobDetailDataSchema = z
+  .union([z.object({ job: JobSchema }), JobSchema])
+  .transform((val) => {
+    if ("job" in val) {
+      return { job: val.job };
+    }
+    return { job: val };
+  });
 
 export const JobDetailResponseSchema = DjangoResponse(JobDetailDataSchema);
 
 export const PublicJobSchema = z.object({
   id: z.string(),
+  company_name: z.string().optional().nullable(),
+  company_logo: z.string().optional().nullable(),
   title: z.string(),
-  job_type: z.string(),
-  location: z.string(),
-  experience: z.string().optional().nullable(),
+  job_type: z.string().optional().nullable(),
+  location: z.string().optional().nullable(),
+  experience: z
+    .union([z.string(), z.number()])
+    .optional()
+    .nullable()
+    .transform((v) => (v != null ? String(v) : null)),
   job_description: z.string().optional().nullable(),
-  salary_range: z.string().optional().nullable(),
-  min_karma: z.number(),
-  min_level: z.number(),
-  status: z.string(),
-  created_at: z.string(),
-  updated_at: z.string(),
-  karma_reward: z.number().optional().nullable(),
-  duration_value: z.number().optional().nullable(),
+  salary_range: z
+    .union([z.string(), z.number()])
+    .optional()
+    .nullable()
+    .transform((v) => (v != null ? String(v) : null)),
+  status: z.string().optional().nullable(),
+  created_at: z.string().optional().nullable(),
+  updated_at: z.string().optional().nullable(),
+
+  duration_value: z
+    .union([z.number(), z.string()])
+    .optional()
+    .nullable()
+    .transform((v) => (v != null ? Number(v) : null)),
   duration_unit: z.string().optional().nullable(),
-  hourly_rate: z.string().optional().nullable(),
-  deliverables: z.array(z.string()).optional().nullable(),
-  stipend: z.string().optional().nullable(),
-  certificate_provided: z.boolean().optional().nullable(),
-  rules: z.array(JobRuleSchema).default([]),
+  hourly_rate: z
+    .union([z.string(), z.number()])
+    .optional()
+    .nullable()
+    .transform((v) => (v != null ? String(v) : null)),
+  deliverables: z
+    .union([z.array(z.string()), z.string()])
+    .optional()
+    .nullable(),
+  stipend: z
+    .union([z.string(), z.number()])
+    .optional()
+    .nullable()
+    .transform((v) => (v != null ? String(v) : null)),
+  certificate_provided: z
+    .union([z.boolean(), z.string(), z.number()])
+    .optional()
+    .nullable()
+    .transform((v) => {
+      if (v === "true" || v === "1" || v === 1 || v === "Yes") return true;
+      if (v === "false" || v === "0" || v === 0 || v === "No") return false;
+      if (typeof v === "boolean") return v;
+      return null;
+    }),
+  rules: z
+    .array(JobRuleSchema)
+    .nullish()
+    .transform((v) => v ?? []),
 });
 
 export const LearnerApplicationSchema = z.object({
-  id: z.string(),
-  status: z.enum(["applied", "shortlisted", "accepted", "rejected"]),
-  cover_note: z.string().optional().nullable(),
-  job_title: z.string(),
-  job_type: z.string(),
-  company_name: z.string(),
-  company_id: z.string(),
-  created_at: z.string(),
-  updated_at: z.string(),
+  id: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? ""),
+  job: JobSchema,
+  resume_link: z.string().optional().nullable(),
+  cover_letter: z.string().optional().nullable(),
+  status: z
+    .string()
+    .nullish()
+    .transform((v) => {
+      if (!v) return "pending";
+      const lower = v.toLowerCase();
+      if (lower === "pending") return "pending";
+      if (lower === "in-review") return "in-review";
+      if (lower === "shortlisted") return "shortlisted";
+      if (lower === "interview") return "interview";
+      if (lower === "selected" || lower === "accepted") return "selected";
+      if (lower === "rejected") return "rejected";
+      return "pending";
+    }),
+  rejection_reason: z.string().optional().nullable(),
+  applied_at: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? ""),
 });
 
 export const LevelSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  level_order: z.number(),
+  id: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? ""),
+  name: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? ""),
+  level_order: z
+    .number()
+    .nullish()
+    .transform((v) => v ?? 0),
 });
 
 export const JobApplicantSchema = z.object({
-  id: z.string(),
-  status: z.enum(["applied", "shortlisted", "accepted", "rejected"]),
-  cover_note: z.string().optional().nullable(),
-  applicant_id: z.string(),
-  full_name: z.string(),
-  muid: z.string(),
-  district: z.string().optional().nullable(),
-  karma: z.number(),
-  level: LevelSchema,
-  reviewed_by_id: z.string().optional().nullable(),
-  reviewed_at: z.string().optional().nullable(),
-  created_at: z.string(),
-  updated_at: z.string(),
+  id: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? ""),
+  job: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? ""),
+  applicant_name: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? ""),
+  applicant_email: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? ""),
+  resume_link: z.string().optional().nullable(),
+  cover_letter: z.string().optional().nullable(),
+  status: z
+    .string()
+    .nullish()
+    .transform((v) => {
+      if (!v) return "pending";
+      const lower = v.toLowerCase();
+      if (lower === "pending") return "pending";
+      if (lower === "in-review") return "in-review";
+      if (lower === "shortlisted") return "shortlisted";
+      if (lower === "interview") return "interview";
+      if (lower === "selected" || lower === "accepted") return "selected";
+      if (lower === "rejected") return "rejected";
+      return "pending";
+    }),
+  rejection_reason: z.string().optional().nullable(),
+  applied_at: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? ""),
 });
 
 export const LearnerProfileSchema = z.object({
-  id: z.string(),
-  muid: z.string(),
-  full_name: z.string(),
-  gender: z.string().optional().nullable(),
-  district: z.string().optional().nullable(),
-  karma: z.number(),
-  level: LevelSchema,
-  interest_groups: z.array(
-    z.object({
-      id: z.string(),
-      name: z.string(),
-    }),
-  ),
-  interested_in_work: z.boolean(),
-  interested_in_gig_work: z.boolean(),
+  id: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? ""),
+  full_name: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? ""),
+  muid: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? ""),
+  email: z.string().optional().nullable(),
+  karma: z
+    .number()
+    .nullish()
+    .transform((v) => v ?? 0),
+  level: z.number().optional().nullable(),
+  college: z.string().optional().nullable(),
+  department: z.string().optional().nullable(),
+  graduation_year: z.string().optional().nullable(),
 });
 
 export const PublicJobsResponseSchema = DjangoResponse(
-  z.object({
-    jobs: z.array(PublicJobSchema),
-    pagination: PaginationSchema,
-  }),
+  z
+    .object({
+      data: z.array(PublicJobSchema).nullish(),
+      jobs: z.array(PublicJobSchema).nullish(),
+      pagination: z
+        .object({
+          count: z
+            .number()
+            .nullish()
+            .transform((v) => v ?? 0),
+          total_pages: z
+            .number()
+            .nullish()
+            .transform((v) => v ?? 1),
+          current_page: z
+            .number()
+            .nullish()
+            .transform((v) => v ?? 1),
+          per_page: z
+            .number()
+            .nullish()
+            .transform((v) => v ?? 10),
+          next: z.string().nullable().optional(),
+          previous: z.string().nullable().optional(),
+        })
+        .passthrough()
+        .optional()
+        .transform((v) => ({
+          count: v?.count ?? 0,
+          totalPages: v?.total_pages ?? 1,
+          isNext: !!v?.next,
+          isPrev: !!v?.previous,
+          nextPage: v?.next ? (v.current_page ?? 1) + 1 : null,
+        })),
+    })
+    .transform((val) => ({
+      jobs: val.jobs ?? val.data ?? [],
+      pagination: val.pagination,
+    })),
 );
 
 export const LearnerApplicationsResponseSchema = DjangoResponse(
-  z.object({
-    applications: z.array(LearnerApplicationSchema),
-    pagination: PaginationSchema,
-  }),
+  z
+    .object({
+      data: z.array(LearnerApplicationSchema).nullish(),
+      applications: z.array(LearnerApplicationSchema).nullish(),
+      pagination: PaginationSchema.nullish().transform(
+        (v) =>
+          v ?? {
+            count: 0,
+            totalPages: 1,
+            isNext: false,
+            isPrev: false,
+            nextPage: null,
+          },
+      ),
+    })
+    .transform((val) => ({
+      applications: val.applications ?? val.data ?? [],
+      pagination: val.pagination,
+    })),
 );
 
 export const JobApplicantsResponseSchema = DjangoResponse(
-  z.object({
-    job_id: z.string(),
-    job_title: z.string(),
-    applicants: z.array(JobApplicantSchema),
-    pagination: PaginationSchema,
-  }),
+  z
+    .object({
+      job_id: z
+        .string()
+        .nullish()
+        .transform((v) => v ?? ""),
+      job_title: z
+        .string()
+        .nullish()
+        .transform((v) => v ?? ""),
+      data: z.array(JobApplicantSchema).nullish(),
+      applicants: z.array(JobApplicantSchema).nullish(),
+      pagination: PaginationSchema.nullish().transform(
+        (v) =>
+          v ?? {
+            count: 0,
+            totalPages: 1,
+            isNext: false,
+            isPrev: false,
+            nextPage: null,
+          },
+      ),
+    })
+    .transform((val) => ({
+      job_id: val.job_id,
+      job_title: val.job_title,
+      applicants: val.applicants ?? val.data ?? [],
+      pagination: val.pagination,
+    })),
 );
 
 export const LearnerDiscoveryResponseSchema = DjangoResponse(
-  z.object({
-    learners: z.array(LearnerProfileSchema),
-    pagination: PaginationSchema,
-  }),
+  z
+    .object({
+      data: z.array(LearnerProfileSchema).nullish(),
+      learners: z.array(LearnerProfileSchema).nullish(),
+      pagination: z
+        .object({
+          count: z
+            .number()
+            .nullish()
+            .transform((v) => v ?? 0),
+          total_pages: z.number().nullish(),
+          totalPages: z.number().nullish(),
+          current_page: z.number().nullish(),
+          currentPage: z.number().nullish(),
+          per_page: z.number().nullish(),
+          perPage: z.number().nullish(),
+          next: z.string().nullable().optional(),
+          previous: z.string().nullable().optional(),
+          isNext: z.boolean().optional(),
+          isPrev: z.boolean().optional(),
+        })
+        .passthrough()
+        .optional()
+        .transform((v) => {
+          const totalPages = v?.total_pages ?? v?.totalPages ?? 1;
+          const currentPage = v?.current_page ?? v?.currentPage ?? 1;
+          const isNext = !!(v?.next || v?.isNext);
+          const isPrev = !!(v?.previous || v?.isPrev);
+          return {
+            count: v?.count ?? 0,
+            totalPages,
+            isNext,
+            isPrev,
+            nextPage: v?.next ? currentPage + 1 : null,
+          };
+        }),
+    })
+    .transform((val) => ({
+      learners: val.learners ?? val.data ?? [],
+      pagination: val.pagination ?? {
+        count: 0,
+        totalPages: 1,
+        isNext: false,
+        isPrev: false,
+        nextPage: null,
+      },
+    })),
 );
 
 // ─── Mutation Response Schemas ──────────────────────────────
 
-export const CreateJobResponseSchema = DjangoResponse(
-  z.object({
-    job: z.object({
-      id: z.string(),
-      company_id: z.string(),
-      title: z.string(),
-      job_type: z.string(),
-      created_at: z.string(),
-    }),
-  }),
-);
+export const CreateJobResponseSchema = DjangoResponse(JobSchema);
 
 export const UpdateJobResponseSchema = DjangoResponse(
-  z.object({
-    job_id: z.string(),
-    updated_fields: z.array(z.string()),
-  }),
+  z.union([
+    z.object({
+      job_id: z.string(),
+      updated_fields: z.array(z.string()),
+    }),
+    JobSchema,
+    z.object({
+      job: JobSchema,
+    }),
+    z.record(z.string(), z.unknown()),
+  ]),
 );
 
 export const DeleteJobResponseSchema = DjangoResponse(
-  z.object({
-    job_id: z.string(),
-    deleted_at: z.string(),
-  }),
+  z.union([
+    z.object({
+      job_id: z.string(),
+      deleted_at: z.string(),
+    }),
+    z.record(z.string(), z.unknown()),
+  ]),
 );
 
 export const CreateRuleResponseSchema = DjangoResponse(
@@ -221,7 +549,7 @@ export const CreateRuleResponseSchema = DjangoResponse(
       id: z.string(),
       job_id: z.string(),
       rule_type: z.string(),
-      rule_type_id: z.string(),
+      rule_value: z.string(),
       created_at: z.string(),
     }),
   }),
@@ -243,24 +571,11 @@ export const DeleteRuleResponseSchema = DjangoResponse(
 );
 
 export const ApplyJobResponseSchema = DjangoResponse(
-  z.object({
-    application_id: z.string(),
-    job_id: z.string(),
-    job_title: z.string(),
-    status: z.string(),
-    applied_at: z.string(),
-  }),
+  z.object({}).passthrough().optional().nullable(),
 );
 
-export const UpdateApplicantStatusResponseSchema = DjangoResponse(
-  z.object({
-    application_id: z.string(),
-    applicant_id: z.string(),
-    new_status: z.string(),
-    reviewed_by: z.string(),
-    reviewed_at: z.string(),
-  }),
-);
+export const UpdateApplicantStatusResponseSchema =
+  DjangoResponse(JobApplicantSchema);
 
 export const GenericResponseSchema = DjangoResponse(z.unknown());
 
@@ -332,40 +647,91 @@ export const CompanyProfileSchema = z.object({
 export const CompanyProfileResponseSchema =
   DjangoResponse(CompanyProfileSchema);
 
-// Public company profile response (no auth — same CompanyProfile shape, now with extended fields)
-export const PublicCompanyProfileResponseSchema =
-  DjangoResponse(CompanyProfileSchema);
+// Public company profile schema — extends CompanyProfileSchema with public-only fields
+export const PublicCompanyProfileSchema = CompanyProfileSchema.omit({
+  company_user_id: true,
+  status: true,
+  legal_name: true,
+  registration_number: true,
+  tax_id: true,
+  verification_document_url: true,
+  verification_requested_at: true,
+  verified_at: true,
+  verified_by: true,
+  rejection_reason: true,
+}).extend({
+  short_pitch: z.string().nullable().optional(),
+  district_name: z.string().nullable().optional(),
+  state_name: z.string().nullable().optional(),
+  country_name: z.string().nullable().optional(),
+});
+export type PublicCompanyProfile = z.infer<typeof PublicCompanyProfileSchema>;
 
-// Public jobs by slug
+export const PublicCompanyProfileResponseSchema = DjangoResponse(
+  PublicCompanyProfileSchema,
+);
+
+// Public jobs by slug — matches GET /profile/public/<slug>/jobs/ response
+export const PublicJobRuleSchema = z.object({
+  id: z.string(),
+  rule_type: z.string(),
+  rule_value: z.string(),
+});
+
 export const PublicJobBySlugSchema = z.object({
   id: z.string(),
+  company_name: z.string().optional().nullable(),
+  company_logo: z.string().optional().nullable(),
   title: z.string(),
-  job_type: z.string().optional(),
-  location: z.string().optional(),
-  salary_range: z.string(),
+  experience: z.string().optional().nullable(),
+  job_description: z.string().optional().nullable(),
+  location: z.string().optional().nullable(),
+  salary_range: z.string().optional().nullable(),
+  job_type: z.string().optional().nullable(),
+  status: z.string().optional().nullable(),
+  duration_value: z.number().optional().nullable(),
+  duration_unit: z.string().optional().nullable(),
+  hourly_rate: z
+    .union([z.string(), z.number()])
+    .optional()
+    .nullable()
+    .transform((v) => (v != null ? String(v) : null)),
+  deliverables: z.string().optional().nullable(),
+  stipend: z.string().optional().nullable(),
+  certificate_provided: z.boolean().optional().nullable(),
+  rules: z
+    .array(PublicJobRuleSchema)
+    .nullish()
+    .transform((v) => v ?? []),
   created_at: z.string(),
-  is_active: z.boolean().optional(),
-  min_karma: z.number().optional(),
-  min_level: z.number().optional(),
-  tags: z.array(z.string()).optional().default([]),
 });
 export type PublicJobBySlug = z.infer<typeof PublicJobBySlugSchema>;
 
-export const PublicJobsPaginationSchema = z.object({
-  count: z.number(),
-  totalPages: z.number(),
-  isFirst: z.boolean(),
-  isLast: z.boolean(),
-});
-
 export const PublicJobsBySlugDataSchema = z.object({
-  company: z.object({
-    id: z.string(),
-    name: z.string(),
-    slug: z.string(),
-  }),
-  jobs: z.array(PublicJobBySlugSchema),
-  pagination: PublicJobsPaginationSchema,
+  data: z.array(PublicJobBySlugSchema),
+  pagination: z
+    .object({
+      count: z
+        .number()
+        .nullish()
+        .transform((v) => v ?? 0),
+      total_pages: z
+        .number()
+        .nullish()
+        .transform((v) => v ?? 1),
+      current_page: z
+        .number()
+        .nullish()
+        .transform((v) => v ?? 1),
+      per_page: z
+        .number()
+        .nullish()
+        .transform((v) => v ?? 10),
+      next: z.string().nullable().optional(),
+      previous: z.string().nullable().optional(),
+    })
+    .passthrough()
+    .optional(),
 });
 export type PublicJobsBySlugData = z.infer<typeof PublicJobsBySlugDataSchema>;
 
@@ -375,7 +741,7 @@ export const PublicJobsBySlugResponseSchema = DjangoResponse(
 
 // ─── Form Schemas (per-step validation) ─────────────────────
 
-export const BasicInfoStepSchema = z.object({
+export const BasicInfoStepObjectSchema = z.object({
   title: z
     .string()
     .min(1, "Job title is required")
@@ -387,9 +753,22 @@ export const BasicInfoStepSchema = z.object({
     .max(100, "Location must be 100 characters or fewer"),
   salary_range: z
     .string()
-    .min(1, "Salary range is required")
-    .max(50, "Salary range must be 50 characters or fewer"),
+    .max(50, "Salary range must be 50 characters or fewer")
+    .optional(),
 });
+
+export const BasicInfoStepSchema = BasicInfoStepObjectSchema.refine(
+  (data) => {
+    if (data.job_type !== "Gig") {
+      return !!data.salary_range && data.salary_range.trim().length > 0;
+    }
+    return true;
+  },
+  {
+    message: "Salary range is required for non-gig jobs",
+    path: ["salary_range"],
+  },
+);
 
 export const RequirementsStepSchema = z.object({
   experience: z
@@ -400,23 +779,8 @@ export const RequirementsStepSchema = z.object({
     .string()
     .min(10, "Description must be at least 10 characters")
     .max(5000, "Description must be 5000 characters or fewer"),
-  min_karma: z
-    .number({ message: "Karma must be a number" })
-    .int("Karma must be a whole number")
-    .min(0, "Karma must be 0 or more")
-    .max(10000, "Karma must be 10000 or fewer"),
-  min_level: z
-    .number({ message: "Level must be a number" })
-    .int("Level must be a whole number")
-    .min(1, "Level must be between 1 and 7")
-    .max(7, "Level must be between 1 and 7"),
   // Advanced options — all optional
-  karma_reward: z
-    .number()
-    .int("Must be a whole number")
-    .min(0, "Must be 0 or more")
-    .max(10000, "Must be 10000 or fewer")
-    .optional(),
+
   duration_value: z
     .number()
     .int("Must be a whole number")
@@ -431,7 +795,20 @@ export const RequirementsStepSchema = z.object({
 });
 
 /** Combined form schema for create / edit */
-export const JobFormSchema = BasicInfoStepSchema.merge(RequirementsStepSchema);
+export const JobFormSchema = BasicInfoStepObjectSchema.merge(
+  RequirementsStepSchema,
+).refine(
+  (data) => {
+    if (data.job_type !== "Gig") {
+      return !!data.salary_range && data.salary_range.trim().length > 0;
+    }
+    return true;
+  },
+  {
+    message: "Salary range is required for non-gig jobs",
+    path: ["salary_range"],
+  },
+);
 
 export type JobFormValues = z.infer<typeof JobFormSchema>;
 export type BasicInfoStepValues = z.infer<typeof BasicInfoStepSchema>;
@@ -441,51 +818,216 @@ export type RequirementsStepValues = z.infer<typeof RequirementsStepSchema>;
 
 export const RuleFormSchema = z.object({
   rule_type: z.string().min(1, "Rule type is required"),
-  rule_type_id: z.string().min(1, "Please select a value"),
+  rule_value: z.string().min(1, "Please select a value"),
 });
 
 export type RuleFormValues = z.infer<typeof RuleFormSchema>;
 
-// ─── MuLearner Directory Schema ─────────────────────────────
+// ─── Company Tasks Schemas ───────────────────────────────────
 
-export const MuLearnerSchema = z.object({
+export const SkillSchema = z.object({
   id: z.string(),
-  full_name: z.string(),
-  muid: z.string(),
-  email: z.string(),
-  karma: z.coerce.number(),
-  level: z.coerce.number(),
-  college: z.string().nullable().optional(),
-  department: z.string().nullable().optional(),
-  graduation_year: z.coerce.number().nullable().optional(),
+  name: z.string(),
+  code: z.string(),
 });
 
-export const MuLearnersResponseSchema = DjangoResponse(
+export const TaskSchema = z.object({
+  id: z.string(),
+  hashtag: z.string(),
+  discord_link: z.string().nullable().optional(),
+  title: z.string(),
+  description: z.string(),
+  karma: z.number(),
+  channel: z.string().nullable().optional(),
+  type: z.string(),
+  active: z.boolean(),
+  variable_karma: z.boolean(),
+  usage_count: z.number(),
+  level: z.string().nullable().optional(),
+  org: z.string().nullable().optional(),
+  ig: z.string().nullable().optional(),
+  event: z.string().nullable().optional(),
+  bonus_karma: z.number(),
+  bonus_time: z.string().nullable().optional(),
+  approval_status: z.string(),
+  rejection_reason: z.string().nullable().optional(),
+  reviewed_at: z.string().nullable().optional(),
+  requested_by_name: z.string().nullable().optional(),
+  requested_at: z.string().nullable().optional(),
+  skills: z.array(SkillSchema).default([]),
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+
+export const TasksListResponseSchema = DjangoResponse(
   z.object({
-    data: z.array(MuLearnerSchema),
-    pagination: PaginationSchema,
+    data: z.array(TaskSchema),
+    pagination: z.object({
+      count: z
+        .number()
+        .nullish()
+        .transform((v) => v ?? 0),
+      total_pages: z
+        .number()
+        .nullish()
+        .transform((v) => v ?? 1),
+      current_page: z
+        .number()
+        .nullish()
+        .transform((v) => v ?? 1),
+      per_page: z
+        .number()
+        .nullish()
+        .transform((v) => v ?? 10),
+      next: z.string().nullable().optional(),
+      previous: z.string().nullable().optional(),
+    }),
   }),
 );
 
-// ─── Gig Analytics Schema ────────────────────────────────────
+export const TaskDetailResponseSchema = DjangoResponse(TaskSchema);
 
-export const GigAnalyticsFunnelSchema = z.object({
-  Total: z.coerce.number().default(0),
-  Pending: z.coerce.number().default(0),
-  "In-Review": z.coerce.number().default(0),
-  Shortlisted: z.coerce.number().default(0),
-  Interview: z.coerce.number().default(0),
-  Selected: z.coerce.number().default(0),
-  Rejected: z.coerce.number().default(0),
+export const GenericTaskMutationResponseSchema = DjangoResponse(
+  z.object({}).passthrough(),
+);
+
+// ─── Company Mentor Nomination Schemas ──────────────────────
+
+export const MentorNominationSchema = z.object({
+  id: z.string(),
+  user_id: z.string(),
+  user_name: z.string(),
+  user_email: z.string().email().optional().nullable(),
+  org_name: z.string(),
+  mentor_tier: z.string(),
+  status: z.string(),
+  reason: z.string(),
+  verification_note: z.string().nullable().optional(),
+  verified_at: z.string().nullable().optional(),
 });
 
+export const NominateMentorResponseSchema = DjangoResponse(
+  MentorNominationSchema,
+);
+
+export const ListMentorNominationsResponseSchema = DjangoResponse(
+  z.array(MentorNominationSchema),
+);
+
+// ─── Analytics Schemas ────────────────────────────────────────
+
 export const GigAnalyticsSchema = z.object({
-  total_gigs_posted: z.coerce.number().default(0),
-  active_gigs: z.coerce.number().default(0),
-  closed_gigs: z.coerce.number().default(0),
-  average_hourly_rate: z.coerce.number().default(0),
-  application_funnel: GigAnalyticsFunnelSchema,
-  conversion_rate: z.string().default("0%"),
+  total_gigs_posted: z.number(),
+  active_gigs: z.number(),
+  closed_gigs: z.number(),
+  average_hourly_rate: z.number(),
+  application_funnel: z.record(z.string(), z.number()),
+  conversion_rate: z.string(),
 });
 
 export const GigAnalyticsResponseSchema = DjangoResponse(GigAnalyticsSchema);
+
+export const CompanyDashboardSummarySchema = z.object({
+  company: z.object({
+    id: z.string(),
+    name: z.string(),
+    slug: z.string(),
+    status: z.string(),
+    logo: z.string().nullable().optional(),
+  }),
+  quick_stats: z
+    .object({
+      jobs_posted: z.number().catch(0),
+      total_views: z.number().catch(0),
+      applications: z.number().catch(0),
+      hired: z.number().catch(0),
+    })
+    .catch({ jobs_posted: 0, total_views: 0, applications: 0, hired: 0 }),
+  stat_cards: z.array(
+    z.object({
+      key: z.string(),
+      label: z.string(),
+      value: z.number(),
+      delta: z.number(),
+      delta_type: z.string(),
+      period: z.string(),
+    }),
+  ),
+  talent_pool: z.object({
+    total_learners: z.number(),
+    level_distribution: z.array(
+      z.object({
+        level_id: z.string(),
+        level_name: z.string(),
+        level_order: z.number(),
+        count: z.number(),
+        percentage: z.number(),
+      }),
+    ),
+    top_interest_groups: z.array(
+      z.object({
+        ig_id: z.string(),
+        name: z.string(),
+        learner_count: z.number(),
+        total_karma: z.number(),
+      }),
+    ),
+  }),
+});
+
+export const CompanyDashboardSummaryResponseSchema = DjangoResponse(
+  CompanyDashboardSummarySchema,
+);
+
+export const TrackJobViewResponseSchema = DjangoResponse(
+  z.object({}).passthrough(),
+);
+
+export const JobEngagementAnalyticsSchema = z.object({
+  job_id: z.string(),
+  job_title: z.string(),
+  total_views: z.number(),
+  total_applications: z.number(),
+  total_hired: z.number(),
+  conversion_rate_percentage: z.number(),
+});
+
+export const JobEngagementAnalyticsResponseSchema = DjangoResponse(
+  JobEngagementAnalyticsSchema,
+);
+
+export const TalentPoolAnalyticsSchema = z.object({
+  total_learners: z.number(),
+  level_distribution: z.array(
+    z.object({
+      level_id: z.string(),
+      level_name: z.string(),
+      level_order: z.number(),
+      count: z.number(),
+      percentage: z.number(),
+    }),
+  ),
+  top_interest_groups: z.array(
+    z.object({
+      ig_id: z.string(),
+      name: z.string(),
+      learner_count: z.number(),
+      total_karma: z.number(),
+    }),
+  ),
+});
+
+export const TalentPoolAnalyticsResponseSchema = DjangoResponse(
+  TalentPoolAnalyticsSchema,
+);
+
+export const AdminSummarySchema = z.object({
+  total_companies: z.number(),
+  verified_companies: z.number(),
+  pending_companies: z.number(),
+  rejected_companies: z.number(),
+  total_jobs: z.number(),
+  total_company_tasks: z.number(),
+});
+
+export const AdminSummaryResponseSchema = DjangoResponse(AdminSummarySchema);

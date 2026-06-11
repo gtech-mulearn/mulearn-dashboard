@@ -7,7 +7,7 @@
  */
 
 import { ChevronDown, Settings2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import {
   FormControl,
@@ -28,7 +28,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { TagInput } from "@/components/ui/tag-input";
 import { cn } from "@/lib/utils";
-import { DURATION_UNIT_OPTIONS, MIN_LEVEL_OPTIONS } from "../../constants";
+import { DURATION_UNIT_OPTIONS } from "../../constants";
 import type { JobFormValues } from "../../schemas";
 
 interface StepRequirementsProps {
@@ -36,7 +36,16 @@ interface StepRequirementsProps {
 }
 
 export function StepRequirements({ form }: StepRequirementsProps) {
+  const jobType = form.watch("job_type");
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [hasOpenedGig, setHasOpenedGig] = useState(false);
+
+  useEffect(() => {
+    if (jobType === "Gig" && !hasOpenedGig) {
+      setShowAdvanced(true);
+      setHasOpenedGig(true);
+    }
+  }, [jobType, hasOpenedGig]);
 
   return (
     <div className="space-y-6">
@@ -85,55 +94,6 @@ export function StepRequirements({ form }: StepRequirementsProps) {
             </FormItem>
           )}
         />
-
-        <FormField
-          control={form.control}
-          name="min_karma"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Minimum Karma</FormLabel>
-              <FormControl>
-                <Input
-                  {...field}
-                  type="number"
-                  min={0}
-                  max={10000}
-                  placeholder="0"
-                  onChange={(e) => field.onChange(Number(e.target.value))}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="min_level"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Minimum Level</FormLabel>
-              <Select
-                value={String(field.value)}
-                onValueChange={(val) => field.onChange(Number(val))}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select level" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {MIN_LEVEL_OPTIONS.map((opt) => (
-                    <SelectItem key={opt.value} value={String(opt.value)}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
       </div>
 
       {/* Advanced options collapsible */}
@@ -168,34 +128,6 @@ export function StepRequirements({ form }: StepRequirementsProps) {
           <div className="overflow-hidden">
             <div className="border-t border-border px-4 py-5">
               <div className="grid gap-5 sm:grid-cols-2">
-                {/* Karma Reward */}
-                <FormField
-                  control={form.control}
-                  name="karma_reward"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Karma Reward</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min={0}
-                          max={10000}
-                          placeholder="e.g. 500"
-                          value={field.value ?? ""}
-                          onChange={(e) => {
-                            const v = e.target.value;
-                            field.onChange(v === "" ? undefined : Number(v));
-                          }}
-                        />
-                      </FormControl>
-                      <p className="text-[11px] text-muted-foreground mt-1">
-                        Karma awarded to the hired candidate
-                      </p>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
                 {/* Certificate Provided */}
                 <FormField
                   control={form.control}
@@ -220,60 +152,70 @@ export function StepRequirements({ form }: StepRequirementsProps) {
                   )}
                 />
 
-                {/* Duration */}
-                <FormField
-                  control={form.control}
-                  name="duration_value"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Duration</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min={1}
-                          max={365}
-                          placeholder="e.g. 3"
-                          value={field.value ?? ""}
-                          onChange={(e) => {
-                            const v = e.target.value;
-                            field.onChange(v === "" ? undefined : Number(v));
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="duration_unit"
-                  render={({ field }) => (
-                    <FormItem className="mt-auto">
-                      <FormLabel className="sr-only">Duration unit</FormLabel>
-                      <Select
-                        value={field.value ?? ""}
-                        onValueChange={(val) =>
-                          field.onChange(val || undefined)
-                        }
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Unit" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {DURATION_UNIT_OPTIONS.map((opt) => (
-                            <SelectItem key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {/* Duration Combined */}
+                <div className="space-y-2">
+                  <label
+                    htmlFor="duration_value"
+                    className="text-sm font-medium leading-none"
+                  >
+                    Duration
+                  </label>
+                  <div className="flex gap-2">
+                    <FormField
+                      control={form.control}
+                      name="duration_value"
+                      render={({ field }) => (
+                        <FormItem className="flex-1 space-y-0">
+                          <FormControl>
+                            <Input
+                              id="duration_value"
+                              type="number"
+                              min={1}
+                              max={365}
+                              placeholder="e.g. 3"
+                              value={field.value ?? ""}
+                              onChange={(e) => {
+                                const v = e.target.value;
+                                field.onChange(
+                                  v === "" ? undefined : Number(v),
+                                );
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="duration_unit"
+                      render={({ field }) => (
+                        <FormItem className="w-1/3 space-y-0">
+                          <Select
+                            value={field.value ?? ""}
+                            onValueChange={(val) =>
+                              field.onChange(val || undefined)
+                            }
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Unit" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {DURATION_UNIT_OPTIONS.map((opt) => (
+                                <SelectItem key={opt.value} value={opt.value}>
+                                  {opt.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
 
                 {/* Hourly Rate */}
                 <FormField

@@ -122,18 +122,22 @@ function CompanyProfileSidebar({
               </span>
             </div>
           )}
-          {profile.created_at && (
-            <div className="flex items-center gap-3">
-              <CalendarDays className="size-4 shrink-0 text-muted-foreground" />
-              <span className="text-sm text-foreground">
-                Member since{" "}
-                {new Date(profile.created_at).toLocaleDateString("en-IN", {
-                  month: "long",
-                  year: "numeric",
-                })}
-              </span>
-            </div>
-          )}
+          {profile.created_at &&
+            (() => {
+              const d = new Date(profile.created_at);
+              return !isNaN(d.getTime()) ? (
+                <div className="flex items-center gap-3">
+                  <CalendarDays className="size-4 shrink-0 text-muted-foreground" />
+                  <span className="text-sm text-foreground">
+                    Member since{" "}
+                    {d.toLocaleDateString("en-IN", {
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </span>
+                </div>
+              ) : null;
+            })()}
           {profile.email && (
             <div className="flex items-center gap-3">
               <Mail className="size-4 shrink-0 text-muted-foreground" />
@@ -180,17 +184,6 @@ function CompanyProfileSidebar({
           muLearn Stats
         </h3>
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <GraduationCap className="size-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">
-                Hires via muLearn
-              </span>
-            </div>
-            <span className="text-sm font-semibold text-foreground">
-              {profile.hire_count ?? 0}
-            </span>
-          </div>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Award className="size-4 text-muted-foreground" />
@@ -246,20 +239,13 @@ export function CompanyProfilePage() {
       />
 
       {/* Stats row */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2">
         <StatCard
           icon={<FileText className="size-5" />}
           value={activeJobs.length}
           label="Open Roles"
           color="text-success"
           bg="bg-success/10"
-        />
-        <StatCard
-          icon={<GraduationCap className="size-5" />}
-          value={profile.hire_count ?? 0}
-          label="Hires via muLearn"
-          color="text-brand-blue"
-          bg="bg-brand-blue/10"
         />
         <StatCard
           icon={<Award className="size-5" />}

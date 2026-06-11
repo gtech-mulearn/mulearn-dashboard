@@ -1,5 +1,17 @@
 # mulearn-dashboard
 
+## 4.8.0
+
+### Minor Changes
+
+- [#125](https://github.com/gtech-mulearn/mulearn-dashboard/pull/125) [`e116017`](https://github.com/awindsr/mulearn-dashboard/commit/e116017900651f2921dd899af0c95a979ad26f3b) Thanks [@vedhavk](https://github.com/vedhavk)! - **Company Branch** — a new suite of features connecting companies, learners, and admins.
+
+  - **Manage Companies (Admin):** Review, verify, or reject company registration requests, with a detailed company profile view and approve/reject flow.
+  - **Jobs (Company):** Post and manage job openings through a guided multi-step form, set eligibility rules, and track applicants through hiring stages.
+  - **Tasks (Company):** Create and manage community tasks with karma points, submitted for admin approval.
+  - **Mentors (Company):** Nominate mentors from the community for admin review.
+  - **Jobs for Learners:** Browse open roles across all verified companies, apply with a resume and cover letter, and track application status from "My Applications."
+
 ## 4.7.0
 
 ### Minor Changes

@@ -11,7 +11,8 @@
  * - Enabler: fetches the profile verification status.
  */
 
-import { AlertCircle, Clock, XCircle } from "lucide-react";
+import { AlertCircle, CheckCircle, Clock, X, XCircle } from "lucide-react";
+import { useState } from "react";
 import { useCompanyOnboardingStatus } from "@/features/auth/hooks";
 import { useUserProfile } from "@/features/auth/hooks/use-session";
 import { useMentorApplication } from "@/features/mentor/onboarding/hooks/use-onboarding";
@@ -41,7 +42,12 @@ export function VerificationStatusBanner({
   const mentorApplication = useMentorApplication(isMentor);
   const mentorOverview = useMentorOverview();
 
-  // ── Company ─────────────────────────────────────────────────────
+  const [successDismissed, setSuccessDismissed] = useState(false);
+
+  const handleDismissSuccess = () => {
+    setSuccessDismissed(true);
+  };
+
   if (isCompany) {
     if (companyStatus.isLoading) return null;
 
@@ -50,9 +56,36 @@ export function VerificationStatusBanner({
     const status = data?.status?.toLowerCase();
     const rejectionReason = data?.rejection_reason;
 
-    // Already verified — no banner needed
-    if (verified === true || status === "approved" || status === "active")
+    const isSuccess =
+      verified === true ||
+      status === "approved" ||
+      status === "active" ||
+      status === "verified";
+
+    if (isSuccess) {
+      if (!successDismissed) {
+        return (
+          <div className="flex items-start gap-3 rounded-xl border border-success/30 bg-success/10 px-4 py-3 text-sm text-success">
+            <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-success" />
+            <div className="flex-1">
+              <p className="font-semibold">Company verified successfully</p>
+              <p className="mt-0.5 text-success/80">
+                Your company profile has been approved. You now have full
+                access.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleDismissSuccess}
+              className="text-success hover:text-success/80 transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        );
+      }
       return null;
+    }
 
     if (status === "rejected") {
       return (
