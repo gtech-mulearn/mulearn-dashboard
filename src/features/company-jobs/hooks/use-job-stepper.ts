@@ -12,11 +12,10 @@ import {
 } from "../schemas";
 import type { Job, StepId } from "../types";
 
+import type { z } from "zod";
+
 // Per-step validation schemas
-const STEP_SCHEMAS: Record<
-  string,
-  typeof BasicInfoStepSchema | typeof RequirementsStepSchema | null
-> = {
+const STEP_SCHEMAS: Record<string, z.ZodTypeAny | null> = {
   "basic-info": BasicInfoStepSchema,
   requirements: RequirementsStepSchema,
   rules: null, // Rules step has its own validation via the rule dialog
@@ -32,9 +31,7 @@ const DEFAULT_VALUES: JobFormValues = {
   salary_range: "",
   experience: "",
   job_description: "",
-  min_karma: 0,
-  min_level: 1,
-  karma_reward: undefined,
+
   duration_value: undefined,
   duration_unit: undefined,
   hourly_rate: "",
@@ -48,12 +45,10 @@ function jobToFormValues(job: Job): JobFormValues {
     title: job.title,
     job_type: job.job_type,
     location: job.location,
-    salary_range: job.salary_range,
+    salary_range: job.salary_range ?? "",
     experience: job.experience ?? "",
     job_description: job.job_description ?? "",
-    min_karma: job.min_karma,
-    min_level: job.min_level,
-    karma_reward: job.karma_reward ?? undefined,
+
     duration_value: job.duration_value ?? undefined,
     duration_unit: job.duration_unit ?? undefined,
     hourly_rate: job.hourly_rate ?? "",
@@ -111,7 +106,7 @@ export function useJobStepper(
   const STEP_FIELDS: Record<string, (keyof JobFormValues)[]> = useMemo(
     () => ({
       "basic-info": ["title", "job_type", "location", "salary_range"],
-      requirements: ["experience", "job_description", "min_karma", "min_level"],
+      requirements: ["experience", "job_description"],
       rules: [],
       review: [],
     }),

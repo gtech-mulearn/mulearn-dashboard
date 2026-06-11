@@ -14,7 +14,7 @@ import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { createJobRule } from "@/features/company-jobs/api";
+
 import {
   CompanyStatusGuard,
   JobStepper,
@@ -31,60 +31,59 @@ export default function CreateJobPage() {
     router.push("/dashboard/company/jobs");
   }, [router]);
 
+  const parseNumber = useCallback((val: string | number | undefined | null) => {
+    if (val === undefined || val === null || val === "") return undefined;
+    if (typeof val === "number") return val;
+    const clean = val.replace(/[^0-9.]/g, "");
+    const parsed = parseFloat(clean);
+    return isNaN(parsed) ? undefined : parsed;
+  }, []);
+
   const handleSubmit = useCallback(
     async (values: JobFormValues, rules: JobRule[]) => {
       try {
+        const isGig = values.job_type === "Gig";
         const result = await createJobMutation.mutateAsync({
           title: values.title,
           experience: values.experience,
           job_description: values.job_description,
           location: values.location,
-          salary_range: values.salary_range,
           job_type: values.job_type,
-          min_karma: values.min_karma,
-          min_level: values.min_level,
-          // Advanced options — only include if set
-          ...(values.karma_reward !== undefined && {
-            karma_reward: values.karma_reward,
-          }),
-          ...(values.duration_value !== undefined && {
-            duration_value: values.duration_value,
-          }),
-          ...(values.duration_unit && { duration_unit: values.duration_unit }),
-          ...(values.hourly_rate && { hourly_rate: values.hourly_rate }),
-          ...(values.deliverables && { deliverables: values.deliverables }),
-          ...(values.stipend && { stipend: values.stipend }),
-          ...(values.certificate_provided !== undefined &&
-            values.certificate_provided !== false && {
-              certificate_provided: values.certificate_provided,
-            }),
+          status: "Active",
+          certificate_provided: values.certificate_provided ? "Yes" : "No",
+          rules: rules.map((r) => ({
+            rule_type: r.rule_type,
+            rule_value: r.rule_value,
+          })),
+
+          // Distinguish Gig vs Other Jobs
+          ...(isGig
+            ? {
+                duration_value:
+                  values.duration_value != null
+                    ? Number(values.duration_value)
+                    : undefined,
+                duration_unit: values.duration_unit || undefined,
+                hourly_rate: parseNumber(values.hourly_rate),
+                deliverables:
+                  values.deliverables && values.deliverables.length > 0
+                    ? values.deliverables.join(", ")
+                    : undefined,
+                stipend: parseNumber(values.stipend),
+              }
+            : {
+                salary_range: values.salary_range,
+              }),
         });
 
-        const jobId = result.job.id;
-
-        // Create rules sequentially (if any were added during creation)
-        if (rules.length > 0) {
-          for (const rule of rules) {
-            try {
-              await createJobRule(jobId, {
-                rule_type: rule.rule_type,
-                rule_type_id: rule.rule_type_id,
-              });
-            } catch {
-              // Individual rule failure shouldn't block navigation
-              toast.error(
-                `Failed to add rule "${rule.rule_name}". You can add it from the job detail page.`,
-              );
-            }
-          }
-        }
+        const jobId = result.id;
 
         router.push(`/dashboard/company/jobs/${jobId}`);
       } catch {
         // Error is handled by the mutation's onError handler
       }
     },
-    [createJobMutation, router],
+    [createJobMutation, router, parseNumber],
   );
 
   return (

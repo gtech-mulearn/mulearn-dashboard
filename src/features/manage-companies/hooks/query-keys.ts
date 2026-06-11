@@ -8,4 +8,6 @@ export const manageCompaniesKeys = {
     sortBy: string;
     status: string;
   }) => [...manageCompaniesKeys.lists(), params] as const,
+  details: () => [...manageCompaniesKeys.all, "detail"] as const,
+  detail: (id: string) => [...manageCompaniesKeys.details(), id] as const,
 };

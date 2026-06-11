@@ -18,18 +18,22 @@ import {
   DollarSign,
   MapPin,
   Package,
-  Sparkles,
-  Star,
   Timer,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { useApplyJob } from "../hooks";
+import {
+  useApplyJob,
+  useLearnerApplications,
+  useResubmitApplication,
+  useTrackJobView,
+} from "../hooks";
 import type { PublicJob } from "../types";
 
 interface JobDetailModalProps {
@@ -39,11 +43,14 @@ interface JobDetailModalProps {
 }
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+  const d = iso ? new Date(iso) : null;
+  return d && !isNaN(d.getTime())
+    ? d.toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      })
+    : "N/A";
 }
 
 function Section({
@@ -69,17 +76,74 @@ export function JobDetailModal({
   onOpenChange,
 }: JobDetailModalProps) {
   const [coverNote, setCoverNote] = useState("");
-  const { mutate: apply, isPending, isSuccess, reset } = useApplyJob();
+  const [resumeLink, setResumeLink] = useState("");
+  const {
+    mutate: apply,
+    isPending: isApplying,
+    isSuccess: applySuccess,
+  } = useApplyJob();
+  const {
+    mutate: resubmit,
+    isPending: isResubmitting,
+    isSuccess: resubmitSuccess,
+  } = useResubmitApplication();
+  const { mutate: trackView } = useTrackJobView();
+
+  const { data: appsResponse } = useLearnerApplications();
+  const existingApp = appsResponse?.applications.find(
+    (app) => app.job.id === job?.id,
+  );
+  const isRejected = existingApp?.status === "rejected";
+  const isAlreadyApplied = existingApp && !isRejected;
+  const isPending = isApplying || isResubmitting;
+  const isSuccess = applySuccess || resubmitSuccess;
+
+  useEffect(() => {
+    if (open && job?.id) {
+      trackView(job.id);
+    }
+  }, [open, job?.id, trackView]);
 
   const handleApply = () => {
-    if (!job) return;
-    apply({ jobId: job.id, coverNote: coverNote.trim() || undefined });
+    if (!job || !resumeLink.trim() || isAlreadyApplied) return;
+
+    const onSuccessOptions = {
+      onSuccess: () => {
+        setTimeout(() => {
+          onOpenChange(false);
+          setCoverNote("");
+          setResumeLink("");
+        }, 1200);
+      },
+    };
+
+    if (isRejected && existingApp) {
+      resubmit(
+        {
+          appId: existingApp.id,
+          payload: {
+            resume_link: resumeLink.trim(),
+            cover_letter: coverNote.trim() || undefined,
+          },
+        },
+        onSuccessOptions,
+      );
+    } else {
+      apply(
+        {
+          jobId: job.id,
+          resume_link: resumeLink.trim(),
+          cover_letter: coverNote.trim() || undefined,
+        },
+        onSuccessOptions,
+      );
+    }
   };
 
   const handleClose = (open: boolean) => {
     if (!open) {
       setCoverNote("");
-      reset();
+      setResumeLink("");
     }
     onOpenChange(open);
   };
@@ -89,32 +153,40 @@ export function JobDetailModal({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
+        <DialogTitle className="sr-only">{job.title}</DialogTitle>
         {/* Header */}
         <div className="px-6 pt-6 pb-4 border-b border-border shrink-0">
           <div className="pr-8">
             <div className="flex flex-wrap items-center gap-2 mb-2">
-              <Badge variant="secondary" className="capitalize text-xs">
-                <Briefcase className="h-3 w-3 mr-1" />
-                {job.job_type.replace(/_/g, " ")}
-              </Badge>
-              {job.karma_reward ? (
-                <Badge className="gap-1 bg-primary/10 text-primary border border-primary/20 text-xs">
-                  <Sparkles className="h-3 w-3" />+{job.karma_reward} karma
+              {job.job_type && (
+                <Badge variant="secondary" className="capitalize text-xs">
+                  <Briefcase className="h-3 w-3 mr-1" />
+                  {job.job_type.replace(/_/g, " ")}
                 </Badge>
-              ) : null}
+              )}
             </div>
             <h2 className="text-xl font-bold text-foreground leading-tight">
               {job.title}
             </h2>
             <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <MapPin className="h-3.5 w-3.5" />
-                {job.location}
-              </span>
-              <span className="flex items-center gap-1">
-                <Calendar className="h-3.5 w-3.5" />
-                Posted {formatDate(job.created_at)}
-              </span>
+              {job.company_name && (
+                <span className="flex items-center gap-1 font-medium text-foreground">
+                  <Briefcase className="h-3.5 w-3.5" />
+                  {job.company_name}
+                </span>
+              )}
+              {job.location && (
+                <span className="flex items-center gap-1">
+                  <MapPin className="h-3.5 w-3.5" />
+                  {job.location}
+                </span>
+              )}
+              {job.created_at && (
+                <span className="flex items-center gap-1">
+                  <Calendar className="h-3.5 w-3.5" />
+                  Posted {formatDate(job.created_at)}
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -124,14 +196,6 @@ export function JobDetailModal({
           {/* Requirements */}
           <Section title="Requirements">
             <div className="flex flex-wrap gap-2">
-              <div className="flex items-center gap-2 rounded-lg bg-muted px-3 py-2 text-sm">
-                <Sparkles className="h-4 w-4 text-primary" />
-                <span className="font-medium">Karma ≥ {job.min_karma}</span>
-              </div>
-              <div className="flex items-center gap-2 rounded-lg bg-muted px-3 py-2 text-sm">
-                <Star className="h-4 w-4 text-primary" />
-                <span className="font-medium">Level ≥ {job.min_level}</span>
-              </div>
               {job.experience && (
                 <div className="flex items-center gap-2 rounded-lg bg-muted px-3 py-2 text-sm">
                   <Timer className="h-4 w-4 text-primary" />
@@ -190,16 +254,23 @@ export function JobDetailModal({
           )}
 
           {/* Deliverables */}
-          {job.deliverables && job.deliverables.length > 0 && (
+          {job.deliverables && (
             <Section title="Deliverables">
-              <ul className="space-y-1.5">
-                {job.deliverables.map((d) => (
-                  <li key={d} className="flex items-start gap-2 text-sm">
-                    <Package className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
-                    <span>{d}</span>
-                  </li>
-                ))}
-              </ul>
+              {Array.isArray(job.deliverables) ? (
+                <ul className="space-y-1.5">
+                  {job.deliverables.map((d) => (
+                    <li key={d} className="flex items-start gap-2 text-sm">
+                      <Package className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+                      <span>{d}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="flex items-start gap-2 text-sm">
+                  <Package className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+                  <span>{job.deliverables}</span>
+                </div>
+              )}
             </Section>
           )}
 
@@ -223,7 +294,7 @@ export function JobDetailModal({
                   <li key={rule.id} className="flex items-start gap-2 text-sm">
                     <span className="mt-2 h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
                     <span>
-                      {rule.rule_name}
+                      {rule.rule_value}
                       {rule.rule_type && (
                         <span className="ml-1.5 text-xs text-muted-foreground capitalize">
                           ({rule.rule_type.replace(/_/g, " ")})
@@ -252,23 +323,48 @@ export function JobDetailModal({
               </div>
             </div>
           ) : (
-            <div className="space-y-1.5">
-              <label
-                htmlFor="modal-cover-note"
-                className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-              >
-                Cover note{" "}
-                <span className="font-normal normal-case">(optional)</span>
-              </label>
-              <Textarea
-                id="modal-cover-note"
-                placeholder="Tell the company why you're a great fit…"
-                rows={3}
-                value={coverNote}
-                onChange={(e) => setCoverNote(e.target.value)}
-                className="resize-none"
-                disabled={isPending}
-              />
+            <div className="space-y-4">
+              {/* Resume Link */}
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="modal-resume-link"
+                  className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                >
+                  Resume Link{" "}
+                  <span className="text-destructive font-normal normal-case">
+                    *
+                  </span>
+                </label>
+                <Input
+                  id="modal-resume-link"
+                  type="url"
+                  placeholder="e.g., Google Drive, Notion, Portfolio URL…"
+                  value={resumeLink}
+                  onChange={(e) => setResumeLink(e.target.value)}
+                  disabled={isPending}
+                  required
+                />
+              </div>
+
+              {/* Cover note */}
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="modal-cover-note"
+                  className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                >
+                  Cover note{" "}
+                  <span className="font-normal normal-case">(optional)</span>
+                </label>
+                <Textarea
+                  id="modal-cover-note"
+                  placeholder="Tell the company why you're a great fit…"
+                  rows={3}
+                  value={coverNote}
+                  onChange={(e) => setCoverNote(e.target.value)}
+                  className="resize-none"
+                  disabled={isPending}
+                />
+              </div>
             </div>
           )}
         </div>
@@ -279,8 +375,19 @@ export function JobDetailModal({
             {isSuccess ? "Close" : "Cancel"}
           </Button>
           {!isSuccess && (
-            <Button onClick={handleApply} disabled={isPending}>
-              {isPending ? "Applying…" : "Apply Now"}
+            <Button
+              onClick={handleApply}
+              disabled={isPending || !resumeLink.trim() || isAlreadyApplied}
+            >
+              {isAlreadyApplied
+                ? "Already Applied"
+                : isPending
+                  ? isRejected
+                    ? "Resubmitting…"
+                    : "Applying…"
+                  : isRejected
+                    ? "Resubmit Application"
+                    : "Apply Now"}
             </Button>
           )}
         </div>

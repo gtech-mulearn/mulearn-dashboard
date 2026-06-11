@@ -26,5 +26,6 @@ export {
   checkEmailExists,
   companySignup,
   registerUser,
+  updateCompanyRegistration,
   validateRegistrationData,
 } from "./register.api";
