@@ -380,7 +380,7 @@ export function RegisterRoleDetails({
   const getRoleLabel = () => {
     switch (role) {
       case "student":
-        return "Student";
+        return "Learner";
       case "mentor":
         return "Mentor";
       case "enabler":
