@@ -6,6 +6,7 @@ import {
   fetchAvailabilityCalendar,
   getAvailabilitySlots,
 } from "../api";
+import type { WeeklySchedule } from "../types";
 import { mentorKeys } from "./query-keys";
 
 const no403Retry = (failureCount: number, error: unknown) => {
@@ -28,19 +29,27 @@ export function useAvailabilitySlots() {
   });
 }
 
+// Availability calendar — reuses availability query key (same data source)
 export function useAvailabilityCalendar() {
   return useQuery({
-    queryKey: mentorKeys.availabilityCalendar(),
+    queryKey: [...mentorKeys.availability(), "calendar"] as const,
     queryFn: fetchAvailabilityCalendar,
     staleTime: 5 * 60 * 1000,
     retry: no403Retry,
   });
 }
 
+// createAvailabilitySlots(schedule, igId?) — igId optional, no React Query ctx arg
 export function useCreateAvailabilitySlots() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: createAvailabilitySlots,
+    mutationFn: ({
+      schedule,
+      igId,
+    }: {
+      schedule: WeeklySchedule;
+      igId?: string;
+    }) => createAvailabilitySlots(schedule, igId),
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: mentorKeys.availability(),

@@ -25,6 +25,38 @@ import { useMentorList } from "../hooks/use-mentor-verify";
 import type { MentorApplicationListItem } from "../schemas";
 import { MentorVerifyDialog } from "./mentor-verify-dialog";
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function getDisplayName(m: MentorApplicationListItem): string {
+  return m.user_full_name ?? m.full_name ?? "—";
+}
+
+function getStatusBadge(m: MentorApplicationListItem) {
+  // Doc: status is "PENDING" | "APPROVED" | "REJECTED"
+  // Backward compat: fall back to is_verified boolean if status not present
+  const status =
+    m.status ??
+    (m.is_verified === true
+      ? "APPROVED"
+      : m.verification_note
+        ? "REJECTED"
+        : "PENDING");
+
+  if (status === "APPROVED") return <Badge variant="default">Approved</Badge>;
+  if (status === "REJECTED")
+    return <Badge variant="destructive">Rejected</Badge>;
+  return <Badge variant="secondary">Pending</Badge>;
+}
+
+function isApprovedMentor(m: MentorApplicationListItem): boolean {
+  return (
+    m.status === "APPROVED" ||
+    (m.status === undefined && m.is_verified === true)
+  );
+}
+
+// ─── Table Component ──────────────────────────────────────────────────────────
+
 function MentorTable({
   items,
   isLoading,
@@ -63,7 +95,7 @@ function MentorTable({
       <TableHeader>
         <TableRow>
           <TableHead>Name</TableHead>
-          <TableHead>Expertise</TableHead>
+          <TableHead>Email</TableHead>
           <TableHead>Status</TableHead>
           <TableHead>Tier</TableHead>
           {showActions && <TableHead>Actions</TableHead>}
@@ -73,39 +105,17 @@ function MentorTable({
         {items.map((m) => (
           <TableRow key={m.id}>
             <TableCell>
-              <p className="font-medium">{m.full_name}</p>
+              <p className="font-medium">{getDisplayName(m)}</p>
               {m.muid && (
                 <p className="text-xs text-muted-foreground">{m.muid}</p>
               )}
             </TableCell>
             <TableCell>
-              {(() => {
-                const exp = Array.isArray(m.expertise) ? m.expertise : [];
-                return (
-                  <div className="flex flex-wrap gap-1">
-                    {exp.slice(0, 3).map((e) => (
-                      <Badge key={e} variant="secondary" className="text-xs">
-                        {e}
-                      </Badge>
-                    ))}
-                    {exp.length > 3 && (
-                      <Badge variant="outline" className="text-xs">
-                        +{exp.length - 3}
-                      </Badge>
-                    )}
-                  </div>
-                );
-              })()}
+              <p className="text-sm text-muted-foreground">
+                {m.user_email ?? m.email ?? "—"}
+              </p>
             </TableCell>
-            <TableCell>
-              {m.is_verified ? (
-                <Badge variant="default">Verified</Badge>
-              ) : m.verification_note ? (
-                <Badge variant="destructive">Rejected</Badge>
-              ) : (
-                <Badge variant="secondary">Pending</Badge>
-              )}
-            </TableCell>
+            <TableCell>{getStatusBadge(m)}</TableCell>
             <TableCell>
               {m.mentor_tier ? (
                 <Badge variant="outline">{m.mentor_tier}</Badge>
@@ -123,13 +133,13 @@ function MentorTable({
                         size="icon"
                         className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950"
                         onClick={() => onVerify(m, "approve")}
-                        disabled={m.is_verified}
+                        disabled={isApprovedMentor(m)}
                       >
                         <CheckCircle className="h-4 w-4" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      {m.is_verified ? "Already verified" : "Approve"}
+                      {isApprovedMentor(m) ? "Already approved" : "Approve"}
                     </TooltipContent>
                   </Tooltip>
                   <Tooltip>
@@ -139,7 +149,7 @@ function MentorTable({
                         size="icon"
                         className="h-8 w-8 text-destructive hover:bg-destructive/10"
                         onClick={() => onVerify(m, "reject")}
-                        disabled={m.is_verified}
+                        disabled={isApprovedMentor(m)}
                       >
                         <XCircle className="h-4 w-4" />
                       </Button>
@@ -155,6 +165,8 @@ function MentorTable({
     </Table>
   );
 }
+
+// ─── Page Component ───────────────────────────────────────────────────────────
 
 export function MentorVerificationPage() {
   const [search, setSearch] = useState("");
@@ -184,7 +196,7 @@ export function MentorVerificationPage() {
           <div className="relative w-64">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search by name or MUID..."
+              placeholder="Search by name or email…"
               className="pl-8"
               value={search}
               onChange={(e) => setSearch(e.target.value)}

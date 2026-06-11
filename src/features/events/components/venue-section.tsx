@@ -6,9 +6,9 @@ import {
   type FieldErrors,
   type UseFormWatch,
 } from "react-hook-form";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { CreateEventSchema } from "../schemas";
-import { Button } from "@/components/ui/button";
 
 interface VenueSectionProps {
   control: Control<CreateEventSchema>;

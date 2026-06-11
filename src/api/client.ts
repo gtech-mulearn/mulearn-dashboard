@@ -308,6 +308,7 @@ async function request<T>(
         endpoint,
         status: res.status,
         message: backendMsg,
+        raw: rawData,
       });
     }
     throw error;

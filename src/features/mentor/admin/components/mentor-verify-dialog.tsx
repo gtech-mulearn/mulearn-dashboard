@@ -33,11 +33,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { useVerifyMentor } from "../hooks/use-mentor-verify";
 import type { MentorApplicationListItem } from "../schemas";
 
+// ─── Local form schemas ───────────────────────────────────────────────────────
+// Approve: doc payload = { status: "APPROVED" }  (mentor_tier is frontend-only UI)
 const ApproveSchema = z.object({
   mentor_tier: z.string().optional(),
 });
+// Reject: doc payload = { status: "REJECTED", verification_note: "..." }
 const RejectSchema = z.object({
-  note: z.string().min(1, "Rejection note is required"),
+  verification_note: z.string().min(1, "Rejection note is required"),
 });
 
 type ApproveValues = z.infer<typeof ApproveSchema>;
@@ -48,6 +51,21 @@ interface MentorVerifyDialogProps {
   action: "approve" | "reject";
   open: boolean;
   onOpenChange: (v: boolean) => void;
+}
+
+// ─── Helper: resolve display name ─────────────────────────────────────────────
+function getDisplayName(mentor: MentorApplicationListItem): string {
+  return mentor.user_full_name ?? mentor.full_name ?? "Mentor";
+}
+
+// ─── Helper: resolve status badge ────────────────────────────────────────────
+function getStatusBadge(mentor: MentorApplicationListItem) {
+  const status = mentor.status;
+  if (status === "APPROVED")
+    return { label: "Approved", variant: "default" as const };
+  if (status === "REJECTED")
+    return { label: "Rejected", variant: "destructive" as const };
+  return { label: "Pending", variant: "secondary" as const };
 }
 
 export function MentorVerifyDialog({
@@ -64,48 +82,46 @@ export function MentorVerifyDialog({
   });
   const rejectForm = useForm<RejectValues>({
     resolver: zodResolver(RejectSchema),
-    defaultValues: { note: "" },
+    defaultValues: { verification_note: "" },
   });
 
   const isApprove = action === "approve";
 
-  function onApprove(values: ApproveValues) {
+  // ─── Approve → doc payload: { status: "APPROVED" } ─────────────────────────
+  function onApprove(_values: ApproveValues) {
     if (!mentor) return;
-    const tier: "IG_MENTOR" | "MENTOR" | undefined =
-      values.mentor_tier === "IG_MENTOR" || values.mentor_tier === "MENTOR"
-        ? values.mentor_tier
-        : undefined;
+    verify(
+      {
+        mentorId: mentor.id,
+        data: { status: "APPROVED" },
+      },
+      { onSuccess: () => onOpenChange(false) },
+    );
+  }
+
+  // ─── Reject → doc payload: { status: "REJECTED", verification_note: "..." } ─
+  function onReject(values: RejectValues) {
+    if (!mentor) return;
     verify(
       {
         mentorId: mentor.id,
         data: {
-          action: "approve",
-          mentor_tier: tier,
+          status: "REJECTED",
+          verification_note: values.verification_note,
         },
       },
       { onSuccess: () => onOpenChange(false) },
     );
   }
 
-  function onReject(values: RejectValues) {
-    if (!mentor) return;
-    verify(
-      {
-        mentorId: mentor.id,
-        data: { action: "reject", note: values.note },
-      },
-      { onSuccess: () => onOpenChange(false) },
-    );
-  }
-
-  const initials = mentor?.full_name
-    ? mentor.full_name
-        .split(" ")
-        .map((n) => n[0])
-        .slice(0, 2)
-        .join("")
-        .toUpperCase()
-    : "M";
+  const displayName = mentor ? getDisplayName(mentor) : "Mentor";
+  const initials =
+    displayName
+      .split(" ")
+      .map((n) => n[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase() || "M";
 
   const appliedAt = mentor?.created_at
     ? new Date(mentor.created_at).toLocaleDateString(undefined, {
@@ -115,7 +131,14 @@ export function MentorVerifyDialog({
       })
     : null;
 
-  const expertise = Array.isArray(mentor?.expertise) ? mentor.expertise : [];
+  const expertise = mentor?.expertise
+    ? typeof mentor.expertise === "string"
+      ? mentor.expertise
+      : ""
+    : "";
+
+  const email = mentor?.user_email ?? mentor?.email ?? "";
+  const muid = mentor?.muid ?? "";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -135,29 +158,32 @@ export function MentorVerifyDialog({
               <div className="flex items-start gap-3">
                 <Avatar className="h-12 w-12">
                   {mentor.profile_pic ? (
-                    <AvatarImage
-                      src={mentor.profile_pic}
-                      alt={mentor.full_name}
-                    />
+                    <AvatarImage src={mentor.profile_pic} alt={displayName} />
                   ) : null}
                   <AvatarFallback>{initials}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-base">{mentor.full_name}</p>
-                  {mentor.muid && (
+                  <p className="font-semibold text-base">{displayName}</p>
+                  {muid && (
                     <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                       <User className="h-3 w-3" />
-                      {mentor.muid}
+                      {muid}
                     </p>
                   )}
-                  {mentor.email && (
+                  {email && (
                     <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                       <Mail className="h-3 w-3" />
-                      {mentor.email}
+                      {email}
                     </p>
                   )}
                 </div>
                 <div className="flex flex-col items-end gap-1 text-xs text-muted-foreground">
+                  {/* Status badge */}
+                  {mentor.status && (
+                    <Badge variant={getStatusBadge(mentor).variant}>
+                      {getStatusBadge(mentor).label}
+                    </Badge>
+                  )}
                   {appliedAt && (
                     <span className="flex items-center gap-1">
                       <CalendarDays className="h-3 w-3" />
@@ -175,7 +201,7 @@ export function MentorVerifyDialog({
             </div>
 
             {/* Expertise */}
-            {expertise.length > 0 && (
+            {expertise && (
               <div>
                 <div className="flex items-center gap-1.5 mb-2">
                   <Sparkles className="h-3.5 w-3.5 text-muted-foreground" />
@@ -183,13 +209,7 @@ export function MentorVerifyDialog({
                     Expertise
                   </p>
                 </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {expertise.map((e) => (
-                    <Badge key={e} variant="secondary">
-                      {e}
-                    </Badge>
-                  ))}
-                </div>
+                <p className="text-sm text-foreground">{expertise}</p>
               </div>
             )}
 
@@ -249,12 +269,13 @@ export function MentorVerifyDialog({
               onSubmit={approveForm.handleSubmit(onApprove)}
               className="space-y-4"
             >
+              {/* Tier select is UI-only (doc doesn't send tier in verify payload) */}
               <FormField
                 control={approveForm.control}
                 name="mentor_tier"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Mentor Tier</FormLabel>
+                    <FormLabel>Mentor Tier (informational)</FormLabel>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl>
                         <SelectTrigger>
@@ -263,15 +284,21 @@ export function MentorVerifyDialog({
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="IG_MENTOR">
-                          IG Mentor — can mentor a specific Interest Group
+                          IG Mentor — mentors a specific Interest Group
                         </SelectItem>
                         <SelectItem value="MENTOR">
-                          Global Mentor — can create global sessions only
+                          Mentor — global sessions
+                        </SelectItem>
+                        <SelectItem value="COMPANY_MENTOR">
+                          Company Mentor
+                        </SelectItem>
+                        <SelectItem value="CAMPUS_MENTOR">
+                          Campus Mentor
                         </SelectItem>
                       </SelectContent>
                     </Select>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Defaults to IG Mentor if not set.
+                      Tier is assigned automatically on approval.
                     </p>
                     <FormMessage />
                   </FormItem>
@@ -286,7 +313,7 @@ export function MentorVerifyDialog({
                   Cancel
                 </Button>
                 <Button type="submit" disabled={isPending}>
-                  {isPending ? "Approving..." : "Approve"}
+                  {isPending ? "Approving…" : "Approve"}
                 </Button>
               </div>
             </form>
@@ -299,14 +326,14 @@ export function MentorVerifyDialog({
             >
               <FormField
                 control={rejectForm.control}
-                name="note"
+                name="verification_note"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Rejection Note</FormLabel>
                     <FormControl>
                       <Textarea
                         rows={3}
-                        placeholder="Explain why this application is being rejected..."
+                        placeholder="Explain why this application is being rejected…"
                         {...field}
                       />
                     </FormControl>
@@ -327,7 +354,7 @@ export function MentorVerifyDialog({
                   variant="destructive"
                   disabled={isPending}
                 >
-                  {isPending ? "Rejecting..." : "Reject"}
+                  {isPending ? "Rejecting…" : "Reject"}
                 </Button>
               </div>
             </form>
