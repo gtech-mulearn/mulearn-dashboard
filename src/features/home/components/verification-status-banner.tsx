@@ -39,7 +39,7 @@ export function VerificationStatusBanner({
 
   const companyStatus = useCompanyOnboardingStatus(isCompany);
   const mentorApplication = useMentorApplication(isMentor);
-  const mentorOverview = useMentorOverview();
+  const mentorOverview = useMentorOverview(isMentor);
 
   // ── Company ─────────────────────────────────────────────────────
   if (isCompany) {
