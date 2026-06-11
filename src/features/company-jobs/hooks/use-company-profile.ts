@@ -45,7 +45,7 @@ export function usePublicCompanyProfile(slug?: string) {
   return useQuery({
     queryKey: COMPANY_KEYS.publicProfile(slug ?? ""),
     queryFn: () => fetchPublicCompanyProfile(slug as string),
-    enabled: !!slug,
+    enabled: !!slug && !slug.includes("@"),
     staleTime: 10 * 60 * 1000,
   });
 }
@@ -54,7 +54,7 @@ export function usePublicCompanyJobs(slug?: string) {
   return useQuery({
     queryKey: COMPANY_KEYS.publicJobs(slug ?? ""),
     queryFn: () => fetchPublicCompanyJobsBySlug(slug as string),
-    enabled: !!slug,
+    enabled: !!slug && !slug.includes("@"),
     staleTime: 5 * 60 * 1000,
   });
 }

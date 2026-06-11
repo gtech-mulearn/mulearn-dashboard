@@ -34,7 +34,7 @@ import { ROLES } from "@/lib/auth/roles";
 
 export default function PublicProfilePage() {
   const params = useParams();
-  const muidParam = params.muid as string;
+  const muidParam = decodeURIComponent(params.muid as string);
 
   // Companies use slugs (e.g. techcorp-india), users use MUIDs (e.g. john@mulearn)
   // MUIDs always contain an '@'. Slugs never do.

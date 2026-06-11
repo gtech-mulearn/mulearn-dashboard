@@ -18,6 +18,7 @@ export function CompanyPublicView({
   userProfile,
   slug,
 }: CompanyPublicViewProps) {
+  const isMuid = slug.includes("@");
   const {
     data: apiProfile,
     isLoading: profileLoading,
@@ -25,7 +26,7 @@ export function CompanyPublicView({
   } = usePublicCompanyProfile(slug);
   const { data: jobsData, isLoading: jobsLoading } = usePublicCompanyJobs(slug);
 
-  if (profileLoading || jobsLoading) {
+  if (!isMuid && (profileLoading || jobsLoading)) {
     return (
       <div className="flex items-center justify-center py-20 text-muted-foreground">
         Loading profile…
@@ -33,7 +34,7 @@ export function CompanyPublicView({
     );
   }
 
-  if (profileError) {
+  if (!isMuid && profileError) {
     return (
       <div className="flex items-center justify-center py-20 text-destructive">
         Failed to load company profile
