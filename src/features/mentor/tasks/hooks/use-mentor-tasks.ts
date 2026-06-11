@@ -10,11 +10,11 @@ import {
   fetchMentorTask,
   fetchMentorTasks,
   fetchTaskIgDropdown,
+  fetchTaskLevels,
   fetchTaskTypes,
   updateMentorTask,
 } from "../api/mentor-tasks.api";
 import type { MentorTaskFormValues } from "../schemas";
-import { fetchPublicLevels } from "@/features/mujourney/api/mujourney.api";
 
 // ─── Query keys ───────────────────────────────────────────────────────────────
 const mentorTaskKeys = {
@@ -59,12 +59,11 @@ export function useTaskTypes() {
   });
 }
 
-// ─── GET /api/v1/public/list/levels/ — task levels for dropdown ──────────────
-
+// ─── GET /api/v1/dashboard/task/level/ — task levels for dropdown ────────────
 export function useTaskLevels() {
   return useQuery({
     queryKey: [...mentorTaskKeys.all, "levels"],
-    queryFn: fetchPublicLevels,
+    queryFn: fetchTaskLevels,
     staleTime: 10 * 60 * 1000, // levels change rarely
     retry: no403Retry,
   });

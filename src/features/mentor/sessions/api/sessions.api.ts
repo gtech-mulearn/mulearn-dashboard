@@ -90,6 +90,50 @@ function toBackendPayload(data: Partial<SessionFormValues>) {
   return payload;
 }
 
+// Update payload — identical to create but WITHOUT recurrence fields.
+// PATCH /session/update/{id}/ rejects recurrence_type, recurrence_interval,
+// and recurrence_end_date with "Unknown field." so we must omit them entirely.
+function toUpdatePayload(data: Partial<SessionFormValues>) {
+  const {
+    ig_id,
+    meeting_link,
+    description,
+    venue,
+    starts_at,
+    ends_at,
+    // Strip all recurrence fields — backend PATCH endpoint does not accept them
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    is_recurring: _is_recurring,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    recurrence_type: _recurrence_type,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    recurrence_interval: _recurrence_interval,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    recurrence_end_date: _recurrence_end_date,
+    ...rest
+  } = data;
+
+  const payload: Record<string, unknown> = { ...rest };
+
+  if (ig_id !== undefined) {
+    payload.ig = ig_id;
+    payload.entity_id = ig_id;
+    payload.session_type = "ig_session";
+  }
+
+  if (starts_at !== undefined) payload.starts_at = toISO(starts_at);
+  if (ends_at !== undefined) payload.ends_at = toISO(ends_at);
+
+  if (meeting_link && meeting_link.trim() !== "")
+    payload.meeting_link = meeting_link.trim();
+  if (description && description.trim() !== "")
+    payload.description = description.trim();
+  if (venue && (venue as string).trim() !== "")
+    payload.venue = (venue as string).trim();
+
+  return payload;
+}
+
 // ─── #11 POST /session/create/ ────────────────────────────────────────────────
 export async function createSession(data: SessionFormValues): Promise<Session> {
   const res = await apiClient.post(
@@ -140,14 +184,13 @@ export async function fetchSessionDetail(sessionId: string): Promise<Session> {
 export async function updateSession(
   id: string,
   data: Partial<SessionFormValues>,
-): Promise<Session> {
-  const res = await apiClient.patch(
+): Promise<void> {
+  await apiClient.patch(
     endpoints.mentor.sessionUpdate(id),
-    toBackendPayload(data),
-    SingleSessionResponseSchema,
+    toUpdatePayload(data), // ← stripped of recurrence fields
+    GenericResponseSchema,
     OPT,
   );
-  return res.response;
 }
 
 // ─── #14 DELETE /session/update/<session_id>/ ────────────────────────────────
