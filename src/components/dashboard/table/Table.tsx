@@ -196,7 +196,7 @@ const Table: FC<TableProps> = (props) => {
                       className="border-b border-border px-3.5 py-3 w-32"
                       key={column}
                     >
-                      <div className="flex items-center justify-end gap-1">
+                      <div className="flex items-center justify-center gap-1">
                         {props.customActionRender ? (
                           props.customActionRender(rowData)
                         ) : (
@@ -294,7 +294,9 @@ const Table: FC<TableProps> = (props) => {
                     #{startIndex + index + 1}
                   </p>
                   <p className="text-base font-semibold text-foreground">
-                    {convertToTableData(rowData.full_name)}
+                    {convertToTableData(
+                      rowData.full_name ?? rowData.name ?? rowData.title,
+                    )}
                   </p>
                 </div>
                 {actionIdColumn && (

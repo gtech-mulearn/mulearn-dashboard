@@ -20,7 +20,7 @@ export function ActiveQuests() {
       </h3>
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Link href="/dashboard/intern/timesheet">
-          <Card className="h-full border-2 border-transparent hover:border-brand-blue/50 bg-gradient-to-br from-card to-brand-blue/5 transition-all cursor-pointer group shadow-lg hover:shadow-brand-blue/10">
+          <Card className="h-full border-2 border-transparent hover:border-brand-blue/50 bg-gradient-to-br from-card to-brand-blue/5 transition-all cursor-pointer group shadow-lg hover:shadow-brand-blue/10 py-0 gap-0">
             <CardContent className="p-6 flex flex-col items-center text-center gap-4">
               <div className="p-4 bg-brand-blue/10 rounded-2xl group-hover:scale-110 transition-transform">
                 <Calendar className="w-8 h-8 text-brand-blue" />
@@ -38,7 +38,7 @@ export function ActiveQuests() {
         </Link>
 
         <Link href="/dashboard/intern/tasks">
-          <Card className="h-full border-2 border-transparent hover:border-success/50 bg-gradient-to-br from-card to-success/5 transition-all cursor-pointer group shadow-lg hover:shadow-success/10">
+          <Card className="h-full border-2 border-transparent hover:border-success/50 bg-gradient-to-br from-card to-success/5 transition-all cursor-pointer group shadow-lg hover:shadow-success/10 py-0 gap-0">
             <CardContent className="p-6 flex flex-col items-center text-center gap-4">
               <div className="p-4 bg-success/10 rounded-2xl group-hover:scale-110 transition-transform">
                 <CheckCircle2 className="w-8 h-8 text-success" />
@@ -56,7 +56,7 @@ export function ActiveQuests() {
         </Link>
 
         <Link href="/dashboard/intern/weekly-review">
-          <Card className="h-full border-2 border-transparent hover:border-brand-purple/50 bg-gradient-to-br from-card to-brand-purple/5 transition-all cursor-pointer group shadow-lg hover:shadow-brand-purple/10">
+          <Card className="h-full border-2 border-transparent hover:border-brand-purple/50 bg-gradient-to-br from-card to-brand-purple/5 transition-all cursor-pointer group shadow-lg hover:shadow-brand-purple/10 py-0 gap-0">
             <CardContent className="p-6 flex flex-col items-center text-center gap-4">
               <div className="p-4 bg-brand-purple/10 rounded-2xl group-hover:scale-110 transition-transform">
                 <LineChart className="w-8 h-8 text-brand-purple" />
@@ -74,7 +74,7 @@ export function ActiveQuests() {
         </Link>
 
         <Link href="http://mulearn.org/r/internplaybook" target="_blank">
-          <Card className="h-full border-2 border-transparent hover:border-warning/50 bg-gradient-to-br from-card to-warning/5 transition-all cursor-pointer group shadow-lg hover:shadow-warning/10">
+          <Card className="h-full border-2 border-transparent hover:border-warning/50 bg-gradient-to-br from-card to-warning/5 transition-all cursor-pointer group shadow-lg hover:shadow-warning/10 py-0 gap-0">
             <CardContent className="p-6 flex flex-col items-center text-center gap-4">
               <div className="p-4 bg-warning/10 rounded-2xl group-hover:scale-110 transition-transform">
                 <BookOpen className="w-8 h-8 text-warning" />

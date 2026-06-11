@@ -29,7 +29,7 @@ export function InternHeader({ onApplyLeave }: InternHeaderProps) {
             <Skeleton className="h-4 w-32" />
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Skeleton className="h-10 w-28 rounded-full" />
           <Skeleton className="h-10 w-36 rounded-full" />
           <Skeleton className="h-8 w-24 rounded-full" />
@@ -58,7 +58,7 @@ export function InternHeader({ onApplyLeave }: InternHeaderProps) {
           </div>
         </div>
         <div>
-          <h2 className="text-3xl font-black tracking-tight text-foreground flex items-center gap-2">
+          <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground flex items-center gap-2">
             Welcome back, {userDisplayName}
           </h2>
           <div className="flex items-center gap-3 mt-1">
@@ -74,7 +74,7 @@ export function InternHeader({ onApplyLeave }: InternHeaderProps) {
           </div>
         </div>
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <Link href="/dashboard/intern/leave">
           <Button
             variant="outline"

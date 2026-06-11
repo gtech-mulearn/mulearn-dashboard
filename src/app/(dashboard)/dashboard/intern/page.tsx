@@ -12,7 +12,7 @@ export default function InternDashboardPage() {
   const [isLeaveOpen, setIsLeaveOpen] = useState(false);
 
   return (
-    <div className="flex-1 space-y-8 p-8 pt-6 max-w-7xl mx-auto w-full bg-background/50">
+    <div className="flex-1 space-y-8 p-4 md:p-8 pt-6 max-w-7xl mx-auto w-full bg-background/50">
       {/* Header Section */}
       <InternHeader onApplyLeave={() => setIsLeaveOpen(true)} />
 

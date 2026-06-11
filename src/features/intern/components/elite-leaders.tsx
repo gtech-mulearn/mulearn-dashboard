@@ -77,7 +77,7 @@ export function EliteLeaders() {
 
   if (isLoading) {
     return (
-      <Card className="border-border/40 bg-card/40 backdrop-blur-md overflow-hidden">
+      <Card className="border-border/40 bg-card/40 backdrop-blur-md overflow-hidden py-0 gap-0 pt-6">
         <CardHeader className="flex flex-row items-center justify-between pb-4">
           <div>
             <CardTitle className="text-lg font-black uppercase tracking-widest flex items-center gap-2">
@@ -102,7 +102,7 @@ export function EliteLeaders() {
   }
 
   return (
-    <Card className="border-border/40 bg-card/40 backdrop-blur-md overflow-hidden">
+    <Card className="border-border/40 bg-card/40 backdrop-blur-md overflow-hidden py-0 gap-0 pt-6">
       <CardHeader className="flex flex-row items-center justify-between pb-4">
         <div>
           <CardTitle className="text-lg font-black uppercase tracking-widest flex items-center gap-2">

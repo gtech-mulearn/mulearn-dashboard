@@ -22,7 +22,7 @@ export function QuestLog() {
 
   if (isLoading) {
     return (
-      <Card className="h-full border-border/40 bg-card/40 backdrop-blur-md flex flex-col">
+      <Card className="h-full border-border/40 bg-card/40 backdrop-blur-md flex flex-col py-0 gap-0 pt-6">
         <CardHeader className="pb-4 border-b border-border/20">
           <CardTitle className="text-lg font-black uppercase tracking-widest flex items-center gap-2">
             <Activity className="w-5 h-5 text-muted-foreground" />
@@ -60,7 +60,7 @@ export function QuestLog() {
   }));
 
   return (
-    <Card className="h-full border-border/40 bg-card/40 backdrop-blur-md flex flex-col">
+    <Card className="h-full border-border/40 bg-card/40 backdrop-blur-md flex flex-col py-0 gap-0 pt-6">
       <CardHeader className="pb-4 border-b border-border/20">
         <CardTitle className="text-lg font-black uppercase tracking-widest flex items-center gap-2">
           <Activity className="w-5 h-5 text-muted-foreground" />

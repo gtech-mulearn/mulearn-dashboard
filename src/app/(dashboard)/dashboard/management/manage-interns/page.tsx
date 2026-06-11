@@ -8,6 +8,7 @@ import {
   Gem,
   MoreHorizontal,
   PauseCircle,
+  Pencil,
   Plus,
   Shield,
   Sparkles,
@@ -42,6 +43,7 @@ import {
   useGuilds,
   useManageInternsList,
 } from "@/features/intern";
+import type { TManageInternItem } from "@/features/intern/types";
 import { useDebounce } from "@/hooks/use-debounce";
 import { InternsStats } from "../../../../../features/intern/components/interns-stats";
 import { OnboardDialog } from "../../../../../features/intern/components/onboard-dialog";
@@ -159,11 +161,27 @@ export default function ManageInternsPage() {
   const { mutateAsync: exportCsv, isPending: isExporting } = useExportInterns();
 
   const rows = useMemo(() => {
-    return (listData?.data ?? []) as unknown as Data[];
-  }, [listData]);
+    const data = (listData?.data ?? []) as unknown as TManageInternItem[];
+    if (statusFilter === "all") return data as unknown as Data[];
+    return data.filter(
+      (item) => item.status?.toUpperCase() === statusFilter.toUpperCase(),
+    ) as unknown as Data[];
+  }, [listData, statusFilter]);
 
   const totalPages = listData?.pagination?.totalPages ?? 1;
   const totalCount = listData?.pagination?.count ?? 0;
+
+  const isBackendFiltered = useMemo(() => {
+    if (statusFilter === "all" || !listData?.data) return true;
+    return (listData.data as any[]).every(
+      (item) => item.status?.toUpperCase() === statusFilter.toUpperCase(),
+    );
+  }, [listData, statusFilter]);
+
+  const displayedTotalCount = isBackendFiltered ? totalCount : rows.length;
+  const displayedTotalPages = isBackendFiltered
+    ? totalPages
+    : Math.ceil(rows.length / perPage) || 1;
 
   const tableColumns = useMemo(() => {
     return [
@@ -199,39 +217,16 @@ export default function ManageInternsPage() {
         wrap: (data: string) => getStatusBadge(data),
       },
       {
-        column: "streak",
-        Label: "Streak",
+        column: "created_at",
+        Label: "Joined Date",
         isSortable: true,
         wrap: (data: string) => (
-          <div className="font-mono font-black text-warning flex items-center gap-1">
-            {Number(data || 0) > 0 ? (
-              <>
-                <Flame className="w-3 h-3 fill-warning" /> {data}
-              </>
-            ) : (
-              <span className="text-muted-foreground/40">{data || "0"}</span>
-            )}
-          </div>
-        ),
-      },
-      {
-        column: "score",
-        Label: "Gems",
-        isSortable: true,
-        wrap: (data: string) => (
-          <div className="font-mono font-black text-foreground flex items-center gap-1.5">
-            <Gem className="w-3.5 h-3.5 text-brand-blue" />
-            {Number(data || 0).toLocaleString()}
-          </div>
-        ),
-      },
-      {
-        column: "rank",
-        Label: "Rank",
-        isSortable: true,
-        wrap: (data: string) => (
-          <span className="font-black text-muted-foreground">
-            #{data || "-"}
+          <span className="font-mono text-xs font-bold text-foreground">
+            {new Date(data).toLocaleDateString(undefined, {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })}
           </span>
         ),
       },
@@ -363,7 +358,7 @@ export default function ManageInternsPage() {
           isCsvDownloading={isExporting}
         />
 
-        <Card className="border-border/40 bg-card/40 backdrop-blur-xl shadow-2xl overflow-hidden">
+        <Card className="border-border/40 bg-card/40 backdrop-blur-xl shadow-2xl overflow-hidden py-0">
           <CardContent className="p-0">
             <Table
               rows={rows}
@@ -374,45 +369,38 @@ export default function ManageInternsPage() {
               id={["id"]}
               slNoCellClassName="font-black text-muted-foreground/40 w-16"
               customActionRender={(row) => (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="h-8 w-8 p-0 hover:bg-muted/50 rounded-lg"
-                    >
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    align="end"
-                    className="w-48 bg-card/95 backdrop-blur-xl border-border/60 font-bold"
+                <div className="flex items-center gap-1.5 justify-center">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => {
+                      setUpdateIntern({
+                        id: String(row.id),
+                        name: String(row.full_name),
+                        guild: String(row.guild ?? ""),
+                        status: String(row.status ?? "ACTIVE"),
+                      });
+                    }}
+                    className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg"
+                    title="Edit Intern"
                   >
-                    <DropdownMenuItem
-                      onClick={() => {
-                        setUpdateIntern({
-                          id: String(row.id),
-                          name: String(row.full_name),
-                          guild: String(row.guild ?? ""),
-                          status: String(row.status ?? "ACTIVE"),
-                        });
-                      }}
-                      className="cursor-pointer uppercase text-[10px] tracking-wider py-3"
-                    >
-                      Edit Intern
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => {
-                        setDeactivateIntern({
-                          id: String(row.id),
-                          name: String(row.full_name),
-                        });
-                      }}
-                      className="cursor-pointer uppercase text-[10px] tracking-wider py-3 text-destructive focus:text-destructive"
-                    >
-                      Deactivate
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => {
+                      setDeactivateIntern({
+                        id: String(row.id),
+                        name: String(row.full_name),
+                      });
+                    }}
+                    className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg"
+                    title="Deactivate Intern"
+                  >
+                    <Shield className="h-4 w-4" />
+                  </Button>
+                </div>
               )}
             >
               <THead
@@ -424,12 +412,12 @@ export default function ManageInternsPage() {
               <div className="p-4 border-t border-border/20">
                 <Pagination
                   currentPage={page}
-                  totalPages={totalPages}
+                  totalPages={displayedTotalPages}
                   perPage={perPage}
-                  totalCount={totalCount}
+                  totalCount={displayedTotalCount}
                   handlePreviousClick={() => setPage((p) => Math.max(1, p - 1))}
                   handleNextClick={() =>
-                    setPage((p) => Math.min(totalPages, p + 1))
+                    setPage((p) => Math.min(displayedTotalPages, p + 1))
                   }
                 />
               </div>
