@@ -83,7 +83,7 @@ export default function ProfilePage() {
     mentorStatus?.status === "APPROVED";
 
   const updateProfileMutation = useUpdateProfile();
-  const { data: editableProfile } = useEditableProfile();
+
   const changeOrganizationMutation = useEditCollege();
   const updateProfileImageMutation = useUpdateProfileImage();
   const uploadCoverPicMutation = useUploadCoverPic();
@@ -127,31 +127,15 @@ export default function ProfilePage() {
     );
 
     if (hasProfileUpdates) {
-      const baseFullName =
-        editableProfile?.full_name?.trim() || profile.full_name?.trim() || "";
-      const finalFullName = data.full_name?.trim() || baseFullName;
-      const [firstName, ...lastNameParts] = finalFullName.split(" ");
-
-      const baseEmail = editableProfile?.email?.trim() || profile.email || "";
-      const baseMobile =
-        editableProfile?.mobile?.trim() || profile.mobile || "";
-      const baseGender =
-        editableProfile?.gender?.trim() || profile.gender || "";
-      const baseDob = editableProfile?.dob?.trim() || profile.dob || "";
-      const baseCommunities = editableProfile?.communities ?? [];
-
-      const profilePayload: UpdateProfileRequest = {
-        first_name: firstName?.trim() || "",
-        last_name: lastNameParts.join(" ").trim(),
-        full_name: finalFullName,
-        email: data.email?.trim() || baseEmail,
-        mobile: data.mobile?.trim() || baseMobile,
-        gender: data.gender?.trim() || baseGender,
-        dob: data.dob?.trim() || baseDob,
-        communities: dirtyFields.communities
-          ? (data.communities ?? [])
-          : baseCommunities,
-      };
+      const profilePayload: UpdateProfileRequest = {};
+      if (dirtyFields.full_name)
+        profilePayload.full_name = data.full_name?.trim() || "";
+      if (dirtyFields.email) profilePayload.email = data.email?.trim() || "";
+      if (dirtyFields.mobile) profilePayload.mobile = data.mobile?.trim() || "";
+      if (dirtyFields.gender) profilePayload.gender = data.gender?.trim() || "";
+      if (dirtyFields.dob) profilePayload.dob = data.dob?.trim() || "";
+      if (dirtyFields.communities)
+        profilePayload.communities = data.communities ?? [];
 
       await updateProfileMutation.mutateAsync(profilePayload);
     }

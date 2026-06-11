@@ -118,10 +118,7 @@ export function MentorEditProfileModal({
   const handleSubmit = async (values: MentorEditValues) => {
     try {
       // 1. Update learner profile fields (name)
-      const [firstName, ...lastParts] = (values.full_name ?? "").split(" ");
       await updateProfileMutation.mutateAsync({
-        first_name: firstName?.trim() ?? "",
-        last_name: lastParts.join(" ").trim(),
         full_name: values.full_name ?? "",
       });
 
