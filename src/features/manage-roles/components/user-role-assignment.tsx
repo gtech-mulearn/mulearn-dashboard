@@ -91,6 +91,7 @@ function SingleTab({ role }: { role: Role }) {
                 className="size-8 rounded-xl text-success hover:bg-success/10 hover:text-success/80"
                 disabled={assignMutation.isPending}
                 title="Assign role"
+                aria-label="Assign role"
                 onClick={() =>
                   assignMutation.mutate({ user_id: user.id, role_id: role.id })
                 }
@@ -103,6 +104,7 @@ function SingleTab({ role }: { role: Role }) {
                 className="size-8 rounded-xl text-destructive hover:bg-destructive/10"
                 disabled={removeMutation.isPending}
                 title="Remove role"
+                aria-label="Remove role"
                 onClick={() =>
                   removeMutation.mutate({ user_id: user.id, role_id: role.id })
                 }
@@ -158,9 +160,11 @@ function BulkAddTab({ role }: { role: Role }) {
         ))}
       </div>
       <Button
-        className="w-full rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90"
+        variant="default"
+        className="w-full"
         disabled={!selected.length || bulkAssign.isPending}
         onClick={handleAssign}
+        aria-label="Assign selected users"
       >
         {bulkAssign.isPending
           ? "Assigning…"
@@ -212,9 +216,10 @@ function BulkRemoveTab({ role }: { role: Role }) {
       </div>
       <Button
         variant="destructive"
-        className="w-full rounded-2xl"
+        className="w-full"
         disabled={!selected.length || bulkRemove.isPending}
         onClick={handleRemove}
+        aria-label="Remove selected users"
       >
         {bulkRemove.isPending
           ? "Removing…"
