@@ -121,13 +121,14 @@ export function RegisterClient({
     // Student / Enabler
     college?: string;
     customCollege?: string;
-    // Student / Mentor (College type)
+    // Student / Mentor (College type) / Student (Company type)
     department?: string;
     graduationYear?: number;
-    // Mentor
+    // Mentor / Student (Company type)
     organization?: string;
     customOrganization?: string;
     organizationType?: "College" | "Company";
+    role?: string;
     // Company
     companyName?: string;
     companyDescription?: string;
@@ -223,6 +224,7 @@ export function RegisterClient({
     organization?: string;
     customOrganization?: string;
     organizationType?: "College" | "Company";
+    role?: string;
   }) {
     if (!basicData || !selectedRole) return;
 
@@ -251,30 +253,47 @@ export function RegisterClient({
 
     // 3. Now authenticated — handle org linking for student / enabler
     if (selectedRole === "student" || selectedRole === "enabler") {
-      if (values.college === "others" && values.customCollege) {
-        // Submit unverified org for admin review
-        const payload: {
-          title: string;
-          org_type: "College" | "Company";
-          department?: string;
-          graduation_year?: string;
-        } = { title: values.customCollege, org_type: "College" };
-
-        if (selectedRole === "student") {
-          if (values.department) payload.department = values.department;
-          if (values.graduationYear)
-            payload.graduation_year = values.graduationYear.toString();
+      if (selectedRole === "student" && values.organizationType === "Company") {
+        if (values.organization === "others" && values.customOrganization) {
+          await createOrganization.mutateAsync({
+            title: values.customOrganization,
+            org_type: "Company",
+          });
+          toast.success("Organization submitted for review!");
+        } else if (values.organization) {
+          await selectOrganization.mutateAsync({
+            organization: values.organization,
+            department: null,
+            graduation_year: null,
+            is_student: true,
+          });
         }
+      } else {
+        if (values.college === "others" && values.customCollege) {
+          // Submit unverified org for admin review
+          const payload: {
+            title: string;
+            org_type: "College" | "Company";
+            department?: string;
+            graduation_year?: string;
+          } = { title: values.customCollege, org_type: "College" };
 
-        await createOrganization.mutateAsync(payload);
-        toast.success("College submitted for review!");
-      } else if (values.college) {
-        await selectOrganization.mutateAsync({
-          organization: values.college,
-          department: values.department ?? null,
-          graduation_year: values.graduationYear ?? null,
-          is_student: selectedRole === "student",
-        });
+          if (selectedRole === "student") {
+            if (values.department) payload.department = values.department;
+            if (values.graduationYear)
+              payload.graduation_year = values.graduationYear.toString();
+          }
+
+          await createOrganization.mutateAsync(payload);
+          toast.success("College submitted for review!");
+        } else if (values.college) {
+          await selectOrganization.mutateAsync({
+            organization: values.college,
+            department: values.department ?? null,
+            graduation_year: values.graduationYear ?? null,
+            is_student: selectedRole === "student",
+          });
+        }
       }
     }
 
