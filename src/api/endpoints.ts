@@ -905,6 +905,15 @@ export const endpoints = {
       taskTypes: "/api/v1/dashboard/task/list-task-type/",
       taskTypeCreate: "/api/v1/dashboard/task/list-task-type/",
       taskTypeDetail: (id: string) => `/api/v1/dashboard/task/task-type/${id}/`,
+      import: "/api/v1/dashboard/task/import/",
+      template: "/api/v1/dashboard/task/base-template/",
+      csv: "/api/v1/dashboard/task/csv/",
+      levels: "/api/v1/dashboard/task/level/",
+      igs: "/api/v1/dashboard/task/ig/",
+      organizations: "/api/v1/dashboard/task/organization/",
+      channels: "/api/v1/dashboard/task/channel/",
+      types: "/api/v1/dashboard/task/task-types/",
+      skills: "/api/v1/dashboard/skill/dropdown/",
     },
 
     interestGroups: {

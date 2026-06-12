@@ -1,2 +1,3 @@
 export * from "./use-task-types";
 export * from "./use-task-verification";
+export * from "./use-tasks";

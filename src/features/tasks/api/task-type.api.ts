@@ -1,11 +1,11 @@
 import { apiClient } from "@/api";
 import { endpoints } from "@/api/endpoints";
 import {
-  TaskTypeListResponseSchema,
-  type TaskTypeData,
   type CreateTaskTypeInput,
-  type UpdateTaskTypeInput,
   MutationResponseSchema,
+  type TaskTypeData,
+  TaskTypeListResponseSchema,
+  type UpdateTaskTypeInput,
 } from "../schemas/task-type.schema";
 
 export interface TaskTypeParams {

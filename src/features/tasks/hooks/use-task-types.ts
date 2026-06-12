@@ -3,8 +3,8 @@ import {
   createTaskType,
   deleteTaskType,
   fetchTaskTypes,
-  updateTaskType,
   type TaskTypeParams,
+  updateTaskType,
 } from "../api/task-type.api";
 import type {
   CreateTaskTypeInput,

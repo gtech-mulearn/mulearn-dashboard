@@ -6,18 +6,9 @@
  * A row in the learner's "My Applications" tab.
  */
 
-import type { LearnerApplication } from "../types";
-import { MoreVertical, Trash2, RefreshCcw } from "lucide-react";
+import { MoreVertical, RefreshCcw, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { ApplicationStatusBadge } from "./application-status-badge";
-import type { AppStatus } from "../constants";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
@@ -26,9 +17,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useWithdrawApplication, useResubmitApplication } from "../hooks";
+import type { AppStatus } from "../constants";
+import { useResubmitApplication, useWithdrawApplication } from "../hooks";
+import type { LearnerApplication } from "../types";
+import { ApplicationStatusBadge } from "./application-status-badge";
 
 interface ApplicationRowProps {
   application: LearnerApplication;

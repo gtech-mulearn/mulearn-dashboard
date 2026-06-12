@@ -1,8 +1,8 @@
 "use client";
 
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { useDebounce } from "@/hooks/use-debounce";
 import { Blank } from "@/components/dashboard/table/Blank";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table from "@/components/dashboard/table/Table";
@@ -10,13 +10,13 @@ import TableTop from "@/components/dashboard/table/TableTop";
 import THead from "@/components/dashboard/table/Thead";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useDebounce } from "@/hooks/use-debounce";
 import {
-  useTaskTypes,
   useCreateTaskType,
-  useUpdateTaskType,
   useDeleteTaskType,
+  useTaskTypes,
+  useUpdateTaskType,
 } from "../../hooks";
-import { Plus, Pencil, Trash2 } from "lucide-react";
 import { TaskTypeDialog } from "./task-type-dialog";
 
 export default function TaskTypeView() {

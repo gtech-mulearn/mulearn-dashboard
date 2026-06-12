@@ -1,17 +1,19 @@
 "use client";
 
-import { useState } from "react";
 import {
   BarChart2,
   Briefcase,
   CheckCircle,
   Eye,
+  Percent,
+  RefreshCw,
+  TrendingDown,
   TrendingUp,
   Users,
-  Percent,
-  TrendingDown,
-  RefreshCw,
 } from "lucide-react";
+import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -19,18 +21,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  useGigAnalytics,
-  useCompanyDashboardSummary,
-  useJobEngagementAnalytics,
-  useTalentPoolAnalytics,
-  useJobs,
-} from "@/features/company-jobs/hooks";
-import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -39,7 +32,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  useCompanyDashboardSummary,
+  useGigAnalytics,
+  useJobEngagementAnalytics,
+  useJobs,
+  useTalentPoolAnalytics,
+} from "@/features/company-jobs/hooks";
 
 export default function CompanyAnalyticsPage() {
   const [activeTab, setActiveTab] = useState("dashboard-summary");
