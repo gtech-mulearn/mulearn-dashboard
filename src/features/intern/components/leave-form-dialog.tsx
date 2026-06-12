@@ -216,14 +216,15 @@ export function LeaveFormDialog({ open, onOpenChange }: LeaveFormDialogProps) {
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={submitMutation.isPending}
-              className="w-full sm:w-auto uppercase tracking-widest text-[10px] font-black border-border/50 rounded-xl h-10"
+              className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
             >
               Cancel
             </Button>
             <Button
               type="submit"
+              variant="trusty"
               disabled={submitMutation.isPending}
-              className="w-full sm:w-auto bg-gradient-to-r from-warning to-destructive hover:scale-[1.02] transition-transform text-white uppercase tracking-widest text-[10px] font-black shadow-lg rounded-xl h-10"
+              className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
             >
               {submitMutation.isPending ? "Submitting..." : "Apply Leave"}
             </Button>

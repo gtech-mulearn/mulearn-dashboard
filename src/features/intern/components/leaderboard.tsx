@@ -86,7 +86,7 @@ export function EliteLeaders() {
           <Button
             size="sm"
             variant="ghost"
-            className="text-xs font-bold uppercase tracking-widest hover:bg-warning/10 hover:text-warning"
+            className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
           >
             Full Board <ChevronRight className="w-4 h-4 ml-1" />
           </Button>

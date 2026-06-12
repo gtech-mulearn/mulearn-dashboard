@@ -102,7 +102,7 @@ export function QuestLog() {
         <Link href="/dashboard/intern/timesheet">
           <Button
             variant="outline"
-            className="w-full text-[10px] font-black uppercase tracking-[0.2em] border-border/50 hover:bg-muted"
+            className="w-full gap-2 text-[10px] tracking-widest h-10 shadow-lg"
           >
             View History
           </Button>

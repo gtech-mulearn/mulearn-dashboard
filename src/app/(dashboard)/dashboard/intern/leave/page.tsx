@@ -119,9 +119,9 @@ export default function LeaveManagementPage() {
           <Button
             onClick={() => setIsLeaveOpen(true)}
             variant="default"
-            className="font-bold bg-brand-purple hover:bg-brand-purple/90 text-white px-6 py-3 text-xs uppercase tracking-wider shadow-lg transition-all hover:scale-105"
+            className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
           >
-            <Plus className="w-4 h-4 mr-2" />
+            <Plus className="w-4 h-4" />
             Apply for Leave
           </Button>
         </div>
@@ -315,10 +315,10 @@ export default function LeaveManagementPage() {
                             {req.status === "PENDING" && (
                               <Button
                                 size="sm"
-                                variant="ghost"
+                                variant="destructive"
                                 onClick={() => handleCancelLeave(req.id)}
                                 disabled={cancelLeaveMutation.isPending}
-                                className="text-xs font-bold uppercase tracking-widest text-destructive hover:bg-destructive/10 hover:text-destructive h-8 px-3"
+                                className="text-xs font-bold uppercase tracking-widest"
                               >
                                 {isCancelling ? (
                                   <Spinner className="w-3.5 h-3.5" />

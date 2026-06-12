@@ -20,7 +20,6 @@ import TableTop from "@/components/dashboard/table/TableTop";
 import THead from "@/components/dashboard/table/Thead";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { SectionErrorFallback } from "@/components/ui/errors/SectionErrorFallback";
 import {
@@ -46,25 +45,37 @@ const getStatusBadge = (status: string) => {
   switch (status) {
     case "ACTIVE":
       return (
-        <Badge variant="outline" className="intern-status-active gap-1.5">
+        <Badge
+          variant="outline"
+          className="gap-1.5 text-success border-success/30"
+        >
           <CheckCircle2 className="w-3 h-3" /> Active
         </Badge>
       );
     case "AT_RISK":
       return (
-        <Badge variant="outline" className="intern-status-at-risk gap-1.5">
+        <Badge
+          variant="outline"
+          className="gap-1.5 text-warning border-warning/30"
+        >
           <AlertTriangle className="w-3 h-3" /> At Risk
         </Badge>
       );
     case "ON_LEAVE":
       return (
-        <Badge variant="outline" className="intern-status-on-leave gap-1.5">
+        <Badge
+          variant="outline"
+          className="gap-1.5 text-brand-blue border-brand-blue/30"
+        >
           <PauseCircle className="w-3 h-3" /> On Leave
         </Badge>
       );
     case "INACTIVE":
       return (
-        <Badge variant="outline" className="intern-status-inactive gap-1.5">
+        <Badge
+          variant="outline"
+          className="gap-1.5 text-muted-foreground border-border"
+        >
           <Shield className="w-3 h-3" /> Inactive
         </Badge>
       );
@@ -233,7 +244,7 @@ export default function ManageInternsPage() {
         <div className="flex flex-wrap items-center gap-3">
           <Button
             onClick={() => setIsOnboardOpen(true)}
-            variant="trusty"
+            variant="default"
             className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
           >
             <Plus className="w-4 h-4" />
@@ -355,74 +366,68 @@ export default function ManageInternsPage() {
             isCsvDownloading={isExporting}
           />
 
-          <Card className="border-border/40 bg-card/40 backdrop-blur-xl shadow-2xl overflow-hidden">
-            <CardContent className="p-0">
-              <Table
-                rows={rows}
-                isloading={isListLoading}
-                page={page}
+          <Table
+            rows={rows}
+            isloading={isListLoading}
+            page={page}
+            perPage={perPage}
+            columnOrder={tableColumns}
+            id={["id"]}
+            slNoCellClassName="font-black text-muted-foreground/40 w-16"
+            customActionRender={(row) => (
+              <div className="flex items-center gap-1.5 justify-center">
+                <Button
+                  size="icon-sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setUpdateIntern({
+                      id: String(row.id),
+                      name: String(row.full_name),
+                      guild: String(row.guild ?? ""),
+                      status: String(row.status ?? "ACTIVE"),
+                    });
+                  }}
+                  className="rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+                  title="Edit Intern"
+                >
+                  <Pencil className="size-4" />
+                </Button>
+                <Button
+                  size="icon-sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setDeactivateIntern({
+                      id: String(row.id),
+                      name: String(row.full_name),
+                    });
+                  }}
+                  className="rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+                  title="Deactivate Intern"
+                >
+                  <Shield className="size-4" />
+                </Button>
+              </div>
+            )}
+          >
+            <THead
+              columnOrder={tableColumns}
+              onIconClick={handleSort}
+              action={true}
+              thClassName="bg-muted/20 border-b border-border/20 h-12 font-black uppercase text-[9px] tracking-[0.3em]"
+            />
+            <div className="p-4 border-t border-border/20">
+              <Pagination
+                currentPage={page}
+                totalPages={displayedTotalPages}
                 perPage={perPage}
-                columnOrder={tableColumns}
-                id={["id"]}
-                slNoCellClassName="font-black text-muted-foreground/40 w-16"
-                customActionRender={(row) => (
-                  <div className="flex items-center gap-1.5 justify-center">
-                    <Button
-                      size="icon-sm"
-                      variant="ghost"
-                      onClick={() => {
-                        setUpdateIntern({
-                          id: String(row.id),
-                          name: String(row.full_name),
-                          guild: String(row.guild ?? ""),
-                          status: String(row.status ?? "ACTIVE"),
-                        });
-                      }}
-                      className="text-muted-foreground hover:text-primary hover:bg-primary/10"
-                      title="Edit Intern"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="icon-sm"
-                      variant="ghost"
-                      onClick={() => {
-                        setDeactivateIntern({
-                          id: String(row.id),
-                          name: String(row.full_name),
-                        });
-                      }}
-                      className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                      title="Deactivate Intern"
-                    >
-                      <Shield className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
-              >
-                <THead
-                  columnOrder={tableColumns}
-                  onIconClick={handleSort}
-                  action={true}
-                  thClassName="bg-muted/20 border-b border-border/20 h-12 font-black uppercase text-[9px] tracking-[0.3em]"
-                />
-                <div className="p-4 border-t border-border/20">
-                  <Pagination
-                    currentPage={page}
-                    totalPages={displayedTotalPages}
-                    perPage={perPage}
-                    totalCount={displayedTotalCount}
-                    handlePreviousClick={() =>
-                      setPage((p) => Math.max(1, p - 1))
-                    }
-                    handleNextClick={() =>
-                      setPage((p) => Math.min(displayedTotalPages, p + 1))
-                    }
-                  />
-                </div>
-              </Table>
-            </CardContent>
-          </Card>
+                totalCount={displayedTotalCount}
+                handlePreviousClick={() => setPage((p) => Math.max(1, p - 1))}
+                handleNextClick={() =>
+                  setPage((p) => Math.min(displayedTotalPages, p + 1))
+                }
+              />
+            </div>
+          </Table>
         </div>
       </ErrorBoundary>
 

@@ -36,6 +36,13 @@ export function UpdateDialog({
   const [updateGuild, setUpdateGuild] = useState("");
   const [updateStatus, setUpdateStatus] = useState("");
 
+  const statusColorClass: Record<string, string> = {
+    ACTIVE: "text-success",
+    AT_RISK: "text-warning",
+    ON_LEAVE: "text-brand-blue",
+    INACTIVE: "text-muted-foreground",
+  };
+
   const updateMutation = useUpdateIntern(intern?.id || "");
 
   useEffect(() => {
@@ -111,7 +118,9 @@ export function UpdateDialog({
               Status
             </Label>
             <Select value={updateStatus} onValueChange={setUpdateStatus}>
-              <SelectTrigger className="w-full h-10 font-bold uppercase text-xs border-border/40 bg-background/50">
+              <SelectTrigger
+                className={`w-full h-10 font-bold uppercase text-xs border-border/40 bg-background/50 ${statusColorClass[updateStatus] ?? ""}`}
+              >
                 <SelectValue placeholder="Select Status" />
               </SelectTrigger>
               <SelectContent className="bg-card/95 backdrop-blur-xl border-border/60">
@@ -149,14 +158,15 @@ export function UpdateDialog({
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={updateMutation.isPending}
-              className="uppercase tracking-widest text-[10px] font-black border-border/50 rounded-xl"
+              className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
             >
               Cancel
             </Button>
             <Button
               type="submit"
+              variant="default"
               disabled={updateMutation.isPending}
-              className="bg-primary text-primary-foreground uppercase tracking-widest text-[10px] font-black shadow-lg rounded-xl"
+              className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
             >
               {updateMutation.isPending ? "Saving..." : "Save Changes"}
             </Button>

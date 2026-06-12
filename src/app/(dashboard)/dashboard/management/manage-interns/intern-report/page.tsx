@@ -8,7 +8,6 @@ import Table, { type Data } from "@/components/dashboard/table/Table";
 import THead from "@/components/dashboard/table/Thead";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   Dialog,
   DialogClose,
@@ -312,100 +311,97 @@ export default function WeeklyReportGeneratorPage() {
         </div>
       </div>
 
-      <Card className="border-border/40 bg-card/40 backdrop-blur-xl shadow-2xl overflow-hidden">
-        <CardHeader className="bg-muted/10 border-b border-border/20 py-8">
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
-            <div className="flex-1 space-y-6">
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/40" />
-                <Input
-                  placeholder="Search by Name or Token..."
-                  onChange={(e) => {
-                    setSearchText(e.target.value);
-                    setPage(1);
-                  }}
-                  className="pl-12 h-14 bg-background/50 border-border/50 font-bold focus:ring-primary/20 w-full max-w-xl text-lg rounded-md"
-                />
-              </div>
-            </div>
-
-            <div className="w-full lg:w-72">
-              <Label className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
-                Team Filter
-              </Label>
-              <Select
-                value={teamFilter}
-                onValueChange={(v) => {
-                  setTeamFilter(v);
+      <div className="space-y-4">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+          <div className="flex-1 space-y-6">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/40" />
+              <Input
+                placeholder="Search by Name or Token..."
+                onChange={(e) => {
+                  setSearchText(e.target.value);
                   setPage(1);
                 }}
-              >
-                <SelectTrigger className="h-14 bg-background/50 border-border/50 font-black uppercase text-[10px] tracking-widest rounded-md">
-                  <SelectValue placeholder="All Teams" />
-                </SelectTrigger>
-                <SelectContent className="bg-card font-bold border-border/60">
-                  <SelectItem value="ALL" className="uppercase text-[10px]">
-                    All Teams
-                  </SelectItem>
-                  {uniqueTeams.map((team) => (
-                    <SelectItem
-                      key={team}
-                      value={team}
-                      className="uppercase text-[10px]"
-                    >
-                      {team}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          <Table
-            rows={filteredData}
-            isloading={isLoading}
-            page={page}
-            perPage={perPage}
-            columnOrder={columnOrder}
-            id={["id"]}
-            slNoCellClassName="font-black text-muted-foreground/20 w-16"
-            customActionRender={(row) => (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => {
-                  setSelectedReview(row as unknown as TWeeklyReview);
-                  setReviewNote((row.review_note as string) ?? "");
-                  setIsReviewOpen(true);
-                }}
-                className="uppercase tracking-widest text-[9px] font-black text-primary hover:bg-muted/50 border border-border/20 px-2.5 h-7.5"
-              >
-                Evaluate
-              </Button>
-            )}
-          >
-            <THead
-              columnOrder={columnOrder}
-              onIconClick={() => {}}
-              action={true}
-              thClassName="bg-muted/20 border-b border-border/20 h-14 font-black uppercase text-[9px] tracking-[0.3em]"
-            />
-            <div className="p-4 border-t border-border/20">
-              <Pagination
-                currentPage={page}
-                totalPages={totalPages}
-                perPage={perPage}
-                totalCount={totalCount}
-                handlePreviousClick={() => setPage((p) => Math.max(1, p - 1))}
-                handleNextClick={() =>
-                  setPage((p) => Math.min(totalPages, p + 1))
-                }
+                className="pl-12 h-14 bg-card/40 border-border/40 font-bold focus:ring-primary/20 w-full max-w-xl text-lg rounded-md"
               />
             </div>
-          </Table>
-        </CardContent>
-      </Card>
+          </div>
+
+          <div className="w-full lg:w-72">
+            <Label className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+              Team Filter
+            </Label>
+            <Select
+              value={teamFilter}
+              onValueChange={(v) => {
+                setTeamFilter(v);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="h-14 bg-card/40 border-border/40 font-black uppercase text-[10px] tracking-widest rounded-md">
+                <SelectValue placeholder="All Teams" />
+              </SelectTrigger>
+              <SelectContent className="bg-card font-bold border-border/60">
+                <SelectItem value="ALL" className="uppercase text-[10px]">
+                  All Teams
+                </SelectItem>
+                {uniqueTeams.map((team) => (
+                  <SelectItem
+                    key={team}
+                    value={team}
+                    className="uppercase text-[10px]"
+                  >
+                    {team}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <Table
+          rows={filteredData}
+          isloading={isLoading}
+          page={page}
+          perPage={perPage}
+          columnOrder={columnOrder}
+          id={["id"]}
+          slNoCellClassName="font-black text-muted-foreground/40 w-16"
+          customActionRender={(row) => (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                setSelectedReview(row as unknown as TWeeklyReview);
+                setReviewNote((row.review_note as string) ?? "");
+                setIsReviewOpen(true);
+              }}
+              className="uppercase tracking-widest text-[9px] font-black text-primary hover:bg-muted/50 border border-border/20 px-2.5 h-7.5"
+            >
+              Evaluate
+            </Button>
+          )}
+        >
+          <THead
+            columnOrder={columnOrder}
+            onIconClick={() => {}}
+            action={true}
+            thClassName="bg-muted/20 border-b border-border/20 h-14 font-black uppercase text-[9px] tracking-[0.3em]"
+          />
+          <div className="p-4 border-t border-border/20">
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              perPage={perPage}
+              totalCount={totalCount}
+              handlePreviousClick={() => setPage((p) => Math.max(1, p - 1))}
+              handleNextClick={() =>
+                setPage((p) => Math.min(totalPages, p + 1))
+              }
+            />
+          </div>
+        </Table>
+      </div>
 
       <div className="flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-[0.5em] text-muted-foreground/20 py-8">
         <Sparkles className="w-3 h-3" /> Data Sanctum{" "}
@@ -529,7 +525,7 @@ export default function WeeklyReportGeneratorPage() {
               type="button"
               variant="outline"
               onClick={() => setIsReviewOpen(false)}
-              className="uppercase tracking-widest text-[10px] font-black border-border/50"
+              className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
             >
               Cancel
             </Button>
@@ -551,7 +547,7 @@ export default function WeeklyReportGeneratorPage() {
                   );
                 }}
                 disabled={reviewMutation.isPending}
-                className="uppercase tracking-widest text-[10px] font-black"
+                className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
               >
                 Reject
               </Button>
@@ -571,7 +567,8 @@ export default function WeeklyReportGeneratorPage() {
                   );
                 }}
                 disabled={reviewMutation.isPending}
-                className="bg-success hover:bg-success/95 text-white uppercase tracking-widest text-[10px] font-black"
+                variant="secondary"
+                className="bg-success text-white hover:bg-success/90 gap-2 text-[10px] tracking-widest h-10 shadow-lg"
               >
                 Approve
               </Button>

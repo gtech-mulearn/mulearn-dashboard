@@ -78,15 +78,16 @@ export function InternHeader({ onApplyLeave }: InternHeaderProps) {
         <Link href="/dashboard/intern/leave">
           <Button
             variant="outline"
-            className="font-bold border-brand-purple/50 text-brand-purple hover:bg-brand-purple/10 rounded-full px-5 py-2 text-xs uppercase tracking-wider shadow-md transition-all hover:scale-105"
+            className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
           >
-            <Calendar className="w-4 h-4 mr-2" />
+            <Calendar className="w-4 h-4" />
             Leave Desk
           </Button>
         </Link>
         <Button
           onClick={onApplyLeave}
-          className="font-bold bg-brand-purple hover:bg-brand-purple/90 text-white rounded-full px-5 py-2 text-xs uppercase tracking-wider shadow-md transition-all hover:scale-105"
+          variant="trusty"
+          className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
         >
           Apply for Leave
         </Button>

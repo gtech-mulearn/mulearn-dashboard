@@ -37,6 +37,13 @@ export function OnboardDialog({
   const [onboardGuild, setOnboardGuild] = useState("");
   const [onboardStatus, setOnboardStatus] = useState("ACTIVE");
 
+  const statusColorClass: Record<string, string> = {
+    ACTIVE: "text-success",
+    AT_RISK: "text-warning",
+    ON_LEAVE: "text-brand-blue",
+    INACTIVE: "text-muted-foreground",
+  };
+
   const onboardMutation = useOnboardIntern();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -124,7 +131,9 @@ export function OnboardDialog({
               Initial Status
             </Label>
             <Select value={onboardStatus} onValueChange={setOnboardStatus}>
-              <SelectTrigger className="w-full h-10 font-bold uppercase text-xs border-border/40 bg-background/50">
+              <SelectTrigger
+                className={`w-full h-10 font-bold uppercase text-xs border-border/40 bg-background/50 ${statusColorClass[onboardStatus] ?? ""}`}
+              >
                 <SelectValue placeholder="Select Status" />
               </SelectTrigger>
               <SelectContent className="bg-card/95 backdrop-blur-xl border-border/60">
@@ -156,20 +165,21 @@ export function OnboardDialog({
             </Select>
           </div>
 
-          <DialogFooter className="pt-4">
+          <DialogFooter className="pt-4 gap-2">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={onboardMutation.isPending}
-              className="uppercase tracking-widest text-[10px] font-black border-border/50 rounded-xl"
+              className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
             >
               Cancel
             </Button>
             <Button
               type="submit"
+              variant="default"
               disabled={onboardMutation.isPending}
-              className="bg-gradient-to-r from-brand-blue to-brand-purple hover:scale-[1.02] transition-transform text-white uppercase tracking-widest text-[10px] font-black shadow-lg rounded-xl"
+              className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
             >
               {onboardMutation.isPending ? "Onboarding..." : "Onboard"}
             </Button>

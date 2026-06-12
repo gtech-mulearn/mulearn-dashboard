@@ -7,7 +7,6 @@ import Table, { type Data } from "@/components/dashboard/table/Table";
 import THead from "@/components/dashboard/table/Thead";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -44,6 +43,13 @@ export default function TimesheetReviewsPage() {
   );
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [reviewNote, setReviewNote] = useState("");
+
+  const statusColorClass: Record<string, string> = {
+    ALL: "",
+    PENDING: "text-warning",
+    APPROVED: "text-success",
+    REJECTED: "text-destructive",
+  };
 
   const { data: listData, isLoading } = useManageTimesheets({
     page,
@@ -174,112 +180,111 @@ export default function TimesheetReviewsPage() {
         </div>
       </div>
 
-      <Card className="border-border/40 bg-card/40 backdrop-blur-xl shadow-2xl overflow-hidden">
-        <CardHeader className="bg-muted/10 border-b border-border/20 py-6">
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
-            <div className="flex-1 space-y-4">
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/40" />
-                <Input
-                  placeholder="Search by Name or MUID..."
-                  value={searchText}
-                  onChange={(e) => {
-                    setSearchText(e.target.value);
-                    setPage(1);
-                  }}
-                  className="pl-12 h-12 bg-background/50 border-border/50 font-bold focus:ring-primary/20 w-full max-w-xl text-sm rounded-md"
-                />
-              </div>
-            </div>
-
-            <div className="w-full lg:w-64 flex gap-4">
-              <div className="flex-1">
-                <Label className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
-                  Status Filter
-                </Label>
-                <Select
-                  value={statusFilter}
-                  onValueChange={(v) => {
-                    setStatusFilter(v);
-                    setPage(1);
-                  }}
-                >
-                  <SelectTrigger className="h-12 bg-background/50 border-border/50 font-black uppercase text-[10px] tracking-widest rounded-md">
-                    <SelectValue placeholder="Pending" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card font-bold border-border/60">
-                    <SelectItem value="ALL" className="uppercase text-[10px]">
-                      All Logs
-                    </SelectItem>
-                    <SelectItem
-                      value="PENDING"
-                      className="uppercase text-[10px]"
-                    >
-                      Pending
-                    </SelectItem>
-                    <SelectItem
-                      value="APPROVED"
-                      className="uppercase text-[10px]"
-                    >
-                      Approved
-                    </SelectItem>
-                    <SelectItem
-                      value="REJECTED"
-                      className="uppercase text-[10px]"
-                    >
-                      Rejected
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          <Table
-            rows={rows}
-            isloading={isLoading}
-            page={page}
-            perPage={perPage}
-            columnOrder={columnOrder}
-            id={["id"]}
-            slNoCellClassName="font-black text-muted-foreground/20 w-16"
-            customActionRender={(row) => (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => {
-                  setSelectedTimesheet(row as unknown as TTimesheet);
-                  setReviewNote(row.review_note ? String(row.review_note) : "");
-                  setIsReviewOpen(true);
+      <div className="space-y-4">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+          <div className="flex-1 space-y-4">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/40" />
+              <Input
+                placeholder="Search by Name or MUID..."
+                value={searchText}
+                onChange={(e) => {
+                  setSearchText(e.target.value);
+                  setPage(1);
                 }}
-                className="uppercase tracking-widest text-[9px] font-black text-primary hover:bg-muted/50 border border-border/20 px-2.5 h-7.5"
-              >
-                {row.status === "PENDING" ? "Evaluate" : "View"}
-              </Button>
-            )}
-          >
-            <THead
-              columnOrder={columnOrder}
-              onIconClick={() => {}}
-              action={true}
-              thClassName="bg-muted/20 border-b border-border/20 h-12 font-black uppercase text-[9px] tracking-[0.3em]"
-            />
-            <div className="p-4 border-t border-border/20">
-              <Pagination
-                currentPage={page}
-                totalPages={totalPages}
-                perPage={perPage}
-                totalCount={totalCount}
-                handlePreviousClick={() => setPage((p) => Math.max(1, p - 1))}
-                handleNextClick={() =>
-                  setPage((p) => Math.min(totalPages, p + 1))
-                }
+                className="pl-12 h-12 bg-card/40 border-border/40 font-bold focus:ring-primary/20 w-full max-w-xl text-sm rounded-md"
               />
             </div>
-          </Table>
-        </CardContent>
-      </Card>
+          </div>
+
+          <div className="w-full lg:w-64 flex gap-4">
+            <div className="flex-1">
+              <Label className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+                Status Filter
+              </Label>
+              <Select
+                value={statusFilter}
+                onValueChange={(v) => {
+                  setStatusFilter(v);
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger
+                  className={`h-12 bg-card/40 border-border/40 font-black uppercase text-[10px] tracking-widest rounded-md ${statusColorClass[statusFilter] ?? ""}`}
+                >
+                  <SelectValue placeholder="Pending" />
+                </SelectTrigger>
+                <SelectContent className="bg-card font-bold border-border/60">
+                  <SelectItem value="ALL" className="uppercase text-[10px]">
+                    All Logs
+                  </SelectItem>
+                  <SelectItem
+                    value="PENDING"
+                    className="uppercase text-[10px] text-warning"
+                  >
+                    Pending
+                  </SelectItem>
+                  <SelectItem
+                    value="APPROVED"
+                    className="uppercase text-[10px] text-success"
+                  >
+                    Approved
+                  </SelectItem>
+                  <SelectItem
+                    value="REJECTED"
+                    className="uppercase text-[10px] text-destructive"
+                  >
+                    Rejected
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+
+        <Table
+          rows={rows}
+          isloading={isLoading}
+          page={page}
+          perPage={perPage}
+          columnOrder={columnOrder}
+          id={["id"]}
+          slNoCellClassName="font-black text-muted-foreground/40 w-16"
+          customActionRender={(row) => (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                setSelectedTimesheet(row as unknown as TTimesheet);
+                setReviewNote(row.review_note ? String(row.review_note) : "");
+                setIsReviewOpen(true);
+              }}
+              className="uppercase tracking-widest text-[9px] font-black text-primary hover:bg-muted/50 border border-border/20 px-2.5 h-7.5"
+            >
+              {row.status === "PENDING" ? "Evaluate" : "View"}
+            </Button>
+          )}
+        >
+          <THead
+            columnOrder={columnOrder}
+            onIconClick={() => {}}
+            action={true}
+            thClassName="bg-muted/20 border-b border-border/20 h-12 font-black uppercase text-[9px] tracking-[0.3em]"
+          />
+          <div className="p-4 border-t border-border/20">
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              perPage={perPage}
+              totalCount={totalCount}
+              handlePreviousClick={() => setPage((p) => Math.max(1, p - 1))}
+              handleNextClick={() =>
+                setPage((p) => Math.min(totalPages, p + 1))
+              }
+            />
+          </div>
+        </Table>
+      </div>
 
       <Dialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
         <DialogContent className="bg-card/95 backdrop-blur-xl border-border/60">
@@ -405,7 +410,7 @@ export default function TimesheetReviewsPage() {
               type="button"
               variant="outline"
               onClick={() => setIsReviewOpen(false)}
-              className="uppercase tracking-widest text-[10px] font-black border-border/50"
+              className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
             >
               Close
             </Button>
@@ -427,7 +432,7 @@ export default function TimesheetReviewsPage() {
                   }}
                   disabled={reviewMutation.isPending}
                   variant="destructive"
-                  className="uppercase tracking-widest text-[10px] font-black"
+                  className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
                 >
                   Reject
                 </Button>
@@ -446,7 +451,8 @@ export default function TimesheetReviewsPage() {
                     );
                   }}
                   disabled={reviewMutation.isPending}
-                  className="bg-success hover:bg-success/90 text-white uppercase tracking-widest text-[10px] font-black"
+                  variant="secondary"
+                  className="bg-success text-white hover:bg-success/90 gap-2 text-[10px] tracking-widest h-10 shadow-lg"
                 >
                   Approve
                 </Button>
