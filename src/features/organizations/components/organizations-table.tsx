@@ -279,9 +279,8 @@ function OrgFormDialog({
     watchedState || null,
     open,
   );
-  const { data: affiliations = [] } = useAffiliations(
-    open && watchedOrgType === "College",
-  );
+  const { data: affiliations = [], isLoading: affiliationsLoading } =
+    useAffiliations(open && watchedOrgType === "College");
 
   // Reset state/district when country changes
   useEffect(() => {
@@ -445,7 +444,7 @@ function OrgFormDialog({
                         />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent className="max-h-[200px] overflow-y-auto">
+                    <SelectContent className="z-[9999] max-h-[200px] overflow-y-auto">
                       {countries.map((c) => (
                         <SelectItem key={c.id} value={c.id}>
                           {c.name}
@@ -468,7 +467,7 @@ function OrgFormDialog({
                   <Select
                     onValueChange={field.onChange}
                     value={field.value}
-                    disabled={!watchedCountry}
+                    disabled={!watchedCountry || statesLoading}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -483,7 +482,7 @@ function OrgFormDialog({
                         />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent className="max-h-[200px] overflow-y-auto">
+                    <SelectContent className="z-[9999] max-h-[200px] overflow-y-auto">
                       {states.map((s) => (
                         <SelectItem key={s.id} value={s.id}>
                           {s.name}
@@ -506,7 +505,7 @@ function OrgFormDialog({
                   <Select
                     onValueChange={field.onChange}
                     value={field.value}
-                    disabled={!watchedState}
+                    disabled={!watchedState || districtsLoading}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -521,7 +520,7 @@ function OrgFormDialog({
                         />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent className="max-h-[200px] overflow-y-auto">
+                    <SelectContent className="z-[9999] max-h-[200px] overflow-y-auto">
                       {districts.map((d) => (
                         <SelectItem key={d.id} value={d.id}>
                           {d.name}
@@ -534,7 +533,7 @@ function OrgFormDialog({
               )}
             />
 
-            {/* Affiliation (College only) */}
+            {/* Affiliation (College only) — identical pattern to Country */}
             {watchedOrgType === "College" && (
               <FormField
                 control={form.control}
@@ -545,10 +544,16 @@ function OrgFormDialog({
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select affiliation" />
+                          <SelectValue
+                            placeholder={
+                              affiliationsLoading
+                                ? "Loading…"
+                                : "Select affiliation"
+                            }
+                          />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="max-h-[200px] overflow-y-auto">
+                      <SelectContent className="z-[9999] max-h-[200px] overflow-y-auto">
                         {affiliations.map((a) => (
                           <SelectItem key={a.id} value={a.id}>
                             {a.name}
@@ -596,7 +601,7 @@ export default function OrganizationsTable() {
 
   // ── Table state ───────────────────────────────────────────
   const [currentPage, setCurrentPage] = useState(1);
-  const [perPage, setPerPage] = useState(20);
+  const perPage = 20;
   const [sort, setSort] = useState("");
   const [search, setSearch] = useState("");
 
@@ -635,11 +640,6 @@ export default function OrganizationsTable() {
   const handleSearch = (value: string) => {
     setCurrentPage(1);
     setSearch(value);
-  };
-
-  const handlePerPage = (value: number) => {
-    setCurrentPage(1);
-    setPerPage(value);
   };
 
   const handleSortChange = (column: string) => {
@@ -750,16 +750,14 @@ export default function OrganizationsTable() {
           {/* ── Search + Rows per page ────────────────────── */}
           <TableTop
             onSearchText={handleSearch}
-            onPerPageNumber={handlePerPage}
-            perPage={perPage}
-            perPageOptions={[10, 20, 50, 100]}
             CSV=""
-            searchPlaceholder={`Search ${activeTab}s by name or code…`}
+            searchPlaceholder={`Search ${activeTab}s`}
             searchSize="md"
             searchPosition="right"
-            searchWrapperClassName="md:max-w-[680px]"
+            wrapperClassName="border-none bg-transparent shadow-none p-0"
+            searchWrapperClassName="border-none bg-transparent md:max-w-[680px]"
             searchFieldWrapperClassName="lg:max-w-[380px]"
-            searchInputClassName="h-10 text-sm"
+            searchInputClassName="h-10 text-sm border border-border/50 rounded-lg bg-transparent"
           />
 
           {/* ── Table ─────────────────────────────────────── */}

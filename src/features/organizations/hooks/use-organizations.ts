@@ -18,7 +18,13 @@ import {
   fetchOrganizations,
   fetchStates,
 } from "../api/organizations.api";
-import type { OrgFormData, OrgType } from "../schemas";
+import type {
+  AffiliationItem,
+  LocationOption,
+  OrgFormData,
+  OrgType,
+} from "../schemas";
+
 import { organizationsKeys } from "./query-keys";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -44,6 +50,18 @@ export function useOrganizations(params: UseOrganizationsParams) {
   });
 }
 
+// Helper: React Query select transform that guarantees an array is returned
+// even if the cache holds a stale envelope object from a previous broken fetch.
+function toArray<T>(data: unknown): T[] {
+  if (Array.isArray(data)) return data as T[];
+  // Handle envelope still present in cache (legacy stale data)
+  if (data && typeof data === "object" && "response" in data) {
+    const inner = (data as Record<string, unknown>).response;
+    if (Array.isArray(inner)) return inner as T[];
+  }
+  return [];
+}
+
 // ─── Affiliation Dropdown ─────────────────────────────────────────────────────
 
 export function useAffiliations(enabled = true) {
@@ -53,6 +71,8 @@ export function useAffiliations(enabled = true) {
     enabled,
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
+    // Guarantee the data is always an array even if the cache holds stale garbage
+    select: (data) => toArray<AffiliationItem>(data),
   });
 }
 
@@ -65,6 +85,7 @@ export function useCountries(enabled = true) {
     enabled,
     staleTime: 30 * 60 * 1000,
     gcTime: 60 * 60 * 1000,
+    select: (data) => toArray<LocationOption>(data),
   });
 }
 
@@ -75,6 +96,7 @@ export function useStates(countryId: string | null, enabled = true) {
     enabled: enabled && !!countryId,
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
+    select: (data) => toArray<LocationOption>(data),
   });
 }
 
@@ -85,6 +107,7 @@ export function useDistricts(stateId: string | null, enabled = true) {
     enabled: enabled && !!stateId,
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
+    select: (data) => toArray<LocationOption>(data),
   });
 }
 

@@ -1,14 +1,12 @@
 import type { z } from "zod";
 import { apiClient } from "@/api/client";
-import {
-  type AffiliationItem,
-  AffiliationListResponseSchema,
-  LocationListResponseSchema,
-  type LocationOption,
-  type OrgFormData,
-  type OrgInfo,
-  type OrgType,
-  type PaginationSchema,
+import type {
+  AffiliationItem,
+  LocationOption,
+  OrgFormData,
+  OrgInfo,
+  OrgType,
+  PaginationSchema,
 } from "../schemas";
 
 // ─── Endpoints (inline, matching the spec) ────────────────────────────────────
@@ -136,24 +134,41 @@ export async function downloadOrganizationCsv(orgType: OrgType): Promise<Blob> {
   return response as unknown as Blob;
 }
 
+// ─── Shared helper ────────────────────────────────────────────────────────────
+
+/**
+ * apiClient unwraps the Django envelope ({hasError,statusCode,response})
+ * before returning. The result is already the inner `response` value.
+ * However, if the envelope is still present (edge case), unwrap manually.
+ * Returns the payload as T[], falling back to [] if it's not an array.
+ */
+function normaliseArray<T>(raw: unknown): T[] {
+  // Still-wrapped envelope guard
+  const unwrapped =
+    raw && typeof raw === "object" && "response" in raw
+      ? (raw as Record<string, unknown>).response
+      : raw;
+  return Array.isArray(unwrapped) ? (unwrapped as T[]) : [];
+}
+
 // ─── Affiliation dropdown ─────────────────────────────────────────────────────
 
 export async function fetchAffiliations(): Promise<AffiliationItem[]> {
-  const response = await apiClient.get(
+  // Do NOT pass a schema — apiClient already unwraps the envelope, so an
+  // envelope-level schema always mismatches. Normalise the raw payload instead.
+  const raw = await apiClient.get<unknown>(
     "/api/v1/dashboard/organisation/affiliation/list/",
-    AffiliationListResponseSchema,
   );
-  return response as unknown as AffiliationItem[];
+  return normaliseArray<AffiliationItem>(raw);
 }
 
 // ─── Country list ─────────────────────────────────────────────────────────────
 
 export async function fetchCountries(): Promise<LocationOption[]> {
-  const response = await apiClient.get(
+  const raw = await apiClient.get<unknown>(
     "/api/v1/dashboard/location/countries/list/",
-    LocationListResponseSchema,
   );
-  return response as LocationOption[];
+  return normaliseArray<LocationOption>(raw);
 }
 
 // ─── State list ───────────────────────────────────────────────────────────────
@@ -161,12 +176,10 @@ export async function fetchCountries(): Promise<LocationOption[]> {
 export async function fetchStates(
   countryId: string,
 ): Promise<LocationOption[]> {
-  const response = await apiClient.post(
-    "/api/v1/register/state/list/",
-    { country: countryId },
-    LocationListResponseSchema,
-  );
-  return response as LocationOption[];
+  const raw = await apiClient.post<unknown>("/api/v1/register/state/list/", {
+    country: countryId,
+  });
+  return normaliseArray<LocationOption>(raw);
 }
 
 // ─── District list ────────────────────────────────────────────────────────────
@@ -174,10 +187,8 @@ export async function fetchStates(
 export async function fetchDistricts(
   stateId: string,
 ): Promise<LocationOption[]> {
-  const response = await apiClient.post(
-    "/api/v1/register/district/list/",
-    { state: stateId },
-    LocationListResponseSchema,
-  );
-  return response as LocationOption[];
+  const raw = await apiClient.post<unknown>("/api/v1/register/district/list/", {
+    state: stateId,
+  });
+  return normaliseArray<LocationOption>(raw);
 }
