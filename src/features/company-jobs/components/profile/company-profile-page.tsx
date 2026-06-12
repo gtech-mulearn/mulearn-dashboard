@@ -238,24 +238,6 @@ export function CompanyProfilePage() {
         remotePolicy={profile.remote_policy ?? null}
       />
 
-      {/* Stats row */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <StatCard
-          icon={<FileText className="size-5" />}
-          value={activeJobs.length}
-          label="Open Roles"
-          color="text-success"
-          bg="bg-success/10"
-        />
-        <StatCard
-          icon={<Award className="size-5" />}
-          value={(profile.avg_karma_of_hires ?? 0).toLocaleString()}
-          label="Avg. Hire Karma"
-          color="text-brand-purple"
-          bg="bg-brand-purple/10"
-        />
-      </div>
-
       {/* Two-column layout */}
       <div className="grid gap-5 lg:grid-cols-[300px_1fr]">
         {/* Sidebar */}
@@ -265,6 +247,24 @@ export function CompanyProfilePage() {
 
         {/* Main content */}
         <div className="order-1 space-y-5 lg:order-2">
+          {/* Stats row */}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <StatCard
+              icon={<FileText className="size-5" />}
+              value={activeJobs.length}
+              label="Open Roles"
+              color="text-success"
+              bg="bg-success/10"
+            />
+            <StatCard
+              icon={<Award className="size-5" />}
+              value={(profile.avg_karma_of_hires ?? 0).toLocaleString()}
+              label="Avg. Hire Karma"
+              color="text-brand-purple"
+              bg="bg-brand-purple/10"
+            />
+          </div>
+
           {/* About */}
           {profile.description && (
             <div className="rounded-2xl bg-card p-5 shadow-sm">
@@ -283,19 +283,15 @@ export function CompanyProfilePage() {
             techStack={profile.tech_stack ?? []}
             perks={profile.perks ?? []}
           />
-
-          {/* Jobs */}
-          <CompanyJobsSection
-            isOwnProfile
-            ownJobs={isLoadingJobs ? [] : allJobs}
-          />
-
-          {/* Testimonials */}
-          <CompanyTestimonialsSection
-            testimonials={profile.testimonials ?? []}
-          />
         </div>
       </div>
+
+      {/* Full-width sections below the two-column layout */}
+      {/* Jobs */}
+      <CompanyJobsSection isOwnProfile ownJobs={isLoadingJobs ? [] : allJobs} />
+
+      {/* Testimonials */}
+      <CompanyTestimonialsSection testimonials={profile.testimonials ?? []} />
     </div>
   );
 }
