@@ -714,7 +714,7 @@ export function TaskRequestsPage() {
             <TabsTrigger value="pending">
               Pending
               {pendingCount > 0 && (
-                <Badge variant="secondary" className="ml-2">
+                <Badge className="ml-2 bg-brand-blue text-primary-foreground hover:bg-brand-blue/90 border-transparent">
                   {pendingCount}
                 </Badge>
               )}

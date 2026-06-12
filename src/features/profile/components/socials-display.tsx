@@ -10,17 +10,8 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  Check,
-  Dribbble,
-  Facebook,
-  Github,
-  Instagram,
-  Linkedin,
-  Pencil,
-  X,
-} from "lucide-react";
-import type { ElementType, SVGProps } from "react";
+import { Check, Github, Instagram, Linkedin, Pencil, X } from "lucide-react";
+import type { ElementType } from "react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import Loader from "@/app/loading";
@@ -35,34 +26,6 @@ interface SocialsDisplayProps {
 }
 
 type SocialIcon = ElementType<{ className?: string }>;
-
-const _XTwitterLogo = (props: SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
-    <path d="M13.7 10.6 20.4 3h-1.6l-5.8 6.6L8.4 3H3l7 10-7 8h1.6l6.1-7 4.9 7H21l-7.3-10.4Zm-2.2 2.5-.7-1L5.2 4.2h2.4l4.5 6.4.7 1 5.9 8.4h-2.4l-4.8-6.9Z" />
-  </svg>
-);
-
-const BehanceLogo = (props: SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
-    <path d="M3 6h6.1c2.3 0 3.7 1.2 3.7 3.1 0 1.1-.5 2-1.5 2.5 1.3.4 2 1.4 2 2.9 0 2.2-1.7 3.5-4.3 3.5H3V6Zm3 4.7h2.5c.9 0 1.4-.4 1.4-1.1s-.5-1.1-1.4-1.1H6v2.2Zm0 4.8h2.8c1 0 1.6-.4 1.6-1.3 0-.8-.6-1.2-1.6-1.2H6v2.5Z" />
-    <path d="M15.1 7h5.6v1.6h-5.6V7Zm2.9 3.2c2.5 0 4 1.8 4 4.3v.7h-5.9c.2.9.9 1.5 1.9 1.5.8 0 1.3-.3 1.7-.9h2.1c-.6 1.7-2 2.6-3.8 2.6-2.5 0-4.1-1.7-4.1-4.1s1.6-4.1 4.1-4.1Zm1.8 3.4c-.1-.9-.8-1.5-1.8-1.5-.9 0-1.6.6-1.8 1.5h3.6Z" />
-  </svg>
-);
-
-const StackOverflowLogo = (props: SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
-    <path d="m17.6 19.2.1-5h1.8l-.1 6.8H4.5v-6.8h1.8v5h11.3Z" />
-    <path d="M8.1 17.2h7.8v-1.8H8.1v1.8Zm.2-4 7.6 1.6.4-1.8-7.6-1.6-.4 1.8Zm1-3.8 7 3.3.8-1.6-7-3.3-.8 1.6Zm2-3.5 5.9 5.1 1.2-1.4-5.9-5.1-1.2 1.4Zm3.8-3.7-1.5 1 4.3 6.5 1.5-1-4.3-6.5Z" />
-  </svg>
-);
-
-const MediumLogo = (props: SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
-    <ellipse cx="7.4" cy="12" rx="4.4" ry="6.4" />
-    <ellipse cx="15" cy="12" rx="2.2" ry="5.9" />
-    <ellipse cx="19.3" cy="12" rx="1" ry="5.4" />
-  </svg>
-);
 
 // TODO: social icon brand colors are per-platform brand identities — leave as-is per design-system exception
 const socialLinks: {
@@ -93,52 +56,12 @@ const socialLinks: {
     placeholder: "Instagram username",
     color: "#E4405F",
   },
-  {
-    key: "facebook",
-    icon: Facebook,
-    baseUrl: "https://facebook.com/",
-    placeholder: "Facebook username",
-    color: "#1877F2",
-  },
-  {
-    key: "behance",
-    icon: BehanceLogo,
-    baseUrl: "https://behance.net/",
-    placeholder: "Behance username",
-    color: "#1769FF",
-  },
-  {
-    key: "dribble",
-    icon: Dribbble,
-    baseUrl: "https://dribbble.com/",
-    placeholder: "Dribbble username",
-    color: "#EA4C89",
-  },
-  {
-    key: "stackoverflow",
-    icon: StackOverflowLogo,
-    baseUrl: "https://stackoverflow.com/users/",
-    placeholder: "Stack Overflow user ID",
-    color: "#F48024",
-  },
-  {
-    key: "medium",
-    icon: MediumLogo,
-    baseUrl: "https://medium.com/@",
-    placeholder: "Medium username",
-    color: "#000",
-  },
 ];
 
 type SocialFormValues = {
   github: string;
   linkedin: string;
   instagram: string;
-  facebook: string;
-  behance: string;
-  dribble: string;
-  stackoverflow: string;
-  medium: string;
 };
 
 export function SocialsDisplay({ isOwnProfile, muid }: SocialsDisplayProps) {
@@ -158,11 +81,6 @@ export function SocialsDisplay({ isOwnProfile, muid }: SocialsDisplayProps) {
     github: "",
     linkedin: "",
     instagram: "",
-    facebook: "",
-    behance: "",
-    dribble: "",
-    stackoverflow: "",
-    medium: "",
   });
 
   // Initialize form with current values
@@ -172,11 +90,6 @@ export function SocialsDisplay({ isOwnProfile, muid }: SocialsDisplayProps) {
         github: socials.github || "",
         linkedin: socials.linkedin || "",
         instagram: socials.instagram || "",
-        facebook: socials.facebook || "",
-        behance: socials.behance || "",
-        dribble: socials.dribble || "",
-        stackoverflow: socials.stackoverflow || "",
-        medium: socials.medium || "",
       });
     }
   }, [socials]);
@@ -210,11 +123,6 @@ export function SocialsDisplay({ isOwnProfile, muid }: SocialsDisplayProps) {
         github: socials.github || "",
         linkedin: socials.linkedin || "",
         instagram: socials.instagram || "",
-        facebook: socials.facebook || "",
-        behance: socials.behance || "",
-        dribble: socials.dribble || "",
-        stackoverflow: socials.stackoverflow || "",
-        medium: socials.medium || "",
       });
     }
     setEditMode(false);

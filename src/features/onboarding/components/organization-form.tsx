@@ -126,7 +126,7 @@ export function OrganizationForm({
           <>
             <OptionCard
               icon="🎓"
-              label="Student"
+              label="Learner"
               selected={userType === "student"}
               onClick={() => setUserType("student")}
             />
