@@ -21,8 +21,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
-import { useReviewTask } from "../hooks/use-task-verification";
-import type { TaskVerificationItem } from "../schemas/task-verification.schema";
+import { useReviewTask } from "../../hooks";
+import type { TaskVerificationItem } from "../../schemas";
 
 const RejectSchema = z.object({
   reason: z.string().min(1, "Rejection reason is required"),

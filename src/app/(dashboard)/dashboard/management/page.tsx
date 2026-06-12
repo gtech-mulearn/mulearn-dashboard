@@ -98,7 +98,7 @@ const MANAGEMENT_ITEMS: ManagementItem[] = [
     icon: ShieldCheck,
     title: "Task Verification",
     description: "Review, approve, and verify pending tasks.",
-    path: "/dashboard/management/task-verification",
+    path: "/dashboard/management/tasks/task-verification",
     color: "bg-chart-2/10 text-chart-2",
   },
   {

@@ -903,6 +903,8 @@ export const endpoints = {
       reject: (taskId: string) => `/api/v1/dashboard/task/${taskId}/reject/`,
       /** GET/POST/PUT/DELETE - Task Types CRUD */
       taskTypes: "/api/v1/dashboard/task/list-task-type/",
+      taskTypeCreate: "/api/v1/dashboard/task/list-task-type/",
+      taskTypeDetail: (id: string) => `/api/v1/dashboard/task/task-type/${id}/`,
     },
 
     interestGroups: {

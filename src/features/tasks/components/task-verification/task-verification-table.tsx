@@ -15,8 +15,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { usePendingTasks } from "../hooks/use-task-verification";
-import type { TaskVerificationItem } from "../schemas/task-verification.schema";
+import { usePendingTasks } from "../../hooks";
+import type { TaskVerificationItem } from "../../schemas";
 import { TaskReviewDialog } from "./task-review-dialog";
 
 const COLUMN_ORDER = [
