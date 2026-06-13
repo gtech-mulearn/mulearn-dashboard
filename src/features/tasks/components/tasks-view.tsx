@@ -41,24 +41,86 @@ export default function TasksView() {
   const [editId, setEditId] = useState<string | null>(null);
 
   const columns = [
-    { column: "hashtag", Label: "Hashtag", isSortable: true },
-    { column: "title", Label: "Title", isSortable: true },
-    { column: "karma", Label: "Karma", isSortable: true },
-    { column: "type", Label: "Type", isSortable: false },
-    { column: "channel", Label: "Channel", isSortable: false },
-    { column: "active", Label: "Status", isSortable: false },
+    { column: "title", Label: "Title", isSortable: true, width: "w-48" },
+    { column: "hashtag", Label: "Hashtag", isSortable: true, width: "w-32" },
+    { column: "org", Label: "Organization", isSortable: true, width: "w-40" },
+    { column: "active", Label: "Active", isSortable: true, width: "w-28" },
+    { column: "karma", Label: "Karma", isSortable: true, width: "w-24" },
+    {
+      column: "usage_count",
+      Label: "Usage Count",
+      isSortable: true,
+      width: "w-28",
+    },
+    {
+      column: "variable_karma",
+      Label: "Variable Karma",
+      isSortable: true,
+      width: "w-32",
+    },
+    { column: "ig", Label: "Interest Group", isSortable: true, width: "w-40" },
+    { column: "level", Label: "Level", isSortable: true, width: "w-32" },
+    { column: "channel", Label: "Channel", isSortable: true, width: "w-40" },
+    { column: "event", Label: "Event", isSortable: true, width: "w-40" },
+    {
+      column: "bonus_time",
+      Label: "Bonus time",
+      isSortable: true,
+      width: "w-40",
+    },
+    {
+      column: "bonus_karma",
+      Label: "Bonus karma",
+      isSortable: true,
+      width: "w-28",
+    },
+    {
+      column: "updated_by",
+      Label: "Updated By",
+      isSortable: true,
+      width: "w-36",
+    },
+    {
+      column: "updated_at",
+      Label: "Updated On",
+      isSortable: true,
+      width: "w-36",
+    },
+    {
+      column: "created_by",
+      Label: "Created By",
+      isSortable: true,
+      width: "w-36",
+    },
+    {
+      column: "created_at",
+      Label: "Created On",
+      isSortable: true,
+      width: "w-36",
+    },
   ];
 
   const rows = useMemo(() => {
     if (!data?.data) return [];
     return data.data.map((item: Task) => ({
       id: String(item.id),
-      hashtag: item.hashtag,
       title: item.title,
-      karma: item.karma,
-      type: item.type || "—",
-      channel: item.channel || "—",
+      hashtag: item.hashtag,
+      org: item.org || "—",
       active: item.active,
+      karma: item.karma,
+      usage_count: item.usage_count,
+      variable_karma: item.variable_karma,
+      ig: item.ig || "—",
+      level: item.level || "—",
+      channel: item.channel || "—",
+      event: item.event || "—",
+      bonus_time: item.bonus_time || "—",
+      bonus_karma: item.bonus_karma,
+      updated_by: item.updated_by || "—",
+      updated_at: item.updated_at || "—",
+      created_by: item.created_by || "—",
+      created_at: item.created_at || "—",
     }));
   }, [data]);
 
