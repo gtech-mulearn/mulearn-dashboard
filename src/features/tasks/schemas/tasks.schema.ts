@@ -2,7 +2,7 @@ import { z } from "zod";
 import { ApiResponseSchema, PaginatedDataSchema } from "./task-type.schema";
 
 export const TaskItemSchema = z.object({
-  id: z.union([z.string(), z.number()]),
+  id: z.union([z.string(), z.number()]).optional(),
   hashtag: z.string(),
   title: z.string(),
   karma: z.coerce.number().default(0),

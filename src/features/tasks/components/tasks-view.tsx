@@ -6,7 +6,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Blank } from "@/components/dashboard/table/Blank";
 import Pagination from "@/components/dashboard/table/pagination";
-import Table from "@/components/dashboard/table/Table";
+import Table, { type Data } from "@/components/dashboard/table/Table";
 import TableTop from "@/components/dashboard/table/TableTop";
 import THead from "@/components/dashboard/table/Thead";
 import { Button } from "@/components/ui/button";
@@ -139,7 +139,7 @@ export default function TasksView() {
         toast.success("Task deleted successfully");
         setDeleteId(null);
       },
-      onError: (err: any) => {
+      onError: (err: Error) => {
         toast.error(err?.message || "Failed to delete task");
       },
     });
@@ -162,14 +162,14 @@ export default function TasksView() {
     }
   };
 
-  const renderActions = (row: any) => {
+  const renderActions = (row: Data) => {
     return (
       <div className="flex items-center justify-end gap-2">
         <Button
           variant="outline"
           size="sm"
           onClick={() => {
-            setEditId(row.id);
+            setEditId(String(row.id ?? ""));
           }}
           className="h-8 w-8 p-0"
         >
@@ -179,7 +179,7 @@ export default function TasksView() {
           variant="destructive"
           size="sm"
           onClick={() => {
-            setDeleteId(row.id);
+            setDeleteId(String(row.id ?? ""));
           }}
           className="h-8 w-8 p-0"
         >
