@@ -8,7 +8,6 @@ import TableTop from "@/components/dashboard/table/TableTop";
 import THead from "@/components/dashboard/table/Thead";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { useUserInfo, useUserProfile } from "@/features/auth";
 import { useLeaderboard, useLeaderboardMe } from "@/features/intern";

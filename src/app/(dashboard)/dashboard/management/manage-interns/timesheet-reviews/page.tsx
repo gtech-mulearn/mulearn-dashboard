@@ -4,8 +4,6 @@ import {
   AlertTriangle,
   CheckCircle2,
   Search,
-  Shield,
-  Sparkles,
   Trophy,
   XCircle,
 } from "lucide-react";
@@ -295,7 +293,10 @@ export default function TimesheetReviewsPage() {
       </div>
 
       <Dialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
-        <DialogContent className="bg-card/95 backdrop-blur-xl border-border/60">
+        <DialogContent
+          showCloseButton={false}
+          className="bg-card/95 backdrop-blur-xl border-border/60"
+        >
           <DialogHeader>
             <DialogTitle className="text-xl font-black uppercase tracking-wider text-foreground">
               Evaluate Daily Timesheet
@@ -459,57 +460,68 @@ export default function TimesheetReviewsPage() {
             })()}
 
           <DialogFooter className="gap-2 sm:justify-between border-t border-border/20 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsReviewOpen(false)}
-              className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
-            >
-              Close
-            </Button>
-            {selectedTimesheet?.status === "PENDING" && (
-              <div className="flex gap-2">
+            {selectedTimesheet?.status === "PENDING" ? (
+              <>
                 <Button
                   type="button"
-                  onClick={() => {
-                    reviewMutation.mutate(
-                      { action: "reject", review_note: reviewNote },
-                      {
-                        onSuccess: () => {
-                          setIsReviewOpen(false);
-                          setReviewNote("");
-                          setSelectedTimesheet(null);
-                        },
-                      },
-                    );
-                  }}
-                  disabled={reviewMutation.isPending}
                   variant="outline"
-                  className="border-destructive text-destructive hover:bg-destructive hover:text-white hover:border-destructive hover:bg-none gap-2 text-[10px] tracking-widest h-10 shadow-lg font-bold"
+                  onClick={() => setIsReviewOpen(false)}
+                  className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
                 >
-                  Reject
+                  Close
                 </Button>
-                <Button
-                  type="button"
-                  onClick={() => {
-                    reviewMutation.mutate(
-                      { action: "approve", review_note: reviewNote },
-                      {
-                        onSuccess: () => {
-                          setIsReviewOpen(false);
-                          setReviewNote("");
-                          setSelectedTimesheet(null);
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      reviewMutation.mutate(
+                        { action: "reject", review_note: reviewNote },
+                        {
+                          onSuccess: () => {
+                            setIsReviewOpen(false);
+                            setReviewNote("");
+                            setSelectedTimesheet(null);
+                          },
                         },
-                      },
-                    );
-                  }}
-                  disabled={reviewMutation.isPending}
-                  variant="outline"
-                  className="border-success text-success hover:bg-success hover:text-white hover:border-success hover:bg-none gap-2 text-[10px] tracking-widest h-10 shadow-lg font-bold"
-                >
-                  Approve
-                </Button>
-              </div>
+                      );
+                    }}
+                    disabled={reviewMutation.isPending}
+                    variant="outline"
+                    className="border-destructive text-destructive hover:bg-destructive hover:text-white hover:border-destructive hover:bg-none gap-2 text-[10px] tracking-widest h-10 shadow-lg font-bold"
+                  >
+                    Reject
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      reviewMutation.mutate(
+                        { action: "approve", review_note: reviewNote },
+                        {
+                          onSuccess: () => {
+                            setIsReviewOpen(false);
+                            setReviewNote("");
+                            setSelectedTimesheet(null);
+                          },
+                        },
+                      );
+                    }}
+                    disabled={reviewMutation.isPending}
+                    variant="outline"
+                    className="border-success text-success hover:bg-success hover:text-white hover:border-success hover:bg-none gap-2 text-[10px] tracking-widest h-10 shadow-lg font-bold"
+                  >
+                    Approve
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsReviewOpen(false)}
+                className="w-full gap-2 text-[10px] tracking-widest h-10 shadow-lg font-bold"
+              >
+                Close
+              </Button>
             )}
           </DialogFooter>
         </DialogContent>

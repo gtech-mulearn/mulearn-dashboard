@@ -4,7 +4,6 @@ import {
   AlertTriangle,
   CheckCircle2,
   Search,
-  Shield,
   Sparkles,
   Trophy,
   XCircle,
