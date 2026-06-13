@@ -18,7 +18,7 @@ function Calendar({
   className,
   classNames,
   showOutsideDays = true,
-  captionLayout = "dropdown",
+  captionLayout = "label",
   buttonVariant = "ghost",
   formatters,
   components,
@@ -40,7 +40,7 @@ function Calendar({
       captionLayout={captionLayout}
       formatters={{
         formatMonthDropdown: (date) =>
-          date.toLocaleString("default", { month: "long" }),
+          date.toLocaleString("default", { month: "short" }),
         ...formatters,
       }}
       classNames={{

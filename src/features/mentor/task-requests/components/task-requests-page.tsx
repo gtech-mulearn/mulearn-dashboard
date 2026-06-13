@@ -62,7 +62,6 @@ import {
   useDeleteMentorTask,
   useMentorTasks,
   useTaskIgDropdown,
-  useTaskLevels,
   useTaskTypes,
   useUpdateMentorTask,
 } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
@@ -115,7 +114,6 @@ function TaskFormDialog({
   const isEdit = !!task;
   const { data: myIgs = [] } = useTaskIgDropdown();
   const { data: taskTypes = [], isLoading: taskTypesLoading } = useTaskTypes();
-  const { data: levels = [], isLoading: levelsLoading } = useTaskLevels();
   const { mutate: create, isPending: isCreating } = useCreateMentorTask();
   const { mutate: update, isPending: isUpdating } = useUpdateMentorTask(
     task?.id ?? "",
@@ -140,33 +138,15 @@ function TaskFormDialog({
   // Populate form when editing
   useEffect(() => {
     if (task && open) {
-      // The API list response stores type/ig/level as display names (e.g. "IGL4",
-      // "Web Development", "lvl3"). The dropdowns bind to UUIDs, so we must resolve
-      // each name to its ID before resetting the form.
-      const resolvedIg =
-        myIgs.find((ig) => ig.name === task.ig || ig.id === task.ig)?.id ??
-        task.ig ??
-        "";
-      const resolvedType =
-        taskTypes.find((t) => t.title === task.type || t.id === task.type)
-          ?.id ??
-        task.type ??
-        "";
-      const resolvedLevel =
-        levels.find((lvl) => lvl.name === task.level || lvl.id === task.level)
-          ?.id ??
-        task.level ??
-        "";
-
       form.reset({
-        hashtag: task.hashtag?.replace(/^#/, "") ?? "",
+        hashtag: task.hashtag ?? "",
         title: task.title ?? "",
         karma: task.karma ?? 100,
         usage_count: task.usage_count ?? 1,
         description: task.description ?? "",
-        type: resolvedType,
-        level: resolvedLevel,
-        ig: resolvedIg,
+        type: task.type ?? "",
+        level: task.level ?? "",
+        ig: task.ig ?? "",
         skill_ids: [],
       });
     } else if (!task && open) {
@@ -182,7 +162,7 @@ function TaskFormDialog({
         skill_ids: [],
       });
     }
-  }, [task, open, form, myIgs, taskTypes, levels]);
+  }, [task, open, form]);
 
   function onSubmit(values: MentorTaskFormValues) {
     const payload = {
@@ -355,31 +335,10 @@ function TaskFormDialog({
                 name="level"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Level</FormLabel>
-                    <Select
-                      value={field.value || "none"}
-                      onValueChange={(val) =>
-                        field.onChange(val === "none" ? "" : val)
-                      }
-                    >
-                      <FormControl>
-                        <SelectTrigger disabled={levelsLoading}>
-                          <SelectValue
-                            placeholder={
-                              levelsLoading ? "Loading..." : "Select level"
-                            }
-                          />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="none">None</SelectItem>
-                        {levels.map((lvl) => (
-                          <SelectItem key={lvl.id} value={lvl.id}>
-                            {lvl.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormLabel>Level ID (optional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Level UUID" {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -714,7 +673,7 @@ export function TaskRequestsPage() {
             <TabsTrigger value="pending">
               Pending
               {pendingCount > 0 && (
-                <Badge className="ml-2 bg-brand-blue text-primary-foreground hover:bg-brand-blue/90 border-transparent">
+                <Badge variant="secondary" className="ml-2">
                   {pendingCount}
                 </Badge>
               )}
