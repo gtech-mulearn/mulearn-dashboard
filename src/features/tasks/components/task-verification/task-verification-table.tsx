@@ -28,6 +28,9 @@ const COLUMN_ORDER = [
   { column: "approval_status", Label: "Status", isSortable: false },
 ];
 
+const isCompanyTask = (task: TaskVerificationItem) =>
+  Boolean(task.company_name?.trim());
+
 export function TaskVerificationTable({
   status,
   source,
@@ -46,7 +49,6 @@ export function TaskVerificationTable({
 
   const { data, isLoading } = usePendingTasks({
     approval_status: status,
-    source,
     pageIndex: page,
     perPage,
     search: search.trim() || undefined,
@@ -68,18 +70,21 @@ export function TaskVerificationTable({
     }
   };
 
-  const tableRows: Data[] = tasks.map((t) => {
+  const filteredTasks = tasks.filter((task) => {
+    if (!source) return true;
+    const isCompany = isCompanyTask(task);
+    return source === "company" ? isCompany : !isCompany;
+  });
+
+  const tableRows: Data[] = filteredTasks.map((t) => {
+    const companyName = t.company_name?.trim();
     const dataRow: Data = {
       id: t.id,
       title: t.title,
       hashtag: t.hashtag,
       karma: t.karma,
-      requested_by_name: t.requested_by?.full_name || t.company_name || "—",
-      submitter_role: t.company_name
-        ? "Company"
-        : t.requested_by
-          ? "Mentor"
-          : "—",
+      requested_by_name: t.requested_by?.full_name || companyName || "—",
+      submitter_role: isCompanyTask(t) ? "Company" : "Mentor",
       approval_status: t.approval_status,
     };
     return dataRow;
@@ -94,14 +99,17 @@ export function TaskVerificationTable({
       "Role",
       "Status",
     ];
-    const csvRows = tasks.map((t) => [
-      t.title,
-      t.hashtag,
-      t.karma,
-      t.requested_by?.full_name || t.company_name || "—",
-      t.company_name ? "Company" : t.requested_by ? "Mentor" : "—",
-      t.approval_status,
-    ]);
+    const csvRows = filteredTasks.map((t) => {
+      const companyName = t.company_name?.trim();
+      return [
+        t.title,
+        t.hashtag,
+        t.karma,
+        t.requested_by?.full_name || companyName || "—",
+        isCompanyTask(t) ? "Company" : "Mentor",
+        t.approval_status,
+      ];
+    });
     const csv = [headers, ...csvRows]
       .map((row) =>
         row.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","),
@@ -132,7 +140,7 @@ export function TaskVerificationTable({
           onCsvDownload={downloadCSV}
           perPage={perPage}
           perPageOptions={[10, 25, 50, 100]}
-          searchPlaceholder="Search by Name. Title or Hashtag..."
+          searchPlaceholder="Search by Name, Title or Hashtag..."
           searchSize="sm"
           searchPosition="right"
           searchInputClassName="pl-8 bg-background border-border text-foreground focus-visible:ring-ring"
@@ -146,7 +154,7 @@ export function TaskVerificationTable({
           columnOrder={COLUMN_ORDER}
           id={["id"]}
           customActionRender={(row) => {
-            const item = tasks.find((t) => t.id === String(row.id));
+            const item = filteredTasks.find((t) => t.id === String(row.id));
             if (!item) return null;
             const isPending = item.approval_status === "pending";
             return (
@@ -194,7 +202,7 @@ export function TaskVerificationTable({
             );
           }}
           customCellRender={(column, row) => {
-            const item = tasks.find((t) => t.id === String(row.id));
+            const item = filteredTasks.find((t) => t.id === String(row.id));
             if (!item) return null;
             if (column === "approval_status") {
               const statusColors = {
