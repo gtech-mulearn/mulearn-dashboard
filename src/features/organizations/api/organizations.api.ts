@@ -140,12 +140,27 @@ export async function deleteOrganization(code: string): Promise<void> {
 // ─── CSV export ───────────────────────────────────────────────────────────────
 
 export async function downloadOrganizationCsv(orgType: OrgType): Promise<Blob> {
-  const response = await apiClient.get<Blob>(
-    `${BASE}/${orgType}/csv/`,
-    undefined,
-    { responseType: "blob" },
-  );
-  return response as unknown as Blob;
+  const blob = await apiClient.get<Blob>(`${BASE}/${orgType}/csv/`, undefined, {
+    responseType: "blob",
+  });
+
+  // The backend might return the CSV string wrapped inside the standard Django JSON envelope.
+  const text = await blob.text();
+  try {
+    const json = JSON.parse(text);
+    if (
+      json &&
+      typeof json === "object" &&
+      "response" in json &&
+      typeof json.response === "string"
+    ) {
+      return new Blob([json.response], { type: "text/csv;charset=utf-8;" });
+    }
+  } catch {
+    // If JSON parsing fails, it's a raw CSV file as expected.
+  }
+
+  return blob;
 }
 
 // ─── Shared helper ────────────────────────────────────────────────────────────
