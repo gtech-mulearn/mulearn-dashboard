@@ -22,19 +22,19 @@ const THead = ({
   action,
   verify = false,
   thClassName = "",
-  slNoClassName = "w-16",
+  slNoClassName = "w-20",
 }: TableHeadProps) => {
   return (
     <thead>
       <tr>
         <th
-          className={`border-b border-border px-3.5 py-3 text-left text-sm font-bold uppercase tracking-wider ${slNoClassName} ${thClassName}`}
+          className={`border-b border-border px-4 py-3 text-left text-base font-bold uppercase tracking-wider ${slNoClassName} ${thClassName}`}
         >
           Sl.no
         </th>
         {columnOrder.map((column) => (
           <th
-            className={`border-b border-border px-3.5 py-3 text-left text-sm font-bold tracking-wider ${column.width || ""} ${thClassName}`}
+            className={`border-b border-border px-4 py-3 text-left text-base font-bold tracking-wider ${column.width || ""} ${thClassName}`}
             key={column.column}
           >
             <div className="flex items-center gap-2">
@@ -52,12 +52,12 @@ const THead = ({
           </th>
         ))}
         {verify && (
-          <th className="border-b border-border px-3.5 py-3 text-left text-sm font-bold tracking-wider">
+          <th className="border-b border-border px-4 py-3 text-left text-base font-bold tracking-wider">
             Verify
           </th>
         )}
         {action && (
-          <th className="border-b border-border px-3.5 py-3 text-left text-sm font-bold tracking-wider w-32">
+          <th className="border-b border-border px-4 py-3 text-left text-base font-bold tracking-wider w-32">
             Action
           </th>
         )}

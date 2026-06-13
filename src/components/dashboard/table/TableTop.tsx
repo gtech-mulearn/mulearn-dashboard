@@ -1,25 +1,20 @@
 import { Download, Search } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import { cn } from "@/lib/utils";
 import { SearchBar } from "./SearchBar";
 
 type Props = {
   onSearchText: (data: string) => void;
-  onPerPageNumber: (data: number) => void;
+  onPerPageNumber?: (data: number) => void;
   CSV: string;
-  perPage: number;
-  perPageOptions: number[];
+  perPage?: number;
+  perPageOptions?: number[];
   searchPlaceholder: string;
   searchSize: "sm" | "md" | "lg";
   searchPosition: "left" | "center" | "right";
+  wrapperClassName?: string;
   searchWrapperClassName?: string;
   searchFieldWrapperClassName?: string;
   searchBarClassName?: string;
@@ -30,13 +25,11 @@ type Props = {
 
 const TableTop = ({
   onSearchText,
-  onPerPageNumber,
   CSV,
-  perPage,
-  perPageOptions,
   searchPlaceholder,
   searchSize,
   searchPosition,
+  wrapperClassName,
   searchWrapperClassName,
   searchFieldWrapperClassName,
   searchBarClassName,
@@ -66,6 +59,7 @@ const TableTop = ({
         searchPosition === "left" && "md:justify-start",
         searchPosition === "center" && "md:justify-center",
         searchPosition === "right" && "md:justify-between",
+        wrapperClassName,
       )}
     >
       {searchPosition !== "left" && (
@@ -97,7 +91,7 @@ const TableTop = ({
               onSearch={handleData}
               placeholder={searchPlaceholder}
               size={searchSize}
-              showButton={false}
+              showButton={true}
               className={cn(CSV ? "w-full" : "w-fit", searchBarClassName)}
               inputClassName={cn(
                 "border-border bg-background pl-9 pr-3",
@@ -106,26 +100,6 @@ const TableTop = ({
             />
           </div>
           <div className="flex flex-wrap items-center justify-between gap-2 w-full lg:w-auto">
-            <div className="flex items-center gap-2">
-              <span className="whitespace-nowrap text-xs font-medium text-muted-foreground">
-                Rows per page
-              </span>
-              <Select
-                value={String(perPage)}
-                onValueChange={(value) => onPerPageNumber(Number(value))}
-              >
-                <SelectTrigger className="h-10 w-[88px] rounded-xl border-border bg-background">
-                  <SelectValue placeholder="Rows" />
-                </SelectTrigger>
-                <SelectContent>
-                  {perPageOptions.map((option) => (
-                    <SelectItem key={option} value={String(option)}>
-                      {option}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
             {CSV && (
               <Button
                 variant="outline"
