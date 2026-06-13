@@ -264,7 +264,7 @@ export default function LeaveManagementPage() {
                               {req.leave_type}
                             </Badge>
                           </td>
-                          <td className="p-4 font-mono text-xs">
+                          <td className="p-4 text-xs">
                             {new Date(req.start_date).toLocaleDateString(
                               undefined,
                               {
@@ -274,7 +274,7 @@ export default function LeaveManagementPage() {
                               },
                             )}
                           </td>
-                          <td className="p-4 font-mono text-xs">
+                          <td className="p-4 text-xs">
                             {new Date(req.end_date).toLocaleDateString(
                               undefined,
                               {
@@ -284,7 +284,7 @@ export default function LeaveManagementPage() {
                               },
                             )}
                           </td>
-                          <td className="p-4 font-mono text-xs text-brand-blue font-bold">
+                          <td className="p-4 text-xs text-brand-blue font-bold">
                             {req.duration_days
                               ? `${req.duration_days} ${req.duration_days === 1 ? "day" : "days"}`
                               : "-"}

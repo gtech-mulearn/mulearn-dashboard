@@ -216,7 +216,7 @@ export default function ManageInternsPage() {
         Label: "Joined Date",
         isSortable: true,
         wrap: (data: string) => (
-          <span className="font-mono text-xs font-bold text-foreground">
+          <span className="text-xs font-bold text-foreground">
             {new Date(data).toLocaleDateString(undefined, {
               month: "short",
               day: "numeric",

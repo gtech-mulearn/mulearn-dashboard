@@ -39,6 +39,10 @@ export function InternStatsCards() {
   const userGuild = overview?.guild || "DESIGN";
   const userRank = profile?.rank || 3;
 
+  const formattedGuild = userGuild.toUpperCase().endsWith("GUILD")
+    ? userGuild
+    : `${userGuild} Guild`;
+
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       {/* Points Card */}
@@ -55,8 +59,8 @@ export function InternStatsCards() {
             <Gem className="w-6 h-6 text-brand-blue" />
             {userScore.toLocaleString()}
           </div>
-          <p className="text-[10px] text-muted-foreground mt-2 font-bold uppercase tracking-widest flex items-center gap-1">
-            Currently in <span className="text-success">{userGuild}</span> guild
+          <p className="text-[10px] text-muted-foreground mt-2 font-bold uppercase tracking-widest">
+            Currently in <span className="text-success">{formattedGuild}</span>
           </p>
         </CardContent>
       </Card>
@@ -71,7 +75,7 @@ export function InternStatsCards() {
           <Flame className="h-4 w-4 text-warning fill-warning" />
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-black font-mono tracking-tighter text-foreground flex items-baseline gap-1">
+          <div className="text-3xl font-black font-mono tracking-tighter text-foreground flex items-baseline gap-1 flex-wrap">
             {userStreak}
             <span className="text-sm font-bold text-muted-foreground uppercase">
               DAYS
@@ -102,7 +106,7 @@ export function InternStatsCards() {
           <div className="text-3xl font-black font-mono tracking-tighter text-foreground">
             #{userRank}
           </div>
-          <p className="text-[10px] text-success mt-2 font-bold uppercase tracking-widest flex items-center gap-1">
+          <p className="text-[10px] text-success mt-2 font-bold uppercase tracking-widest">
             Complexity score: {overview?.complexity_score || 0}
           </p>
         </CardContent>
@@ -118,9 +122,9 @@ export function InternStatsCards() {
           <Target className="h-4 w-4 text-success" />
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-black font-mono tracking-tighter text-foreground">
+          <div className="text-3xl font-black font-mono tracking-tighter text-foreground flex items-baseline gap-1 flex-wrap">
             {overview?.completed_tasks || 0}
-            <span className="text-xs font-bold text-muted-foreground uppercase ml-1">
+            <span className="text-xs font-bold text-muted-foreground uppercase">
               COMPLETED TASKS
             </span>
           </div>

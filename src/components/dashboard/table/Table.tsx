@@ -43,6 +43,7 @@ type TableProps = {
   customCellRender?: (column: string, row: Data) => ReactElement | null;
   slNoCellClassName?: string;
   customActionRender?: (row: Data) => ReactElement | null;
+  useRowRankAsSerialNo?: boolean;
 };
 
 function convertToTableData(dateString: unknown): string {
@@ -143,9 +144,9 @@ const Table: FC<TableProps> = (props) => {
       <div
         ref={tableContainerRef}
         onScroll={updateScrollIndicator}
-        className="hidden overflow-x-auto overflow-y-hidden rounded-xl border border-border bg-card md:block"
+        className="w-full overflow-x-auto rounded-xl border border-border bg-card"
       >
-        <table className="w-full border-collapse table-fixed">
+        <table className="w-full border-collapse table-fixed min-w-[900px]">
           {props.children?.[0]}
           {props.isloading ? (
             <tbody>
@@ -168,7 +169,10 @@ const Table: FC<TableProps> = (props) => {
                   <td
                     className={`border-b border-border px-3.5 py-3 w-16 ${props.slNoCellClassName ?? ""}`}
                   >
-                    {startIndex + index + 1}
+                    {props.useRowRankAsSerialNo &&
+                    typeof rowData.rank === "number"
+                      ? rowData.rank
+                      : startIndex + index + 1}
                   </td>
                   {props.columnOrder.map((column) => (
                     <td
@@ -268,7 +272,7 @@ const Table: FC<TableProps> = (props) => {
         </table>
       </div>
       {hasOverflow && (
-        <div className="mt-3 hidden md:block">
+        <div className="mt-3 block">
           <div className="relative h-2 rounded-full bg-border">
             <div
               className="absolute top-0 h-2 rounded-full bg-muted-foreground/40"
@@ -282,7 +286,7 @@ const Table: FC<TableProps> = (props) => {
       )}
 
       {!props.isloading && hasData && (
-        <div className="space-y-3 md:hidden">
+        <div className="space-y-3 hidden">
           {props.rows.map((rowData, index) => (
             <div
               key={`${rowData.id ?? index}`}
@@ -291,7 +295,11 @@ const Table: FC<TableProps> = (props) => {
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div>
                   <p className="text-sm text-muted-foreground">
-                    #{startIndex + index + 1}
+                    #
+                    {props.useRowRankAsSerialNo &&
+                    typeof rowData.rank === "number"
+                      ? rowData.rank
+                      : startIndex + index + 1}
                   </p>
                   <p className="text-base font-semibold text-foreground">
                     {convertToTableData(

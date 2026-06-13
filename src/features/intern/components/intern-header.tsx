@@ -9,7 +9,7 @@ import { useUserInfo, useUserProfile } from "@/features/auth";
 import { useInternOverview } from "@/features/intern";
 
 interface InternHeaderProps {
-  onApplyLeave: () => void;
+  onApplyLeave?: () => void;
 }
 
 export function InternHeader({ onApplyLeave }: InternHeaderProps) {
@@ -61,8 +61,8 @@ export function InternHeader({ onApplyLeave }: InternHeaderProps) {
           <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground flex items-center gap-2">
             Welcome back, {userDisplayName}
           </h2>
-          <div className="flex items-center gap-3 mt-1">
-            <div className="w-48 h-2 bg-muted rounded-full overflow-hidden">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-1">
+            <div className="w-48 h-2 bg-muted rounded-full overflow-hidden shrink-0">
               <div
                 className="h-full bg-gradient-to-r from-brand-purple to-brand-blue"
                 style={{ width: `${userExp}%` }}
@@ -84,13 +84,6 @@ export function InternHeader({ onApplyLeave }: InternHeaderProps) {
             Leave Desk
           </Button>
         </Link>
-        <Button
-          onClick={onApplyLeave}
-          variant="trusty"
-          className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
-        >
-          Apply for Leave
-        </Button>
         <Badge
           variant="outline"
           className="px-4 py-1.5 text-sm font-bold border-success/30 text-success bg-success/5 rounded-full"

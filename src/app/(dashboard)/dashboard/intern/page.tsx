@@ -5,9 +5,9 @@ import { ErrorBoundary } from "react-error-boundary";
 import { SectionErrorFallback } from "@/components/ui/errors/SectionErrorFallback";
 import { LeaveFormDialog } from "@/features/intern";
 import { ActiveQuests } from "../../../../features/intern/components/active-quests";
-import { EliteLeaders } from "../../../../features/intern/components/leaderboard";
 import { InternHeader } from "../../../../features/intern/components/intern-header";
 import { InternStatsCards } from "../../../../features/intern/components/intern-stats-cards";
+import { EliteLeaders } from "../../../../features/intern/components/leaderboard";
 import { QuestLog } from "../../../../features/intern/components/quest-log";
 
 export default function InternDashboardPage() {

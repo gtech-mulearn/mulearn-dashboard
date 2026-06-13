@@ -1,6 +1,14 @@
 "use client";
 
-import { Search, Sparkles, Trophy } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Search,
+  Shield,
+  Sparkles,
+  Trophy,
+  XCircle,
+} from "lucide-react";
 import { useState } from "react";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table, { type Data } from "@/components/dashboard/table/Table";
@@ -29,6 +37,16 @@ import {
   useReviewLeave,
 } from "@/features/intern/hooks/use-manage-interns";
 import type { TLeaveRequest } from "@/features/intern/types";
+
+const calculateDurationDays = (startStr: string, endStr: string) => {
+  if (!startStr || !endStr) return 0;
+  const start = new Date(startStr);
+  const end = new Date(endStr);
+  start.setHours(0, 0, 0, 0);
+  end.setHours(0, 0, 0, 0);
+  const diffTime = end.getTime() - start.getTime();
+  return Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24))) + 1;
+};
 
 export default function LeaveReviewsPage() {
   const [searchText, setSearchText] = useState("");
@@ -71,10 +89,10 @@ export default function LeaveReviewsPage() {
       isSortable: true,
       wrap: (data: string, _id: string, row: Data) => (
         <div className="flex flex-col">
-          <span className="font-bold uppercase text-[11px] tracking-tight">
+          <span className="font-bold text-foreground uppercase tracking-tight text-sm">
             {String(data || (row as any).full_name || "Unknown")}
           </span>
-          <span className="text-[9px] text-muted-foreground font-mono font-bold leading-none mt-1">
+          <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest leading-none mt-1">
             {(row as any).muid || ""}
           </span>
         </div>
@@ -87,7 +105,7 @@ export default function LeaveReviewsPage() {
       wrap: (data: string) => (
         <Badge
           variant="outline"
-          className="text-[9px] uppercase font-black tracking-widest bg-muted/40"
+          className="font-bold uppercase text-muted-foreground/80 tracking-wider"
         >
           {String(data)}
         </Badge>
@@ -98,7 +116,7 @@ export default function LeaveReviewsPage() {
       Label: "Start Date",
       isSortable: true,
       wrap: (data: string) => (
-        <span className="font-mono text-xs font-bold text-foreground">
+        <span className="text-xs font-bold text-foreground">
           {new Date(data).toLocaleDateString(undefined, {
             month: "short",
             day: "numeric",
@@ -112,7 +130,7 @@ export default function LeaveReviewsPage() {
       Label: "End Date",
       isSortable: true,
       wrap: (data: string) => (
-        <span className="font-mono text-xs font-bold text-foreground">
+        <span className="text-xs font-bold text-foreground">
           {new Date(data).toLocaleDateString(undefined, {
             month: "short",
             day: "numeric",
@@ -125,9 +143,24 @@ export default function LeaveReviewsPage() {
       column: "duration_days",
       Label: "Days",
       isSortable: true,
-      wrap: (data: string) => (
-        <span className="font-black text-brand-purple">{data || "-"} days</span>
-      ),
+      wrap: (data: string, _id: string, row: Data) => {
+        let days = data ? Number(data) : null;
+        if ((!days || isNaN(days)) && row.start_date && row.end_date) {
+          const start = new Date(row.start_date as string);
+          const end = new Date(row.end_date as string);
+          start.setHours(0, 0, 0, 0);
+          end.setHours(0, 0, 0, 0);
+          const diffTime = end.getTime() - start.getTime();
+          const diffDays =
+            Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24))) + 1;
+          days = diffDays;
+        }
+        return (
+          <span className="text-xs font-bold text-foreground">
+            {days ? `${days} day${days > 1 ? "s" : ""}` : "-"}
+          </span>
+        );
+      },
     },
     {
       column: "status",
@@ -139,36 +172,36 @@ export default function LeaveReviewsPage() {
             return (
               <Badge
                 variant="outline"
-                className="border-success/30 text-success bg-success/10 text-[9px] uppercase tracking-wider font-black"
+                className="gap-1.5 text-success border-success/30"
               >
-                Approved
+                <CheckCircle2 className="w-3 h-3" /> Approved
               </Badge>
             );
           case "REJECTED":
             return (
               <Badge
                 variant="outline"
-                className="border-destructive/30 text-destructive bg-destructive/10 text-[9px] uppercase tracking-wider font-black"
+                className="gap-1.5 text-destructive border-destructive/30"
               >
-                Rejected
+                <XCircle className="w-3 h-3" /> Rejected
               </Badge>
             );
           case "CANCELLED":
             return (
               <Badge
                 variant="outline"
-                className="border-border/30 text-muted-foreground bg-muted text-[9px] uppercase tracking-wider font-black"
+                className="gap-1.5 text-muted-foreground border-border"
               >
-                Cancelled
+                <Shield className="w-3 h-3" /> Cancelled
               </Badge>
             );
           default:
             return (
               <Badge
                 variant="outline"
-                className="border-warning/30 text-warning bg-warning/10 text-[9px] uppercase tracking-wider font-black"
+                className="gap-1.5 text-warning border-warning/30"
               >
-                Pending
+                <AlertTriangle className="w-3 h-3" /> Pending
               </Badge>
             );
         }
@@ -207,9 +240,9 @@ export default function LeaveReviewsPage() {
             </div>
           </div>
 
-          <div className="w-full lg:w-64 flex gap-4">
+          <div className="w-full lg:w-48 flex gap-4">
             <div className="flex-1">
-              <Label className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+              <Label className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-right">
                 Status Filter
               </Label>
               <Select
@@ -220,7 +253,7 @@ export default function LeaveReviewsPage() {
                 }}
               >
                 <SelectTrigger
-                  className={`h-12 bg-card/40 border-border/40 font-black uppercase text-[10px] tracking-widest rounded-md ${statusColorClass[statusFilter] ?? ""}`}
+                  className={`w-full h-12 bg-card/40 border-border/40 font-black uppercase text-[10px] tracking-widest rounded-md ${statusColorClass[statusFilter] ?? ""}`}
                 >
                   <SelectValue placeholder="Pending" />
                 </SelectTrigger>
@@ -275,7 +308,7 @@ export default function LeaveReviewsPage() {
                 setReviewNote(row.review_note ? String(row.review_note) : "");
                 setIsReviewOpen(true);
               }}
-              className="uppercase tracking-widest text-[9px] font-black text-primary hover:bg-muted/50 border border-border/20 px-2.5 h-7.5"
+              className="rounded-md text-muted-foreground hover:bg-muted hover:text-foreground font-black uppercase text-[9px] tracking-widest px-3 h-7.5"
             >
               {row.status === "PENDING" ? "Evaluate" : "View"}
             </Button>
@@ -313,131 +346,182 @@ export default function LeaveReviewsPage() {
             </DialogDescription>
           </DialogHeader>
 
-          {selectedLeave && (
-            <div className="space-y-4 py-2 my-2 text-sm">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
-                    Intern
-                  </span>
-                  <span className="font-bold text-foreground">
-                    {selectedLeave.user_name || "Unknown"} (
-                    {(selectedLeave as any).muid || ""})
-                  </span>
-                </div>
-                <div>
-                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
-                    Submission Date
-                  </span>
-                  <span className="font-bold text-foreground">
-                    {new Date(selectedLeave.created_at).toLocaleDateString(
-                      undefined,
-                      {
-                        weekday: "long",
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      },
-                    )}
-                  </span>
-                </div>
-              </div>
+          {selectedLeave &&
+            (() => {
+              const muid = (selectedLeave as any).muid || "";
+              const days =
+                selectedLeave.duration_days ||
+                calculateDurationDays(
+                  selectedLeave.start_date,
+                  selectedLeave.end_date,
+                );
+              return (
+                <div className="space-y-4 py-2 my-2 text-sm">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
+                        Intern
+                      </span>
+                      <span className="font-bold text-foreground text-sm">
+                        {selectedLeave.user_name || "Unknown"}
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
+                        MUID
+                      </span>
+                      <span className="font-bold text-foreground text-sm">
+                        {muid || "-"}
+                      </span>
+                    </div>
+                  </div>
 
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
-                    Leave Type
-                  </span>
-                  <Badge variant="outline" className="font-bold mt-1 text-xs">
-                    {selectedLeave.leave_type}
-                  </Badge>
-                </div>
-                <div>
-                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
-                    Start Date
-                  </span>
-                  <span className="font-bold text-foreground">
-                    {new Date(selectedLeave.start_date).toLocaleDateString(
-                      undefined,
-                      {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      },
-                    )}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
-                    End Date
-                  </span>
-                  <span className="font-bold text-foreground">
-                    {new Date(selectedLeave.end_date).toLocaleDateString(
-                      undefined,
-                      {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      },
-                    )}
-                  </span>
-                </div>
-              </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
+                        Submission Date
+                      </span>
+                      <span className="font-bold text-foreground text-sm">
+                        {new Date(selectedLeave.created_at).toLocaleDateString(
+                          undefined,
+                          {
+                            weekday: "long",
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          },
+                        )}
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-1 items-start">
+                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
+                        Leave Type
+                      </span>
+                      <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground font-bold text-xs uppercase tracking-wider mt-1">
+                        {selectedLeave.leave_type}
+                      </div>
+                    </div>
+                  </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
-                    Duration Days
-                  </span>
-                  <span className="font-black text-brand-purple">
-                    {selectedLeave.duration_days} Days
-                  </span>
-                </div>
-                <div>
-                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
-                    Status
-                  </span>
-                  <span className="font-bold uppercase text-xs">
-                    {selectedLeave.status}
-                  </span>
-                </div>
-              </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
+                        Start Date
+                      </span>
+                      <span className="font-bold text-foreground text-sm">
+                        {new Date(selectedLeave.start_date).toLocaleDateString(
+                          undefined,
+                          {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          },
+                        )}
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
+                        End Date
+                      </span>
+                      <span className="font-bold text-foreground text-sm">
+                        {new Date(selectedLeave.end_date).toLocaleDateString(
+                          undefined,
+                          {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          },
+                        )}
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
+                        Duration Days
+                      </span>
+                      <span className="font-black text-brand-purple text-sm">
+                        {days ? `${days} Day${days > 1 ? "s" : ""}` : "-"}
+                      </span>
+                    </div>
+                  </div>
 
-              <div>
-                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
-                  Reason for Respite
-                </span>
-                <p className="bg-muted/40 p-2.5 rounded-lg text-xs font-semibold text-foreground/80 mt-1 border border-border/20 max-h-40 overflow-y-auto leading-relaxed">
-                  {selectedLeave.reason || "No reason provided."}
-                </p>
-              </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
+                        Status
+                      </span>
+                      <div className="mt-1">
+                        {selectedLeave.status === "APPROVED" && (
+                          <Badge
+                            variant="outline"
+                            className="gap-1.5 text-success border-success/30 font-bold uppercase text-xs"
+                          >
+                            <CheckCircle2 className="w-3 h-3" /> Approved
+                          </Badge>
+                        )}
+                        {selectedLeave.status === "REJECTED" && (
+                          <Badge
+                            variant="outline"
+                            className="gap-1.5 text-destructive border-destructive/30 font-bold uppercase text-xs"
+                          >
+                            <XCircle className="w-3 h-3" /> Rejected
+                          </Badge>
+                        )}
+                        {selectedLeave.status === "CANCELLED" && (
+                          <Badge
+                            variant="outline"
+                            className="gap-1.5 text-muted-foreground border-border font-bold uppercase text-xs"
+                          >
+                            <Shield className="w-3 h-3" /> Cancelled
+                          </Badge>
+                        )}
+                        {selectedLeave.status === "PENDING" && (
+                          <Badge
+                            variant="outline"
+                            className="gap-1.5 text-warning border-warning/30 font-bold uppercase text-xs"
+                          >
+                            <AlertTriangle className="w-3 h-3" /> Pending
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
 
-              {selectedLeave.status === "PENDING" ? (
-                <div className="space-y-2 pt-2 border-t border-border/20">
-                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                    Review Notes / Feedback
-                  </Label>
-                  <textarea
-                    value={reviewNote}
-                    onChange={(e) => setReviewNote(e.target.value)}
-                    placeholder="Feedback visible to the intern..."
-                    className="w-full min-h-[80px] bg-background/50 border border-border/40 rounded-lg p-3 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-primary/40 resize-none"
-                  />
-                </div>
-              ) : (
-                selectedLeave.review_note && (
-                  <div className="pt-2 border-t border-border/20">
+                  <div className="flex flex-col gap-1">
                     <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
-                      Council Review Note
+                      Reason for Respite
                     </span>
-                    <p className="p-2 bg-muted/20 border rounded-lg text-xs mt-1 text-muted-foreground">
-                      {selectedLeave.review_note}
+                    <p className="bg-muted/40 p-2.5 rounded-lg text-xs font-semibold text-foreground/80 mt-1 border border-border/20 max-h-40 overflow-y-auto leading-relaxed">
+                      {selectedLeave.reason || "No reason provided."}
                     </p>
                   </div>
-                )
-              )}
-            </div>
-          )}
+
+                  {selectedLeave.status === "PENDING" ? (
+                    <div className="space-y-2 pt-2 border-t border-border/20 flex flex-col gap-1">
+                      <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+                        Review Notes / Feedback
+                      </Label>
+                      <textarea
+                        value={reviewNote}
+                        onChange={(e) => setReviewNote(e.target.value)}
+                        placeholder="Feedback visible to the intern..."
+                        className="w-full min-h-[80px] bg-background/50 border border-border/40 rounded-lg p-3 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-primary/40 resize-none"
+                      />
+                    </div>
+                  ) : (
+                    selectedLeave.review_note && (
+                      <div className="pt-2 border-t border-border/20 flex flex-col gap-1">
+                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
+                          Council Review Note
+                        </span>
+                        <p className="p-2.5 bg-muted/20 border rounded-lg text-xs mt-1 text-muted-foreground leading-relaxed">
+                          {selectedLeave.review_note}
+                        </p>
+                      </div>
+                    )
+                  )}
+                </div>
+              );
+            })()}
 
           <DialogFooter className="gap-2 sm:justify-between border-t border-border/20 pt-4">
             <Button
@@ -465,8 +549,8 @@ export default function LeaveReviewsPage() {
                     );
                   }}
                   disabled={reviewMutation.isPending}
-                  variant="destructive"
-                  className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
+                  variant="outline"
+                  className="border-destructive text-destructive hover:bg-destructive hover:text-white hover:border-destructive hover:bg-none gap-2 text-[10px] tracking-widest h-10 shadow-lg font-bold"
                 >
                   Reject
                 </Button>
@@ -485,8 +569,8 @@ export default function LeaveReviewsPage() {
                     );
                   }}
                   disabled={reviewMutation.isPending}
-                  variant="secondary"
-                  className="bg-success text-white hover:bg-success/90 gap-2 text-[10px] tracking-widest h-10 shadow-lg"
+                  variant="outline"
+                  className="border-success text-success hover:bg-success hover:text-white hover:border-success hover:bg-none gap-2 text-[10px] tracking-widest h-10 shadow-lg font-bold"
                 >
                   Approve
                 </Button>

@@ -46,7 +46,7 @@ export default function TeamReportPage() {
           <span className="font-bold uppercase text-[11px] tracking-tight">
             {String(data || (row as any).full_name || "Unknown")}
           </span>
-          <span className="text-[9px] text-muted-foreground font-mono font-bold leading-none mt-1">
+          <span className="text-[9px] text-muted-foreground font-bold leading-none mt-1">
             {(row as any).muid || ""}
           </span>
         </div>
@@ -57,7 +57,7 @@ export default function TeamReportPage() {
       Label: "Epoch",
       isSortable: true,
       wrap: (_data: string, _id: string, row: Data) => (
-        <span className="font-bold text-[10px] font-mono">
+        <span className="font-bold text-[10px]">
           W{row.iso_week} {row.iso_year}
         </span>
       ),
@@ -67,7 +67,7 @@ export default function TeamReportPage() {
       Label: "Energy Committed",
       isSortable: true,
       wrap: (data: string) => (
-        <span className="font-mono font-black text-brand-blue">{data} hrs</span>
+        <span className="font-black text-brand-blue">{data} hrs</span>
       ),
     },
     {

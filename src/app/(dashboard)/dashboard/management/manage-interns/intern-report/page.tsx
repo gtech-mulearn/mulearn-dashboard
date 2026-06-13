@@ -1,6 +1,14 @@
 "use client";
 
-import { Search, Sparkles, Trophy } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Search,
+  Shield,
+  Sparkles,
+  Trophy,
+  XCircle,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Pagination from "@/components/dashboard/table/pagination";
@@ -103,7 +111,7 @@ export default function WeeklyReportGeneratorPage() {
       Label: "MUID Token",
       isSortable: true,
       wrap: (data: string) => (
-        <Badge variant="outline" className="font-mono text-[10px]">
+        <Badge variant="outline" className="text-[10px]">
           {String(data)}
         </Badge>
       ),
@@ -126,7 +134,7 @@ export default function WeeklyReportGeneratorPage() {
       Label: "Epoch",
       isSortable: true,
       wrap: (_data: string, _id: string, row: Data) => (
-        <span className="font-bold text-[10px] font-mono">
+        <span className="font-bold text-[10px]">
           W{row.iso_week} {row.iso_year}
         </span>
       ),
@@ -420,105 +428,151 @@ export default function WeeklyReportGeneratorPage() {
             </DialogDescription>
           </DialogHeader>
 
-          {selectedReview && (
-            <div className="space-y-4 py-2 my-2 text-sm">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
-                    Intern
-                  </span>
-                  <span className="font-bold text-foreground">
-                    {selectedReview.user_name ||
-                      (selectedReview as any).full_name ||
-                      "Unknown"}{" "}
-                    ({selectedReview.muid})
-                  </span>
-                </div>
-                <div>
-                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
-                    Team / Week
-                  </span>
-                  <span className="font-bold text-foreground">
-                    {selectedReview.team} - W{selectedReview.iso_week}{" "}
-                    {selectedReview.iso_year}
-                  </span>
-                </div>
-              </div>
+          {selectedReview &&
+            (() => {
+              const muid = selectedReview.muid || "";
+              return (
+                <div className="space-y-4 py-2 my-2 text-sm">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
+                        Intern
+                      </span>
+                      <span className="font-bold text-foreground text-sm">
+                        {selectedReview.user_name ||
+                          (selectedReview as any).full_name ||
+                          "Unknown"}
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
+                        MUID
+                      </span>
+                      <span className="font-bold text-foreground text-sm">
+                        {muid || "-"}
+                      </span>
+                    </div>
+                  </div>
 
-              <div>
-                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block mb-1">
-                  Tasks Completed (Achievements)
-                </span>
-                {selectedReview.tasks_completed ? (
-                  <div className="bg-muted/40 p-2.5 rounded-lg border border-border/20 max-h-40 overflow-y-auto">
-                    <MarkdownRenderer
-                      content={selectedReview.tasks_completed}
-                      className="text-xs"
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
+                        Hours Committed
+                      </span>
+                      <span className="font-bold text-foreground text-sm">
+                        {selectedReview.hours_committed} Hour
+                        {selectedReview.hours_committed !== 1 ? "s" : ""}
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
+                        On Leave
+                      </span>
+                      <span className="font-bold text-foreground text-sm">
+                        {selectedReview.is_on_leave
+                          ? `Yes (${selectedReview.leave_days} day${(selectedReview.leave_days ?? 0) > 1 ? "s" : ""})`
+                          : "No"}
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
+                        Status
+                      </span>
+                      <div className="mt-1">
+                        {selectedReview.status === "APPROVED" && (
+                          <Badge
+                            variant="outline"
+                            className="gap-1.5 text-success border-success/30 font-bold uppercase text-xs"
+                          >
+                            <CheckCircle2 className="w-3 h-3" /> Approved
+                          </Badge>
+                        )}
+                        {selectedReview.status === "REJECTED" && (
+                          <Badge
+                            variant="outline"
+                            className="gap-1.5 text-destructive border-destructive/30 font-bold uppercase text-xs"
+                          >
+                            <XCircle className="w-3 h-3" /> Rejected
+                          </Badge>
+                        )}
+                        {selectedReview.status === "PENDING" && (
+                          <Badge
+                            variant="outline"
+                            className="gap-1.5 text-warning border-warning/30 font-bold uppercase text-xs"
+                          >
+                            <AlertTriangle className="w-3 h-3" /> Pending
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
+                        Team / Week
+                      </span>
+                      <span className="font-bold text-foreground text-sm">
+                        {selectedReview.team} - W{selectedReview.iso_week}{" "}
+                        {selectedReview.iso_year}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
+                      Tasks Completed (Achievements)
+                    </span>
+                    {selectedReview.tasks_completed ? (
+                      <div className="bg-muted/40 p-2.5 rounded-lg border border-border/20 max-h-40 overflow-y-auto leading-relaxed mt-1">
+                        <MarkdownRenderer
+                          content={selectedReview.tasks_completed}
+                          className="text-xs"
+                        />
+                      </div>
+                    ) : (
+                      <p className="text-xs italic text-muted-foreground mt-1">
+                        None reported.
+                      </p>
+                    )}
+                  </div>
+
+                  {selectedReview.blockers && (
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
+                        Blockers
+                      </span>
+                      <p className="bg-destructive/5 text-destructive p-2.5 rounded-lg text-xs font-semibold border border-destructive/20 leading-relaxed">
+                        {selectedReview.blockers}
+                      </p>
+                    </div>
+                  )}
+
+                  {selectedReview.suggestions && (
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
+                        Suggestions
+                      </span>
+                      <p className="bg-muted/40 p-2.5 rounded-lg text-xs font-semibold border border-border/20 leading-relaxed text-foreground/80">
+                        {selectedReview.suggestions}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="space-y-2 pt-2 border-t border-border/20 flex flex-col gap-1">
+                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+                      Evaluation Notes / Feedback
+                    </Label>
+                    <textarea
+                      value={reviewNote}
+                      onChange={(e) => setReviewNote(e.target.value)}
+                      placeholder="Feedback visible to the intern..."
+                      className="w-full min-h-[80px] bg-background/50 border border-border/40 rounded-lg p-3 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-primary/40 resize-none"
                     />
                   </div>
-                ) : (
-                  <p className="text-xs italic text-muted-foreground">
-                    None reported.
-                  </p>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
-                    Hours Committed
-                  </span>
-                  <span className="font-black text-brand-blue font-mono">
-                    {selectedReview.hours_committed} Hours
-                  </span>
                 </div>
-                <div>
-                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
-                    On Leave / Leave Days
-                  </span>
-                  <span className="font-bold">
-                    {selectedReview.is_on_leave
-                      ? `Yes (${selectedReview.leave_days} days)`
-                      : "No"}
-                  </span>
-                </div>
-              </div>
-
-              {selectedReview.blockers && (
-                <div>
-                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
-                    Blockers
-                  </span>
-                  <p className="bg-muted/20 p-2 rounded-lg text-xs text-muted-foreground mt-1 border border-border/20">
-                    {selectedReview.blockers}
-                  </p>
-                </div>
-              )}
-
-              {selectedReview.suggestions && (
-                <div>
-                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
-                    Suggestions
-                  </span>
-                  <p className="bg-muted/20 p-2 rounded-lg text-xs text-muted-foreground mt-1 border border-border/20">
-                    {selectedReview.suggestions}
-                  </p>
-                </div>
-              )}
-
-              <div className="space-y-2 pt-2 border-t border-border/20">
-                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                  Evaluation Notes / Feedback
-                </Label>
-                <textarea
-                  value={reviewNote}
-                  onChange={(e) => setReviewNote(e.target.value)}
-                  placeholder="Feedback visible to the intern..."
-                  className="w-full min-h-[80px] bg-background/50 border border-border/40 rounded-lg p-3 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-primary/40 resize-none"
-                />
-              </div>
-            </div>
-          )}
+              );
+            })()}
 
           <DialogFooter className="gap-2 sm:justify-between border-t border-border/20 pt-4">
             <Button
@@ -532,7 +586,6 @@ export default function WeeklyReportGeneratorPage() {
             <div className="flex gap-2">
               <Button
                 type="button"
-                variant="destructive"
                 onClick={() => {
                   if (!selectedReview) return;
                   reviewMutation.mutate(
@@ -547,7 +600,8 @@ export default function WeeklyReportGeneratorPage() {
                   );
                 }}
                 disabled={reviewMutation.isPending}
-                className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
+                variant="outline"
+                className="border-destructive text-destructive hover:bg-destructive hover:text-white hover:border-destructive hover:bg-none gap-2 text-[10px] tracking-widest h-10 shadow-lg font-bold"
               >
                 Reject
               </Button>
@@ -567,8 +621,8 @@ export default function WeeklyReportGeneratorPage() {
                   );
                 }}
                 disabled={reviewMutation.isPending}
-                variant="secondary"
-                className="bg-success text-white hover:bg-success/90 gap-2 text-[10px] tracking-widest h-10 shadow-lg"
+                variant="outline"
+                className="border-success text-success hover:bg-success hover:text-white hover:border-success hover:bg-none gap-2 text-[10px] tracking-widest h-10 shadow-lg font-bold"
               >
                 Approve
               </Button>

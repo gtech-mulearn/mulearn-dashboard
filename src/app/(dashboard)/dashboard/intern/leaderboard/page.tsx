@@ -5,6 +5,7 @@ import { useState } from "react";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table, { type Data } from "@/components/dashboard/table/Table";
 import TableTop from "@/components/dashboard/table/TableTop";
+import THead from "@/components/dashboard/table/Thead";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -80,8 +81,8 @@ export default function LeaderboardPage() {
 
   const userDisplayName =
     profile?.full_name || userInfo?.full_name || "Alex Doe";
-  const userRank = meRank?.rank || profile?.rank || "-";
-  const userScore = meRank?.score || profile?.karma || 0;
+  const userRank = meRank?.rank ?? "-";
+  const userScore = meRank?.score ?? 0;
 
   const tableColumns = [
     {
@@ -114,7 +115,7 @@ export default function LeaderboardPage() {
       Label: "Points",
       isSortable: true,
       wrap: (data: string | import("react").ReactElement) => (
-        <div className="flex items-center gap-1.5 font-mono">
+        <div className="flex items-center gap-1.5">
           <Gem className="w-3.5 h-3.5 text-brand-blue" />
           {data}
         </div>
@@ -133,7 +134,7 @@ export default function LeaderboardPage() {
     },
   ];
 
-  const others = listRows;
+  const others = searchText ? listRows : listRows.filter((row) => row.rank > 3);
 
   return (
     <div className="flex-1 space-y-8 p-8 pt-6 max-w-7xl mx-auto w-full bg-background/50">
@@ -293,28 +294,38 @@ export default function LeaderboardPage() {
           searchWrapperClassName="bg-card/40 border-border/40"
         />
 
-        <Card className="border-border/40 bg-card/40 backdrop-blur-xl shadow-2xl overflow-hidden">
-          <CardContent className="p-0">
-            <Table
-              rows={others}
-              page={page}
+        <Table
+          rows={others}
+          page={page}
+          perPage={perPage}
+          columnOrder={tableColumns}
+          slNoCellClassName="text-muted-foreground font-bold"
+          useRowRankAsSerialNo={true}
+        >
+          <THead
+            columnOrder={tableColumns}
+            onIconClick={() => {}}
+            action={false}
+            thClassName="bg-muted/20 border-b border-border/20 h-12 font-black uppercase text-[9px] tracking-[0.3em]"
+          />
+          <div className="p-4 border-t border-border/20">
+            <Pagination
+              currentPage={page}
+              totalPages={boardData?.pagination?.totalPages || 1}
               perPage={perPage}
-              columnOrder={tableColumns}
-              id={["id"]}
-              slNoCellClassName="text-muted-foreground font-bold"
+              totalCount={
+                boardData?.pagination?.count
+                  ? Math.max(
+                      0,
+                      boardData.pagination.count - (searchText ? 0 : 3),
+                    )
+                  : 0
+              }
+              handlePreviousClick={() => setPage((p) => Math.max(1, p - 1))}
+              handleNextClick={() => setPage((p) => p + 1)}
             />
-            <div className="p-4 border-t border-border/20">
-              <Pagination
-                currentPage={page}
-                totalPages={boardData?.pagination?.totalPages || 1}
-                perPage={perPage}
-                totalCount={boardData?.pagination?.count || 0}
-                handlePreviousClick={() => setPage((p) => Math.max(1, p - 1))}
-                handleNextClick={() => setPage((p) => p + 1)}
-              />
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+        </Table>
       </div>
     </div>
   );
