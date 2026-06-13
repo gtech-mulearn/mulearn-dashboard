@@ -109,3 +109,41 @@ export interface TaskReferenceData {
   types: ReferenceItem[];
   skills: ReferenceItem[];
 }
+
+export const TasksResponseSchema = ApiResponseSchema(
+  PaginatedDataSchema(TaskItemSchema),
+);
+
+const TaskPayloadSchema = z.union([
+  TaskItemSchema,
+  z.object({ task: TaskItemSchema }).passthrough(),
+  z.object({ data: TaskItemSchema }).passthrough(),
+]);
+
+const TaskResponseDataSchema = z.preprocess((value) => {
+  const parsedPayload = TaskPayloadSchema.safeParse(value);
+  if (!parsedPayload.success) return value;
+
+  const parsedTask = TaskItemSchema.safeParse(parsedPayload.data);
+  if (parsedTask.success) return parsedTask.data;
+
+  const payload = parsedPayload.data as { task?: unknown; data?: unknown };
+  const task = payload.task ?? payload.data;
+  const parsedNestedTask = TaskItemSchema.safeParse(task);
+  return parsedNestedTask.success ? parsedNestedTask.data : value;
+}, TaskItemSchema);
+
+export const SingleTaskResponseSchema = ApiResponseSchema(
+  TaskResponseDataSchema,
+);
+export const DropdownResponseSchema = ApiResponseSchema(
+  z.array(
+    z
+      .object({
+        id: z.string(),
+        name: z.string().optional(),
+        title: z.string().optional(),
+      })
+      .passthrough(),
+  ),
+);

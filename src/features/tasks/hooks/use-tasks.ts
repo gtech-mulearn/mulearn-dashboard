@@ -8,10 +8,10 @@ import {
   fetchTaskReferences,
   fetchTasks,
   importTasks,
-  type TaskListParams,
   updateTask,
 } from "../api/tasks.api";
 import type { TaskCreateRequest } from "../schemas/tasks.schema";
+import type { TaskListParams } from "../types/tasks.types";
 
 export const useTasks = (
   params: TaskListParams,

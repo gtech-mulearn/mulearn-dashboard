@@ -1,50 +1,17 @@
 import { z } from "zod";
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
+import { ApiResponseSchema } from "../schemas/task-type.schema";
 import {
-  ApiResponseSchema,
-  PaginatedDataSchema,
-} from "../schemas/task-type.schema";
-import {
+  DropdownResponseSchema,
+  SingleTaskResponseSchema,
+  TasksResponseSchema,
   type ReferenceItem,
   type Task,
   type TaskCreateRequest,
-  TaskItemSchema,
   type TaskReferenceData,
 } from "../schemas/tasks.schema";
-
-export interface TaskListParams {
-  pageIndex: number;
-  perPage: number;
-  search?: string;
-  sortBy?: string;
-}
-
-export interface TaskListData {
-  data: Task[];
-  pagination: {
-    count: number;
-    totalPages: number;
-    isNext: boolean;
-    isPrev: boolean;
-  };
-}
-
-const TasksResponseSchema = ApiResponseSchema(
-  PaginatedDataSchema(TaskItemSchema),
-);
-const SingleTaskResponseSchema = ApiResponseSchema(TaskItemSchema);
-const DropdownResponseSchema = ApiResponseSchema(
-  z.array(
-    z
-      .object({
-        id: z.string(),
-        name: z.string().optional(),
-        title: z.string().optional(),
-      })
-      .passthrough(),
-  ),
-);
+import type { TaskListData, TaskListParams } from "../types/tasks.types";
 
 export async function fetchTasks(
   params: TaskListParams,
