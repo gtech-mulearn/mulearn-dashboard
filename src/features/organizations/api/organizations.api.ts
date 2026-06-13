@@ -125,7 +125,7 @@ export async function editOrganization(
     title: data.title,
     code: data.code,
     org_type: data.org_type,
-    affiliation: data.affiliation || undefined,
+    affiliation: data.org_type === "College" ? data.affiliation || null : null,
     district: data.district || undefined,
   };
   await apiClient.put(`${BASE}/edit/${code}/`, payload);

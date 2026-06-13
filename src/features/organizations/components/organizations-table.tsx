@@ -62,13 +62,13 @@ function resolveField(row: Record<string, unknown>, key: string): string {
 }
 
 const COLLEGE_COLUMNS = [
-  { column: "title", Label: "Title", isSortable: true, width: "min-w-[180px]" },
-  { column: "code", Label: "Code", isSortable: true, width: "min-w-[100px]" },
+  { column: "title", Label: "Title", isSortable: true, width: "w-[230px]" },
+  { column: "code", Label: "Code", isSortable: true, width: "w-[100px]" },
   {
     column: "affiliation",
     Label: "Affiliation",
     isSortable: false,
-    width: "min-w-[150px]",
+    width: "w-[160px]",
     wrap: (_: string, _id: string, row: Record<string, unknown>) => (
       <span>{resolveField(row, "affiliation")}</span>
     ),
@@ -77,7 +77,7 @@ const COLLEGE_COLUMNS = [
     column: "district",
     Label: "District",
     isSortable: false,
-    width: "min-w-[120px]",
+    width: "w-[130px]",
     wrap: (_: string, _id: string, row: Record<string, unknown>) => (
       <span>{resolveField(row, "district")}</span>
     ),
@@ -86,7 +86,7 @@ const COLLEGE_COLUMNS = [
     column: "zone",
     Label: "Zone",
     isSortable: false,
-    width: "min-w-[120px]",
+    width: "w-[130px]",
     wrap: (_: string, _id: string, row: Record<string, unknown>) => (
       <span>{resolveField(row, "zone")}</span>
     ),
@@ -94,13 +94,13 @@ const COLLEGE_COLUMNS = [
 ];
 
 const COMPANY_COLUMNS = [
-  { column: "title", Label: "Title", isSortable: true, width: "min-w-[180px]" },
-  { column: "code", Label: "Code", isSortable: true, width: "min-w-[100px]" },
+  { column: "title", Label: "Title", isSortable: true, width: "w-[230px]" },
+  { column: "code", Label: "Code", isSortable: true, width: "w-[100px]" },
   {
     column: "district",
     Label: "District",
     isSortable: false,
-    width: "min-w-[120px]",
+    width: "w-[130px]",
     wrap: (_: string, _id: string, row: Record<string, unknown>) => (
       <span>{resolveField(row, "district")}</span>
     ),
@@ -109,7 +109,7 @@ const COMPANY_COLUMNS = [
     column: "zone",
     Label: "Zone",
     isSortable: false,
-    width: "min-w-[120px]",
+    width: "w-[130px]",
     wrap: (_: string, _id: string, row: Record<string, unknown>) => (
       <span>{resolveField(row, "zone")}</span>
     ),
@@ -118,7 +118,7 @@ const COMPANY_COLUMNS = [
     column: "state",
     Label: "State",
     isSortable: false,
-    width: "min-w-[120px]",
+    width: "w-[130px]",
     wrap: (_: string, _id: string, row: Record<string, unknown>) => (
       <span>{resolveField(row, "state")}</span>
     ),
@@ -127,7 +127,7 @@ const COMPANY_COLUMNS = [
     column: "country",
     Label: "Country",
     isSortable: false,
-    width: "min-w-[120px]",
+    width: "w-[130px]",
     wrap: (_: string, _id: string, row: Record<string, unknown>) => (
       <span>{resolveField(row, "country")}</span>
     ),
@@ -135,13 +135,13 @@ const COMPANY_COLUMNS = [
 ];
 
 const COMMUNITY_COLUMNS = [
-  { column: "title", Label: "Title", isSortable: true, width: "min-w-[180px]" },
-  { column: "code", Label: "Code", isSortable: true, width: "min-w-[100px]" },
+  { column: "title", Label: "Title", isSortable: true, width: "w-[230px]" },
+  { column: "code", Label: "Code", isSortable: true, width: "w-[100px]" },
   {
     column: "state",
     Label: "State",
     isSortable: false,
-    width: "min-w-[120px]",
+    width: "w-[130px]",
     wrap: (_: string, _id: string, row: Record<string, unknown>) => (
       <span>{resolveField(row, "state")}</span>
     ),
@@ -150,7 +150,7 @@ const COMMUNITY_COLUMNS = [
     column: "zone",
     Label: "Zone",
     isSortable: false,
-    width: "min-w-[120px]",
+    width: "w-[130px]",
     wrap: (_: string, _id: string, row: Record<string, unknown>) => (
       <span>{resolveField(row, "zone")}</span>
     ),
@@ -158,13 +158,13 @@ const COMMUNITY_COLUMNS = [
 ];
 
 const SCHOOL_COLUMNS = [
-  { column: "title", Label: "Title", isSortable: true, width: "min-w-[180px]" },
-  { column: "code", Label: "Code", isSortable: true, width: "min-w-[100px]" },
+  { column: "title", Label: "Title", isSortable: true, width: "w-[230px]" },
+  { column: "code", Label: "Code", isSortable: true, width: "w-[100px]" },
   {
     column: "district",
     Label: "District",
     isSortable: false,
-    width: "min-w-[120px]",
+    width: "w-[130px]",
     wrap: (_: string, _id: string, row: Record<string, unknown>) => (
       <span>{resolveField(row, "district")}</span>
     ),
@@ -173,7 +173,7 @@ const SCHOOL_COLUMNS = [
     column: "zone",
     Label: "Zone",
     isSortable: false,
-    width: "min-w-[120px]",
+    width: "w-[130px]",
     wrap: (_: string, _id: string, row: Record<string, unknown>) => (
       <span>{resolveField(row, "zone")}</span>
     ),
@@ -354,7 +354,7 @@ function OrgFormDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Building className="size-4 text-primary" />
-            {isEditing ? "Edit Organization" : "Add Organization"}
+            {isEditing ? "Edit Organisation Details" : "Add Organisation"}
           </DialogTitle>
         </DialogHeader>
 
@@ -387,14 +387,7 @@ function OrgFormDialog({
                   <FormItem>
                     <FormLabel>Code</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="e.g. IITB"
-                        {...field}
-                        disabled={isEditing}
-                        className={
-                          isEditing ? "bg-muted cursor-not-allowed" : ""
-                        }
-                      />
+                      <Input placeholder="e.g. IITB" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -409,15 +402,10 @@ function OrgFormDialog({
                     <FormLabel>Organization Type</FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      value={field.value}
-                      disabled={isEditing}
+                      value={field.value || undefined}
                     >
                       <FormControl>
-                        <SelectTrigger
-                          className={
-                            isEditing ? "bg-muted cursor-not-allowed" : ""
-                          }
-                        >
+                        <SelectTrigger>
                           <SelectValue placeholder="Select type" />
                         </SelectTrigger>
                       </FormControl>
@@ -446,7 +434,10 @@ function OrgFormDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Country</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value || undefined}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue
@@ -483,7 +474,7 @@ function OrgFormDialog({
                     <FormLabel>State</FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      value={field.value}
+                      value={field.value || undefined}
                       disabled={!watchedCountry || statesLoading}
                     >
                       <FormControl>
@@ -529,7 +520,7 @@ function OrgFormDialog({
                     <FormLabel>District</FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      value={field.value}
+                      value={field.value || undefined}
                       disabled={!watchedState || districtsLoading}
                     >
                       <FormControl>
@@ -573,7 +564,7 @@ function OrgFormDialog({
                       <FormLabel>Affiliation</FormLabel>
                       <Select
                         onValueChange={field.onChange}
-                        value={field.value}
+                        value={field.value || undefined}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -621,8 +612,8 @@ function OrgFormDialog({
                     ? "Saving…"
                     : "Creating…"
                   : isEditing
-                    ? "Save Changes"
-                    : "Create Organization"}
+                    ? "Edit Organisation"
+                    : "Create Organisation"}
               </Button>
             </div>
           </form>
@@ -688,7 +679,7 @@ export default function OrganizationsTable() {
 
   const handleEditClick = useCallback(
     (id: string | number | boolean) => {
-      const org = rows.find((r) => r.id === String(id)) ?? null;
+      const org = rows.find((r) => r.code === String(id)) ?? null;
       setSelectedOrg(org);
       setFormOpen(true);
     },
@@ -800,7 +791,7 @@ export default function OrganizationsTable() {
           />
 
           {/* ── Table ─────────────────────────────────────── */}
-          <div className="w-full overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
+          <div className="w-full overflow-x-auto">
             <div className="min-w-[600px]">
               <Table
                 rows={rows as unknown as Data[]}
