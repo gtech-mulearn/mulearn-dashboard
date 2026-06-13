@@ -15,6 +15,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { useInterestGroupsList } from "../hooks";
+import { Button } from "@/components/ui/button";
 import type { InterestGroup, InterestGroupListItem } from "../schemas";
 
 interface IGSelectorProps {
@@ -125,35 +126,44 @@ export function IGSelector({
         </span>
         <div className="flex gap-2">
           {canEdit && !editMode && (
-            <button
+            <Button
               type="button"
+              variant="default"
+              size="icon"
               onClick={() => setEditMode(true)}
-              className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors hover:bg-primary/20"
+              className="h-7 w-7"
               title="Edit"
+              aria-label="Edit interest groups"
             >
               <Pencil className="h-3.5 w-3.5" />
-            </button>
+            </Button>
           )}
           {editMode && (
             <>
-              <button
+              <Button
                 type="button"
+                variant="secondary"
+                size="icon"
                 onClick={handleCancel}
                 disabled={isSaving}
-                className="flex h-7 w-7 items-center justify-center rounded-full bg-destructive/10 text-destructive transition-colors hover:bg-destructive/20"
+                className="h-7 w-7 bg-destructive/10 text-destructive transition-colors hover:bg-destructive/20"
                 title="Cancel"
+                aria-label="Cancel"
               >
                 <X className="h-3.5 w-3.5" />
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="secondary"
+                size="icon"
                 onClick={handleSave}
                 disabled={isSaving}
-                className="flex h-7 w-7 items-center justify-center rounded-full bg-success/10 text-success transition-colors hover:bg-success/20"
+                className="h-7 w-7 bg-success/10 text-success transition-colors hover:bg-success/20"
                 title="Save"
+                aria-label="Save"
               >
                 <Check className="h-3.5 w-3.5" />
-              </button>
+              </Button>
             </>
           )}
         </div>
@@ -165,27 +175,30 @@ export function IGSelector({
           sortedIgs.map((ig) => (
             <div
               key={ig.id || ig.name}
-              className={`relative flex items-center gap-2 rounded-xl border-2 border-primary px-3 py-2 text-sm font-medium transition-all ${
+              className={`relative flex items-center gap-2 rounded-xl border-2 border-brand-blue px-3 py-2 text-sm font-medium transition-all ${
                 editMode ? "scale-95" : ""
               }`}
             >
               {editMode && (
-                <button
+                <Button
                   type="button"
+                  variant="default"
+                  size="icon"
                   onClick={() => handleRemoveIg(ig.id || "")}
-                  className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-foreground text-background hover:bg-destructive"
+                  className="absolute -right-2 -top-2  h-5 w-5 bg-brand-blue text-background hover:bg-destructive border-none"
+                  aria-label={`Remove ${ig.name}`}
                 >
                   <X className="h-3 w-3" />
-                </button>
+                </Button>
               )}
               <span className="text-foreground">{ig.name}</span>
               <Badge
                 variant="outline"
-                className="gap-1 border border-primary px-3 text-xs sm:gap-1.5 sm:text-sm"
+                className="gap-1 border border-brand-blue px-3 text-xs sm:gap-1.5 sm:text-sm"
               >
                 {formatLevel(ig.level)}
               </Badge>
-              <Badge className="rounded-lg border border-primary px-2 py-0.5">
+              <Badge className="rounded-lg border border-brand-blue bg-brand-blue  hover:bg-brand-blue/80 px-2 py-0.5">
                 {formatKarma(ig.karma)}
               </Badge>
             </div>
@@ -211,15 +224,17 @@ export function IGSelector({
             <p className="text-sm text-muted-foreground">Loading...</p>
           ) : availableIgs.length > 0 ? (
             availableIgs.map((ig) => (
-              <button
+              <Button
                 key={ig.id}
                 type="button"
+                variant="secondary"
                 onClick={() => handleAddIg(ig)}
                 className="flex items-center gap-2 rounded-xl bg-primary/10 px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/20"
+                aria-label={`Add ${ig.name}`}
               >
                 <Plus className="h-3.5 w-3.5" />
                 {ig.name}
-              </button>
+              </Button>
             ))
           ) : (
             <p className="text-sm text-muted-foreground">

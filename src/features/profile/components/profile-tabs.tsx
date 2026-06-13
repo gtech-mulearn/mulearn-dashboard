@@ -8,6 +8,7 @@
 
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export type ProfileTab =
@@ -37,19 +38,21 @@ export function ProfileTabs({ activeTab, onTabChange }: ProfileTabsProps) {
     <div className="relative">
       <div className="flex gap-1 overflow-x-auto rounded-xl bg-muted p-1">
         {tabs.map((tab) => (
-          <button
+          <Button
             key={tab.id}
             type="button"
+            variant="secondary"
             onClick={() => onTabChange(tab.id)}
             className={cn(
               "relative whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-all",
               activeTab === tab.id
-                ? "bg-card text-primary shadow-sm"
+                ? "bg-card text-primary shadow-sm hover:bg-card"
                 : "text-muted-foreground hover:bg-card/50 hover:text-foreground",
             )}
+            aria-label={tab.label}
           >
             {tab.label}
-          </button>
+          </Button>
         ))}
       </div>
     </div>

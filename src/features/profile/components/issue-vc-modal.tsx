@@ -329,7 +329,6 @@ export function IssueVCModal({
         <Button
           onClick={handleIssueVC}
           disabled={issueVCMutation.isPending || !selectedDID}
-          className="bg-primary hover:bg-primary/90"
         >
           {issueVCMutation.isPending && <Spinner className="mr-2 h-4 w-4" />}
           Issue VC
