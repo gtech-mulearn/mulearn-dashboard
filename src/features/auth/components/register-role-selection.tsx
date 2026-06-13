@@ -66,8 +66,8 @@ export function RegisterRoleSelection({
       <div className="space-y-4">
         <OptionCard
           icon="🎓"
-          label="Student"
-          description="I'm a learner building tech skills and earning karma."
+          label="Learner"
+          description="I'm a learner exploring and building skills across diverse domains while earning karma through meaningful contributions"
           selected={selectedRole === "student"}
           onClick={() => setSelectedRole("student")}
           disabled={isLoading}
@@ -75,7 +75,7 @@ export function RegisterRoleSelection({
         <OptionCard
           icon="👨‍🏫"
           label="Mentor"
-          description="I guide and support learners. Company employees — choose this, then select your company during setup."
+          description="I guide and support learners. Company employees can choose this option and select their company during setup."
           selected={selectedRole === "mentor"}
           onClick={() => setSelectedRole("mentor")}
           disabled={isLoading}
@@ -83,7 +83,7 @@ export function RegisterRoleSelection({
         <OptionCard
           icon="🤝"
           label="Enabler"
-          description="I represent an institution or organisation supporting the µLearn community."
+          description="I represent an institution or organisation supporting the uLearn community."
           selected={selectedRole === "enabler"}
           onClick={() => setSelectedRole("enabler")}
           disabled={isLoading}
