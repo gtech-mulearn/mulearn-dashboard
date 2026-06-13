@@ -12,11 +12,6 @@ import { useState } from "react";
 import Loader from "@/app/loading";
 import { CompanyProfilePage } from "@/features/company-jobs/components";
 import {
-  useMentorApplication,
-  useMentorProfile,
-} from "@/features/mentor/onboarding/hooks/use-onboarding";
-import { MentorProfilePage } from "@/features/mentor/profile";
-import {
   AccountSettingsModal,
   Achievements,
   Badges,
@@ -54,8 +49,6 @@ import { ROLES } from "@/lib/auth/roles";
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<ProfileTab>("basic-details");
   const [lastSavedDepartmentId, setLastSavedDepartmentId] = useState("");
-  // Toggle: true = show standard learner view even if user is a mentor
-  const [showLearnerView, setShowLearnerView] = useState(false);
 
   // Modal states
   const [showEditProfile, setShowEditProfile] = useState(false);
@@ -69,21 +62,8 @@ export default function ProfilePage() {
     isError,
     refetch: refetchProfile,
   } = useUserProfile();
-
-  // Mentor status — only fetched to decide which view to render.
-  // Uses the same hook the mentor onboarding flow already relies on.
-  const { data: mentorStatus } = useMentorApplication();
-  const { data: mentorProfile } = useMentorProfile(
-    mentorStatus?.status === "APPROVED",
-  );
-
-  const isMentor =
-    !showLearnerView &&
-    profile?.roles.includes(ROLES.MENTOR) &&
-    mentorStatus?.status === "APPROVED";
-
   const updateProfileMutation = useUpdateProfile();
-
+  const { data: editableProfile } = useEditableProfile();
   const changeOrganizationMutation = useEditCollege();
   const updateProfileImageMutation = useUpdateProfileImage();
   const uploadCoverPicMutation = useUploadCoverPic();
@@ -127,15 +107,31 @@ export default function ProfilePage() {
     );
 
     if (hasProfileUpdates) {
-      const profilePayload: UpdateProfileRequest = {};
-      if (dirtyFields.full_name)
-        profilePayload.full_name = data.full_name?.trim() || "";
-      if (dirtyFields.email) profilePayload.email = data.email?.trim() || "";
-      if (dirtyFields.mobile) profilePayload.mobile = data.mobile?.trim() || "";
-      if (dirtyFields.gender) profilePayload.gender = data.gender?.trim() || "";
-      if (dirtyFields.dob) profilePayload.dob = data.dob?.trim() || "";
-      if (dirtyFields.communities)
-        profilePayload.communities = data.communities ?? [];
+      const baseFullName =
+        editableProfile?.full_name?.trim() || profile.full_name?.trim() || "";
+      const finalFullName = data.full_name?.trim() || baseFullName;
+      const [firstName, ...lastNameParts] = finalFullName.split(" ");
+
+      const baseEmail = editableProfile?.email?.trim() || profile.email || "";
+      const baseMobile =
+        editableProfile?.mobile?.trim() || profile.mobile || "";
+      const baseGender =
+        editableProfile?.gender?.trim() || profile.gender || "";
+      const baseDob = editableProfile?.dob?.trim() || profile.dob || "";
+      const baseCommunities = editableProfile?.communities ?? [];
+
+      const profilePayload: UpdateProfileRequest = {
+        first_name: firstName?.trim() || "",
+        last_name: lastNameParts.join(" ").trim(),
+        full_name: finalFullName,
+        email: data.email?.trim() || baseEmail,
+        mobile: data.mobile?.trim() || baseMobile,
+        gender: data.gender?.trim() || baseGender,
+        dob: data.dob?.trim() || baseDob,
+        communities: dirtyFields.communities
+          ? (data.communities ?? [])
+          : baseCommunities,
+      };
 
       await updateProfileMutation.mutateAsync(profilePayload);
     }
@@ -194,13 +190,6 @@ export default function ProfilePage() {
   // Company users see the company profile, not the student layout
   if (profile.roles.includes(ROLES.COMPANY)) {
     return <CompanyProfilePage />;
-  }
-
-  // Mentor users see the mentor profile by default, with a toggle to switch back
-  if (isMentor && mentorProfile) {
-    return (
-      <MentorProfilePage onSwitchToLearner={() => setShowLearnerView(true)} />
-    );
   }
 
   const monthDifference = getMonthDifference(profile.joined);

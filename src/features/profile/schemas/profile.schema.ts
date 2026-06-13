@@ -248,6 +248,8 @@ export type UserPreferencesResponseType = z.infer<
 // ============================================
 
 export const UpdateProfileRequestSchema = z.object({
+  first_name: z.string().optional(),
+  last_name: z.string().optional(),
   full_name: z.string().optional(),
   email: z.string().optional(),
   mobile: z.string().optional(),

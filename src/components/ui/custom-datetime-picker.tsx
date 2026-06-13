@@ -1,11 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import {
-  Calendar as CalendarIcon,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { Calendar as CalendarIcon } from "lucide-react";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -27,7 +23,6 @@ interface CustomDateTimePickerProps {
   onChange: (value: string) => void;
   disabled?: boolean;
   hideTime?: boolean;
-  placeholder?: string;
 }
 
 const HOURS = Array.from({ length: 24 }, (_, i) =>
@@ -69,197 +64,6 @@ function CustomDayButton({
       )}
       {...props}
     />
-  );
-}
-
-const MONTH_NAMES = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
-
-function MonthYearCaption({
-  displayMonth,
-  onMonthChange,
-}: {
-  displayMonth: Date;
-  onMonthChange: (date: Date) => void;
-}) {
-  const [monthOpen, setMonthOpen] = React.useState(false);
-  const [yearOpen, setYearOpen] = React.useState(false);
-  const currentYear = displayMonth.getFullYear();
-  const currentMonth = displayMonth.getMonth();
-  const years = Array.from({ length: 201 }, (_, i) => 1900 + i);
-  const monthScrollRef = React.useRef<HTMLDivElement>(null);
-  const yearScrollRef = React.useRef<HTMLDivElement>(null);
-
-  // Auto-scroll selected item into view when dropdown opens
-  React.useEffect(() => {
-    if (monthOpen && monthScrollRef.current) {
-      const el = monthScrollRef.current.querySelector(
-        `[data-month="${currentMonth}"]`,
-      ) as HTMLElement;
-      el?.scrollIntoView({ block: "center" });
-    }
-  }, [monthOpen, currentMonth]);
-
-  React.useEffect(() => {
-    if (yearOpen && yearScrollRef.current) {
-      const el = yearScrollRef.current.querySelector(
-        `[data-year="${currentYear}"]`,
-      ) as HTMLElement;
-      el?.scrollIntoView({ block: "center" });
-    }
-  }, [yearOpen, currentYear]);
-
-  const goToPrev = () => {
-    const d = new Date(displayMonth);
-    d.setMonth(d.getMonth() - 1);
-    onMonthChange(d);
-  };
-
-  const goToNext = () => {
-    const d = new Date(displayMonth);
-    d.setMonth(d.getMonth() + 1);
-    onMonthChange(d);
-  };
-
-  return (
-    <div className="flex items-center justify-between w-full px-1 mb-2">
-      <button
-        type="button"
-        onClick={goToPrev}
-        className="h-7 w-7 rounded-full flex items-center justify-center hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer text-zinc-600 dark:text-zinc-400"
-      >
-        <ChevronLeft className="h-4 w-4" />
-      </button>
-
-      <div className="flex items-center gap-1">
-        {/* Month dropdown */}
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => {
-              setMonthOpen((o) => !o);
-              setYearOpen(false);
-            }}
-            className="font-bold text-base px-2 py-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer text-black dark:text-white select-none"
-          >
-            {MONTH_NAMES[currentMonth]}
-          </button>
-          {monthOpen && (
-            <>
-              {/* Backdrop to close on outside click */}
-              <button
-                type="button"
-                className="fixed inset-0 z-40 h-full w-full cursor-default bg-transparent outline-none border-none"
-                onClick={() => setMonthOpen(false)}
-                aria-label="Close month dropdown"
-                tabIndex={-1}
-              />
-              <div
-                className="absolute left-1/2 -translate-x-1/2 top-full mt-1 z-50 w-36 bg-white dark:bg-zinc-900 rounded-xl shadow-xl p-1 flex flex-col gap-0.5"
-                style={{ maxHeight: "200px", overflowY: "auto" }}
-                ref={monthScrollRef}
-                onWheel={(e) => e.stopPropagation()}
-              >
-                {MONTH_NAMES.map((name, idx) => (
-                  <button
-                    key={name}
-                    type="button"
-                    data-month={idx}
-                    onClick={() => {
-                      const d = new Date(displayMonth);
-                      d.setMonth(idx);
-                      onMonthChange(d);
-                      setMonthOpen(false);
-                    }}
-                    className={cn(
-                      "w-full text-left px-3 py-1.5 text-sm rounded-lg transition-colors cursor-pointer",
-                      idx === currentMonth
-                        ? "bg-blue-600 text-white font-semibold"
-                        : "hover:bg-zinc-100 dark:hover:bg-zinc-800 text-black dark:text-white",
-                    )}
-                  >
-                    {name}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* Year dropdown */}
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => {
-              setYearOpen((o) => !o);
-              setMonthOpen(false);
-            }}
-            className="font-bold text-base px-2 py-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer text-black dark:text-white select-none"
-          >
-            {currentYear}
-          </button>
-          {yearOpen && (
-            <>
-              <button
-                type="button"
-                className="fixed inset-0 z-40 h-full w-full cursor-default bg-transparent outline-none border-none"
-                onClick={() => setYearOpen(false)}
-                aria-label="Close year dropdown"
-                tabIndex={-1}
-              />
-              <div
-                className="absolute left-1/2 -translate-x-1/2 top-full mt-1 z-50 w-24 bg-white dark:bg-zinc-900 rounded-xl shadow-xl p-1 flex flex-col gap-0.5"
-                style={{ maxHeight: "200px", overflowY: "auto" }}
-                ref={yearScrollRef}
-                onWheel={(e) => e.stopPropagation()}
-              >
-                {years.map((yr) => (
-                  <button
-                    key={yr}
-                    type="button"
-                    data-year={yr}
-                    onClick={() => {
-                      const d = new Date(displayMonth);
-                      d.setFullYear(yr);
-                      onMonthChange(d);
-                      setYearOpen(false);
-                    }}
-                    className={cn(
-                      "w-full text-left px-3 py-1.5 text-sm rounded-lg transition-colors cursor-pointer",
-                      yr === currentYear
-                        ? "bg-blue-600 text-white font-semibold"
-                        : "hover:bg-zinc-100 dark:hover:bg-zinc-800 text-black dark:text-white",
-                    )}
-                  >
-                    {yr}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-
-      <button
-        type="button"
-        onClick={goToNext}
-        className="h-7 w-7 rounded-full flex items-center justify-center hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer text-zinc-600 dark:text-zinc-400"
-      >
-        <ChevronRight className="h-4 w-4" />
-      </button>
-    </div>
   );
 }
 
@@ -435,10 +239,8 @@ export function CustomDateTimePicker({
   onChange,
   disabled,
   hideTime = false,
-  placeholder,
 }: CustomDateTimePickerProps) {
   const date = value ? new Date(value) : undefined;
-  const [month, setMonth] = React.useState<Date>(date || new Date());
 
   const formatLocalISO = (d: Date) => {
     const year = d.getFullYear();
@@ -452,6 +254,7 @@ export function CustomDateTimePicker({
   const handleDateSelect = (newDate: Date | undefined) => {
     if (!newDate) return;
     const current = date || new Date();
+    // Preserve existing time when changing date
     newDate.setHours(current.getHours());
     newDate.setMinutes(current.getMinutes());
     onChange(formatLocalISO(newDate));
@@ -491,7 +294,7 @@ export function CustomDateTimePicker({
             </div>
           ) : (
             <span className="text-muted-foreground">
-              {placeholder || `Pick a date${!hideTime ? " and time" : ""}`}
+              Pick a date{!hideTime && " and time"}
             </span>
           )}
         </Button>
@@ -508,28 +311,41 @@ export function CustomDateTimePicker({
             <Calendar
               mode="single"
               selected={date}
-              month={month}
-              onMonthChange={setMonth}
               onSelect={handleDateSelect}
               showOutsideDays={false}
-              captionLayout="label"
               className="text-black dark:text-white"
               components={{
                 DayButton: CustomDayButton,
-                MonthCaption: ({ calendarMonth }: any) => (
-                  <MonthYearCaption
-                    displayMonth={calendarMonth.date}
-                    onMonthChange={setMonth}
-                  />
-                ),
+                MonthCaption: (props: any) => {
+                  const date =
+                    props.calendarMonth?.date ||
+                    props.displayMonth ||
+                    props.month ||
+                    new Date();
+                  return (
+                    <div className={props.className}>
+                      <div className="flex flex-col items-center justify-center gap-1">
+                        <span className="text-xl font-bold text-black dark:text-white leading-none">
+                          {format(date, "MMMM")}
+                        </span>
+                        <span className="text-[0.7rem] font-bold text-black dark:text-white leading-none">
+                          {format(date, "yyyy")}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                },
               }}
               classNames={{
                 weekday:
                   "text-gray-400 dark:text-gray-500 rounded-md flex-1 font-medium text-[0.7rem] uppercase select-none text-center",
-                button_previous: "hidden",
-                button_next: "hidden",
-                nav: "hidden",
-                month_caption: "flex items-center justify-center",
+                caption_label: "flex items-center justify-center",
+                month_caption: "flex items-center justify-center pt-2 pb-4",
+                nav: "flex items-center w-full absolute top-2 inset-x-0 justify-between px-2 pointer-events-none",
+                button_previous:
+                  "h-8 w-8 rounded-full bg-white dark:bg-zinc-900 shadow-sm border flex items-center justify-center text-blue-600 hover:bg-zinc-50 pointer-events-auto cursor-pointer",
+                button_next:
+                  "h-8 w-8 rounded-full bg-white dark:bg-zinc-900 shadow-sm border flex items-center justify-center text-blue-600 hover:bg-zinc-50 pointer-events-auto cursor-pointer",
                 today: "!bg-transparent",
               }}
             />

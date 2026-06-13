@@ -40,7 +40,7 @@ export function VerificationStatusBanner({
 
   const companyStatus = useCompanyOnboardingStatus(isCompany);
   const mentorApplication = useMentorApplication(isMentor);
-  const mentorOverview = useMentorOverview(isMentor);
+  const mentorOverview = useMentorOverview();
 
   const [successDismissed, setSuccessDismissed] = useState(false);
 

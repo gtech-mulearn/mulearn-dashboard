@@ -14,7 +14,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { CustomDateTimePicker } from "@/components/ui/custom-datetime-picker";
 import {
   Form,
   FormControl,
@@ -34,7 +33,6 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { MultiSelectDropdown } from "@/features/manage-users/components";
 import { useDepartments } from "@/features/settings";
-import { useColleges } from "@/features/settings/hooks/use-college";
 import {
   useCommunities,
   useCountries,
@@ -138,25 +136,8 @@ export function EditProfileModal({
   const { data: organizationData } = useOrganizationData(districtId);
   const { data: allDepartments = [] } = useDepartments();
 
-  const { data: allColleges = [] } = useColleges();
-
-  const uniqueCountries = useMemo(() => {
-    const map = new Map<string, LocationOption>();
-    for (const c of countries) {
-      const normalized = c.label.trim().toLowerCase();
-      if (!map.has(normalized)) {
-        // preserve original label casing for the first occurrence
-        map.set(normalized, c);
-      }
-    }
-    return Array.from(map.values());
-  }, [countries]);
-
   const currentOrgRaw = profile.college_id || "";
-  const collegeOrgDisplayName =
-    allColleges.find((c: any) => c.id === currentOrgRaw)?.title ||
-    profile.college_code ||
-    currentOrgRaw;
+  const collegeOrgDisplayName = profile.college_code || currentOrgRaw;
   const currentOrgOption: LocationOption | null = currentOrgRaw
     ? {
         value: currentOrgRaw,
@@ -182,15 +163,9 @@ export function EditProfileModal({
       }
     : null;
 
-  const allCollegesOptions = allColleges.map((c: any) => ({
-    value: c.id,
-    label: c.title,
-  }));
-
   const organizations = [
     ...(currentOrgOption ? [currentOrgOption] : []),
     ...(organizationData?.organizations ?? []),
-    ...allCollegesOptions,
   ].filter(
     (option, index, list) =>
       list.findIndex((candidate) => candidate.value === option.value) === index,
@@ -453,22 +428,10 @@ export function EditProfileModal({
                     <FormItem>
                       <FormLabel>Date of Birth</FormLabel>
                       <FormControl>
-                        <CustomDateTimePicker
-                          value={
-                            field.value
-                              ? new Date(field.value).toISOString()
-                              : undefined
-                          }
-                          onChange={(isoString) => {
-                            if (isoString) {
-                              // isoString is "YYYY-MM-DDTHH:mm" — just take the date part
-                              field.onChange(isoString.slice(0, 10));
-                            } else {
-                              field.onChange("");
-                            }
-                          }}
-                          hideTime
-                          placeholder="Select date of birth"
+                        <Input
+                          {...field}
+                          type="date"
+                          className={fieldClassName}
                         />
                       </FormControl>
                       <FormMessage />
@@ -541,7 +504,7 @@ export function EditProfileModal({
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="__none__">None</SelectItem>
-                          {uniqueCountries.map((country) => (
+                          {countries.map((country) => (
                             <SelectItem
                               key={country.value}
                               value={country.value}
@@ -651,7 +614,7 @@ export function EditProfileModal({
                           });
                           field.onChange(value === "__none__" ? "" : value);
                         }}
-                        disabled={organizations.length === 0}
+                        disabled={!districtId && organizations.length === 0}
                       >
                         <FormControl>
                           <SelectTrigger className={selectTriggerClassName}>

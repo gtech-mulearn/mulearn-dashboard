@@ -31,116 +31,62 @@ export function logSchemaMismatch(endpoint: string, issues: unknown): void {
 /**
  * Extract a human-readable error message from Django's standard error envelope.
  *
- * Handles (in priority order):
- *  1. `{ message: { general: ["..."] } }`      — muLearn custom envelope
- *  2. `{ message: { field: ["..."] } }`         — muLearn field-level errors
- *  3. `{ message: "..." }`                      — plain string message
- *  4. `{ response: { field: ["..."] } }`        — errors packed in `response`
- *  5. `{ detail: "..." }`                       — DRF standard
- *  6. `{ field: ["..."], ... }`                 — flat DRF validation dict
+ * Handles:
+ *  - `{ message: { general: ["..."] } }`  (most common)
+ *  - `{ detail: "..." }`                  (DRF style)
  */
 export function extractDjangoMessage(data: unknown): string | null {
   if (!data) return null;
+
   if (typeof data === "string") return data;
-  if (data instanceof Error) return data.message;
-  if (typeof data !== "object") return null;
 
-  const d = data as Record<string, unknown>;
-
-  // 1 & 2 & 3: Check `message` field
-  const msg = d.message;
-  if (msg != null) {
-    if (typeof msg === "string") return msg || null;
-
-    if (typeof msg === "object") {
-      const msgObj = msg as Record<string, unknown>;
-
-      // 1. { message: { general: ["..."] } }
-      if (Array.isArray(msgObj.general) && msgObj.general.length > 0) {
-        if (typeof msgObj.general[0] === "string") {
-          return msgObj.general[0];
-        }
-        if (
-          typeof msgObj.general[0] === "object" &&
-          msgObj.general[0] !== null
-        ) {
-          // { message: { general: [ { country: ["Unknown field."] } ] } }
-          const genParts: string[] = [];
-          for (const [field, errors] of Object.entries(
-            msgObj.general[0] as Record<string, unknown>,
-          )) {
-            if (Array.isArray(errors)) {
-              const joined = errors
-                .filter((e): e is string => typeof e === "string")
-                .join(", ");
-              if (joined) genParts.push(`${field}: ${joined}`);
-            } else if (typeof errors === "string" && errors) {
-              genParts.push(`${field}: ${errors}`);
-            }
-          }
-          if (genParts.length > 0) return genParts.join(" | ");
-        }
-      }
-
-      // 2. { message: { field: ["..."], ... } }
-      const parts: string[] = [];
-      for (const [field, errors] of Object.entries(msgObj)) {
-        if (Array.isArray(errors)) {
-          const joined = errors
-            .filter((e): e is string => typeof e === "string")
-            .join(", ");
-          if (joined) parts.push(`${field}: ${joined}`);
-        } else if (typeof errors === "string" && errors) {
-          parts.push(`${field}: ${errors}`);
-        }
-      }
-      if (parts.length > 0) return parts.join(" | ");
-    }
+  if (data instanceof Error) {
+    return data.message;
   }
 
-  // 4. Check `response` field for validation errors
-  // Django sometimes sends { hasError: true, message: null, response: { field: ["err"] } }
-  const resp = d.response;
-  if (resp != null && typeof resp === "object" && !Array.isArray(resp)) {
-    const respObj = resp as Record<string, unknown>;
-    const respParts: string[] = [];
-    for (const [field, errors] of Object.entries(respObj)) {
+  if (typeof data !== "object") return null;
+  const d = data as Record<string, unknown>;
+
+  const msg = d.message;
+  if (msg && typeof msg === "object") {
+    const msgObj = msg as Record<string, unknown>;
+    // Check for "general" first
+    if (
+      Array.isArray(msgObj.general) &&
+      typeof msgObj.general[0] === "string"
+    ) {
+      return msgObj.general[0];
+    }
+    // Fallback: take the first value from any other key in the message object
+    for (const key of Object.keys(msgObj)) {
+      const val = msgObj[key];
+      if (Array.isArray(val) && typeof val[0] === "string") {
+        return val[0];
+      }
+      if (typeof val === "string") {
+        return val;
+      }
+    }
+
+    // { message: { field_name: ["..."], other_field: ["..."] } }
+    // — Django / DRF field-level validation errors
+    const parts: string[] = [];
+    for (const [field, errors] of Object.entries(msgObj)) {
       if (Array.isArray(errors)) {
         const joined = errors
           .filter((e): e is string => typeof e === "string")
           .join(", ");
-        if (joined) respParts.push(`${field}: ${joined}`);
+        if (joined) parts.push(`${field}: ${joined}`);
       } else if (typeof errors === "string" && errors) {
-        respParts.push(`${field}: ${errors}`);
+        parts.push(`${field}: ${errors}`);
       }
     }
-    if (respParts.length > 0) return respParts.join(" | ");
+    if (parts.length > 0) return parts.join(" | ");
   }
 
-  // 5. { detail: "..." } — standard DRF
+  if (typeof msg === "string") return msg;
+
   if (typeof d.detail === "string") return d.detail;
-
-  // 6. Flat DRF validation dict at root: { field: ["..."] }
-  const SKIP_KEYS = new Set([
-    "hasError",
-    "statusCode",
-    "message",
-    "response",
-    "detail",
-  ]);
-  const rootParts: string[] = [];
-  for (const [field, errors] of Object.entries(d)) {
-    if (SKIP_KEYS.has(field)) continue;
-    if (Array.isArray(errors)) {
-      const joined = errors
-        .filter((e): e is string => typeof e === "string")
-        .join(", ");
-      if (joined) rootParts.push(`${field}: ${joined}`);
-    } else if (typeof errors === "string" && errors) {
-      rootParts.push(`${field}: ${errors}`);
-    }
-  }
-  if (rootParts.length > 0) return rootParts.join(" | ");
 
   return null;
 }
