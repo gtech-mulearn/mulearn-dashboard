@@ -179,10 +179,14 @@ export function useReviewLeave(id: string) {
 }
 
 // ── Timesheet Review ───────────────────────────────────────
-export function useManageTimesheets(params?: TInternQueryParams) {
+export function useManageTimesheets(
+  params?: TInternQueryParams,
+  enabled = true,
+) {
   return useQuery({
     queryKey: internKeys.manageTimesheets(params ?? {}),
     queryFn: () => manageInternsApi.getTimesheetsList(params),
+    enabled,
   });
 }
 
@@ -202,10 +206,14 @@ export function useReviewTimesheet(id: string) {
 }
 
 // ── Weekly Review ──────────────────────────────────────────
-export function useManageWeeklyReviews(params?: TInternQueryParams) {
+export function useManageWeeklyReviews(
+  params?: TInternQueryParams,
+  enabled = true,
+) {
   return useQuery({
     queryKey: internKeys.manageReviews(params ?? {}),
     queryFn: () => manageInternsApi.getWeeklyReviews(params),
+    enabled,
   });
 }
 

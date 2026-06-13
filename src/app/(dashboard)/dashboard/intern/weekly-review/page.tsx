@@ -45,19 +45,26 @@ export default function WeeklyReviewPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-4 bg-card/40 backdrop-blur-md border border-border/40 p-4 rounded-2xl shadow-xl">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-brand-blue/10 rounded-xl">
-              <Trophy className="w-6 h-6 text-brand-blue" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-sm font-black text-brand-blue uppercase tracking-widest">
-                Week {weekNum} &bull; {yearNum}
+        <div className="flex items-center gap-3 bg-card/40 backdrop-blur-md border border-border/40 p-4 rounded-2xl shadow-xl">
+          <div className="p-2 bg-brand-blue/10 rounded-xl">
+            <Trophy className="w-6 h-6 text-brand-blue" />
+          </div>
+          <div className="flex flex-col justify-center gap-1">
+            <span className="text-sm font-black text-brand-blue uppercase tracking-widest leading-none">
+              Week {weekNum} &bull; {yearNum}
+            </span>
+            <span className="text-[10px] font-bold text-muted-foreground uppercase leading-none">
+              Status:{" "}
+              <span
+                className={
+                  currentReview
+                    ? "text-success font-black"
+                    : "text-warning font-black"
+                }
+              >
+                {currentReview ? "Submitted" : "Open"}
               </span>
-              <span className="text-[10px] font-bold text-muted-foreground uppercase">
-                Status: {currentReview ? "Submitted" : "Open"}
-              </span>
-            </div>
+            </span>
           </div>
         </div>
       </div>

@@ -268,7 +268,7 @@ export default function TimesheetPage() {
                   <CheckCircle2 className="h-8 w-8 text-success mt-1" />
                   <div className="space-y-2">
                     <AlertTitle className="text-2xl font-black uppercase tracking-tight">
-                      Chronicle Sealed
+                      Daily quest commited
                     </AlertTitle>
                     <AlertDescription className="font-bold opacity-80 text-sm">
                       Awesome job! You have already submitted your daily quest

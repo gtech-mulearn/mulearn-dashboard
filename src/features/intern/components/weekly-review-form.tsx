@@ -36,7 +36,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useUserInfo } from "@/features/auth";
 import {
-  useGuilds,
+  useInternOverview,
   useSubmitWeeklyReview,
   useWeeklyReviewCurrent,
 } from "@/features/intern";
@@ -56,20 +56,17 @@ function getISOWeekAndYear(date: Date = new Date()) {
   return { week, year };
 }
 
-const DEFAULT_TEAMS = ["BACKEND", "FRONTEND", "DESIGN", "DEVOPS", "DATA", "QA"];
-
 interface WeeklyReviewFormProps {
   onSuccess?: () => void;
 }
 
 export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
   const { data: userData } = useUserInfo();
-  const { data: guildsList } = useGuilds();
   const { data: currentReview, isLoading: isCurrentLoading } =
     useWeeklyReviewCurrent();
+  const { data: overview, isLoading: isOverviewLoading } = useInternOverview();
   const submitMutation = useSubmitWeeklyReview();
 
-  const teams = guildsList || DEFAULT_TEAMS;
   const isSubmitted = !!currentReview;
   const weekInfo = currentReview
     ? { week: currentReview.iso_week, year: currentReview.iso_year }
@@ -81,7 +78,7 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
       fullName: userData?.full_name || "",
       muid: userData?.muid || "",
       email: userData?.email || "",
-      team: "",
+      team: overview?.guild || "",
       isOnLeave: false,
       tasksAssigned: "",
       tasksCompleted: "",
@@ -100,12 +97,12 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
   const isOnLeave = form.watch("isOnLeave");
 
   useEffect(() => {
-    if (userData) {
+    if (userData || overview) {
       form.reset({
-        fullName: userData.full_name || "",
-        muid: userData.muid || "",
-        email: userData.email || "",
-        team: form.getValues("team") || "",
+        fullName: userData?.full_name || "",
+        muid: userData?.muid || "",
+        email: userData?.email || "",
+        team: overview?.guild || form.getValues("team") || "",
         isOnLeave: form.getValues("isOnLeave") || false,
         tasksAssigned: form.getValues("tasksAssigned") || "",
         tasksCompleted: form.getValues("tasksCompleted") || "",
@@ -120,7 +117,7 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
         suggestions: form.getValues("suggestions") || "",
       });
     }
-  }, [userData, form]);
+  }, [userData, overview, form]);
 
   const onSubmit = async (values: WeeklyReviewFormValues) => {
     submitMutation.mutate(
@@ -148,7 +145,7 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
     );
   };
 
-  if (isCurrentLoading) {
+  if (isCurrentLoading || isOverviewLoading) {
     return (
       <div className="flex justify-center p-12">
         <Spinner className="w-8 h-8 text-primary" />
@@ -167,12 +164,12 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
           <Alert className="bg-success/10 text-success border-success/20 py-4 md:py-6 px-4 md:px-6 rounded-xl">
             <CheckCircle2 className="h-6 w-6" />
             <div className="ml-2">
-              <AlertTitle className="text-base md:text-lg font-black uppercase">
-                Archive Sealed
+              <AlertTitle className="text-base md:text-lg font-black uppercase tracking-tight">
+                Weekly Review Logged
               </AlertTitle>
-              <AlertDescription className="font-bold opacity-80 text-xs md:text-sm">
-                You have already submitted your review for Week {weekInfo?.week}
-                , {weekInfo?.year}. The next chronicle opens in 7 days.
+              <AlertDescription className="font-bold opacity-95 text-xs md:text-sm mt-1">
+                Awesome job! Your review for this week has been successfully
+                recorded. Keep up the excellent work and consistency!
               </AlertDescription>
             </div>
           </Alert>
@@ -264,31 +261,15 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                        Team
+                        Guild
                       </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        value={field.value}
-                        required
-                      >
-                        <FormControl>
-                          <SelectTrigger className="bg-background/60 border-border/50 h-10 font-bold rounded-md focus:ring-brand-blue/30">
-                            <SelectValue placeholder="Select Guild..." />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {teams.map((team) => (
-                            <SelectItem
-                              key={team}
-                              value={team}
-                              className="font-bold text-xs uppercase"
-                            >
-                              {team}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          readOnly
+                          className="bg-background/40 border-none font-bold text-foreground h-10 rounded-md cursor-not-allowed uppercase"
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -397,9 +378,11 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
                             <div className="relative">
                               <Input
                                 {...field}
-                                type="text"
+                                type="number"
                                 placeholder="Enter the total hours committed..."
                                 className="bg-background/50 border-border/50 h-10 font-bold px-4 rounded-md focus:ring-brand-blue/30"
+                                min="0"
+                                step="0.25"
                               />
                             </div>
                           </FormControl>
