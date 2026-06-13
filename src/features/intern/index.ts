@@ -8,7 +8,11 @@
  */
 
 export * from "./api";
-export { LeaveFormDialog, WeeklyReviewForm } from "./components";
+export {
+  LeaveFormDialog,
+  QuestLogHistory,
+  WeeklyReviewForm,
+} from "./components";
 export { internKeys } from "./hooks/query-keys";
 export * from "./hooks/use-intern";
 export * from "./hooks/use-manage-interns";

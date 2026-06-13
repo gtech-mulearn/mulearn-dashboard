@@ -145,7 +145,7 @@ export default function LeaveReviewsPage() {
       isSortable: true,
       wrap: (data: string, _id: string, row: Data) => {
         let days = data ? Number(data) : null;
-        if ((!days || isNaN(days)) && row.start_date && row.end_date) {
+        if ((!days || Number.isNaN(days)) && row.start_date && row.end_date) {
           const start = new Date(row.start_date as string);
           const end = new Date(row.end_date as string);
           start.setHours(0, 0, 0, 0);
@@ -336,7 +336,10 @@ export default function LeaveReviewsPage() {
       </div>
 
       <Dialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
-        <DialogContent className="bg-card/95 backdrop-blur-xl border-border/60">
+        <DialogContent
+          showCloseButton={false}
+          className="bg-card/95 backdrop-blur-xl border-border/60"
+        >
           <DialogHeader>
             <DialogTitle className="text-xl font-black uppercase tracking-wider text-foreground">
               Evaluate Leave Request
@@ -524,57 +527,68 @@ export default function LeaveReviewsPage() {
             })()}
 
           <DialogFooter className="gap-2 sm:justify-between border-t border-border/20 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsReviewOpen(false)}
-              className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
-            >
-              Close
-            </Button>
-            {selectedLeave?.status === "PENDING" && (
-              <div className="flex gap-2">
+            {selectedLeave?.status === "PENDING" ? (
+              <>
                 <Button
                   type="button"
-                  onClick={() => {
-                    reviewMutation.mutate(
-                      { action: "reject", review_note: reviewNote },
-                      {
-                        onSuccess: () => {
-                          setIsReviewOpen(false);
-                          setReviewNote("");
-                          setSelectedLeave(null);
-                        },
-                      },
-                    );
-                  }}
-                  disabled={reviewMutation.isPending}
                   variant="outline"
-                  className="border-destructive text-destructive hover:bg-destructive hover:text-white hover:border-destructive hover:bg-none gap-2 text-[10px] tracking-widest h-10 shadow-lg font-bold"
+                  onClick={() => setIsReviewOpen(false)}
+                  className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
                 >
-                  Reject
+                  Close
                 </Button>
-                <Button
-                  type="button"
-                  onClick={() => {
-                    reviewMutation.mutate(
-                      { action: "approve", review_note: reviewNote },
-                      {
-                        onSuccess: () => {
-                          setIsReviewOpen(false);
-                          setReviewNote("");
-                          setSelectedLeave(null);
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      reviewMutation.mutate(
+                        { action: "reject", review_note: reviewNote },
+                        {
+                          onSuccess: () => {
+                            setIsReviewOpen(false);
+                            setReviewNote("");
+                            setSelectedLeave(null);
+                          },
                         },
-                      },
-                    );
-                  }}
-                  disabled={reviewMutation.isPending}
-                  variant="outline"
-                  className="border-success text-success hover:bg-success hover:text-white hover:border-success hover:bg-none gap-2 text-[10px] tracking-widest h-10 shadow-lg font-bold"
-                >
-                  Approve
-                </Button>
-              </div>
+                      );
+                    }}
+                    disabled={reviewMutation.isPending}
+                    variant="outline"
+                    className="border-destructive text-destructive hover:bg-destructive hover:text-white hover:border-destructive hover:bg-none gap-2 text-[10px] tracking-widest h-10 shadow-lg font-bold"
+                  >
+                    Reject
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      reviewMutation.mutate(
+                        { action: "approve", review_note: reviewNote },
+                        {
+                          onSuccess: () => {
+                            setIsReviewOpen(false);
+                            setReviewNote("");
+                            setSelectedLeave(null);
+                          },
+                        },
+                      );
+                    }}
+                    disabled={reviewMutation.isPending}
+                    variant="outline"
+                    className="border-success text-success hover:bg-success hover:text-white hover:border-success hover:bg-none gap-2 text-[10px] tracking-widest h-10 shadow-lg font-bold"
+                  >
+                    Approve
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsReviewOpen(false)}
+                className="w-full gap-2 text-[10px] tracking-widest h-10 shadow-lg font-bold"
+              >
+                Close
+              </Button>
             )}
           </DialogFooter>
         </DialogContent>

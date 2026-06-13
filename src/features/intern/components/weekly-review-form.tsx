@@ -1,14 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  CheckCircle2,
-  Gem,
-  ShieldAlert,
-  Sparkles,
-  Target,
-  Zap,
-} from "lucide-react";
+import { CheckCircle2, ShieldAlert, Sparkles, Target, Zap } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -168,7 +161,7 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
       <Card className="border-border/40 bg-card/30 backdrop-blur-md shadow-2xl overflow-hidden relative py-4 md:py-6">
         <div className="absolute top-0 inset-x-0 h-1 bg-success/50" />
         <CardHeader className="text-xl md:text-2xl font-black uppercase tracking-tighter px-4 md:px-6">
-          Weekly Chronicles
+          Weekly Review
         </CardHeader>
         <CardContent className="px-4 md:px-6">
           <Alert className="bg-success/10 text-success border-success/20 py-4 md:py-6 px-4 md:px-6 rounded-xl">
@@ -198,19 +191,19 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <Badge className="bg-brand-purple/10 text-brand-purple border-brand-purple/20 px-2 py-0.5 font-black text-[10px] uppercase tracking-widest">
-                  Weekly Boss Quest
+                <Badge className="bg-brand-blue/10 text-brand-blue border-brand-blue/20 px-2 py-0.5 font-black text-[10px] uppercase tracking-widest">
+                  Weekly Review
                 </Badge>
               </div>
               <CardTitle className="text-2xl md:text-3xl font-black uppercase tracking-tighter">
                 Weekly Review
               </CardTitle>
               <CardDescription className="font-bold text-muted-foreground/60 uppercase text-[10px] tracking-widest mt-1">
-                Reflection earns you massive XP and rewards
+                Reflect on your weekly achievements and future plans
               </CardDescription>
             </div>
             {weekInfo && (
-              <div className="bg-brand-purple/20 border border-brand-purple/30 px-4 py-2 rounded-full text-xs font-black text-brand-purple uppercase tracking-widest tabular-nums shadow-[0_0_15px_rgba(143,68,237,0.2)]">
+              <div className="bg-brand-blue/20 border border-brand-blue/30 px-4 py-2 rounded-full text-xs font-black text-brand-blue uppercase tracking-widest tabular-nums shadow-[0_0_15px_rgba(46,133,254,0.2)]">
                 Week {weekInfo.week} &bull; {weekInfo.year}
               </div>
             )}
@@ -233,7 +226,7 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                        Character Name
+                        Full Name
                       </FormLabel>
                       <FormControl>
                         <Input
@@ -252,7 +245,7 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                        ID Token (MUID)
+                        MUID
                       </FormLabel>
                       <FormControl>
                         <Input
@@ -271,7 +264,7 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                        Alliance / Team
+                        Team
                       </FormLabel>
                       <Select
                         onValueChange={field.onChange}
@@ -280,7 +273,7 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
                         required
                       >
                         <FormControl>
-                          <SelectTrigger className="bg-background/60 border-border/50 h-10 font-bold rounded-md focus:ring-brand-purple/30">
+                          <SelectTrigger className="bg-background/60 border-border/50 h-10 font-bold rounded-md focus:ring-brand-blue/30">
                             <SelectValue placeholder="Select Guild..." />
                           </SelectTrigger>
                         </FormControl>
@@ -317,10 +310,10 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
                     <div className="space-y-1">
                       <FormLabel className="text-xs md:text-sm font-black uppercase tracking-tight text-foreground cursor-pointer flex items-center gap-2">
                         <ShieldAlert className="w-4 h-4 text-brand-blue" />
-                        Character Inactive this week (On Leave)
+                        On Leave
                       </FormLabel>
                       <FormDescription className="text-[10px] font-bold text-muted-foreground/60 uppercase">
-                        Skip reporting quests for this period
+                        Select if you were on leave for this review period
                       </FormDescription>
                     </div>
                   </FormItem>
@@ -336,13 +329,13 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                            The Proclamation (Tasks Assigned)
+                            Tasks Assigned
                           </FormLabel>
                           <FormControl>
                             <Textarea
                               {...field}
-                              placeholder="What deeds were required of you?"
-                              className="min-h-[120px] bg-background/50 border-border/50 font-bold focus:ring-brand-purple/30 rounded-md p-4 resize-none"
+                              placeholder="Describe the tasks assigned to you this week..."
+                              className="min-h-[120px] bg-background/50 border-border/50 font-bold focus:ring-brand-blue/30 rounded-md p-4 resize-none"
                             />
                           </FormControl>
                           <FormMessage />
@@ -355,12 +348,12 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                            The Conquest (Tasks Completed)
+                            Tasks Completed
                           </FormLabel>
                           <FormControl>
                             <Textarea
                               {...field}
-                              placeholder="Which battles did you win?"
+                              placeholder="Describe the tasks you completed this week..."
                               className="min-h-[120px] bg-background/50 border-border/50 font-bold focus:ring-success/30 rounded-md p-4 resize-none"
                             />
                           </FormControl>
@@ -376,13 +369,13 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                          Chronicles of Work (Works Done)
+                          Weekly Review / Work Done
                         </FormLabel>
                         <FormControl>
                           <Textarea
                             {...field}
-                            placeholder="Detailed account of your legendary contributions..."
-                            className="min-h-[120px] bg-background/50 border-border/50 font-bold focus:ring-brand-purple/30 rounded-md p-4 resize-none"
+                            placeholder="Provide a detailed review of the work you performed..."
+                            className="min-h-[120px] bg-background/50 border-border/50 font-bold focus:ring-brand-blue/30 rounded-md p-4 resize-none"
                           />
                         </FormControl>
                         <FormMessage />
@@ -398,19 +391,16 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
                         <FormItem>
                           <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
                             <Sparkles className="w-3 h-3 text-warning" />
-                            Energy Expended (Hours)
+                            Hours Committed
                           </FormLabel>
                           <FormControl>
                             <div className="relative">
                               <Input
                                 {...field}
                                 type="text"
-                                placeholder="Total hours dedicated..."
-                                className="bg-background/50 border-border/50 h-12 font-bold px-4 rounded-md focus:ring-brand-purple/30"
+                                placeholder="Enter the total hours committed..."
+                                className="bg-background/50 border-border/50 h-10 font-bold px-4 rounded-md focus:ring-brand-blue/30"
                               />
-                              <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-muted-foreground/40 tracking-widest">
-                                XP
-                              </div>
                             </div>
                           </FormControl>
                           <FormMessage />
@@ -423,12 +413,12 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                            Dark Shadows (Blockers)
+                            Blockers
                           </FormLabel>
                           <FormControl>
                             <Textarea
                               {...field}
-                              placeholder="Any monsters blocking your path?"
+                              placeholder="List any blockers encountered (optional)..."
                               className="min-h-[80px] bg-background/50 border-border/50 font-bold focus:ring-destructive/30 rounded-md p-4 resize-none"
                             />
                           </FormControl>
@@ -445,30 +435,31 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                            Rate Your Week (1-5)
+                            Weekly Rating (1-5)
                           </FormLabel>
                           <Select
                             onValueChange={field.onChange}
                             value={field.value}
                           >
                             <FormControl>
-                              <SelectTrigger className="bg-background/50 border-border/50 h-12 font-bold rounded-md focus:ring-brand-purple/30">
+                              <SelectTrigger className="bg-background/50 border-border/50 h-10 font-bold rounded-md focus:ring-brand-blue/30">
                                 <SelectValue placeholder="How was your week?" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent className="bg-card font-bold border-border/60">
-                              {[1, 2, 3, 4, 5].map((val) => (
+                              {[
+                                { val: 5, label: "Excellent" },
+                                { val: 4, label: "Good" },
+                                { val: 3, label: "Satisfactory" },
+                                { val: 2, label: "Challenging" },
+                                { val: 1, label: "Very Challenging" },
+                              ].map(({ val, label }) => (
                                 <SelectItem
                                   key={val}
                                   value={String(val)}
                                   className="font-bold text-xs"
                                 >
-                                  {val} -{" "}
-                                  {val === 5
-                                    ? "Excellent"
-                                    : val === 1
-                                      ? "Very Challenging"
-                                      : `Tier ${val}`}
+                                  {val} - {label}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -484,13 +475,13 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                            Aura of Wisdom (Learnings)
+                            Learnings
                           </FormLabel>
                           <FormControl>
                             <Textarea
                               {...field}
-                              placeholder="What new wisdom or skills did you acquire?"
-                              className="min-h-[80px] bg-background/50 border-border/50 font-bold focus:ring-brand-purple/30 rounded-md p-4 resize-none"
+                              placeholder="Describe what you learned this week..."
+                              className="min-h-[80px] bg-background/50 border-border/50 font-bold focus:ring-brand-blue/30 rounded-md p-4 resize-none"
                             />
                           </FormControl>
                           <FormMessage />
@@ -506,12 +497,12 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                            Conquered Trials (Challenges Faced)
+                            Challenges Faced
                           </FormLabel>
                           <FormControl>
                             <Textarea
                               {...field}
-                              placeholder="What obstacles did you face?"
+                              placeholder="Describe any challenges you faced..."
                               className="min-h-[80px] bg-background/50 border-border/50 font-bold focus:ring-destructive/30 rounded-md p-4 resize-none"
                             />
                           </FormControl>
@@ -526,12 +517,12 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                            Next Quest Plan
+                            Next Week's Plan
                           </FormLabel>
                           <FormControl>
                             <Textarea
                               {...field}
-                              placeholder="What is your plan for the upcoming week?"
+                              placeholder="Outline your goals and plan for next week..."
                               className="min-h-[80px] bg-background/50 border-border/50 font-bold focus:ring-brand-blue/30 rounded-md p-4 resize-none"
                             />
                           </FormControl>
@@ -552,8 +543,8 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
                         <FormControl>
                           <Textarea
                             {...field}
-                            placeholder="Any suggestions for improvement or things you want the council to know?"
-                            className="min-h-[80px] bg-background/50 border-border/50 font-bold focus:ring-brand-purple/30 rounded-md p-4 resize-none"
+                            placeholder="Any feedback or suggestions for improvement..."
+                            className="min-h-[80px] bg-background/50 border-border/50 font-bold focus:ring-brand-blue/30 rounded-md p-4 resize-none"
                           />
                         </FormControl>
                         <FormMessage />
@@ -571,14 +562,14 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                          Rest Periods (Leave Days)
+                          Leave Days
                         </FormLabel>
                         <FormControl>
                           <Input
                             {...field}
                             type="text"
                             placeholder="Number of leave days taken this week (e.g., 2). Enter 0 if none."
-                            className="bg-background/50 border-border/50 h-12 font-bold px-4 rounded-md focus:ring-brand-blue/30"
+                            className="bg-background/50 border-border/50 h-10 font-bold px-4 rounded-md focus:ring-brand-blue/30"
                           />
                         </FormControl>
                         <FormMessage />
@@ -589,43 +580,18 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
               )}
 
               <div className="flex flex-col items-center gap-4 md:gap-6 pt-4">
-                <div className="w-full flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 md:p-6 bg-warning/5 border border-warning/20 rounded-2xl gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-warning/20 rounded-lg">
-                      <Gem className="w-6 h-6 text-warning fill-warning" />
-                    </div>
-                    <div>
-                      <p className="text-[10px] md:text-xs font-black uppercase text-warning tracking-widest">
-                        Quest Reward
-                      </p>
-                      <p className="text-base md:text-lg font-black tabular-nums">
-                        +50 GEMS
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-left sm:text-right">
-                    <p className="text-[10px] md:text-xs font-black uppercase text-muted-foreground tracking-widest">
-                      Est. Experience
-                    </p>
-                    <p className="text-base md:text-lg font-black tabular-nums text-brand-blue">
-                      +2500 XP
-                    </p>
-                  </div>
-                </div>
-
                 <Button
                   type="submit"
-                  variant="trusty"
-                  className="w-full h-14 md:h-16 text-xs md:text-sm shadow-[0_15px_30px_rgba(143,68,237,0.3)]"
+                  className="w-full h-12 text-sm shadow-[0_8px_16px_rgba(46,133,254,0.25)] bg-brand-blue hover:bg-brand-blue/90 text-primary-foreground font-bold rounded-full transition-all duration-300"
                   disabled={form.formState.isSubmitting}
                 >
                   {form.formState.isSubmitting ? (
                     <>
                       <Spinner className="mr-3 h-5 w-5" />
-                      Publishing Legend...
+                      Submitting...
                     </>
                   ) : (
-                    "Seal the Chronicles"
+                    "Submit Weekly Review"
                   )}
                 </Button>
               </div>
@@ -633,10 +599,6 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
           </Form>
         </CardContent>
       </Card>
-
-      <p className="text-center text-[10px] font-bold text-muted-foreground/40 uppercase tracking-[0.4em] pb-12">
-        Verified by the council &bull; No forgery allowed
-      </p>
     </div>
   );
 }

@@ -99,7 +99,7 @@ export function QuestLog() {
         </div>
       </CardContent>
       <div className="p-4 border-t border-border/20">
-        <Link href="/dashboard/intern/timesheet">
+        <Link href="/dashboard/intern/quest-log">
           <Button
             variant="outline"
             className="w-full gap-2 text-[10px] tracking-widest h-10 shadow-lg"
