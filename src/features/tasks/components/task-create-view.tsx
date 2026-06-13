@@ -40,9 +40,6 @@ export default function TaskCreateView() {
         toast.success("Task created successfully");
         router.push("/dashboard/management/tasks");
       },
-      onError: (err: any) => {
-        toast.error(err?.message || "Failed to create task");
-      },
     });
   };
 

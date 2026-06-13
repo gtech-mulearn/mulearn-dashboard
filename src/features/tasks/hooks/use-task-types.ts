@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   createTaskType,
   deleteTaskType,
@@ -6,23 +7,22 @@ import {
   type TaskTypeParams,
   updateTaskType,
 } from "../api/task-type.api";
-import type {
-  CreateTaskTypeInput,
-  UpdateTaskTypeInput,
-} from "../schemas/task-type.schema";
-import { toast } from "sonner";
-import { ApiError } from "@/api";
+import type { UpdateTaskTypeInput } from "../schemas/task-type.schema";
+import { getTaskErrorMessage, useTaskQueryErrorToast } from "./task-error";
 
 export const useTaskTypes = (
   params: TaskTypeParams,
   options?: { enabled?: boolean },
 ) => {
-  return useQuery({
+  const query = useQuery({
     queryKey: ["task-types", params],
     queryFn: () => fetchTaskTypes(params),
     placeholderData: (prev) => prev,
     ...options,
   });
+
+  useTaskQueryErrorToast(query.error, "Failed to load task types.");
+  return query;
 };
 
 export const useCreateTaskType = () => {
@@ -33,12 +33,9 @@ export const useCreateTaskType = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["task-types"], exact: false });
     },
-    onError: (error) =>
-      toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to submit review status.",
-      ),
+    onError: (error) => {
+      toast.error(getTaskErrorMessage(error, "Failed to create task type."));
+    },
   });
 };
 
@@ -51,12 +48,9 @@ export const useUpdateTaskType = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["task-types"], exact: false });
     },
-    onError: (error) =>
-      toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to submit review status.",
-      ),
+    onError: (error) => {
+      toast.error(getTaskErrorMessage(error, "Failed to update task type."));
+    },
   });
 };
 
@@ -68,11 +62,8 @@ export const useDeleteTaskType = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["task-types"], exact: false });
     },
-    onError: (error) =>
-      toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to submit review status.",
-      ),
+    onError: (error) => {
+      toast.error(getTaskErrorMessage(error, "Failed to delete task type."));
+    },
   });
 };

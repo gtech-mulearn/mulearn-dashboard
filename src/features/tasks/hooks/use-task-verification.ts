@@ -2,9 +2,9 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ApiError } from "@/api";
 import { fetchPendingTasks, reviewTask } from "../api/task-verification.api";
 import type { ReviewActionValues } from "../schemas/task-verification.schema";
+import { getTaskErrorMessage, useTaskQueryErrorToast } from "./task-error";
 
 const taskVerificationKeys = {
   all: ["task-verification-list"] as const,
@@ -24,7 +24,7 @@ interface UsePendingTasksParams {
 }
 
 export function usePendingTasks(params: UsePendingTasksParams = {}) {
-  return useQuery({
+  const query = useQuery({
     queryKey: taskVerificationKeys.list(params as Record<string, unknown>),
     queryFn: () => fetchPendingTasks(params),
     retry: (failureCount, error) => {
@@ -38,6 +38,9 @@ export function usePendingTasks(params: UsePendingTasksParams = {}) {
     },
     staleTime: 2 * 60 * 1000,
   });
+
+  useTaskQueryErrorToast(query.error, "Failed to load pending tasks.");
+  return query;
 }
 
 export function useReviewTask() {
@@ -60,11 +63,10 @@ export function useReviewTask() {
           : "Task application rejected.",
       );
     },
-    onError: (error) =>
+    onError: (error) => {
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to submit review status.",
-      ),
+        getTaskErrorMessage(error, "Failed to submit review status."),
+      );
+    },
   });
 }

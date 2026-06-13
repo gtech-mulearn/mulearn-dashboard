@@ -41,7 +41,7 @@ export default function TaskBulkImportView() {
       window.URL.revokeObjectURL(url);
       toast.success("Downloaded template successfully");
     } catch {
-      toast.error("Failed to download template");
+      // Error toast is handled by useDownloadTasksTemplate.
     }
   };
 
@@ -49,12 +49,9 @@ export default function TaskBulkImportView() {
     if (!file) return;
 
     importMutation.mutate(file, {
-      onSuccess: (res: ImportResult) => {
-        setImportResult(res);
+      onSuccess: (res) => {
+        setImportResult(res as ImportResult);
         toast.success("Bulk import process completed");
-      },
-      onError: (err: any) => {
-        toast.error(err?.message || "Failed to import tasks");
       },
     });
   };

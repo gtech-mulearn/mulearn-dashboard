@@ -61,9 +61,6 @@ export default function TaskEditView({ id }: TaskEditViewProps) {
           toast.success("Task updated successfully");
           router.push("/dashboard/management/tasks");
         },
-        onError: (err: any) => {
-          toast.error(err?.message || "Failed to update task");
-        },
       },
     );
   };

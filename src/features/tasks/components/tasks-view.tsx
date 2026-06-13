@@ -139,9 +139,6 @@ export default function TasksView() {
         toast.success("Task deleted successfully");
         setDeleteId(null);
       },
-      onError: (err: Error) => {
-        toast.error(err?.message || "Failed to delete task");
-      },
     });
   };
 
@@ -158,7 +155,7 @@ export default function TasksView() {
       window.URL.revokeObjectURL(url);
       toast.success("Downloaded tasks CSV");
     } catch {
-      toast.error("Failed to download tasks CSV");
+      // Error toast is handled by useDownloadTasksCsv.
     }
   };
 

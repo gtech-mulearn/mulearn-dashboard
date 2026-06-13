@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Blank } from "@/components/dashboard/table/Blank";
 import Pagination from "@/components/dashboard/table/pagination";
-import Table from "@/components/dashboard/table/Table";
+import Table, { type Data } from "@/components/dashboard/table/Table";
 import TableTop from "@/components/dashboard/table/TableTop";
 import THead from "@/components/dashboard/table/Thead";
 import { Button } from "@/components/ui/button";
@@ -102,9 +102,6 @@ export default function TaskTypeView() {
             setModalType(null);
             setTitleInput("");
           },
-          onError: (err: any) => {
-            toast.error(err?.message || "Failed to create task type");
-          },
         },
       );
     } else if (modalType === "edit") {
@@ -121,9 +118,6 @@ export default function TaskTypeView() {
             setTitleInput("");
             setEditId("");
           },
-          onError: (err: any) => {
-            toast.error(err?.message || "Failed to update task type");
-          },
         },
       );
     }
@@ -135,9 +129,6 @@ export default function TaskTypeView() {
         toast.success("Task type deleted successfully");
         setModalType(null);
         setDeleteId("");
-      },
-      onError: (err: any) => {
-        toast.error(err?.message || "Failed to delete task type");
       },
     });
   };
@@ -172,7 +163,7 @@ export default function TaskTypeView() {
         ),
       ];
 
-      const csvContent = "data:text/csv;charset=utf-8," + csvRows.join("\n");
+      const csvContent = `data:text/csv;charset=utf-8,${csvRows.join("\n")}`;
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
       link.setAttribute("href", encodedUri);
@@ -187,15 +178,15 @@ export default function TaskTypeView() {
     }
   };
 
-  const renderActions = (row: any) => {
+  const renderActions = (row: Data) => {
     return (
       <div className="flex items-center justify-end gap-2">
         <Button
           variant="outline"
           size="sm"
           onClick={() => {
-            setEditId(row.id);
-            setTitleInput(row.title);
+            setEditId(String(row.id ?? ""));
+            setTitleInput(String(row.title ?? ""));
             setModalType("edit");
           }}
           className="h-8 w-8 p-0"
@@ -206,7 +197,7 @@ export default function TaskTypeView() {
           variant="destructive"
           size="sm"
           onClick={() => {
-            setDeleteId(row.id);
+            setDeleteId(String(row.id ?? ""));
             setModalType("delete");
           }}
           className="h-8 w-8 p-0"

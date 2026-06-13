@@ -4,15 +4,19 @@ import { endpoints } from "@/api/endpoints";
 import { ApiResponseSchema } from "../schemas/task-type.schema";
 import {
   DropdownResponseSchema,
-  SingleTaskResponseSchema,
-  TaskMutationResponseSchema,
-  TasksResponseSchema,
   type ReferenceItem,
+  SingleTaskResponseSchema,
   type Task,
   type TaskCreateRequest,
+  TaskMutationResponseSchema,
   type TaskReferenceData,
+  TasksResponseSchema,
 } from "../schemas/tasks.schema";
-import type { TaskListData, TaskListParams } from "../types/tasks.types";
+import type {
+  PublicTaskListParams,
+  TaskListData,
+  TaskListParams,
+} from "../types/tasks.types";
 
 export async function fetchTasks(
   params: TaskListParams,
@@ -31,6 +35,39 @@ export async function fetchTasks(
 
   const response = await apiClient.get(
     `${endpoints.admin.tasks.base}?${query.toString()}`,
+    TasksResponseSchema,
+    { skipAuthRedirectOn403: true },
+  );
+
+  return (
+    response.response ??
+    response.data ?? {
+      data: [],
+      pagination: { count: 0, totalPages: 1, isNext: false, isPrev: false },
+    }
+  );
+}
+
+export async function fetchPublicTasks(
+  params: PublicTaskListParams,
+): Promise<TaskListData> {
+  const query = new URLSearchParams({
+    pageIndex: String(params.pageIndex),
+    perPage: String(params.perPage),
+  });
+
+  if (params.search?.trim()) {
+    query.set("search", params.search.trim());
+  }
+  if (params.sortBy?.trim()) {
+    query.set("sortBy", params.sortBy.trim());
+  }
+  if (params.ig_id?.trim()) {
+    query.set("ig_id", params.ig_id.trim());
+  }
+
+  const response = await apiClient.get(
+    `${endpoints.admin.tasks.publicList}?${query.toString()}`,
     TasksResponseSchema,
     { skipAuthRedirectOn403: true },
   );
@@ -103,7 +140,7 @@ export async function downloadTasksTemplate(): Promise<Blob> {
   });
 }
 
-export async function importTasks(file: File): Promise<any> {
+export async function importTasks(file: File): Promise<unknown> {
   const formData = new FormData();
   formData.append("file", file);
 
@@ -122,13 +159,15 @@ export async function importTasks(file: File): Promise<any> {
 }
 
 export async function fetchTaskReferences(): Promise<TaskReferenceData> {
+  type DropdownItem = string | { id: string; name?: string; title?: string };
+
   const safeFetch = async (url: string): Promise<ReferenceItem[]> => {
     try {
       const res = await apiClient.get(url, DropdownResponseSchema, {
         skipAuthRedirectOn403: true,
       });
-      const data = res.response ?? res.data ?? [];
-      return data.map((item: any) =>
+      const data: DropdownItem[] = res.response ?? res.data ?? [];
+      return data.map((item) =>
         typeof item === "string"
           ? { id: item, name: item, title: item }
           : {

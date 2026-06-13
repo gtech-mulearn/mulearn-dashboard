@@ -7,6 +7,10 @@ export interface TaskListParams {
   sortBy?: string;
 }
 
+export interface PublicTaskListParams extends TaskListParams {
+  ig_id?: string;
+}
+
 export interface TaskListData {
   data: Task[];
   pagination: {

@@ -78,9 +78,6 @@ export function TaskFormDialog({
           onClose();
           if (onSuccess) onSuccess();
         },
-        onError: (err: any) => {
-          toast.error(err?.message || "Failed to update task");
-        },
       },
     );
   };
