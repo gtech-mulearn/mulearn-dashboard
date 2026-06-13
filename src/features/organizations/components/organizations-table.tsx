@@ -330,12 +330,17 @@ function OrgFormDialog({
   }, [open, editingOrg, defaultOrgType, form.reset]);
 
   const onSubmit = async (data: OrgFormData) => {
-    if (isEditing && editingOrg) {
-      await editOrg({ code: editingOrg.code, data });
-    } else {
-      await addOrg(data);
+    try {
+      if (isEditing && editingOrg) {
+        await editOrg({ code: editingOrg.code, data });
+      } else {
+        await addOrg(data);
+      }
+      onOpenChange(false);
+    } catch {
+      // Ignore: mutation's onError handles the toast. Catching it here
+      // prevents an unhandled promise rejection in the console.
     }
-    onOpenChange(false);
   };
 
   const isPending = isAdding || isEditing_;
@@ -373,190 +378,56 @@ function OrgFormDialog({
               )}
             />
 
-            {/* Code */}
-            <FormField
-              control={form.control}
-              name="code"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Code</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="e.g. IITB"
-                      {...field}
-                      disabled={isEditing}
-                      className={isEditing ? "bg-muted cursor-not-allowed" : ""}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Org Type */}
-            <FormField
-              control={form.control}
-              name="org_type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Organization Type</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value}
-                    disabled={isEditing}
-                  >
+            {/* Row: Code & Org Type */}
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="code"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Code</FormLabel>
                     <FormControl>
-                      <SelectTrigger
+                      <Input
+                        placeholder="e.g. IITB"
+                        {...field}
+                        disabled={isEditing}
                         className={
                           isEditing ? "bg-muted cursor-not-allowed" : ""
                         }
-                      >
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
+                      />
                     </FormControl>
-                    <SelectContent>
-                      {ORG_TYPES.map((t) => (
-                        <SelectItem key={t} value={t}>
-                          {t}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            {/* Country */}
-            <FormField
-              control={form.control}
-              name="country"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Country</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue
-                          placeholder={
-                            countriesLoading ? "Loading…" : "Select country"
-                          }
-                        />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent className="z-[9999] max-h-[200px] overflow-y-auto">
-                      {countries.map((c) => (
-                        <SelectItem key={c.id} value={c.id}>
-                          {c.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* State */}
-            <FormField
-              control={form.control}
-              name="state"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>State</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value}
-                    disabled={!watchedCountry || statesLoading}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue
-                          placeholder={
-                            !watchedCountry
-                              ? "Select country first"
-                              : statesLoading
-                                ? "Loading…"
-                                : "Select state"
-                          }
-                        />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent className="z-[9999] max-h-[200px] overflow-y-auto">
-                      {states.map((s) => (
-                        <SelectItem key={s.id} value={s.id}>
-                          {s.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* District */}
-            <FormField
-              control={form.control}
-              name="district"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>District</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value}
-                    disabled={!watchedState || districtsLoading}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue
-                          placeholder={
-                            !watchedState
-                              ? "Select state first"
-                              : districtsLoading
-                                ? "Loading…"
-                                : "Select district"
-                          }
-                        />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent className="z-[9999] max-h-[200px] overflow-y-auto">
-                      {districts.map((d) => (
-                        <SelectItem key={d.id} value={d.id}>
-                          {d.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Affiliation (College only) — identical pattern to Country */}
-            {watchedOrgType === "College" && (
               <FormField
                 control={form.control}
-                name="affiliation"
+                name="org_type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Affiliation</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <FormLabel>Organization Type</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      disabled={isEditing}
+                    >
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue
-                            placeholder={
-                              affiliationsLoading
-                                ? "Loading…"
-                                : "Select affiliation"
-                            }
-                          />
+                        <SelectTrigger
+                          className={
+                            isEditing ? "bg-muted cursor-not-allowed" : ""
+                          }
+                        >
+                          <SelectValue placeholder="Select type" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="z-[9999] max-h-[200px] overflow-y-auto">
-                        {affiliations.map((a) => (
-                          <SelectItem key={a.id} value={a.id}>
-                            {a.name}
+                      <SelectContent
+                        position="popper"
+                        className="z-[9999] max-h-[200px] overflow-y-auto"
+                      >
+                        {ORG_TYPES.map((t) => (
+                          <SelectItem key={t} value={t}>
+                            {t}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -565,7 +436,175 @@ function OrgFormDialog({
                   </FormItem>
                 )}
               />
-            )}
+            </div>
+
+            {/* Row: Country & State */}
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="country"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Country</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue
+                            placeholder={
+                              countriesLoading ? "Loading…" : "Select country"
+                            }
+                          />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent
+                        position="popper"
+                        className="z-[9999] max-h-[200px] overflow-y-auto"
+                      >
+                        {countries.map((c) => (
+                          <SelectItem
+                            key={c.id || c.value}
+                            value={(c.id || c.value) as string}
+                          >
+                            {c.name || c.title || c.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="state"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>State</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      disabled={!watchedCountry || statesLoading}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue
+                            placeholder={
+                              !watchedCountry
+                                ? "Select country first"
+                                : statesLoading
+                                  ? "Loading…"
+                                  : "Select state"
+                            }
+                          />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent
+                        position="popper"
+                        className="z-[9999] max-h-[200px] overflow-y-auto"
+                      >
+                        {states.map((s) => (
+                          <SelectItem
+                            key={s.id || s.value}
+                            value={(s.id || s.value) as string}
+                          >
+                            {s.name || s.title || s.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Row: District & Affiliation */}
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="district"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>District</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      disabled={!watchedState || districtsLoading}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue
+                            placeholder={
+                              !watchedState
+                                ? "Select state first"
+                                : districtsLoading
+                                  ? "Loading…"
+                                  : "Select district"
+                            }
+                          />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent
+                        position="popper"
+                        className="z-[9999] max-h-[200px] overflow-y-auto"
+                      >
+                        {districts.map((d) => (
+                          <SelectItem
+                            key={d.id || d.value}
+                            value={(d.id || d.value) as string}
+                          >
+                            {d.name || d.title || d.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {watchedOrgType === "College" ? (
+                <FormField
+                  control={form.control}
+                  name="affiliation"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Affiliation</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue
+                              placeholder={
+                                affiliationsLoading
+                                  ? "Loading…"
+                                  : "Select affiliation"
+                              }
+                            />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent
+                          position="popper"
+                          className="z-[9999] max-h-[200px] overflow-y-auto"
+                        >
+                          {affiliations.map((a) => (
+                            <SelectItem key={a.id} value={a.id}>
+                              {a.title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ) : (
+                <div /> /* Empty div to keep District on the left when Affiliation is hidden */
+              )}
+            </div>
 
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end pt-2">
               <Button

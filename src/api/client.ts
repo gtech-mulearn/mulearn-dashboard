@@ -260,6 +260,23 @@ async function request<T>(
           );
         }
 
+        // Treat a business error (hasError: true) or non-OK retry as a thrown error
+        // so it surfaces to the caller rather than being silently swallowed.
+        if (!retryRes.ok) {
+          const retryMsg = extractDjangoMessage(retryData);
+          if (process.env.NODE_ENV === "development") {
+            console.error(
+              `[API Client] Business error (retry): [Status ${retryRes.status}] ${endpoint}\nMessage: ${retryMsg}`,
+              retryData,
+            );
+          }
+          throw new ApiError(
+            retryRes.status,
+            retryMsg || `Request failed: ${endpoint}`,
+            retryData,
+          );
+        }
+
         if (options.schema) {
           const parsed = options.schema.safeParse(retryData);
           if (!parsed.success) {
@@ -276,7 +293,12 @@ async function request<T>(
           return parsed.data;
         }
         return retryData?.response ?? (retryData as T);
-      } catch {
+      } catch (err) {
+        // Re-throw ApiErrors directly — they are legitimate business/HTTP errors,
+        // not auth failures. Only clear tokens for genuine auth errors.
+        if (err instanceof ApiError) {
+          throw err;
+        }
         authStore.clearTokens();
         if (typeof window !== "undefined") {
           window.location.href = "/login";

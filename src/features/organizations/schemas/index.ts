@@ -49,7 +49,7 @@ export const OrgInfoSchema = z
 
 export const AffiliationItemSchema = z.object({
   id: z.string(),
-  name: z.string(),
+  title: z.string(),
 });
 
 export const AffiliationListResponseSchema = z
@@ -64,8 +64,11 @@ export const AffiliationListResponseSchema = z
 // ─── Location cascading ───────────────────────────────────────────────────────
 
 export const LocationOptionSchema = z.object({
-  id: z.string(),
-  name: z.string(),
+  id: z.string().optional(),
+  value: z.string().optional(),
+  name: z.string().optional(),
+  title: z.string().optional(),
+  label: z.string().optional(),
 });
 
 export const LocationListResponseSchema = z

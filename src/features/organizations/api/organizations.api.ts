@@ -105,7 +105,14 @@ export async function fetchOrganizationDetails(id: string): Promise<OrgInfo> {
 // ─── Create ───────────────────────────────────────────────────────────────────
 
 export async function addOrganization(data: OrgFormData): Promise<void> {
-  await apiClient.post(`${BASE}/create/`, data);
+  const payload = {
+    title: data.title,
+    code: data.code,
+    org_type: data.org_type,
+    affiliation: data.affiliation || undefined,
+    district: data.district || undefined,
+  };
+  await apiClient.post(`${BASE}/create/`, payload);
 }
 
 // ─── Edit ─────────────────────────────────────────────────────────────────────
@@ -114,7 +121,14 @@ export async function editOrganization(
   code: string,
   data: OrgFormData,
 ): Promise<void> {
-  await apiClient.put(`${BASE}/edit/${code}/`, data);
+  const payload = {
+    title: data.title,
+    code: data.code,
+    org_type: data.org_type,
+    affiliation: data.affiliation || undefined,
+    district: data.district || undefined,
+  };
+  await apiClient.put(`${BASE}/edit/${code}/`, payload);
 }
 
 // ─── Delete ───────────────────────────────────────────────────────────────────
@@ -179,7 +193,11 @@ export async function fetchStates(
   const raw = await apiClient.post<unknown>("/api/v1/register/state/list/", {
     country: countryId,
   });
-  return normaliseArray<LocationOption>(raw);
+  const data =
+    raw && typeof raw === "object" && "states" in raw
+      ? (raw as Record<string, unknown>).states
+      : raw;
+  return normaliseArray<LocationOption>(data);
 }
 
 // ─── District list ────────────────────────────────────────────────────────────
@@ -190,5 +208,9 @@ export async function fetchDistricts(
   const raw = await apiClient.post<unknown>("/api/v1/register/district/list/", {
     state: stateId,
   });
-  return normaliseArray<LocationOption>(raw);
+  const data =
+    raw && typeof raw === "object" && "districts" in raw
+      ? (raw as Record<string, unknown>).districts
+      : raw;
+  return normaliseArray<LocationOption>(data);
 }
