@@ -5,6 +5,7 @@ import type {
   MentorTask,
   MentorTaskFormValues,
   TaskIg,
+  TaskLevel,
   TaskType,
 } from "../schemas";
 import {
@@ -14,6 +15,7 @@ import {
   MentorTaskGenericResponseSchema,
   MentorTaskListResponseSchema,
   TaskIgDropdownResponseSchema,
+  TaskLevelListResponseSchema,
   TaskTypeListResponseSchema,
 } from "../schemas";
 
@@ -53,6 +55,17 @@ export async function fetchTaskTypes(): Promise<TaskType[]> {
     OPT,
   );
   return res.response.data;
+}
+
+// ─── GET /task/level/ — list all available task levels ───────────────────────
+// Response: { response: [{ id, name }] } — array directly in response field
+export async function fetchTaskLevels(): Promise<TaskLevel[]> {
+  const res = await apiClient.get(
+    endpoints.adminTask.taskLevelList,
+    TaskLevelListResponseSchema,
+    OPT,
+  );
+  return res.response;
 }
 
 // ─── #2 GET /tasks/ — list mentor-submitted tasks ────────────────────────────
