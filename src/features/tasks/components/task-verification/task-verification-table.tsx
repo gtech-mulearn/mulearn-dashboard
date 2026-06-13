@@ -30,10 +30,10 @@ const COLUMN_ORDER = [
 
 export function TaskVerificationTable({
   status,
-  role,
+  source,
 }: {
   status: "pending" | "approved" | "rejected";
-  role?: "mentor" | "company" | "admin";
+  source?: "mentor" | "company";
 }) {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -46,7 +46,7 @@ export function TaskVerificationTable({
 
   const { data, isLoading } = usePendingTasks({
     approval_status: status,
-    role,
+    source,
     pageIndex: page,
     perPage,
     search: search.trim() || undefined,

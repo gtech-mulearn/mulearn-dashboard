@@ -5,6 +5,7 @@ import { ApiResponseSchema } from "../schemas/task-type.schema";
 import {
   DropdownResponseSchema,
   SingleTaskResponseSchema,
+  TaskMutationResponseSchema,
   TasksResponseSchema,
   type ReferenceItem,
   type Task,
@@ -57,35 +58,31 @@ export async function fetchTaskDetail(id: string): Promise<Task> {
   return task;
 }
 
-export async function createTask(data: TaskCreateRequest): Promise<Task> {
+export async function createTask(
+  data: TaskCreateRequest,
+): Promise<Task | undefined> {
   const response = await apiClient.post(
     endpoints.admin.tasks.base,
     data,
-    SingleTaskResponseSchema,
+    TaskMutationResponseSchema,
     { skipAuthRedirectOn403: true },
   );
   const result = response.response ?? response.data;
-  if (!result) {
-    throw new Error("Failed to create task");
-  }
-  return result as Task;
+  return result as Task | undefined;
 }
 
 export async function updateTask(
   id: string,
   data: Partial<TaskCreateRequest>,
-): Promise<Task> {
+): Promise<Task | undefined> {
   const response = await apiClient.put(
     endpoints.admin.tasks.detail(id),
     data,
-    SingleTaskResponseSchema,
+    TaskMutationResponseSchema,
     { skipAuthRedirectOn403: true },
   );
   const result = response.response ?? response.data;
-  if (!result) {
-    throw new Error("Failed to update task");
-  }
-  return result as Task;
+  return result as Task | undefined;
 }
 
 export async function deleteTask(id: string): Promise<void> {
@@ -131,24 +128,29 @@ export async function fetchTaskReferences(): Promise<TaskReferenceData> {
         skipAuthRedirectOn403: true,
       });
       const data = res.response ?? res.data ?? [];
-      return data.map((item: any) => ({
-        id: item.id,
-        name: item.name,
-        title: item.title,
-      }));
+      return data.map((item: any) =>
+        typeof item === "string"
+          ? { id: item, name: item, title: item }
+          : {
+              id: item.id,
+              name: item.name,
+              title: item.title,
+            },
+      );
     } catch (err) {
       console.error(`Failed to fetch references from ${url}:`, err);
       return [];
     }
   };
 
-  const [levels, igs, organizations, channels, types, skills] =
+  const [levels, igs, organizations, channels, types, events, skills] =
     await Promise.all([
       safeFetch(endpoints.admin.tasks.levels),
       safeFetch(endpoints.admin.tasks.igs),
       safeFetch(endpoints.admin.tasks.organizations),
       safeFetch(endpoints.admin.tasks.channels),
       safeFetch(endpoints.admin.tasks.types),
+      safeFetch(endpoints.admin.tasks.events),
       safeFetch(endpoints.admin.tasks.skills),
     ]);
 
@@ -158,6 +160,7 @@ export async function fetchTaskReferences(): Promise<TaskReferenceData> {
     organizations,
     channels,
     types,
+    events,
     skills,
   };
 }

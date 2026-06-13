@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { apiClient } from "@/api/client";
+import { endpoints } from "@/api/endpoints";
 import { ApiResponseSchema } from "@/lib/schemas/api-response";
 import type {
   ReviewActionValues,
@@ -9,7 +10,7 @@ import { TaskVerificationListResponseSchema } from "../schemas/task-verification
 
 interface ListParams {
   approval_status?: "pending" | "approved" | "rejected";
-  role?: "mentor" | "company" | "admin";
+  source?: "mentor" | "company";
   mentor_name?: string;
   company_name?: string;
   pageIndex?: number;
@@ -25,7 +26,7 @@ export async function fetchPendingTasks(params: ListParams = {}): Promise<{
 }> {
   const q = new URLSearchParams();
   if (params.approval_status) q.set("approval_status", params.approval_status);
-  if (params.role) q.set("role", params.role);
+  if (params.source) q.set("source", params.source);
   if (params.mentor_name) q.set("mentor_name", params.mentor_name);
   if (params.company_name) q.set("company_name", params.company_name);
   if (params.pageIndex) q.set("pageIndex", String(params.pageIndex));
@@ -35,8 +36,8 @@ export async function fetchPendingTasks(params: ListParams = {}): Promise<{
 
   const query = q.toString();
   const url = query
-    ? `/api/v1/dashboard/task/pending/?${query}`
-    : `/api/v1/dashboard/task/pending/`;
+    ? `${endpoints.admin.tasks.pending}?${query}`
+    : endpoints.admin.tasks.pending;
 
   const res = await apiClient.get(url, TaskVerificationListResponseSchema, {
     skipAuthRedirectOn403: true,
@@ -54,9 +55,8 @@ export async function reviewTask(
   taskId: string,
   data: ReviewActionValues,
 ): Promise<void> {
-  const url = `/api/v1/dashboard/task/${taskId}/review/`;
   const schema = ApiResponseSchema(z.any());
-  await apiClient.patch(url, data, schema, {
+  await apiClient.patch(endpoints.admin.tasks.review(taskId), data, schema, {
     skipAuthRedirectOn403: true,
   });
 }

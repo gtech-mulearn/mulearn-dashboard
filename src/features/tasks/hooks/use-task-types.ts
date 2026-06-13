@@ -10,6 +10,8 @@ import type {
   CreateTaskTypeInput,
   UpdateTaskTypeInput,
 } from "../schemas/task-type.schema";
+import { toast } from "sonner";
+import { ApiError } from "@/api";
 
 export const useTaskTypes = (
   params: TaskTypeParams,
@@ -31,6 +33,12 @@ export const useCreateTaskType = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["task-types"], exact: false });
     },
+    onError: (error) =>
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to submit review status.",
+      ),
   });
 };
 
@@ -43,6 +51,12 @@ export const useUpdateTaskType = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["task-types"], exact: false });
     },
+    onError: (error) =>
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to submit review status.",
+      ),
   });
 };
 
@@ -54,5 +68,11 @@ export const useDeleteTaskType = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["task-types"], exact: false });
     },
+    onError: (error) =>
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to submit review status.",
+      ),
   });
 };

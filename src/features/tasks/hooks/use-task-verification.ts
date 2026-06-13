@@ -14,7 +14,7 @@ const taskVerificationKeys = {
 
 interface UsePendingTasksParams {
   approval_status?: "pending" | "approved" | "rejected";
-  role?: "mentor" | "company" | "admin";
+  source?: "mentor" | "company";
   mentor_name?: string;
   company_name?: string;
   pageIndex?: number;

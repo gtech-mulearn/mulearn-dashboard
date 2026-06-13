@@ -166,7 +166,7 @@ export default function TaskForm({
                 <SelectTrigger id="channel_id">
                   <SelectValue placeholder="Select Channel" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent position="popper">
                   {(refs?.channels ?? []).map((ch: any) => (
                     <SelectItem key={ch.id} value={ch.id}>
                       {ch.name || ch.title || ch.id}
@@ -198,7 +198,7 @@ export default function TaskForm({
                 <SelectTrigger id="type_id">
                   <SelectValue placeholder="Select Type" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent position="popper">
                   {(refs?.types ?? []).map((t: any) => (
                     <SelectItem key={t.id} value={t.id}>
                       {t.title || t.name || t.id}
@@ -230,7 +230,7 @@ export default function TaskForm({
                 <SelectTrigger id="level_id">
                   <SelectValue placeholder="Select Level" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent position="popper">
                   <SelectItem value="none">None</SelectItem>
                   {(refs?.levels ?? []).map((l: any) => (
                     <SelectItem key={l.id} value={l.id}>
@@ -260,7 +260,7 @@ export default function TaskForm({
                 <SelectTrigger id="ig_id">
                   <SelectValue placeholder="Select Interest Group" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent position="popper">
                   <SelectItem value="none">None</SelectItem>
                   {(refs?.igs ?? []).map((ig: any) => (
                     <SelectItem key={ig.id} value={ig.id}>
@@ -290,7 +290,7 @@ export default function TaskForm({
                 <SelectTrigger id="organization_id">
                   <SelectValue placeholder="Select Organization" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent position="popper">
                   <SelectItem value="none">None</SelectItem>
                   {(refs?.organizations ?? []).map((org: any) => (
                     <SelectItem key={org.id} value={org.id}>
@@ -320,11 +320,31 @@ export default function TaskForm({
 
         {/* Event */}
         <div className="space-y-2">
-          <Label htmlFor="event">Event Name</Label>
-          <Input
-            id="event"
-            placeholder="Event name (if any)"
-            {...register("event")}
+          <Label htmlFor="event">Event</Label>
+          <Controller
+            name="event"
+            control={control}
+            render={({ field }) => (
+              <Select
+                value={field.value || "none"}
+                onValueChange={(val) =>
+                  field.onChange(val === "none" ? null : val)
+                }
+                disabled={refsLoading}
+              >
+                <SelectTrigger id="event">
+                  <SelectValue placeholder="Select Event" />
+                </SelectTrigger>
+                <SelectContent position="popper">
+                  <SelectItem value="none">None</SelectItem>
+                  {(refs?.events ?? []).map((event: any) => (
+                    <SelectItem key={event.id} value={event.id}>
+                      {event.title || event.name || event.id}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           />
         </div>
 

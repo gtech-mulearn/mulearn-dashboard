@@ -107,6 +107,7 @@ export interface TaskReferenceData {
   organizations: ReferenceItem[];
   channels: ReferenceItem[];
   types: ReferenceItem[];
+  events: ReferenceItem[];
   skills: ReferenceItem[];
 }
 
@@ -136,14 +137,18 @@ const TaskResponseDataSchema = z.preprocess((value) => {
 export const SingleTaskResponseSchema = ApiResponseSchema(
   TaskResponseDataSchema,
 );
+export const TaskMutationResponseSchema = ApiResponseSchema(z.unknown());
 export const DropdownResponseSchema = ApiResponseSchema(
   z.array(
-    z
-      .object({
-        id: z.string(),
-        name: z.string().optional(),
-        title: z.string().optional(),
-      })
-      .passthrough(),
+    z.union([
+      z.string(),
+      z
+        .object({
+          id: z.string(),
+          name: z.string().optional(),
+          title: z.string().optional(),
+        })
+        .passthrough(),
+    ]),
   ),
 );

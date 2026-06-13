@@ -12,8 +12,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TaskVerificationTable } from "./task-verification-table";
 
 export function TaskVerificationPage() {
-  const [roleFilter, setRoleFilter] = useState<
-    "mentor" | "company" | "admin" | "all"
+  const [sourceFilter, setSourceFilter] = useState<
+    "mentor" | "company" | "all"
   >("all");
   const [activeTab, setActiveTab] = useState<
     "pending" | "approved" | "rejected"
@@ -33,17 +33,19 @@ export function TaskVerificationPage() {
 
         <div className="flex flex-wrap items-center gap-3">
           <Select
-            value={roleFilter}
-            onValueChange={(val) => setRoleFilter(val as any)}
+            value={sourceFilter}
+            onValueChange={(val) => setSourceFilter(val as any)}
           >
             <SelectTrigger className="w-full max-w-[180px] sm:w-[180px] bg-background border-border text-foreground">
               <SelectValue placeholder="Filter by Submitter..." />
             </SelectTrigger>
-            <SelectContent className="bg-card text-foreground border border-border">
+            <SelectContent
+              position="popper"
+              className="bg-card text-foreground border border-border"
+            >
               <SelectItem value="all">All Submitters</SelectItem>
               <SelectItem value="mentor">Mentors Only</SelectItem>
               <SelectItem value="company">Companies Only</SelectItem>
-              <SelectItem value="admin">Admins Only</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -78,21 +80,21 @@ export function TaskVerificationPage() {
         <TabsContent value="pending" className="mt-4">
           <TaskVerificationTable
             status="pending"
-            role={roleFilter === "all" ? undefined : roleFilter}
+            source={sourceFilter === "all" ? undefined : sourceFilter}
           />
         </TabsContent>
 
         <TabsContent value="approved" className="mt-4">
           <TaskVerificationTable
             status="approved"
-            role={roleFilter === "all" ? undefined : roleFilter}
+            source={sourceFilter === "all" ? undefined : sourceFilter}
           />
         </TabsContent>
 
         <TabsContent value="rejected" className="mt-4">
           <TaskVerificationTable
             status="rejected"
-            role={roleFilter === "all" ? undefined : roleFilter}
+            source={sourceFilter === "all" ? undefined : sourceFilter}
           />
         </TabsContent>
       </Tabs>
