@@ -145,7 +145,7 @@ const Table: FC<TableProps> = (props) => {
         onScroll={updateScrollIndicator}
         className="hidden overflow-x-auto overflow-y-hidden rounded-xl border border-border bg-card md:block"
       >
-        <table className="w-full border-collapse table-fixed text-base">
+        <table className="w-full border-collapse table-fixed">
           {props.children?.[0]}
           {props.isloading ? (
             <tbody>
@@ -166,13 +166,13 @@ const Table: FC<TableProps> = (props) => {
                   className="odd:bg-muted/70 even:bg-transparent"
                 >
                   <td
-                    className={`border-b border-border px-4 py-3 w-20 ${props.slNoCellClassName ?? ""}`}
+                    className={`border-b border-border px-3.5 py-3 w-16 ${props.slNoCellClassName ?? ""}`}
                   >
                     {startIndex + index + 1}
                   </td>
                   {props.columnOrder.map((column) => (
                     <td
-                      className={`border-b border-border px-4 py-3 break-words ${column.width || ""}`}
+                      className={`border-b border-border px-3.5 py-3 break-words ${column.width || ""}`}
                       key={column.column}
                     >
                       {(() => {
@@ -193,10 +193,10 @@ const Table: FC<TableProps> = (props) => {
                   ))}
                   {props.id?.map((column) => (
                     <td
-                      className="border-b border-border px-4 py-3 w-32"
+                      className="border-b border-border px-3.5 py-3 w-32"
                       key={column}
                     >
-                      <div className="flex items-center justify-start gap-4">
+                      <div className="flex items-center justify-end gap-1">
                         {props.customActionRender ? (
                           props.customActionRender(rowData)
                         ) : (
@@ -204,34 +204,34 @@ const Table: FC<TableProps> = (props) => {
                             {props.analytics && (
                               <button
                                 type="button"
-                                className="cursor-pointer rounded-md p-2 text-muted-foreground hover:bg-muted"
+                                className="rounded-md p-2 text-muted-foreground hover:bg-muted"
                                 onClick={() =>
                                   props.analytics?.(rowData[column] ?? "")
                                 }
                               >
-                                <TrendingUp className="size-5" />
+                                <TrendingUp className="size-4" />
                               </button>
                             )}
                             {props.onCopyClick && (
                               <button
                                 type="button"
-                                className="cursor-pointer rounded-md p-2 text-muted-foreground hover:bg-muted"
+                                className="rounded-md p-2 text-muted-foreground hover:bg-muted"
                                 onClick={() =>
                                   props.onCopyClick?.(rowData[column] ?? "")
                                 }
                               >
-                                <Copy className="size-5" />
+                                <Copy className="size-4" />
                               </button>
                             )}
                             {props.onEditClick && (
                               <button
                                 type="button"
-                                className="cursor-pointer rounded-md p-2 text-muted-foreground hover:bg-muted"
+                                className="rounded-md p-2 text-muted-foreground hover:bg-muted"
                                 onClick={() =>
                                   props.onEditClick?.(rowData[column] ?? "")
                                 }
                               >
-                                <Pencil className="size-5" />
+                                <Pencil className="size-4" />
                               </button>
                             )}
                             {props.onVerifyClick && (
@@ -248,12 +248,12 @@ const Table: FC<TableProps> = (props) => {
                             {props.onDeleteClick && (
                               <button
                                 type="button"
-                                className="cursor-pointer rounded-md p-2 text-muted-foreground hover:bg-muted"
+                                className="rounded-md p-2 text-muted-foreground hover:bg-muted"
                                 onClick={() =>
                                   setDeleteRowId(String(rowData[column] ?? ""))
                                 }
                               >
-                                <Trash2 className="size-5" />
+                                <Trash2 className="size-4" />
                               </button>
                             )}
                           </>

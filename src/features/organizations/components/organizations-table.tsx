@@ -62,13 +62,12 @@ function resolveField(row: Record<string, unknown>, key: string): string {
 }
 
 const COLLEGE_COLUMNS = [
-  { column: "title", Label: "Title", isSortable: true, width: "w-[230px]" },
-  { column: "code", Label: "Code", isSortable: true, width: "w-[100px]" },
+  { column: "title", Label: "Title", isSortable: true, width: "w-[170px]" },
+  { column: "code", Label: "Code", isSortable: true },
   {
     column: "affiliation",
     Label: "Affiliation",
     isSortable: false,
-    width: "w-[160px]",
     wrap: (_: string, _id: string, row: Record<string, unknown>) => (
       <span>{resolveField(row, "affiliation")}</span>
     ),
@@ -77,7 +76,6 @@ const COLLEGE_COLUMNS = [
     column: "district",
     Label: "District",
     isSortable: false,
-    width: "w-[130px]",
     wrap: (_: string, _id: string, row: Record<string, unknown>) => (
       <span>{resolveField(row, "district")}</span>
     ),
@@ -86,7 +84,6 @@ const COLLEGE_COLUMNS = [
     column: "zone",
     Label: "Zone",
     isSortable: false,
-    width: "w-[130px]",
     wrap: (_: string, _id: string, row: Record<string, unknown>) => (
       <span>{resolveField(row, "zone")}</span>
     ),
@@ -94,13 +91,12 @@ const COLLEGE_COLUMNS = [
 ];
 
 const COMPANY_COLUMNS = [
-  { column: "title", Label: "Title", isSortable: true, width: "w-[230px]" },
-  { column: "code", Label: "Code", isSortable: true, width: "w-[100px]" },
+  { column: "title", Label: "Title", isSortable: true, width: "w-[170px]" },
+  { column: "code", Label: "Code", isSortable: true },
   {
     column: "district",
     Label: "District",
     isSortable: false,
-    width: "w-[130px]",
     wrap: (_: string, _id: string, row: Record<string, unknown>) => (
       <span>{resolveField(row, "district")}</span>
     ),
@@ -109,7 +105,6 @@ const COMPANY_COLUMNS = [
     column: "zone",
     Label: "Zone",
     isSortable: false,
-    width: "w-[130px]",
     wrap: (_: string, _id: string, row: Record<string, unknown>) => (
       <span>{resolveField(row, "zone")}</span>
     ),
@@ -118,7 +113,6 @@ const COMPANY_COLUMNS = [
     column: "state",
     Label: "State",
     isSortable: false,
-    width: "w-[130px]",
     wrap: (_: string, _id: string, row: Record<string, unknown>) => (
       <span>{resolveField(row, "state")}</span>
     ),
@@ -127,7 +121,6 @@ const COMPANY_COLUMNS = [
     column: "country",
     Label: "Country",
     isSortable: false,
-    width: "w-[130px]",
     wrap: (_: string, _id: string, row: Record<string, unknown>) => (
       <span>{resolveField(row, "country")}</span>
     ),
@@ -135,13 +128,12 @@ const COMPANY_COLUMNS = [
 ];
 
 const COMMUNITY_COLUMNS = [
-  { column: "title", Label: "Title", isSortable: true, width: "w-[230px]" },
-  { column: "code", Label: "Code", isSortable: true, width: "w-[100px]" },
+  { column: "title", Label: "Title", isSortable: true, width: "w-[170px]" },
+  { column: "code", Label: "Code", isSortable: true },
   {
     column: "state",
     Label: "State",
     isSortable: false,
-    width: "w-[130px]",
     wrap: (_: string, _id: string, row: Record<string, unknown>) => (
       <span>{resolveField(row, "state")}</span>
     ),
@@ -150,7 +142,6 @@ const COMMUNITY_COLUMNS = [
     column: "zone",
     Label: "Zone",
     isSortable: false,
-    width: "w-[130px]",
     wrap: (_: string, _id: string, row: Record<string, unknown>) => (
       <span>{resolveField(row, "zone")}</span>
     ),
@@ -158,13 +149,12 @@ const COMMUNITY_COLUMNS = [
 ];
 
 const SCHOOL_COLUMNS = [
-  { column: "title", Label: "Title", isSortable: true, width: "w-[230px]" },
-  { column: "code", Label: "Code", isSortable: true, width: "w-[100px]" },
+  { column: "title", Label: "Title", isSortable: true, width: "w-[170px]" },
+  { column: "code", Label: "Code", isSortable: true },
   {
     column: "district",
     Label: "District",
     isSortable: false,
-    width: "w-[130px]",
     wrap: (_: string, _id: string, row: Record<string, unknown>) => (
       <span>{resolveField(row, "district")}</span>
     ),
@@ -173,7 +163,6 @@ const SCHOOL_COLUMNS = [
     column: "zone",
     Label: "Zone",
     isSortable: false,
-    width: "w-[130px]",
     wrap: (_: string, _id: string, row: Record<string, unknown>) => (
       <span>{resolveField(row, "zone")}</span>
     ),
@@ -631,7 +620,7 @@ export default function OrganizationsTable() {
 
   // ── Table state ───────────────────────────────────────────
   const [currentPage, setCurrentPage] = useState(1);
-  const perPage = 20;
+  const [perPage, setPerPage] = useState(20);
   const [sort, setSort] = useState("");
   const [search, setSearch] = useState("");
 
@@ -780,11 +769,16 @@ export default function OrganizationsTable() {
           {/* ── Search + Rows per page ────────────────────── */}
           <TableTop
             onSearchText={handleSearch}
+            onPerPageNumber={(n) => {
+              setPerPage(n);
+              setCurrentPage(1);
+            }}
             CSV=""
+            perPage={perPage}
+            perPageOptions={[10, 20, 50, 100]}
             searchPlaceholder={`Search ${activeTab}s`}
             searchSize="md"
             searchPosition="right"
-            wrapperClassName="border-none bg-transparent shadow-none p-0"
             searchWrapperClassName="border-none bg-transparent md:max-w-[680px]"
             searchFieldWrapperClassName="lg:max-w-[380px]"
             searchInputClassName="h-10 text-sm border border-border/50 rounded-lg bg-transparent"

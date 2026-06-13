@@ -25,7 +25,11 @@ const Pagination = ({
   return (
     <>
       {totalPages > 0 && (
-        <div className="flex flex-col items-center justify-end gap-4 pt-4 sm:flex-row">
+        <div className="flex flex-col items-start justify-between gap-4 border-t border-border/40 pt-4 sm:flex-row sm:items-center">
+          <div className="text-sm text-muted-foreground">
+            Showing <strong className="text-foreground">{start}</strong> to{" "}
+            <strong className="text-foreground">{end}</strong> entries
+          </div>
           <div className="flex w-full flex-wrap items-center justify-center gap-2 sm:w-auto sm:justify-normal">
             <Button
               variant="outline"
