@@ -406,6 +406,7 @@ export interface EventWriteBody {
   is_featured?: boolean;
   tags: string[] | null;
   user_limit?: number;
+  event_scope: IGCluster;
 }
 
 export type EventPatchBody = Partial<EventWriteBody>;
@@ -458,6 +459,7 @@ export interface EventDetailViewProps {
   showInterestButton?: boolean;
   layout?: "full" | "content-only";
   showVenue?: boolean;
+  initialEvent?: EventDetail;
 }
 
 export interface ManageEventDetailViewProps {

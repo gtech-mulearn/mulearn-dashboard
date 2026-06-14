@@ -308,40 +308,42 @@ export function ManageEventDetailView({
             <ArrowLeft className="mr-2 h-4 w-4" /> Back
           </Button>
 
-          <div className="hidden flex-wrap gap-2 sm:flex">
-            {!isEditing ? (
-              <>
-                <Button
-                  variant="outline"
-                  onClick={() => setPeoplePanelOpen((value) => !value)}
-                >
-                  {peoplePanelOpen ? "Hide People" : "People"}
-                </Button>
-                <Button variant="outline" onClick={enterEditMode}>
-                  <Pencil className="mr-2 h-4 w-4" /> Edit
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={() => setConfirmCancelOpen(true)}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" /> Cancel Event
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button
-                  type="submit"
-                  form={`event-inline-edit-form-${event.id}`}
-                  disabled={!isEditSaveArmed}
-                >
-                  Save Changes
-                </Button>
-                <Button variant="outline" onClick={handleDiscard}>
-                  Discard
-                </Button>
-              </>
-            )}
-          </div>
+          {event.status !== "cancelled" && (
+            <div className="hidden flex-wrap gap-2 sm:flex">
+              {!isEditing ? (
+                <>
+                  <Button
+                    variant="outline"
+                    onClick={() => setPeoplePanelOpen((value) => !value)}
+                  >
+                    {peoplePanelOpen ? "Hide People" : "People"}
+                  </Button>
+                  <Button variant="outline" onClick={enterEditMode}>
+                    <Pencil className="mr-2 h-4 w-4" /> Edit
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={() => setConfirmCancelOpen(true)}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" /> Cancel Event
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    type="submit"
+                    form={`event-inline-edit-form-${event.id}`}
+                    disabled={!isEditSaveArmed}
+                  >
+                    Save Changes
+                  </Button>
+                  <Button variant="outline" onClick={handleDiscard}>
+                    Discard
+                  </Button>
+                </>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -406,6 +408,7 @@ export function ManageEventDetailView({
           ) : (
             <EventDetailView
               eventId={eventId}
+              initialEvent={event}
               showInterestButton={false}
               layout="content-only"
               showVenue={false}
@@ -456,43 +459,45 @@ export function ManageEventDetailView({
         </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 p-3 backdrop-blur sm:hidden">
-        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-2">
-          {!isEditing ? (
-            <Button variant="outline" onClick={enterEditMode}>
-              <Pencil className="mr-2 h-4 w-4" /> Edit
+      {event.status !== "cancelled" && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 p-3 backdrop-blur sm:hidden">
+          <div className="mx-auto grid max-w-7xl grid-cols-1 gap-2">
+            {!isEditing ? (
+              <Button variant="outline" onClick={enterEditMode}>
+                <Pencil className="mr-2 h-4 w-4" /> Edit
+              </Button>
+            ) : (
+              <>
+                <Button
+                  type="submit"
+                  form={`event-inline-edit-form-${event.id}`}
+                  disabled={!isEditSaveArmed}
+                >
+                  Save Changes
+                </Button>
+                <Button variant="outline" onClick={handleDiscard}>
+                  Discard
+                </Button>
+              </>
+            )}
+            <Button
+              variant="outline"
+              onClick={() => setPeoplePanelOpen((value) => !value)}
+            >
+              {peoplePanelOpen ? "Hide People" : "People"}
             </Button>
-          ) : (
-            <>
-              <Button
-                type="submit"
-                form={`event-inline-edit-form-${event.id}`}
-                disabled={!isEditSaveArmed}
-              >
-                Save Changes
-              </Button>
-              <Button variant="outline" onClick={handleDiscard}>
-                Discard
-              </Button>
-            </>
-          )}
-          <Button
-            variant="outline"
-            onClick={() => setPeoplePanelOpen((value) => !value)}
-          >
-            {peoplePanelOpen ? "Hide People" : "People"}
-          </Button>
-          <Button variant="outline" onClick={() => setPanelOpen(true)}>
-            Panels
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={() => setConfirmCancelOpen(true)}
-          >
-            Cancel
-          </Button>
+            <Button variant="outline" onClick={() => setPanelOpen(true)}>
+              Panels
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => setConfirmCancelOpen(true)}
+            >
+              Cancel
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
 
       <Sheet open={panelOpen} onOpenChange={setPanelOpen}>
         <SheetContent
