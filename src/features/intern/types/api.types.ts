@@ -20,6 +20,7 @@ export interface TInternOverviewStatus {
   completed_tasks: number;
   complexity_score: number;
   score: number;
+  join_date?: string;
 }
 
 export interface TInternActivityLog {
