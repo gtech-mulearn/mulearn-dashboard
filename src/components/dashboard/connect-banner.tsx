@@ -19,11 +19,7 @@ export function ConnectAccountsBanner() {
   );
   const user = useUserInfo();
   const [isDiscordDialogOpen, setIsDiscordDialogOpen] = useState(false);
-  const ALLOWED_ROUTES = [
-    "/dashboard/profile",
-    "/dashboard/mujourney",
-    "/dashboard/courses",
-  ];
+  const ALLOWED_ROUTES = ["/dashboard/profile", "/dashboard/mujourney"];
   const isAllowedRoute = ALLOWED_ROUTES.includes(pathname);
   if (!isAllowedRoute) return null;
   if (isConnectBannerDismissed) return null;

@@ -128,13 +128,6 @@ export const NAV_ITEMS: readonly NavItem[] = [
     dynamicCheck: (roles) => !roles.some((r) => r === ROLES.COMPANY),
   },
   {
-    id: "courses",
-    title: "Courses",
-    href: "/dashboard/courses",
-    icon: GraduationCap,
-    section: "main",
-  },
-  {
     id: "search",
     title: "Search",
     href: "/dashboard/search",
