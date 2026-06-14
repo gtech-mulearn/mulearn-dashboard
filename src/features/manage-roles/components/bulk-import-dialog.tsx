@@ -110,7 +110,7 @@ export function BulkImportDialog({
                 size="sm"
                 disabled={isDownloading}
                 onClick={download}
-                className="rounded-xl"
+                aria-label="Download template"
               >
                 {isDownloading ? "Downloading…" : "Download"}
               </Button>
@@ -217,16 +217,17 @@ export function BulkImportDialog({
             type="button"
             variant="outline"
             onClick={() => handleClose(false)}
-            className="rounded-2xl border-primary text-primary hover:bg-primary/10"
+            aria-label="Cancel bulk import"
           >
             {showResults ? "Close" : "Cancel"}
           </Button>
           {!showResults && (
             <Button
               type="button"
+              variant="default"
               disabled={!selectedFile || importMutation.isPending}
               onClick={handleImport}
-              className="rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90"
+              aria-label="Import bulk roles"
             >
               {importMutation.isPending ? "Uploading…" : "Import"}
             </Button>

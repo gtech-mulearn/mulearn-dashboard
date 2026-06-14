@@ -117,6 +117,24 @@ export const routeAccessMap: Record<string, RouteConfig> = {
   "/dashboard/management/college-levels": {
     roles: [ROLES.ADMIN],
   },
+  "/dashboard/management/tasks": {
+    roles: [ROLES.ADMIN],
+  },
+  "/dashboard/management/tasks/bulk-import": {
+    roles: [ROLES.ADMIN],
+  },
+  "/dashboard/management/tasks/create": {
+    roles: [ROLES.ADMIN],
+  },
+  "/dashboard/management/tasks/edit": {
+    roles: [ROLES.ADMIN],
+  },
+  "/dashboard/management/tasks/task-type": {
+    roles: [ROLES.ADMIN],
+  },
+  "/dashboard/management/tasks/task-verification": {
+    roles: [ROLES.ADMIN],
+  },
   "/dashboard/management/manage-locations": {
     roles: [ROLES.ADMIN],
   },

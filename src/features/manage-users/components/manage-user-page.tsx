@@ -189,14 +189,16 @@ export default function ManageUsers() {
               type="button"
               variant="outline"
               onClick={() => setIsModalOpen(false)}
-              className="h-12 rounded-2xl border-primary text-2xl sm:text-base font-medium text-primary hover:bg-primary/10"
+              className="h-12 text-2xl sm:text-base font-medium"
+              aria-label="Cancel editing user"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               form="manage-users-edit-form"
-              className="h-12 rounded-2xl bg-primary text-2xl sm:text-base font-medium text-primary-foreground hover:bg-primary/90"
+              className="h-12 text-2xl sm:text-base font-medium"
+              aria-label="Save user details"
             >
               Done
             </Button>

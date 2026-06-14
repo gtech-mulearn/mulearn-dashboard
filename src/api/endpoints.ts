@@ -897,12 +897,22 @@ export const endpoints = {
       detail: (taskId: string) => `/api/v1/dashboard/task/${taskId}/`,
       /** GET - List tasks awaiting admin review */
       pending: "/api/v1/dashboard/task/pending/",
-      /** PATCH - Approve a pending task */
-      approve: (taskId: string) => `/api/v1/dashboard/task/${taskId}/approve/`,
-      /** PATCH - Reject a pending task */
-      reject: (taskId: string) => `/api/v1/dashboard/task/${taskId}/reject/`,
+      /** PATCH - Approve or reject a pending task */
+      review: (taskId: string) => `/api/v1/dashboard/task/${taskId}/review/`,
       /** GET/POST/PUT/DELETE - Task Types CRUD */
       taskTypes: "/api/v1/dashboard/task/list-task-type/",
+      taskTypeCreate: "/api/v1/dashboard/task/list-task-type/",
+      taskTypeDetail: (id: string) => `/api/v1/dashboard/task/task-type/${id}/`,
+      import: "/api/v1/dashboard/task/import/",
+      template: "/api/v1/dashboard/task/base-template/",
+      csv: "/api/v1/dashboard/task/csv/",
+      levels: "/api/v1/dashboard/task/level/",
+      igs: "/api/v1/dashboard/task/ig/",
+      organizations: "/api/v1/dashboard/task/organization/",
+      channels: "/api/v1/dashboard/task/channel/",
+      types: "/api/v1/dashboard/task/task-types/",
+      events: "/api/v1/dashboard/task/events/",
+      skills: "/api/v1/dashboard/skill/dropdown/",
     },
 
     interestGroups: {
@@ -1146,6 +1156,33 @@ export const endpoints = {
     circleHealth: "/api/v1/dashboard/campus/circle-health/",
     /** GET - Standalone recent activity feed */
     recentActivity: "/api/v1/dashboard/campus/recent-activity/",
+  },
+
+  // ============================================
+  // Organization (Institutes) Endpoints
+  // org_type is a PATH SEGMENT (e.g. /college/, /company/, /community/, /school/)
+  // matching the established pattern in search.colleges / search.schools
+  // ============================================
+  organizations: {
+    /** GET - List organizations by type (path segment: college|company|community|school) */
+    listByType: (orgType: string) =>
+      `/api/v1/dashboard/organisation/institutes/${orgType.toLowerCase()}/`,
+    /** GET - Get organization details by ID */
+    detail: (id: string) =>
+      `/api/v1/dashboard/organisation/institutes/info/${id}/`,
+    /** POST - Create new organization */
+    create: "/api/v1/dashboard/organisation/institutes/create/",
+    /** PUT - Edit organization by code */
+    edit: (code: string) =>
+      `/api/v1/dashboard/organisation/institutes/edit/${code}/`,
+    /** DELETE - Delete organization by code */
+    delete: (code: string) =>
+      `/api/v1/dashboard/organisation/institutes/delete/${code}/`,
+    /** GET - Export organizations as CSV by org_type */
+    csv: (orgType: string) =>
+      `/api/v1/dashboard/organisation/institutes/${orgType.toLowerCase()}/csv/`,
+    /** GET - List affiliations for dropdown */
+    affiliationList: "/api/v1/dashboard/organisation/affiliation/list/",
   },
   intern: {
     overviewStatus: "/api/v1/dashboard/intern/overview/status/",

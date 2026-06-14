@@ -10,6 +10,7 @@ import {
   useState,
 } from "react";
 import Loader from "@/app/loading";
+import { Button } from "@/components/ui/button";
 import Modal from "./Modal";
 
 export interface Data {
@@ -206,59 +207,69 @@ const Table: FC<TableProps> = (props) => {
                         ) : (
                           <>
                             {props.analytics && (
-                              <button
-                                type="button"
-                                className="rounded-md p-2 text-muted-foreground hover:bg-muted"
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-muted-foreground hover:bg-muted hover:text-foreground"
                                 onClick={() =>
                                   props.analytics?.(rowData[column] ?? "")
                                 }
+                                aria-label="View analytics"
                               >
                                 <TrendingUp className="size-4" />
-                              </button>
+                              </Button>
                             )}
                             {props.onCopyClick && (
-                              <button
-                                type="button"
-                                className="rounded-md p-2 text-muted-foreground hover:bg-muted"
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-muted-foreground hover:bg-muted hover:text-foreground"
                                 onClick={() =>
                                   props.onCopyClick?.(rowData[column] ?? "")
                                 }
+                                aria-label="Copy"
                               >
                                 <Copy className="size-4" />
-                              </button>
+                              </Button>
                             )}
                             {props.onEditClick && (
-                              <button
-                                type="button"
-                                className="rounded-md p-2 text-muted-foreground hover:bg-muted"
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-muted-foreground hover:bg-muted hover:text-foreground"
                                 onClick={() =>
                                   props.onEditClick?.(rowData[column] ?? "")
                                 }
+                                aria-label="Edit"
                               >
                                 <Pencil className="size-4" />
-                              </button>
+                              </Button>
                             )}
                             {props.onVerifyClick && (
-                              <button
-                                type="button"
-                                className="rounded-md px-2 py-1 text-xs font-medium text-primary hover:bg-muted"
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-8 px-2 py-1"
                                 onClick={() =>
                                   openVerify(rowData[column] ?? "", rowData)
                                 }
+                                aria-label="Verify"
                               >
                                 Verify
-                              </button>
+                              </Button>
                             )}
                             {props.onDeleteClick && (
-                              <button
-                                type="button"
-                                className="rounded-md p-2 text-muted-foreground hover:bg-muted"
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-muted-foreground hover:bg-muted hover:text-foreground"
                                 onClick={() =>
                                   setDeleteRowId(String(rowData[column] ?? ""))
                                 }
+                                aria-label="Delete"
                               >
                                 <Trash2 className="size-4" />
-                              </button>
+                              </Button>
                             )}
                           </>
                         )}
@@ -314,61 +325,71 @@ const Table: FC<TableProps> = (props) => {
                     ) : (
                       <>
                         {props.analytics && (
-                          <button
-                            type="button"
-                            className="rounded-md p-2 text-muted-foreground hover:bg-muted"
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-muted-foreground hover:bg-muted hover:text-foreground"
                             onClick={() =>
                               props.analytics?.(rowData[actionIdColumn] ?? "")
                             }
+                            aria-label="View analytics"
                           >
                             <TrendingUp className="size-4" />
-                          </button>
+                          </Button>
                         )}
                         {props.onCopyClick && (
-                          <button
-                            type="button"
-                            className="rounded-md p-2 text-muted-foreground hover:bg-muted"
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-muted-foreground hover:bg-muted hover:text-foreground"
                             onClick={() =>
                               props.onCopyClick?.(rowData[actionIdColumn] ?? "")
                             }
+                            aria-label="Copy"
                           >
                             <Copy className="size-4" />
-                          </button>
+                          </Button>
                         )}
                         {props.onEditClick && (
-                          <button
-                            type="button"
-                            className="rounded-md p-2 text-muted-foreground hover:bg-muted"
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-muted-foreground hover:bg-muted hover:text-foreground"
                             onClick={() =>
                               props.onEditClick?.(rowData[actionIdColumn] ?? "")
                             }
+                            aria-label="Edit"
                           >
                             <Pencil className="size-4" />
-                          </button>
+                          </Button>
                         )}
                         {props.onVerifyClick && (
-                          <button
-                            type="button"
-                            className="rounded-md px-2 py-1 text-xs font-medium text-primary hover:bg-muted"
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 px-2 py-1 "
                             onClick={() =>
                               openVerify(rowData[actionIdColumn] ?? "", rowData)
                             }
+                            aria-label="Verify"
                           >
                             Verify
-                          </button>
+                          </Button>
                         )}
                         {props.onDeleteClick && (
-                          <button
-                            type="button"
-                            className="rounded-md p-2 text-muted-foreground hover:bg-muted"
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className=" text-muted-foreground hover:bg-muted hover:text-foreground"
                             onClick={() =>
                               setDeleteRowId(
                                 String(rowData[actionIdColumn] ?? ""),
                               )
                             }
+                            aria-label="Delete"
                           >
                             <Trash2 className="size-4" />
-                          </button>
+                          </Button>
                         )}
                       </>
                     )}

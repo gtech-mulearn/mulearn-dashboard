@@ -1,0 +1,114 @@
+import { z } from "zod";
+
+// ─── Shared ──────────────────────────────────────────────────────────────────
+
+export const ApiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
+  z.object({
+    hasError: z.boolean(),
+    statusCode: z.number(),
+    message: z.record(z.string(), z.array(z.string())).optional(),
+    response: dataSchema,
+  });
+
+export const GenericMutationResponseSchema = ApiResponseSchema(
+  z.object({}).passthrough(),
+);
+
+export const PaginationSchema = z.object({
+  count: z.number().optional(),
+  totalPages: z.number().optional(),
+  isNext: z.boolean().optional(),
+  isPrev: z.boolean().optional(),
+});
+
+// ─── Org types ───────────────────────────────────────────────────────────────
+
+export const ORG_TYPES = ["College", "Company", "Community", "School"] as const;
+export type OrgType = (typeof ORG_TYPES)[number];
+
+// ─── Organization (OrgInfo) ──────────────────────────────────────────────────
+
+export const OrgInfoSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  code: z.string(),
+  karma: z.number().optional().nullable(),
+  org_type: z.string().optional().nullable(),
+
+  // These are the properties expected/returned by the actual endpoints
+  zone: z.string().nullable().optional(),
+  district: z.string().nullable().optional(),
+  state: z.string().nullable().optional(),
+  country: z.string().nullable().optional(),
+  affiliation: z.string().nullable().optional(),
+
+  // Old/legacy property names, kept just in case
+  zone_name: z.string().nullable().optional(),
+  zone_uuid: z.string().nullable().optional(),
+  country_name: z.string().nullable().optional(),
+  country_uuid: z.string().nullable().optional(),
+  state_name: z.string().nullable().optional(),
+  state_uuid: z.string().nullable().optional(),
+  district_name: z.string().nullable().optional(),
+  district_uuid: z.string().nullable().optional(),
+  affiliation_name: z.string().nullable().optional(),
+  affiliation_uuid: z.string().nullable().optional(),
+});
+
+export const OrgListDataSchema = z.object({
+  data: z.array(OrgInfoSchema),
+  pagination: PaginationSchema,
+});
+
+export const OrgListResponseSchema = ApiResponseSchema(OrgListDataSchema);
+
+// ─── Affiliation dropdown item ────────────────────────────────────────────────
+
+export const AffiliationItemSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+});
+
+export const AffiliationListResponseSchema = ApiResponseSchema(
+  z.array(AffiliationItemSchema),
+);
+
+// ─── Location cascading ───────────────────────────────────────────────────────
+// These are pulled from the existing location endpoints (dropdownList)
+
+export const LocationOptionSchema = z.object({
+  value: z.string(),
+  label: z.string(),
+});
+
+// ─── Form values ──────────────────────────────────────────────────────────────
+
+export const OrgFormSchema = z
+  .object({
+    title: z.string().trim().min(1, "Organization name is required"),
+    code: z.string().trim().min(1, "Organization code is required"),
+    org_type: z.enum(ORG_TYPES, { error: "Organization type is required" }),
+    // UI-only cascade fields — stripped before sending to the backend
+    country: z.string().min(1, "Country is required"),
+    state: z.string().min(1, "State is required"),
+    district: z.string().min(1, "District is required"),
+    // affiliation: required UUID for College, null for all other org types
+    affiliation: z.string().nullable().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.org_type === "College" && !data.affiliation) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Affiliation is required for colleges",
+        path: ["affiliation"],
+      });
+    }
+  });
+
+// ─── Inferred types ──────────────────────────────────────────────────────────
+
+export type OrgInfo = z.infer<typeof OrgInfoSchema>;
+export type OrgListData = z.infer<typeof OrgListDataSchema>;
+export type AffiliationItem = z.infer<typeof AffiliationItemSchema>;
+export type LocationOption = z.infer<typeof LocationOptionSchema>;
+export type OrgFormValues = z.infer<typeof OrgFormSchema>;

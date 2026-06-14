@@ -24,6 +24,7 @@ import { authStore } from "@/lib/auth";
 import type { NavItem } from "@/lib/nav-config";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/stores/ui-store";
+import { Button } from "@/components/ui/button";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -92,14 +93,14 @@ export function Sidebar() {
       {/* Mobile Top Bar */}
       <div className="lg:hidden fixed top-0 left-0 w-full h-16 bg-background border-b border-border z-40 flex items-center px-4 justify-between">
         <div className="flex items-center gap-3">
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setIsMobileOpen(true)}
-            className="p-2 -ml-2 rounded-lg hover:bg-accent hover:text-accent-foreground"
-            type="button"
             aria-label="Open navigation menu"
           >
             <Menu className="w-6 h-6 text-muted-foreground" />
-          </button>
+          </Button>
           <Link href="/dashboard">
             <Image
               src="/logo.webp"
@@ -155,12 +156,11 @@ export function Sidebar() {
           )}
           <div className="flex items-center gap-2">
             {!isCollapsed && <ThemeToggle />}
-            <button
-              onClick={toggleSidebar}
-              className={cn(
-                "p-1.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors",
-              )}
+            <Button
               type="button"
+              variant="ghost"
+              size="icon"
+              onClick={toggleSidebar}
               aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
               {isCollapsed ? (
@@ -168,7 +168,7 @@ export function Sidebar() {
               ) : (
                 <ChevronLeft className="w-4 h-4 text-muted-foreground" />
               )}
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -186,14 +186,15 @@ export function Sidebar() {
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <button
-              onClick={() => setIsMobileOpen(false)}
-              className="p-1.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors"
+            <Button
               type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsMobileOpen(false)}
               aria-label="Close navigation menu"
             >
               <X className="w-5 h-5 text-muted-foreground" />
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -240,17 +241,15 @@ export function Sidebar() {
           )}
 
           {/* Logout Button */}
-          <button
+          <Button
+            variant="destructive"
+            size="default"
             onClick={() => setIsLogoutDialogOpen(true)}
+            aria-label="Logout"
             className={cn(
-              "w-full flex items-center cursor-pointer rounded-xl text-destructive hover:bg-destructive/10 transition-all py-2.5",
-              // Base (Mobile/Expanded)
-              "justify-start gap-3 px-3",
-              // Desktop Collapsed override
-              isCollapsed && "lg:justify-center lg:px-0",
+              "w-full rounded-xl",
+              isCollapsed && "lg:justify-center",
             )}
-            type="button"
-            title={isCollapsed ? "Logout" : undefined}
           >
             <LogOut className="w-5 h-5 shrink-0" />
             <span
@@ -261,7 +260,7 @@ export function Sidebar() {
             >
               Logout
             </span>
-          </button>
+          </Button>
         </div>
       </aside>
 
