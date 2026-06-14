@@ -83,15 +83,14 @@ export default function TimesheetPage() {
   const isSubmitting = submitTimesheetMutation.isPending;
 
   // Parse the user's onboarding date (strip time so comparisons are date-only)
-  const onboardingDate =
-    overview?.join_date || profile?.joined
-      ? (() => {
-          const dateVal = overview?.join_date || profile?.joined;
-          const d = new Date(dateVal!.replace(" ", "T"));
-          d.setHours(0, 0, 0, 0);
-          return d;
-        })()
-      : null;
+  const dateVal = overview?.join_date || profile?.joined;
+  const onboardingDate = dateVal
+    ? (() => {
+        const d = new Date(dateVal.replace(" ", "T"));
+        d.setHours(0, 0, 0, 0);
+        return d;
+      })()
+    : null;
 
   // First day of the onboarding month — used to restrict calendar navigation
   const onboardingMonthStart = onboardingDate
