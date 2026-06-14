@@ -46,8 +46,12 @@ export async function fetchOrganizations(
 export async function createOrganization(
   payload: OrgFormValues,
 ): Promise<void> {
-  // country and state are UI-only cascade fields; the backend rejects them
-  const { country: _c, state: _s, ...backendPayload } = payload;
+  // Strip UI-only cascade fields; normalise affiliation to null for non-College types
+  const { country: _c, state: _s, affiliation, ...rest } = payload;
+  const backendPayload = {
+    ...rest,
+    affiliation: rest.org_type === "College" ? affiliation || null : null,
+  };
   await apiClient.post(
     endpoints.organizations.create,
     backendPayload,
@@ -61,8 +65,12 @@ export async function editOrganization(
   code: string,
   payload: OrgFormValues,
 ): Promise<void> {
-  // country and state are UI-only cascade fields; the backend rejects them
-  const { country: _c, state: _s, ...backendPayload } = payload;
+  // Strip UI-only cascade fields; normalise affiliation to null for non-College types
+  const { country: _c, state: _s, affiliation, ...rest } = payload;
+  const backendPayload = {
+    ...rest,
+    affiliation: rest.org_type === "College" ? affiliation || null : null,
+  };
   await apiClient.put(
     endpoints.organizations.edit(code),
     backendPayload,

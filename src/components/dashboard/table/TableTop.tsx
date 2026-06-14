@@ -131,7 +131,7 @@ const TableTop = ({
                 variant="outline"
                 onClick={handleClick}
                 disabled={isCsvDownloading}
-                className="h-10 rounded-xl border-border bg-background px-4 font-semibold text-foreground hover:bg-muted"
+                className="h-10 px-4"
               >
                 <Download className="mr-2 size-4" />
                 Export CSV

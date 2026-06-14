@@ -358,20 +358,21 @@ export function InterestGroupFormDialog({
               return (
                 <Fragment key={label}>
                   <div className="flex items-center gap-3">
-                    <button
+                    <Button
                       type="button"
+                      size="icon-sm"
+                      variant={isActive || isCompleted ? "default" : "outline"}
                       disabled={!isCompleted}
                       onClick={() => isCompleted && setCurrentStep(stepIndex)}
-                      className={`flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-semibold transition-colors ${
+                      aria-label={label}
+                      className={
                         isActive
-                          ? "border-primary bg-primary text-primary-foreground ring-2 ring-primary ring-offset-2"
-                          : isCompleted
-                            ? "border-primary bg-primary text-primary-foreground"
-                            : "border-border bg-background text-muted-foreground"
-                      }`}
+                          ? "ring-2 ring-brand-blue ring-offset-2"
+                          : undefined
+                      }
                     >
                       {isCompleted ? <Check className="h-4 w-4" /> : stepIndex}
-                    </button>
+                    </Button>
                     <div className="min-w-0 pt-1">
                       <p
                         className={`whitespace-nowrap text-xs leading-none ${isActive ? "font-medium text-primary" : "text-muted-foreground"}`}
@@ -570,18 +571,21 @@ export function InterestGroupFormDialog({
                       <p className="text-sm font-medium text-foreground">
                         Top Blogs
                       </p>
-                      <button
+                      <Button
                         type="button"
+                        size="sm"
+                        variant="default"
                         onClick={() =>
                           setTopBlogs((prev) => [
                             ...prev,
                             { _key: newKey(), title: "", url: "" },
                           ])
                         }
-                        className="inline-flex items-center gap-1 rounded-lg bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary hover:bg-primary/20 transition-colors"
+                        aria-label="Add top blog"
+                        className="gap-1"
                       >
-                        <Plus className="h-3 w-3" /> Add
-                      </button>
+                        <Plus className="size-3" /> Add
+                      </Button>
                     </div>
                     <div className="space-y-2">
                       {topBlogs.map((blog) => (
@@ -619,17 +623,20 @@ export function InterestGroupFormDialog({
                               className="rounded-xl border-border bg-background"
                             />
                           </div>
-                          <button
+                          <Button
                             type="button"
+                            size="icon-sm"
+                            variant="destructive"
                             onClick={() =>
                               setTopBlogs((prev) =>
                                 prev.filter((b) => b._key !== blog._key),
                               )
                             }
-                            className="mt-1 rounded-lg p-1.5 text-destructive/60 hover:bg-destructive/10 hover:text-destructive transition-colors"
+                            aria-label="Remove blog"
+                            className="mt-1"
                           >
                             <Trash2 className="h-4 w-4" />
-                          </button>
+                          </Button>
                         </div>
                       ))}
                       {topBlogs.length === 0 && (
@@ -646,8 +653,10 @@ export function InterestGroupFormDialog({
                       <p className="text-sm font-medium text-foreground">
                         People to Follow
                       </p>
-                      <button
+                      <Button
                         type="button"
+                        size="sm"
+                        variant="default"
                         onClick={() =>
                           setPeopleToFollow((prev) => [
                             ...prev,
@@ -659,10 +668,11 @@ export function InterestGroupFormDialog({
                             },
                           ])
                         }
-                        className="inline-flex items-center gap-1 rounded-lg bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary hover:bg-primary/20 transition-colors"
+                        aria-label="Add person to follow"
+                        className="gap-1"
                       >
-                        <Plus className="h-3 w-3" /> Add
-                      </button>
+                        <Plus className="size-3" /> Add
+                      </Button>
                     </div>
                     <div className="space-y-2">
                       {peopleToFollow.map((person) => (
@@ -716,17 +726,20 @@ export function InterestGroupFormDialog({
                               />
                             </div>
                           </div>
-                          <button
+                          <Button
                             type="button"
+                            size="icon-sm"
+                            variant="destructive"
                             onClick={() =>
                               setPeopleToFollow((prev) =>
                                 prev.filter((p) => p._key !== person._key),
                               )
                             }
-                            className="mt-1 rounded-lg p-1.5 text-destructive/60 hover:bg-destructive/10 hover:text-destructive transition-colors"
+                            aria-label="Remove person"
+                            className="mt-1"
                           >
                             <Trash2 className="h-4 w-4" />
-                          </button>
+                          </Button>
                         </div>
                       ))}
                       {peopleToFollow.length === 0 && (
@@ -902,8 +915,8 @@ export function InterestGroupFormDialog({
             <Button
               type="button"
               variant="ghost"
-              className="text-muted-foreground hover:text-foreground"
               onClick={requestClose}
+              aria-label="Cancel"
             >
               Cancel
             </Button>
@@ -913,8 +926,8 @@ export function InterestGroupFormDialog({
                 <Button
                   type="button"
                   variant="outline"
-                  className="border-border"
                   onClick={() => setCurrentStep((s) => Math.max(1, s - 1))}
+                  aria-label="Back"
                 >
                   Back
                 </Button>
@@ -923,17 +936,21 @@ export function InterestGroupFormDialog({
               {currentStep < TOTAL ? (
                 <Button
                   type="button"
-                  className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+                  variant="default"
                   onClick={handleNext}
+                  aria-label="Next"
                 >
                   Next
                 </Button>
               ) : (
                 <Button
                   type="button"
-                  className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+                  variant="default"
                   disabled={isSubmitting}
                   onClick={handleSubmit}
+                  aria-label={
+                    initialData ? "Save changes" : "Create interest group"
+                  }
                 >
                   {isSubmitting ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

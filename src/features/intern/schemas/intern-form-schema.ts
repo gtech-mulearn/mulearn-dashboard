@@ -27,6 +27,11 @@ const baseWeeklyReviewSchema = z.object({
   hoursCommitted: z.string().optional(),
   blockers: z.string().optional(),
   leaveDays: z.string().optional(),
+  rating: z.string().optional(),
+  learnings: z.string().optional(),
+  challengesFaced: z.string().optional(),
+  nextWeekPlan: z.string().optional(),
+  suggestions: z.string().optional(),
 });
 
 export const weeklyReviewSchema = baseWeeklyReviewSchema.superRefine(
@@ -54,22 +59,24 @@ export const weeklyReviewSchema = baseWeeklyReviewSchema.superRefine(
         });
       }
       if (
-        !data.hoursCommitted ||
-        Number.isNaN(Number(data.hoursCommitted)) ||
-        Number(data.hoursCommitted) < 0
+        data.hoursCommitted === undefined ||
+        data.hoursCommitted === null ||
+        data.hoursCommitted.trim() === ""
       ) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "Hours must be a positive number",
+          message: "Hours committed is required",
           path: ["hoursCommitted"],
         });
-      }
-      if (!data.blockers) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Blockers are required",
-          path: ["blockers"],
-        });
+      } else {
+        const num = Number(data.hoursCommitted);
+        if (Number.isNaN(num) || num < 0) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Hours must be a positive number",
+            path: ["hoursCommitted"],
+          });
+        }
       }
     }
   },

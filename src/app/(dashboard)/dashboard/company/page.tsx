@@ -1,6 +1,6 @@
+import { BarChart2, Briefcase, ClipboardList } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Briefcase, ClipboardList, BarChart2 } from "lucide-react";
 import {
   Card,
   CardContent,

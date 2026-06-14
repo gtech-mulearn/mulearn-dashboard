@@ -345,6 +345,7 @@ function LocationContent() {
               setEditingItem(null);
               setOpen(true);
             }}
+            aria-label={`Add ${SINGULAR[activeTab]}`}
           >
             Add {SINGULAR[activeTab]}
           </Button>
@@ -353,21 +354,18 @@ function LocationContent() {
 
       <CardContent className="mt-6 p-0 space-y-6">
         {/* Tabs */}
-        <div className="flex overflow-x-auto gap-1 border-b pb-0 no-scrollbar">
+        <div className="flex overflow-x-auto gap-1 pb-0 no-scrollbar">
           {TABS.map((tab) => (
             <Button
               key={tab}
-              variant="ghost"
+              variant={activeTab === tab ? "default" : "outline"}
               onClick={() => {
                 setActiveTab(tab);
                 setPage(1);
                 setSearch("");
               }}
-              className={`capitalize shrink-0 rounded-none border-b-2 transition-colors ${
-                activeTab === tab
-                  ? "border-primary text-primary"
-                  : "border-transparent text-muted-foreground"
-              }`}
+              className="capitalize shrink-0"
+              aria-label={`${tab} tab`}
             >
               {tab}
             </Button>
@@ -464,6 +462,7 @@ function LocationContent() {
                               setEditingItem(row);
                               setOpen(true);
                             }}
+                            aria-label={`Edit ${r.label}`}
                           >
                             Edit
                           </Button>
@@ -471,6 +470,7 @@ function LocationContent() {
                             variant="destructive"
                             size="sm"
                             onClick={() => handleDeleteClick(r.value)}
+                            aria-label={`Delete ${r.label}`}
                           >
                             Delete
                           </Button>
@@ -549,6 +549,7 @@ function LocationContent() {
                           setEditingItem(row);
                           setOpen(true);
                         }}
+                        aria-label={`Edit ${r.label}`}
                       >
                         Edit
                       </Button>
@@ -556,6 +557,7 @@ function LocationContent() {
                         variant="destructive"
                         size="sm"
                         onClick={() => handleDeleteClick(r.value)}
+                        aria-label={`Delete ${r.label}`}
                       >
                         Delete
                       </Button>
@@ -580,6 +582,7 @@ function LocationContent() {
                 className="flex-1 sm:flex-none"
                 disabled={page === 1}
                 onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                aria-label="Previous page"
               >
                 Previous
               </Button>
@@ -589,6 +592,7 @@ function LocationContent() {
                 className="flex-1 sm:flex-none"
                 disabled={page >= totalPages}
                 onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+                aria-label="Next page"
               >
                 Next
               </Button>
@@ -781,11 +785,16 @@ function LocationContent() {
                   setOpen(false);
                   setEditingItem(null);
                 }}
+                aria-label="Cancel"
               >
                 Cancel
               </Button>
               {/* Fix 1: disable submit while dropdowns are still loading */}
-              <Button type="submit" disabled={isDropdownLoading}>
+              <Button
+                type="submit"
+                disabled={isDropdownLoading}
+                aria-label={editingItem ? "Update location" : "Save location"}
+              >
                 {isDropdownLoading
                   ? "Loading..."
                   : editingItem
@@ -823,6 +832,7 @@ function LocationContent() {
                 setOpenDelete(false);
                 setDeleteTarget(null);
               }}
+              aria-label="Cancel delete"
             >
               Cancel
             </Button>
@@ -830,6 +840,7 @@ function LocationContent() {
               variant="destructive"
               disabled={currentDelete.isPending}
               onClick={handleConfirmDelete}
+              aria-label="Confirm delete"
             >
               {currentDelete.isPending ? "Deleting..." : "Delete"}
             </Button>

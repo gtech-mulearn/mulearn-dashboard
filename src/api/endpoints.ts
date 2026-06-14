@@ -897,12 +897,22 @@ export const endpoints = {
       detail: (taskId: string) => `/api/v1/dashboard/task/${taskId}/`,
       /** GET - List tasks awaiting admin review */
       pending: "/api/v1/dashboard/task/pending/",
-      /** PATCH - Approve a pending task */
-      approve: (taskId: string) => `/api/v1/dashboard/task/${taskId}/approve/`,
-      /** PATCH - Reject a pending task */
-      reject: (taskId: string) => `/api/v1/dashboard/task/${taskId}/reject/`,
+      /** PATCH - Approve or reject a pending task */
+      review: (taskId: string) => `/api/v1/dashboard/task/${taskId}/review/`,
       /** GET/POST/PUT/DELETE - Task Types CRUD */
       taskTypes: "/api/v1/dashboard/task/list-task-type/",
+      taskTypeCreate: "/api/v1/dashboard/task/list-task-type/",
+      taskTypeDetail: (id: string) => `/api/v1/dashboard/task/task-type/${id}/`,
+      import: "/api/v1/dashboard/task/import/",
+      template: "/api/v1/dashboard/task/base-template/",
+      csv: "/api/v1/dashboard/task/csv/",
+      levels: "/api/v1/dashboard/task/level/",
+      igs: "/api/v1/dashboard/task/ig/",
+      organizations: "/api/v1/dashboard/task/organization/",
+      channels: "/api/v1/dashboard/task/channel/",
+      types: "/api/v1/dashboard/task/task-types/",
+      events: "/api/v1/dashboard/task/events/",
+      skills: "/api/v1/dashboard/skill/dropdown/",
     },
 
     interestGroups: {
@@ -1173,6 +1183,48 @@ export const endpoints = {
       `/api/v1/dashboard/organisation/institutes/${orgType.toLowerCase()}/csv/`,
     /** GET - List affiliations for dropdown */
     affiliationList: "/api/v1/dashboard/organisation/affiliation/list/",
+  },
+  intern: {
+    overviewStatus: "/api/v1/dashboard/intern/overview/status/",
+    overviewActivity: "/api/v1/dashboard/intern/overview/activity/",
+    topLeaderboard: "/api/v1/dashboard/intern/overview/leaderboard/top/",
+    timesheets: "/api/v1/dashboard/intern/timesheets/",
+    timesheetDetail: (id: string) =>
+      `/api/v1/dashboard/intern/timesheets/${id}/`,
+    timesheetToday: "/api/v1/dashboard/intern/timesheets/today/",
+    timesheetHistory: "/api/v1/dashboard/intern/timesheets/history/",
+    timesheetSummary: "/api/v1/dashboard/intern/timesheets/summary/",
+    reviews: "/api/v1/dashboard/intern/reviews/",
+    reviewDetail: (id: string) => `/api/v1/dashboard/intern/reviews/${id}/`,
+    reviewCurrent: "/api/v1/dashboard/intern/reviews/current/",
+    reviewHistory: "/api/v1/dashboard/intern/reviews/history/",
+    tasksMine: "/api/v1/dashboard/intern/tasks/mine/",
+    taskDetail: (id: string) => `/api/v1/dashboard/intern/tasks/${id}/`,
+    leave: "/api/v1/dashboard/intern/leave/",
+    leaveDetail: (id: string) => `/api/v1/dashboard/intern/leave/${id}/`,
+    leaveHistory: "/api/v1/dashboard/intern/leave/history/",
+    leaveBalance: "/api/v1/dashboard/intern/leave/balance/",
+    leaderboard: "/api/v1/dashboard/intern/leaderboard/",
+    leaderboardMe: "/api/v1/dashboard/intern/leaderboard/me/",
+    guilds: "/api/v1/dashboard/intern/guilds/",
+  },
+  manageInterns: {
+    interns: "/api/v1/dashboard/manage-interns/interns/",
+    internDetail: (id: string) =>
+      `/api/v1/dashboard/manage-interns/interns/${id}/`,
+    status: "/api/v1/dashboard/manage-interns/status/",
+    export: "/api/v1/dashboard/manage-interns/interns/export/",
+    tasks: "/api/v1/dashboard/manage-interns/tasks/",
+    taskDetail: (id: string) => `/api/v1/dashboard/manage-interns/tasks/${id}/`,
+    leave: "/api/v1/dashboard/manage-interns/leave/",
+    leaveReview: (id: string) =>
+      `/api/v1/dashboard/manage-interns/leave/${id}/review/`,
+    timesheetsReview: "/api/v1/dashboard/manage-interns/reviews/timesheets/",
+    timesheetReviewDetail: (id: string) =>
+      `/api/v1/dashboard/manage-interns/reviews/timesheets/${id}/review/`,
+    reviews: "/api/v1/dashboard/manage-interns/reviews/",
+    weeklyReviewDetail: (id: string) =>
+      `/api/v1/dashboard/manage-interns/reviews/reviews/${id}/review/`,
   },
 } as const;
 

@@ -203,30 +203,33 @@ export function ManageIGTable() {
             const ig = row as unknown as InterestGroup;
             return (
               <div className="flex items-center justify-end gap-0.5">
-                <button
-                  type="button"
-                  className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
                   onClick={() => handleView(ig)}
-                  title="View Details"
+                  aria-label={`View details for ${ig.name}`}
                 >
                   <Eye className="size-4" />
-                </button>
-                <button
-                  type="button"
-                  className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
                   onClick={() => handleEdit(ig)}
-                  title="Edit"
+                  aria-label={`Edit ${ig.name}`}
                 >
                   <Pencil className="size-4" />
-                </button>
-                <button
-                  type="button"
-                  className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
                   onClick={() => handleDeleteRequest(ig)}
-                  title="Delete"
+                  aria-label={`Delete ${ig.name}`}
                 >
                   <Trash2 className="size-4" />
-                </button>
+                </Button>
               </div>
             );
           }}

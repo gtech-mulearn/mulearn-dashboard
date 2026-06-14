@@ -10,16 +10,25 @@ export interface UserResult {
   profile_pic?: string | null;
 }
 
-export function useSearch(excludedMuids: string[] = []) {
+const EMPTY_EXCLUDED: string[] = [];
+
+export function useSearch(excludedMuids: string[] = EMPTY_EXCLUDED) {
   const [query, setQuery] = React.useState("");
   const [results, setResults] = React.useState<UserResult[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
   const debouncedQuery = useDebounce(query, 300);
 
+  // Serialize and stabilize excludedMuids to prevent reference changes from triggering useEffect
+  const serializedExcluded = excludedMuids.join(",");
+  // biome-ignore lint/correctness/useExhaustiveDependencies: serializedExcluded is the actual value dependency for stable array recreation
+  const stableExcluded = React.useMemo(() => {
+    return [...excludedMuids];
+  }, [serializedExcluded]);
+
   React.useEffect(() => {
     if (!debouncedQuery.trim()) {
-      setResults([]);
-      setIsLoading(false);
+      setResults((prev) => (prev.length === 0 ? prev : []));
+      setIsLoading((prev) => (prev ? false : prev));
       return;
     }
 
@@ -38,11 +47,13 @@ export function useSearch(excludedMuids: string[] = []) {
       .then((response) => {
         if (!cancelled) {
           const users = response.data ?? [];
-          setResults(users.filter((u) => !excludedMuids.includes(u.muid)));
+          setResults(users.filter((u) => !stableExcluded.includes(u.muid)));
         }
       })
       .catch(() => {
-        if (!cancelled) setResults([]);
+        if (!cancelled) {
+          setResults((prev) => (prev.length === 0 ? prev : []));
+        }
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false);
@@ -51,16 +62,18 @@ export function useSearch(excludedMuids: string[] = []) {
     return () => {
       cancelled = true;
     };
-  }, [debouncedQuery, excludedMuids]);
+  }, [debouncedQuery, stableExcluded]);
 
   const handleSearch = React.useCallback((val: string) => {
     setQuery(val);
-    if (!val.trim()) setResults([]);
+    if (!val.trim()) {
+      setResults((prev) => (prev.length === 0 ? prev : []));
+    }
   }, []);
 
   const clearResults = React.useCallback(() => {
     setQuery("");
-    setResults([]);
+    setResults((prev) => (prev.length === 0 ? prev : []));
   }, []);
 
   return { query, results, isLoading, handleSearch, clearResults };

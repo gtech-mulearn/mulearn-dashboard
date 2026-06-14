@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { DataTableErrorBoundary } from "@/components/dashboard/DataTableErrorBoundary";
 import Pagination from "@/components/dashboard/table/pagination";
@@ -409,6 +410,7 @@ function OrgFormDialog({
     setValue,
     formState: { errors, isSubmitting },
   } = useForm<OrgFormValues>({
+    resolver: zodResolver(OrgFormSchema),
     defaultValues: {
       title: org?.title ?? "",
       code: org?.code ?? "",
@@ -416,7 +418,7 @@ function OrgFormDialog({
       country: org?.country_uuid ?? "",
       state: org?.state_uuid ?? "",
       district: org?.district_uuid ?? "",
-      affiliation: org?.affiliation_uuid ?? "",
+      affiliation: org?.affiliation_uuid ?? null,
     },
   });
 
@@ -435,7 +437,7 @@ function OrgFormDialog({
         country: org?.country_uuid ?? "",
         state: org?.state_uuid ?? "",
         district: org?.district_uuid ?? "",
-        affiliation: org?.affiliation_uuid ?? "",
+        affiliation: org?.affiliation_uuid ?? null,
       });
     }
     onOpenChange(val);
@@ -507,10 +509,6 @@ function OrgFormDialog({
               id="org-code"
               placeholder="e.g. MUCET"
               {...register("code")}
-              readOnly={isEditing}
-              className={
-                isEditing ? "bg-muted cursor-not-allowed opacity-60" : ""
-              }
             />
             {errors.code && (
               <p className="text-xs text-destructive">{errors.code.message}</p>
@@ -524,11 +522,7 @@ function OrgFormDialog({
               name="org_type"
               control={control}
               render={({ field }) => (
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value}
-                  disabled={isEditing}
-                >
+                <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger id="org-type">
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>

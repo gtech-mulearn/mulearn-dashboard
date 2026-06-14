@@ -83,15 +83,27 @@ export const LocationOptionSchema = z.object({
 
 // ─── Form values ──────────────────────────────────────────────────────────────
 
-export const OrgFormSchema = z.object({
-  title: z.string().trim().min(1, "Organization name is required"),
-  code: z.string().trim().min(1, "Organization code is required"),
-  org_type: z.enum(ORG_TYPES, { error: "Organization type is required" }),
-  country: z.string().min(1, "Country is required"),
-  state: z.string().min(1, "State is required"),
-  district: z.string().min(1, "District is required"),
-  affiliation: z.string().optional(),
-});
+export const OrgFormSchema = z
+  .object({
+    title: z.string().trim().min(1, "Organization name is required"),
+    code: z.string().trim().min(1, "Organization code is required"),
+    org_type: z.enum(ORG_TYPES, { error: "Organization type is required" }),
+    // UI-only cascade fields — stripped before sending to the backend
+    country: z.string().min(1, "Country is required"),
+    state: z.string().min(1, "State is required"),
+    district: z.string().min(1, "District is required"),
+    // affiliation: required UUID for College, null for all other org types
+    affiliation: z.string().nullable().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.org_type === "College" && !data.affiliation) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Affiliation is required for colleges",
+        path: ["affiliation"],
+      });
+    }
+  });
 
 // ─── Inferred types ──────────────────────────────────────────────────────────
 

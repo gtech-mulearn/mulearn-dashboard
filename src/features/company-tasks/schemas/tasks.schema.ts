@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 const DjangoResponse = <T extends z.ZodTypeAny>(dataSchema: T) =>
   z.object({
     hasError: z.boolean().optional(),
