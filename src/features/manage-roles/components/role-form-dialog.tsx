@@ -123,15 +123,16 @@ export function RoleFormDialog({
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="rounded-2xl border-primary text-primary hover:bg-primary/10"
+            aria-label="Cancel"
           >
             Cancel
           </Button>
           <Button
             type="submit"
+            variant="default"
             form="role-form"
             disabled={isPending}
-            className="rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90"
+            aria-label={isEdit ? "Update role" : "Create role"}
           >
             {isPending ? "Saving…" : isEdit ? "Update" : "Create"}
           </Button>

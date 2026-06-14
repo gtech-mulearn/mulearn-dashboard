@@ -12,7 +12,6 @@
 import { Layers, Plus, UserCircle } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import type { DynamicTypeTab } from "../types";
 import { DynamicRoleTable } from "./dynamic-role-table";
 import { DynamicTypeFormDialog } from "./dynamic-type-form-dialog";
@@ -52,6 +51,7 @@ export function DynamicTypePage() {
           id="dynamic-type-create-btn"
           onClick={() => setCreateOpen(true)}
           className="shrink-0"
+          aria-label="Create new mapping"
         >
           <Plus className="mr-2 h-4 w-4" />
           Create Mapping
@@ -62,24 +62,19 @@ export function DynamicTypePage() {
       <div className="border-b">
         <nav className="-mb-px flex gap-1" aria-label="Dynamic type tabs">
           {TABS.map((tab) => (
-            <button
+            <Button
               key={tab.id}
               id={`dynamic-type-tab-${tab.id}`}
-              type="button"
+              variant={activeTab === tab.id ? "default" : "outline"}
               onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                "flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors",
-                "border-b-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                activeTab === tab.id
-                  ? "border-primary text-primary"
-                  : "border-transparent text-muted-foreground hover:border-muted-foreground/40 hover:text-foreground",
-              )}
+              className="flex items-center gap-2"
+              aria-label={tab.label}
               aria-selected={activeTab === tab.id}
               role="tab"
             >
               {tab.icon}
               {tab.label}
-            </button>
+            </Button>
           ))}
         </nav>
       </div>
