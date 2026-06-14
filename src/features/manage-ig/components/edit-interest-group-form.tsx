@@ -3,6 +3,7 @@
 import { Plus, Trash2, XCircle } from "lucide-react";
 import { useCallback, useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MuidSearchInput } from "@/components/ui/muid-search-input";
@@ -217,12 +218,14 @@ export function EditInterestGroupForm({
             </SheetDescription>
           </div>
           <SheetClose asChild>
-            <button
+            <Button
               type="button"
-              className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              variant="ghost"
+              size="icon"
+              aria-label="Close form"
             >
               <XCircle className="h-4 w-4" />
-            </button>
+            </Button>
           </SheetClose>
         </div>
       </SheetHeader>
@@ -355,13 +358,15 @@ export function EditInterestGroupForm({
             <legend className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
               Top Blogs
             </legend>
-            <button
+            <Button
               type="button"
               onClick={addBlog}
-              className="inline-flex items-center gap-1 rounded-lg bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary hover:bg-primary/20 transition-colors"
+              aria-label="Add blog"
+              variant="secondary"
+              size="sm"
             >
               <Plus className="h-3 w-3" /> Add
-            </button>
+            </Button>
           </div>
           {topBlogs.map((blog, i) => (
             <div
@@ -380,13 +385,15 @@ export function EditInterestGroupForm({
                   placeholder="https://..."
                 />
               </div>
-              <button
+              <Button
                 type="button"
                 onClick={() => removeBlog(i)}
-                className="mt-1 rounded-lg p-1.5 text-destructive/60 hover:bg-destructive/10 hover:text-destructive transition-colors"
+                aria-label="Remove blog"
+                variant="destructive"
+                size="icon"
               >
                 <Trash2 className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
           ))}
         </fieldset>
@@ -397,13 +404,15 @@ export function EditInterestGroupForm({
             <legend className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
               People to Follow
             </legend>
-            <button
+            <Button
               type="button"
               onClick={addPerson}
-              className="inline-flex items-center gap-1 rounded-lg bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary hover:bg-primary/20 transition-colors"
+              aria-label="Add person"
+              variant="secondary"
+              size="sm"
             >
               <Plus className="h-3 w-3" /> Add
-            </button>
+            </Button>
           </div>
           {peopleToFollow.map((person, i) => (
             <div
@@ -429,13 +438,15 @@ export function EditInterestGroupForm({
                   placeholder="@twitter_handle"
                 />
               </div>
-              <button
+              <Button
                 type="button"
                 onClick={() => removePerson(i)}
-                className="mt-1 rounded-lg p-1.5 text-destructive/60 hover:bg-destructive/10 hover:text-destructive transition-colors"
+                aria-label="Remove person"
+                variant="destructive"
+                size="icon"
               >
                 <Trash2 className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
           ))}
         </fieldset>
@@ -466,20 +477,17 @@ export function EditInterestGroupForm({
 
       <SheetFooter className="border-t border-border/50 pt-4">
         <SheetClose asChild>
-          <button
-            type="button"
-            className="rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-muted-foreground hover:bg-muted transition-colors"
-          >
+          <Button type="button" variant="outline" aria-label="Cancel">
             Cancel
-          </button>
+          </Button>
         </SheetClose>
-        <button
+        <Button
           type="submit"
           disabled={isPending}
-          className="rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
+          aria-label={isPending ? "Saving changes" : "Save changes"}
         >
           {isPending ? "Saving…" : "Save Changes"}
-        </button>
+        </Button>
       </SheetFooter>
     </form>
   );

@@ -35,7 +35,7 @@ const Pagination = ({
               variant="outline"
               onClick={handlePreviousClick}
               disabled={currentPage <= 1}
-              className="h-10 shrink-0 whitespace-nowrap rounded-xl border-primary/30 px-4 text-sm font-semibold text-primary transition-all hover:bg-primary/10 disabled:border-border"
+              aria-label="Go to previous page"
             >
               Previous
             </Button>
@@ -48,7 +48,7 @@ const Pagination = ({
               variant="default"
               onClick={handleNextClick}
               disabled={currentPage >= totalPages}
-              className="h-10 shrink-0 whitespace-nowrap rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-md shadow-primary/25 transition-all hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:shadow-none"
+              aria-label="Go to next page"
             >
               Next
             </Button>

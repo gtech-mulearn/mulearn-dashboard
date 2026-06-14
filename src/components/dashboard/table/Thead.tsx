@@ -1,4 +1,5 @@
 import { ArrowUpDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 type Column = {
   column: string;
@@ -40,13 +41,14 @@ const THead = ({
             <div className="flex items-center gap-2">
               <span>{column.Label}</span>
               {column.isSortable && (
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
                   onClick={() => onIconClick(column.column)}
                   className="text-muted-foreground hover:text-foreground"
                 >
                   <ArrowUpDown className="size-3" />
-                </button>
+                </Button>
               )}
             </div>
           </th>

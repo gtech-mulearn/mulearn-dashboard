@@ -84,13 +84,14 @@ export const SearchBar = ({
           )}
         />
         {search && (
-          <button
+          <Button
             type="button"
+            variant="ghost"
             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
             onClick={clearInput}
           >
             <X className="size-4" />
-          </button>
+          </Button>
         )}
       </div>
       {showButton && (

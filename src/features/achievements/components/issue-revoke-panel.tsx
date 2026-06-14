@@ -136,11 +136,12 @@ export function IssueRevokePanel() {
             disabled={!canSubmit || isIssuePending || isRevokePending}
             className="flex-1"
             data-testid="issue-btn"
+            aria-label="Issue achievement"
           >
             {isIssuePending ? "Issuing..." : "Issue"}
           </Button>
           <Button
-            variant="outline"
+            variant="destructive"
             onClick={() => {
               if (showRevokeReason) {
                 handleRevoke();
@@ -149,8 +150,9 @@ export function IssueRevokePanel() {
               }
             }}
             disabled={!canSubmit || isRevokePending || isIssuePending}
-            className="flex-1 text-destructive border-destructive/40 hover:bg-destructive/5 hover:text-destructive"
+            className="flex-1"
             data-testid="revoke-btn"
+            aria-label="Revoke achievement"
           >
             {isRevokePending
               ? "Revoking..."
@@ -169,6 +171,7 @@ export function IssueRevokePanel() {
               setShowRevokeReason(false);
               setRevokeReason("");
             }}
+            aria-label="Cancel revoke"
           >
             Cancel revoke
           </Button>
