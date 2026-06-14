@@ -56,7 +56,6 @@ export const SearchBar = ({
 
   const clearInput = () => {
     setSearch("");
-    prevSearchRef.current = "";
     if (onClear) onClear();
     else onSearch("");
   };
