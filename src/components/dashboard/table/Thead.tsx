@@ -54,16 +54,12 @@ const THead = ({
           </th>
         ))}
         {verify && (
-          <th
-            className={`border-b border-border px-3.5 py-3 text-center text-sm font-bold tracking-wider ${thClassName}`}
-          >
+          <th className="border-b border-border px-3.5 py-3 text-left text-sm font-bold tracking-wider">
             Verify
           </th>
         )}
         {action && (
-          <th
-            className={`border-b border-border px-3.5 py-3 text-center text-sm font-bold tracking-wider w-32 ${thClassName}`}
-          >
+          <th className="border-b border-border px-3.5 py-3 text-left text-sm font-bold tracking-wider w-32">
             Action
           </th>
         )}

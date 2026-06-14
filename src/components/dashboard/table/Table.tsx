@@ -44,7 +44,6 @@ type TableProps = {
   customCellRender?: (column: string, row: Data) => ReactElement | null;
   slNoCellClassName?: string;
   customActionRender?: (row: Data) => ReactElement | null;
-  useRowRankAsSerialNo?: boolean;
 };
 
 function convertToTableData(dateString: unknown): string {
@@ -145,9 +144,9 @@ const Table: FC<TableProps> = (props) => {
       <div
         ref={tableContainerRef}
         onScroll={updateScrollIndicator}
-        className="w-full overflow-x-auto rounded-xl border border-border bg-card"
+        className="hidden overflow-x-auto overflow-y-hidden rounded-xl border border-border bg-card md:block"
       >
-        <table className="w-full border-collapse table-fixed min-w-[900px]">
+        <table className="w-full border-collapse table-fixed">
           {props.children?.[0]}
           {props.isloading ? (
             <tbody>
@@ -170,10 +169,7 @@ const Table: FC<TableProps> = (props) => {
                   <td
                     className={`border-b border-border px-3.5 py-3 w-16 ${props.slNoCellClassName ?? ""}`}
                   >
-                    {props.useRowRankAsSerialNo &&
-                    typeof rowData.rank === "number"
-                      ? rowData.rank
-                      : startIndex + index + 1}
+                    {startIndex + index + 1}
                   </td>
                   {props.columnOrder.map((column) => (
                     <td
@@ -201,7 +197,7 @@ const Table: FC<TableProps> = (props) => {
                       className="border-b border-border px-3.5 py-3 w-32"
                       key={column}
                     >
-                      <div className="flex items-center justify-center gap-1">
+                      <div className="flex items-center justify-end gap-1">
                         {props.customActionRender ? (
                           props.customActionRender(rowData)
                         ) : (
@@ -283,7 +279,7 @@ const Table: FC<TableProps> = (props) => {
         </table>
       </div>
       {hasOverflow && (
-        <div className="mt-3 block">
+        <div className="mt-3 hidden md:block">
           <div className="relative h-2 rounded-full bg-border">
             <div
               className="absolute top-0 h-2 rounded-full bg-muted-foreground/40"
@@ -297,7 +293,7 @@ const Table: FC<TableProps> = (props) => {
       )}
 
       {!props.isloading && hasData && (
-        <div className="space-y-3 hidden">
+        <div className="space-y-3 md:hidden">
           {props.rows.map((rowData, index) => (
             <div
               key={`${rowData.id ?? index}`}
@@ -306,16 +302,10 @@ const Table: FC<TableProps> = (props) => {
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div>
                   <p className="text-sm text-muted-foreground">
-                    #
-                    {props.useRowRankAsSerialNo &&
-                    typeof rowData.rank === "number"
-                      ? rowData.rank
-                      : startIndex + index + 1}
+                    #{startIndex + index + 1}
                   </p>
                   <p className="text-base font-semibold text-foreground">
-                    {convertToTableData(
-                      rowData.full_name ?? rowData.name ?? rowData.title,
-                    )}
+                    {convertToTableData(rowData.full_name)}
                   </p>
                 </div>
                 {actionIdColumn && (
