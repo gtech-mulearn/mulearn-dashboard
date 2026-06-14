@@ -128,9 +128,9 @@ export function ErrorLogPage() {
                 size="sm"
                 disabled={isDownloading}
                 onClick={() => downloadLog(type)}
-                className="h-8 gap-1.5 rounded-xl px-3 text-xs transition-transform duration-150 hover:scale-105 active:scale-95"
+                aria-label={`Download ${label} log`}
               >
-                <Download className="h-3.5 w-3.5text-primary-foreground" />
+                <Download />
                 Download
               </Button>
               {/* Clear button */}
@@ -140,9 +140,9 @@ export function ErrorLogPage() {
                 size="sm"
                 disabled={isClearing}
                 onClick={() => clearLog(type)}
-                className="h-8 gap-1.5 rounded-xl px-3 text-xstext-primary-foreground transition-transform duration-150 hover:scale-105 active:scale-95"
+                aria-label={`Clear ${label} log`}
               >
-                <Trash2 className="h-3.5 w-3.5text-primary-foreground" />
+                <Trash2 />
                 Clear {label}
               </Button>
             </div>

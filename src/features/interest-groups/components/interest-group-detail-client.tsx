@@ -23,6 +23,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
+import { Button } from "@/components/ui/button";
 import { useUserInfo } from "@/features/auth";
 import { useInterestGroupDetail } from "@/features/interest-groups";
 import { InterestGroupFormDialog } from "@/features/manage-ig";
@@ -66,14 +67,16 @@ export function InterestGroupDetailClient() {
       error.status >= 500;
     return (
       <div className="mx-auto max-w-4xl space-y-6 px-4 py-8">
-        <button
-          type="button"
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={() => router.back()}
-          className="flex items-center gap-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
+          className="gap-2"
+          aria-label="Go back"
         >
           <ArrowLeft className="h-4 w-4" />
           Back
-        </button>
+        </Button>
         <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-8 text-center">
           <h3 className="text-lg font-semibold text-destructive">
             {isServerError ? "Server Error" : "Interest Group Not Found"}
@@ -104,14 +107,16 @@ export function InterestGroupDetailClient() {
   return (
     <div className="w-full  mx-auto space-y-8 px-5 py-8 sm:px-6 md:px-8">
       {/* Back */}
-      <button
-        type="button"
+      <Button
+        variant="ghost"
+        size="sm"
         onClick={() => router.back()}
-        className="group flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        className="group gap-2"
+        aria-label="Back to Interest Groups"
       >
         <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
         Back to Interest Groups
-      </button>
+      </Button>
 
       {/* ── Hero ── */}
       <div className="relative overflow-hidden rounded-[2rem] bg-linear-to-br from-primary/90 via-primary to-primary/80 p-6 sm:p-8 md:p-12 text-primary-foreground shadow-xl shadow-primary/10">
@@ -119,14 +124,16 @@ export function InterestGroupDetailClient() {
         <div className="absolute -left-20 -bottom-20 h-64 w-64 sm:h-80 sm:w-80 md:h-96 md:w-96 rounded-full bg-foreground/10 blur-3xl" />
 
         {isIGLead && (
-          <button
-            type="button"
+          <Button
+            variant="outline"
+            size="sm"
+            className="absolute right-4 top-4 z-20 backdrop-blur-md"
             onClick={() => setEditOpen(true)}
-            className="absolute right-4 top-4 z-20 flex items-center gap-1.5 rounded-xl bg-card/20 px-3 py-1.5 text-xs font-semibold text-primary-foreground backdrop-blur-md border border-card/20 transition-all hover:bg-card/30 hover:scale-105 active:scale-95"
+            aria-label="Edit interest group"
           >
             <Pencil className="h-3 w-3" />
             Edit
-          </button>
+          </Button>
         )}
 
         <div className="relative z-10 flex flex-col gap-6 md:gap-8 lg:flex-row lg:items-start lg:justify-between">

@@ -132,10 +132,16 @@ export function AchievementCard({
               <Button
                 size="sm"
                 onClick={handleButtonClick}
+                aria-label={
+                  is_issued
+                    ? "View verifiable credential"
+                    : "Issue verifiable credential"
+                }
+                variant={is_issued ? "default" : "default"}
                 className={
                   is_issued
-                    ? "bg-success hover:bg-success/90"
-                    : "bg-primary hover:bg-primary/90"
+                    ? "bg-success hover:bg-success/90 border-bg-success "
+                    : ""
                 }
               >
                 {is_issued ? "View VC" : "Issue VC"}
@@ -146,7 +152,12 @@ export function AchievementCard({
           {/* View-only for non-owners */}
           {!isOwnProfile && is_issued && vc_url && (
             <div className="flex justify-center">
-              <Button size="sm" variant="outline" onClick={handleButtonClick}>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleButtonClick}
+                aria-label="View credential"
+              >
                 View Credential
               </Button>
             </div>

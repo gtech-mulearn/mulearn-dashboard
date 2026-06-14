@@ -22,6 +22,7 @@ import {
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import Loader from "@/app/loading";
+import { Button } from "@/components/ui/button";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { useInterestGroupDetail } from "@/features/interest-groups";
 import { PersonCard } from "@/features/interest-groups/components/person-card";
@@ -54,14 +55,15 @@ export function IGDetail() {
       error.status >= 500;
     return (
       <div className="mx-auto max-w-4xl space-y-6 px-4 py-8">
-        <button
+        <Button
           type="button"
           onClick={() => router.back()}
-          className="flex items-center gap-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
+          variant="ghost"
+          aria-label="Go back"
         >
           <ArrowLeft className="h-4 w-4" />
           Back
-        </button>
+        </Button>
         <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-8 text-center">
           <h3 className="text-lg font-semibold text-destructive">
             {isServerError ? "Server Error" : "Interest Group Not Found"}
@@ -92,26 +94,28 @@ export function IGDetail() {
   return (
     <div className="w-full  mx-auto space-y-8 px-5 py-8 sm:px-6 md:px-8">
       {/* Back */}
-      <button
+      <Button
         type="button"
         onClick={() => router.back()}
-        className="group flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        variant="ghost"
+        aria-label="Back to Interest Groups"
       >
         <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
         Back to Interest Groups
-      </button>
+      </Button>
 
       {/* ── Hero ── */}
       <div className="relative overflow-hidden rounded-[2rem] bg-linear-to-br from-primary/90 via-primary to-primary/80 p-6 sm:p-8 md:p-12 text-primary-foreground shadow-xl shadow-primary/10">
         <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-20">
-          <button
+          <Button
             type="button"
             onClick={() => setIsEditOpen(true)}
-            className="inline-flex items-center gap-2 rounded-xl bg-card/20 px-4 py-2.5 text-sm font-bold backdrop-blur-md border border-card/10 transition-all hover:bg-card/30 hover:scale-105 active:scale-95"
+            variant="secondary"
+            aria-label="Edit interest group"
           >
             <Pencil className="h-4 w-4" />
             <span className="hidden sm:block">Edit</span>
-          </button>
+          </Button>
         </div>
         <div className="absolute -right-20 -top-20 h-64 w-64 sm:h-80 sm:w-80 md:h-96 md:w-96 rounded-full bg-card/10 blur-3xl" />
         <div className="absolute -left-20 -bottom-20 h-64 w-64 sm:h-80 sm:w-80 md:h-96 md:w-96 rounded-full bg-foreground/10 blur-3xl" />

@@ -27,6 +27,7 @@ import Loader from "@/app/loading";
 import { updateSocials } from "../api";
 import { usePublicSocials, useSocials } from "../hooks";
 import { profileKeys } from "../hooks/query-keys";
+import { Button } from "@/components/ui/button";
 
 interface SocialsDisplayProps {
   isOwnProfile: boolean;
@@ -241,34 +242,43 @@ export function SocialsDisplay({ isOwnProfile, muid }: SocialsDisplayProps) {
         {isOwnProfile && (
           <div className="flex gap-2">
             {!editMode ? (
-              <button
+              <Button
                 type="button"
+                variant="default"
+                size="icon"
                 onClick={() => setEditMode(true)}
-                className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors hover:bg-primary/20"
+                className=" h-7 w-7"
                 title="Edit"
+                aria-label="Edit social links"
               >
                 <Pencil className="h-3.5 w-3.5" />
-              </button>
+              </Button>
             ) : (
               <>
-                <button
+                <Button
                   type="button"
+                  size="icon"
+                  variant="secondary"
                   onClick={handleCancel}
                   disabled={isSaving}
-                  className="flex h-7 w-7 items-center justify-center rounded-full bg-destructive/10 text-destructive transition-colors hover:bg-destructive/20"
+                  className="h-7 w-7 bg-destructive/10 text-destructive transition-colors hover:bg-destructive/20"
                   title="Cancel"
+                  aria-label="Cancel"
                 >
                   <X className="h-3.5 w-3.5" />
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
+                  variant="secondary"
+                  size="icon"
                   onClick={handleSave}
                   disabled={isSaving}
-                  className="flex h-7 w-7 items-center justify-center rounded-full bg-success/10 text-success transition-colors hover:bg-success/20"
+                  className="h-7 w-7 bg-success/10 text-success transition-colors hover:bg-success/20"
                   title="Save"
+                  aria-label="Save"
                 >
                   <Check className="h-3.5 w-3.5" />
-                </button>
+                </Button>
               </>
             )}
           </div>

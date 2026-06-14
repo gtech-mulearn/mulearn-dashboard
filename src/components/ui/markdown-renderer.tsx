@@ -21,7 +21,7 @@ export function MarkdownRenderer({
   if (!content) return null;
 
   return (
-    <div className={cn("markdown-body", className)}>
+    <div className={cn("markdown-body break-words", className)}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeSanitize]}

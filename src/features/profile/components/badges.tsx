@@ -9,6 +9,7 @@
  */
 
 import { Award } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useBadges } from "../hooks";
 
 interface BadgesProps {
@@ -31,13 +32,15 @@ export function Badges({ muid, isOwnProfile }: BadgesProps) {
     return (
       <div className="rounded-2xl bg-destructive/5 p-8 text-center">
         <p className="text-destructive">Failed to load badges</p>
-        <button
-          type="button"
+        <Button
+          variant="default"
+          size="sm"
           onClick={() => refetch()}
-          className="mt-2 text-sm text-primary hover:underline"
+          className="mt-2"
+          aria-label="Retry loading badges"
         >
           Try Again
-        </button>
+        </Button>
       </div>
     );
   }

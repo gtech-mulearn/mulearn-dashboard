@@ -518,6 +518,7 @@ export function EventInlineEditForm({
                 {tag}
                 <Button
                   variant="ghost"
+                  aria-label={`Remove tag ${tag}`}
                   size="icon"
                   type="button"
                   onClick={() => {
