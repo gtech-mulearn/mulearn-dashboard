@@ -1,4 +1,4 @@
-import { apiClient, ApiError } from "@/api/client";
+import { ApiError, apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
   type CompanyDetails,

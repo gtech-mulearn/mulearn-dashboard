@@ -1,8 +1,9 @@
 "use client";
 import { X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -25,6 +26,16 @@ export const SearchBar = ({
   inputClassName,
 }: Props) => {
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
+  const prevSearchRef = useRef("");
+
+  useEffect(() => {
+    const trimmed = debouncedSearch.trim();
+    if (trimmed !== prevSearchRef.current) {
+      prevSearchRef.current = trimmed;
+      onSearch(trimmed);
+    }
+  }, [debouncedSearch, onSearch]);
 
   const sizeClass =
     size === "sm"
@@ -41,11 +52,16 @@ export const SearchBar = ({
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    onSearch(search.trim());
+    const trimmed = search.trim();
+    if (trimmed !== prevSearchRef.current) {
+      prevSearchRef.current = trimmed;
+      onSearch(trimmed);
+    }
   };
 
   const clearInput = () => {
     setSearch("");
+    prevSearchRef.current = "";
     if (onClear) onClear();
     else onSearch("");
   };

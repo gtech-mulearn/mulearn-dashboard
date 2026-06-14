@@ -10,19 +10,8 @@
 "use client";
 
 import { ChevronDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useState } from "react";
-import type { AppStatus } from "../constants";
-import { APP_STATUS_META, APP_STATUS_TRANSITIONS } from "../constants";
-import { useUpdateApplicantStatus } from "../hooks";
-import type { JobApplicant } from "../types";
-import { ApplicationStatusBadge } from "./application-status-badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -31,7 +20,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Textarea } from "@/components/ui/textarea";
+import type { AppStatus } from "../constants";
+import { APP_STATUS_META, APP_STATUS_TRANSITIONS } from "../constants";
+import { useUpdateApplicantStatus } from "../hooks";
+import type { JobApplicant } from "../types";
+import { ApplicationStatusBadge } from "./application-status-badge";
 
 interface ApplicantRowProps {
   applicant: JobApplicant;

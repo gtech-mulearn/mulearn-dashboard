@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useMemo, useState } from "react";
 import { type UseFormReturn, useForm } from "react-hook-form";
+import type { z } from "zod";
 import { JOB_STEPPER_STEPS } from "../constants";
 import {
   BasicInfoStepSchema,
@@ -11,8 +12,6 @@ import {
   RequirementsStepSchema,
 } from "../schemas";
 import type { Job, StepId } from "../types";
-
-import type { z } from "zod";
 
 // Per-step validation schemas
 const STEP_SCHEMAS: Record<string, z.ZodTypeAny | null> = {

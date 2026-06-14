@@ -187,8 +187,17 @@ export const NAV_ITEMS: readonly NavItem[] = [
     dynamicCheck: (roles) =>
       roles.some((r) => r === ROLES.MENTOR || r === ROLES.COMPANY),
   },
+  {
+    id: "intern-dashboard",
+    title: "Intern",
+    href: "/dashboard/intern",
+    icon: LayoutDashboard,
+    section: "main",
+    roles: [ROLES.INTERN, ROLES.ADMIN],
+  },
 
   // ── Management Section (role-gated) ───────────────────────
+
   {
     id: "mentor-sessions",
     title: "Sessions",
