@@ -50,7 +50,7 @@ const calculateDurationDays = (startStr: string, endStr: string) => {
 
 export default function LeaveReviewsPage() {
   const [searchText, setSearchText] = useState("");
-  const [statusFilter, setStatusFilter] = useState("PENDING");
+  const [statusFilter, setStatusFilter] = useState("ALL");
   const [page, setPage] = useState(1);
   const [perPage, _setPerPage] = useState(10);
 

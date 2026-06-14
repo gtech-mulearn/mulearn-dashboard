@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity, Gem } from "lucide-react";
+import { Activity } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,8 +22,8 @@ export function QuestLog() {
 
   if (isLoading) {
     return (
-      <Card className="h-full border-border/40 bg-card/40 backdrop-blur-md flex flex-col pt-6">
-        <CardHeader className="pb-4 border-b border-border/20">
+      <Card className="h-full border-border/40 bg-card/40 backdrop-blur-md flex flex-col py-4 px-5">
+        <CardHeader className="pt-0 px-0 pb-2 border-b border-border/20">
           <CardTitle className="text-lg font-black uppercase tracking-widest flex items-center gap-2">
             <Activity className="w-5 h-5 text-muted-foreground" />
             Quest Log
@@ -32,7 +32,7 @@ export function QuestLog() {
             Recent XP Gains
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-4 flex-1 space-y-4">
+        <CardContent className="pt-3 px-0 pb-0 flex-1 space-y-4">
           {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="flex justify-between items-center">
               <div className="space-y-1">
@@ -60,8 +60,8 @@ export function QuestLog() {
   }));
 
   return (
-    <Card className="h-full border-border/40 bg-card/40 backdrop-blur-md flex flex-col pt-6">
-      <CardHeader className="pb-4 border-b border-border/20">
+    <Card className="h-full border-border/40 bg-card/40 backdrop-blur-md flex flex-col py-4 px-5">
+      <CardHeader className="pt-0 px-0 pb-2 border-b border-border/20">
         <CardTitle className="text-lg font-black uppercase tracking-widest flex items-center gap-2">
           <Activity className="w-5 h-5 text-muted-foreground" />
           Quest Log
@@ -70,12 +70,12 @@ export function QuestLog() {
           Recent XP Gains
         </CardDescription>
       </CardHeader>
-      <CardContent className="p-0 flex-1">
+      <CardContent className="pt-3 px-0 pb-0 flex-1">
         <div className="divide-y divide-border/20">
           {recentActivities.map((activity) => (
             <div
               key={activity.id}
-              className="p-4 hover:bg-muted/30 transition-all flex items-start justify-between gap-4 group"
+              className="py-2.5 px-0 hover:bg-muted/10 transition-all flex items-start justify-between gap-4 group"
             >
               <div className="space-y-1">
                 <p className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">
@@ -85,8 +85,7 @@ export function QuestLog() {
                   {activity.date}
                 </p>
               </div>
-              <Badge className="font-black bg-brand-blue/10 text-brand-blue border-none rounded-lg px-2 py-1 flex items-center gap-0.5">
-                <Gem className="w-3 h-3" />
+              <Badge className="font-black bg-brand-blue/10 text-brand-blue border-none rounded-lg px-2 py-1">
                 {activity.points}
               </Badge>
             </div>
@@ -98,7 +97,7 @@ export function QuestLog() {
           )}
         </div>
       </CardContent>
-      <div className="p-4 border-t border-border/20">
+      <div className="pt-4 px-0 pb-0 border-t border-border/20">
         <Link href="/dashboard/intern/quest-log">
           <Button
             variant="outline"

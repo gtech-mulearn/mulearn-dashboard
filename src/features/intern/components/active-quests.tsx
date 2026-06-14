@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  BookOpen,
-  Calendar,
-  CheckCircle2,
-  Gem,
-  LineChart,
-  Zap,
-} from "lucide-react";
+import { BookOpen, Calendar, CheckCircle2, LineChart, Zap } from "lucide-react";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -30,7 +23,7 @@ export function ActiveQuests() {
                   Daily Log
                 </h4>
                 <p className="text-xs text-muted-foreground mt-1 font-medium">
-                  Log today's work to earn <Gem className="inline w-3 h-3" /> 10
+                  Log today's work to earn 10 points
                 </p>
               </div>
             </CardContent>
@@ -66,7 +59,7 @@ export function ActiveQuests() {
                   Reflection
                 </h4>
                 <p className="text-xs text-muted-foreground mt-1 font-medium">
-                  Weekly summary for up to <Gem className="inline w-3 h-3" /> 50
+                  Weekly summary for up to 50 points
                 </p>
               </div>
             </CardContent>

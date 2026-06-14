@@ -43,7 +43,7 @@ import type { TTimesheet, TWeeklyReview } from "@/features/intern/types";
 
 export default function TimesheetReviewsPage() {
   const [searchText, setSearchText] = useState("");
-  const [statusFilter, setStatusFilter] = useState("PENDING");
+  const [statusFilter, setStatusFilter] = useState("ALL");
   const [typeFilter, setTypeFilter] = useState<"DAILY" | "WEEKLY">("DAILY");
   const [page, setPage] = useState(1);
   const [perPage, _setPerPage] = useState(10);

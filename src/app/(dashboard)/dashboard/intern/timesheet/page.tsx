@@ -45,6 +45,7 @@ import {
   useInternTasks,
   useSubmitTimesheet,
   useTimesheetHistory,
+  useTimesheets,
   useTimesheetToday,
 } from "@/features/intern";
 
@@ -54,6 +55,8 @@ export default function TimesheetPage() {
     useTimesheetToday();
   const { data: timesheetHistory, isLoading: isHistoryLoading } =
     useTimesheetHistory({ page: 1, perPage: 50 });
+  const { data: timesheetsData, isLoading: isTimesheetsLoading } =
+    useTimesheets({ page: 1, perPage: 100 });
   const { data: overview } = useInternOverview();
   const { data: tasksData } = useInternTasks({ page: 1, perPage: 100 });
   const { data: profile } = useUserProfile();
@@ -210,7 +213,23 @@ export default function TimesheetPage() {
   const activeTasks =
     tasksData?.data?.filter((t) => t.status !== "COMPLETED") || [];
 
-  if (isTodayLoading || isHistoryLoading) {
+  // Build category list from GET /timesheets/ API
+  const CATEGORY_LABELS: Record<string, string> = {
+    DEVELOPMENT: "Development / Coding",
+    DESIGN: "UI/UX Arts / Design",
+    TESTING: "QA / Testing",
+  };
+  const apiCategories = Array.from(
+    new Set(
+      (timesheetsData?.data ?? []).map((ts) => ts.category).filter(Boolean),
+    ),
+  );
+  const allCategories =
+    apiCategories.length > 0
+      ? apiCategories
+      : ["DEVELOPMENT", "DESIGN", "TESTING"];
+
+  if (isTodayLoading || isHistoryLoading || isTimesheetsLoading) {
     return (
       <div className="flex h-[80vh] items-center justify-center">
         <Spinner className="w-8 h-8 text-primary" />
@@ -319,24 +338,15 @@ export default function TimesheetPage() {
                           <SelectValue placeholder="Choose your discipline..." />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem
-                            value="DEVELOPMENT"
-                            className="font-bold uppercase text-xs"
-                          >
-                            Development / Coding
-                          </SelectItem>
-                          <SelectItem
-                            value="DESIGN"
-                            className="font-bold uppercase text-xs"
-                          >
-                            UI/UX Arts / Design
-                          </SelectItem>
-                          <SelectItem
-                            value="TESTING"
-                            className="font-bold uppercase text-xs"
-                          >
-                            QA / Testing
-                          </SelectItem>
+                          {allCategories.map((cat) => (
+                            <SelectItem
+                              key={cat}
+                              value={cat}
+                              className="font-bold uppercase text-xs"
+                            >
+                              {CATEGORY_LABELS[cat] ?? cat.replace(/_/g, " ")}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -358,84 +368,92 @@ export default function TimesheetPage() {
                           max="24"
                           step="0.25"
                         />
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black uppercase text-muted-foreground/40">
-                          HRS
-                        </div>
                       </div>
                     </div>
                   </div>
 
                   {/* Task Linker Section */}
-                  {activeTasks.length > 0 && (
-                    <div className="grid gap-6 md:grid-cols-2">
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+                        Link to Assigned Task
+                      </Label>
+                      <Select
+                        onValueChange={setLinkedTaskId}
+                        value={linkedTaskId}
+                        disabled={activeTasks.length === 0}
+                      >
+                        <SelectTrigger className="w-full bg-background/50 border-border/50 !h-10 font-bold focus:ring-brand-blue/30">
+                          <SelectValue
+                            placeholder={
+                              activeTasks.length > 0
+                                ? "Link an assigned task..."
+                                : "No active tasks assigned"
+                            }
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem
+                            value="none"
+                            className="font-bold uppercase text-xs text-muted-foreground"
+                          >
+                            None
+                          </SelectItem>
+                          {activeTasks.map((task) => (
+                            <SelectItem
+                              key={task.id}
+                              value={task.id}
+                              className="font-bold uppercase text-xs"
+                            >
+                              {task.title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {linkedTaskId && linkedTaskId !== "none" && (
                       <div className="space-y-2">
                         <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                          Link Active Task
+                          Update Task Status
                         </Label>
                         <Select
-                          onValueChange={setLinkedTaskId}
-                          value={linkedTaskId}
+                          onValueChange={setTaskStatus}
+                          value={taskStatus}
                         >
                           <SelectTrigger className="w-full bg-background/50 border-border/50 !h-10 font-bold focus:ring-brand-blue/30">
-                            <SelectValue placeholder="Link an assigned task..." />
+                            <SelectValue placeholder="Update status..." />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem
-                              value="none"
-                              className="font-bold uppercase text-xs text-muted-foreground"
+                              value="TODO"
+                              className="font-bold uppercase text-xs"
                             >
-                              None
+                              To Do
                             </SelectItem>
-                            {activeTasks.map((task) => (
-                              <SelectItem
-                                key={task.id}
-                                value={task.id}
-                                className="font-bold uppercase text-xs"
-                              >
-                                {task.title}
-                              </SelectItem>
-                            ))}
+                            <SelectItem
+                              value="IN_PROGRESS"
+                              className="font-bold uppercase text-xs"
+                            >
+                              In Progress
+                            </SelectItem>
+                            <SelectItem
+                              value="COMPLETED"
+                              className="font-bold uppercase text-xs"
+                            >
+                              Completed
+                            </SelectItem>
+                            <SelectItem
+                              value="ON_HOLD"
+                              className="font-bold uppercase text-xs"
+                            >
+                              On Hold
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
-
-                      {linkedTaskId && linkedTaskId !== "none" && (
-                        <div className="space-y-2">
-                          <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                            Update Task Status
-                          </Label>
-                          <Select
-                            onValueChange={setTaskStatus}
-                            value={taskStatus}
-                          >
-                            <SelectTrigger className="w-full bg-background/50 border-border/50 !h-10 font-bold focus:ring-brand-blue/30">
-                              <SelectValue placeholder="Update status..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem
-                                value="IN_PROGRESS"
-                                className="font-bold uppercase text-xs"
-                              >
-                                In Progress
-                              </SelectItem>
-                              <SelectItem
-                                value="COMPLETED"
-                                className="font-bold uppercase text-xs"
-                              >
-                                Completed
-                              </SelectItem>
-                              <SelectItem
-                                value="ON_HOLD"
-                                className="font-bold uppercase text-xs"
-                              >
-                                On Hold
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      )}
-                    </div>
-                  )}
+                    )}
+                  </div>
 
                   <div className="space-y-2">
                     <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
@@ -543,7 +561,7 @@ export default function TimesheetPage() {
               </div>
               <TooltipProvider>
                 <div className="grid grid-cols-7 gap-1.5 sm:gap-2.5">
-                  {prevMonthTrailingDays.map((prev, i) => {
+                  {prevMonthTrailingDays.map((prev, _i) => {
                     const keyStr = prev.date.toISOString();
                     // Blank out days before onboarding
                     if (prev.status === "blank") {
@@ -578,7 +596,7 @@ export default function TimesheetPage() {
                       </Tooltip>
                     );
                   })}
-                  {days.map((day, i) => {
+                  {days.map((day, _i) => {
                     const keyStr = day.date.toISOString();
                     // Blank out days before onboarding (if any are marked blank)
                     if (day.status === "blank") {

@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, Gem, Trophy } from "lucide-react";
+import { ChevronRight, Trophy } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -138,7 +138,7 @@ export function EliteLeaders() {
                 Intern
               </TableHead>
               <TableHead className="font-black uppercase text-[9px] tracking-[0.3em] text-right pr-6 text-muted-foreground w-24">
-                Points
+                Score
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -182,7 +182,6 @@ export function EliteLeaders() {
                   </TableCell>
                   <TableCell className="py-3 text-right pr-6">
                     <div className="flex items-center justify-end gap-1 font-bold text-xs text-foreground">
-                      <Gem className="w-3.5 h-3.5 text-brand-blue" />
                       {row.points}
                     </div>
                   </TableCell>

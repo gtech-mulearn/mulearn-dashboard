@@ -2,6 +2,7 @@
 
 import { Calendar } from "lucide-react";
 import Link from "next/link";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -31,7 +32,6 @@ export function InternHeader({ onApplyLeave }: InternHeaderProps) {
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <Skeleton className="h-10 w-28 rounded-full" />
-          <Skeleton className="h-10 w-36 rounded-full" />
           <Skeleton className="h-8 w-24 rounded-full" />
         </div>
       </div>
@@ -41,17 +41,33 @@ export function InternHeader({ onApplyLeave }: InternHeaderProps) {
   const userDisplayName =
     profile?.full_name || userInfo?.full_name || "Alex Doe";
   const userStatus = overview?.status || "ACTIVE";
-  const userLevel = profile?.level || "12";
-  const userExp = profile?.percentile || 75;
+  const userLevel = profile?.level || "1";
+  const profilePic = (profile as any)?.profile_pic || null;
+
+  const initials = userDisplayName
+    .split(" ")
+    .map((n: string) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
       <div className="flex items-center gap-4">
         <div className="relative">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-purple to-brand-blue flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-            {userLevel}
-          </div>
-          <div className="absolute -bottom-1 -right-1 bg-background rounded-full p-1 border border-border">
+          <Avatar className="w-16 h-16 rounded-2xl border-2 border-brand-blue/30 shadow-lg">
+            {profilePic && (
+              <AvatarImage
+                src={profilePic}
+                alt={userDisplayName}
+                className="rounded-2xl object-cover"
+              />
+            )}
+            <AvatarFallback className="rounded-2xl bg-gradient-to-br from-brand-purple to-brand-blue text-white text-xl font-bold">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <div className="absolute -bottom-1 -right-1 bg-background rounded-full p-0.5 border border-border">
             <div className="w-5 h-5 rounded-full bg-success flex items-center justify-center text-[10px] text-white font-bold">
               ✓
             </div>
@@ -62,14 +78,8 @@ export function InternHeader({ onApplyLeave }: InternHeaderProps) {
             Welcome back, {userDisplayName}
           </h2>
           <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-1">
-            <div className="w-48 h-2 bg-muted rounded-full overflow-hidden shrink-0">
-              <div
-                className="h-full bg-gradient-to-r from-brand-purple to-brand-blue"
-                style={{ width: `${userExp}%` }}
-              />
-            </div>
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
-              Level {userLevel} &bull; {userExp}% EXP
+              {userLevel}
             </span>
           </div>
         </div>

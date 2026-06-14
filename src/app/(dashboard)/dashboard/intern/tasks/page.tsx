@@ -1,16 +1,9 @@
 "use client";
 
-import {
-  AlertCircle,
-  CheckCircle2,
-  Clock,
-  PlayCircle,
-  Search,
-  Sparkles,
-  StopCircle,
-} from "lucide-react";
+import { Clock, Search, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -18,6 +11,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -27,22 +27,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
-import { useInternTasks, useUpdateTaskStatus } from "@/features/intern";
-
-const getStatusIcon = (status: string) => {
-  switch (status) {
-    case "TODO":
-      return <StopCircle className="w-4 h-4 text-muted-foreground" />;
-    case "IN_PROGRESS":
-      return <PlayCircle className="w-4 h-4 text-brand-blue animate-pulse" />;
-    case "COMPLETED":
-      return <CheckCircle2 className="w-4 h-4 text-success" />;
-    case "ON_HOLD":
-      return <AlertCircle className="w-4 h-4 text-warning" />;
-    default:
-      return null;
-  }
-};
+import {
+  type TInternTask,
+  useInternTasks,
+  useUpdateTaskStatus,
+} from "@/features/intern";
 
 const getComplexityColor = (complexity: string) => {
   switch (complexity) {
@@ -63,6 +52,7 @@ export default function InternTasksPage() {
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [page, setPage] = useState(1);
+  const [selectedTask, setSelectedTask] = useState<TInternTask | null>(null);
 
   const { data: tasksResponse, isLoading } = useInternTasks({
     page,
@@ -147,7 +137,8 @@ export default function InternTasksPage() {
           {filteredTasks.map((task) => (
             <Card
               key={task.id}
-              className="border-border/40 bg-card/30 backdrop-blur-md shadow-lg overflow-hidden flex flex-col justify-between transition-all hover:shadow-xl"
+              className="border-border/40 bg-card/30 backdrop-blur-md shadow-lg overflow-hidden flex flex-col justify-between transition-all hover:shadow-xl cursor-pointer hover:border-brand-blue/30"
+              onClick={() => setSelectedTask(task)}
             >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between gap-2 mb-2">
@@ -175,45 +166,57 @@ export default function InternTasksPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-2 border-t border-border/10 mt-auto">
-                <div className="flex items-center justify-between gap-4 mt-2">
-                  <div className="flex items-center gap-1.5">
-                    {getStatusIcon(task.status)}
-                    <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
-                      {task.status.replace("_", " ")}
-                    </span>
+                {/* biome-ignore lint/a11y/useKeyWithClickEvents: stopPropagation container */}
+                {/* biome-ignore lint/a11y/noStaticElementInteractions: stopPropagation container */}
+                <div
+                  className="flex items-center justify-end gap-2 mt-2"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 hover:text-foreground"
+                      onClick={() => setSelectedTask(task)}
+                    >
+                      Details
+                    </Button>
+                    <Select
+                      value={task.status}
+                      onValueChange={(val) => handleStatusChange(task.id, val)}
+                      disabled={updateStatusMutation.isPending}
+                    >
+                      <SelectTrigger className="h-8 font-black uppercase text-[9px] tracking-widest w-[110px] border-border/50 bg-background/50 rounded-lg">
+                        <SelectValue placeholder="Update" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-card font-bold border-border/60">
+                        <SelectItem
+                          value="TODO"
+                          className="uppercase text-[9px]"
+                        >
+                          To Do
+                        </SelectItem>
+                        <SelectItem
+                          value="IN_PROGRESS"
+                          className="uppercase text-[9px]"
+                        >
+                          In Progress
+                        </SelectItem>
+                        <SelectItem
+                          value="COMPLETED"
+                          className="uppercase text-[9px]"
+                        >
+                          Completed
+                        </SelectItem>
+                        <SelectItem
+                          value="ON_HOLD"
+                          className="uppercase text-[9px]"
+                        >
+                          On Hold
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <Select
-                    value={task.status}
-                    onValueChange={(val) => handleStatusChange(task.id, val)}
-                    disabled={updateStatusMutation.isPending}
-                  >
-                    <SelectTrigger className="h-8 font-black uppercase text-[9px] tracking-widest w-[110px] border-border/50 bg-background/50 rounded-lg">
-                      <SelectValue placeholder="Update" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-card font-bold border-border/60">
-                      <SelectItem value="TODO" className="uppercase text-[9px]">
-                        To Do
-                      </SelectItem>
-                      <SelectItem
-                        value="IN_PROGRESS"
-                        className="uppercase text-[9px]"
-                      >
-                        In Progress
-                      </SelectItem>
-                      <SelectItem
-                        value="COMPLETED"
-                        className="uppercase text-[9px]"
-                      >
-                        Completed
-                      </SelectItem>
-                      <SelectItem
-                        value="ON_HOLD"
-                        className="uppercase text-[9px]"
-                      >
-                        On Hold
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
               </CardContent>
             </Card>
@@ -227,10 +230,152 @@ export default function InternTasksPage() {
         </div>
       )}
 
-      <div className="flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-[0.5em] text-muted-foreground/20 py-8">
-        <Sparkles className="w-3 h-3" /> Conquering Duties{" "}
-        <Sparkles className="w-3 h-3" />
-      </div>
+      {/* Detailed Task View Dialog */}
+      <Dialog
+        open={!!selectedTask}
+        onOpenChange={(o) => !o && setSelectedTask(null)}
+      >
+        <DialogContent className="max-w-2xl border-border/40 bg-card/95 backdrop-blur-2xl shadow-2xl">
+          {selectedTask && (
+            <>
+              <DialogHeader className="pb-4 border-b border-border/20">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <DialogTitle className="text-2xl font-black uppercase tracking-tight text-foreground">
+                    {selectedTask.title}
+                  </DialogTitle>
+                  <div className="flex flex-wrap items-center gap-2 shrink-0">
+                    <Badge
+                      variant="outline"
+                      className={`text-[9px] uppercase font-black tracking-widest ${getComplexityColor(selectedTask.complexity)}`}
+                    >
+                      {selectedTask.complexity}
+                    </Badge>
+                    {selectedTask.team && (
+                      <Badge
+                        variant="outline"
+                        className="bg-brand-blue/10 text-brand-blue border-brand-blue/20 text-[9px] font-black rounded-md uppercase tracking-wider px-2 py-0.5"
+                      >
+                        {selectedTask.team}
+                      </Badge>
+                    )}
+                    <Badge
+                      variant="outline"
+                      className="bg-muted/30 text-muted-foreground border-border text-[9px] font-black rounded-md uppercase tracking-wider px-2 py-0.5"
+                    >
+                      {selectedTask.category}
+                    </Badge>
+                  </div>
+                </div>
+                <DialogDescription className="hidden">
+                  Task details and description view
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-6 pt-4">
+                {/* Description */}
+                <div className="space-y-2">
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                    Description
+                  </h4>
+                  <div className="p-4 rounded-xl border border-border/40 bg-background/40 max-h-[220px] overflow-y-auto">
+                    <p className="text-sm font-medium text-foreground whitespace-pre-wrap leading-relaxed">
+                      {selectedTask.description || "No description provided."}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Grid info */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1 bg-background/25 border border-border/20 p-3 rounded-xl">
+                    <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">
+                      Created By
+                    </p>
+                    <p className="text-sm font-bold text-foreground">
+                      {selectedTask.created_by_name ||
+                        selectedTask.created_by ||
+                        "Admin/Mentor"}
+                    </p>
+                  </div>
+
+                  <div className="space-y-1 bg-background/25 border border-border/20 p-3 rounded-xl">
+                    <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-muted-foreground/50" />
+                      Deadline
+                    </p>
+                    <p className="text-sm font-bold text-foreground">
+                      {selectedTask.deadline
+                        ? new Date(selectedTask.deadline).toLocaleDateString(
+                            undefined,
+                            {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            },
+                          )
+                        : "No deadline"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Status Updater inside modal */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl border border-border/40 bg-brand-blue/5">
+                  <div>
+                    <h4 className="text-xs font-black uppercase tracking-wider text-foreground">
+                      Task Status
+                    </h4>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide mt-0.5">
+                      Update your work progress on this task
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-3 w-full sm:w-auto">
+                    <Select
+                      value={selectedTask.status}
+                      onValueChange={(val) => {
+                        handleStatusChange(selectedTask.id, val);
+                        setSelectedTask((prev) =>
+                          prev ? { ...prev, status: val as any } : null,
+                        );
+                      }}
+                      disabled={updateStatusMutation.isPending}
+                    >
+                      <SelectTrigger className="h-9 font-black uppercase text-[10px] tracking-widest w-[130px] border-border/50 bg-background/50 rounded-lg">
+                        <SelectValue placeholder="Update" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-card font-bold border-border/60">
+                        <SelectItem
+                          value="TODO"
+                          className="uppercase text-[9px]"
+                        >
+                          To Do
+                        </SelectItem>
+                        <SelectItem
+                          value="IN_PROGRESS"
+                          className="uppercase text-[9px]"
+                        >
+                          In Progress
+                        </SelectItem>
+                        <SelectItem
+                          value="COMPLETED"
+                          className="uppercase text-[9px]"
+                        >
+                          Completed
+                        </SelectItem>
+                        <SelectItem
+                          value="ON_HOLD"
+                          className="uppercase text-[9px]"
+                        >
+                          On Hold
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

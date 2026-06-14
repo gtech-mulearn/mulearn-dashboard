@@ -4,6 +4,7 @@ import {
   AlertTriangle,
   Calendar,
   CheckCircle2,
+  ListTodo,
   PauseCircle,
   Pencil,
   Plus,
@@ -266,6 +267,15 @@ export default function ManageInternsPage() {
             >
               <Calendar className="w-4 h-4" />
               Leaves
+            </Button>
+          </Link>
+          <Link href="/dashboard/management/manage-interns/tasks">
+            <Button
+              variant="default"
+              className="gap-2 text-[10px] tracking-widest h-10 shadow-lg bg-brand-blue hover:bg-brand-blue/90"
+            >
+              <ListTodo className="w-4 h-4" />
+              Tasks
             </Button>
           </Link>
           <Link href="/dashboard/management/manage-interns/intern-report">

@@ -1,16 +1,15 @@
 "use client";
 
-import { Flame, Gem, Target, Trophy } from "lucide-react";
+import { Flame, Star, Target, Trophy } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useUserProfile } from "@/features/auth";
-import { useInternOverview } from "@/features/intern";
+import { useInternOverview, useLeaderboardMe } from "@/features/intern";
 
 export function InternStatsCards() {
-  const { data: profile, isLoading: isProfileLoading } = useUserProfile();
   const { data: overview, isLoading: isOverviewLoading } = useInternOverview();
+  const { data: meRank, isLoading: isMeLoading } = useLeaderboardMe();
 
-  const isLoading = isProfileLoading || isOverviewLoading;
+  const isLoading = isOverviewLoading || isMeLoading;
 
   if (isLoading) {
     return (
@@ -34,29 +33,33 @@ export function InternStatsCards() {
     );
   }
 
-  const userScore = overview?.score ?? profile?.karma ?? 1240;
-  const userStreak = overview?.daily_streak ?? 14;
-  const userGuild = overview?.guild || "DESIGN";
-  const userRank = profile?.rank || 3;
+  const userScore = overview?.score ?? 0;
+  const userDailyStreak = overview?.daily_streak ?? 0;
+  const userWeeklyStreak = overview?.weekly_streak ?? 0;
+  const userGuild = overview?.guild || "—";
+  const userRank = meRank?.rank ?? "—";
 
   const formattedGuild = userGuild.toUpperCase().endsWith("GUILD")
     ? userGuild
-    : `${userGuild} Guild`;
+    : userGuild !== "—"
+      ? `${userGuild} Guild`
+      : "—";
+
+  const completedTasks = overview?.completed_tasks ?? 0;
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      {/* Points Card */}
+      {/* Score Card */}
       <Card className="relative overflow-hidden group border-border/40 bg-card/50 backdrop-blur-sm transition-all hover:bg-card hover:shadow-xl hover:-translate-y-1">
         <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-brand-blue/10 rounded-full blur-3xl group-hover:bg-brand-blue/20 transition-all" />
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-            Total Gems
+            Score
           </CardTitle>
-          <Gem className="h-4 w-4 text-brand-blue animate-pulse" />
+          <Star className="h-4 w-4 text-brand-blue animate-pulse" />
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-black font-mono tracking-tighter text-foreground flex items-center gap-2">
-            <Gem className="w-6 h-6 text-brand-blue" />
+          <div className="text-3xl font-black font-mono tracking-tighter text-foreground">
             {userScore.toLocaleString()}
           </div>
           <p className="text-[10px] text-muted-foreground mt-2 font-bold uppercase tracking-widest">
@@ -76,7 +79,7 @@ export function InternStatsCards() {
         </CardHeader>
         <CardContent>
           <div className="text-3xl font-black font-mono tracking-tighter text-foreground flex items-baseline gap-1 flex-wrap">
-            {userStreak}
+            {userDailyStreak}
             <span className="text-sm font-bold text-muted-foreground uppercase">
               DAYS
             </span>
@@ -84,11 +87,13 @@ export function InternStatsCards() {
           <div className="mt-2 h-1.5 w-full bg-muted overflow-hidden rounded-full p-[1px]">
             <div
               className="h-full bg-gradient-to-r from-warning to-destructive rounded-full"
-              style={{ width: `${Math.min(100, (userStreak / 30) * 100)}%` }}
+              style={{
+                width: `${Math.min(100, (userDailyStreak / 30) * 100)}%`,
+              }}
             />
           </div>
           <p className="text-[10px] text-muted-foreground mt-2 font-bold uppercase tracking-widest">
-            Weekly Streak: {overview?.weekly_streak || 0} Weeks
+            Weekly Streak: {userWeeklyStreak} Weeks
           </p>
         </CardContent>
       </Card>
@@ -123,7 +128,7 @@ export function InternStatsCards() {
         </CardHeader>
         <CardContent>
           <div className="text-3xl font-black font-mono tracking-tighter text-foreground flex items-baseline gap-1 flex-wrap">
-            {overview?.completed_tasks || 0}
+            {completedTasks}
             <span className="text-xs font-bold text-muted-foreground uppercase">
               COMPLETED TASKS
             </span>
@@ -133,7 +138,7 @@ export function InternStatsCards() {
               <div
                 key={day}
                 className={`h-full flex-1 rounded-full ${
-                  day <= (overview?.completed_tasks || 0)
+                  day <= completedTasks
                     ? "bg-success"
                     : "bg-muted-foreground/20"
                 }`}

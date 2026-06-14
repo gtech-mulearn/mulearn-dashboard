@@ -7,7 +7,6 @@ import {
   ChevronRight,
   Clock,
   FileText,
-  Gem,
   ShieldAlert,
   Star,
 } from "lucide-react";
@@ -174,9 +173,9 @@ export function QuestLogHistory() {
               {dailyData.data.map((log) => (
                 <Card
                   key={log.id}
-                  className="border-border/40 bg-card/40 backdrop-blur-md shadow-xl overflow-hidden"
+                  className="border-border/40 bg-card/40 backdrop-blur-md shadow-md overflow-hidden"
                 >
-                  <CardHeader className="border-b border-border/20 pb-3">
+                  <CardHeader className="pt-4 pb-2 px-5 border-b border-border/20">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-brand-blue" />
@@ -195,27 +194,26 @@ export function QuestLogHistory() {
                       {getStatusBadge(log.status)}
                     </div>
                   </CardHeader>
-                  <CardContent className="pt-4 space-y-3">
-                    <div className="flex flex-wrap items-center gap-3">
+                  <CardContent className="pt-3 pb-4 px-5 space-y-2.5">
+                    <div className="flex flex-wrap items-center gap-2">
                       {getCategoryBadge(log.category)}
                       <div className="flex items-center gap-1 text-[11px] font-black uppercase text-muted-foreground tracking-wider">
                         <Clock className="w-3.5 h-3.5" />
                         {log.hours} Hours
                       </div>
                       {log.karma_awarded !== null && (
-                        <Badge className="bg-warning/10 text-warning border-none font-black text-[10px] rounded-md px-2 py-0.5 flex items-center gap-0.5">
-                          <Gem className="w-3 h-3 fill-warning" />+
-                          {log.karma_awarded} XP
+                        <Badge className="bg-warning/10 text-warning border-none font-black text-[10px] rounded-md px-2 py-0.5">
+                          +{log.karma_awarded} XP
                         </Badge>
                       )}
                     </div>
 
-                    <div className="bg-background/40 border border-border/20 p-4 rounded-xl">
-                      <p className="text-xs font-black uppercase tracking-wider text-muted-foreground/60 mb-1 flex items-center gap-1.5">
-                        <FileText className="w-3.5 h-3.5" />
+                    <div className="bg-background/40 border border-border/20 px-3 py-2 rounded-lg">
+                      <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground/60 mb-1 flex items-center gap-1">
+                        <FileText className="w-3 h-3" />
                         Achievement Log
                       </p>
-                      <p className="text-sm font-medium text-foreground whitespace-pre-wrap leading-relaxed">
+                      <p className="text-xs font-medium text-foreground leading-tight line-clamp-4">
                         {log.description}
                       </p>
                     </div>
@@ -223,13 +221,13 @@ export function QuestLogHistory() {
                     {log.blockers &&
                       log.blockers !== "None" &&
                       log.blockers !== "" && (
-                        <div className="bg-destructive/5 border border-destructive/20 p-3 rounded-xl flex items-start gap-3">
-                          <ShieldAlert className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
+                        <div className="bg-destructive/5 border border-destructive/20 px-3 py-2 rounded-lg flex items-start gap-2">
+                          <ShieldAlert className="w-3.5 h-3.5 text-destructive shrink-0 mt-0.5" />
                           <div>
-                            <p className="text-[10px] font-black uppercase text-destructive tracking-widest">
-                              Blockers Encountered
+                            <p className="text-[9px] font-black uppercase text-destructive tracking-widest">
+                              Blockers
                             </p>
-                            <p className="text-xs text-muted-foreground mt-0.5 font-medium leading-relaxed">
+                            <p className="text-xs text-muted-foreground font-medium leading-tight">
                               {log.blockers}
                             </p>
                           </div>
@@ -237,13 +235,13 @@ export function QuestLogHistory() {
                       )}
 
                     {log.review_note && (
-                      <div className="bg-brand-blue/5 border border-brand-blue/20 p-3 rounded-xl flex items-start gap-3">
-                        <CheckCircle2 className="w-4 h-4 text-brand-blue shrink-0 mt-0.5" />
+                      <div className="bg-brand-blue/5 border border-brand-blue/20 px-3 py-2 rounded-lg flex items-start gap-2">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-brand-blue shrink-0 mt-0.5" />
                         <div>
-                          <p className="text-[10px] font-black uppercase text-brand-blue tracking-widest">
+                          <p className="text-[9px] font-black uppercase text-brand-blue tracking-widest">
                             Reviewer Remarks
                           </p>
-                          <p className="text-xs text-muted-foreground mt-0.5 font-medium leading-relaxed">
+                          <p className="text-xs text-muted-foreground font-medium leading-tight">
                             {log.review_note}
                           </p>
                         </div>
@@ -292,9 +290,9 @@ export function QuestLogHistory() {
             {weeklyData.data.map((review) => (
               <Card
                 key={review.id}
-                className="border-border/40 bg-card/40 backdrop-blur-md shadow-xl overflow-hidden"
+                className="border-border/40 bg-card/40 backdrop-blur-md shadow-md overflow-hidden"
               >
-                <CardHeader className="border-b border-border/20 pb-3">
+                <CardHeader className="pt-4 pb-2 px-5 border-b border-border/20">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-brand-blue" />
@@ -309,7 +307,7 @@ export function QuestLogHistory() {
                     {getStatusBadge(review.status)}
                   </div>
                 </CardHeader>
-                <CardContent className="pt-4 space-y-4">
+                <CardContent className="pt-3 pb-4 px-5 space-y-3">
                   <div className="flex flex-wrap items-center gap-3">
                     <Badge className="bg-brand-blue/10 text-brand-blue border-brand-blue/20 text-[9px] font-black rounded-md uppercase tracking-wider px-2 py-0.5">
                       {review.team}
@@ -326,69 +324,68 @@ export function QuestLogHistory() {
                     {review.task_remarks?.rating &&
                       renderStars(review.task_remarks.rating)}
                     {review.karma_awarded !== null && (
-                      <Badge className="bg-warning/10 text-warning border-none font-black text-[10px] rounded-md px-2 py-0.5 flex items-center gap-0.5">
-                        <Gem className="w-3 h-3 fill-warning" />+
-                        {review.karma_awarded} XP
+                      <Badge className="bg-warning/10 text-warning border-none font-black text-[10px] rounded-md px-2 py-0.5">
+                        +{review.karma_awarded} XP
                       </Badge>
                     )}
                   </div>
 
                   {!review.is_on_leave ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="bg-background/40 border border-border/20 p-4 rounded-xl space-y-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="bg-background/40 border border-border/20 px-3 py-2 rounded-lg space-y-1.5">
                         <div>
-                          <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground/60 mb-0.5">
+                          <p className="text-[9px] font-black uppercase tracking-wider text-muted-foreground/60 mb-0.5">
                             Tasks Assigned
                           </p>
-                          <p className="text-sm font-medium text-foreground whitespace-pre-wrap leading-relaxed">
+                          <p className="text-xs font-medium text-foreground leading-tight line-clamp-3">
                             {review.tasks_assigned || "None"}
                           </p>
                         </div>
                         <div className="pt-2 border-t border-border/10">
-                          <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground/60 mb-0.5">
+                          <p className="text-[9px] font-black uppercase tracking-wider text-muted-foreground/60 mb-0.5">
                             Tasks Completed
                           </p>
-                          <p className="text-sm font-medium text-foreground whitespace-pre-wrap leading-relaxed">
+                          <p className="text-xs font-medium text-foreground leading-tight line-clamp-3">
                             {review.tasks_completed || "None"}
                           </p>
                         </div>
                         <div className="pt-2 border-t border-border/10">
-                          <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground/60 mb-0.5">
+                          <p className="text-[9px] font-black uppercase tracking-wider text-muted-foreground/60 mb-0.5">
                             Weekly Review / Work Done
                           </p>
-                          <p className="text-sm font-medium text-foreground whitespace-pre-wrap leading-relaxed">
+                          <p className="text-xs font-medium text-foreground leading-tight line-clamp-4">
                             {review.weekly_review || "None"}
                           </p>
                         </div>
                       </div>
 
-                      <div className="bg-background/40 border border-border/20 p-4 rounded-xl space-y-2">
+                      <div className="bg-background/40 border border-border/20 px-3 py-2 rounded-lg space-y-1.5">
                         {review.task_remarks?.learnings && (
                           <div>
-                            <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground/60 mb-0.5">
+                            <p className="text-[9px] font-black uppercase tracking-wider text-muted-foreground/60 mb-0.5">
                               Learnings
                             </p>
-                            <p className="text-sm font-medium text-foreground whitespace-pre-wrap leading-relaxed">
+                            <p className="text-xs font-medium text-foreground leading-tight line-clamp-3">
                               {review.task_remarks.learnings}
                             </p>
                           </div>
                         )}
                         {review.task_remarks?.challenges_faced && (
                           <div className="pt-2 border-t border-border/10">
-                            <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground/60 mb-0.5">
+                            <p className="text-[9px] font-black uppercase tracking-wider text-muted-foreground/60 mb-0.5">
                               Challenges Faced
                             </p>
-                            <p className="text-sm font-medium text-foreground whitespace-pre-wrap leading-relaxed">
+                            <p className="text-xs font-medium text-foreground leading-tight line-clamp-3">
                               {review.task_remarks.challenges_faced}
                             </p>
                           </div>
                         )}
                         {review.task_remarks?.next_week_plan && (
                           <div className="pt-2 border-t border-border/10">
-                            <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground/60 mb-0.5">
+                            <p className="text-[9px] font-black uppercase tracking-wider text-muted-foreground/60 mb-0.5">
                               Next Week's Plan
                             </p>
-                            <p className="text-sm font-medium text-foreground whitespace-pre-wrap leading-relaxed">
+                            <p className="text-xs font-medium text-foreground leading-tight line-clamp-3">
                               {review.task_remarks.next_week_plan}
                             </p>
                           </div>
@@ -396,21 +393,21 @@ export function QuestLogHistory() {
                       </div>
                     </div>
                   ) : (
-                    <div className="bg-background/40 border border-border/20 p-4 rounded-xl">
-                      <p className="text-sm font-bold text-muted-foreground italic uppercase tracking-wider">
+                    <div className="bg-background/40 border border-border/20 px-3 py-2 rounded-lg">
+                      <p className="text-xs font-bold text-muted-foreground italic uppercase tracking-wider">
                         Marked as on leave this week.
                       </p>
                     </div>
                   )}
 
                   {review.blockers && (
-                    <div className="bg-destructive/5 border border-destructive/20 p-3 rounded-xl flex items-start gap-3">
+                    <div className="bg-destructive/5 border border-destructive/20 px-3 py-2 rounded-lg flex items-start gap-3">
                       <ShieldAlert className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
                       <div>
                         <p className="text-[10px] font-black uppercase text-destructive tracking-widest">
                           Blockers Encountered
                         </p>
-                        <p className="text-xs text-muted-foreground mt-0.5 font-medium leading-relaxed">
+                        <p className="text-xs text-muted-foreground mt-0.5 font-medium leading-tight">
                           {review.blockers}
                         </p>
                       </div>
@@ -418,13 +415,13 @@ export function QuestLogHistory() {
                   )}
 
                   {review.review_note && (
-                    <div className="bg-brand-blue/5 border border-brand-blue/20 p-3 rounded-xl flex items-start gap-3">
+                    <div className="bg-brand-blue/5 border border-brand-blue/20 px-3 py-2 rounded-lg flex items-start gap-3">
                       <CheckCircle2 className="w-4 h-4 text-brand-blue shrink-0 mt-0.5" />
                       <div>
                         <p className="text-[10px] font-black uppercase text-brand-blue tracking-widest">
                           Council Review Remarks
                         </p>
-                        <p className="text-xs text-muted-foreground mt-0.5 font-medium leading-relaxed">
+                        <p className="text-xs text-muted-foreground mt-0.5 font-medium leading-tight">
                           {review.review_note}
                         </p>
                       </div>

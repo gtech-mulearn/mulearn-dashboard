@@ -1,6 +1,6 @@
 "use client";
 
-import { Gem, Trophy } from "lucide-react";
+import { Trophy } from "lucide-react";
 import { useState } from "react";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table, { type Data } from "@/components/dashboard/table/Table";
@@ -53,9 +53,6 @@ export default function LeaderboardPage() {
             .map((n) => n[0])
             .join("")
         : "??",
-      avatarUrl: item?.user_id
-        ? `https://api.dicebear.com/7.x/avataaars/svg?seed=${item.user_id}`
-        : undefined,
     };
   };
 
@@ -75,7 +72,6 @@ export default function LeaderboardPage() {
           .map((n) => n[0])
           .join("")
       : "??",
-    avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${item.user_id}`,
   }));
 
   const userDisplayName =
@@ -111,13 +107,10 @@ export default function LeaderboardPage() {
     },
     {
       column: "points",
-      Label: "Points",
+      Label: "Score",
       isSortable: true,
       wrap: (data: string | import("react").ReactElement) => (
-        <div className="flex items-center gap-1.5">
-          <Gem className="w-3.5 h-3.5 text-brand-blue" />
-          {data}
-        </div>
+        <div className="flex items-center gap-1.5">{data}</div>
       ),
     },
     {
@@ -155,7 +148,6 @@ export default function LeaderboardPage() {
         <div className="flex flex-col items-center w-full md:w-64 z-10">
           <div className="relative mb-4">
             <Avatar className="w-24 h-24 border-4 border-slate-400 shadow-[0_0_20px_rgba(148,163,184,0.3)]">
-              {top2.avatarUrl && <AvatarImage src={top2.avatarUrl} />}
               <AvatarFallback className="bg-slate-800 text-slate-200 text-xl font-bold">
                 {top2.avatar}
               </AvatarFallback>
@@ -167,10 +159,10 @@ export default function LeaderboardPage() {
           <h3 className="text-xl font-bold text-foreground mb-1">
             {top2.name}
           </h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Score: {top2.points.toLocaleString()}
-          </p>
-          <div className="bg-card/80 backdrop-blur-sm border border-border/50 rounded-xl p-6 w-full text-center shadow-xl flex flex-col items-center gap-3 h-48 justify-end transform transition-transform hover:scale-105">
+          <div className="bg-card/80 backdrop-blur-sm border border-border/50 rounded-xl p-6 w-full text-center shadow-xl flex flex-col items-center gap-3 h-52 justify-end transform transition-transform hover:scale-105">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+              Score: {top2.points.toLocaleString()}
+            </p>
             <div className="p-2 bg-slate-400/10 rounded-lg">
               <Trophy className="w-6 h-6 text-slate-400" />
             </div>
@@ -179,7 +171,6 @@ export default function LeaderboardPage() {
                 Reward
               </p>
               <div className="flex items-center justify-center gap-2 text-2xl font-bold text-foreground">
-                <Gem className="w-6 h-6 text-brand-blue" />
                 5,000
               </div>
               <p className="text-xs text-muted-foreground">Prize</p>
@@ -194,7 +185,6 @@ export default function LeaderboardPage() {
               👑
             </div>
             <Avatar className="w-32 h-32 border-4 border-warning shadow-[0_0_30px_rgba(255,141,12,0.4)] ring-4 ring-warning/20">
-              {top1.avatarUrl && <AvatarImage src={top1.avatarUrl} />}
               <AvatarFallback className="bg-warning/20 text-warning text-2xl font-bold">
                 {top1.avatar}
               </AvatarFallback>
@@ -206,20 +196,19 @@ export default function LeaderboardPage() {
           <h3 className="text-2xl font-extrabold text-foreground mb-1">
             {top1.name}
           </h3>
-          <p className="text-sm text-muted-foreground mb-6">
-            Score: {top1.points.toLocaleString()}
-          </p>
-          <div className="bg-gradient-to-b from-card to-warning/5 backdrop-blur-sm border-2 border-warning/30 rounded-2xl p-8 w-full text-center shadow-[0_20px_50px_rgba(255,141,12,0.15)] flex flex-col items-center gap-4 h-64 justify-end relative overflow-hidden group">
+          <div className="bg-gradient-to-b from-card to-warning/5 backdrop-blur-sm border-2 border-warning/30 rounded-2xl p-8 w-full text-center shadow-[0_20px_50px_rgba(255,141,12,0.15)] flex flex-col items-center gap-4 h-72 justify-end relative overflow-hidden group">
             <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-warning to-transparent opacity-50" />
+            <p className="text-sm font-black text-warning">
+              Score: {top1.points.toLocaleString()}
+            </p>
             <div className="p-3 bg-warning/10 rounded-xl group-hover:scale-110 transition-transform">
               <Trophy className="w-8 h-8 text-warning" />
             </div>
             <div className="space-y-1">
               <p className="text-xs uppercase tracking-wider text-warning font-bold">
-                Grand Prize
+                First Place
               </p>
               <div className="flex items-center justify-center gap-2 text-4xl font-black text-foreground tabular-nums">
-                <Gem className="w-8 h-8 text-brand-blue" />
                 10,000
               </div>
               <p className="text-sm text-muted-foreground">Prize Points</p>
@@ -231,7 +220,6 @@ export default function LeaderboardPage() {
         <div className="flex flex-col items-center w-full md:w-64 z-10">
           <div className="relative mb-4">
             <Avatar className="w-24 h-24 border-4 border-amber-700/50 shadow-[0_0_20px_rgba(180,83,9,0.2)]">
-              {top3.avatarUrl && <AvatarImage src={top3.avatarUrl} />}
               <AvatarFallback className="bg-amber-900/20 text-amber-700 text-xl font-bold">
                 {top3.avatar}
               </AvatarFallback>
@@ -243,10 +231,10 @@ export default function LeaderboardPage() {
           <h3 className="text-xl font-bold text-foreground mb-1">
             {top3.name}
           </h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Score: {top3.points.toLocaleString()}
-          </p>
-          <div className="bg-card/80 backdrop-blur-sm border border-border/50 rounded-xl p-6 w-full text-center shadow-xl flex flex-col items-center gap-3 h-44 justify-end transform transition-transform hover:scale-105">
+          <div className="bg-card/80 backdrop-blur-sm border border-border/50 rounded-xl p-6 w-full text-center shadow-xl flex flex-col items-center gap-3 h-48 justify-end transform transition-transform hover:scale-105">
+            <p className="text-xs font-bold text-amber-700 uppercase tracking-wider">
+              Score: {top3.points.toLocaleString()}
+            </p>
             <div className="p-2 bg-amber-700/10 rounded-lg">
               <Trophy className="w-6 h-6 text-amber-700" />
             </div>
@@ -255,7 +243,6 @@ export default function LeaderboardPage() {
                 Reward
               </p>
               <div className="flex items-center justify-center gap-2 text-2xl font-bold text-foreground">
-                <Gem className="w-6 h-6 text-brand-blue" />
                 2,500
               </div>
               <p className="text-xs text-muted-foreground">Prize</p>
@@ -267,7 +254,6 @@ export default function LeaderboardPage() {
       {/* User Status Banner */}
       <div className="bg-brand-blue/10 border border-brand-blue/20 rounded-full py-3 px-8 text-center text-sm font-medium text-brand-blue max-w-2xl mx-auto flex items-center justify-center gap-2 mb-12 animate-pulse">
         You are ranked <span className="font-black">#{userRank}</span> with{" "}
-        <Gem className="w-4 h-4" />{" "}
         <span className="font-black">{userScore.toLocaleString()}</span> points
       </div>
 

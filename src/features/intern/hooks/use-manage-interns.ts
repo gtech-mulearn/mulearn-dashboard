@@ -195,9 +195,31 @@ export function useReviewTimesheet(id: string) {
   return useMutation({
     mutationFn: (payload: TTimesheetReviewPayload) =>
       manageInternsApi.reviewTimesheet(id, payload),
-    onSuccess: async () => {
-      toast.success("Timesheet review submitted!");
+    onSuccess: async (_data, variables) => {
+      toast.success(
+        variables.action === "approve"
+          ? "Timesheet approved — streak & score updated!"
+          : "Timesheet review submitted!",
+      );
+      await queryClient.invalidateQueries({
+        queryKey: ["intern", "manage", "timesheets"],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["intern", "manage", "reviews"],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["intern", "overview", "status"],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["intern", "leaderboard"],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["intern", "overview", "activity"],
+      });
       await queryClient.invalidateQueries({ queryKey: internKeys.manage() });
+      await queryClient.invalidateQueries({
+        queryKey: internKeys.timesheets(),
+      });
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error, "Failed to submit timesheet review"));
@@ -222,9 +244,29 @@ export function useReviewWeeklyReview(id: string) {
   return useMutation({
     mutationFn: (payload: TWeeklyReviewReviewPayload) =>
       manageInternsApi.reviewWeeklyReview(id, payload),
-    onSuccess: async () => {
-      toast.success("Weekly review evaluation submitted!");
+    onSuccess: async (_data, variables) => {
+      toast.success(
+        variables.action === "approve"
+          ? "Weekly review approved — +50 score & weekly streak updated!"
+          : "Weekly review evaluation submitted!",
+      );
+      await queryClient.invalidateQueries({
+        queryKey: ["intern", "manage", "timesheets"],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["intern", "manage", "reviews"],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["intern", "overview", "status"],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["intern", "leaderboard"],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["intern", "overview", "activity"],
+      });
       await queryClient.invalidateQueries({ queryKey: internKeys.manage() });
+      await queryClient.invalidateQueries({ queryKey: internKeys.reviews() });
     },
     onError: (error: unknown) => {
       toast.error(

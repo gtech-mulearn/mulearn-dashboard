@@ -3,12 +3,14 @@
 import {
   AlertCircle,
   AlertTriangle,
+  CalendarDays,
   FileText,
   Home,
   PlaneTakeoff,
-  Plus,
+  Send,
 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,19 +20,35 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import {
-  LeaveFormDialog,
   useCancelLeave,
   useLeaveBalance,
   useLeaveRequests,
+  useSubmitLeave,
 } from "@/features/intern";
 
 export default function LeaveManagementPage() {
-  const [isLeaveOpen, setIsLeaveOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 10;
+
+  // Inline form state
+  const [leaveType, setLeaveType] = useState<
+    "SICK" | "CASUAL" | "WFH" | "EMERGENCY" | ""
+  >("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [reason, setReason] = useState("");
 
   const { data: balance, isLoading: isBalanceLoading } = useLeaveBalance();
   const { data: history, isLoading: isHistoryLoading } = useLeaveRequests({
@@ -38,9 +56,38 @@ export default function LeaveManagementPage() {
     perPage: perPage,
   });
   const cancelLeaveMutation = useCancelLeave();
+  const submitLeaveMutation = useSubmitLeave();
 
   const handleCancelLeave = (id: string) => {
     cancelLeaveMutation.mutate(id);
+  };
+
+  const handleSubmitLeave = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!leaveType || !startDate || !endDate || !reason.trim()) {
+      toast.error("Please fill in all required fields.");
+      return;
+    }
+    if (new Date(endDate) < new Date(startDate)) {
+      toast.error("End date cannot be before start date.");
+      return;
+    }
+    submitLeaveMutation.mutate(
+      {
+        leave_type: leaveType,
+        start_date: startDate,
+        end_date: endDate,
+        reason: reason.trim(),
+      },
+      {
+        onSuccess: () => {
+          setLeaveType("");
+          setStartDate("");
+          setEndDate("");
+          setReason("");
+        },
+      },
+    );
   };
 
   const isLoading = isBalanceLoading || isHistoryLoading;
@@ -53,7 +100,6 @@ export default function LeaveManagementPage() {
     );
   }
 
-  // Categories helper to display balances beautifully
   const balanceCategories = [
     {
       key: "CASUAL",
@@ -115,16 +161,6 @@ export default function LeaveManagementPage() {
             leaves.
           </p>
         </div>
-        <div>
-          <Button
-            onClick={() => setIsLeaveOpen(true)}
-            variant="default"
-            className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
-          >
-            <Plus className="w-4 h-4" />
-            Apply for Leave
-          </Button>
-        </div>
       </div>
 
       <Tabs defaultValue="balance" className="w-full space-y-6">
@@ -148,9 +184,8 @@ export default function LeaveManagementPage() {
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {balanceCategories.map((cat) => {
               const Icon = cat.icon;
-              const limit = cat.balance?.limit ?? "∞";
-              const used = cat.balance?.used ?? 0;
               const remaining = cat.balance?.remaining ?? "∞";
+              const used = cat.balance?.used ?? 0;
 
               return (
                 <Card
@@ -180,28 +215,9 @@ export default function LeaveManagementPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="pt-2 border-t border-border/10 mt-2">
-                    <div className="flex justify-between text-xs font-bold text-muted-foreground">
-                      <span>USED: {used}</span>
-                      <span>LIMIT: {limit}</span>
+                    <div className="text-xs font-bold text-muted-foreground">
+                      USED: {used}
                     </div>
-                    {typeof limit === "number" && (
-                      <div className="mt-2 h-1.5 w-full bg-muted/30 overflow-hidden rounded-full p-[1px]">
-                        <div
-                          className={`h-full bg-gradient-to-r ${
-                            cat.key === "SICK"
-                              ? "from-destructive to-destructive/85"
-                              : cat.key === "CASUAL"
-                                ? "from-brand-blue to-brand-blue/80"
-                                : cat.key === "WFH"
-                                  ? "from-brand-purple to-brand-purple/80"
-                                  : "from-warning to-warning/80"
-                          } rounded-full`}
-                          style={{
-                            width: `${Math.min(100, (used / limit) * 100)}%`,
-                          }}
-                        />
-                      </div>
-                    )}
                   </CardContent>
                 </Card>
               );
@@ -379,8 +395,128 @@ export default function LeaveManagementPage() {
         </TabsContent>
       </Tabs>
 
-      {/* Leave form dialog trigger */}
-      <LeaveFormDialog open={isLeaveOpen} onOpenChange={setIsLeaveOpen} />
+      {/* ── Inline Leave Application Form ───────────────────────────── */}
+      <div className="pt-4 border-t border-border/30">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-2 bg-brand-purple/10 rounded-xl">
+            <CalendarDays className="w-5 h-5 text-brand-purple" />
+          </div>
+          <div>
+            <h3 className="text-lg font-black uppercase tracking-widest text-foreground">
+              Apply for Leave
+            </h3>
+            <p className="text-xs text-muted-foreground font-medium">
+              Submit a new leave request — your campus lead will review it.
+            </p>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmitLeave}>
+          <Card className="border-border/40 bg-card/40 backdrop-blur-md shadow-xl">
+            <CardContent className="pt-6 space-y-6">
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {/* Leave Type */}
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+                    Leave Type <span className="text-destructive">*</span>
+                  </Label>
+                  <Select
+                    required
+                    value={leaveType}
+                    onValueChange={(v) =>
+                      setLeaveType(v as "SICK" | "CASUAL" | "WFH" | "EMERGENCY")
+                    }
+                  >
+                    <SelectTrigger className="w-full bg-background/50 border-border/50 h-10 font-bold focus:ring-brand-purple/30">
+                      <SelectValue placeholder="Select leave type..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="CASUAL" className="font-bold text-xs">
+                        Casual Leave
+                      </SelectItem>
+                      <SelectItem value="SICK" className="font-bold text-xs">
+                        Sick Leave
+                      </SelectItem>
+                      <SelectItem value="WFH" className="font-bold text-xs">
+                        Work From Home
+                      </SelectItem>
+                      <SelectItem
+                        value="EMERGENCY"
+                        className="font-bold text-xs"
+                      >
+                        Emergency Leave
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Start Date */}
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+                    Start Date <span className="text-destructive">*</span>
+                  </Label>
+                  <input
+                    type="date"
+                    required
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="w-full h-10 rounded-md border border-border/50 bg-background/50 px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-purple/30 focus:border-brand-purple/40"
+                  />
+                </div>
+
+                {/* End Date */}
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+                    End Date <span className="text-destructive">*</span>
+                  </Label>
+                  <input
+                    type="date"
+                    required
+                    value={endDate}
+                    min={startDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="w-full h-10 rounded-md border border-border/50 bg-background/50 px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-purple/30 focus:border-brand-purple/40"
+                  />
+                </div>
+              </div>
+
+              {/* Reason */}
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+                  Reason <span className="text-destructive">*</span>
+                </Label>
+                <Textarea
+                  required
+                  placeholder="Briefly explain why you need this leave..."
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  className="min-h-[120px] bg-background/50 border-border/50 font-bold focus:ring-brand-purple/30 resize-none p-4"
+                />
+              </div>
+
+              <div className="pt-2">
+                <Button
+                  type="submit"
+                  disabled={submitLeaveMutation.isPending}
+                  className="h-11 px-8 text-sm shadow-[0_8px_16px_rgba(139,92,246,0.25)] bg-brand-purple hover:bg-brand-purple/90 text-white font-bold rounded-full transition-all duration-300 gap-2"
+                >
+                  {submitLeaveMutation.isPending ? (
+                    <>
+                      <Spinner className="h-4 w-4" />
+                      Submitting...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      Submit Leave Request
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </form>
+      </div>
     </div>
   );
 }

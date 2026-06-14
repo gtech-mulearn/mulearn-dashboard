@@ -51,6 +51,13 @@ export function useTimesheetHistory(params?: TInternQueryParams) {
   });
 }
 
+export function useTimesheets(params?: TInternQueryParams) {
+  return useQuery({
+    queryKey: [...internKeys.timesheets(), params ?? {}],
+    queryFn: () => internApi.getTimesheets(params),
+  });
+}
+
 export function useTimesheetToday() {
   return useQuery({
     queryKey: internKeys.timesheetToday(),
