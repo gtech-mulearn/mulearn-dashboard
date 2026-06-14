@@ -43,6 +43,7 @@ import {
   useUpdateTask,
 } from "@/features/intern";
 import type { TInternTask } from "@/features/intern/types";
+import { useDebounce } from "@/hooks/use-debounce";
 import { useSearch } from "@/hooks/use-search";
 
 // ── Helpers ───────────────────────────────────────────────────
@@ -106,10 +107,12 @@ export default function AdminTasksPage() {
     clearResults: clearAssigneeResults,
   } = useSearch();
 
+  const debouncedSearch = useDebounce(searchText, 300);
+
   const { data: tasksData, isLoading } = useManageTasks({
     page,
     perPage,
-    search: searchText || undefined,
+    search: debouncedSearch || undefined,
   });
 
   const { data: guilds = [] } = useGuilds();
@@ -217,7 +220,7 @@ export default function AdminTasksPage() {
   };
 
   return (
-    <div className="flex-1 space-y-8 p-8 pt-6 max-w-7xl mx-auto w-full bg-background/50">
+    <div className="flex-1 space-y-8 p-4 sm:p-8 pt-6 max-w-7xl mx-auto w-full bg-background/50">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
@@ -333,7 +336,7 @@ export default function AdminTasksPage() {
                         )}
                       </td>
                       <td className="p-4 pr-6 text-right">
-                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center justify-end gap-2">
                           <Button
                             size="sm"
                             variant="outline"
@@ -392,8 +395,8 @@ export default function AdminTasksPage() {
 
       {/* ── Create Task Dialog ──────────────────────────────────── */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-2xl border-border/40 bg-card backdrop-blur-xl">
-          <DialogHeader>
+        <DialogContent className="w-full max-w-[calc(100%-2rem)] sm:max-w-2xl border-border/40 bg-card backdrop-blur-xl">
+          <DialogHeader className="pr-8">
             <DialogTitle className="text-xl font-black uppercase tracking-widest">
               Assign New Task
             </DialogTitle>
@@ -401,7 +404,10 @@ export default function AdminTasksPage() {
               Fill in the task details and assign it to an intern.
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleCreate} className="space-y-5 pt-2">
+          <form
+            onSubmit={handleCreate}
+            className="space-y-5 pt-2 w-full min-w-0"
+          >
             {/* Title */}
             <div className="space-y-2">
               <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
@@ -428,12 +434,12 @@ export default function AdminTasksPage() {
                 onChange={(e) =>
                   setForm({ ...form, description: e.target.value })
                 }
-                className="min-h-[90px] bg-background/50 border-border/50 font-medium resize-none"
+                className="min-h-[90px] max-h-[160px] overflow-y-auto bg-background/50 border-border/50 font-medium resize-none"
               />
             </div>
 
             {/* Category + Complexity */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                   Category <span className="text-destructive">*</span>
@@ -565,7 +571,7 @@ export default function AdminTasksPage() {
             </div>
 
             {/* Team + Deadline */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                   Team
@@ -636,8 +642,8 @@ export default function AdminTasksPage() {
 
       {/* ── Edit Task Dialog ────────────────────────────────────── */}
       <Dialog open={!!editTask} onOpenChange={(o) => !o && setEditTask(null)}>
-        <DialogContent className="max-w-2xl border-border/40 bg-card backdrop-blur-xl">
-          <DialogHeader>
+        <DialogContent className="w-full max-w-[calc(100%-2rem)] sm:max-w-2xl border-border/40 bg-card backdrop-blur-xl">
+          <DialogHeader className="pr-8">
             <DialogTitle className="text-xl font-black uppercase tracking-widest">
               Edit Task
             </DialogTitle>
@@ -645,7 +651,10 @@ export default function AdminTasksPage() {
               Update task details. Assignee changes are not supported via edit.
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleUpdate} className="space-y-5 pt-2">
+          <form
+            onSubmit={handleUpdate}
+            className="space-y-5 pt-2 w-full min-w-0"
+          >
             <div className="space-y-2">
               <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                 Title
@@ -665,10 +674,10 @@ export default function AdminTasksPage() {
                 onChange={(e) =>
                   setForm({ ...form, description: e.target.value })
                 }
-                className="min-h-[80px] bg-background/50 border-border/50 font-medium resize-none"
+                className="min-h-[80px] max-h-[160px] overflow-y-auto bg-background/50 border-border/50 font-medium resize-none"
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                   Category
@@ -723,7 +732,7 @@ export default function AdminTasksPage() {
                 </Select>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                   Team

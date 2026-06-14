@@ -686,7 +686,7 @@ export default function TimesheetPage() {
                 </div>
                 <div className="flex flex-col items-end gap-0.5">
                   <Badge className="bg-brand-blue/10 text-brand-blue border-brand-blue/30 font-black text-[10px] px-2 py-0.5">
-                    {multiplier} XP Boost
+                    {multiplier} Point Boost
                   </Badge>
                   <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground/60">
                     Active multiplier

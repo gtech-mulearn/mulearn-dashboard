@@ -117,7 +117,7 @@ export function LeaveFormDialog({ open, onOpenChange }: LeaveFormDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-card/95 backdrop-blur-xl border-border/60 w-full max-w-[calc(100%-2rem)] sm:max-w-md p-4 sm:p-6">
-        <DialogHeader>
+        <DialogHeader className="pr-8">
           <DialogTitle className="text-xl font-black uppercase tracking-wider text-foreground">
             Apply for Leave
           </DialogTitle>
@@ -126,7 +126,7 @@ export function LeaveFormDialog({ open, onOpenChange }: LeaveFormDialogProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 py-2">
+        <form onSubmit={handleSubmit} className="space-y-4 py-2 w-full min-w-0">
           <div className="space-y-2">
             <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
               Leave Type

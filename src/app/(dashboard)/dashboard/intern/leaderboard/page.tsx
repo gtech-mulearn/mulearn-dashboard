@@ -43,7 +43,10 @@ export default function LeaderboardPage() {
   }
 
   const getPodiumUser = (index: number) => {
-    const item = podiumData?.data?.[index];
+    const activePodium = (podiumData?.data || []).filter(
+      (item) => item.status !== "INACTIVE",
+    );
+    const item = activePodium[index];
     return {
       name: item?.full_name || "N/A",
       points: item?.score || 0,
@@ -60,19 +63,21 @@ export default function LeaderboardPage() {
   const top2 = getPodiumUser(1);
   const top3 = getPodiumUser(2);
 
-  const listRows = (boardData?.data || []).map((item) => ({
-    id: item.user_id,
-    rank: item.rank,
-    name: item.full_name,
-    points: item.score,
-    streak: "-",
-    avatar: item.full_name
-      ? item.full_name
-          .split(" ")
-          .map((n) => n[0])
-          .join("")
-      : "??",
-  }));
+  const listRows = (boardData?.data || [])
+    .filter((item) => item.status !== "INACTIVE")
+    .map((item) => ({
+      id: item.user_id,
+      rank: item.rank,
+      name: item.full_name,
+      points: item.score,
+      streak: "-",
+      avatar: item.full_name
+        ? item.full_name
+            .split(" ")
+            .map((n) => n[0])
+            .join("")
+        : "??",
+    }));
 
   const userDisplayName =
     profile?.full_name || userInfo?.full_name || "Alex Doe";
@@ -159,21 +164,17 @@ export default function LeaderboardPage() {
           <h3 className="text-xl font-bold text-foreground mb-1">
             {top2.name}
           </h3>
-          <div className="bg-card/80 backdrop-blur-sm border border-border/50 rounded-xl p-6 w-full text-center shadow-xl flex flex-col items-center gap-3 h-52 justify-end transform transition-transform hover:scale-105">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-              Score: {top2.points.toLocaleString()}
-            </p>
+          <div className="bg-card/80 backdrop-blur-sm border border-border/50 rounded-xl p-6 w-full text-center shadow-xl flex flex-col items-center gap-3 h-52 justify-center transform transition-transform hover:scale-105">
             <div className="p-2 bg-slate-400/10 rounded-lg">
               <Trophy className="w-6 h-6 text-slate-400" />
             </div>
             <div className="space-y-1">
-              <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                Reward
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                Score
               </p>
-              <div className="flex items-center justify-center gap-2 text-2xl font-bold text-foreground">
-                5,000
+              <div className="text-3xl font-black text-foreground">
+                {top2.points.toLocaleString()}
               </div>
-              <p className="text-xs text-muted-foreground">Prize</p>
             </div>
           </div>
         </div>
@@ -196,22 +197,18 @@ export default function LeaderboardPage() {
           <h3 className="text-2xl font-extrabold text-foreground mb-1">
             {top1.name}
           </h3>
-          <div className="bg-gradient-to-b from-card to-warning/5 backdrop-blur-sm border-2 border-warning/30 rounded-2xl p-8 w-full text-center shadow-[0_20px_50px_rgba(255,141,12,0.15)] flex flex-col items-center gap-4 h-72 justify-end relative overflow-hidden group">
+          <div className="bg-gradient-to-b from-card to-warning/5 backdrop-blur-sm border-2 border-warning/30 rounded-2xl p-8 w-full text-center shadow-[0_20px_50px_rgba(255,141,12,0.15)] flex flex-col items-center gap-4 h-72 justify-center relative overflow-hidden group">
             <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-warning to-transparent opacity-50" />
-            <p className="text-sm font-black text-warning">
-              Score: {top1.points.toLocaleString()}
-            </p>
             <div className="p-3 bg-warning/10 rounded-xl group-hover:scale-110 transition-transform">
               <Trophy className="w-8 h-8 text-warning" />
             </div>
             <div className="space-y-1">
-              <p className="text-xs uppercase tracking-wider text-warning font-bold">
-                First Place
+              <p className="text-[10px] font-black uppercase tracking-widest text-warning">
+                Score
               </p>
-              <div className="flex items-center justify-center gap-2 text-4xl font-black text-foreground tabular-nums">
-                10,000
+              <div className="text-4xl font-black text-foreground tabular-nums">
+                {top1.points.toLocaleString()}
               </div>
-              <p className="text-sm text-muted-foreground">Prize Points</p>
             </div>
           </div>
         </div>
@@ -231,21 +228,17 @@ export default function LeaderboardPage() {
           <h3 className="text-xl font-bold text-foreground mb-1">
             {top3.name}
           </h3>
-          <div className="bg-card/80 backdrop-blur-sm border border-border/50 rounded-xl p-6 w-full text-center shadow-xl flex flex-col items-center gap-3 h-48 justify-end transform transition-transform hover:scale-105">
-            <p className="text-xs font-bold text-amber-700 uppercase tracking-wider">
-              Score: {top3.points.toLocaleString()}
-            </p>
+          <div className="bg-card/80 backdrop-blur-sm border border-border/50 rounded-xl p-6 w-full text-center shadow-xl flex flex-col items-center gap-3 h-48 justify-center transform transition-transform hover:scale-105">
             <div className="p-2 bg-amber-700/10 rounded-lg">
               <Trophy className="w-6 h-6 text-amber-700" />
             </div>
             <div className="space-y-1">
-              <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                Reward
+              <p className="text-[10px] font-black uppercase tracking-widest text-amber-700">
+                Score
               </p>
-              <div className="flex items-center justify-center gap-2 text-2xl font-bold text-foreground">
-                2,500
+              <div className="text-3xl font-black text-foreground">
+                {top3.points.toLocaleString()}
               </div>
-              <p className="text-xs text-muted-foreground">Prize</p>
             </div>
           </div>
         </div>

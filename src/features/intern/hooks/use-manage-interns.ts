@@ -199,8 +199,23 @@ export function useReviewTimesheet(id: string) {
       toast.success(
         variables.action === "approve"
           ? "Timesheet approved — streak & score updated!"
-          : "Timesheet review submitted!",
+          : "Timesheet rejected — streak reset to 0!",
       );
+      await queryClient.invalidateQueries({
+        queryKey: ["manage-timesheets"],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["manage-weekly-reviews"],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["intern-overview-status"],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["leaderboard"],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["quest-log-activity"],
+      });
       await queryClient.invalidateQueries({
         queryKey: ["intern", "manage", "timesheets"],
       });
@@ -248,8 +263,23 @@ export function useReviewWeeklyReview(id: string) {
       toast.success(
         variables.action === "approve"
           ? "Weekly review approved — +50 score & weekly streak updated!"
-          : "Weekly review evaluation submitted!",
+          : "Weekly review rejected — streak reset to 0!",
       );
+      await queryClient.invalidateQueries({
+        queryKey: ["manage-timesheets"],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["manage-weekly-reviews"],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["intern-overview-status"],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["leaderboard"],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["quest-log-activity"],
+      });
       await queryClient.invalidateQueries({
         queryKey: ["intern", "manage", "timesheets"],
       });

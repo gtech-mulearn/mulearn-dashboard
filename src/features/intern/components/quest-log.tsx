@@ -29,7 +29,7 @@ export function QuestLog() {
             Quest Log
           </CardTitle>
           <CardDescription className="text-xs font-bold uppercase text-muted-foreground/60">
-            Recent XP Gains
+            Recent Points Gains
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-3 px-0 pb-0 flex-1 space-y-4">
@@ -67,7 +67,7 @@ export function QuestLog() {
           Quest Log
         </CardTitle>
         <CardDescription className="text-xs font-bold uppercase text-muted-foreground/60">
-          Recent XP Gains
+          Recent Points Gains
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-3 px-0 pb-0 flex-1">
@@ -77,8 +77,8 @@ export function QuestLog() {
               key={activity.id}
               className="py-2.5 px-0 hover:bg-muted/10 transition-all flex items-start justify-between gap-4 group"
             >
-              <div className="space-y-1">
-                <p className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">
+              <div className="space-y-1 min-w-0 flex-1">
+                <p className="text-sm font-bold text-foreground group-hover:text-primary transition-colors break-all">
                   {activity.title}
                 </p>
                 <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">

@@ -1,4 +1,4 @@
-import { apiClient, endpoints } from "@/api";
+import { ApiError, apiClient, endpoints } from "@/api";
 import type {
   TInternActivityLog,
   TInternOverviewStatus,
@@ -212,7 +212,16 @@ export const internApi = {
   },
 
   getLeaderboardMe: async (): Promise<TLeaderboardMe> => {
-    return apiClient.get<TLeaderboardMe>(endpoints.intern.leaderboardMe);
+    try {
+      return await apiClient.get<TLeaderboardMe>(
+        endpoints.intern.leaderboardMe,
+      );
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 400) {
+        return { rank: 0, score: 0 };
+      }
+      throw error;
+    }
   },
 
   // ── Guilds ─────────────────────────────────────────────────

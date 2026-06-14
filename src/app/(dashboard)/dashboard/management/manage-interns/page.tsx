@@ -105,7 +105,7 @@ export default function ManageInternsPage() {
     undefined,
   );
 
-  const debouncedSearch = useDebounce(searchText, 500);
+  const debouncedSearch = useDebounce(searchText, 300);
 
   // Dialog & Modal states
   const [isOnboardOpen, setIsOnboardOpen] = useState(false);

@@ -39,6 +39,7 @@ import {
 } from "@/features/intern";
 
 export default function LeaveManagementPage() {
+  const [activeTab, setActiveTab] = useState("balance");
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 10;
 
@@ -163,7 +164,11 @@ export default function LeaveManagementPage() {
         </div>
       </div>
 
-      <Tabs defaultValue="balance" className="w-full space-y-6">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="w-full space-y-6"
+      >
         <TabsList className="bg-muted/30 border border-border/40 p-1 rounded-xl">
           <TabsTrigger
             value="balance"
@@ -184,7 +189,6 @@ export default function LeaveManagementPage() {
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {balanceCategories.map((cat) => {
               const Icon = cat.icon;
-              const remaining = cat.balance?.remaining ?? "∞";
               const used = cat.balance?.used ?? 0;
 
               return (
@@ -204,12 +208,6 @@ export default function LeaveManagementPage() {
                       </span>
                       <Icon className={`w-4 h-4 ${cat.textColor}`} />
                     </div>
-                    <CardTitle className="text-2xl font-black tracking-tight text-foreground mt-1">
-                      {remaining}{" "}
-                      <span className="text-xs font-bold text-muted-foreground uppercase">
-                        Remaining
-                      </span>
-                    </CardTitle>
                     <CardDescription className="text-[10px] font-semibold text-muted-foreground mt-0.5">
                       {cat.desc}
                     </CardDescription>
@@ -396,127 +394,134 @@ export default function LeaveManagementPage() {
       </Tabs>
 
       {/* ── Inline Leave Application Form ───────────────────────────── */}
-      <div className="pt-4 border-t border-border/30">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-brand-purple/10 rounded-xl">
-            <CalendarDays className="w-5 h-5 text-brand-purple" />
+      {activeTab === "balance" && (
+        <div className="pt-4 border-t border-border/30">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-brand-purple/10 rounded-xl">
+              <CalendarDays className="w-5 h-5 text-brand-purple" />
+            </div>
+            <div>
+              <h3 className="text-lg font-black uppercase tracking-widest text-foreground">
+                Apply for Leave
+              </h3>
+              <p className="text-xs text-muted-foreground font-medium">
+                Submit a new leave request — your campus lead will review it.
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-lg font-black uppercase tracking-widest text-foreground">
-              Apply for Leave
-            </h3>
-            <p className="text-xs text-muted-foreground font-medium">
-              Submit a new leave request — your campus lead will review it.
-            </p>
-          </div>
-        </div>
 
-        <form onSubmit={handleSubmitLeave}>
-          <Card className="border-border/40 bg-card/40 backdrop-blur-md shadow-xl">
-            <CardContent className="pt-6 space-y-6">
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {/* Leave Type */}
+          <form onSubmit={handleSubmitLeave}>
+            <Card className="border-border/40 bg-card/40 backdrop-blur-md shadow-xl">
+              <CardContent className="pt-6 space-y-6">
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {/* Leave Type */}
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+                      Leave Type <span className="text-destructive">*</span>
+                    </Label>
+                    <Select
+                      required
+                      value={leaveType}
+                      onValueChange={(v) =>
+                        setLeaveType(
+                          v as "SICK" | "CASUAL" | "WFH" | "EMERGENCY",
+                        )
+                      }
+                    >
+                      <SelectTrigger className="w-full bg-background/50 border-border/50 h-10 font-bold focus:ring-brand-purple/30">
+                        <SelectValue placeholder="Select leave type..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem
+                          value="CASUAL"
+                          className="font-bold text-xs"
+                        >
+                          Casual Leave
+                        </SelectItem>
+                        <SelectItem value="SICK" className="font-bold text-xs">
+                          Sick Leave
+                        </SelectItem>
+                        <SelectItem value="WFH" className="font-bold text-xs">
+                          Work From Home
+                        </SelectItem>
+                        <SelectItem
+                          value="EMERGENCY"
+                          className="font-bold text-xs"
+                        >
+                          Emergency Leave
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Start Date */}
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+                      Start Date <span className="text-destructive">*</span>
+                    </Label>
+                    <input
+                      type="date"
+                      required
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className="w-full h-10 rounded-md border border-border/50 bg-background/50 px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-purple/30 focus:border-brand-purple/40"
+                    />
+                  </div>
+
+                  {/* End Date */}
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+                      End Date <span className="text-destructive">*</span>
+                    </Label>
+                    <input
+                      type="date"
+                      required
+                      value={endDate}
+                      min={startDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className="w-full h-10 rounded-md border border-border/50 bg-background/50 px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-purple/30 focus:border-brand-purple/40"
+                    />
+                  </div>
+                </div>
+
+                {/* Reason */}
                 <div className="space-y-2">
                   <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                    Leave Type <span className="text-destructive">*</span>
+                    Reason <span className="text-destructive">*</span>
                   </Label>
-                  <Select
+                  <Textarea
                     required
-                    value={leaveType}
-                    onValueChange={(v) =>
-                      setLeaveType(v as "SICK" | "CASUAL" | "WFH" | "EMERGENCY")
-                    }
+                    placeholder="Briefly explain why you need this leave..."
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                    className="min-h-[120px] bg-background/50 border-border/50 font-bold focus:ring-brand-purple/30 resize-none p-4"
+                  />
+                </div>
+
+                <div className="pt-2">
+                  <Button
+                    type="submit"
+                    disabled={submitLeaveMutation.isPending}
+                    className="h-11 px-8 text-sm shadow-[0_8px_16px_rgba(139,92,246,0.25)] bg-brand-purple hover:bg-brand-purple/90 text-white font-bold rounded-full transition-all duration-300 gap-2"
                   >
-                    <SelectTrigger className="w-full bg-background/50 border-border/50 h-10 font-bold focus:ring-brand-purple/30">
-                      <SelectValue placeholder="Select leave type..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="CASUAL" className="font-bold text-xs">
-                        Casual Leave
-                      </SelectItem>
-                      <SelectItem value="SICK" className="font-bold text-xs">
-                        Sick Leave
-                      </SelectItem>
-                      <SelectItem value="WFH" className="font-bold text-xs">
-                        Work From Home
-                      </SelectItem>
-                      <SelectItem
-                        value="EMERGENCY"
-                        className="font-bold text-xs"
-                      >
-                        Emergency Leave
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+                    {submitLeaveMutation.isPending ? (
+                      <>
+                        <Spinner className="h-4 w-4" />
+                        Submitting...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4" />
+                        Submit Leave Request
+                      </>
+                    )}
+                  </Button>
                 </div>
-
-                {/* Start Date */}
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                    Start Date <span className="text-destructive">*</span>
-                  </Label>
-                  <input
-                    type="date"
-                    required
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full h-10 rounded-md border border-border/50 bg-background/50 px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-purple/30 focus:border-brand-purple/40"
-                  />
-                </div>
-
-                {/* End Date */}
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                    End Date <span className="text-destructive">*</span>
-                  </Label>
-                  <input
-                    type="date"
-                    required
-                    value={endDate}
-                    min={startDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    className="w-full h-10 rounded-md border border-border/50 bg-background/50 px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-purple/30 focus:border-brand-purple/40"
-                  />
-                </div>
-              </div>
-
-              {/* Reason */}
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                  Reason <span className="text-destructive">*</span>
-                </Label>
-                <Textarea
-                  required
-                  placeholder="Briefly explain why you need this leave..."
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  className="min-h-[120px] bg-background/50 border-border/50 font-bold focus:ring-brand-purple/30 resize-none p-4"
-                />
-              </div>
-
-              <div className="pt-2">
-                <Button
-                  type="submit"
-                  disabled={submitLeaveMutation.isPending}
-                  className="h-11 px-8 text-sm shadow-[0_8px_16px_rgba(139,92,246,0.25)] bg-brand-purple hover:bg-brand-purple/90 text-white font-bold rounded-full transition-all duration-300 gap-2"
-                >
-                  {submitLeaveMutation.isPending ? (
-                    <>
-                      <Spinner className="h-4 w-4" />
-                      Submitting...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="w-4 h-4" />
-                      Submit Leave Request
-                    </>
-                  )}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </form>
-      </div>
+              </CardContent>
+            </Card>
+          </form>
+        </div>
+      )}
     </div>
   );
 }

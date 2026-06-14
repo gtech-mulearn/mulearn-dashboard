@@ -32,6 +32,7 @@ import {
   useInternTasks,
   useUpdateTaskStatus,
 } from "@/features/intern";
+import { useDebounce } from "@/hooks/use-debounce";
 
 const getComplexityColor = (complexity: string) => {
   switch (complexity) {
@@ -50,6 +51,7 @@ const getComplexityColor = (complexity: string) => {
 
 export default function InternTasksPage() {
   const [searchText, setSearchText] = useState("");
+  const debouncedSearch = useDebounce(searchText, 300);
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [page, setPage] = useState(1);
   const [selectedTask, setSelectedTask] = useState<TInternTask | null>(null);
@@ -57,7 +59,7 @@ export default function InternTasksPage() {
   const { data: tasksResponse, isLoading } = useInternTasks({
     page,
     perPage: 20,
-    search: searchText || undefined,
+    search: debouncedSearch || undefined,
   });
 
   const updateStatusMutation = useUpdateTaskStatus();
@@ -72,7 +74,7 @@ export default function InternTasksPage() {
   };
 
   return (
-    <div className="flex-1 space-y-8 p-8 pt-6 max-w-7xl mx-auto w-full bg-background/50">
+    <div className="flex-1 space-y-8 p-4 sm:p-8 pt-6 max-w-7xl mx-auto w-full bg-background/50">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <div className="flex items-center gap-2 mb-2">
@@ -137,6 +139,7 @@ export default function InternTasksPage() {
           {filteredTasks.map((task) => (
             <Card
               key={task.id}
+              data-slot="card"
               className="border-border/40 bg-card/30 backdrop-blur-md shadow-lg overflow-hidden flex flex-col justify-between transition-all hover:shadow-xl cursor-pointer hover:border-brand-blue/30"
               onClick={() => setSelectedTask(task)}
             >
@@ -173,14 +176,6 @@ export default function InternTasksPage() {
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-8 text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 hover:text-foreground"
-                      onClick={() => setSelectedTask(task)}
-                    >
-                      Details
-                    </Button>
                     <Select
                       value={task.status}
                       onValueChange={(val) => handleStatusChange(task.id, val)}
@@ -235,12 +230,12 @@ export default function InternTasksPage() {
         open={!!selectedTask}
         onOpenChange={(o) => !o && setSelectedTask(null)}
       >
-        <DialogContent className="max-w-2xl border-border/40 bg-card/95 backdrop-blur-2xl shadow-2xl">
+        <DialogContent className="w-full max-w-[calc(100%-2rem)] sm:max-w-2xl border-border/40 bg-card/95 backdrop-blur-2xl shadow-2xl">
           {selectedTask && (
             <>
-              <DialogHeader className="pb-4 border-b border-border/20">
+              <DialogHeader className="pt-3 sm:pt-0 pr-8 pb-4 border-b border-border/20">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <DialogTitle className="text-2xl font-black uppercase tracking-tight text-foreground">
+                  <DialogTitle className="text-2xl font-black uppercase tracking-tight text-foreground break-all">
                     {selectedTask.title}
                   </DialogTitle>
                   <div className="flex flex-wrap items-center gap-2 shrink-0">
@@ -277,15 +272,15 @@ export default function InternTasksPage() {
                   <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                     Description
                   </h4>
-                  <div className="p-4 rounded-xl border border-border/40 bg-background/40 max-h-[220px] overflow-y-auto">
-                    <p className="text-sm font-medium text-foreground whitespace-pre-wrap leading-relaxed">
+                  <div className="p-4 rounded-xl border border-border/40 bg-background/40 max-h-[220px] overflow-y-auto w-full min-w-0">
+                    <p className="text-sm font-medium text-foreground whitespace-pre-wrap leading-relaxed break-all">
                       {selectedTask.description || "No description provided."}
                     </p>
                   </div>
                 </div>
 
                 {/* Grid info */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1 bg-background/25 border border-border/20 p-3 rounded-xl">
                     <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">
                       Created By

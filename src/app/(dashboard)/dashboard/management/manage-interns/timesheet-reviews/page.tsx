@@ -491,8 +491,8 @@ export default function TimesheetReviewsPage() {
       >
         <DialogContent
           showCloseButton={false}
-          className={`bg-card/95 backdrop-blur-xl border-border/60 ${
-            typeFilter === "WEEKLY" ? "max-w-2xl sm:max-w-2xl" : ""
+          className={`bg-card/95 backdrop-blur-xl border-border/60 w-full max-w-[calc(100%-2rem)] ${
+            typeFilter === "WEEKLY" ? "sm:max-w-2xl" : "sm:max-w-lg"
           }`}
         >
           <DialogHeader>
@@ -515,8 +515,8 @@ export default function TimesheetReviewsPage() {
                 ((selectedTimesheet as unknown as Record<string, unknown>)
                   .muid as string) || "";
               return (
-                <div className="space-y-4 py-2 my-2 text-sm">
-                  <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-4 py-2 my-2 text-sm w-full min-w-0">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1">
                       <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
                         Intern
@@ -549,7 +549,7 @@ export default function TimesheetReviewsPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="flex flex-col gap-1 items-start">
                       <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
                         Category
@@ -584,7 +584,7 @@ export default function TimesheetReviewsPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1">
                       <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
                         Status
@@ -642,7 +642,7 @@ export default function TimesheetReviewsPage() {
                         <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
                           Blockers
                         </span>
-                        <p className="bg-destructive/5 text-destructive p-2.5 rounded-lg text-xs font-semibold mt-1 border border-destructive/20 leading-relaxed">
+                        <p className="bg-destructive/5 text-destructive p-2.5 rounded-lg text-xs font-semibold mt-1 border border-destructive/20 leading-relaxed break-words">
                           {selectedTimesheet.blockers}
                         </p>
                       </div>
@@ -666,7 +666,7 @@ export default function TimesheetReviewsPage() {
                         <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
                           Council Review Note
                         </span>
-                        <p className="p-2.5 bg-muted/20 border rounded-lg text-xs mt-1 text-muted-foreground leading-relaxed">
+                        <p className="p-2.5 bg-muted/20 border rounded-lg text-xs mt-1 text-muted-foreground leading-relaxed break-words">
                           {selectedTimesheet.review_note}
                         </p>
                       </div>
@@ -684,8 +684,8 @@ export default function TimesheetReviewsPage() {
                   .muid as string) || "";
               const remarks = selectedWeeklyReview.task_remarks;
               return (
-                <div className="space-y-4 py-2 my-2 text-sm max-h-[60vh] overflow-y-auto pr-1">
-                  <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-4 py-2 my-2 text-sm max-h-[60vh] overflow-y-auto pr-1 w-full min-w-0">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1">
                       <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
                         Intern
@@ -718,7 +718,7 @@ export default function TimesheetReviewsPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="flex flex-col gap-1">
                       <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
                         Week
@@ -746,7 +746,7 @@ export default function TimesheetReviewsPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1">
                       <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
                         Leave Details
@@ -858,7 +858,7 @@ export default function TimesheetReviewsPage() {
                             <Sparkles className="w-3.5 h-3.5 text-brand-blue" />
                             Key Learnings
                           </span>
-                          <p className="bg-muted/20 p-2.5 rounded-lg text-xs mt-1 border border-border/10 leading-relaxed text-foreground font-medium">
+                          <p className="bg-muted/20 p-2.5 rounded-lg text-xs mt-1 border border-border/10 leading-relaxed text-foreground font-medium break-words">
                             {remarks.learnings}
                           </p>
                         </div>
@@ -869,7 +869,7 @@ export default function TimesheetReviewsPage() {
                           <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
                             Challenges Faced
                           </span>
-                          <p className="bg-muted/20 p-2.5 rounded-lg text-xs mt-1 border border-border/10 leading-relaxed text-foreground font-medium">
+                          <p className="bg-muted/20 p-2.5 rounded-lg text-xs mt-1 border border-border/10 leading-relaxed text-foreground font-medium break-words">
                             {remarks.challenges_faced}
                           </p>
                         </div>
@@ -880,7 +880,7 @@ export default function TimesheetReviewsPage() {
                           <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
                             Next Week Plan
                           </span>
-                          <p className="bg-muted/20 p-2.5 rounded-lg text-xs mt-1 border border-border/10 leading-relaxed text-foreground font-medium">
+                          <p className="bg-muted/20 p-2.5 rounded-lg text-xs mt-1 border border-border/10 leading-relaxed text-foreground font-medium break-words">
                             {remarks.next_week_plan}
                           </p>
                         </div>
@@ -893,7 +893,7 @@ export default function TimesheetReviewsPage() {
                       <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
                         Blockers
                       </span>
-                      <p className="bg-destructive/5 text-destructive p-2.5 rounded-lg text-xs font-semibold mt-1 border border-destructive/20 leading-relaxed">
+                      <p className="bg-destructive/5 text-destructive p-2.5 rounded-lg text-xs font-semibold mt-1 border border-destructive/20 leading-relaxed break-words">
                         {selectedWeeklyReview.blockers}
                       </p>
                     </div>
@@ -904,7 +904,7 @@ export default function TimesheetReviewsPage() {
                       <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
                         Suggestions
                       </span>
-                      <p className="bg-muted/20 p-2.5 rounded-lg text-xs mt-1 border border-border/10 leading-relaxed text-muted-foreground font-medium">
+                      <p className="bg-muted/20 p-2.5 rounded-lg text-xs mt-1 border border-border/10 leading-relaxed text-muted-foreground font-medium break-words">
                         {selectedWeeklyReview.suggestions}
                       </p>
                     </div>
@@ -928,7 +928,7 @@ export default function TimesheetReviewsPage() {
                         <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
                           Council Review Note
                         </span>
-                        <p className="p-2.5 bg-muted/20 border rounded-lg text-xs mt-1 text-muted-foreground leading-relaxed">
+                        <p className="p-2.5 bg-muted/20 border rounded-lg text-xs mt-1 text-muted-foreground leading-relaxed break-words">
                           {selectedWeeklyReview.review_note}
                         </p>
                       </div>

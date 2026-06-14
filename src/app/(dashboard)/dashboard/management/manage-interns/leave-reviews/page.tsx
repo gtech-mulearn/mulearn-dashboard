@@ -338,7 +338,7 @@ export default function LeaveReviewsPage() {
       <Dialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
         <DialogContent
           showCloseButton={false}
-          className="bg-card/95 backdrop-blur-xl border-border/60"
+          className="bg-card/95 backdrop-blur-xl border-border/60 w-full max-w-[calc(100%-2rem)] sm:max-w-lg p-4 sm:p-6"
         >
           <DialogHeader>
             <DialogTitle className="text-xl font-black uppercase tracking-wider text-foreground">
@@ -359,8 +359,8 @@ export default function LeaveReviewsPage() {
                   selectedLeave.end_date,
                 );
               return (
-                <div className="space-y-4 py-2 my-2 text-sm">
-                  <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-4 py-2 my-2 text-sm w-full min-w-0">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1">
                       <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
                         Intern
@@ -379,7 +379,7 @@ export default function LeaveReviewsPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1">
                       <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
                         Submission Date
@@ -406,7 +406,7 @@ export default function LeaveReviewsPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="flex flex-col gap-1">
                       <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
                         Start Date
@@ -447,7 +447,7 @@ export default function LeaveReviewsPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1">
                       <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
                         Status
@@ -493,7 +493,7 @@ export default function LeaveReviewsPage() {
                     <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
                       Reason for Respite
                     </span>
-                    <p className="bg-muted/40 p-2.5 rounded-lg text-xs font-semibold text-foreground/80 mt-1 border border-border/20 max-h-40 overflow-y-auto leading-relaxed">
+                    <p className="bg-muted/40 p-2.5 rounded-lg text-xs font-semibold text-foreground/80 mt-1 border border-border/20 max-h-40 overflow-y-auto leading-relaxed break-words">
                       {selectedLeave.reason || "No reason provided."}
                     </p>
                   </div>
@@ -516,7 +516,7 @@ export default function LeaveReviewsPage() {
                         <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
                           Council Review Note
                         </span>
-                        <p className="p-2.5 bg-muted/20 border rounded-lg text-xs mt-1 text-muted-foreground leading-relaxed">
+                        <p className="p-2.5 bg-muted/20 border rounded-lg text-xs mt-1 text-muted-foreground leading-relaxed break-words">
                           {selectedLeave.review_note}
                         </p>
                       </div>

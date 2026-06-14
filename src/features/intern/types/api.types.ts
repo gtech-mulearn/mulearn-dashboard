@@ -35,6 +35,7 @@ export interface TLeaderboardRow {
   guild: string;
   score: number;
   rank: number;
+  status?: string;
 }
 
 export interface TTimesheet {

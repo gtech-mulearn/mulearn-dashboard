@@ -39,12 +39,14 @@ export function EliteLeaders() {
   }, [profile, userInfo]);
 
   const allRows = useMemo(() => {
-    return (topLeaderboard || []).map((item) => ({
-      id: item.user_id,
-      rank: item.rank,
-      name: item.full_name,
-      points: item.score,
-    }));
+    return (topLeaderboard || [])
+      .filter((item) => item.status !== "INACTIVE")
+      .map((item) => ({
+        id: item.user_id,
+        rank: item.rank,
+        name: item.full_name,
+        points: item.score,
+      }));
   }, [topLeaderboard]);
 
   const topRows = useMemo(() => {
