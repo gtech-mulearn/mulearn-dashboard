@@ -897,12 +897,22 @@ export const endpoints = {
       detail: (taskId: string) => `/api/v1/dashboard/task/${taskId}/`,
       /** GET - List tasks awaiting admin review */
       pending: "/api/v1/dashboard/task/pending/",
-      /** PATCH - Approve a pending task */
-      approve: (taskId: string) => `/api/v1/dashboard/task/${taskId}/approve/`,
-      /** PATCH - Reject a pending task */
-      reject: (taskId: string) => `/api/v1/dashboard/task/${taskId}/reject/`,
+      /** PATCH - Approve or reject a pending task */
+      review: (taskId: string) => `/api/v1/dashboard/task/${taskId}/review/`,
       /** GET/POST/PUT/DELETE - Task Types CRUD */
       taskTypes: "/api/v1/dashboard/task/list-task-type/",
+      taskTypeCreate: "/api/v1/dashboard/task/list-task-type/",
+      taskTypeDetail: (id: string) => `/api/v1/dashboard/task/task-type/${id}/`,
+      import: "/api/v1/dashboard/task/import/",
+      template: "/api/v1/dashboard/task/base-template/",
+      csv: "/api/v1/dashboard/task/csv/",
+      levels: "/api/v1/dashboard/task/level/",
+      igs: "/api/v1/dashboard/task/ig/",
+      organizations: "/api/v1/dashboard/task/organization/",
+      channels: "/api/v1/dashboard/task/channel/",
+      types: "/api/v1/dashboard/task/task-types/",
+      events: "/api/v1/dashboard/task/events/",
+      skills: "/api/v1/dashboard/skill/dropdown/",
     },
 
     interestGroups: {
