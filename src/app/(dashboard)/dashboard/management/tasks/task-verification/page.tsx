@@ -1,5 +1,5 @@
-import { TaskVerificationPage } from "@/features/tasks";
+import { TaskVerificationView } from "@/features/tasks";
 
-export default function TaskVerificationRoute() {
-  return <TaskVerificationPage />;
+export default function TaskVerificationPage() {
+  return <TaskVerificationView />;
 }

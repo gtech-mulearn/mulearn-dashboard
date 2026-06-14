@@ -11,7 +11,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TaskVerificationTable } from "./task-verification-table";
 
-export function TaskVerificationPage() {
+export function TaskVerificationView() {
   const [sourceFilter, setSourceFilter] = useState<
     "mentor" | "company" | "all"
   >("all");
