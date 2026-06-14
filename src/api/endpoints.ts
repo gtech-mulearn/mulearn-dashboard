@@ -1157,6 +1157,33 @@ export const endpoints = {
     /** GET - Standalone recent activity feed */
     recentActivity: "/api/v1/dashboard/campus/recent-activity/",
   },
+
+  // ============================================
+  // Organization (Institutes) Endpoints
+  // org_type is a PATH SEGMENT (e.g. /college/, /company/, /community/, /school/)
+  // matching the established pattern in search.colleges / search.schools
+  // ============================================
+  organizations: {
+    /** GET - List organizations by type (path segment: college|company|community|school) */
+    listByType: (orgType: string) =>
+      `/api/v1/dashboard/organisation/institutes/${orgType.toLowerCase()}/`,
+    /** GET - Get organization details by ID */
+    detail: (id: string) =>
+      `/api/v1/dashboard/organisation/institutes/info/${id}/`,
+    /** POST - Create new organization */
+    create: "/api/v1/dashboard/organisation/institutes/create/",
+    /** PUT - Edit organization by code */
+    edit: (code: string) =>
+      `/api/v1/dashboard/organisation/institutes/edit/${code}/`,
+    /** DELETE - Delete organization by code */
+    delete: (code: string) =>
+      `/api/v1/dashboard/organisation/institutes/delete/${code}/`,
+    /** GET - Export organizations as CSV by org_type */
+    csv: (orgType: string) =>
+      `/api/v1/dashboard/organisation/institutes/${orgType.toLowerCase()}/csv/`,
+    /** GET - List affiliations for dropdown */
+    affiliationList: "/api/v1/dashboard/organisation/affiliation/list/",
+  },
   intern: {
     overviewStatus: "/api/v1/dashboard/intern/overview/status/",
     overviewActivity: "/api/v1/dashboard/intern/overview/activity/",
