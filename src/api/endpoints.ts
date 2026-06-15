@@ -1184,6 +1184,20 @@ export const endpoints = {
     /** GET - List affiliations for dropdown */
     affiliationList: "/api/v1/dashboard/organisation/affiliation/list/",
   },
+  // ============================================
+  // Affiliation CRUD Endpoints (Set B — dedicated module)
+  // ============================================
+  affiliation: {
+    /** GET - Paginated list with metadata (organization_count, created_by, etc.) */
+    list: "/api/v1/dashboard/affiliation/",
+    /** POST - Create a new affiliation */
+    create: "/api/v1/dashboard/affiliation/",
+    /** PUT - Update affiliation by UUID */
+    update: (id: string) => `/api/v1/dashboard/affiliation/${id}/`,
+    /** DELETE - Delete affiliation by UUID */
+    delete: (id: string) => `/api/v1/dashboard/affiliation/${id}/`,
+  },
+
   intern: {
     overviewStatus: "/api/v1/dashboard/intern/overview/status/",
     overviewActivity: "/api/v1/dashboard/intern/overview/activity/",
