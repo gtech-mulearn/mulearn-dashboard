@@ -1,6 +1,5 @@
 import { ArrowUpRight, Briefcase, MapPin, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { LearnerProfile } from "../types";
@@ -18,7 +17,7 @@ export function LearnerCard({ learner }: LearnerCardProps) {
     .toUpperCase();
 
   return (
-    <Card className="group relative p-3 py-4">
+    <Card className="group flex h-full flex-col p-3 py-4">
       {/* Avatar + name */}
       <div className="flex items-start gap-3 pr-24">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-sm font-bold text-primary">
@@ -67,7 +66,7 @@ export function LearnerCard({ learner }: LearnerCardProps) {
       </div>
 
       {/* Details */}
-      <div className="mt-3 space-y-1">
+      <div className="mt-3 mb-4 flex-1 space-y-1">
         {learner.college && (
           <div className="flex items-start gap-1.5 text-xs text-muted-foreground">
             <MapPin className="h-3 w-3 shrink-0 mt-0.5" />
@@ -93,7 +92,7 @@ export function LearnerCard({ learner }: LearnerCardProps) {
       </div>
 
       {/* View profile CTA */}
-      <div className="mt-4 border-t border-border pt-3">
+      <div className="mt-auto border-t border-border pt-3">
         <Button
           variant="ghost"
           size="sm"

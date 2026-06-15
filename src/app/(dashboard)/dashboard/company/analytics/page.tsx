@@ -11,6 +11,7 @@ import {
   TrendingUp,
   Users,
 } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -264,9 +265,11 @@ function DashboardSummaryView() {
               </CardHeader>
               <CardContent className="flex items-center gap-4">
                 {summary.company.logo ? (
-                  <img
+                  <Image
                     src={summary.company.logo}
                     alt={summary.company.name}
+                    width={64}
+                    height={64}
                     className="h-16 w-16 rounded-xl object-contain border bg-white p-1"
                   />
                 ) : (

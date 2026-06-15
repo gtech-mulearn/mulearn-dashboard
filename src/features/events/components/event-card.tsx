@@ -18,24 +18,33 @@ interface EventCardProps {
 }
 
 function getOrganizerName(organizer: OrganizerInfo): string {
-  if (organizer.type === "global_ig") {
-    return organizer.ig?.name ?? "Global IG";
+  if (!organizer) return "MuLearn";
+
+  const type = organizer.type ?? organizer.organiser_type;
+
+  if (type === "global_ig") {
+    const igName = organizer.ig?.name ?? organizer.organiser_ig?.name;
+    return igName ?? "Global IG";
   }
-  if (organizer.type === "campus_ig") {
-    const igName = organizer.ig?.name;
-    const campusName = organizer.campus?.title ?? organizer.campus?.name;
+  if (type === "campus_ig") {
+    const igName = organizer.ig?.name ?? organizer.organiser_ig?.name;
+    const campusInfo = organizer.campus ?? organizer.organiser_campus;
+    const campusName = campusInfo?.title ?? campusInfo?.name;
+
     if (igName && campusName) {
       return `${igName} @ ${campusName}`;
     }
     return organizer.campus_ig?.name ?? "Campus IG";
   }
-  if (organizer.type === "campus") {
-    return organizer.campus?.title ?? organizer.campus?.name ?? "Campus";
+  if (type === "campus") {
+    const campusInfo = organizer.campus ?? organizer.organiser_campus;
+    return campusInfo?.title ?? campusInfo?.name ?? "Campus";
   }
-  if (organizer.type === "company") {
-    return organizer.company?.title ?? organizer.company?.name ?? "Company";
+  if (type === "company") {
+    const companyInfo = organizer.company ?? organizer.organiser_company;
+    return companyInfo?.title ?? companyInfo?.name ?? "Company";
   }
-  if (organizer.type === "admin") {
+  if (type === "admin") {
     return "MuLearn";
   }
   return "MuLearn";

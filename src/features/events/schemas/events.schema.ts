@@ -11,6 +11,7 @@ export const venueTypeSchema = z.enum(["physical", "online", "hybrid"]);
 const createEventBaseSchema = z.object({
   title: z.string().min(1, "Title is required").max(200, "Title too long"),
   description: z.string().min(1, "Description is required"),
+  event_scope: z.enum(["coder", "maker", "manager", "creative"]),
   scope: z.enum(["global", "campus", "ig", "campus_ig"]),
   start_datetime: z
     .string()

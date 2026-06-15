@@ -18,20 +18,30 @@ export function EventDetailView({
   showInterestButton = true,
   layout = "full",
   showVenue = true,
+  initialEvent,
 }: EventDetailViewProps) {
-  const { data: event, isLoading, isError, error } = useEventDetail(eventId);
+  const {
+    data: fetchedEvent,
+    isLoading,
+    isError,
+    error,
+  } = useEventDetail(initialEvent ? undefined : eventId);
 
-  if (isLoading) {
+  const event = initialEvent ?? fetchedEvent;
+
+  if (isLoading && !initialEvent) {
     return <EventDetailSkeleton />;
   }
 
-  if (isError || !event) {
+  if ((isError || !event) && !initialEvent) {
     return (
       <p className="text-sm text-destructive">
         {error instanceof Error ? error.message : "Failed to load event"}
       </p>
     );
   }
+
+  if (!event) return null;
 
   const organizerName = (() => {
     const { type, ig, campus, company, campus_ig } = event.organizer;
