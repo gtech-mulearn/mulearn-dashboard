@@ -298,7 +298,7 @@ export function SessionCreateDialog({
                           min={1}
                           {...field}
                           onChange={(e) =>
-                            field.onChange(parseInt(e.target.value) || 1)
+                            field.onChange(parseInt(e.target.value, 10) || 1)
                           }
                         />
                       </FormControl>

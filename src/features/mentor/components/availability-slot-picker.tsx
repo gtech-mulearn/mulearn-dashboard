@@ -118,7 +118,7 @@ export function AvailabilitySlotPicker({ value, onChange, disabled }: Props) {
             className="flex gap-2 md:grid md:grid-cols-7"
             style={{ "--slide-idx": startIndex } as React.CSSProperties}
           >
-            {DAYS.map(({ short, label, num }, index) => {
+            {DAYS.map(({ short, label, num }, _index) => {
               const enabled = isDayEnabled(value, num);
               const slots = getSlots(value, num);
               const switchId = `${id}-day-${num}`;

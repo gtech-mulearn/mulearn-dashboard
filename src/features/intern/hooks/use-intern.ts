@@ -110,6 +110,13 @@ export function useWeeklyReviews(params?: TInternQueryParams) {
   });
 }
 
+export function useWeeklyReviewHistory(params?: TInternQueryParams) {
+  return useQuery({
+    queryKey: [...internKeys.reviews(), "history", params ?? {}],
+    queryFn: () => internApi.getWeeklyReviewHistory(params),
+  });
+}
+
 export function useWeeklyReviewCurrent() {
   return useQuery({
     queryKey: internKeys.reviewCurrent(),

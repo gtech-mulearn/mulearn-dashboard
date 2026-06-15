@@ -115,7 +115,6 @@ import { IgChapterEditDialog } from "./ig-chapter-edit-dialog";
 import { IgChapterFormDialog } from "./ig-chapter-form-dialog";
 import { StudentLevelsCard } from "./student-levels-card";
 import { TransferEnablerDialog } from "./transfer-enabler-dialog";
-import { TransferIgRoleDialog } from "./transfer-ig-role-dialog";
 import { TransferLeadDialog } from "./transfer-lead-dialog";
 
 const PIE_COLORS = ["#16a34a", "#0ea5e9", "#f59e0b", "#ef4444", "#8b5cf6"];

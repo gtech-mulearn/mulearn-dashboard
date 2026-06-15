@@ -55,7 +55,7 @@ export function ApplicantRow({ applicant, jobId }: ApplicantRowProps) {
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
 
-  const handleStatusChange = (next: AppStatus) => {
+  const _handleStatusChange = (next: AppStatus) => {
     if (next === "rejected") {
       setRejectOpen(true);
       return;
@@ -104,7 +104,7 @@ export function ApplicantRow({ applicant, jobId }: ApplicantRowProps) {
               const d = applicant.applied_at
                 ? new Date(applicant.applied_at)
                 : null;
-              return d && !isNaN(d.getTime())
+              return d && !Number.isNaN(d.getTime())
                 ? `Applied on ${d.toLocaleDateString()}`
                 : "Applied on N/A";
             })()}
