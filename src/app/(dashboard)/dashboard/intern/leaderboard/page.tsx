@@ -278,7 +278,6 @@ export default function LeaderboardPage() {
           perPage={perPage}
           columnOrder={tableColumns}
           slNoCellClassName="text-muted-foreground font-bold"
-          useRowRankAsSerialNo={true}
         >
           <THead
             columnOrder={tableColumns}
