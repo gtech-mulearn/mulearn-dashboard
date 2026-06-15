@@ -3,6 +3,7 @@
 import { Handshake, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { DataTableErrorBoundary } from "@/components/dashboard/DataTableErrorBoundary";
+import { Blank } from "@/components/dashboard/table/Blank";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table from "@/components/dashboard/table/Table";
 import TableTop from "@/components/dashboard/table/TableTop";
@@ -197,23 +198,21 @@ function AffiliationContent() {
                   onIconClick={handleSort}
                   action
                 />
-                <div>
-                  {!isLoading && (
-                    <Pagination
-                      currentPage={currentPage}
-                      totalPages={totalPages}
-                      handleNextClick={() =>
-                        setCurrentPage((p) => Math.min(p + 1, totalPages || 1))
-                      }
-                      handlePreviousClick={() =>
-                        setCurrentPage((p) => Math.max(p - 1, 1))
-                      }
-                      perPage={perPage}
-                      totalCount={totalCount}
-                    />
-                  )}
-                </div>
-                <div />
+                {!isLoading && (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    handleNextClick={() =>
+                      setCurrentPage((p) => Math.min(p + 1, totalPages || 1))
+                    }
+                    handlePreviousClick={() =>
+                      setCurrentPage((p) => Math.max(p - 1, 1))
+                    }
+                    perPage={perPage}
+                    totalCount={totalCount}
+                  />
+                )}
+                <Blank />
               </Table>
             </div>
           </div>

@@ -1,9 +1,8 @@
 "use client";
 import { X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -14,7 +13,6 @@ type Props = {
   className?: string;
   showButton: boolean;
   inputClassName?: string;
-  debounceDelay?: number;
 };
 
 export const SearchBar = ({
@@ -25,10 +23,8 @@ export const SearchBar = ({
   className,
   showButton,
   inputClassName,
-  debounceDelay = 500,
 }: Props) => {
   const [search, setSearch] = useState("");
-  const debouncedSearch = useDebounce(search, debounceDelay);
 
   const sizeClass =
     size === "sm"
@@ -37,21 +33,16 @@ export const SearchBar = ({
         ? "h-11 text-base"
         : "h-10 text-sm";
 
-  // Fire onSearch automatically when debounced value changes (no button)
-  useEffect(() => {
-    if (!showButton) {
-      onSearch(debouncedSearch.trim());
-    }
-  }, [debouncedSearch, showButton, onSearch]);
-
   const onChangeSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const sanitizedInput = event.target.value.replace(/[<>/]/g, "");
+    const inputValue = event.target.value;
+    const sanitizedInput = inputValue.replace(/[<>/]/g, "");
     setSearch(sanitizedInput);
+    onSearch(sanitizedInput);
   };
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    onSearch(search.trim()); // immediate on explicit submit
+    onSearch(search.trim());
   };
 
   const clearInput = () => {
