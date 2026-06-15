@@ -53,7 +53,7 @@ export function CompanyProfileHeader({
     ? new Date(profile.created_at)
     : null;
   const memberSince =
-    memberSinceDate && !isNaN(memberSinceDate.getTime())
+    memberSinceDate && !Number.isNaN(memberSinceDate.getTime())
       ? memberSinceDate.toLocaleDateString("en-IN", {
           month: "long",
           year: "numeric",

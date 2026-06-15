@@ -16,7 +16,7 @@ export function JobCard({ job, onView }: JobCardProps) {
 
   const dateObj = job.created_at ? new Date(job.created_at) : null;
   const formattedDate =
-    dateObj && !isNaN(dateObj.getTime())
+    dateObj && !Number.isNaN(dateObj.getTime())
       ? dateObj.toLocaleDateString("en-IN", {
           day: "numeric",
           month: "short",

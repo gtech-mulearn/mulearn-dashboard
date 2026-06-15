@@ -20,6 +20,7 @@ export interface TInternOverviewStatus {
   completed_tasks: number;
   complexity_score: number;
   score: number;
+  join_date?: string;
 }
 
 export interface TInternActivityLog {
@@ -72,6 +73,12 @@ export interface TTimesheetUpdatePayload {
   remark?: string;
   end_of_day_note?: string;
   edit_reason: string; // mandatory
+  category?: string;
+  description?: string;
+  hours?: string;
+  blockers?: string;
+  task?: string;
+  task_status?: string;
 }
 
 export interface TTimesheetSummary {
@@ -133,6 +140,14 @@ export interface TWeeklyReviewUpdatePayload {
   blockers?: string;
   suggestions?: string;
   rating?: number;
+  weekly_review?: string;
+  tasks_assigned?: string;
+  tasks_completed?: string;
+  hours_committed?: number;
+  leave_days?: number;
+  learnings?: string;
+  challenges_faced?: string;
+  next_week_plan?: string;
 }
 
 export interface TInternTask {

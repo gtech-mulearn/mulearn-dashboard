@@ -44,7 +44,7 @@ interface JobDetailModalProps {
 
 function formatDate(iso: string) {
   const d = iso ? new Date(iso) : null;
-  return d && !isNaN(d.getTime())
+  return d && !Number.isNaN(d.getTime())
     ? d.toLocaleDateString("en-IN", {
         day: "numeric",
         month: "short",

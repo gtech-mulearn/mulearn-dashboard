@@ -7,7 +7,6 @@ import {
   ChevronRight,
   FileText,
   Globe,
-  GraduationCap,
   Linkedin,
   Mail,
   Pencil,
@@ -125,7 +124,7 @@ function CompanyProfileSidebar({
           {profile.created_at &&
             (() => {
               const d = new Date(profile.created_at);
-              return !isNaN(d.getTime()) ? (
+              return !Number.isNaN(d.getTime()) ? (
                 <div className="flex items-center gap-3">
                   <CalendarDays className="size-4 shrink-0 text-muted-foreground" />
                   <span className="text-sm text-foreground">

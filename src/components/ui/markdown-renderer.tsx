@@ -32,7 +32,7 @@ export function MarkdownRenderer({
             </a>
           ),
           img: ({ alt, ...props }) => (
-            // eslint-disable-next-line @next/next/no-img-element
+            // biome-ignore lint/performance/noImgElement: Markdown images dimensions are unknown
             <img
               {...props}
               alt={alt ?? ""}

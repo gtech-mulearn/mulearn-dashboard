@@ -239,7 +239,7 @@ function OrganizationsContent() {
   // ─── Column order ─────────────────────────────────────────────────────────
   const columnOrder = useMemo(() => getColumnOrder(activeTab), [activeTab]);
 
-  const TabIcon = TAB_ICONS[activeTab];
+  const _TabIcon = TAB_ICONS[activeTab];
 
   return (
     <>

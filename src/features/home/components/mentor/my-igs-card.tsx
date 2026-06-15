@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTaskIgDropdown } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
 
-const no403Retry = (failureCount: number, error: unknown) => {
+const _no403Retry = (failureCount: number, error: unknown) => {
   if (
     error instanceof Error &&
     "status" in error &&
