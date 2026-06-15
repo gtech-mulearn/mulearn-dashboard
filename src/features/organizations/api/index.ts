@@ -6,42 +6,40 @@
 
 // Affiliation CRUD API
 export {
+  createAffiliation,
+  deleteAffiliation,
   type FetchAffiliationsParams,
   fetchAffiliations,
-  createAffiliation,
   updateAffiliation,
-  deleteAffiliation,
 } from "./affiliation.api";
-
-// Organizations API
-export {
-  type FetchOrgsParams,
-  fetchOrganizations,
-  createOrganization,
-  editOrganization,
-  deleteOrganization,
-  downloadOrgsCsv,
-  fetchAffiliationDropdowns,
-  fetchCountriesDropdown,
-  fetchStatesDropdown,
-  fetchDistrictsDropdown,
-} from "./organizations.api";
-
 // Departments API
 export {
-  type DepartmentParams,
-  type DepartmentListData,
-  fetchDepartments,
   createDepartment,
-  updateDepartment,
+  type DepartmentListData,
+  type DepartmentParams,
   deleteDepartment,
+  fetchDepartments,
+  updateDepartment,
 } from "./departments.api";
+// Organizations API
+export {
+  createOrganization,
+  deleteOrganization,
+  downloadOrgsCsv,
+  editOrganization,
+  type FetchOrgsParams,
+  fetchAffiliationDropdowns,
+  fetchCountriesDropdown,
+  fetchDistrictsDropdown,
+  fetchOrganizations,
+  fetchStatesDropdown,
+} from "./organizations.api";
 
 // Transfer & Merge API
 export {
-  transferOrganization,
-  fetchMergePreview,
   executeMerge,
+  fetchMergePreview,
+  transferOrganization,
 } from "./transfer.api";
 
 // Verification API

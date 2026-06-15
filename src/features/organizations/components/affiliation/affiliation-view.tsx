@@ -10,11 +10,11 @@ import TableTop from "@/components/dashboard/table/TableTop";
 import THead from "@/components/dashboard/table/Thead";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { AffiliationItem } from "@/features/organizations";
 import {
   useAffiliationsList,
   useDeleteAffiliation,
 } from "@/features/organizations";
-import type { AffiliationItem } from "@/features/organizations";
 import { AffiliationFormDialog } from "./affiliation-form-dialog";
 
 // ─── Column definitions ───────────────────────────────────────────────────────

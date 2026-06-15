@@ -4,46 +4,45 @@
  * 📍 src/features/organizations/hooks/index.ts
  */
 
-// Query keys
-export { organizationsKeys, affiliationKeys } from "./query-keys";
-
 // Error utilities
 export { getOrgErrorMessage, useOrgQueryErrorToast } from "./org-error";
+// Query keys
+export { affiliationKeys, organizationsKeys } from "./query-keys";
 
 // Affiliation CRUD hooks
 export {
   useAffiliationsList,
   useCreateAffiliation,
-  useUpdateAffiliation,
   useDeleteAffiliation,
+  useUpdateAffiliation,
 } from "./use-affiliations";
 
 // Department hooks
 export {
-  useDepartments,
   useCreateDepartment,
-  useUpdateDepartment,
   useDeleteDepartment,
+  useDepartments,
+  useUpdateDepartment,
 } from "./use-departments";
 
 // Organization hooks
 export {
-  useOrgsList,
-  useCreateOrg,
-  useEditOrg,
-  useDeleteOrg,
-  useOrgsCsvDownload,
   useAffiliations,
   useCountriesDropdown,
-  useStatesDropdown,
+  useCreateOrg,
+  useDeleteOrg,
   useDistrictsDropdown,
+  useEditOrg,
+  useOrgsCsvDownload,
+  useOrgsList,
+  useStatesDropdown,
 } from "./use-organizations";
 
 // Transfer & Merge hooks
 export {
-  useTransferOrganization,
-  useMergePreview,
   useExecuteMerge,
+  useMergePreview,
+  useTransferOrganization,
 } from "./use-transfer";
 
 // Verification hooks

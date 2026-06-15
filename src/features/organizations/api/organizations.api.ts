@@ -8,6 +8,7 @@ import {
   type OrgInfo,
   type OrgListData,
   OrgListResponseSchema,
+  type AffiliationItem,
 } from "../schemas";
 
 // ─── Query params ─────────────────────────────────────────────────────────────
@@ -153,3 +154,10 @@ export async function fetchDistrictsDropdown(
   })) as { districts: any[] };
   return mapToOptions(data.districts || data);
 }
+
+// ─── New org-module APIs ──────────────────────────────────────────────────────
+export * from "./departments.api";
+export * from "./transfer.api";
+export * from "./verification.api";
+// Re-export types for convenience
+export type { AffiliationItem, OrgFormValues, OrgInfo, OrgListData };

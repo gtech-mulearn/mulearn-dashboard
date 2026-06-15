@@ -20,10 +20,10 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { eventsApi } from "../api";
 import {
+  EVENT_CLUSTER_OPTIONS,
   EVENT_CREATE_WIZARD_STEPS,
   EVENT_FORM_DEFAULT_VALUES,
   EVENT_SCOPE_OPTIONS,
-  EVENT_CLUSTER_OPTIONS,
 } from "../constants/events.constants";
 import {
   toEventFormData,
