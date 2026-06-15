@@ -194,7 +194,7 @@ export default function TasksView() {
             Tasks
           </CardTitle>
           <p className="text-sm text-muted-foreground mt-1">
-            Manage task configuration for the MuLearn
+            Manage task configuration
           </p>
         </div>
         <div className="flex flex-wrap gap-2 w-full sm:w-auto">

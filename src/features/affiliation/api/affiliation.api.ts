@@ -1,10 +1,10 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
-  AffiliationListResponseSchema,
-  GenericMutationResponseSchema,
   type AffiliationFormValues,
   type AffiliationListData,
+  AffiliationListResponseSchema,
+  GenericMutationResponseSchema,
 } from "../schemas";
 
 export interface FetchAffiliationsParams {
