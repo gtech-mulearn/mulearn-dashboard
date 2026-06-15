@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { CustomDateTimePicker } from "@/components/ui/custom-datetime-picker";
 import {
   Form,
   FormControl,
@@ -133,7 +134,10 @@ export function SessionEditSheet({
                     <FormItem>
                       <FormLabel>Starts At</FormLabel>
                       <FormControl>
-                        <Input type="datetime-local" {...field} />
+                        <CustomDateTimePicker
+                          value={field.value}
+                          onChange={field.onChange}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -146,7 +150,10 @@ export function SessionEditSheet({
                     <FormItem>
                       <FormLabel>Ends At</FormLabel>
                       <FormControl>
-                        <Input type="datetime-local" {...field} />
+                        <CustomDateTimePicker
+                          value={field.value}
+                          onChange={field.onChange}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

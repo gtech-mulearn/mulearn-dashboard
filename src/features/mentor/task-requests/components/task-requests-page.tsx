@@ -62,6 +62,7 @@ import {
   useDeleteMentorTask,
   useMentorTasks,
   useTaskIgDropdown,
+  useTaskLevels,
   useTaskTypes,
   useUpdateMentorTask,
 } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
@@ -101,6 +102,8 @@ const STATUS_CONFIG: Record<
   },
 };
 
+const EMPTY_ARRAY: any[] = [];
+
 // ─── Task Form Dialog (Create + Edit) ─────────────────────────────────────────
 function TaskFormDialog({
   open,
@@ -112,8 +115,11 @@ function TaskFormDialog({
   task?: MentorTask | null;
 }) {
   const isEdit = !!task;
-  const { data: myIgs = [] } = useTaskIgDropdown();
-  const { data: taskTypes = [], isLoading: taskTypesLoading } = useTaskTypes();
+  const { data: myIgs = EMPTY_ARRAY } = useTaskIgDropdown();
+  const { data: taskTypes = EMPTY_ARRAY, isLoading: taskTypesLoading } =
+    useTaskTypes();
+  const { data: levels = EMPTY_ARRAY, isLoading: levelsLoading } =
+    useTaskLevels();
   const { mutate: create, isPending: isCreating } = useCreateMentorTask();
   const { mutate: update, isPending: isUpdating } = useUpdateMentorTask(
     task?.id ?? "",
@@ -135,21 +141,9 @@ function TaskFormDialog({
     } as any,
   });
 
-  // Populate form when editing
+  // Reset form when opening in create mode
   useEffect(() => {
-    if (task && open) {
-      form.reset({
-        hashtag: task.hashtag ?? "",
-        title: task.title ?? "",
-        karma: task.karma ?? 100,
-        usage_count: task.usage_count ?? 1,
-        description: task.description ?? "",
-        type: task.type ?? "",
-        level: task.level ?? "",
-        ig: task.ig ?? "",
-        skill_ids: [],
-      });
-    } else if (!task && open) {
+    if (open && !task) {
       form.reset({
         hashtag: "",
         title: "",
@@ -162,7 +156,43 @@ function TaskFormDialog({
         skill_ids: [],
       });
     }
-  }, [task, open, form]);
+  }, [open, task, form]);
+
+  // Populate form when editing
+  useEffect(() => {
+    if (task && open) {
+      // The API list response stores type/ig/level as display names (e.g. "IGL4",
+      // "Web Development", "lvl3"). The dropdowns bind to UUIDs, so we must resolve
+      // each name to its ID before resetting the form.
+      const resolvedIg =
+        myIgs.find((ig: any) => ig.name === task.ig || ig.id === task.ig)?.id ??
+        task.ig ??
+        "";
+      const resolvedType =
+        taskTypes.find((t: any) => t.title === task.type || t.id === task.type)
+          ?.id ??
+        task.type ??
+        "";
+      const resolvedLevel =
+        levels.find(
+          (lvl: any) => lvl.name === task.level || lvl.id === task.level,
+        )?.id ??
+        task.level ??
+        "";
+
+      form.reset({
+        hashtag: task.hashtag?.replace(/^#/, "") ?? "",
+        title: task.title ?? "",
+        karma: task.karma ?? 100,
+        usage_count: task.usage_count ?? 1,
+        description: task.description ?? "",
+        type: resolvedType,
+        level: resolvedLevel,
+        ig: resolvedIg,
+        skill_ids: [],
+      });
+    }
+  }, [task, open, form, myIgs, taskTypes, levels]);
 
   function onSubmit(values: MentorTaskFormValues) {
     const payload = {
@@ -335,10 +365,31 @@ function TaskFormDialog({
                 name="level"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Level ID (optional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Level UUID" {...field} />
-                    </FormControl>
+                    <FormLabel>Level</FormLabel>
+                    <Select
+                      value={field.value || "none"}
+                      onValueChange={(val) =>
+                        field.onChange(val === "none" ? "" : val)
+                      }
+                    >
+                      <FormControl>
+                        <SelectTrigger disabled={levelsLoading}>
+                          <SelectValue
+                            placeholder={
+                              levelsLoading ? "Loading..." : "Select level"
+                            }
+                          />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
+                        {levels.map((lvl: any) => (
+                          <SelectItem key={lvl.id} value={lvl.id}>
+                            {lvl.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}

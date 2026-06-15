@@ -10,6 +10,7 @@ import {
   fetchMentorTask,
   fetchMentorTasks,
   fetchTaskIgDropdown,
+  fetchTaskLevels,
   fetchTaskTypes,
   updateMentorTask,
 } from "../api/mentor-tasks.api";
@@ -54,6 +55,16 @@ export function useTaskTypes() {
     queryKey: mentorTaskKeys.taskTypes(),
     queryFn: fetchTaskTypes,
     staleTime: 10 * 60 * 1000, // task types change rarely
+    retry: no403Retry,
+  });
+}
+
+// ─── GET /api/v1/dashboard/task/level/ — task levels for dropdown ────────────
+export function useTaskLevels() {
+  return useQuery({
+    queryKey: [...mentorTaskKeys.all, "levels"],
+    queryFn: fetchTaskLevels,
+    staleTime: 10 * 60 * 1000, // levels change rarely
     retry: no403Retry,
   });
 }
