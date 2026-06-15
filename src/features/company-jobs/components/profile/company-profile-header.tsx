@@ -191,7 +191,8 @@ export function CompanyProfileHeader({
                     variant="outline"
                     size="sm"
                     asChild
-                    className="gap-1 rounded-full border border-white/30 bg-white/10 px-3 text-xs text-white backdrop-blur-sm hover:bg-white/20 sm:gap-1.5 sm:text-sm"
+                    aria-label="Edit Profile"
+                    className="gap-1 rounded-full sm:gap-1.5 sm:text-sm"
                   >
                     <Link href="/dashboard/company/profile/edit">
                       <Pencil className="size-3.5" />
@@ -199,9 +200,11 @@ export function CompanyProfileHeader({
                     </Link>
                   </Button>
                   <Button
+                    aria-label="Post a Job"
                     size="sm"
                     asChild
-                    className="gap-1 rounded-full bg-background px-3 text-xs text-foreground hover:bg-background/90 sm:gap-1.5 sm:text-sm"
+                    variant="default"
+                    className="gap-1 rounded-full text-xs sm:gap-1.5 sm:text-sm bg-background px-3 text-foreground hover:bg-background/90 border-none"
                   >
                     <Link href="/dashboard/company/jobs/create">
                       Post a Job
@@ -211,16 +214,19 @@ export function CompanyProfileHeader({
               ) : (
                 <>
                   <Button
+                    aria-label="Share"
                     variant="outline"
                     size="sm"
-                    className="gap-1 rounded-full border border-white/30 bg-white/10 px-3 text-xs text-white backdrop-blur-sm hover:bg-white/20 sm:gap-1.5 sm:text-sm"
+                    className="gap-1 rounded-full  text-xs sm:gap-1.5 sm:text-sm"
                   >
                     <Share2 className="size-3.5" />
                     <span className="hidden sm:inline">Share</span>
                   </Button>
                   <Button
+                    variant="default"
+                    aria-label={`View Open Roles${activeJobsCount > 0 ? `, ${activeJobsCount} jobs` : ""}`}
                     size="sm"
-                    className="gap-1 rounded-full bg-background px-3 text-xs text-foreground hover:bg-background/90 sm:gap-1.5 sm:text-sm"
+                    className="gap-1 rounded-full bg-background px-3 text-xs text-foreground hover:bg-background/90 sm:gap-1.5 sm:text-sm border-none"
                     onClick={() => {
                       document
                         .getElementById("company-jobs-section")
