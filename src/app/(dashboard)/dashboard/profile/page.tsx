@@ -12,6 +12,11 @@ import { useState } from "react";
 import Loader from "@/app/loading";
 import { CompanyProfilePage } from "@/features/company-jobs/components";
 import {
+  useMentorApplication,
+  useMentorProfile,
+} from "@/features/mentor/onboarding/hooks/use-onboarding";
+import { MentorProfilePage } from "@/features/mentor/profile";
+import {
   AccountSettingsModal,
   Achievements,
   Badges,
@@ -49,6 +54,8 @@ import { ROLES } from "@/lib/auth/roles";
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<ProfileTab>("basic-details");
   const [lastSavedDepartmentId, setLastSavedDepartmentId] = useState("");
+  // Toggle: true = show standard learner view even if user is a mentor
+  const [showLearnerView, setShowLearnerView] = useState(false);
 
   // Modal states
   const [showEditProfile, setShowEditProfile] = useState(false);
@@ -62,6 +69,19 @@ export default function ProfilePage() {
     isError,
     refetch: refetchProfile,
   } = useUserProfile();
+
+  // Mentor status — only fetched to decide which view to render.
+  // Uses the same hook the mentor onboarding flow already relies on.
+  const { data: mentorStatus } = useMentorApplication();
+  const { data: mentorProfile } = useMentorProfile(
+    mentorStatus?.status === "APPROVED",
+  );
+
+  const isMentor =
+    !showLearnerView &&
+    profile?.roles.includes(ROLES.MENTOR) &&
+    mentorStatus?.status === "APPROVED";
+
   const updateProfileMutation = useUpdateProfile();
   const { data: editableProfile } = useEditableProfile();
   const changeOrganizationMutation = useEditCollege();
@@ -190,6 +210,13 @@ export default function ProfilePage() {
   // Company users see the company profile, not the student layout
   if (profile.roles.includes(ROLES.COMPANY)) {
     return <CompanyProfilePage />;
+  }
+
+  // Mentor users see the mentor profile by default, with a toggle to switch back
+  if (isMentor && mentorProfile) {
+    return (
+      <MentorProfilePage onSwitchToLearner={() => setShowLearnerView(true)} />
+    );
   }
 
   const monthDifference = getMonthDifference(profile.joined);

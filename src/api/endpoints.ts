@@ -334,6 +334,9 @@ export const endpoints = {
     // ── GET  task/list-task-type/ ─────────────────────────────────────────
     /** GET - List all available task types (used for the type dropdown) */
     taskTypeList: "/api/v1/dashboard/task/list-task-type/",
+    // ── GET  task/level/ ──────────────────────────────────────────────────
+    /** GET - List all task levels (used for the level dropdown) */
+    taskLevelList: "/api/v1/dashboard/task/level/",
   },
 
   // ============================================
