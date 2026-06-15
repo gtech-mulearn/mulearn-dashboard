@@ -23,6 +23,7 @@ import {
   EVENT_CREATE_WIZARD_STEPS,
   EVENT_FORM_DEFAULT_VALUES,
   EVENT_SCOPE_OPTIONS,
+  EVENT_CLUSTER_OPTIONS,
 } from "../constants/events.constants";
 import {
   toEventFormData,
@@ -290,7 +291,7 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
 
   const validateCurrentStep = async (): Promise<boolean> => {
     if (currentStep === 1) {
-      return trigger(["title", "description"]);
+      return trigger(["title", "description", "event_scope"]);
     }
 
     if (currentStep === 2) {
@@ -460,6 +461,7 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
       venue_maps_url: values.maps_url,
       venue_online_link: values.online_link,
       venue_platform: values.platform,
+      event_scope: values.event_scope,
       scope: values.scope,
       scope_org: values.scope === "campus" ? values.target_campus_id : null,
       scope_ig: values.scope === "ig" ? values.target_ig_id : null,
@@ -638,6 +640,43 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                       </p>
                     ) : null}
                   </div>
+
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-foreground">
+                      Event Cluster / Category{" "}
+                      <span className="text-destructive">*</span>
+                    </p>
+                    <Controller
+                      control={control}
+                      name="event_scope"
+                      render={({ field }) => (
+                        <div className="flex flex-wrap gap-2">
+                          {EVENT_CLUSTER_OPTIONS.filter(
+                            (o) => o.value !== "all",
+                          ).map((item) => {
+                            const active = field.value === item.value;
+                            return (
+                              <Button
+                                key={item.value}
+                                type="button"
+                                variant={active ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => field.onChange(item.value)}
+                              >
+                                {item.label}
+                              </Button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    />
+                    {errors.event_scope?.message ? (
+                      <p className="text-xs text-destructive">
+                        {errors.event_scope.message}
+                      </p>
+                    ) : null}
+                  </div>
+
                   <div className="space-y-2">
                     <p className="text-sm font-medium text-foreground">Tags</p>
                     <div className="flex gap-2">

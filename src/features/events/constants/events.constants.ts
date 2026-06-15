@@ -184,6 +184,7 @@ export const MANAGE_EVENT_STATUS_PILLS: Array<
 export const EVENT_FORM_DEFAULT_VALUES: CreateEventSchema = {
   title: "",
   description: "",
+  event_scope: "coder",
 
   scope: "global",
   start_datetime: "",
