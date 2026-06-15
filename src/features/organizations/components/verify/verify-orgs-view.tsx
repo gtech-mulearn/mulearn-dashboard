@@ -66,8 +66,6 @@ export default function VerifyOrgsView() {
 
   const renderActions = (row: Data) => (
     <Button
-      size="sm"
-      variant="outline"
       onClick={() => {
         setSelectedOrg(row._raw as unknown as UnverifiedOrgItem);
         setDialogOpen(true);
@@ -97,7 +95,7 @@ export default function VerifyOrgsView() {
           </p>
         </div>
         <Badge
-          variant="secondary"
+          variant="outline"
           className="text-sm px-3 py-1 self-start sm:self-auto"
         >
           {filtered.length} pending

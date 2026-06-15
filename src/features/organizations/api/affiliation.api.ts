@@ -67,6 +67,3 @@ export async function deleteAffiliation(id: string): Promise<void> {
     GenericMutationResponseSchema,
   );
 }
-
-// Re-export types for convenience
-export type { AffiliationFormValues };

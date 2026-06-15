@@ -1,4 +1,4 @@
-import AffiliationPage from "@/features/affiliation/components/affiliation-page";
+import { AffiliationView } from "@/features/organizations";
 
 export const metadata = {
   title: "Organization Affiliation | Management | MuLearn Dashboard",
@@ -6,6 +6,6 @@ export const metadata = {
     "Manage university and organization affiliations used for college registrations.",
 };
 
-export default function Page() {
-  return <AffiliationPage />;
+export default function AffiliationPage() {
+  return <AffiliationView />;
 }

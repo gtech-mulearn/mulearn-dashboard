@@ -17,12 +17,12 @@ import { Label } from "@/components/ui/label";
 import {
   useCreateAffiliation,
   useUpdateAffiliation,
-} from "../hooks/use-affiliations";
+} from "@/features/organizations/hooks";
 import {
   AffiliationFormSchema,
   type AffiliationFormValues,
   type AffiliationItem,
-} from "../schemas";
+} from "@/features/organizations";
 
 interface AffiliationFormDialogProps {
   open: boolean;

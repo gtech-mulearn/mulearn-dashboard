@@ -45,14 +45,12 @@ export const OrgInfoSchema = z.object({
   karma: z.number().optional().nullable(),
   org_type: z.string().optional().nullable(),
 
-  // These are the properties expected/returned by the actual endpoints
   zone: z.string().nullable().optional(),
   district: z.string().nullable().optional(),
   state: z.string().nullable().optional(),
   country: z.string().nullable().optional(),
   affiliation: z.string().nullable().optional(),
 
-  // Old/legacy property names, kept just in case
   zone_name: z.string().nullable().optional(),
   zone_uuid: z.string().nullable().optional(),
   country_name: z.string().nullable().optional(),
@@ -72,19 +70,18 @@ export const OrgListDataSchema = z.object({
 
 export const OrgListResponseSchema = ApiResponseSchema(OrgListDataSchema);
 
-// ─── Affiliation dropdown item ────────────────────────────────────────────────
+// ─── Affiliation dropdown item (used in org create/edit form) ─────────────────
 
-export const AffiliationItemSchema = z.object({
+export const AffiliationDropdownItemSchema = z.object({
   id: z.string(),
   title: z.string(),
 });
 
-export const AffiliationListResponseSchema = ApiResponseSchema(
-  z.array(AffiliationItemSchema),
+export const AffiliationDropdownListResponseSchema = ApiResponseSchema(
+  z.array(AffiliationDropdownItemSchema),
 );
 
 // ─── Location cascading ───────────────────────────────────────────────────────
-// These are pulled from the existing location endpoints (dropdownList)
 
 export const LocationOptionSchema = z.object({
   value: z.string(),
@@ -98,11 +95,9 @@ export const OrgFormSchema = z
     title: z.string().trim().min(1, "Organization name is required"),
     code: z.string().trim().min(1, "Organization code is required"),
     org_type: z.enum(ORG_TYPES, { error: "Organization type is required" }),
-    // UI-only cascade fields — stripped before sending to the backend
     country: z.string().min(1, "Country is required"),
     state: z.string().min(1, "State is required"),
     district: z.string().min(1, "District is required"),
-    // affiliation: required UUID for College, null for all other org types
     affiliation: z.string().nullable().optional(),
   })
   .superRefine((data, ctx) => {
@@ -119,6 +114,15 @@ export const OrgFormSchema = z
 
 export type OrgInfo = z.infer<typeof OrgInfoSchema>;
 export type OrgListData = z.infer<typeof OrgListDataSchema>;
-export type AffiliationItem = z.infer<typeof AffiliationItemSchema>;
+export type AffiliationDropdownItem = z.infer<
+  typeof AffiliationDropdownItemSchema
+>;
 export type LocationOption = z.infer<typeof LocationOptionSchema>;
 export type OrgFormValues = z.infer<typeof OrgFormSchema>;
+
+// ─── Sub-schema barrels ───────────────────────────────────────────────────────
+
+export * from "./affiliation.schema";
+export * from "./departments.schema";
+export * from "./transfer.schema";
+export * from "./verification.schema";
