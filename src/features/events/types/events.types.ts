@@ -133,11 +133,17 @@ export interface MinimalCompany {
 // ─── ORGANIZER INFO ─────────────────────────────────────────────────────────
 
 export interface OrganizerInfo {
-  type: OrganizerType;
+  type?: OrganizerType;
   ig?: MinimalIG | null;
   campus?: MinimalCampus | null;
   company?: MinimalCompany | null;
   campus_ig_id?: UUID | null;
+  // Backend API returns these fields instead
+  organiser_type?: OrganizerType;
+  organiser_ig?: MinimalIG | null;
+  organiser_campus?: MinimalCampus | null;
+  organiser_company?: MinimalCompany | null;
+  organiser_ci_id?: UUID | null;
   // Backward compatibility for old component usage
   campus_ig?: { id: UUID; name: string; icon: string; code?: string } | null;
 }
