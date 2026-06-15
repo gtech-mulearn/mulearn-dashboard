@@ -66,12 +66,13 @@ const no403Retry = (failureCount: number, error: unknown) => {
   return failureCount < 2;
 };
 
-export function useMentorOverview() {
+export function useMentorOverview(enabled = true) {
   return useQuery({
     queryKey: homeKeys.mentorOverview(),
     queryFn: getMentorOverview,
     staleTime: HOME_STALE_TIME,
     retry: no403Retry,
+    enabled,
   });
 }
 
