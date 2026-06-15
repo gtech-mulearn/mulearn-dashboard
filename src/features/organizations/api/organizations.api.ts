@@ -1,8 +1,8 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
-  type AffiliationItem,
-  AffiliationListResponseSchema,
+  type AffiliationDropdownItem,
+  AffiliationDropdownListResponseSchema,
   GenericMutationResponseSchema,
   type OrgFormValues,
   type OrgInfo,
@@ -109,10 +109,12 @@ export async function downloadOrgsCsv(orgType: string): Promise<void> {
 
 // ─── Affiliation Dropdown ─────────────────────────────────────────────────────
 
-export async function fetchAffiliations(): Promise<AffiliationItem[]> {
+export async function fetchAffiliationDropdowns(): Promise<
+  AffiliationDropdownItem[]
+> {
   const response = await apiClient.get(
     endpoints.organizations.affiliationList,
-    AffiliationListResponseSchema,
+    AffiliationDropdownListResponseSchema,
   );
   return response.response;
 }
@@ -151,11 +153,3 @@ export async function fetchDistrictsDropdown(
   })) as { districts: any[] };
   return mapToOptions(data.districts || data);
 }
-
-// Re-export types for convenience
-export type { OrgInfo, OrgListData, OrgFormValues, AffiliationItem };
-
-// ─── New org-module APIs ──────────────────────────────────────────────────────
-export * from "./departments.api";
-export * from "./transfer.api";
-export * from "./verification.api";

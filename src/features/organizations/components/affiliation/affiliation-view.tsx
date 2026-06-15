@@ -13,8 +13,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   useAffiliationsList,
   useDeleteAffiliation,
-} from "../hooks/use-affiliations";
-import type { AffiliationItem } from "../schemas";
+} from "@/features/organizations";
+import type { AffiliationItem } from "@/features/organizations";
 import { AffiliationFormDialog } from "./affiliation-form-dialog";
 
 // ─── Column definitions ───────────────────────────────────────────────────────
@@ -60,7 +60,7 @@ const COLUMN_ORDER = [
 
 // ─── Page wrapper ─────────────────────────────────────────────────────────────
 
-export default function AffiliationPage() {
+export default function AffiliationView() {
   return (
     <DataTableErrorBoundary>
       <AffiliationContent />
@@ -149,8 +149,7 @@ function AffiliationContent() {
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <Button
-                size="sm"
-                className="rounded-xl gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto"
+                className="gap-1.5 w-full sm:w-auto"
                 onClick={handleCreateOpen}
                 aria-label="Create affiliation"
               >

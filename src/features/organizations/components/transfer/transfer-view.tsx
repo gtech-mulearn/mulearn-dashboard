@@ -330,9 +330,9 @@ function FullMergeFlow() {
               Back to Setup
             </Button>
             <Button
+              variant={"destructive"}
               onClick={handleExecuteMerge}
               disabled={!confirmed || mergeMutation.isPending}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {mergeMutation.isPending
                 ? "Executing Merge..."
