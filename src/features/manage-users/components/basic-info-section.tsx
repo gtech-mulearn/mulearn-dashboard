@@ -21,7 +21,6 @@ import { Input } from "@/components/ui/input";
 import type { ManageUserFormValues } from "../schemas";
 import { LocationSearchDropdown } from "./location-search-dropdown";
 import { MultiSelectDropdown } from "./multi-select-dropdown";
-import { AssignRoleDialog } from "./AssignRoleDialog";
 import { useAssignUserRole } from "../hooks";
 import { toast } from "sonner";
 import {
