@@ -17,6 +17,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/app/theme-toggle";
+import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { VersionBadge } from "@/components/ui/version-badge";
 import { useFilteredNav } from "@/hooks/use-filtered-nav";
@@ -24,7 +25,6 @@ import { authStore } from "@/lib/auth";
 import type { NavItem } from "@/lib/nav-config";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/stores/ui-store";
-import { Button } from "@/components/ui/button";
 
 export function Sidebar() {
   const pathname = usePathname();

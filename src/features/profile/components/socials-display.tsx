@@ -24,10 +24,10 @@ import type { ElementType, SVGProps } from "react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import Loader from "@/app/loading";
+import { Button } from "@/components/ui/button";
 import { updateSocials } from "../api";
 import { usePublicSocials, useSocials } from "../hooks";
 import { profileKeys } from "../hooks/query-keys";
-import { Button } from "@/components/ui/button";
 
 interface SocialsDisplayProps {
   isOwnProfile: boolean;

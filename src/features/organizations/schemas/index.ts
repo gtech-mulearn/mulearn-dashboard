@@ -17,8 +17,18 @@ export const GenericMutationResponseSchema = ApiResponseSchema(
 export const PaginationSchema = z.object({
   count: z.number().optional(),
   totalPages: z.number().optional(),
+  isFirst: z.boolean().optional(),
+  isLast: z.boolean().optional(),
   isNext: z.boolean().optional(),
   isPrev: z.boolean().optional(),
+  nextPage: z
+    .union([z.string(), z.number(), z.null(), z.undefined()])
+    .transform((val) => {
+      if (val === null || val === undefined || val === "") return null;
+      return typeof val === "string" ? Number(val) || null : val;
+    })
+    .nullable()
+    .optional(),
 });
 
 // ─── Org types ───────────────────────────────────────────────────────────────
