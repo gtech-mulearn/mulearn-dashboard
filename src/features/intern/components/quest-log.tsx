@@ -1,11 +1,10 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Activity, Clock, Edit2, HelpCircle } from "lucide-react";
+import { Activity, Calendar, Clock, Edit2, HelpCircle } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -32,13 +31,24 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { internApi } from "@/features/intern/api/intern.api";
 import {
+  useInternTasks,
   useTimesheetHistory,
+  useUpdateTaskStatus,
   useWeeklyReviewHistory,
 } from "@/features/intern/hooks/use-intern";
 import type {
+  TInternTask,
   TTimesheet,
   TTimesheetUpdatePayload,
   TWeeklyReview,
@@ -47,14 +57,14 @@ import type {
 
 type UnifiedActivity = {
   id: string;
-  type: "timesheet" | "weekly_review";
+  type: "timesheet" | "weekly_review" | "completed_task";
   title: string;
   description: string;
   dateStr: string;
   rawDate: Date;
-  status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
+  status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED" | "COMPLETED";
   karma: number | null;
-  raw: TTimesheet | TWeeklyReview;
+  raw: TTimesheet | TWeeklyReview | TInternTask;
 };
 
 export function QuestLog() {
@@ -63,6 +73,11 @@ export function QuestLog() {
     useTimesheetHistory({ page: 1, perPage: 20 });
   const { data: weeklyReviews, isLoading: isWeeklyLoading } =
     useWeeklyReviewHistory({ page: 1, perPage: 20 });
+  const { data: myTasks, isLoading: isTasksLoading } = useInternTasks({
+    page: 1,
+    perPage: 100,
+  });
+  const updateTaskStatusMutation = useUpdateTaskStatus();
 
   const [selectedItem, setSelectedItem] = useState<UnifiedActivity | null>(
     null,
@@ -156,7 +171,21 @@ export function QuestLog() {
     },
   });
 
-  const isLoading = isTimesheetLoading || isWeeklyLoading;
+  const handleTaskStatusChange = (
+    taskId: string,
+    status: "TODO" | "IN_PROGRESS" | "COMPLETED" | "ON_HOLD",
+  ) => {
+    updateTaskStatusMutation.mutate(
+      { id: taskId, status },
+      {
+        onSuccess: () => {
+          setSelectedItem(null);
+        },
+      },
+    );
+  };
+
+  const isLoading = isTimesheetLoading || isWeeklyLoading || isTasksLoading;
 
   if (isLoading) {
     return (
@@ -185,8 +214,16 @@ export function QuestLog() {
     );
   }
 
+  const getTaskPoints = (complexity: TInternTask["complexity"]) => {
+    const mapping = { LOW: 1, MEDIUM: 2, HIGH: 3, CRITICAL: 5 };
+    const mult = mapping[complexity] || 0;
+    return 30 + mult * 20;
+  };
+
   const timesheets = timesheetHistory?.data || [];
   const reviews = weeklyReviews?.data || [];
+  const tasks = myTasks?.data || [];
+  const completedTasks = tasks.filter((t) => t.status === "COMPLETED");
 
   const recentActivities: UnifiedActivity[] = [
     ...timesheets.map(
@@ -225,6 +262,33 @@ export function QuestLog() {
         raw: wr,
       }),
     ),
+    ...completedTasks.map(
+      (task): UnifiedActivity => ({
+        id: task.id,
+        type: "completed_task",
+        title: `Task Completed: ${task.title}`,
+        description: task.description || "",
+        dateStr: task.updated_at
+          ? new Date(task.updated_at).toLocaleDateString(undefined, {
+              month: "short",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : new Date(task.created_at).toLocaleDateString(undefined, {
+              month: "short",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+        rawDate: task.updated_at
+          ? new Date(task.updated_at)
+          : new Date(task.created_at),
+        status: "COMPLETED",
+        karma: getTaskPoints(task.complexity),
+        raw: task,
+      }),
+    ),
   ]
     .sort((a, b) => b.rawDate.getTime() - a.rawDate.getTime())
     .slice(0, 6);
@@ -233,27 +297,33 @@ export function QuestLog() {
     switch (status) {
       case "APPROVED":
         return (
-          <Badge className="font-black bg-success/15 text-success border-none rounded-lg px-2.5 py-0.5 text-[9px] uppercase tracking-wider shrink-0">
-            +{karma ?? 0} Points
-          </Badge>
+          <div className="bg-success/15 text-success border border-success/30 font-black text-[9px] rounded-full px-2.5 py-0.5 uppercase tracking-wider flex items-center gap-1 shrink-0">
+            Gained {karma ?? 0} pts
+          </div>
+        );
+      case "COMPLETED":
+        return (
+          <div className="bg-success/15 text-success border border-success/30 font-black text-[9px] rounded-full px-2.5 py-0.5 uppercase tracking-wider flex items-center gap-1 shrink-0">
+            Gained {karma ?? 0} pts
+          </div>
         );
       case "PENDING":
         return (
-          <Badge className="font-black bg-warning/15 text-warning border-none rounded-lg px-2.5 py-0.5 text-[9px] uppercase tracking-wider shrink-0">
+          <div className="bg-warning/15 text-warning border border-warning/30 font-black text-[9px] rounded-full px-2.5 py-0.5 uppercase tracking-wider shrink-0">
             Pending
-          </Badge>
+          </div>
         );
       case "REJECTED":
         return (
-          <Badge className="font-black bg-destructive/15 text-destructive border-none rounded-lg px-2.5 py-0.5 text-[9px] uppercase tracking-wider shrink-0">
+          <div className="bg-destructive/15 text-destructive border border-destructive/30 font-black text-[9px] rounded-full px-2.5 py-0.5 uppercase tracking-wider shrink-0">
             Rejected
-          </Badge>
+          </div>
         );
       default:
         return (
-          <Badge className="font-black bg-muted text-muted-foreground border-none rounded-lg px-2.5 py-0.5 text-[9px] uppercase tracking-wider shrink-0">
+          <div className="bg-muted text-muted-foreground border border-border font-black text-[9px] rounded-full px-2.5 py-0.5 uppercase tracking-wider shrink-0">
             {status}
-          </Badge>
+          </div>
         );
     }
   };
@@ -295,7 +365,7 @@ export function QuestLog() {
   };
 
   return (
-    <Card className="h-full border-border/40 bg-card/40 backdrop-blur-md flex flex-col py-4 px-5">
+    <Card className="@container h-full border-border/40 bg-card/40 backdrop-blur-md flex flex-col py-4 px-5">
       <CardHeader className="pt-0 px-0 pb-2 border-b border-border/20">
         <CardTitle className="text-lg font-black uppercase tracking-widest flex items-center gap-2">
           <Activity className="w-5 h-5 text-muted-foreground" />
@@ -305,32 +375,71 @@ export function QuestLog() {
           Recent Points Gains
         </CardDescription>
       </CardHeader>
-      <CardContent className="pt-3 px-0 pb-0 flex-1">
-        <div className="divide-y divide-border/20">
-          {recentActivities.map((activity) => (
-            <button
-              type="button"
-              key={`${activity.type}-${activity.id}`}
-              onClick={() => setSelectedItem(activity)}
-              className="w-full text-left py-2.5 px-0 hover:bg-muted/10 transition-all flex items-start justify-between gap-4 group cursor-pointer border-none bg-transparent focus:outline-none"
-            >
-              <div className="space-y-1 min-w-0 flex-1">
-                <p className="text-sm font-bold text-foreground group-hover:text-primary transition-colors break-all">
-                  {activity.title}
-                </p>
-                <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
+      <CardContent className="pt-3 px-0 pb-0 flex-1 overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/10 border-b border-border/20 hover:bg-transparent">
+              <TableHead className="font-black uppercase text-[9px] tracking-[0.2em] text-muted-foreground pl-4 py-2">
+                Quest / Activity
+              </TableHead>
+              <TableHead className="font-black uppercase text-[9px] tracking-[0.2em] text-muted-foreground py-2 hidden @md:table-cell w-[140px]">
+                Submitted
+              </TableHead>
+              <TableHead className="font-black uppercase text-[9px] tracking-[0.2em] text-muted-foreground pr-4 py-2 text-right w-[130px]">
+                Status
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {recentActivities.map((activity) => (
+              <TableRow
+                key={`${activity.type}-${activity.id}`}
+                role="button"
+                tabIndex={0}
+                onClick={() => setSelectedItem(activity)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setSelectedItem(activity);
+                  }
+                }}
+                className="border-b border-border/10 transition-all cursor-pointer hover:bg-muted/20 focus:ring-2 focus:ring-ring focus:outline-none"
+              >
+                <TableCell className="pl-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-3.5 h-3.5 text-brand-blue shrink-0" />
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-xs font-bold text-foreground break-words">
+                        {activity.title}
+                      </span>
+                      <span className="text-[9px] text-muted-foreground @md:hidden mt-0.5">
+                        {activity.dateStr}
+                      </span>
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell className="py-3 text-[11px] font-medium text-muted-foreground whitespace-nowrap hidden @md:table-cell w-[140px]">
                   {activity.dateStr}
-                </p>
-              </div>
-              {getStatusBadge(activity.status, activity.karma)}
-            </button>
-          ))}
-          {recentActivities.length === 0 && (
-            <div className="p-8 text-center text-xs text-muted-foreground italic uppercase tracking-wider">
-              No recent activity
-            </div>
-          )}
-        </div>
+                </TableCell>
+                <TableCell className="pr-4 py-3 text-right w-[130px]">
+                  <div className="flex justify-end items-center">
+                    {getStatusBadge(activity.status, activity.karma)}
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+            {recentActivities.length === 0 && (
+              <TableRow>
+                <TableCell
+                  colSpan={3}
+                  className="text-center py-8 text-xs font-bold text-muted-foreground uppercase tracking-wider italic"
+                >
+                  No recent activity
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </CardContent>
       <div className="pt-4 px-0 pb-0 border-t border-border/20">
         <Link href="/dashboard/intern/quest-log">
@@ -355,11 +464,16 @@ export function QuestLog() {
                 <DialogTitle className="text-xl font-black uppercase tracking-tight text-foreground break-all flex items-center gap-2">
                   {selectedItem.type === "timesheet"
                     ? "Daily Timesheet"
-                    : "Weekly Review"}
+                    : selectedItem.type === "weekly_review"
+                      ? "Weekly Review"
+                      : "Completed Task"}
                 </DialogTitle>
                 <DialogDescription className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-1 flex items-center gap-1.5">
                   <Clock className="w-3.5 h-3.5" />
-                  Submitted on {selectedItem.dateStr}
+                  {selectedItem.type === "completed_task"
+                    ? "Completed on"
+                    : "Submitted on"}{" "}
+                  {selectedItem.dateStr}
                 </DialogDescription>
               </DialogHeader>
 
@@ -375,13 +489,14 @@ export function QuestLog() {
                     </div>
                   </div>
 
-                  {selectedItem.status === "APPROVED" && (
+                  {(selectedItem.status === "APPROVED" ||
+                    selectedItem.status === "COMPLETED") && (
                     <div className="text-right">
                       <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
-                        Points Awarded
+                        Points Earned
                       </p>
                       <p className="text-lg font-black text-success mt-0.5">
-                        +{selectedItem.karma ?? 0} XP
+                        +{selectedItem.karma ?? 0} pts
                       </p>
                     </div>
                   )}
@@ -404,6 +519,95 @@ export function QuestLog() {
                   </div>
                 )}
 
+                {/* Completed Task Fields */}
+                {selectedItem.type === "completed_task" && (
+                  <div className="space-y-4">
+                    {/* Category */}
+                    <div className="space-y-1.5">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                        Category
+                      </Label>
+                      <Input
+                        value={(selectedItem.raw as TInternTask).category || ""}
+                        disabled={true}
+                        className="bg-background/50 border-border/50 font-medium cursor-not-allowed uppercase"
+                      />
+                    </div>
+
+                    {/* Complexity */}
+                    <div className="space-y-1.5">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                        Complexity
+                      </Label>
+                      <Input
+                        value={
+                          (selectedItem.raw as TInternTask).complexity || ""
+                        }
+                        disabled={true}
+                        className="bg-background/50 border-border/50 font-medium cursor-not-allowed uppercase"
+                      />
+                    </div>
+
+                    {/* Task Description */}
+                    <div className="space-y-1.5">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                        Task Description
+                      </Label>
+                      <Textarea
+                        value={
+                          (selectedItem.raw as TInternTask).description || ""
+                        }
+                        disabled={true}
+                        rows={4}
+                        className="bg-background/50 border-border/50 font-medium resize-none cursor-not-allowed"
+                      />
+                    </div>
+
+                    {/* Status updater for completed task (card should editing for that) */}
+                    <div className="space-y-1.5 p-3 rounded-xl border border-brand-blue/30 bg-brand-blue/5">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-brand-blue">
+                        Task Status
+                      </Label>
+                      <Select
+                        value={(selectedItem.raw as TInternTask).status}
+                        onValueChange={(val) => {
+                          handleTaskStatusChange(selectedItem.id, val as any);
+                        }}
+                      >
+                        <SelectTrigger className="w-full bg-background/50 border-border/50 font-bold uppercase text-[10px] tracking-wider mt-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-card font-bold border-border/60">
+                          <SelectItem
+                            value="TODO"
+                            className="uppercase text-[9px]"
+                          >
+                            To Do
+                          </SelectItem>
+                          <SelectItem
+                            value="IN_PROGRESS"
+                            className="uppercase text-[9px]"
+                          >
+                            In Progress
+                          </SelectItem>
+                          <SelectItem
+                            value="COMPLETED"
+                            className="uppercase text-[9px]"
+                          >
+                            Completed
+                          </SelectItem>
+                          <SelectItem
+                            value="ON_HOLD"
+                            className="uppercase text-[9px]"
+                          >
+                            On Hold
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                )}
+
                 {/* Timesheet Form Fields */}
                 {selectedItem.type === "timesheet" && (
                   <div className="space-y-4">
@@ -416,7 +620,7 @@ export function QuestLog() {
                         value={tsCategory}
                         onValueChange={setTsCategory}
                         disabled={
-                          selectedItem.status !== "PENDING" || !isEditMode
+                          selectedItem.status !== "REJECTED" || !isEditMode
                         }
                       >
                         <SelectTrigger className="w-full bg-background/50 border-border/50 font-bold uppercase text-[10px] tracking-wider">
@@ -458,7 +662,7 @@ export function QuestLog() {
                         value={tsHours}
                         onChange={(e) => setTsHours(e.target.value)}
                         disabled={
-                          selectedItem.status !== "PENDING" || !isEditMode
+                          selectedItem.status !== "REJECTED" || !isEditMode
                         }
                         className="bg-background/50 border-border/50 font-medium"
                       />
@@ -473,7 +677,7 @@ export function QuestLog() {
                         value={tsDescription}
                         onChange={(e) => setTsDescription(e.target.value)}
                         disabled={
-                          selectedItem.status !== "PENDING" || !isEditMode
+                          selectedItem.status !== "REJECTED" || !isEditMode
                         }
                         rows={4}
                         className="bg-background/50 border-border/50 font-medium resize-none"
@@ -489,7 +693,7 @@ export function QuestLog() {
                         value={tsBlockers}
                         onChange={(e) => setTsBlockers(e.target.value)}
                         disabled={
-                          selectedItem.status !== "PENDING" || !isEditMode
+                          selectedItem.status !== "REJECTED" || !isEditMode
                         }
                         rows={2}
                         className="bg-background/50 border-border/50 font-medium resize-none"
@@ -526,7 +730,7 @@ export function QuestLog() {
                         value={wrHours}
                         onChange={(e) => setWrHours(Number(e.target.value))}
                         disabled={
-                          selectedItem.status !== "PENDING" || !isEditMode
+                          selectedItem.status !== "REJECTED" || !isEditMode
                         }
                         className="bg-background/50 border-border/50 font-medium"
                       />
@@ -541,7 +745,7 @@ export function QuestLog() {
                         value={wrTasksAssigned}
                         onChange={(e) => setWrTasksAssigned(e.target.value)}
                         disabled={
-                          selectedItem.status !== "PENDING" || !isEditMode
+                          selectedItem.status !== "REJECTED" || !isEditMode
                         }
                         rows={2}
                         className="bg-background/50 border-border/50 font-medium resize-none"
@@ -557,7 +761,7 @@ export function QuestLog() {
                         value={wrTasksCompleted}
                         onChange={(e) => setWrTasksCompleted(e.target.value)}
                         disabled={
-                          selectedItem.status !== "PENDING" || !isEditMode
+                          selectedItem.status !== "REJECTED" || !isEditMode
                         }
                         rows={2}
                         className="bg-background/50 border-border/50 font-medium resize-none"
@@ -573,7 +777,7 @@ export function QuestLog() {
                         value={wrWeeklyReview}
                         onChange={(e) => setWrWeeklyReview(e.target.value)}
                         disabled={
-                          selectedItem.status !== "PENDING" || !isEditMode
+                          selectedItem.status !== "REJECTED" || !isEditMode
                         }
                         rows={3}
                         className="bg-background/50 border-border/50 font-medium resize-none"
@@ -589,7 +793,7 @@ export function QuestLog() {
                         value={wrLearnings}
                         onChange={(e) => setWrLearnings(e.target.value)}
                         disabled={
-                          selectedItem.status !== "PENDING" || !isEditMode
+                          selectedItem.status !== "REJECTED" || !isEditMode
                         }
                         rows={2}
                         className="bg-background/50 border-border/50 font-medium resize-none"
@@ -605,7 +809,7 @@ export function QuestLog() {
                         value={wrChallenges}
                         onChange={(e) => setWrChallenges(e.target.value)}
                         disabled={
-                          selectedItem.status !== "PENDING" || !isEditMode
+                          selectedItem.status !== "REJECTED" || !isEditMode
                         }
                         rows={2}
                         className="bg-background/50 border-border/50 font-medium resize-none"
@@ -621,7 +825,7 @@ export function QuestLog() {
                         value={wrNextPlan}
                         onChange={(e) => setWrNextPlan(e.target.value)}
                         disabled={
-                          selectedItem.status !== "PENDING" || !isEditMode
+                          selectedItem.status !== "REJECTED" || !isEditMode
                         }
                         rows={2}
                         className="bg-background/50 border-border/50 font-medium resize-none"
@@ -637,7 +841,7 @@ export function QuestLog() {
                         value={wrBlockers}
                         onChange={(e) => setWrBlockers(e.target.value)}
                         disabled={
-                          selectedItem.status !== "PENDING" || !isEditMode
+                          selectedItem.status !== "REJECTED" || !isEditMode
                         }
                         rows={2}
                         className="bg-background/50 border-border/50 font-medium resize-none"
@@ -653,7 +857,7 @@ export function QuestLog() {
                         value={wrSuggestions}
                         onChange={(e) => setWrSuggestions(e.target.value)}
                         disabled={
-                          selectedItem.status !== "PENDING" || !isEditMode
+                          selectedItem.status !== "REJECTED" || !isEditMode
                         }
                         rows={2}
                         className="bg-background/50 border-border/50 font-medium resize-none"
@@ -664,7 +868,7 @@ export function QuestLog() {
               </div>
 
               <DialogFooter className="border-t border-border/20 pt-4 flex items-center justify-end gap-2">
-                {selectedItem.status === "PENDING" &&
+                {selectedItem.status === "REJECTED" &&
                   (!isEditMode ? (
                     <Button
                       type="button"

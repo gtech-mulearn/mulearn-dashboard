@@ -1,13 +1,13 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
+  type AffiliationItem,
   AffiliationListResponseSchema,
   GenericMutationResponseSchema,
-  OrgListResponseSchema,
   type OrgFormValues,
   type OrgInfo,
   type OrgListData,
-  type AffiliationItem,
+  OrgListResponseSchema,
 } from "../schemas";
 
 // ─── Query params ─────────────────────────────────────────────────────────────

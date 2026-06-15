@@ -339,6 +339,8 @@ export interface LearnerDiscoveryParams {
   sort_order?: "asc" | "desc";
   page?: number;
   per_page?: number;
+  pageIndex?: number;
+  perPage?: number;
 }
 
 // ─── Analytics Types ─────────────────────────────────────────
