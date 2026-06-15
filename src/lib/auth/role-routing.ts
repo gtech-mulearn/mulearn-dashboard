@@ -45,6 +45,11 @@ export function getRoleHomePath(roles: string[]): string {
     return "/dashboard/campus/manage";
   }
 
+  // ── Intern dashboard ─────────────────────────────────────────
+  if (roles.includes(ROLES.INTERN)) {
+    return "/dashboard/intern";
+  }
+
   // ── Default: Student, Mentor, Enabler, Company, Pre Member, etc.
   return "/dashboard";
 }

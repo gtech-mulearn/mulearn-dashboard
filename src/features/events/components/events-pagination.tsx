@@ -53,6 +53,7 @@ export function EventsPagination({
             onClick={() => onPageChange(currentPage - 1)}
             disabled={!pagination.isPrev}
             className="h-8 w-8 rounded-full"
+            aria-label="Previous page"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -63,7 +64,7 @@ export function EventsPagination({
               variant={page === currentPage ? "default" : "outline"}
               size="icon"
               onClick={() => onPageChange(page)}
-              className={`h-8 w-8 rounded-full ${page === currentPage ? "" : ""}`}
+              className="h-8 w-8 rounded-full"
             >
               {page}
             </Button>
@@ -90,6 +91,7 @@ export function EventsPagination({
             onClick={() => onPageChange(currentPage + 1)}
             disabled={!pagination.isNext}
             className="h-8 w-8 rounded-full"
+            aria-label="Next page"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>

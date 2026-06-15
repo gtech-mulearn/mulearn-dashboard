@@ -74,13 +74,6 @@ const MANAGEMENT_ITEMS: ManagementItem[] = [
     color: "bg-chart-5/10 text-chart-5",
   },
   {
-    icon: Rocket,
-    title: "Manage Launchpad",
-    description: "Create, edit, and configure user launchpad.",
-    path: "/dashboard/management/manage-launchpad",
-    color: "bg-chart-5/10 text-chart-5",
-  },
-  {
     icon: Briefcase,
     title: "Manage Companies",
     description: "Review and verify company registration requests.",
@@ -102,10 +95,17 @@ const MANAGEMENT_ITEMS: ManagementItem[] = [
     color: "bg-chart-1/10 text-chart-1",
   },
   {
+    icon: ShieldCheck,
+    title: "Task Verification",
+    description: "Review, approve, and verify pending tasks.",
+    path: "/dashboard/management/tasks/task-verification",
+    color: "bg-chart-2/10 text-chart-2",
+  },
+  {
     icon: Type,
     title: "Task Type",
     description: "Manage Task Types.",
-    path: "/dashboard/management/task-type",
+    path: "/dashboard/management/tasks/task-type",
     color: "bg-chart-2/10 text-chart-2",
   },
   {
@@ -133,7 +133,7 @@ const MANAGEMENT_ITEMS: ManagementItem[] = [
     icon: Building2,
     title: "Organization Departments",
     description: "Manage organizational departments and structure.",
-    path: "/dashboard/management/organization/manage-departments",
+    path: "/dashboard/management/organization/departments",
     color: "bg-primary/10 text-primary",
   },
   {
@@ -147,7 +147,7 @@ const MANAGEMENT_ITEMS: ManagementItem[] = [
     icon: CheckCircle,
     title: "Organization Verification",
     description: "Verify legitimacy of registered organizations.",
-    path: "/dashboard/management/verify-organizations",
+    path: "/dashboard/management/organization/verify-organizations",
     color: "bg-chart-2/10 text-chart-2",
   },
   {
@@ -156,13 +156,6 @@ const MANAGEMENT_ITEMS: ManagementItem[] = [
     description: "Manage user interest groups and categories.",
     path: "/dashboard/management/manage-interest-groups",
     color: "bg-chart-3/10 text-chart-3",
-  },
-  {
-    icon: Handshake,
-    title: "Community: Meetup Verification",
-    description: "Verify and approve community meetups.",
-    path: "/dashboard/management/lc-meetup-verification",
-    color: "bg-chart-4/10 text-chart-4",
   },
   {
     icon: GraduationCap,

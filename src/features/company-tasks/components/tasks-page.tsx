@@ -1,6 +1,9 @@
 "use client";
 
-import { useCompanyTasks } from "../hooks/use-company-tasks";
+import { Edit2, MoreVertical, Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -8,23 +11,21 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useState } from "react";
-import { CreateTaskModal } from "./create-task-modal";
-import { TaskDetailModal } from "./task-detail-modal";
-import type { CompanyTask } from "../types/tasks.types";
-import { useDeleteCompanyTask } from "../hooks/use-company-tasks";
-import { MoreVertical, Edit2, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  useCompanyTasks,
+  useDeleteCompanyTask,
+} from "../hooks/use-company-tasks";
+import type { CompanyTask } from "../types/tasks.types";
+import { CreateTaskModal } from "./create-task-modal";
+import { TaskDetailModal } from "./task-detail-modal";
 
 export function CompanyTasksPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);

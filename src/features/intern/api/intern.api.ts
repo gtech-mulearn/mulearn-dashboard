@@ -1,0 +1,231 @@
+import { ApiError, apiClient, endpoints } from "@/api";
+import type {
+  TInternActivityLog,
+  TInternOverviewStatus,
+  TInternTask,
+  TLeaderboardMe,
+  TLeaderboardRow,
+  TLeaveBalance,
+  TLeaveRequest,
+  TLeaveSubmitPayload,
+  TPaginatedData,
+  TTimesheet,
+  TTimesheetSubmitPayload,
+  TTimesheetSummary,
+  TTimesheetUpdatePayload,
+  TWeeklyReview,
+  TWeeklyReviewSubmitPayload,
+  TWeeklyReviewUpdatePayload,
+} from "../types";
+
+export interface TInternQueryParams {
+  page?: number;
+  perPage?: number;
+  page_size?: number;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: string;
+  status?: string;
+}
+
+function buildQueryString(params?: TInternQueryParams): string {
+  if (!params) return "";
+  const searchParams = new URLSearchParams();
+  if (params.page !== undefined) searchParams.set("page", String(params.page));
+  if (params.perPage !== undefined)
+    searchParams.set("perPage", String(params.perPage));
+  if (params.page_size !== undefined)
+    searchParams.set("page_size", String(params.page_size));
+  if (params.search) searchParams.set("search", params.search);
+  if (params.sortBy) searchParams.set("sortBy", params.sortBy);
+  if (params.sortOrder) searchParams.set("sortOrder", params.sortOrder);
+  if (params.status) searchParams.set("status", params.status);
+  const qStr = searchParams.toString();
+  return qStr ? `?${qStr}` : "";
+}
+
+export const internApi = {
+  // ── Overview ───────────────────────────────────────────────
+  getOverviewStatus: async (): Promise<TInternOverviewStatus> => {
+    return apiClient.get<TInternOverviewStatus>(
+      endpoints.intern.overviewStatus,
+    );
+  },
+
+  getOverviewActivity: async (
+    params?: TInternQueryParams,
+  ): Promise<TPaginatedData<TInternActivityLog>> => {
+    const qs = buildQueryString(params);
+    return apiClient.get<TPaginatedData<TInternActivityLog>>(
+      `${endpoints.intern.overviewActivity}${qs}`,
+    );
+  },
+
+  getTopLeaderboard: async (): Promise<TLeaderboardRow[]> => {
+    return apiClient.get<TLeaderboardRow[]>(endpoints.intern.topLeaderboard);
+  },
+
+  // ── Timesheets ─────────────────────────────────────────────
+  getTimesheets: async (
+    params?: TInternQueryParams,
+  ): Promise<TPaginatedData<TTimesheet>> => {
+    const qs = buildQueryString(params);
+    return apiClient.get<TPaginatedData<TTimesheet>>(
+      `${endpoints.intern.timesheets}${qs}`,
+    );
+  },
+
+  getTimesheetDetail: async (id: string): Promise<TTimesheet> => {
+    return apiClient.get<TTimesheet>(endpoints.intern.timesheetDetail(id));
+  },
+
+  submitTimesheet: async (payload: TTimesheetSubmitPayload): Promise<void> => {
+    await apiClient.post(endpoints.intern.timesheets, payload);
+  },
+
+  updateTimesheet: async (
+    id: string,
+    payload: TTimesheetUpdatePayload,
+  ): Promise<void> => {
+    await apiClient.patch(endpoints.intern.timesheetDetail(id), payload);
+  },
+
+  getTimesheetToday: async (): Promise<TTimesheet> => {
+    return apiClient.get<TTimesheet>(endpoints.intern.timesheetToday);
+  },
+
+  getTimesheetHistory: async (
+    params?: TInternQueryParams,
+  ): Promise<TPaginatedData<TTimesheet>> => {
+    const qs = buildQueryString(params);
+    return apiClient.get<TPaginatedData<TTimesheet>>(
+      `${endpoints.intern.timesheetHistory}${qs}`,
+    );
+  },
+
+  getTimesheetSummary: async (): Promise<TTimesheetSummary> => {
+    return apiClient.get<TTimesheetSummary>(endpoints.intern.timesheetSummary);
+  },
+
+  // ── Weekly Reviews ──────────────────────────────────────────
+  getWeeklyReviews: async (
+    params?: TInternQueryParams,
+  ): Promise<TPaginatedData<TWeeklyReview>> => {
+    const qs = buildQueryString(params);
+    return apiClient.get<TPaginatedData<TWeeklyReview>>(
+      `${endpoints.intern.reviews}${qs}`,
+    );
+  },
+
+  getWeeklyReviewDetail: async (id: string): Promise<TWeeklyReview> => {
+    return apiClient.get<TWeeklyReview>(endpoints.intern.reviewDetail(id));
+  },
+
+  submitWeeklyReview: async (
+    payload: TWeeklyReviewSubmitPayload,
+  ): Promise<void> => {
+    await apiClient.post(endpoints.intern.reviews, payload);
+  },
+
+  updateWeeklyReview: async (
+    id: string,
+    payload: TWeeklyReviewUpdatePayload,
+  ): Promise<void> => {
+    await apiClient.patch(endpoints.intern.reviewDetail(id), payload);
+  },
+
+  getWeeklyReviewCurrent: async (): Promise<TWeeklyReview> => {
+    return apiClient.get<TWeeklyReview>(endpoints.intern.reviewCurrent);
+  },
+
+  getWeeklyReviewHistory: async (
+    params?: TInternQueryParams,
+  ): Promise<TPaginatedData<TWeeklyReview>> => {
+    const qs = buildQueryString(params);
+    return apiClient.get<TPaginatedData<TWeeklyReview>>(
+      `${endpoints.intern.reviewHistory}${qs}`,
+    );
+  },
+
+  // ── Tasks ──────────────────────────────────────────────────
+  getMyTasks: async (
+    params?: TInternQueryParams,
+  ): Promise<TPaginatedData<TInternTask>> => {
+    const qs = buildQueryString(params);
+    return apiClient.get<TPaginatedData<TInternTask>>(
+      `${endpoints.intern.tasksMine}${qs}`,
+    );
+  },
+
+  updateMyTaskStatus: async (
+    id: string,
+    status: "TODO" | "IN_PROGRESS" | "COMPLETED" | "ON_HOLD",
+  ): Promise<void> => {
+    await apiClient.patch(endpoints.intern.taskDetail(id), { status });
+  },
+
+  // ── Leave Management ───────────────────────────────────────
+  getLeaveRequests: async (
+    params?: TInternQueryParams,
+  ): Promise<TPaginatedData<TLeaveRequest>> => {
+    const qs = buildQueryString(params);
+    return apiClient.get<TPaginatedData<TLeaveRequest>>(
+      `${endpoints.intern.leave}${qs}`,
+    );
+  },
+
+  getLeaveRequestDetail: async (id: string): Promise<TLeaveRequest> => {
+    return apiClient.get<TLeaveRequest>(endpoints.intern.leaveDetail(id));
+  },
+
+  submitLeaveRequest: async (payload: TLeaveSubmitPayload): Promise<void> => {
+    await apiClient.post(endpoints.intern.leave, payload);
+  },
+
+  cancelLeaveRequest: async (id: string): Promise<void> => {
+    await apiClient.patch(endpoints.intern.leaveDetail(id), {
+      action: "cancel",
+    });
+  },
+
+  getLeaveHistory: async (
+    params?: TInternQueryParams,
+  ): Promise<TPaginatedData<TLeaveRequest>> => {
+    const qs = buildQueryString(params);
+    return apiClient.get<TPaginatedData<TLeaveRequest>>(
+      `${endpoints.intern.leaveHistory}${qs}`,
+    );
+  },
+
+  getLeaveBalance: async (): Promise<TLeaveBalance> => {
+    return apiClient.get<TLeaveBalance>(endpoints.intern.leaveBalance);
+  },
+
+  // ── Leaderboard ────────────────────────────────────────────
+  getFullLeaderboard: async (
+    params?: TInternQueryParams,
+  ): Promise<TPaginatedData<TLeaderboardRow>> => {
+    const qs = buildQueryString(params);
+    return apiClient.get<TPaginatedData<TLeaderboardRow>>(
+      `${endpoints.intern.leaderboard}${qs}`,
+    );
+  },
+
+  getLeaderboardMe: async (): Promise<TLeaderboardMe> => {
+    try {
+      return await apiClient.get<TLeaderboardMe>(
+        endpoints.intern.leaderboardMe,
+      );
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 400) {
+        return { rank: 0, score: 0 };
+      }
+      throw error;
+    }
+  },
+
+  // ── Guilds ─────────────────────────────────────────────────
+  getGuilds: async (): Promise<string[]> => {
+    return apiClient.get<string[]>(endpoints.intern.guilds);
+  },
+};

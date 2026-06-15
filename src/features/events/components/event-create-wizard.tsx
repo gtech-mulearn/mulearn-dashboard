@@ -559,6 +559,7 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                       <Button
                         variant="default"
                         size="icon-sm"
+                        aria-label={`Go to step ${stepIndex}: ${label}`}
                         onClick={() => setCurrentStep(stepIndex)}
                       >
                         <Check className="h-4 w-4" />

@@ -73,14 +73,15 @@ const buildColumnOrder = (
     isSortable: false,
     width: "w-20 min-w-[80px]",
     wrap: (_data: string | import("react").ReactElement, id: string) => (
-      <button
+      <Button
         type="button"
+        variant="outline"
         onClick={() => onAssign(id)}
-        className="inline-flex items-center gap-1 rounded-lg border border-primary/30 bg-primary/10 px-2 py-1 text-xs font-semibold text-primary transition-colors hover:bg-primary/20 whitespace-nowrap"
+        aria-label="Assign role"
       >
         <UserPlus className="size-3" />
         <span className="hidden sm:inline">Assign</span>
-      </button>
+      </Button>
     ),
   },
 ];
@@ -173,16 +174,17 @@ export default function ManageRoles() {
               <Button
                 variant="outline"
                 size="sm"
-                className="rounded-xl gap-1.5"
                 onClick={() => setBulkImportOpen(true)}
+                aria-label="Open bulk import dialog"
               >
                 <FileSpreadsheet className="size-3.5" />
                 Bulk Import
               </Button>
               <Button
                 size="sm"
-                className="rounded-xl gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90"
+                variant="default"
                 onClick={handleCreateOpen}
+                aria-label="Create new role"
               >
                 <Plus className="size-3.5" />
                 Create

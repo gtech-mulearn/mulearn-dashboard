@@ -88,26 +88,18 @@ function DiscordModerationContent() {
           {/* Leaderboard / Tasks tab buttons */}
           <div className="flex items-center gap-1">
             <Button
-              variant="ghost"
+              variant={activeTab === "leaderboard" ? "default" : "outline"}
               size="sm"
               onClick={() => setActiveTab("leaderboard")}
-              className={`px-3 h-9 text-base font-semibold border-0 bg-transparent shadow-none transition-all duration-200 hover:-translate-y-0.5 hover:scale-105 hover:bg-transparent ${
-                activeTab === "leaderboard"
-                  ? "text-foreground"
-                  : "text-muted-foreground"
-              }`}
+              aria-label="Leaderboard tab"
             >
               Leaderboard
             </Button>
             <Button
-              variant="ghost"
+              variant={activeTab === "tasks" ? "default" : "outline"}
               size="sm"
               onClick={() => setActiveTab("tasks")}
-              className={`px-3 h-9 text-base font-semibold border-0 bg-transparent shadow-none transition-all duration-200 hover:-translate-y-0.5 hover:scale-105 hover:bg-transparent ${
-                activeTab === "tasks"
-                  ? "text-foreground"
-                  : "text-muted-foreground"
-              }`}
+              aria-label="Tasks tab"
             >
               Tasks
             </Button>

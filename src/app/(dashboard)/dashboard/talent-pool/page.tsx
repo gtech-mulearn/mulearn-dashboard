@@ -1,5 +1,6 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import {
   AlertTriangle,
   Briefcase,
@@ -13,7 +14,6 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -27,7 +27,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -35,11 +34,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { fetchAchievements } from "@/features/achievements/api/achievements.api";
 import { LearnerCard } from "@/features/company-jobs/components";
 import { useLearnerDiscovery } from "@/features/company-jobs/hooks";
 import type { LearnerDiscoveryParams } from "@/features/company-jobs/types";
 import { getInterestGroupsList } from "@/features/interest-groups/api/interest-groups.api";
-import { fetchAchievements } from "@/features/achievements/api/achievements.api";
 import { useDebounce } from "@/hooks/use-debounce";
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
