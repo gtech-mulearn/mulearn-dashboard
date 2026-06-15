@@ -10,11 +10,7 @@ const ApiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
     response: dataSchema,
   });
 
-export const GenericMutationResponseSchema = ApiResponseSchema(
-  z.object({}).passthrough(),
-);
-
-export const PaginationSchema = z.object({
+const PaginationSchema = z.object({
   count: z.number().optional(),
   totalPages: z.number().optional(),
   isNext: z.boolean().optional(),

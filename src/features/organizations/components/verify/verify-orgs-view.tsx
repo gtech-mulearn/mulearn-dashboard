@@ -8,7 +8,6 @@ import THead from "@/components/dashboard/table/Thead";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useDebounce } from "@/hooks/use-debounce";
 import { useUnverifiedOrgs } from "../../hooks/use-verification";
 import type { UnverifiedOrgItem } from "../../schemas/verification.schema";
 import { VerifyActionDialog } from "./verify-action-dialog";
@@ -24,7 +23,6 @@ const COLUMNS = [
 
 export default function VerifyOrgsView() {
   const [searchInput, setSearchInput] = useState("");
-  const debouncedSearch = useDebounce(searchInput, 400);
 
   const { data: orgs, isLoading } = useUnverifiedOrgs();
 
@@ -35,7 +33,7 @@ export default function VerifyOrgsView() {
 
   const filtered = useMemo(() => {
     if (!orgs) return [];
-    const term = debouncedSearch.toLowerCase();
+    const term = searchInput.toLowerCase();
     return term
       ? orgs.filter(
           (o) =>
@@ -44,7 +42,7 @@ export default function VerifyOrgsView() {
             o.created_by.toLowerCase().includes(term),
         )
       : orgs;
-  }, [orgs, debouncedSearch]);
+  }, [orgs, searchInput]);
 
   const rows = useMemo(
     () =>
@@ -68,8 +66,6 @@ export default function VerifyOrgsView() {
 
   const renderActions = (row: Data) => (
     <Button
-      size="sm"
-      variant="outline"
       onClick={() => {
         setSelectedOrg(row._raw as unknown as UnverifiedOrgItem);
         setDialogOpen(true);
@@ -99,7 +95,7 @@ export default function VerifyOrgsView() {
           </p>
         </div>
         <Badge
-          variant="secondary"
+          variant="outline"
           className="text-sm px-3 py-1 self-start sm:self-auto"
         >
           {filtered.length} pending

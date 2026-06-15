@@ -10,7 +10,6 @@ import TableTop from "@/components/dashboard/table/TableTop";
 import THead from "@/components/dashboard/table/Thead";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useDebounce } from "@/hooks/use-debounce";
 import {
   useCreateDepartment,
   useDeleteDepartment,
@@ -28,19 +27,17 @@ export default function DepartmentsView() {
   const [searchInput, setSearchInput] = useState("");
   const [sort, setSort] = useState("");
 
-  const debouncedSearch = useDebounce(searchInput, 500);
-
   // ─── Data ───────────────────────────────────────────────────────────────────
-  const { data, isLoading } = useDepartments({
+  const { data, isLoading, isFetching } = useDepartments({
     page: currentPage,
     perPage,
-    search: debouncedSearch,
+    search: searchInput,
     sortBy: sort,
   });
 
   // CSV fetch (lazy)
   const { refetch: refetchCsv } = useDepartments(
-    { page: 1, perPage: 1000, search: debouncedSearch, sortBy: sort },
+    { page: 1, perPage: 1000, search: searchInput, sortBy: sort },
     { enabled: false },
   );
 
@@ -227,7 +224,7 @@ export default function DepartmentsView() {
         <div className="w-full overflow-x-auto">
           <Table
             rows={rows}
-            isloading={isLoading}
+            isloading={isLoading || isFetching}
             page={currentPage}
             perPage={perPage}
             columnOrder={COLUMNS}

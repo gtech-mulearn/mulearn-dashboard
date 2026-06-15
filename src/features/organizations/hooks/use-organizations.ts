@@ -13,7 +13,7 @@ import {
   deleteOrganization,
   downloadOrgsCsv,
   editOrganization,
-  fetchAffiliations,
+  fetchAffiliationDropdowns,
   fetchCountriesDropdown,
   fetchDistrictsDropdown,
   fetchOrganizations,
@@ -116,7 +116,7 @@ export function useOrgsCsvDownload(orgType: string) {
 export function useAffiliations(enabled = true) {
   return useQuery({
     queryKey: organizationsKeys.affiliations(),
-    queryFn: fetchAffiliations,
+    queryFn: fetchAffiliationDropdowns,
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
