@@ -106,10 +106,18 @@ export async function fetchUsersByRole(
   return extractUserArray(response.response);
 }
 
-export async function assignUserRole(payload: {
+export interface AssignUserRolePayload {
   user_id: string;
   role_id: string;
-}): Promise<void> {
+  guild?: string;
+  mentor_tier?: string;
+  ig_ids?: string[];
+  org_id?: string;
+}
+
+export async function assignUserRole(
+  payload: AssignUserRolePayload,
+): Promise<void> {
   await apiClient.post(
     endpoints.manageRoles.userRole,
     payload,

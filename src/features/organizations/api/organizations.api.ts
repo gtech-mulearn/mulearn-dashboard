@@ -152,10 +152,9 @@ export async function fetchDistrictsDropdown(
   return mapToOptions(data.districts || data);
 }
 
-// Re-export types for convenience
-export type { OrgInfo, OrgListData, OrgFormValues, AffiliationItem };
-
 // ─── New org-module APIs ──────────────────────────────────────────────────────
 export * from "./departments.api";
 export * from "./transfer.api";
 export * from "./verification.api";
+// Re-export types for convenience
+export type { AffiliationItem, OrgFormValues, OrgInfo, OrgListData };
