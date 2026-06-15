@@ -133,11 +133,17 @@ export interface MinimalCompany {
 // ─── ORGANIZER INFO ─────────────────────────────────────────────────────────
 
 export interface OrganizerInfo {
-  type: OrganizerType;
+  type?: OrganizerType;
   ig?: MinimalIG | null;
   campus?: MinimalCampus | null;
   company?: MinimalCompany | null;
   campus_ig_id?: UUID | null;
+  // Backend API returns these fields instead
+  organiser_type?: OrganizerType;
+  organiser_ig?: MinimalIG | null;
+  organiser_campus?: MinimalCampus | null;
+  organiser_company?: MinimalCompany | null;
+  organiser_ci_id?: UUID | null;
   // Backward compatibility for old component usage
   campus_ig?: { id: UUID; name: string; icon: string; code?: string } | null;
 }
@@ -406,6 +412,7 @@ export interface EventWriteBody {
   is_featured?: boolean;
   tags: string[] | null;
   user_limit?: number;
+  event_scope: IGCluster;
 }
 
 export type EventPatchBody = Partial<EventWriteBody>;
@@ -458,6 +465,7 @@ export interface EventDetailViewProps {
   showInterestButton?: boolean;
   layout?: "full" | "content-only";
   showVenue?: boolean;
+  initialEvent?: EventDetail;
 }
 
 export interface ManageEventDetailViewProps {

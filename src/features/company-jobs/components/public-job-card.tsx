@@ -7,7 +7,7 @@
  * Uses only CSS-variable-derived colours (no raw Tailwind palette).
  */
 
-import { Briefcase, Calendar, MapPin, Sparkles, Star } from "lucide-react";
+import { Briefcase, Calendar, MapPin, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { PublicJob } from "../types";
 
@@ -29,7 +29,7 @@ export function PublicJobCard({ job, onView }: PublicJobCardProps) {
     <button
       type="button"
       onClick={() => onView(job)}
-      className="group relative w-full rounded-2xl border border-border bg-card p-5 text-left transition-all duration-200 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5"
+      className="group relative flex h-full w-full flex-col rounded-2xl border border-border bg-card p-5 text-left transition-all duration-200 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5"
     >
       {/* Title + meta */}
       <div className="pr-20">
@@ -71,7 +71,7 @@ export function PublicJobCard({ job, onView }: PublicJobCardProps) {
       </div>
 
       {/* Requirement badges — uses semantic CSS variables only */}
-      <div className="mt-3 flex flex-wrap gap-1.5">
+      <div className="mt-3 mb-4 flex flex-1 flex-wrap items-start gap-1.5">
         {/* Empty placeholder if no stipend or cert, since badges are optional now */}
         {job.stipend && (
           <Badge variant="outline" className="text-xs">
@@ -87,7 +87,7 @@ export function PublicJobCard({ job, onView }: PublicJobCardProps) {
       </div>
 
       {/* Footer */}
-      <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
+      <div className="mt-auto flex w-full items-center justify-between border-t border-border pt-3">
         {job.created_at ? (
           <span className="flex items-center gap-1 text-xs text-muted-foreground">
             <Calendar className="h-3 w-3" />

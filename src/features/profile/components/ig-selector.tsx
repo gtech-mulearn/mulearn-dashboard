@@ -14,8 +14,8 @@ import { Check, Pencil, Plus, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import { useInterestGroupsList } from "../hooks";
 import { Button } from "@/components/ui/button";
+import { useInterestGroupsList } from "../hooks";
 import type { InterestGroup, InterestGroupListItem } from "../schemas";
 
 interface IGSelectorProps {

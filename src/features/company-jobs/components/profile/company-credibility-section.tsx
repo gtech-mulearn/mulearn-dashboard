@@ -48,7 +48,7 @@ export function CompanyCredibilitySection({
 }: CompanyCredibilitySectionProps) {
   const memberSinceDate = memberSince ? new Date(memberSince) : null;
   const memberSinceLabel =
-    memberSinceDate && !isNaN(memberSinceDate.getTime())
+    memberSinceDate && !Number.isNaN(memberSinceDate.getTime())
       ? memberSinceDate.toLocaleDateString("en-IN", {
           month: "short",
           year: "numeric",

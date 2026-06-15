@@ -83,7 +83,7 @@ function PublicJobCard({ job }: { job: PublicJobBySlug }) {
     JOB_TYPE_STYLES[job.job_type ?? "Full-Time"] ??
     JOB_TYPE_STYLES["Full-Time"];
   const createdTime = job.created_at ? new Date(job.created_at).getTime() : NaN;
-  const postedDaysAgo = !isNaN(createdTime)
+  const postedDaysAgo = !Number.isNaN(createdTime)
     ? Math.floor((Date.now() - createdTime) / (1000 * 60 * 60 * 24))
     : null;
   const postedLabel =
