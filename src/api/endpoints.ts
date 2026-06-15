@@ -334,6 +334,9 @@ export const endpoints = {
     // ── GET  task/list-task-type/ ─────────────────────────────────────────
     /** GET - List all available task types (used for the type dropdown) */
     taskTypeList: "/api/v1/dashboard/task/list-task-type/",
+    // ── GET  task/level/ ──────────────────────────────────────────────────
+    /** GET - List all task levels (used for the level dropdown) */
+    taskLevelList: "/api/v1/dashboard/task/level/",
   },
 
   // ============================================
@@ -1184,6 +1187,20 @@ export const endpoints = {
     /** GET - List affiliations for dropdown */
     affiliationList: "/api/v1/dashboard/organisation/affiliation/list/",
   },
+  // ============================================
+  // Affiliation CRUD Endpoints (Set B — dedicated module)
+  // ============================================
+  affiliation: {
+    /** GET - Paginated list with metadata (organization_count, created_by, etc.) */
+    list: "/api/v1/dashboard/affiliation/",
+    /** POST - Create a new affiliation */
+    create: "/api/v1/dashboard/affiliation/",
+    /** PUT - Update affiliation by UUID */
+    update: (id: string) => `/api/v1/dashboard/affiliation/${id}/`,
+    /** DELETE - Delete affiliation by UUID */
+    delete: (id: string) => `/api/v1/dashboard/affiliation/${id}/`,
+  },
+
   intern: {
     overviewStatus: "/api/v1/dashboard/intern/overview/status/",
     overviewActivity: "/api/v1/dashboard/intern/overview/activity/",
@@ -1225,6 +1242,39 @@ export const endpoints = {
     reviews: "/api/v1/dashboard/manage-interns/reviews/",
     weeklyReviewDetail: (id: string) =>
       `/api/v1/dashboard/manage-interns/reviews/reviews/${id}/review/`,
+  },
+
+  // ============================================
+  // Organization — Transfer, Departments, Verification
+  // ============================================
+  organization: {
+    // TRANSFER (Simple)
+    /** POST - Transfer all UserOrganizationLinks from source to dest, then delete source */
+    transfer: "/api/v1/dashboard/organisation/transfer/",
+
+    // MERGE (Preview + Execute)
+    /** GET - Preview merge impact | PATCH - Execute merge */
+    merge: (orgId: string) =>
+      `/api/v1/dashboard/organisation/merge_organizations/${orgId}/`,
+
+    // DEPARTMENTS
+    /** GET - Paginated department list */
+    departments: "/api/v1/dashboard/organisation/departments/",
+    /** POST - Create department */
+    departmentsCreate: "/api/v1/dashboard/organisation/departments/create/",
+    /** PUT - Update department by id */
+    departmentsEdit: (id: string) =>
+      `/api/v1/dashboard/organisation/departments/edit/${id}/`,
+    /** DELETE - Delete department by id */
+    departmentsDelete: (id: string) =>
+      `/api/v1/dashboard/organisation/departments/delete/${id}/`,
+
+    // VERIFICATION
+    /** GET - List unverified organizations (pending review) */
+    verificationList: "/api/v1/dashboard/organisation/verify/list/",
+    /** POST - Approve or reject an unverified org */
+    verification: (uorgId: string) =>
+      `/api/v1/dashboard/organisation/verify/${uorgId}/`,
   },
 } as const;
 

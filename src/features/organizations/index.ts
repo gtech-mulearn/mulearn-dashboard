@@ -1,4 +1,10 @@
 export * from "./api/organizations.api";
+export { default as DepartmentsView } from "./components/departments/departments-view";
 export { default as OrganizationsPage } from "./components/organizations-page";
+export { default as TransferView } from "./components/transfer/transfer-view";
+export { default as VerifyOrgsView } from "./components/verify/verify-orgs-view";
+export * from "./hooks/use-departments";
 export * from "./hooks/use-organizations";
+export * from "./hooks/use-transfer";
+export * from "./hooks/use-verification";
 export * from "./schemas";

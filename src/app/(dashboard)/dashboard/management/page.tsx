@@ -131,7 +131,7 @@ const MANAGEMENT_ITEMS: ManagementItem[] = [
     icon: Building2,
     title: "Organization Departments",
     description: "Manage organizational departments and structure.",
-    path: "/dashboard/management/organization/manage-departments",
+    path: "/dashboard/management/organization/departments",
     color: "bg-primary/10 text-primary",
   },
   {
@@ -145,7 +145,7 @@ const MANAGEMENT_ITEMS: ManagementItem[] = [
     icon: CheckCircle,
     title: "Organization Verification",
     description: "Verify legitimacy of registered organizations.",
-    path: "/dashboard/management/verify-organizations",
+    path: "/dashboard/management/organization/verify-organizations",
     color: "bg-chart-2/10 text-chart-2",
   },
   {

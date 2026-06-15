@@ -29,6 +29,18 @@ export const TaskTypeSchema = z.object({
 });
 export type TaskType = z.infer<typeof TaskTypeSchema>;
 
+// ─── task/level/ — task level dropdown ────────────────────────────────────────
+// Response: { response: [{ id, name }] } — array directly in response field
+export const TaskLevelSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+});
+export type TaskLevel = z.infer<typeof TaskLevelSchema>;
+
+export const TaskLevelListResponseSchema = ApiResponseSchema(
+  z.array(TaskLevelSchema),
+);
+
 export const TaskTypeListResponseSchema = ApiResponseSchema(
   z.object({
     data: z.array(TaskTypeSchema),
