@@ -1,13 +1,13 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
+  type AffiliationItem,
   AffiliationListResponseSchema,
   GenericMutationResponseSchema,
-  OrgListResponseSchema,
   type OrgFormValues,
   type OrgInfo,
   type OrgListData,
-  type AffiliationItem,
+  OrgListResponseSchema,
 } from "../schemas";
 
 // ─── Query params ─────────────────────────────────────────────────────────────
@@ -153,4 +153,4 @@ export async function fetchDistrictsDropdown(
 }
 
 // Re-export types for convenience
-export type { OrgInfo, OrgListData, OrgFormValues, AffiliationItem };
+export type { AffiliationItem, OrgFormValues, OrgInfo, OrgListData };

@@ -26,7 +26,7 @@ import {
   Users,
 } from "lucide-react";
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import type { MentorApplication } from "@/features/mentor/onboarding/schemas";
@@ -93,6 +93,17 @@ export function MentorProfileHeader({
 }: MentorProfileHeaderProps) {
   const [imageError, setImageError] = useState(false);
   const [coverError, setCoverError] = useState(false);
+
+  // Reset errors if the profile picture or cover changes
+  // biome-ignore lint/correctness/useExhaustiveDependencies: We want to trigger a reset ONLY when the URL string changes.
+  useEffect(() => {
+    setImageError(false);
+  }, [userProfile.profile_pic]);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: We want to trigger a reset ONLY when the URL string changes.
+  useEffect(() => {
+    setCoverError(false);
+  }, [userProfile.cover_pic]);
 
   const mentorType = deriveMentorType(mentorProfile);
   const typeConfig = MENTOR_TYPE_CONFIG[mentorType];

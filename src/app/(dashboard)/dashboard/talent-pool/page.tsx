@@ -3,12 +3,9 @@
 import { useQuery } from "@tanstack/react-query";
 import {
   AlertTriangle,
-  Briefcase,
-  CheckCircle,
   ChevronDown,
   Filter,
   Search,
-  Sparkles,
   User,
   Users,
   X,
@@ -18,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,

@@ -138,7 +138,7 @@ export default function TaskTypeView() {
     try {
       // Fetch up to 1000 items matching current search and sort
       const { data: allData } = await refetchCsv();
-      if (!allData || !allData.data) {
+      if (!allData?.data) {
         toast.error("No data available to export");
         return;
       }

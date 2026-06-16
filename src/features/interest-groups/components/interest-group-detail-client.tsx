@@ -22,8 +22,8 @@ import {
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { Button } from "@/components/ui/button";
+import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { useUserInfo } from "@/features/auth";
 import { useInterestGroupDetail } from "@/features/interest-groups";
 import { InterestGroupFormDialog } from "@/features/manage-ig";

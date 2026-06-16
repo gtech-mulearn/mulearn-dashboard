@@ -7,7 +7,7 @@
  * Uses only CSS-variable-derived colours (no raw Tailwind palette).
  */
 
-import { Briefcase, Calendar, MapPin, Sparkles, Star } from "lucide-react";
+import { Briefcase, Calendar, MapPin, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { PublicJob } from "../types";
 

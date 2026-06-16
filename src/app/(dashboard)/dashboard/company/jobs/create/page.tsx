@@ -12,7 +12,6 @@
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
 import {
@@ -36,7 +35,7 @@ export default function CreateJobPage() {
     if (typeof val === "number") return val;
     const clean = val.replace(/[^0-9.]/g, "");
     const parsed = parseFloat(clean);
-    return isNaN(parsed) ? undefined : parsed;
+    return Number.isNaN(parsed) ? undefined : parsed;
   }, []);
 
   const handleSubmit = useCallback(

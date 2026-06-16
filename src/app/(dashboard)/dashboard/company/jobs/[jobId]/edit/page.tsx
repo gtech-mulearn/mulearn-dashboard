@@ -38,7 +38,7 @@ export default function EditJobPage() {
     if (typeof val === "number") return val;
     const clean = val.replace(/[^0-9.]/g, "");
     const parsed = parseFloat(clean);
-    return isNaN(parsed) ? undefined : parsed;
+    return Number.isNaN(parsed) ? undefined : parsed;
   }, []);
 
   const handleSubmit = useCallback(

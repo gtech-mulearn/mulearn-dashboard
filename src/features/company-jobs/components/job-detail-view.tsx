@@ -66,7 +66,7 @@ export function JobDetailView({
 
   const createdDateObj = job.created_at ? new Date(job.created_at) : null;
   const formattedCreated =
-    createdDateObj && !isNaN(createdDateObj.getTime())
+    createdDateObj && !Number.isNaN(createdDateObj.getTime())
       ? createdDateObj.toLocaleDateString("en-IN", {
           day: "numeric",
           month: "long",
@@ -76,7 +76,7 @@ export function JobDetailView({
 
   const updatedDateObj = job.updated_at ? new Date(job.updated_at) : null;
   const formattedUpdated =
-    updatedDateObj && !isNaN(updatedDateObj.getTime())
+    updatedDateObj && !Number.isNaN(updatedDateObj.getTime())
       ? updatedDateObj.toLocaleDateString("en-IN", {
           day: "numeric",
           month: "long",

@@ -72,7 +72,7 @@ export default function TaskForm({
   });
 
   const hashtagValue = watch("hashtag");
-  const bonusKarmaValue = watch("bonus_karma");
+  const _bonusKarmaValue = watch("bonus_karma");
 
   // Ensure hashtag starts with '#'
   useEffect(() => {

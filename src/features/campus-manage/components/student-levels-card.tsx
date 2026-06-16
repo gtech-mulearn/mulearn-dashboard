@@ -96,7 +96,7 @@ export function StudentLevelsCard() {
               <Tooltip
                 cursor={{ fill: "hsl(var(--muted))", opacity: 0.15 }}
                 content={({ active, payload }) => {
-                  if (active && payload && payload.length) {
+                  if (active && payload?.length) {
                     const data = payload[0].payload;
                     return (
                       <div className="rounded-xl border border-border/60 bg-white/95 dark:bg-zinc-800/95 p-2.5 shadow-xl backdrop-blur-sm text-xs font-semibold">

@@ -29,7 +29,6 @@ import {
 } from "../schemas";
 import type {
   AdminSummary,
-  ApplyJobResponse,
   CompanyDashboardSummary,
   CompanyProfile,
   CreateJobPayload,
