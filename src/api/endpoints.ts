@@ -596,6 +596,13 @@ export const endpoints = {
         : "/api/v1/dashboard/ig/list/",
     /** GET - Interest group details by ID */
     detail: (id: string) => `/api/v1/dashboard/ig/get/${id}/`,
+
+    /** GET — List IG creation requests (filter by status) */
+    requestList: "/api/v1/dashboard/ig/request/",
+    /** POST — Submit a new IG creation request */
+    requestCreate: "/api/v1/dashboard/ig/request/",
+    /** PATCH — Update IG request status (admin only, used by Issue #3) */
+    requestUpdate: (pk: string) => `/api/v1/dashboard/ig/request/${pk}/`,
   },
 
   // ============================================

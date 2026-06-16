@@ -156,6 +156,9 @@ export const PERMISSIONS = {
   "company:jobs:view": [ROLES.COMPANY, ROLES.ADMIN],
   "company:jobs:manage": [ROLES.COMPANY],
   "company:verification:manage": [ROLES.ADMIN],
+
+  // ── IG Requests ─────────────────────────────────────────
+  "ig_requests:submit": [ROLES.COMPANY],
 } as const;
 
 // ─── Types ──────────────────────────────────────────────────
