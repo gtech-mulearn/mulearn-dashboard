@@ -51,6 +51,9 @@ export function IGRequestsPage() {
   const { mutate: cancelRequest } = useDeleteIGRequest();
   const [cancelId, setCancelId] = useState<string | null>(null);
 
+  const rows = (data?.response?.data as any[]) || [];
+  const hasAction = rows.some((row) => row.status === "requested");
+
   const handleSort = (column: string) => {
     if (sortBy === column) {
       setSortBy(`-${column}`);
@@ -108,7 +111,7 @@ export function IGRequestsPage() {
       <div className="rounded-md bg-background">
         <Table
           isloading={isLoading}
-          rows={(data?.response?.data as any) || []}
+          rows={rows}
           page={page}
           perPage={perPage}
           columnOrder={columnOrder}
@@ -133,7 +136,7 @@ export function IGRequestsPage() {
             }
             return null;
           }}
-          id={["id"]}
+          id={hasAction ? ["id"] : undefined}
           customActionRender={(row) => {
             if (row.status === "requested") {
               return (
@@ -154,7 +157,7 @@ export function IGRequestsPage() {
           <THead
             columnOrder={columnOrder}
             onIconClick={handleSort}
-            action={true}
+            action={hasAction}
           />
           {data?.response?.pagination ? (
             <Pagination
