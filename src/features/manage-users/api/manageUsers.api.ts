@@ -4,6 +4,7 @@ import {
   CollegesByDistrictResponseSchema,
   CommunitiesResponseSchema,
   CountriesResponseSchema,
+  CompaniesResponseSchema,
   DistrictsResponseSchema,
   GenericMutationResponseSchema,
   InterestsResponseSchema,
@@ -263,4 +264,16 @@ export async function assignUserRole(payload: AssignRolePayload): Promise<{
     intern_guild_created: res.intern_guild_created,
     mentor_profile_created: res.mentor_profile_created,
   };
+}
+
+export async function fetchCompanies(): Promise<UiOption[]> {
+  const response = await apiClient.get(
+    endpoints.manageUsers.Company,
+    CompaniesResponseSchema,
+  );
+
+  return response.response.companies.map((company) => ({
+    value: company.id,
+    label: company.title,
+  }));
 }

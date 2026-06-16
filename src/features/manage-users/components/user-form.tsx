@@ -9,6 +9,7 @@ import Loader from "@/app/loading";
 import { Form } from "@/components/ui/form";
 import {
   useCollegeData,
+  useCompanies,
   useDistricts,
   useLocationSearch,
   useManageUserDetail,
@@ -75,6 +76,7 @@ export const UserForm = forwardRef<
 
   const colleges = collegeData?.colleges ?? [];
   const departments = collegeData?.departments ?? [];
+  const { data: companies = [] } = useCompanies();
   const isBusy =
     isDetailLoading || isMetaLoading || updateUserMutation.isPending;
 
@@ -254,6 +256,7 @@ export const UserForm = forwardRef<
           isBusy={isBusy}
           user_id={id}
           colleges={colleges}
+          companies={companies}
           locationSearch={locationSearch}
           isLocationMenuOpen={isLocationMenuOpen}
           isLocationFetching={isLocationFetching}

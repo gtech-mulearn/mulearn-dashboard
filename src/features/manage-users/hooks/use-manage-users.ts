@@ -12,6 +12,7 @@ import { assignUserRole } from "../api";
 import { useCsvDownload } from "@/hooks/use-csv-download";
 import {
   deleteManageUser,
+  fetchCompanies,
   fetchCollegesAndDepartments,
   fetchCommunities,
   fetchCountries,
@@ -218,5 +219,15 @@ export function useAssignUserRole(userId: string) {
       });
       queryClient.invalidateQueries({ queryKey: manageUsersKeys.lists() });
     },
+  });
+}
+
+export function useCompanies() {
+  return useQuery({
+    queryKey: ["companies"],
+    queryFn: fetchCompanies,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 20 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }

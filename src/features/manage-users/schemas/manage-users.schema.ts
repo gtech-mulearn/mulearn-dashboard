@@ -446,3 +446,16 @@ export const AssignRoleFormSchema = z
   });
 
 export type AssignRoleFormValues = z.infer<typeof AssignRoleFormSchema>;
+
+export const CompaniesResponseSchema = ApiResponseSchema(
+  z.object({
+    companies: z.array(
+      z.object({
+        id: z
+          .union([z.string(), z.number()])
+          .transform((value) => String(value)),
+        title: z.string(),
+      }),
+    ),
+  }),
+);

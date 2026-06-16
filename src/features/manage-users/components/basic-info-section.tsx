@@ -45,6 +45,7 @@ interface BasicInfoSectionProps {
   control: Control<ManageUserFormValues>;
   user_id: string;
   colleges: UiOption[];
+  companies: UiOption[];
   isBusy: boolean;
   locationSearch: string;
   isLocationMenuOpen: boolean;
@@ -85,6 +86,7 @@ export function BasicInfoSection({
   selectedRoles,
   selectedInterests,
   colleges = [],
+  companies = [],
   onToggleArrayField,
 }: BasicInfoSectionProps) {
   const [pendingRoleId, setPendingRoleId] = useState<string | null>(null);
@@ -371,13 +373,14 @@ export function BasicInfoSection({
                       </SelectItem>
                     </SelectContent>
                   </Select>
-
                   {(mentorTier === "CAMPUS_MENTOR" ||
                     mentorTier === "COMPANY_MENTOR") && (
                     <OrganizationCombobox
                       value={orgId}
                       onChange={setOrgId}
-                      options={colleges}
+                      options={
+                        mentorTier === "CAMPUS_MENTOR" ? colleges : companies
+                      }
                       placeholder={
                         mentorTier === "CAMPUS_MENTOR"
                           ? "Select college..."
