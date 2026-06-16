@@ -18,6 +18,8 @@ export type MentorProfileTab =
   | "mentees"
   | "activity";
 
+import { Button } from "@/components/ui/button";
+
 interface MentorProfileTabsProps {
   activeTab: MentorProfileTab;
   onTabChange: (tab: MentorProfileTab) => void;
@@ -40,10 +42,13 @@ export function MentorProfileTabs({
     <div className="relative">
       <div className="flex gap-1 overflow-x-auto rounded-xl bg-muted p-1 scrollbar-none">
         {TABS.map((tab) => (
-          <button
+          <Button
             key={tab.id}
+            variant="secondary"
             type="button"
             onClick={() => onTabChange(tab.id)}
+            aria-label={`${tab.label} tab`}
+            aria-selected={activeTab === tab.id}
             className={cn(
               "relative whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-all",
               activeTab === tab.id
@@ -52,7 +57,7 @@ export function MentorProfileTabs({
             )}
           >
             {tab.label}
-          </button>
+          </Button>
         ))}
       </div>
     </div>

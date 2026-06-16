@@ -6,6 +6,7 @@
 
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import type { StepDefinition } from "../../types";
 
 interface StepperHeaderProps {
@@ -36,13 +37,14 @@ export function StepperHeader({
               )}
             >
               {/* Step circle + label */}
-              <button
+              <Button
                 type="button"
+                variant="ghost"
                 onClick={() => isClickable && onStepClick(index)}
                 disabled={!isClickable}
                 className={cn(
                   "flex w-full min-w-0 items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-colors sm:w-auto",
-                  isClickable && "cursor-pointer hover:bg-muted/50",
+                  isClickable && "cursor-pointer",
                   !isClickable && "cursor-default opacity-50",
                 )}
               >
@@ -81,7 +83,7 @@ export function StepperHeader({
                     {step.description}
                   </p>
                 </div>
-              </button>
+              </Button>
 
               {/* Connector line */}
               {index < steps.length - 1 && (

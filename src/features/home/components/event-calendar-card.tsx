@@ -14,6 +14,7 @@ import {
 } from "date-fns";
 import { ChevronLeft, ChevronRight, ExternalLink, MapPin } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { CalendarEvent } from "../schemas";
 
@@ -196,22 +197,26 @@ export function EventCalendarCard({
           {format(currentMonth, "MMMM, yyyy")}
         </h3>
         <div className="flex items-center gap-1.5">
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="icon"
             onClick={goToPrevMonth}
-            className="flex size-8 cursor-pointer items-center justify-center rounded-full bg-muted text-muted-foreground shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:scale-110 hover:bg-muted/80 hover:shadow-lg active:scale-95"
+            className="size-8"
             aria-label="Previous month"
           >
             <ChevronLeft className="size-4" />
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={goToNextMonth}
-            className="flex size-8 cursor-pointer items-center justify-center rounded-full bg-muted text-muted-foreground shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:scale-110 hover:bg-muted/80 hover:shadow-lg active:scale-95"
+            variant="outline"
+            size="icon"
+            className="size-8"
             aria-label="Next month"
           >
             <ChevronRight className="size-4" />
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -243,12 +248,14 @@ export function EventCalendarCard({
             : "";
 
           return (
-            <button
+            <Button
               key={dateKey}
               type="button"
+              aria-label={format(day, "MMMM d, yyyy")}
+              variant="secondary"
               onClick={() => setSelectedDate(day)}
               className={cn(
-                "group/cell relative mx-auto flex size-9 items-center justify-center rounded-full text-sm transition-all duration-200",
+                "group/cell relative mx-auto flex size-9 items-center justify-center rounded-full text-sm transition-all duration-200 bg-transparent",
                 // Default state
                 isCurrentMonth ? "text-foreground" : "text-muted-foreground",
                 // Hover
@@ -261,7 +268,7 @@ export function EventCalendarCard({
                 // Selected (no event) — primary circle
                 isSelected &&
                   !hasEvents &&
-                  "bg-primary text-primary-foreground font-semibold shadow-md",
+                  "bg-primary text-primary-foreground font-semibold shadow-md hover:bg-primary/80",
                 // Has events — colored circle
                 hasEvents &&
                   !isSelected &&
@@ -278,11 +285,11 @@ export function EventCalendarCard({
               {day.getDate()}
               {/* Multiple event indicator dot */}
               {hasEvents && dayEvents.length > 1 && (
-                <span className="absolute -right-0.5 -top-0.5 flex size-3.5 items-center justify-center rounded-full bg-destructive text-[8px] font-bold text-destructive-foreground shadow-sm">
+                <span className="absolute -right-0.5 -top-0.5 flex size-3.5 items-center justify-center rounded-full bg-destructive text-[8px] font-bold text-destructive-foreground shadow-sm hover:bg-destructive/80">
                   {dayEvents.length}
                 </span>
               )}
-            </button>
+            </Button>
           );
         })}
       </div>

@@ -204,6 +204,9 @@ export const routeAccessMap: Record<string, RouteConfig> = {
   "/dashboard/company": {
     roles: [ROLES.COMPANY],
   },
+  "/dashboard/company/ig-requests": {
+    roles: [ROLES.COMPANY],
+  },
 };
 
 // ─── Route Matching ─────────────────────────────────────────

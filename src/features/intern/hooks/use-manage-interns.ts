@@ -262,7 +262,7 @@ export function useReviewWeeklyReview(id: string) {
     onSuccess: async (_data, variables) => {
       toast.success(
         variables.action === "approve"
-          ? "Weekly review approved — +50 score & weekly streak updated!"
+          ? "Weekly review approved — +200 score & weekly streak updated!"
           : "Weekly review rejected — streak reset to 0!",
       );
       await queryClient.invalidateQueries({

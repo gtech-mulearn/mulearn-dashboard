@@ -1,4 +1,13 @@
-export * from "./api/organizations.api";
-export { default as OrganizationsPage } from "./components/organizations-page";
-export * from "./hooks/use-organizations";
+/**
+ * Organizations Feature
+ *
+ * 📍 src/features/organizations/index.ts
+ *
+ * Public API for the organizations feature.
+ * Import from here, not from internal files.
+ */
+
+export * from "./api";
+export * from "./components";
+export * from "./hooks";
 export * from "./schemas";

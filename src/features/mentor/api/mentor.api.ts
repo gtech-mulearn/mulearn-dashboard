@@ -24,7 +24,7 @@ const ApiResponseOf = <T extends z.ZodTypeAny>(dataSchema: T) =>
 
 // Doc: weekday is an integer; 0 = Sunday is accepted (the picker uses 0 for Sun).
 // No min(1) constraint — the backend accepts 0 for Sunday per the component mapping.
-const BackendSlotSchema = z
+const _BackendSlotSchema = z
   .object({
     id: z.string().optional(), // may be absent on POST response
     weekday: z.coerce.number().int(), // 0=Sunday accepted; no min/max restriction

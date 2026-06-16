@@ -596,6 +596,15 @@ export const endpoints = {
         : "/api/v1/dashboard/ig/list/",
     /** GET - Interest group details by ID */
     detail: (id: string) => `/api/v1/dashboard/ig/get/${id}/`,
+
+    /** GET — List IG creation requests (filter by status) */
+    requestList: "/api/v1/dashboard/ig/request/",
+    /** POST — Submit a new IG creation request */
+    requestCreate: "/api/v1/dashboard/ig/request/",
+    /** PATCH — Update IG request status (admin only, used by Issue #3) */
+    requestUpdate: (pk: string) => `/api/v1/dashboard/ig/request/${pk}/`,
+    /** DELETE — Cancel an active IG request */
+    requestDelete: (pk: string) => `/api/v1/dashboard/ig/request/${pk}/`,
   },
 
   // ============================================
@@ -1242,6 +1251,39 @@ export const endpoints = {
     reviews: "/api/v1/dashboard/manage-interns/reviews/",
     weeklyReviewDetail: (id: string) =>
       `/api/v1/dashboard/manage-interns/reviews/reviews/${id}/review/`,
+  },
+
+  // ============================================
+  // Organization — Transfer, Departments, Verification
+  // ============================================
+  organization: {
+    // TRANSFER (Simple)
+    /** POST - Transfer all UserOrganizationLinks from source to dest, then delete source */
+    transfer: "/api/v1/dashboard/organisation/transfer/",
+
+    // MERGE (Preview + Execute)
+    /** GET - Preview merge impact | PATCH - Execute merge */
+    merge: (orgId: string) =>
+      `/api/v1/dashboard/organisation/merge_organizations/${orgId}/`,
+
+    // DEPARTMENTS
+    /** GET - Paginated department list */
+    departments: "/api/v1/dashboard/organisation/departments/",
+    /** POST - Create department */
+    departmentsCreate: "/api/v1/dashboard/organisation/departments/create/",
+    /** PUT - Update department by id */
+    departmentsEdit: (id: string) =>
+      `/api/v1/dashboard/organisation/departments/edit/${id}/`,
+    /** DELETE - Delete department by id */
+    departmentsDelete: (id: string) =>
+      `/api/v1/dashboard/organisation/departments/delete/${id}/`,
+
+    // VERIFICATION
+    /** GET - List unverified organizations (pending review) */
+    verificationList: "/api/v1/dashboard/organisation/verify/list/",
+    /** POST - Approve or reject an unverified org */
+    verification: (uorgId: string) =>
+      `/api/v1/dashboard/organisation/verify/${uorgId}/`,
   },
 } as const;
 

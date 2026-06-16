@@ -68,7 +68,10 @@ export default function InternTasksPage() {
     return statusFilter === "ALL" || t.status === statusFilter;
   });
 
-  const handleStatusChange = (taskId: string, newStatus: any) => {
+  const handleStatusChange = (
+    taskId: string,
+    newStatus: TInternTask["status"],
+  ) => {
     updateStatusMutation.mutate({ id: taskId, status: newStatus });
   };
 
@@ -177,7 +180,12 @@ export default function InternTasksPage() {
                   <div className="flex items-center gap-2">
                     <Select
                       value={task.status}
-                      onValueChange={(val) => handleStatusChange(task.id, val)}
+                      onValueChange={(val) =>
+                        handleStatusChange(
+                          task.id,
+                          val as TInternTask["status"],
+                        )
+                      }
                       disabled={updateStatusMutation.isPending}
                     >
                       <SelectTrigger className="h-8 font-black uppercase text-[9px] tracking-widest w-[110px] border-border/50 bg-background/50 rounded-lg">
@@ -326,9 +334,14 @@ export default function InternTasksPage() {
                     <Select
                       value={selectedTask.status}
                       onValueChange={(val) => {
-                        handleStatusChange(selectedTask.id, val);
+                        handleStatusChange(
+                          selectedTask.id,
+                          val as TInternTask["status"],
+                        );
                         setSelectedTask((prev) =>
-                          prev ? { ...prev, status: val as any } : null,
+                          prev
+                            ? { ...prev, status: val as TInternTask["status"] }
+                            : null,
                         );
                       }}
                       disabled={updateStatusMutation.isPending}
