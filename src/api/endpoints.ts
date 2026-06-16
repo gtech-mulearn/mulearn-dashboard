@@ -1245,6 +1245,31 @@ export const endpoints = {
   },
 
   // ============================================
+  // Notifications
+  // ============================================
+  notifications: {
+    /** GET - List direct + broadcast notifications for authenticated user */
+    list: "/api/v1/notification/list/",
+    /** DELETE - Delete a single direct notification */
+    deleteOne: (id: string) => `/api/v1/notification/delete/id/${id}/`,
+    /** DELETE - Delete all direct notifications for authenticated user */
+    deleteAll: "/api/v1/notification/delete/all/",
+    broadcast: {
+      /** GET - Admin: list all broadcasts */
+      listAll: "/api/v1/notification/broadcast/list/all/",
+      /** POST - Admin: create global broadcast */
+      create: "/api/v1/notification/broadcast/create/",
+      /** PATCH - Admin: partial update broadcast */
+      update: (id: string) => `/api/v1/notification/broadcast/update/id/${id}/`,
+      /** DELETE - Admin: delete single broadcast */
+      deleteOne: (id: string) =>
+        `/api/v1/notification/broadcast/delete/id/${id}/`,
+      /** DELETE - Admin: delete all broadcasts */
+      deleteAll: "/api/v1/notification/broadcast/delete/all/",
+    },
+  },
+
+  // ============================================
   // Organization — Transfer, Departments, Verification
   // ============================================
   organization: {

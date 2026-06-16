@@ -1,6 +1,7 @@
 import {
   AlertTriangle,
   ArrowRight,
+  Bell,
   Briefcase,
   Building,
   Building2,
@@ -203,6 +204,13 @@ const MANAGEMENT_ITEMS: ManagementItem[] = [
     description: "Configure dynamic content types.",
     path: "/dashboard/management/dynamic-type",
     color: "bg-chart-5/10 text-chart-5",
+  },
+  {
+    icon: Bell,
+    title: "Notifications",
+    description: "Create and manage broadcast notifications for users.",
+    path: "/dashboard/management/notifications",
+    color: "bg-chart-1/10 text-chart-1",
   },
 ];
 

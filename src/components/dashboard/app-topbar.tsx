@@ -1,14 +1,13 @@
 "use client";
 
-import { Bell } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { ThemeToggle } from "@/app/theme-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserInfo } from "@/features/auth/hooks/use-session";
+import { NotificationPopover } from "@/features/notification/components/notification-popover";
 import { ROLES } from "@/lib/auth/roles";
 import { cn } from "@/lib/utils";
 
@@ -48,17 +47,7 @@ export function AppTopbar() {
       <div className="flex items-center gap-2">
         <ThemeToggle />
 
-        {isStudent && (
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Notifications"
-            className="rounded-full relative shrink-0"
-          >
-            <Bell className="w-5 h-5 text-muted-foreground" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500" />
-          </Button>
-        )}
+        {isStudent && <NotificationPopover />}
 
         {isLoading ? (
           <div className="flex items-center gap-2 pr-1">
