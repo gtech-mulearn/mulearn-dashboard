@@ -596,6 +596,15 @@ export const endpoints = {
         : "/api/v1/dashboard/ig/list/",
     /** GET - Interest group details by ID */
     detail: (id: string) => `/api/v1/dashboard/ig/get/${id}/`,
+
+    /** GET — List IG creation requests (filter by status) */
+    requestList: "/api/v1/dashboard/ig/request/",
+    /** POST — Submit a new IG creation request */
+    requestCreate: "/api/v1/dashboard/ig/request/",
+    /** PATCH — Update IG request status (admin only, used by Issue #3) */
+    requestUpdate: (pk: string) => `/api/v1/dashboard/ig/request/${pk}/`,
+    /** DELETE — Cancel an active IG request */
+    requestDelete: (pk: string) => `/api/v1/dashboard/ig/request/${pk}/`,
   },
 
   // ============================================
@@ -1233,6 +1242,8 @@ export const endpoints = {
     export: "/api/v1/dashboard/manage-interns/interns/export/",
     tasks: "/api/v1/dashboard/manage-interns/tasks/",
     taskDetail: (id: string) => `/api/v1/dashboard/manage-interns/tasks/${id}/`,
+    taskVerify: (id: string) =>
+      `/api/v1/dashboard/manage-interns/tasks/${id}/verify/`,
     leave: "/api/v1/dashboard/manage-interns/leave/",
     leaveReview: (id: string) =>
       `/api/v1/dashboard/manage-interns/leave/${id}/review/`,

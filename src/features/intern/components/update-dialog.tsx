@@ -39,7 +39,6 @@ export function UpdateDialog({
   const statusColorClass: Record<string, string> = {
     ACTIVE: "text-success",
     AT_RISK: "text-warning",
-    ON_LEAVE: "text-brand-blue",
     INACTIVE: "text-muted-foreground",
   };
 
@@ -77,7 +76,8 @@ export function UpdateDialog({
             Edit Intern
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            Modify the guild and status for {intern?.name}.
+            Modify the guild and base status for {intern?.name}. Approved leave
+            requests control the temporary on-leave state.
           </DialogDescription>
         </DialogHeader>
 
@@ -135,12 +135,6 @@ export function UpdateDialog({
                   className="font-bold uppercase text-xs text-warning"
                 >
                   At Risk
-                </SelectItem>
-                <SelectItem
-                  value="ON_LEAVE"
-                  className="font-bold uppercase text-xs text-brand-blue"
-                >
-                  On Leave
                 </SelectItem>
                 <SelectItem
                   value="INACTIVE"

@@ -428,16 +428,18 @@ export function CompanyDetailSheet({
                   onReject(company);
                   onOpenChange(false);
                 }}
+                aria-label="Reject company"
               >
                 <XCircle className="mr-1.5 h-4 w-4" />
                 Reject
               </Button>
               <Button
-                className="flex-1 rounded-2xl bg-success text-primary-foreground hover:bg-success/90"
+                className="flex-1 rounded-2xl bg-success border-bg-success text-primary-foreground hover:bg-success/90"
                 onClick={() => {
                   onApprove(company);
                   onOpenChange(false);
                 }}
+                aria-label="Approve company"
               >
                 <CheckCircle className="mr-1.5 h-4 w-4" />
                 Approve

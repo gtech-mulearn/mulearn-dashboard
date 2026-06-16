@@ -37,6 +37,7 @@ import {
   useManageInternsList,
 } from "@/features/intern";
 import type { TManageInternItem } from "@/features/intern/types";
+import { resolveInternStatus } from "@/features/intern/utils/intern-helpers";
 import { useDebounce } from "@/hooks/use-debounce";
 import { InternsStats } from "../../../../../features/intern/components/interns-stats";
 import { OnboardDialog } from "../../../../../features/intern/components/onboard-dialog";
@@ -153,11 +154,28 @@ export default function ManageInternsPage() {
   const deactivateMutation = useDeactivateIntern();
   const { mutateAsync: exportCsv, isPending: isExporting } = useExportInterns();
 
+  const getEditableStatus = (item: TManageInternItem) => {
+    return (
+      item.current_status ||
+      item.base_status ||
+      item.previous_status ||
+      (item.status !== "ON_LEAVE" ? item.status : undefined) ||
+      "ACTIVE"
+    );
+  };
+
   const rows = useMemo(() => {
     const data = (listData?.data ?? []) as unknown as TManageInternItem[];
-    if (statusFilter === "all") return data as unknown as Data[];
-    return data.filter(
-      (item) => item.status?.toUpperCase() === statusFilter.toUpperCase(),
+    const resolvedRows = data.map((item) => ({
+      ...item,
+      resolved_status: resolveInternStatus(item),
+    }));
+
+    if (statusFilter === "all") return resolvedRows as unknown as Data[];
+
+    return resolvedRows.filter(
+      (item) =>
+        item.resolved_status?.toUpperCase() === statusFilter.toUpperCase(),
     ) as unknown as Data[];
   }, [listData, statusFilter]);
 
@@ -167,7 +185,8 @@ export default function ManageInternsPage() {
   const isBackendFiltered = useMemo(() => {
     if (statusFilter === "all" || !listData?.data) return true;
     return (listData.data as any[]).every(
-      (item) => item.status?.toUpperCase() === statusFilter.toUpperCase(),
+      (item) =>
+        resolveInternStatus(item).toUpperCase() === statusFilter.toUpperCase(),
     );
   }, [listData, statusFilter]);
 
@@ -207,7 +226,7 @@ export default function ManageInternsPage() {
         ),
       },
       {
-        column: "status",
+        column: "resolved_status",
         Label: "Status",
         isSortable: true,
         wrap: (data: string) => getStatusBadge(data),
@@ -394,7 +413,9 @@ export default function ManageInternsPage() {
                       id: String(row.id),
                       name: String(row.full_name),
                       guild: String(row.guild ?? ""),
-                      status: String(row.status ?? "ACTIVE"),
+                      status: getEditableStatus(
+                        row as unknown as TManageInternItem,
+                      ),
                     });
                   }}
                   className="rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"

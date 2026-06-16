@@ -8,8 +8,10 @@ import THead from "@/components/dashboard/table/Thead";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { Spinner } from "@/components/ui/spinner";
 import { useManageWeeklyReviews } from "@/features/intern";
+import { formatTasksCompleted } from "@/features/intern/utils/intern-helpers";
 
 export default function TeamReportPage() {
   const searchParams = useSearchParams();
@@ -74,13 +76,11 @@ export default function TeamReportPage() {
       column: "tasks_completed",
       Label: "Conquests",
       isSortable: false,
-      wrap: (data: string) => (
-        <p
-          className="text-xs text-muted-foreground max-w-xs truncate"
-          title={data}
-        >
-          {data || "-"}
-        </p>
+      wrap: (data: any) => (
+        <MarkdownRenderer
+          content={formatTasksCompleted(data)}
+          className="text-[11px] leading-relaxed"
+        />
       ),
     },
     {

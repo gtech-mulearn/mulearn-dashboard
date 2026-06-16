@@ -149,35 +149,41 @@ function buildColumnOrder(
           !status;
         return (
           <div className="flex items-center gap-1">
-            <button
+            <Button
               type="button"
+              variant="secondary"
               onClick={() => onView(id)}
-              className="inline-flex items-center gap-1 rounded-lg border border-primary/30 bg-primary/10 px-2 py-1 text-xs font-semibold text-primary transition-colors hover:bg-primary/20"
+              className="inline-flex items-center gap-1 rounded-lg border border-primary/30 bg-primary/10 px-2 py-1 text-xs font-semibold text-primary transition-colors hover:bg-primary/20 h-7"
               title="View details"
+              aria-label="View company details"
             >
               <Eye className="h-3 w-3" />
               <span className="hidden sm:inline">View</span>
-            </button>
+            </Button>
             {isPending && (
               <>
-                <button
+                <Button
                   type="button"
+                  variant="secondary"
                   onClick={() => onApproveRow(id)}
-                  className="inline-flex items-center gap-1 rounded-lg border border-success/40 bg-success/10 px-2 py-1 text-xs font-semibold text-success transition-colors hover:bg-success/20"
+                  className="inline-flex items-center gap-1 rounded-lg border border-success/40 bg-success/10 px-2 py-1 text-xs font-semibold text-success transition-colors hover:bg-success/20 h-7"
                   title="Verify"
+                  aria-label="Verify company"
                 >
                   <CheckCircle className="h-3 w-3" />
                   <span className="hidden sm:inline">Verify</span>
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
+                  variant="secondary"
                   onClick={() => onRejectRow(id)}
-                  className="inline-flex items-center gap-1 rounded-lg border border-destructive/40 bg-destructive/10 px-2 py-1 text-xs font-semibold text-destructive transition-colors hover:bg-destructive/20"
+                  className="inline-flex items-center gap-1 rounded-lg border border-destructive/40 bg-destructive/10 px-2 py-1 text-xs font-semibold text-destructive transition-colors hover:bg-destructive/20 h-7"
                   title="Reject"
+                  aria-label="Reject company"
                 >
                   <XCircle className="h-3 w-3" />
                   <span className="hidden sm:inline">Reject</span>
-                </button>
+                </Button>
               </>
             )}
           </div>

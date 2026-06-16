@@ -241,6 +241,14 @@ export const NAV_ITEMS: readonly NavItem[] = [
     roles: [ROLES.COMPANY],
   },
   {
+    id: "company-ig-requests",
+    title: "IG Requests",
+    href: "/dashboard/company/ig-requests",
+    icon: FileText,
+    section: "management",
+    roles: [ROLES.COMPANY],
+  },
+  {
     id: "company-analytics",
     title: "Analytics & Performance",
     href: "/dashboard/company/analytics",
