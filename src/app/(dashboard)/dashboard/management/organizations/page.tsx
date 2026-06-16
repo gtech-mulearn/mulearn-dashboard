@@ -1,4 +1,4 @@
-import OrganizationsPage from "@/features/organizations/components/organizations-page";
+import { OrganizationsView } from "@/features/organizations";
 
 export const metadata = {
   title: "Organizations | Management | MuLearn Dashboard",
@@ -6,6 +6,6 @@ export const metadata = {
     "Create and manage organization profiles including colleges, companies, communities, and schools.",
 };
 
-export default function Page() {
-  return <OrganizationsPage />;
+export default function OrganizationsPage() {
+  return <OrganizationsView />;
 }

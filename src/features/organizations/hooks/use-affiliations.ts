@@ -13,7 +13,7 @@ import {
   fetchAffiliations,
   updateAffiliation,
 } from "../api/affiliation.api";
-import type { AffiliationFormValues } from "../schemas";
+import type { AffiliationFormValues } from "../schemas/affiliation.schema";
 import { affiliationKeys } from "./query-keys";
 
 interface UseAffiliationsListParams {

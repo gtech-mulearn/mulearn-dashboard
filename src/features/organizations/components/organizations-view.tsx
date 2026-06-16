@@ -261,8 +261,7 @@ function OrganizationsContent() {
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <Button
                 variant="outline"
-                size="sm"
-                className="rounded-xl gap-1.5 w-full sm:w-auto"
+                className="gap-1.5 w-full sm:w-auto"
                 onClick={downloadCsv}
                 disabled={isDownloading}
               >
@@ -270,8 +269,7 @@ function OrganizationsContent() {
                 {isDownloading ? "Exporting..." : "Export CSV"}
               </Button>
               <Button
-                size="sm"
-                className="rounded-xl gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto"
+                className="gap-1.5 w-full sm:w-auto"
                 onClick={handleCreateOpen}
               >
                 <Plus className="size-3.5" />

@@ -53,6 +53,27 @@ function mirrorEventTypeToCategory<T extends EventShape>(event: T): T {
   const eventType = event.event_type ?? null;
   const categoryName = event.category_name ?? null;
 
+  // Normalize organizer properties if they use the 'organiser_' prefix
+  // Using 'any' since EventShape does not fully type the organizer field
+  const org = (event as any).organizer;
+  if (org && typeof org === "object") {
+    if (org.type === undefined && org.organiser_type !== undefined) {
+      org.type = org.organiser_type;
+    }
+    if (org.ig === undefined && org.organiser_ig !== undefined) {
+      org.ig = org.organiser_ig;
+    }
+    if (org.campus === undefined && org.organiser_campus !== undefined) {
+      org.campus = org.organiser_campus;
+    }
+    if (org.company === undefined && org.organiser_company !== undefined) {
+      org.company = org.organiser_company;
+    }
+    if (org.campus_ig_id === undefined && org.organiser_ci_id !== undefined) {
+      org.campus_ig_id = org.organiser_ci_id;
+    }
+  }
+
   if (!eventType || categoryName) {
     return event;
   }

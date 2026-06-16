@@ -369,22 +369,21 @@ export default function TalentPoolPage() {
         </p>
       </div>
 
-      {/* Summary strip */}
-      {!isLoading && !isError && (
-        <div className="flex flex-wrap gap-3">
-          <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm">
+      {/* Controls row */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full">
+        {/* Summary badge */}
+        {!isLoading && !isError && (
+          <div className="flex h-9 shrink-0 items-center gap-2 rounded-xl border border-border bg-card px-4 text-sm">
             <Users className="h-4 w-4 text-primary" />
             <span className="font-semibold text-foreground">
               {total.toLocaleString()}
             </span>
             <span className="text-muted-foreground">learners found</span>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Controls row */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <div className="relative flex-1 min-w-[200px] max-w-sm">
+        {/* Search */}
+        <div className="relative w-full sm:w-[300px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
           <Input
             id="talent-search"
@@ -394,7 +393,7 @@ export default function TalentPoolPage() {
               setPageIndex(1);
             }}
             placeholder="Search by name or MUID…"
-            className="h-9 pl-9 pr-8 text-sm"
+            className="h-9 pl-9 pr-8 text-sm w-full"
           />
           {search && (
             <button
@@ -406,24 +405,28 @@ export default function TalentPoolPage() {
             </button>
           )}
         </div>
-        <FiltersDropdown
-          filters={filters}
-          onChange={(f) => {
-            setFilters(f);
-            setPageIndex(1);
-          }}
-        />
-        {hasActive && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-9 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
-            onClick={clearFilters}
-          >
-            <X className="h-3.5 w-3.5" />
-            Clear all
-          </Button>
-        )}
+
+        {/* Filters */}
+        <div className="flex items-center gap-2">
+          <FiltersDropdown
+            filters={filters}
+            onChange={(f) => {
+              setFilters(f);
+              setPageIndex(1);
+            }}
+          />
+          {hasActive && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 gap-1.5 text-xs text-muted-foreground hover:text-foreground shrink-0"
+              onClick={clearFilters}
+            >
+              <X className="h-3.5 w-3.5" />
+              Clear all
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Grid */}
