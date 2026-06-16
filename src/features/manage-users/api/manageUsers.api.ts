@@ -1,10 +1,12 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
+  type AssignRolePayload,
+  AssignRoleResponseSchema,
   CollegesByDistrictResponseSchema,
   CommunitiesResponseSchema,
-  CountriesResponseSchema,
   CompaniesResponseSchema,
+  CountriesResponseSchema,
   DistrictsResponseSchema,
   GenericMutationResponseSchema,
   InterestsResponseSchema,
@@ -18,8 +20,6 @@ import {
   StatesResponseSchema,
   type UiOption,
   type UpdateManageUserPayload,
-  type AssignRolePayload,
-  AssignRoleResponseSchema,
 } from "../schemas";
 
 interface ManageUsersListParams {

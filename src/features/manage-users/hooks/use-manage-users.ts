@@ -8,13 +8,13 @@ import {
 } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { endpoints } from "@/api/endpoints";
-import { assignUserRole } from "../api";
 import { useCsvDownload } from "@/hooks/use-csv-download";
 import {
+  assignUserRole,
   deleteManageUser,
-  fetchCompanies,
   fetchCollegesAndDepartments,
   fetchCommunities,
+  fetchCompanies,
   fetchCountries,
   fetchDistricts,
   fetchInterests,
@@ -23,8 +23,8 @@ import {
   fetchRoles,
   fetchStates,
   searchLocations,
-  updateManageUser,
   UserRoles,
+  updateManageUser,
 } from "../api";
 import { manageUsersKeys } from "./query-keys";
 

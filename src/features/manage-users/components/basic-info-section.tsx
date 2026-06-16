@@ -8,28 +8,9 @@
 
 "use client";
 
-import type { Control } from "react-hook-form";
 import { useState } from "react";
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import type { ManageUserFormValues } from "../schemas";
-import { LocationSearchDropdown } from "./location-search-dropdown";
-import { MultiSelectDropdown } from "./multi-select-dropdown";
-import { useAssignUserRole } from "../hooks";
+import type { Control } from "react-hook-form";
 import { toast } from "sonner";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -38,7 +19,26 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useAssignUserRole } from "../hooks";
+import type { ManageUserFormValues } from "../schemas";
 import { INTERN_ROLE_NAME, MENTOR_ROLE_NAME, type UiOption } from "../schemas";
+import { LocationSearchDropdown } from "./location-search-dropdown";
+import { MultiSelectDropdown } from "./multi-select-dropdown";
 import { OrganizationCombobox } from "./organisationSearch";
 
 interface BasicInfoSectionProps {
