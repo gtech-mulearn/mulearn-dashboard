@@ -24,6 +24,7 @@ import {
   useUsersWithoutRole,
 } from "../hooks/use-role-users";
 import type { Role, RoleUser } from "../schemas";
+import { ExtraAssignmentDialog } from "./extra-assignment-dialog";
 
 interface UserRoleAssignmentProps {
   open: boolean;
@@ -36,6 +37,8 @@ interface UserRoleAssignmentProps {
 function SingleTab({ role }: { role: Role }) {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [pendingUser, setPendingUser] = useState<RoleUser | null>(null);
+  const [extraDialogOpen, setExtraDialogOpen] = useState(false);
   const assignMutation = useAssignUserRole(role.id);
   const removeMutation = useRemoveUserRole(role.id);
 
@@ -92,9 +95,18 @@ function SingleTab({ role }: { role: Role }) {
                 disabled={assignMutation.isPending}
                 title="Assign role"
                 aria-label="Assign role"
-                onClick={() =>
-                  assignMutation.mutate({ user_id: user.id, role_id: role.id })
-                }
+                onClick={() => {
+                  const lowerTitle = role.title.toLowerCase();
+                  if (lowerTitle === "intern" || lowerTitle === "mentor") {
+                    setPendingUser(user);
+                    setExtraDialogOpen(true);
+                  } else {
+                    assignMutation.mutate({
+                      user_id: user.id,
+                      role_id: role.id,
+                    });
+                  }
+                }}
               >
                 <UserPlus className="size-3.5" />
               </Button>
@@ -115,6 +127,31 @@ function SingleTab({ role }: { role: Role }) {
           </div>
         ))}
       </div>
+
+      <ExtraAssignmentDialog
+        open={extraDialogOpen}
+        onOpenChange={setExtraDialogOpen}
+        user={pendingUser}
+        role={role}
+        isPending={assignMutation.isPending}
+        onConfirm={(extraData) => {
+          if (pendingUser) {
+            assignMutation.mutate(
+              {
+                user_id: pendingUser.id,
+                role_id: role.id,
+                ...extraData,
+              },
+              {
+                onSuccess: () => {
+                  setExtraDialogOpen(false);
+                  setPendingUser(null);
+                },
+              },
+            );
+          }
+        }}
+      />
     </div>
   );
 }
