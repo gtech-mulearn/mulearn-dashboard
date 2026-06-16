@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useUserInfo } from "@/features/auth";
 import { useAcceptSession } from "@/features/mentor/hooks/use-session-actions";
 import type { OverviewSessionListItem } from "../../schemas/home.schema";
+import { Button } from "@/components/ui/button";
 
 type Props = {
   sessions: OverviewSessionListItem[];
@@ -96,8 +97,9 @@ export function SessionRequestsCard({ sessions, isLoading }: Props) {
                       ? timeAgo(req.created_at)
                       : timeAgo(req.starts_at)}
                   </span>
-                  <button
+                  <Button
                     type="button"
+                    variant="default"
                     disabled={isAccepting}
                     onClick={() =>
                       accept({
@@ -105,7 +107,7 @@ export function SessionRequestsCard({ sessions, isLoading }: Props) {
                         userId: userInfo?.muid ?? "",
                       })
                     }
-                    className="flex size-7 shrink-0 items-center justify-center rounded-full bg-success/15 text-success transition-colors hover:bg-success/25 disabled:opacity-50"
+                    className="flex size-7 shrink-0 items-center justify-center rounded-full bg-success/15 text-success transition-colors hover:bg-success/25 disabled:opacity-50 border-none"
                     aria-label="Accept"
                   >
                     {isAccepting ? (
@@ -113,7 +115,7 @@ export function SessionRequestsCard({ sessions, isLoading }: Props) {
                     ) : (
                       <Check className="size-3.5" />
                     )}
-                  </button>
+                  </Button>
                 </div>
               );
             })}
