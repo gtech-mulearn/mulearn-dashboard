@@ -9,6 +9,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { Spinner } from "@/components/ui/spinner";
 import { useManageWeeklyReviews } from "@/features/intern";
+import {
+  formatTasksAssigned,
+  formatTasksCompleted,
+} from "@/features/intern/utils/intern-helpers";
 
 export default function IndividualReportPage() {
   const searchParams = useSearchParams();
@@ -165,13 +169,11 @@ export default function IndividualReportPage() {
                                 Tasks Assigned
                               </span>
                               <div className="text-xs font-semibold text-foreground/80 leading-relaxed">
-                                {review.tasks_assigned ? (
-                                  <MarkdownRenderer
-                                    content={review.tasks_assigned}
-                                  />
-                                ) : (
-                                  "-"
-                                )}
+                                <MarkdownRenderer
+                                  content={formatTasksAssigned(
+                                    review.tasks_assigned,
+                                  )}
+                                />
                               </div>
                             </div>
                             <div className="space-y-1">
@@ -179,13 +181,11 @@ export default function IndividualReportPage() {
                                 Tasks Completed
                               </span>
                               <div className="text-xs font-semibold text-foreground/80 leading-relaxed">
-                                {review.tasks_completed ? (
-                                  <MarkdownRenderer
-                                    content={review.tasks_completed}
-                                  />
-                                ) : (
-                                  "-"
-                                )}
+                                <MarkdownRenderer
+                                  content={formatTasksCompleted(
+                                    review.tasks_completed,
+                                  )}
+                                />
                               </div>
                             </div>
                           </div>

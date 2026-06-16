@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 import { useUserInfo, useUserProfile } from "@/features/auth";
 import { useLeaderboard, useLeaderboardMe } from "@/features/intern";
+import { isCurrentLeaderboardUser } from "@/features/intern/utils/intern-helpers";
 
 export default function LeaderboardPage() {
   const [page, setPage] = useState(1);
@@ -20,6 +21,10 @@ export default function LeaderboardPage() {
   const { data: userInfo } = useUserInfo();
   const { data: profile } = useUserProfile();
   const { data: meRank } = useLeaderboardMe();
+  const leaderboardIdentity = {
+    profileId: profile?.id,
+    muids: [profile?.muid, userInfo?.muid],
+  };
 
   // Absolute top 3 for the podium
   const { data: podiumData, isLoading: isPodiumLoading } = useLeaderboard({
@@ -47,8 +52,13 @@ export default function LeaderboardPage() {
       (item) => item.status !== "INACTIVE",
     );
     const item = activePodium[index];
+    const isCurrentUser = item
+      ? isCurrentLeaderboardUser(item, leaderboardIdentity)
+      : false;
+
     return {
-      name: item?.full_name || "N/A",
+      name: isCurrentUser ? "You" : item?.full_name || "N/A",
+      actualName: item?.full_name || "N/A",
       points: item?.score || 0,
       avatar: item?.full_name
         ? item.full_name
@@ -67,10 +77,13 @@ export default function LeaderboardPage() {
     .filter((item) => item.status !== "INACTIVE")
     .map((item) => ({
       id: item.user_id,
+      muid: item.muid,
       rank: item.rank,
       name: item.full_name,
+      actualName: item.full_name,
       points: item.score,
       streak: "-",
+      isCurrentUser: isCurrentLeaderboardUser(item, leaderboardIdentity),
       avatar: item.full_name
         ? item.full_name
             .split(" ")
@@ -102,7 +115,7 @@ export default function LeaderboardPage() {
             </AvatarFallback>
           </Avatar>
           <span className="font-medium">{data}</span>
-          {(row.id === profile?.id || row.name === userDisplayName) && (
+          {row.isCurrentUser && (
             <Badge className="bg-brand-blue/10 text-brand-blue border-brand-blue/20 text-[10px] h-4">
               YOU
             </Badge>

@@ -26,6 +26,10 @@ function buildQueryString(params?: TInternQueryParams): string {
   if (params.sortBy) searchParams.set("sortBy", params.sortBy);
   if (params.sortOrder) searchParams.set("sortOrder", params.sortOrder);
   if (params.status) searchParams.set("status", params.status);
+  if (params.guild) searchParams.set("guild", params.guild);
+  if (params.complexity) searchParams.set("complexity", params.complexity);
+  if (params.category) searchParams.set("category", params.category);
+  if (params.team) searchParams.set("team", params.team);
   const qStr = searchParams.toString();
   return qStr ? `?${qStr}` : "";
 }
@@ -101,6 +105,13 @@ export const manageInternsApi = {
 
   deleteTask: async (id: string): Promise<void> => {
     await apiClient.delete(endpoints.manageInterns.taskDetail(id));
+  },
+
+  verifyTask: async (
+    id: string,
+    payload: { karma_awarded: number },
+  ): Promise<void> => {
+    await apiClient.post(endpoints.manageInterns.taskVerify(id), payload);
   },
 
   // ── Leave Review ───────────────────────────────────────────

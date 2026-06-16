@@ -21,6 +21,7 @@ export interface TInternOverviewStatus {
   complexity_score: number;
   score: number;
   join_date?: string;
+  longest_daily_streak?: number;
 }
 
 export interface TInternActivityLog {
@@ -32,6 +33,7 @@ export interface TInternActivityLog {
 
 export interface TLeaderboardRow {
   user_id: string;
+  muid?: string;
   full_name: string;
   guild: string;
   score: number;
@@ -53,32 +55,28 @@ export interface TTimesheet {
   edit_reason: string | null;
   status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
   karma_awarded: number | null;
+  score?: number | null;
   review_note: string | null;
   created_at: string;
 }
 
 export interface TTimesheetSubmitPayload {
   entry_date: string;
-  category: string;
   description: string;
-  hours: string;
+  hours: number;
   blockers?: string;
-  task?: string; // linked task ID
-  task_status?: string;
   end_of_day_note?: string;
   edit_reason?: string;
+  task?: Array<{
+    task_id: string;
+    status: string;
+    remark?: string;
+  }>;
 }
 
 export interface TTimesheetUpdatePayload {
-  remark?: string;
   end_of_day_note?: string;
   edit_reason: string; // mandatory
-  category?: string;
-  description?: string;
-  hours?: string;
-  blockers?: string;
-  task?: string;
-  task_status?: string;
 }
 
 export interface TTimesheetSummary {
@@ -101,8 +99,16 @@ export interface TWeeklyReview {
   week_end_date: string;
   team: string;
   is_on_leave: boolean;
-  tasks_assigned: string | null;
-  tasks_completed: string | null;
+  tasks_assigned: Record<string, string> | null;
+  tasks_completed: Array<{
+    task_id: string;
+    title: string;
+    category: string;
+    complexity: string;
+    deadline?: string;
+    final_status: string;
+    output_link: string;
+  }> | null;
   weekly_review: string | null;
   task_remarks: TTaskRemarks | null;
   hours_committed: number;
@@ -112,6 +118,7 @@ export interface TWeeklyReview {
   is_late: boolean;
   status: "PENDING" | "APPROVED" | "REJECTED";
   karma_awarded: number | null;
+  score?: number | null;
   review_note: string | null;
   created_at: string;
   user_name?: string; // admin view
@@ -123,8 +130,6 @@ export interface TWeeklyReviewSubmitPayload {
   team: string;
   is_on_leave: boolean;
   hours_committed: number;
-  tasks_assigned?: string;
-  tasks_completed?: string;
   weekly_review?: string;
   blockers?: string;
   leave_days?: number;
@@ -156,14 +161,20 @@ export interface TInternTask {
   description: string;
   category: string;
   complexity: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+  complexity_score?: number;
+  karma_awarded?: number;
   assigned_to: string;
   assigned_to_name?: string;
-  status: "TODO" | "IN_PROGRESS" | "COMPLETED" | "ON_HOLD";
+  assigned_to_muid?: string;
+  status: "WAITING_FOR_REVIEW" | "IN_PROGRESS" | "COMPLETED" | "ON_HOLD";
+  output_link?: string | null;
+  is_verified?: boolean;
   created_by?: string;
   created_by_name?: string;
   created_at: string;
   updated_at?: string;
   team?: string;
+  guild?: string;
   deadline?: string;
   iso_week?: number;
 }
@@ -217,6 +228,14 @@ export interface TManageInternItem {
   muid: string;
   guild: string;
   status: "ACTIVE" | "AT_RISK" | "ON_LEAVE" | "INACTIVE";
+  current_status?: "ACTIVE" | "AT_RISK" | "INACTIVE";
+  previous_status?: "ACTIVE" | "AT_RISK" | "INACTIVE";
+  base_status?: "ACTIVE" | "AT_RISK" | "INACTIVE";
+  display_status?: "ACTIVE" | "AT_RISK" | "ON_LEAVE" | "INACTIVE";
+  resolved_status?: "ACTIVE" | "AT_RISK" | "ON_LEAVE" | "INACTIVE";
+  is_on_leave?: boolean;
+  leave_status?: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
+  active_leave_status?: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
   created_at: string;
 }
 
@@ -237,6 +256,7 @@ export interface TCreateTaskPayload {
   description: string;
   category: string;
   complexity: string;
+  karma_awarded?: number;
   assigned_to: string;
   team?: string;
   deadline?: string;
@@ -248,6 +268,7 @@ export interface TUpdateTaskPayload {
   description?: string;
   category?: string;
   complexity?: string;
+  karma_awarded?: number;
   assigned_to?: string;
   team?: string;
   deadline?: string;

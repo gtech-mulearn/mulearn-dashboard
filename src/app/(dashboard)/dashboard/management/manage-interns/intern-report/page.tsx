@@ -40,6 +40,7 @@ import {
   useReviewWeeklyReview,
 } from "@/features/intern";
 import type { TWeeklyReview } from "@/features/intern/types";
+import { formatTasksCompleted } from "@/features/intern/utils/intern-helpers";
 
 export default function WeeklyReportGeneratorPage() {
   const router = useRouter();
@@ -142,10 +143,11 @@ export default function WeeklyReportGeneratorPage() {
       column: "tasks_completed",
       Label: "Achievements",
       isSortable: false,
-      wrap: (data: string) => (
-        <span className="text-xs italic text-muted-foreground">
-          "{data || "-"}"
-        </span>
+      wrap: (data: any) => (
+        <MarkdownRenderer
+          content={formatTasksCompleted(data)}
+          className="text-[11px] leading-relaxed"
+        />
       ),
     },
     {
@@ -525,7 +527,9 @@ export default function WeeklyReportGeneratorPage() {
                     {selectedReview.tasks_completed ? (
                       <div className="bg-muted/40 p-2.5 rounded-lg border border-border/20 max-h-40 overflow-y-auto leading-relaxed mt-1">
                         <MarkdownRenderer
-                          content={selectedReview.tasks_completed}
+                          content={formatTasksCompleted(
+                            selectedReview.tasks_completed,
+                          )}
                           className="text-xs"
                         />
                       </div>

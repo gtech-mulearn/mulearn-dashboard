@@ -171,15 +171,29 @@ export function useUpdateTaskStatus() {
     mutationFn: ({
       id,
       status,
+      outputLink,
     }: {
       id: string;
-      status: "TODO" | "IN_PROGRESS" | "COMPLETED" | "ON_HOLD";
-    }) => internApi.updateMyTaskStatus(id, status),
+      status: "WAITING_FOR_REVIEW" | "IN_PROGRESS" | "COMPLETED" | "ON_HOLD";
+      outputLink?: string;
+    }) => internApi.updateMyTaskStatus(id, status, outputLink),
     onSuccess: async () => {
       toast.success("Task status updated!");
       await queryClient.invalidateQueries({ queryKey: internKeys.tasks() });
       await queryClient.invalidateQueries({
         queryKey: internKeys.overviewStatus(),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: internKeys.overviewActivity({}),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: internKeys.topLeaderboard(),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: internKeys.leaderboard(),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: internKeys.leaderboardMe(),
       });
     },
     onError: (error: unknown) => {
