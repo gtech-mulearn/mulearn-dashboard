@@ -6,7 +6,7 @@
  * All registration-related API calls.
  */
 
-import { apiClient, publicApiClient } from "@/api/client";
+import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
   type CompanySignupRequest,

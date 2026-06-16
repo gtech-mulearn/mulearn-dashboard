@@ -9,11 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useUserInfo, useUserProfile } from "@/features/auth";
 import { useInternOverview } from "@/features/intern";
 
-interface InternHeaderProps {
-  onApplyLeave?: () => void;
-}
-
-export function InternHeader({ onApplyLeave }: InternHeaderProps) {
+export function InternHeader() {
   const { data: userInfo, isLoading: isUserLoading } = useUserInfo();
   const { data: profile, isLoading: isProfileLoading } = useUserProfile();
   const { data: overview, isLoading: isOverviewLoading } = useInternOverview();
@@ -42,7 +38,7 @@ export function InternHeader({ onApplyLeave }: InternHeaderProps) {
     profile?.full_name || userInfo?.full_name || "Alex Doe";
   const userStatus = overview?.status || "ACTIVE";
   const userLevel = profile?.level || "1";
-  const profilePic = (profile as any)?.profile_pic || null;
+  const profilePic = profile?.profile_pic || null;
 
   const initials = userDisplayName
     .split(" ")

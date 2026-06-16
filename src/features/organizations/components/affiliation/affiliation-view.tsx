@@ -3,17 +3,18 @@
 import { Handshake, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { DataTableErrorBoundary } from "@/components/dashboard/DataTableErrorBoundary";
+import { Blank } from "@/components/dashboard/table/Blank";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table from "@/components/dashboard/table/Table";
 import TableTop from "@/components/dashboard/table/TableTop";
 import THead from "@/components/dashboard/table/Thead";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { AffiliationItem } from "@/features/organizations";
 import {
   useAffiliationsList,
   useDeleteAffiliation,
-} from "../hooks/use-affiliations";
-import type { AffiliationItem } from "../schemas";
+} from "@/features/organizations";
 import { AffiliationFormDialog } from "./affiliation-form-dialog";
 
 // ─── Column definitions ───────────────────────────────────────────────────────
@@ -59,7 +60,7 @@ const COLUMN_ORDER = [
 
 // ─── Page wrapper ─────────────────────────────────────────────────────────────
 
-export default function AffiliationPage() {
+export default function AffiliationView() {
   return (
     <DataTableErrorBoundary>
       <AffiliationContent />
@@ -148,8 +149,7 @@ function AffiliationContent() {
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <Button
-                size="sm"
-                className="rounded-xl gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto"
+                className="gap-1.5 w-full sm:w-auto"
                 onClick={handleCreateOpen}
                 aria-label="Create affiliation"
               >
@@ -197,23 +197,21 @@ function AffiliationContent() {
                   onIconClick={handleSort}
                   action
                 />
-                <div>
-                  {!isLoading && (
-                    <Pagination
-                      currentPage={currentPage}
-                      totalPages={totalPages}
-                      handleNextClick={() =>
-                        setCurrentPage((p) => Math.min(p + 1, totalPages || 1))
-                      }
-                      handlePreviousClick={() =>
-                        setCurrentPage((p) => Math.max(p - 1, 1))
-                      }
-                      perPage={perPage}
-                      totalCount={totalCount}
-                    />
-                  )}
-                </div>
-                <div />
+                {!isLoading && (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    handleNextClick={() =>
+                      setCurrentPage((p) => Math.min(p + 1, totalPages || 1))
+                    }
+                    handlePreviousClick={() =>
+                      setCurrentPage((p) => Math.max(p - 1, 1))
+                    }
+                    perPage={perPage}
+                    totalCount={totalCount}
+                  />
+                )}
+                <Blank />
               </Table>
             </div>
           </div>

@@ -1,6 +1,5 @@
 import { Plus, Users } from "lucide-react";
 import Link from "next/link";
-import { Skeleton } from "@/components/ui/skeleton";
 
 type Props = {
   jobsPosted: number;

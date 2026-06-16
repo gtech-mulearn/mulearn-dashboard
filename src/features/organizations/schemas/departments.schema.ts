@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const ApiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
+const ApiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
   z
     .object({
       hasError: z.boolean().optional(),

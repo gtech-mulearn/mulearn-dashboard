@@ -16,7 +16,7 @@ export function JobCard({ job, onView }: JobCardProps) {
 
   const dateObj = job.created_at ? new Date(job.created_at) : null;
   const formattedDate =
-    dateObj && !isNaN(dateObj.getTime())
+    dateObj && !Number.isNaN(dateObj.getTime())
       ? dateObj.toLocaleDateString("en-IN", {
           day: "numeric",
           month: "short",
@@ -25,7 +25,7 @@ export function JobCard({ job, onView }: JobCardProps) {
       : "N/A";
 
   return (
-    <div className="group relative rounded-xl border border-border bg-card p-5 transition-all duration-200 hover:border-primary/30 hover:shadow-md hover:shadow-primary/5">
+    <div className="group relative flex h-full flex-col rounded-xl border border-border bg-card p-5 transition-all duration-200 hover:border-primary/30 hover:shadow-md hover:shadow-primary/5">
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
@@ -60,7 +60,7 @@ export function JobCard({ job, onView }: JobCardProps) {
       </div>
 
       {/* Tags */}
-      <div className="mt-3 flex flex-wrap gap-1.5">
+      <div className="mt-3 mb-4 flex flex-1 flex-wrap items-start gap-1.5">
         {job.rules.length > 0 && (
           <Badge variant="outline" className="text-xs">
             {job.rules.length} rule{job.rules.length > 1 ? "s" : ""}
@@ -69,7 +69,7 @@ export function JobCard({ job, onView }: JobCardProps) {
       </div>
 
       {/* Footer */}
-      <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
+      <div className="mt-auto flex items-center justify-between border-t border-border pt-3">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <Calendar className="h-3 w-3" />
           <span>{formattedDate}</span>

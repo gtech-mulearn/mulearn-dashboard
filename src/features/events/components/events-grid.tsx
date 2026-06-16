@@ -9,6 +9,8 @@ interface EventsGridProps {
   onEventDeleted?: () => void;
   onEventView?: (event: EventListItem) => void;
   onCreateEvent?: () => void;
+  emptyTitle?: string;
+  emptyDescription?: string;
 }
 
 export function EventsGrid({
@@ -17,6 +19,8 @@ export function EventsGrid({
   onEventDeleted,
   onEventView,
   onCreateEvent,
+  emptyTitle,
+  emptyDescription,
 }: EventsGridProps) {
   if (events.length === 0) {
     return (
@@ -25,12 +29,14 @@ export function EventsGrid({
           <CalendarPlus2 className="h-5 w-5 text-muted-foreground" />
         </div>
         <p className="text-base font-medium text-foreground">
-          {isManageView ? "No events yet" : "No matching events"}
+          {emptyTitle ??
+            (isManageView ? "No events yet" : "No matching events")}
         </p>
         <p className="mt-1 text-sm text-muted-foreground">
-          {isManageView
-            ? "Create your first event to get your dashboard rolling."
-            : "Try adjusting search or filters to find more events."}
+          {emptyDescription ??
+            (isManageView
+              ? "Create your first event to get your dashboard rolling."
+              : "Try adjusting search or filters to find more events.")}
         </p>
         {isManageView && onCreateEvent ? (
           <Button

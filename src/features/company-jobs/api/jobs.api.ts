@@ -1,3 +1,4 @@
+import type { z } from "zod";
 import { apiClient, publicApiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import type { PublicCompanyProfile, PublicJobsBySlugData } from "../schemas";
@@ -29,7 +30,6 @@ import {
 } from "../schemas";
 import type {
   AdminSummary,
-  ApplyJobResponse,
   CompanyDashboardSummary,
   CompanyProfile,
   CreateJobPayload,
@@ -353,8 +353,8 @@ export async function fetchLearnerDiscovery(
   if (params?.sort_order) query.set("sort_order", params.sort_order);
 
   // Support both page/per_page and pageIndex/perPage query params
-  const page = params?.page ?? (params as any)?.pageIndex;
-  const perPage = params?.per_page ?? (params as any)?.perPage;
+  const page = params?.page ?? params?.pageIndex;
+  const perPage = params?.per_page ?? params?.perPage;
 
   if (page !== undefined) {
     query.set("page", String(page));
@@ -417,7 +417,9 @@ export async function fetchCompanyDashboardSummary(params?: {
   return res.response;
 }
 
-export async function trackJobView(jobId: string): Promise<any> {
+export async function trackJobView(
+  jobId: string,
+): Promise<z.infer<typeof TrackJobViewResponseSchema> | null> {
   try {
     const res = await apiClient.post(
       endpoints.company.trackJobView(jobId),

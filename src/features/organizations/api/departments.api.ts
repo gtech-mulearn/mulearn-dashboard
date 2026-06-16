@@ -29,7 +29,7 @@ export async function fetchDepartments(
   params: DepartmentParams,
 ): Promise<DepartmentListData> {
   const query = new URLSearchParams({
-    page: String(params.page),
+    pageIndex: String(params.page),
     perPage: String(params.perPage),
   });
   if (params.search?.trim()) query.set("search", params.search.trim());

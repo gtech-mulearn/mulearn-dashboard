@@ -15,14 +15,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  useCreateAffiliation,
-  useUpdateAffiliation,
-} from "../hooks/use-affiliations";
-import {
   AffiliationFormSchema,
   type AffiliationFormValues,
   type AffiliationItem,
-} from "../schemas";
+} from "@/features/organizations";
+import {
+  useCreateAffiliation,
+  useUpdateAffiliation,
+} from "@/features/organizations/hooks";
 
 interface AffiliationFormDialogProps {
   open: boolean;

@@ -1,13 +1,14 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
-  type AffiliationItem,
-  AffiliationListResponseSchema,
+  type AffiliationDropdownItem,
+  AffiliationDropdownListResponseSchema,
   GenericMutationResponseSchema,
   type OrgFormValues,
   type OrgInfo,
   type OrgListData,
   OrgListResponseSchema,
+  type AffiliationItem,
 } from "../schemas";
 
 // ─── Query params ─────────────────────────────────────────────────────────────
@@ -109,10 +110,12 @@ export async function downloadOrgsCsv(orgType: string): Promise<void> {
 
 // ─── Affiliation Dropdown ─────────────────────────────────────────────────────
 
-export async function fetchAffiliations(): Promise<AffiliationItem[]> {
+export async function fetchAffiliationDropdowns(): Promise<
+  AffiliationDropdownItem[]
+> {
   const response = await apiClient.get(
     endpoints.organizations.affiliationList,
-    AffiliationListResponseSchema,
+    AffiliationDropdownListResponseSchema,
   );
   return response.response;
 }

@@ -255,19 +255,22 @@ export default function ManageEventsDashboard() {
         </p>
       ) : (
         <>
-          {events.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              {canAdminView
-                ? "No events found. If you expected to see events created by other admins, ensure you have been added as a co-owner or contact a platform admin."
-                : "No events found. Create your first event to get started."}
-            </p>
-          ) : null}
           <EventsGrid
             events={events}
             isManageView
             onEventDeleted={handleEventDeleted}
             onCreateEvent={handleCreateEvent}
             onEventView={handleEventView}
+            emptyTitle={
+              totalCount === 0 ? "No events yet" : "No matching events"
+            }
+            emptyDescription={
+              totalCount === 0
+                ? canAdminView
+                  ? "No events found. If you expected to see events created by other admins, ensure you have been added as a co-owner or contact a platform admin."
+                  : "Create your first event to get your dashboard rolling."
+                : "No events match the current filters. Try selecting a different status or adjusting your search."
+            }
           />
           <EventsPagination
             pagination={data?.pagination}

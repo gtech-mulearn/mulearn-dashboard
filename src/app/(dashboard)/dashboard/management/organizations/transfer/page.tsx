@@ -1,4 +1,4 @@
-import TransferView from "@/features/organizations/components/transfer/transfer-view";
+import { TransferView } from "@/features/organizations";
 
 export const metadata = {
   title: "Organization Transfer | Management | MuLearn Dashboard",
@@ -6,6 +6,6 @@ export const metadata = {
     "Transfer or merge organizations. Destructive — source is permanently deleted.",
 };
 
-export default function Page() {
+export default function OrgTransferPage() {
   return <TransferView />;
 }

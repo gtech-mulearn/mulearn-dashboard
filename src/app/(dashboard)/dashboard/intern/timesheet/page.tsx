@@ -83,9 +83,10 @@ export default function TimesheetPage() {
   const isSubmitting = submitTimesheetMutation.isPending;
 
   // Parse the user's onboarding date (strip time so comparisons are date-only)
-  const onboardingDate = profile?.joined
+  const dateVal = overview?.join_date || profile?.joined;
+  const onboardingDate = dateVal
     ? (() => {
-        const d = new Date(profile.joined.replace(" ", "T"));
+        const d = new Date(dateVal.replace(" ", "T"));
         d.setHours(0, 0, 0, 0);
         return d;
       })()
@@ -514,7 +515,7 @@ export default function TimesheetPage() {
                 <div>
                   <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-brand-blue" />
-                    Quest History
+                    Daily History
                   </CardTitle>
                   <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mt-1 pl-6">
                     {new Date(year, month).toLocaleDateString(undefined, {

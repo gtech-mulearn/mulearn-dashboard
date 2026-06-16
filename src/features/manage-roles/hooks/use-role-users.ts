@@ -9,6 +9,7 @@ import {
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import {
+  type AssignUserRolePayload,
   assignUserRole,
   bulkAssignFromExcel,
   bulkAssignRole,
@@ -59,8 +60,7 @@ export function useUsersWithoutRole(roleId: string) {
 export function useAssignUserRole(roleId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (payload: { user_id: string; role_id: string }) =>
-      assignUserRole(payload),
+    mutationFn: (payload: AssignUserRolePayload) => assignUserRole(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [...manageRolesKeys.all, "users-by-role", roleId],
