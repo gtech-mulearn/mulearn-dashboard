@@ -54,6 +54,7 @@ import type {
   TWeeklyReview,
   TWeeklyReviewUpdatePayload,
 } from "@/features/intern/types";
+import { getTaskKarma } from "@/features/intern/utils/intern-helpers";
 
 type UnifiedActivity = {
   id: string;
@@ -85,10 +86,10 @@ export function QuestLog() {
   const [isEditMode, setIsEditMode] = useState(false);
 
   // Form states for Timesheet
-  const [tsCategory, setTsCategory] = useState("");
   const [tsHours, setTsHours] = useState("");
   const [tsDescription, setTsDescription] = useState("");
   const [tsBlockers, setTsBlockers] = useState("");
+  const [tsEndOfDayNote, setTsEndOfDayNote] = useState("");
   const [tsEditReason, setTsEditReason] = useState("");
 
   // Form states for Weekly Review
@@ -107,16 +108,35 @@ export function QuestLog() {
       setIsEditMode(false);
       if (selectedItem.type === "timesheet") {
         const ts = selectedItem.raw as TTimesheet;
-        setTsCategory(ts.category || "DEVELOPMENT");
         setTsHours(ts.hours || "0");
         setTsDescription(ts.description || "");
         setTsBlockers(ts.blockers || "");
+        setTsEndOfDayNote(ts.end_of_day_note || "");
         setTsEditReason("");
       } else {
         const wr = selectedItem.raw as TWeeklyReview;
         setWrHours(wr.hours_committed || 0);
-        setWrTasksAssigned(wr.tasks_assigned || "");
-        setWrTasksCompleted(wr.tasks_completed || "");
+
+        let assignedStr = "";
+        if (wr.tasks_assigned && typeof wr.tasks_assigned === "object") {
+          assignedStr = Object.values(wr.tasks_assigned)
+            .map((title) => `- ${title}`)
+            .join("\n");
+        } else if (typeof wr.tasks_assigned === "string") {
+          assignedStr = wr.tasks_assigned;
+        }
+        setWrTasksAssigned(assignedStr);
+
+        let completedStr = "";
+        if (Array.isArray(wr.tasks_completed)) {
+          completedStr = wr.tasks_completed
+            .map((t) => `- ${t.title} (${t.final_status || "COMPLETED"})`)
+            .join("\n");
+        } else if (typeof wr.tasks_completed === "string") {
+          completedStr = wr.tasks_completed;
+        }
+        setWrTasksCompleted(completedStr);
+
         setWrWeeklyReview(wr.weekly_review || "");
         setWrBlockers(wr.blockers || "");
         setWrSuggestions(wr.suggestions || "");
@@ -173,7 +193,7 @@ export function QuestLog() {
 
   const handleTaskStatusChange = (
     taskId: string,
-    status: "TODO" | "IN_PROGRESS" | "COMPLETED" | "ON_HOLD",
+    status: "WAITING_FOR_REVIEW" | "IN_PROGRESS" | "COMPLETED" | "ON_HOLD",
   ) => {
     updateTaskStatusMutation.mutate(
       { id: taskId, status },
@@ -214,12 +234,6 @@ export function QuestLog() {
     );
   }
 
-  const getTaskPoints = (complexity: TInternTask["complexity"]) => {
-    const mapping = { LOW: 1, MEDIUM: 2, HIGH: 3, CRITICAL: 5 };
-    const mult = mapping[complexity] || 0;
-    return 30 + mult * 20;
-  };
-
   const timesheets = timesheetHistory?.data || [];
   const reviews = weeklyReviews?.data || [];
   const tasks = myTasks?.data || [];
@@ -230,7 +244,15 @@ export function QuestLog() {
       (ts): UnifiedActivity => ({
         id: ts.id,
         type: "timesheet",
-        title: `Daily Timesheet (${ts.category})`,
+        title: ts.entry_date
+          ? `Daily Timesheet (${new Date(
+              `${ts.entry_date}T00:00:00`,
+            ).toLocaleDateString(undefined, {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })})`
+          : "Daily Timesheet",
         description: ts.description || "",
         dateStr: new Date(ts.created_at).toLocaleDateString(undefined, {
           month: "short",
@@ -240,7 +262,7 @@ export function QuestLog() {
         }),
         rawDate: new Date(ts.created_at),
         status: ts.status,
-        karma: ts.karma_awarded,
+        karma: ts.score ?? ts.karma_awarded,
         raw: ts,
       }),
     ),
@@ -258,7 +280,7 @@ export function QuestLog() {
         }),
         rawDate: new Date(wr.created_at),
         status: wr.status,
-        karma: wr.karma_awarded,
+        karma: wr.score ?? wr.karma_awarded,
         raw: wr,
       }),
     ),
@@ -285,7 +307,7 @@ export function QuestLog() {
           ? new Date(task.updated_at)
           : new Date(task.created_at),
         status: "COMPLETED",
-        karma: getTaskPoints(task.complexity),
+        karma: getTaskKarma(task),
         raw: task,
       }),
     ),
@@ -293,7 +315,11 @@ export function QuestLog() {
     .sort((a, b) => b.rawDate.getTime() - a.rawDate.getTime())
     .slice(0, 6);
 
-  const getStatusBadge = (status: string, karma: number | null) => {
+  const getStatusBadge = (
+    status: string,
+    karma: number | null,
+    isVerified?: boolean,
+  ) => {
     switch (status) {
       case "APPROVED":
         return (
@@ -302,9 +328,16 @@ export function QuestLog() {
           </div>
         );
       case "COMPLETED":
+        if (isVerified) {
+          return (
+            <div className="bg-success/15 text-success border border-success/30 font-black text-[9px] rounded-full px-2.5 py-0.5 uppercase tracking-wider flex items-center gap-1 shrink-0">
+              Completed
+            </div>
+          );
+        }
         return (
-          <div className="bg-success/15 text-success border border-success/30 font-black text-[9px] rounded-full px-2.5 py-0.5 uppercase tracking-wider flex items-center gap-1 shrink-0">
-            Gained {karma ?? 0} pts
+          <div className="bg-warning/15 text-warning border border-warning/30 font-black text-[9px] rounded-full px-2.5 py-0.5 uppercase tracking-wider shrink-0">
+            Pending
           </div>
         );
       case "PENDING":
@@ -333,10 +366,7 @@ export function QuestLog() {
 
     if (selectedItem.type === "timesheet") {
       const payload: TTimesheetUpdatePayload = {
-        category: tsCategory,
-        hours: tsHours,
-        description: tsDescription,
-        blockers: tsBlockers || "None",
+        end_of_day_note: tsEndOfDayNote,
         edit_reason: tsEditReason || "Self correction of details",
       };
 
@@ -347,8 +377,6 @@ export function QuestLog() {
     } else {
       const payload: TWeeklyReviewUpdatePayload = {
         hours_committed: Number(wrHours),
-        tasks_assigned: wrTasksAssigned,
-        tasks_completed: wrTasksCompleted,
         weekly_review: wrWeeklyReview,
         blockers: wrBlockers || "None",
         suggestions: wrSuggestions || "None",
@@ -423,7 +451,13 @@ export function QuestLog() {
                 </TableCell>
                 <TableCell className="pr-4 py-3 text-right w-[130px]">
                   <div className="flex justify-end items-center">
-                    {getStatusBadge(activity.status, activity.karma)}
+                    {getStatusBadge(
+                      activity.status,
+                      activity.karma,
+                      activity.type === "completed_task"
+                        ? (activity.raw as TInternTask).is_verified
+                        : undefined,
+                    )}
                   </div>
                 </TableCell>
               </TableRow>
@@ -485,12 +519,32 @@ export function QuestLog() {
                       Status
                     </p>
                     <div className="flex items-center gap-2 mt-1">
-                      {getStatusBadge(selectedItem.status, selectedItem.karma)}
+                      {getStatusBadge(
+                        selectedItem.status,
+                        selectedItem.karma,
+                        selectedItem.type === "completed_task"
+                          ? (selectedItem.raw as TInternTask).is_verified
+                          : undefined,
+                      )}
                     </div>
                   </div>
 
+                  {selectedItem.type === "completed_task" &&
+                    (selectedItem.raw as TInternTask).karma_awarded !==
+                      undefined && (
+                      <div className="text-center sm:text-right">
+                        <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
+                          Base Karma
+                        </p>
+                        <p className="text-sm font-bold text-foreground mt-0.5">
+                          {(selectedItem.raw as TInternTask).karma_awarded} pts
+                        </p>
+                      </div>
+                    )}
+
                   {(selectedItem.status === "APPROVED" ||
-                    selectedItem.status === "COMPLETED") && (
+                    (selectedItem.status === "COMPLETED" &&
+                      (selectedItem.raw as TInternTask).is_verified)) && (
                     <div className="text-right">
                       <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
                         Points Earned
@@ -579,10 +633,10 @@ export function QuestLog() {
                         </SelectTrigger>
                         <SelectContent className="bg-card font-bold border-border/60">
                           <SelectItem
-                            value="TODO"
+                            value="WAITING_FOR_REVIEW"
                             className="uppercase text-[9px]"
                           >
-                            To Do
+                            Waiting for Review
                           </SelectItem>
                           <SelectItem
                             value="IN_PROGRESS"
@@ -611,44 +665,6 @@ export function QuestLog() {
                 {/* Timesheet Form Fields */}
                 {selectedItem.type === "timesheet" && (
                   <div className="space-y-4">
-                    {/* Category Select */}
-                    <div className="space-y-1.5">
-                      <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                        Category
-                      </Label>
-                      <Select
-                        value={tsCategory}
-                        onValueChange={setTsCategory}
-                        disabled={
-                          selectedItem.status !== "REJECTED" || !isEditMode
-                        }
-                      >
-                        <SelectTrigger className="w-full bg-background/50 border-border/50 font-bold uppercase text-[10px] tracking-wider">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="bg-card font-bold border-border/60">
-                          <SelectItem
-                            value="DEVELOPMENT"
-                            className="uppercase text-[9px]"
-                          >
-                            Development / Coding
-                          </SelectItem>
-                          <SelectItem
-                            value="DESIGN"
-                            className="uppercase text-[9px]"
-                          >
-                            UI/UX Arts / Design
-                          </SelectItem>
-                          <SelectItem
-                            value="TESTING"
-                            className="uppercase text-[9px]"
-                          >
-                            QA / Testing
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
                     {/* Hours committed */}
                     <div className="space-y-1.5">
                       <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
@@ -661,10 +677,8 @@ export function QuestLog() {
                         max="24"
                         value={tsHours}
                         onChange={(e) => setTsHours(e.target.value)}
-                        disabled={
-                          selectedItem.status !== "REJECTED" || !isEditMode
-                        }
-                        className="bg-background/50 border-border/50 font-medium"
+                        disabled={true}
+                        className="bg-background/50 border-border/50 font-medium cursor-not-allowed"
                       />
                     </div>
 
@@ -676,11 +690,9 @@ export function QuestLog() {
                       <Textarea
                         value={tsDescription}
                         onChange={(e) => setTsDescription(e.target.value)}
-                        disabled={
-                          selectedItem.status !== "REJECTED" || !isEditMode
-                        }
+                        disabled={true}
                         rows={4}
-                        className="bg-background/50 border-border/50 font-medium resize-none"
+                        className="bg-background/50 border-border/50 font-medium resize-none cursor-not-allowed"
                       />
                     </div>
 
@@ -692,10 +704,24 @@ export function QuestLog() {
                       <Textarea
                         value={tsBlockers}
                         onChange={(e) => setTsBlockers(e.target.value)}
-                        disabled={
-                          selectedItem.status !== "REJECTED" || !isEditMode
-                        }
+                        disabled={true}
                         rows={2}
+                        className="bg-background/50 border-border/50 font-medium resize-none cursor-not-allowed"
+                      />
+                    </div>
+
+                    {/* End of Day Note */}
+                    <div className="space-y-1.5">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                        End of Day Note
+                      </Label>
+                      <Textarea
+                        value={tsEndOfDayNote}
+                        onChange={(e) => setTsEndOfDayNote(e.target.value)}
+                        disabled={
+                          selectedItem.status !== "PENDING" || !isEditMode
+                        }
+                        rows={3}
                         className="bg-background/50 border-border/50 font-medium resize-none"
                       />
                     </div>
@@ -730,7 +756,7 @@ export function QuestLog() {
                         value={wrHours}
                         onChange={(e) => setWrHours(Number(e.target.value))}
                         disabled={
-                          selectedItem.status !== "REJECTED" || !isEditMode
+                          selectedItem.status !== "PENDING" || !isEditMode
                         }
                         className="bg-background/50 border-border/50 font-medium"
                       />
@@ -745,7 +771,7 @@ export function QuestLog() {
                         value={wrTasksAssigned}
                         onChange={(e) => setWrTasksAssigned(e.target.value)}
                         disabled={
-                          selectedItem.status !== "REJECTED" || !isEditMode
+                          selectedItem.status !== "PENDING" || !isEditMode
                         }
                         rows={2}
                         className="bg-background/50 border-border/50 font-medium resize-none"
@@ -761,7 +787,7 @@ export function QuestLog() {
                         value={wrTasksCompleted}
                         onChange={(e) => setWrTasksCompleted(e.target.value)}
                         disabled={
-                          selectedItem.status !== "REJECTED" || !isEditMode
+                          selectedItem.status !== "PENDING" || !isEditMode
                         }
                         rows={2}
                         className="bg-background/50 border-border/50 font-medium resize-none"
@@ -777,7 +803,7 @@ export function QuestLog() {
                         value={wrWeeklyReview}
                         onChange={(e) => setWrWeeklyReview(e.target.value)}
                         disabled={
-                          selectedItem.status !== "REJECTED" || !isEditMode
+                          selectedItem.status !== "PENDING" || !isEditMode
                         }
                         rows={3}
                         className="bg-background/50 border-border/50 font-medium resize-none"
@@ -793,7 +819,7 @@ export function QuestLog() {
                         value={wrLearnings}
                         onChange={(e) => setWrLearnings(e.target.value)}
                         disabled={
-                          selectedItem.status !== "REJECTED" || !isEditMode
+                          selectedItem.status !== "PENDING" || !isEditMode
                         }
                         rows={2}
                         className="bg-background/50 border-border/50 font-medium resize-none"
@@ -809,7 +835,7 @@ export function QuestLog() {
                         value={wrChallenges}
                         onChange={(e) => setWrChallenges(e.target.value)}
                         disabled={
-                          selectedItem.status !== "REJECTED" || !isEditMode
+                          selectedItem.status !== "PENDING" || !isEditMode
                         }
                         rows={2}
                         className="bg-background/50 border-border/50 font-medium resize-none"
@@ -825,7 +851,7 @@ export function QuestLog() {
                         value={wrNextPlan}
                         onChange={(e) => setWrNextPlan(e.target.value)}
                         disabled={
-                          selectedItem.status !== "REJECTED" || !isEditMode
+                          selectedItem.status !== "PENDING" || !isEditMode
                         }
                         rows={2}
                         className="bg-background/50 border-border/50 font-medium resize-none"
@@ -841,7 +867,7 @@ export function QuestLog() {
                         value={wrBlockers}
                         onChange={(e) => setWrBlockers(e.target.value)}
                         disabled={
-                          selectedItem.status !== "REJECTED" || !isEditMode
+                          selectedItem.status !== "PENDING" || !isEditMode
                         }
                         rows={2}
                         className="bg-background/50 border-border/50 font-medium resize-none"
@@ -857,7 +883,7 @@ export function QuestLog() {
                         value={wrSuggestions}
                         onChange={(e) => setWrSuggestions(e.target.value)}
                         disabled={
-                          selectedItem.status !== "REJECTED" || !isEditMode
+                          selectedItem.status !== "PENDING" || !isEditMode
                         }
                         rows={2}
                         className="bg-background/50 border-border/50 font-medium resize-none"
@@ -868,7 +894,7 @@ export function QuestLog() {
               </div>
 
               <DialogFooter className="border-t border-border/20 pt-4 flex items-center justify-end gap-2">
-                {selectedItem.status === "REJECTED" &&
+                {selectedItem.status === "PENDING" &&
                   (!isEditMode ? (
                     <Button
                       type="button"

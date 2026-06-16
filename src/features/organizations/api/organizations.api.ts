@@ -3,12 +3,12 @@ import { endpoints } from "@/api/endpoints";
 import {
   type AffiliationDropdownItem,
   AffiliationDropdownListResponseSchema,
+  type AffiliationItem,
   GenericMutationResponseSchema,
   type OrgFormValues,
   type OrgInfo,
   type OrgListData,
   OrgListResponseSchema,
-  type AffiliationItem,
 } from "../schemas";
 
 // ─── Query params ─────────────────────────────────────────────────────────────

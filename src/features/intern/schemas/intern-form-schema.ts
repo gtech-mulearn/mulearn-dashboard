@@ -21,8 +21,6 @@ const baseWeeklyReviewSchema = z.object({
   email: z.string().email("Invalid email address"),
   team: z.string().min(1, "Team is required"),
   isOnLeave: z.boolean(),
-  tasksAssigned: z.string().optional(),
-  tasksCompleted: z.string().optional(),
   worksDone: z.string().optional(),
   hoursCommitted: z.string().optional(),
   blockers: z.string().optional(),
@@ -37,20 +35,6 @@ const baseWeeklyReviewSchema = z.object({
 export const weeklyReviewSchema = baseWeeklyReviewSchema.superRefine(
   (data, ctx) => {
     if (!data.isOnLeave) {
-      if (!data.tasksAssigned) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Tasks assigned are required",
-          path: ["tasksAssigned"],
-        });
-      }
-      if (!data.tasksCompleted) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Tasks completed are required",
-          path: ["tasksCompleted"],
-        });
-      }
       if (!data.worksDone) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,

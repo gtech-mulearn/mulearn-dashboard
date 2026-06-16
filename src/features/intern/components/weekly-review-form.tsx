@@ -80,8 +80,6 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
       email: userData?.email || "",
       team: overview?.guild || "",
       isOnLeave: false,
-      tasksAssigned: "",
-      tasksCompleted: "",
       worksDone: "",
       hoursCommitted: "",
       blockers: "",
@@ -104,8 +102,6 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
         email: userData?.email || "",
         team: overview?.guild || form.getValues("team") || "",
         isOnLeave: form.getValues("isOnLeave") || false,
-        tasksAssigned: form.getValues("tasksAssigned") || "",
-        tasksCompleted: form.getValues("tasksCompleted") || "",
         worksDone: form.getValues("worksDone") || "",
         hoursCommitted: form.getValues("hoursCommitted") || "",
         blockers: form.getValues("blockers") || "",
@@ -125,8 +121,6 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
         team: values.team,
         is_on_leave: values.isOnLeave,
         hours_committed: values.isOnLeave ? 0 : Number(values.hoursCommitted),
-        tasks_assigned: values.isOnLeave ? "" : values.tasksAssigned,
-        tasks_completed: values.isOnLeave ? "" : values.tasksCompleted,
         weekly_review: values.isOnLeave ? "" : values.worksDone,
         blockers: values.isOnLeave ? "" : values.blockers,
         leave_days: values.leaveDays ? Number(values.leaveDays) || 0 : 0,
@@ -303,47 +297,6 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
 
               {!isOnLeave && (
                 <div className="space-y-6 md:space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
-                  <div className="grid gap-6 md:gap-8 md:grid-cols-2">
-                    <FormField
-                      control={form.control}
-                      name="tasksAssigned"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                            Tasks Assigned
-                          </FormLabel>
-                          <FormControl>
-                            <Textarea
-                              {...field}
-                              placeholder="Describe the tasks assigned to you this week..."
-                              className="min-h-[120px] bg-background/50 border-border/50 font-bold focus:ring-brand-blue/30 rounded-md p-4 resize-none"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="tasksCompleted"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                            Tasks Completed
-                          </FormLabel>
-                          <FormControl>
-                            <Textarea
-                              {...field}
-                              placeholder="Describe the tasks you completed this week..."
-                              className="min-h-[120px] bg-background/50 border-border/50 font-bold focus:ring-success/30 rounded-md p-4 resize-none"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
                   <FormField
                     control={form.control}
                     name="worksDone"

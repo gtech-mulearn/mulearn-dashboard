@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/table";
 import { useUserInfo, useUserProfile } from "@/features/auth";
 import { useLeaderboardMe, useTopLeaderboard } from "@/features/intern";
+import { isCurrentLeaderboardUser } from "@/features/intern/utils/intern-helpers";
 import { cn } from "@/lib/utils";
 
 export function EliteLeaders() {
@@ -38,13 +39,23 @@ export function EliteLeaders() {
     return profile?.full_name || userInfo?.full_name || "Alex Doe";
   }, [profile, userInfo]);
 
+  const leaderboardIdentity = useMemo(
+    () => ({
+      profileId: profile?.id,
+      muids: [profile?.muid, userInfo?.muid],
+    }),
+    [profile?.id, profile?.muid, userInfo?.muid],
+  );
+
   const allRows = useMemo(() => {
     return (topLeaderboard || [])
       .filter((item) => item.status !== "INACTIVE")
       .map((item) => ({
         id: item.user_id,
+        muid: item.muid,
         rank: item.rank,
         name: item.full_name,
+        actualName: item.full_name,
         points: item.score,
       }));
   }, [topLeaderboard]);
@@ -52,12 +63,11 @@ export function EliteLeaders() {
   const topRows = useMemo(() => {
     if (isLoading || !userDisplayName) return [];
 
-    const isMe = (row: { id: string; name: string }) => {
-      return (
-        (profile?.id && row.id === profile.id) ||
-        (userDisplayName && row.name === userDisplayName)
+    const isMe = (row: { id: string; muid?: string }) =>
+      isCurrentLeaderboardUser(
+        { user_id: row.id, muid: row.muid },
+        leaderboardIdentity,
       );
-    };
 
     const userInTop3 = allRows.slice(0, 3).some((row) => isMe(row));
 
@@ -71,15 +81,26 @@ export function EliteLeaders() {
       if (!userRow) {
         userRow = {
           id: profile?.id || userInfo?.muid || "me",
+          muid: profile?.muid || userInfo?.muid,
           rank: meRank?.rank ?? 0,
           name: userDisplayName,
+          actualName: userDisplayName,
           points: meRank?.score ?? 0,
         };
       }
       result.push(userRow);
       return result;
     }
-  }, [allRows, profile, userInfo, userDisplayName, meRank, isLoading]);
+  }, [
+    allRows,
+    leaderboardIdentity,
+    profile?.id,
+    profile?.muid,
+    userInfo?.muid,
+    userDisplayName,
+    meRank,
+    isLoading,
+  ]);
 
   if (isLoading) {
     return (
@@ -146,9 +167,10 @@ export function EliteLeaders() {
           </TableHeader>
           <TableBody>
             {topRows.map((row, index) => {
-              const isCurrentUser =
-                (profile?.id && row.id === profile.id) ||
-                (userDisplayName && row.name === userDisplayName);
+              const isCurrentUser = isCurrentLeaderboardUser(
+                { user_id: row.id, muid: row.muid },
+                leaderboardIdentity,
+              );
               return (
                 <TableRow
                   key={row.id}
