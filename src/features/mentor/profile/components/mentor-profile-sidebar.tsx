@@ -48,16 +48,9 @@ const QUICK_LINKS = [
     active: true,
   },
   {
-    href: "#",
+    href: "/dashboard/mentor/mentees",
     label: "Mentees",
     icon: Users,
-    active: false,
-    badge: "Soon",
-  },
-  {
-    href: "/dashboard/mentor/opportunities",
-    label: "Opportunities",
-    icon: Sparkles,
     active: true,
   },
 ];
@@ -89,7 +82,7 @@ export function MentorProfileSidebar({
           <CardTitle className="text-sm font-semibold">Quick Actions</CardTitle>
         </CardHeader>
         <CardContent className="space-y-1 p-2">
-          {QUICK_LINKS.map(({ href, label, icon: Icon, active, badge }) => (
+          {QUICK_LINKS.map(({ href, label, icon: Icon, active }) => (
             <Link
               key={label}
               href={active ? href : "#"}
@@ -100,13 +93,7 @@ export function MentorProfileSidebar({
             >
               <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
               <span className="flex-1">{label}</span>
-              {badge ? (
-                <Badge variant="secondary" className="text-[10px] font-normal">
-                  {badge}
-                </Badge>
-              ) : (
-                <ChevronRight className="h-4 w-4 text-muted-foreground/50" />
-              )}
+              <ChevronRight className="h-4 w-4 text-muted-foreground/50" />
             </Link>
           ))}
         </CardContent>
