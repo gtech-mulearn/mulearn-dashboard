@@ -603,6 +603,8 @@ export const endpoints = {
     requestCreate: "/api/v1/dashboard/ig/request/",
     /** PATCH — Update IG request status (admin only, used by Issue #3) */
     requestUpdate: (pk: string) => `/api/v1/dashboard/ig/request/${pk}/`,
+    /** DELETE — Cancel an active IG request */
+    requestDelete: (pk: string) => `/api/v1/dashboard/ig/request/${pk}/`,
   },
 
   // ============================================

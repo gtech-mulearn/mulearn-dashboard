@@ -9,9 +9,11 @@ import TableTop from "@/components/dashboard/table/TableTop";
 import { Blank } from "@/components/dashboard/table/Blank";
 import { Button } from "@/components/ui/button";
 import { useDebounce } from "@/hooks/use-debounce";
-import { useIGRequestsList } from "../hooks";
+import { useIGRequestsList, useDeleteIGRequest } from "../hooks";
 import { IGRequestStatusBadge } from "./ig-request-status-badge";
 import { IGRequestFormDialog } from "./ig-request-form-dialog";
+import { Trash2 } from "lucide-react";
+import Modal from "@/components/dashboard/table/Modal";
 
 const columnOrder = [
   { column: "name", Label: "Name", isSortable: true },
@@ -45,6 +47,9 @@ export function IGRequestsPage() {
     status,
     sortBy,
   });
+
+  const { mutate: cancelRequest } = useDeleteIGRequest();
+  const [cancelId, setCancelId] = useState<string | null>(null);
 
   const handleSort = (column: string) => {
     if (sortBy === column) {
@@ -128,11 +133,28 @@ export function IGRequestsPage() {
             }
             return null;
           }}
+          id={["id"]}
+          customActionRender={(row) => {
+            if (row.status === "requested") {
+              return (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-muted-foreground hover:bg-muted hover:text-foreground"
+                  onClick={() => setCancelId(String(row.id))}
+                  title="Cancel Request"
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              );
+            }
+            return <div className="w-8" />;
+          }}
         >
           <THead
             columnOrder={columnOrder}
             onIconClick={handleSort}
-            action={false}
+            action={true}
           />
           {data?.response?.pagination ? (
             <Pagination
@@ -148,6 +170,22 @@ export function IGRequestsPage() {
           )}
         </Table>
       </div>
+
+      <Modal
+        isOpen={Boolean(cancelId)}
+        setIsOpen={(value) => {
+          if (!value) setCancelId(null);
+        }}
+        id={cancelId ?? ""}
+        heading="Cancel IG Request"
+        content="Are you sure you want to cancel this Interest Group request? This action cannot be undone."
+        type="error"
+        click={async (id) => {
+          cancelRequest(String(id), {
+            onSuccess: () => setCancelId(null),
+          });
+        }}
+      />
     </div>
   );
 }

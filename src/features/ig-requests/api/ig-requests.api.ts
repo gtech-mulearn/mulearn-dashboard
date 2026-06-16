@@ -77,3 +77,7 @@ export async function updateIGRequestStatus(
     UpdateIGRequestStatusResponseSchema,
   );
 }
+
+export async function deleteIGRequest(pk: string) {
+  return apiClient.delete(endpoints.interestGroups.requestDelete(pk));
+}
