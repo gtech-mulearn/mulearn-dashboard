@@ -64,6 +64,7 @@ function OwnJobCard({ job }: { job: Job }) {
           {job.status}
         </span>
         <Button
+          aria-label="Manage job"
           variant="ghost"
           size="sm"
           asChild
@@ -136,8 +137,10 @@ function PublicJobCard({ job }: { job: PublicJobBySlug }) {
       <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
         <span className="text-[11px] text-muted-foreground">{postedLabel}</span>
         <Button
+          aria-label="Apply"
           size="sm"
-          className="h-7 rounded-full bg-primary px-3 text-xs text-primary-foreground hover:bg-primary/90"
+          variant="default"
+          className="h-7 rounded-full px-3 text-xs"
         >
           Apply
         </Button>
@@ -181,6 +184,7 @@ export function CompanyJobsSection({
           {isOwnProfile && (
             <Link
               href="/dashboard/company/jobs/create"
+              aria-label="Post new job"
               className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
             >
               <Plus className="size-3.5" />
@@ -201,8 +205,10 @@ export function CompanyJobsSection({
               {isOwnProfile && (
                 <Button
                   asChild
+                  aria-label="Post a Job"
                   size="sm"
-                  className="mt-4 rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
+                  variant="default"
+                  className="mt-4 rounded-full"
                 >
                   <Link href="/dashboard/company/jobs/create">Post a Job</Link>
                 </Button>

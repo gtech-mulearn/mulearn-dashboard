@@ -199,7 +199,7 @@ export function EventCalendarCard({
         <div className="flex items-center gap-1.5">
           <Button
             type="button"
-            variant="default"
+            variant="outline"
             size="icon"
             onClick={goToPrevMonth}
             className="size-8"
@@ -210,7 +210,7 @@ export function EventCalendarCard({
           <Button
             type="button"
             onClick={goToNextMonth}
-            variant="default"
+            variant="outline"
             size="icon"
             className="size-8"
             aria-label="Next month"
