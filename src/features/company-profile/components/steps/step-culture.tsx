@@ -57,34 +57,28 @@ export function StepCulture() {
         <div className="space-y-2">
           <p className="text-sm font-medium text-foreground">Remote Policy</p>
           <div className="flex flex-wrap gap-2">
-            <button
+            <Button
               type="button"
-              className={`rounded-full border px-4 py-1.5 text-sm transition-colors ${
-                !remotePolicy
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-background text-muted-foreground hover:border-primary hover:text-primary"
-              }`}
+              variant={!remotePolicy ? "default" : "outline"}
               onClick={() =>
                 setValue("remote_policy", null, { shouldValidate: true })
               }
+              aria-pressed={!remotePolicy}
             >
               Not specified
-            </button>
+            </Button>
             {REMOTE_POLICY_OPTIONS.map((opt) => (
-              <button
+              <Button
                 key={opt}
                 type="button"
-                className={`rounded-full border px-4 py-1.5 text-sm transition-colors ${
-                  remotePolicy === opt
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border bg-background text-muted-foreground hover:border-primary hover:text-primary"
-                }`}
+                variant={remotePolicy === opt ? "default" : "outline"}
                 onClick={() =>
                   setValue("remote_policy", opt, { shouldValidate: true })
                 }
+                aria-pressed={remotePolicy === opt}
               >
                 {opt}
-              </button>
+              </Button>
             ))}
           </div>
         </div>

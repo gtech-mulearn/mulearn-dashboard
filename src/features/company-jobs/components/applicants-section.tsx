@@ -149,14 +149,15 @@ export function ApplicantsSection({ jobId }: ApplicantsSectionProps) {
           const isActive = statusFilter === key;
 
           return (
-            <button
+            <Button
               key={key}
               type="button"
+              variant="secondary"
               onClick={() => {
                 setStatusFilter(key);
                 setPageIndex(1);
               }}
-              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs bg-transparent border-none font-medium transition-colors ${
                 isActive
                   ? "bg-primary/10 text-primary"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -168,7 +169,7 @@ export function ApplicantsSection({ jobId }: ApplicantsSectionProps) {
                   {count}
                 </span>
               )}
-            </button>
+            </Button>
           );
         })}
       </div>

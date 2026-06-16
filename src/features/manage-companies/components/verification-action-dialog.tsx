@@ -148,6 +148,7 @@ export function VerificationActionDialog({
             onClick={() => onOpenChange(false)}
             disabled={isPending}
             className="rounded-2xl"
+            aria-label="Cancel"
           >
             Cancel
           </Button>
@@ -157,9 +158,10 @@ export function VerificationActionDialog({
             disabled={isPending}
             className={
               isApprove
-                ? "rounded-2xl bg-success text-primary-foreground hover:bg-success/90"
-                : "rounded-2xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                ? "rounded-2xl bg-success text-primary-foreground hover:bg-success/90 border-bg-success"
+                : "rounded-2xl bg-destructive text-destructive-foreground hover:bg-destructive/90 border-bg-destructive"
             }
+            aria-label={isApprove ? "Approve company" : "Reject company"}
           >
             {isPending
               ? isApprove

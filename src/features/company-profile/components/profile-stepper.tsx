@@ -75,20 +75,18 @@ export function ProfileStepper({ profile }: ProfileStepperProps) {
             return (
               <Fragment key={step.id}>
                 <div className="flex items-center gap-3">
-                  <button
+                  <Button
                     type="button"
+                    variant={isActive || isCompleted ? "default" : "outline"}
                     disabled={!isCompleted}
                     onClick={() => isCompleted && goToStep(index)}
-                    className={`flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-semibold transition-colors ${
-                      isActive
-                        ? "border-primary bg-primary text-primary-foreground ring-2 ring-primary ring-offset-2"
-                        : isCompleted
-                          ? "cursor-pointer border-primary bg-primary text-primary-foreground"
-                          : "border-border bg-background text-muted-foreground"
+                    className={`h-8 w-8 rounded-full p-0 text-sm font-semibold ${
+                      isActive ? "ring-2 ring-brand-blue ring-offset-2" : ""
                     }`}
+                    aria-label={step.label}
                   >
                     {isCompleted ? <Check className="h-4 w-4" /> : index + 1}
-                  </button>
+                  </Button>
                   <div className="min-w-0 pt-1">
                     <p
                       className={`whitespace-nowrap text-xs leading-none ${isActive ? "font-medium text-primary" : "text-muted-foreground"}`}
@@ -135,6 +133,7 @@ export function ProfileStepper({ profile }: ProfileStepperProps) {
             variant="ghost"
             className="text-muted-foreground hover:text-foreground"
             onClick={() => router.push("/dashboard/profile")}
+            aria-label="Cancel"
           >
             Cancel
           </Button>
@@ -146,25 +145,18 @@ export function ProfileStepper({ profile }: ProfileStepperProps) {
                 variant="outline"
                 className="border-border"
                 onClick={goBack}
+                aria-label="Go to previous step"
               >
                 Back
               </Button>
             ) : null}
 
             {!isLastStep ? (
-              <Button
-                type="button"
-                className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
-                onClick={goNext}
-              >
+              <Button type="button" className="rounded-xl" onClick={goNext}>
                 Next
               </Button>
             ) : (
-              <Button
-                type="submit"
-                className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
-                disabled={isPending}
-              >
+              <Button type="submit" className="rounded-xl" disabled={isPending}>
                 {isPending ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : null}
