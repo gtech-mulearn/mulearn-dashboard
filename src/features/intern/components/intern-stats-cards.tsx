@@ -5,17 +5,66 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useInternOverview, useLeaderboardMe } from "@/features/intern";
 
+const RANK_MILESTONE_MESSAGES = {
+  peak: [
+    "👑 Currently at the peak!",
+    "👑 King of the hill! Can anyone dethrone you?",
+    "👑 Number 1 and holding the line!",
+  ],
+  podium: [
+    "🏆 You're closing in on the Podium!",
+    "🏆 So close to the top 3, keep pushing!",
+    "🏆 Chasing the podium spots!",
+    "🏆 Nearly on the podium!",
+  ],
+  top10: [
+    "⚡ Striking distance from the Top 10!",
+    "⚡ Eyeing the Top 10. You've got this!",
+    "⚡ Guard your spot, the Top 10 is next!",
+    "⚡ Just a few more wins to crack the Top 10.",
+  ],
+  top50: [
+    "🚀 Climbing fast toward the Top 50!",
+    "🚀 On track for the Top 50.",
+    "🚀 Leaving the competition behind!",
+    "🚀 Pushing hard into the Top 50!",
+  ],
+};
+
 const getRankMilestone = (rank: number | string) => {
   const r = Number(rank);
+
   if (isNaN(r) || r <= 0) return "Actively competing in leaderboard";
-  if (r === 1) return "👑 Currently at the peak!";
-  if (r <= 3)
-    return `🔥 ${r - 1} ${r - 1 === 1 ? "rank" : "ranks"} away from Rank 1`;
-  if (r <= 10)
-    return `🏆 ${r - 3} ${r - 3 === 1 ? "rank" : "ranks"} away from the Podium`;
-  if (r <= 50)
-    return `⚡ ${r - 10} ${r - 10 === 1 ? "rank" : "ranks"} away from the Top 10`;
-  return `🚀 ${r - 50} ${r - 50 === 1 ? "rank" : "ranks"} away from the Top 50`;
+
+  if (r === 1) {
+    const pool = RANK_MILESTONE_MESSAGES.peak;
+    return pool[r % pool.length];
+  }
+
+  if (r <= 3) {
+    const steps = r - 1;
+    const stepWord = steps === 1 ? "step" : "steps";
+    const rank1Messages = [
+      `🔥 Just ${steps} ${stepWord} away from the absolute peak!`,
+      "🔥 Rank 1 is within your grasp!",
+      "🔥 Next stop: The very top.",
+      "🔥 Breathing down the neck of #1!",
+    ];
+    return rank1Messages[r % rank1Messages.length];
+  }
+
+  if (r <= 10) {
+    const pool = RANK_MILESTONE_MESSAGES.podium;
+    return pool[r % pool.length];
+  }
+
+  if (r <= 50) {
+    const pool = RANK_MILESTONE_MESSAGES.top10;
+    return pool[r % pool.length];
+  }
+
+  const pool = RANK_MILESTONE_MESSAGES.top50;
+  return pool[r % pool.length];
 };
 
 export function InternStatsCards() {
