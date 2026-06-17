@@ -104,7 +104,9 @@ function SessionRow({
       </TableCell>
       <TableCell>
         {(session.ig_name ?? session.entity_name) ? (
-          (session.ig_name ?? session.entity_name)
+          <Badge variant="outline">
+            {session.ig_name ?? session.entity_name}
+          </Badge>
         ) : (
           <Badge variant="outline">Global</Badge>
         )}
@@ -364,7 +366,10 @@ export function SessionsPage() {
               <TabsTrigger value="pending">
                 Pending
                 {pending && pending.length > 0 && (
-                  <Badge variant="secondary" className="ml-2">
+                  <Badge
+                    variant="outline"
+                    className="ml-2 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/50 dark:text-blue-400 dark:border-blue-800"
+                  >
                     {pending.length}
                   </Badge>
                 )}

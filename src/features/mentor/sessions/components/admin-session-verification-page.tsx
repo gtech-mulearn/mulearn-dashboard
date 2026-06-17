@@ -177,7 +177,7 @@ function SessionVerificationTable({
                       {session.ig_name ?? session.entity_name}
                     </Badge>
                   ) : (
-                    <Badge variant="secondary">Global</Badge>
+                    <Badge variant="outline">Global</Badge>
                   )}
                 </TableCell>
 
@@ -352,7 +352,10 @@ export function AdminSessionVerificationPage() {
               <TabsTrigger value="pending" id="tab-pending">
                 Pending
                 {pendingSessions.length > 0 && (
-                  <Badge variant="secondary" className="ml-2">
+                  <Badge
+                    variant="outline"
+                    className="ml-2 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/50 dark:text-blue-400 dark:border-blue-800"
+                  >
                     {pendingSessions.length}
                   </Badge>
                 )}
