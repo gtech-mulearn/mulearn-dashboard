@@ -41,7 +41,7 @@ export function shouldShowEnablerPendingBanner({
 }: EnablerPendingBannerInput): boolean {
   if (isLoading) return false;
   const is_verified = userProfile?.role_verification?.find(
-    (v) => v.role === ROLES.ENABLER,
+    (v) => v.role.toLowerCase() === ROLES.ENABLER.toLowerCase(),
   )?.is_verified;
   if (is_verified === true) return false;
   return true;
