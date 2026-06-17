@@ -42,15 +42,17 @@ import { SessionCreateDialog } from "./session-create-dialog";
 import { SessionEditSheet } from "./session-edit-sheet";
 import { SessionParticipantsDialog } from "./session-participants-dialog";
 
-const STATUS_VARIANT: Record<
-  string,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
-  SCHEDULED: "default",
-  PENDING_APPROVAL: "secondary",
-  COMPLETED: "outline",
-  CANCELLED: "destructive",
-  REJECTED: "destructive",
+const STATUS_STYLES: Record<string, string> = {
+  SCHEDULED:
+    "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-950/50",
+  PENDING_APPROVAL:
+    "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-400 border-amber-200 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-amber-950/50",
+  COMPLETED:
+    "bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400 border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-950/50",
+  CANCELLED:
+    "bg-stone-100 text-stone-700 dark:bg-stone-900/50 dark:text-stone-400 border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-900/50",
+  REJECTED:
+    "bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-400 border-rose-200 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-rose-950/50",
 };
 
 const TERMINAL = new Set(["COMPLETED", "CANCELLED", "REJECTED"]);
@@ -113,7 +115,13 @@ function SessionRow({
           : "Not scheduled"}
       </TableCell>
       <TableCell>
-        <Badge variant={STATUS_VARIANT[status] ?? "secondary"}>
+        <Badge
+          variant="outline"
+          className={
+            STATUS_STYLES[status] ||
+            "bg-muted text-muted-foreground border-border hover:bg-muted"
+          }
+        >
           {status.replace(/_/g, " ")}
         </Badge>
       </TableCell>
