@@ -3,32 +3,6 @@ import type { NextConfig } from "next";
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const pkg = require("./package.json") as { version: string };
 
-const securityHeaders = [
-  { key: "X-Frame-Options", value: "DENY" },
-  { key: "X-Content-Type-Options", value: "nosniff" },
-  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-  {
-    key: "Permissions-Policy",
-    value: "camera=(), microphone=(), geolocation=()",
-  },
-  {
-    key: "Strict-Transport-Security",
-    value: "max-age=63072000; includeSubDomains; preload",
-  },
-  {
-    key: "Content-Security-Policy",
-    value: [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "font-src 'self' https://fonts.gstatic.com",
-      "img-src 'self' data: blob: https:",
-      "connect-src 'self' https://*.mulearn.org https://api.dicebear.com",
-      "frame-ancestors 'none'",
-    ].join("; "),
-  },
-];
-
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
@@ -36,26 +10,13 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_APP_VERSION: pkg.version,
     NEXT_PUBLIC_BUILD_SHA: process.env.COMMIT_REF ?? "dev",
   },
-  output: "standalone",
   reactStrictMode: true,
-  async headers() {
-    return [{ source: "/(.*)", headers: securityHeaders }];
-  },
-  async redirects() {
-    return [
-      {
-        source: "/dashboard/admin",
-        destination: "/dashboard/management",
-        permanent: true,
-      },
-      {
-        source: "/dashboard/admin/:path*",
-        destination: "/dashboard/management/:path*",
-        permanent: true,
-      },
-    ];
-  },
   images: {
+    formats: ["image/avif", "image/webp"],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 604800,
+    qualities: [75, 85, 90],
     remotePatterns: [
       {
         protocol: "https",
@@ -78,6 +39,53 @@ const nextConfig: NextConfig = {
         hostname: "www.madhyamam.com",
       },
     ],
+  },
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          {
+            key: "Content-Security-Policy",
+            value:
+              "default-src 'self' blob: data:; " +
+              "connect-src 'self' blob: data: https:; " +
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https:; " +
+              "style-src 'self' 'unsafe-inline'; " +
+              "img-src 'self' blob: data: https: *; " +
+              "media-src 'self' blob: data: https: *; " +
+              "font-src 'self' data: https:; " +
+              "object-src 'none'; " +
+              "frame-src 'self' blob: data: https:; " +
+              "frame-ancestors 'none'; " +
+              "worker-src 'self' blob: data:; " +
+              "child-src 'self' blob: data:; " +
+              "upgrade-insecure-requests;",
+          },
+          {
+            key: "X-Content-Type-Options",
+            value: "nosniff",
+          },
+          {
+            key: "Referrer-Policy",
+            value: "origin-when-cross-origin",
+          },
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=31536000; includeSubDomains; preload",
+          },
+          {
+            key: "Permissions-Policy",
+            value:
+              "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+          },
+          {
+            key: "X-Frame-Options",
+            value: "DENY",
+          },
+        ],
+      },
+    ];
   },
 };
 

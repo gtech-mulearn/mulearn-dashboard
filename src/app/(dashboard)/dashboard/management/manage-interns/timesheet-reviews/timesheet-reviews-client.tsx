@@ -260,7 +260,7 @@ export function TimesheetReviewsPageClient() {
           wrap: (data: string) => (
             <Badge
               variant="outline"
-              className="font-bold uppercase text-muted-foreground/80 tracking-wider"
+              className="font-bold uppercase tracking-wider"
             >
               {String(data || "-")}
             </Badge>
