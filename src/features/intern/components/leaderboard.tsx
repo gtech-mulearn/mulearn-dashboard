@@ -197,7 +197,7 @@ export function EliteLeaders() {
                       {isCurrentUser && (
                         <Badge
                           variant="outline"
-                          className="text-[9px] font-black tracking-wide bg-primary/10 text-primary border-primary/30 h-4 px-1"
+                          className="text-[9px] font-black tracking-wide h-4 px-1"
                         >
                           YOU
                         </Badge>

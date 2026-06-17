@@ -125,7 +125,7 @@ export function MentorsPage() {
                   </div>
                 )}
                 <div className="flex flex-wrap items-center gap-2 mt-auto pt-4 border-t border-border/50">
-                  <Badge variant="outline" className="text-xs bg-muted/50">
+                  <Badge variant="outline" className="text-xs">
                     Tier: {mentor.mentor_tier}
                   </Badge>
                   {mentor.verified_at && (

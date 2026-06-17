@@ -182,7 +182,10 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <Badge className="bg-brand-blue/10 text-brand-blue border-brand-blue/20 px-2 py-0.5 font-black text-[10px] uppercase tracking-widest">
+                <Badge
+                  variant="secondary"
+                  className="px-2 py-0.5 font-black text-[10px] uppercase tracking-widest"
+                >
                   Weekly Review
                 </Badge>
               </div>

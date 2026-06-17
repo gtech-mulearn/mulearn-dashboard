@@ -60,15 +60,36 @@ const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
 };
 
 function StatusBadge({ status }: { status: string }) {
-  const config = STATUS_CONFIG[status] ?? {
-    label: status,
-    className: "border-border bg-muted text-muted-foreground",
+  if (status === "active") {
+    return (
+      <Badge
+        variant="outline"
+        className="border-success/50 bg-success/10 text-success"
+      >
+        Active
+      </Badge>
+    );
+  }
+
+  const STATUS_VARIANTS: Record<
+    string,
+    "default" | "secondary" | "destructive" | "outline"
+  > = {
+    pending_verification: "secondary",
+    rejected: "destructive",
+    inactive: "outline",
   };
-  return (
-    <Badge variant="outline" className={config.className}>
-      {config.label}
-    </Badge>
-  );
+
+  const STATUS_LABELS: Record<string, string> = {
+    pending_verification: "Pending Verification",
+    rejected: "Rejected",
+    inactive: "Inactive",
+  };
+
+  const variant = STATUS_VARIANTS[status] || "outline";
+  const label = STATUS_LABELS[status] || status;
+
+  return <Badge variant={variant}>{label}</Badge>;
 }
 
 interface DetailRowProps {

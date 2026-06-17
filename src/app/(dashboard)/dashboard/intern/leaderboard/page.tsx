@@ -116,7 +116,7 @@ export default function LeaderboardPage() {
           </Avatar>
           <span className="font-medium">{data}</span>
           {row.isCurrentUser && (
-            <Badge className="bg-brand-blue/10 text-brand-blue border-brand-blue/20 text-[10px] h-4">
+            <Badge variant="outline" className="text-[10px] h-4">
               YOU
             </Badge>
           )}

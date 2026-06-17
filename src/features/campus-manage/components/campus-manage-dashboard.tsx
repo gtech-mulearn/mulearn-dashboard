@@ -1621,7 +1621,7 @@ export function CampusManageDashboard() {
                                     <Badge
                                       key={`${event.id}-${tag || "unnamed"}`}
                                       variant="secondary"
-                                      className="h-5 shrink-0 bg-muted/60 px-2 text-[9px] font-bold uppercase tracking-wider"
+                                      className="h-5 shrink-0 px-2 text-[9px] font-bold uppercase tracking-wider"
                                     >
                                       {tag}
                                     </Badge>
@@ -1629,7 +1629,7 @@ export function CampusManageDashboard() {
                                 ) : (
                                   <Badge
                                     variant="secondary"
-                                    className="h-5 shrink-0 bg-muted/60 px-2 text-[9px] font-bold uppercase tracking-wider"
+                                    className="h-5 shrink-0 px-2 text-[9px] font-bold uppercase tracking-wider"
                                   >
                                     No tags
                                   </Badge>
@@ -1894,7 +1894,7 @@ export function CampusManageDashboard() {
                                 <div className="mt-0.5 flex flex-wrap gap-1">
                                   <Badge
                                     variant="secondary"
-                                    className="rounded-lg bg-primary/5 px-2 py-0 text-[9px] font-black uppercase tracking-widest text-primary/80 ring-1 ring-primary/10"
+                                    className="rounded-lg px-2 py-0 text-[9px] font-black uppercase tracking-widest"
                                   >
                                     {member.role === "member"
                                       ? "Execom"
