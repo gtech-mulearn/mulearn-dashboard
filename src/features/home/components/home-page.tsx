@@ -46,10 +46,16 @@ function HomeLoadingSkeleton() {
 function DualRoleToggle({
   view,
   onChange,
+  roles,
 }: {
   view: DashboardView;
   onChange: (v: DashboardView) => void;
+  roles: readonly string[];
 }) {
+  const isEnabler = roles.some((r) => r.toLowerCase().includes("enabler"));
+  const studentLabel = isEnabler ? "Learner" : "Student";
+  const campusLabel = isEnabler ? "Enabler" : "Campus Lead";
+
   return (
     <div className="flex items-center gap-1 rounded-xl border bg-muted p-1 w-fit">
       {(["student", "campus"] as const).map((v) => (
@@ -63,7 +69,7 @@ function DualRoleToggle({
               : "text-muted-foreground hover:text-foreground"
           }`}
         >
-          {v === "student" ? "Student" : "Campus Lead"}
+          {v === "student" ? studentLabel : campusLabel}
         </button>
       ))}
     </div>
@@ -77,16 +83,24 @@ export function HomePage() {
 
   if (isLoading) return <HomeLoadingSkeleton />;
 
+  const hasRole = (role: string) =>
+    roles.some((r) => r.toLowerCase() === role.toLowerCase());
+
   const isCampusRole = roles.some((r) =>
-    (CAMPUS_MANAGEMENT_ROLES as readonly string[]).includes(r),
+    (CAMPUS_MANAGEMENT_ROLES as readonly string[]).some(
+      (role) => role.toLowerCase() === r.toLowerCase(),
+    ),
   );
-  const isStudent =
-    roles.includes(ROLES.STUDENT) || roles.includes(ROLES.PRE_MEMBER);
+  const isStudent = roles.some((r) =>
+    [ROLES.STUDENT, ROLES.PRE_MEMBER].some(
+      (role) => role.toLowerCase() === r.toLowerCase(),
+    ),
+  );
   const isDualRole = isCampusRole && isStudent;
 
   const renderHome = () => {
-    if (roles.includes(ROLES.MENTOR)) return <MentorHome />;
-    if (roles.includes(ROLES.COMPANY)) return <CompanyHome />;
+    if (hasRole(ROLES.MENTOR)) return <MentorHome />;
+    if (hasRole(ROLES.COMPANY)) return <CompanyHome />;
     if (isDualRole) {
       return dualView === "campus" ? <EnablerHome /> : <MuLearnerHome />;
     }
@@ -97,7 +111,9 @@ export function HomePage() {
   return (
     <div className="space-y-5 p-1">
       <VerificationStatusBanner roles={userInfo?.roles ?? []} />
-      {isDualRole && <DualRoleToggle view={dualView} onChange={setDualView} />}
+      {isDualRole && (
+        <DualRoleToggle view={dualView} onChange={setDualView} roles={roles} />
+      )}
       {renderHome()}
     </div>
   );

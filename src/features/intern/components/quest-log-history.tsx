@@ -243,15 +243,7 @@ export function QuestLogHistory() {
       (ts): UnifiedActivity => ({
         id: ts.id,
         type: "timesheet",
-        title: ts.entry_date
-          ? `Daily Timesheet (${new Date(
-              `${ts.entry_date}T00:00:00`,
-            ).toLocaleDateString(undefined, {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            })})`
-          : "Daily Timesheet",
+        title: "Daily Timesheet",
         description: ts.description || "",
         dateStr: new Date(ts.created_at).toLocaleDateString(undefined, {
           weekday: "short",

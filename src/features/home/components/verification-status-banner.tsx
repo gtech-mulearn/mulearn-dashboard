@@ -30,9 +30,12 @@ interface VerificationStatusBannerProps {
 export function VerificationStatusBanner({
   roles,
 }: VerificationStatusBannerProps) {
-  const isCompany = roles.includes(ROLES.COMPANY);
-  const isMentor = roles.includes(ROLES.MENTOR);
-  const isEnabler = roles.includes(ROLES.ENABLER);
+  const hasRole = (role: string) =>
+    roles.some((r) => r.toLowerCase() === role.toLowerCase());
+
+  const isCompany = hasRole(ROLES.COMPANY);
+  const isMentor = hasRole(ROLES.MENTOR);
+  const isEnabler = hasRole(ROLES.ENABLER);
 
   const { data: userProfile, isLoading: isUserProfileLoading } = useUserProfile(
     { enabled: isEnabler },
