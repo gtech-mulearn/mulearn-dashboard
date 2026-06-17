@@ -144,7 +144,7 @@ export async function importTasks(file: File): Promise<unknown> {
   const formData = new FormData();
   formData.append("file", file);
 
-  const schema = ApiResponseSchema(z.any());
+  const schema = ApiResponseSchema(z.unknown());
   const response = await apiClient.post(
     endpoints.admin.tasks.import,
     formData,

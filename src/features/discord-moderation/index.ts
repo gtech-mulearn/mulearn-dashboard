@@ -8,10 +8,53 @@
  */
 
 // API functions
-export * from "./api";
+export {
+  fetchModeratorLeaderboard,
+  fetchPendingCounts,
+  fetchTaskList,
+} from "./api";
+
+export type { LeaderboardParams, TaskListParams } from "./api";
+
 // Components (primary entry point)
-export * from "./components";
+export {
+  DiscordModerationPage,
+  ModeratorLeaderboard,
+  PendingCountsCard,
+  TaskListTable,
+} from "./components";
+
 // Hooks
-export * from "./hooks";
+export {
+  discordModerationKeys,
+  getModeratorBoardQueryOptions,
+  getPendingCountsQueryOptions,
+  getTaskListQueryOptions,
+  useModeratorBoard,
+  usePendingCounts,
+  useTaskList,
+} from "./hooks";
+
 // Schemas and types
-export * from "./schemas";
+export {
+  ApiResponseSchema,
+  ModeratorLeaderboardDataSchema,
+  ModeratorLeaderboardItemSchema,
+  ModeratorLeaderboardResponseSchema,
+  PaginationSchema,
+  PendingCountsResponseSchema,
+  PendingCountsSchema,
+  TaskListDataSchema,
+  TaskListResponseSchema,
+  TaskLogSchema,
+} from "./schemas";
+
+export type {
+  LeaderboardOption,
+  ModeratorLeaderboardData,
+  ModeratorLeaderboardItem,
+  PendingCounts,
+  TaskListData,
+  TaskLog,
+  TaskStatus,
+} from "./schemas";

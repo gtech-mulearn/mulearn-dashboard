@@ -1,7 +1,9 @@
 "use client";
 
 import { AlertTriangle, RefreshCw } from "lucide-react";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { errorLogger } from "@/lib/error-handling/error-logging.service";
 
 interface ErrorProps {
   error: Error & { digest?: string };
@@ -9,6 +11,10 @@ interface ErrorProps {
 }
 
 export default function ManageEventsError({ error, reset }: ErrorProps) {
+  useEffect(() => {
+    errorLogger.logError(error, { digest: error.digest });
+  }, [error]);
+
   return (
     <div className="flex min-h-[400px] flex-col items-center justify-center gap-6 p-6">
       <div className="rounded-full border border-destructive/20 bg-destructive/10 p-5">
@@ -21,7 +27,7 @@ export default function ManageEventsError({ error, reset }: ErrorProps) {
         <p className="mt-2 text-sm text-muted-foreground">
           An error occurred in the Events Management section.
         </p>
-        {error.message && (
+        {process.env.NODE_ENV === "development" && error.message && (
           <p className="mt-3 rounded-md bg-muted px-3 py-2 font-mono text-xs text-muted-foreground">
             {error.message}
           </p>

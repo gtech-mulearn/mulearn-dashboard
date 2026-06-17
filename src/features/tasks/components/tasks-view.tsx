@@ -246,7 +246,7 @@ export default function TasksView() {
         <div className="w-full overflow-x-auto">
           <Table
             rows={rows}
-            isloading={isLoading}
+            isLoading={isLoading}
             customCellRender={(column, row) => {
               if (column !== "active") return null;
 

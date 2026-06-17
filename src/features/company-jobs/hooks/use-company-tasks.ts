@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   createCompanyTask,
   deleteCompanyTask,
@@ -46,8 +47,10 @@ export function useCreateCompanyTask() {
       queryClient.invalidateQueries({ queryKey: COMPANY_TASKS_KEYS.all });
       toast.success("Task submitted for approval successfully");
     },
-    onError: (err: Error) => {
-      toast.error(err.message ?? "Failed to submit task");
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to submit task" }),
+      );
     },
   });
 }
@@ -70,8 +73,10 @@ export function useUpdateCompanyTask() {
       });
       toast.success("Task updated and re-submitted for approval successfully");
     },
-    onError: (err: Error) => {
-      toast.error(err.message ?? "Failed to update task");
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to update task" }),
+      );
     },
   });
 }
@@ -85,8 +90,10 @@ export function useDeleteCompanyTask() {
       queryClient.invalidateQueries({ queryKey: COMPANY_TASKS_KEYS.all });
       toast.success("Task deleted successfully");
     },
-    onError: (err: Error) => {
-      toast.error(err.message ?? "Failed to delete task");
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to delete task" }),
+      );
     },
   });
 }

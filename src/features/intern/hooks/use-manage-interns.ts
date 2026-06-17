@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ApiError } from "@/api/errors";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { manageInternsApi, type TInternQueryParams } from "../api";
 import type {
   TCreateTaskPayload,
@@ -14,16 +14,6 @@ import type {
   TWeeklyReviewReviewPayload,
 } from "../types";
 import { internKeys } from "./query-keys";
-
-function getErrorMessage(error: unknown, fallback: string): string {
-  if (error instanceof ApiError && error.message) {
-    return error.message;
-  }
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-  return fallback;
-}
 
 export function useManageInternsList(params?: TInternQueryParams) {
   return useQuery({
@@ -41,8 +31,10 @@ export function useOnboardIntern() {
       toast.success("Intern onboarded successfully!");
       await queryClient.invalidateQueries({ queryKey: internKeys.manage() });
     },
-    onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to onboard intern"));
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to onboard intern" }),
+      );
     },
   });
 }
@@ -56,8 +48,10 @@ export function useUpdateIntern(id: string) {
       toast.success("Intern updated successfully!");
       await queryClient.invalidateQueries({ queryKey: internKeys.manage() });
     },
-    onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to update intern"));
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to update intern" }),
+      );
     },
   });
 }
@@ -70,8 +64,10 @@ export function useDeactivateIntern() {
       toast.success("Intern deactivated successfully!");
       await queryClient.invalidateQueries({ queryKey: internKeys.manage() });
     },
-    onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to deactivate intern"));
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to deactivate intern" }),
+      );
     },
   });
 }
@@ -97,8 +93,12 @@ export function useExportInterns() {
       window.URL.revokeObjectURL(url);
       toast.success("Intern directory exported!");
     },
-    onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to export intern list"));
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to export intern list",
+        }),
+      );
     },
   });
 }
@@ -120,8 +120,10 @@ export function useCreateTask() {
       toast.success("Task created and assigned successfully!");
       await queryClient.invalidateQueries({ queryKey: internKeys.manage() });
     },
-    onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to create task"));
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to create task" }),
+      );
     },
   });
 }
@@ -135,8 +137,10 @@ export function useUpdateTask(id: string) {
       toast.success("Task updated successfully!");
       await queryClient.invalidateQueries({ queryKey: internKeys.manage() });
     },
-    onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to update task"));
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to update task" }),
+      );
     },
   });
 }
@@ -149,8 +153,10 @@ export function useDeleteTask() {
       toast.success("Task deleted successfully!");
       await queryClient.invalidateQueries({ queryKey: internKeys.manage() });
     },
-    onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to delete task"));
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to delete task" }),
+      );
     },
   });
 }
@@ -169,8 +175,10 @@ export function useVerifyTask() {
       toast.success("Task verified successfully!");
       await queryClient.invalidateQueries({ queryKey: internKeys.manage() });
     },
-    onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to verify task"));
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to verify task" }),
+      );
     },
   });
 }
@@ -192,8 +200,12 @@ export function useReviewLeave(id: string) {
       toast.success("Leave review submitted!");
       await queryClient.invalidateQueries({ queryKey: internKeys.manage() });
     },
-    onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to submit leave review"));
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to submit leave review",
+        }),
+      );
     },
   });
 }
@@ -256,8 +268,12 @@ export function useReviewTimesheet(id: string) {
         queryKey: internKeys.timesheets(),
       });
     },
-    onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to submit timesheet review"));
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to submit timesheet review",
+        }),
+      );
     },
   });
 }
@@ -318,9 +334,11 @@ export function useReviewWeeklyReview(id: string) {
       await queryClient.invalidateQueries({ queryKey: internKeys.manage() });
       await queryClient.invalidateQueries({ queryKey: internKeys.reviews() });
     },
-    onError: (error: unknown) => {
+    onError: (error) => {
       toast.error(
-        getErrorMessage(error, "Failed to submit weekly review evaluation"),
+        getApiResponseError(error, {
+          fallback: "Failed to submit weekly review evaluation",
+        }),
       );
     },
   });

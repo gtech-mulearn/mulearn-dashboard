@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { fetchCompanyMentors, nominateCompanyMentor } from "../api";
 import type { NominateMentorPayload } from "../api/company-mentor.api";
 
@@ -28,8 +29,10 @@ export function useNominateCompanyMentor() {
       queryClient.invalidateQueries({ queryKey: COMPANY_MENTOR_KEYS.all });
       toast.success("Mentor nominated successfully. Pending admin approval.");
     },
-    onError: (err: Error) => {
-      toast.error(err.message ?? "Failed to nominate mentor");
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to nominate mentor" }),
+      );
     },
   });
 }

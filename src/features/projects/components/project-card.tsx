@@ -16,7 +16,7 @@ function resolveMediaUrl(url: string | null | undefined): string | null {
   return `${process.env.NEXT_PUBLIC_DJANGO_API_URL ?? ""}${url}`;
 }
 
-import { ApiError } from "@/api";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -108,14 +108,14 @@ export function ProjectCard({
       removeVote.mutate(userVote.id, {
         onError: (error) =>
           toast.error(
-            error instanceof ApiError ? error.message : "Failed to remove vote",
+            getApiResponseError(error, { fallback: "Failed to remove vote" }),
           ),
       });
     } else {
       vote.mutate("upvote", {
         onError: (error) =>
           toast.error(
-            error instanceof ApiError ? error.message : "Failed to upvote",
+            getApiResponseError(error, { fallback: "Failed to upvote" }),
           ),
       });
     }

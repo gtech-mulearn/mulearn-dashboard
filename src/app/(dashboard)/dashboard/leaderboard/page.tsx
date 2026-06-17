@@ -4,6 +4,12 @@ import {
   type TimeFrame,
   type WadhwaniTimeFrame,
 } from "@/features/leaderboard";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Leaderboard",
+  description: "View student, campus, and mentor leaderboard rankings.",
+};
 
 interface LeaderboardPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;

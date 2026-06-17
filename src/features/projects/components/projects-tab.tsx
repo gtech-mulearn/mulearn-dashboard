@@ -3,6 +3,7 @@ import { Folder, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   useAddMember,
   useCreateProject,
@@ -78,7 +79,7 @@ export function ProjectsTab({
       await del.mutateAsync(p.id);
       toast.success("Deleted");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Delete failed");
+      toast.error(getApiResponseError(e, { fallback: "Delete failed" }));
     }
   };
 
@@ -168,7 +169,7 @@ export function ProjectsTab({
                   await addMember.mutateAsync({ muid: m });
                   toast.success("Member added");
                 } catch (e) {
-                  toast.error(e instanceof Error ? e.message : "Failed");
+                  toast.error(getApiResponseError(e, { fallback: "Failed" }));
                 }
               }
             : undefined
@@ -180,7 +181,7 @@ export function ProjectsTab({
                   await addMember.mutateAsync({ external_name: name });
                   toast.success("External added");
                 } catch (e) {
-                  toast.error(e instanceof Error ? e.message : "Failed");
+                  toast.error(getApiResponseError(e, { fallback: "Failed" }));
                 }
               }
             : undefined
@@ -191,7 +192,7 @@ export function ProjectsTab({
                 try {
                   await removeMember.mutateAsync(id);
                 } catch (e) {
-                  toast.error(e instanceof Error ? e.message : "Failed");
+                  toast.error(getApiResponseError(e, { fallback: "Failed" }));
                 }
               }
             : undefined

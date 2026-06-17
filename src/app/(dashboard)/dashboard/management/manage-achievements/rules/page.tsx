@@ -1,11 +1,14 @@
+import { requireRole } from "@/lib/auth/server";
+import { ROLES } from "@/lib/auth/roles";
 import { RulesTable } from "@/features/achievements/components";
 
 export const metadata = {
-  title: "Achievement Rules | MuLearn Dashboard",
+  title: "Achievement Rules | Management",
   description: "Manage achievement unlock rules.",
 };
 
-export default function RulesPage() {
+export default async function RulesPage() {
+  await requireRole([ROLES.ADMIN]);
   return (
     <div className="container py-8">
       <RulesTable />

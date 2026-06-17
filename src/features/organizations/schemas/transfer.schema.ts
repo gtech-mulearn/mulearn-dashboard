@@ -55,4 +55,4 @@ export const MergeOrgFormSchema = z.object({
 
 export type MergeOrgFormValues = z.infer<typeof MergeOrgFormSchema>;
 
-export const MergeMutationResponseSchema = z.any();
+export const MergeMutationResponseSchema = z.unknown();

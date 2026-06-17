@@ -4,10 +4,12 @@
  * 📍 src/lib/auth/token-store.ts
  *
  * Manages access and refresh tokens using cookies.
- * This allows middleware to access tokens for route protection.
+ * Server-side cookie operations (refresh route, server.ts) use httpOnly.
+ * Client-side uses js-cookie for Authorization header access.
  *
- * Previously located at src/lib/auth.ts — moved here to colocate
- * with the rest of the auth library.
+ * NOTE: Full httpOnly migration requires a BFF proxy pattern where
+ * client-side API calls go through Next.js route handlers that read
+ * httpOnly cookies and forward the Authorization header to the backend.
  */
 
 import Cookies from "js-cookie";

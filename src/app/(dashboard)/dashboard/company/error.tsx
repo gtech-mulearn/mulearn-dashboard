@@ -12,6 +12,7 @@
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { errorLogger } from "@/lib/error-handling/error-logging.service";
 
 interface ErrorProps {
   error: Error & { digest?: string };
@@ -20,9 +21,8 @@ interface ErrorProps {
 
 export default function CompanyError({ error, reset }: ErrorProps) {
   useEffect(() => {
-    // Error is already captured by the root errorLogger via the error boundary hierarchy.
-    // No additional logging needed here to avoid duplicate production noise.
-  }, []);
+    errorLogger.logError(error, { digest: error.digest });
+  }, [error]);
 
   return (
     <div className="flex min-h-[500px] flex-col items-center justify-center gap-6 p-6">
@@ -37,7 +37,7 @@ export default function CompanyError({ error, reset }: ErrorProps) {
           An unexpected error occurred in the company dashboard. This has been
           logged for investigation.
         </p>
-        {error.message && (
+        {process.env.NODE_ENV === "development" && error.message && (
           <p className="mt-3 rounded-md bg-muted px-3 py-2 text-xs font-mono text-muted-foreground">
             {error.message}
           </p>

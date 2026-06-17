@@ -4,6 +4,7 @@ import { Link2, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { Blank } from "@/components/dashboard/table/Blank";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table from "@/components/dashboard/table/Table";
@@ -75,8 +76,10 @@ export default function UrlShortenerView() {
     try {
       await deleteMutation.mutateAsync(value);
       toast.success("Short URL deleted");
-    } catch {
-      toast.error("Failed to delete short URL");
+    } catch (error) {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to delete short URL" }),
+      );
     }
   };
 
@@ -146,7 +149,7 @@ export default function UrlShortenerView() {
           />
           <Table
             rows={rows}
-            isloading={isLoading}
+            isLoading={isLoading}
             page={currentPage}
             perPage={perPage}
             columnOrder={[...COLUMNS]}

@@ -1,26 +1,12 @@
-"use client";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { IGRequestTable, ManageIGTable } from "@/features/manage-ig";
+import { requireRole } from "@/lib/auth/server";
+import { ROLES } from "@/lib/auth/roles";
+import { ManageInterestGroupsPageClient } from "./manage-interest-groups-client";
 
-export default function InterestGroupsManagementPage() {
-  return (
-    <div className="container mx-auto py-6">
-      <Tabs defaultValue="manage" className="w-full">
-        <div className="mb-6">
-          <TabsList className="w-full sm:w-auto overflow-x-auto">
-            <TabsTrigger value="manage">Manage IGs</TabsTrigger>
-            <TabsTrigger value="requests">IG Requests</TabsTrigger>
-          </TabsList>
-        </div>
+export const metadata = {
+  title: "Manage Interest Groups | Management",
+};
 
-        <TabsContent value="manage">
-          <ManageIGTable />
-        </TabsContent>
-
-        <TabsContent value="requests">
-          <IGRequestTable />
-        </TabsContent>
-      </Tabs>
-    </div>
-  );
+export default async function Page() {
+  await requireRole([ROLES.ADMIN]);
+  return <ManageInterestGroupsPageClient />;
 }

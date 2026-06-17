@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import { NotificationManageCard } from "@/features/notification/components/manage/notification-manage-card";
+
+export const metadata: Metadata = {
+  title: "Notifications",
+  description: "Manage broadcast notifications sent to users.",
+};
 
 export default function NotificationsManagePage() {
   return (

@@ -109,11 +109,11 @@ export const MentorTaskListResponseSchema = ApiResponseSchema(
   }),
 );
 
-// POST/GET single — response is {} on create, so we use z.any() for the detail
-export const MentorTaskCreateResponseSchema = ApiResponseSchema(z.any());
+// POST/GET single — response is {} on create, so we use z.unknown() for the detail
+export const MentorTaskCreateResponseSchema = ApiResponseSchema(z.unknown());
 export const MentorTaskDetailResponseSchema =
   ApiResponseSchema(MentorTaskSchema);
-export const MentorTaskGenericResponseSchema = ApiResponseSchema(z.any());
+export const MentorTaskGenericResponseSchema = ApiResponseSchema(z.unknown());
 
 // ─── Task create form schema — POST tasks/ ────────────────────────────────────
 export const MentorTaskFormSchema = z.object({

@@ -109,7 +109,7 @@ export const VoteMutationResponseSchema = ApiResponseSchema(
 export const CommentMutationResponseSchema = ApiResponseSchema(
   z.object({ Comment: ProjectCommentSchema }),
 );
-export const EmptyResponseSchema = ApiResponseSchema(z.any());
+export const EmptyResponseSchema = ApiResponseSchema(z.unknown());
 
 export const ProjectLinkFormSchema = z.object({
   label: z.string().min(1, "Label is required").max(50),

@@ -17,9 +17,12 @@ class ConsoleLogger implements LoggerAdapter {
         console.table(context);
       }
       console.groupEnd();
+    } else {
+      console.error(
+        `[ErrorBoundary] ${error.name}: ${error.message}`,
+        context?.digest ? `(digest: ${context.digest})` : "",
+      );
     }
-    // Production: wire up a real adapter (Sentry, Datadog, Logtail) via
-    // errorLogger.registerAdapter(...) at app startup instead of raw console.
   }
 }
 

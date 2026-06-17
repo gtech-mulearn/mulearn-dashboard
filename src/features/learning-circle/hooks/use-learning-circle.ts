@@ -15,7 +15,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ApiError } from "@/api";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   approveMember,
   createCircle,
@@ -181,9 +181,9 @@ export function useCreateCircle() {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to create learning circle",
+        getApiResponseError(error, {
+          fallback: "Failed to create learning circle",
+        }),
       );
     },
   });
@@ -205,7 +205,7 @@ export function useEditCircle(circleId: string) {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError ? error.message : "Failed to update circle",
+        getApiResponseError(error, { fallback: "Failed to update circle" }),
       );
     },
   });
@@ -224,7 +224,7 @@ export function useDeleteCircle() {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError ? error.message : "Failed to delete circle",
+        getApiResponseError(error, { fallback: "Failed to delete circle" }),
       );
     },
   });
@@ -250,9 +250,9 @@ export function useApproveMember(circleId: string) {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to update member status",
+        getApiResponseError(error, {
+          fallback: "Failed to update member status",
+        }),
       );
     },
   });
@@ -293,9 +293,9 @@ export function useRespondToJoinRequest(circleId: string) {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to update join request",
+        getApiResponseError(error, {
+          fallback: "Failed to update join request",
+        }),
       );
     },
   });
@@ -317,9 +317,9 @@ export function useTransferLead(circleId: string) {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to transfer lead role",
+        getApiResponseError(error, {
+          fallback: "Failed to transfer lead role",
+        }),
       );
     },
   });
@@ -343,8 +343,10 @@ export function useJoinCircle() {
       });
       toast.success("Join request sent!");
     },
-    onError: (error: ApiError) => {
-      toast.error(error.message || "Failed to send join request");
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to send join request" }),
+      );
     },
   });
 }
@@ -360,8 +362,10 @@ export function useSendInvite(circleId: string) {
       });
       toast.success("Invite sent successfully!");
     },
-    onError: (error: ApiError) => {
-      toast.error(error.message || "Failed to send invite");
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to send invite" }),
+      );
     },
   });
 }
@@ -400,9 +404,7 @@ export function useRespondToInvite() {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to respond to invite",
+        getApiResponseError(error, { fallback: "Failed to respond to invite" }),
       );
     },
   });
@@ -439,9 +441,7 @@ export function useRespondToInviteByLink() {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to respond to invite",
+        getApiResponseError(error, { fallback: "Failed to respond to invite" }),
       );
     },
   });
@@ -464,7 +464,7 @@ export function useCreateMeeting(circleId: string) {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError ? error.message : "Failed to create meeting",
+        getApiResponseError(error, { fallback: "Failed to create meeting" }),
       );
     },
   });
@@ -483,7 +483,7 @@ export function useDeleteMeeting() {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError ? error.message : "Failed to delete meeting",
+        getApiResponseError(error, { fallback: "Failed to delete meeting" }),
       );
     },
   });
@@ -506,7 +506,7 @@ export function useEditMeeting(meetingId: string, circleId: string) {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError ? error.message : "Failed to update meeting",
+        getApiResponseError(error, { fallback: "Failed to update meeting" }),
       );
     },
   });
@@ -532,7 +532,7 @@ export function useRsvpMeeting() {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError ? error.message : "Failed to RSVP to meeting",
+        getApiResponseError(error, { fallback: "Failed to RSVP to meeting" }),
       );
     },
   });
@@ -560,9 +560,9 @@ export function useJoinMeeting() {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to join meeting. Check the meeting code.",
+        getApiResponseError(error, {
+          fallback: "Failed to join meeting. Check the meeting code.",
+        }),
       );
     },
   });
@@ -584,7 +584,7 @@ export function useLeaveMeeting() {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError ? error.message : "Failed to leave meeting",
+        getApiResponseError(error, { fallback: "Failed to leave meeting" }),
       );
     },
   });
@@ -611,7 +611,7 @@ export function useSubmitAttendeeReport(meetingId: string) {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError ? error.message : "Failed to submit report",
+        getApiResponseError(error, { fallback: "Failed to submit report" }),
       );
     },
   });
@@ -632,8 +632,12 @@ export function useSubmitMeetingReport(meetingId: string) {
       });
       toast.success("Meeting report submitted successfully!");
     },
-    onError: (error: ApiError) => {
-      toast.error(error.message || "Failed to submit meeting report");
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to submit meeting report",
+        }),
+      );
     },
   });
 }
@@ -680,9 +684,9 @@ export function useDeleteAttendeeReport(meetingId: string) {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to delete attendee report",
+        getApiResponseError(error, {
+          fallback: "Failed to delete attendee report",
+        }),
       );
     },
   });
@@ -704,9 +708,9 @@ export function useDeleteMeetingReport(meetingId: string) {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to delete meeting report",
+        getApiResponseError(error, {
+          fallback: "Failed to delete meeting report",
+        }),
       );
     },
   });

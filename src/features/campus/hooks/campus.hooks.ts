@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { isValid, parseISO } from "date-fns";
 import { toast } from "sonner";
-import { ApiError } from "@/api";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import type { CampusSessionListParams } from "../api/campus.api";
 import {
   assignCampusMentor,
@@ -88,9 +88,9 @@ export function useAssignCampusMentor() {
     },
     onError: (error) =>
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to assign campus mentor",
+        getApiResponseError(error, {
+          fallback: "Failed to assign campus mentor",
+        }),
       ),
   });
 }
@@ -108,9 +108,9 @@ export function useCreateCampusSession() {
     },
     onError: (error) =>
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to create campus session",
+        getApiResponseError(error, {
+          fallback: "Failed to create campus session",
+        }),
       ),
   });
 }

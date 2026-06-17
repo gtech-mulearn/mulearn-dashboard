@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ApiError } from "@/api/errors";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   createCompanyTask,
   createTaskType,
@@ -64,20 +64,11 @@ export function useCreateCompanyTask() {
       });
     },
     onError: (error) => {
-      if (error instanceof ApiError) {
-        const errData = error.data as Record<string, string[]>;
-        if (errData?.hashtag) {
-          toast.error(
-            errData.hashtag[0] || "A task with this hashtag already exists.",
-          );
-        } else if (errData?.type) {
-          toast.error(`Invalid Task Type: ${errData.type[0]}`);
-        } else {
-          toast.error(error.message);
-        }
-      } else {
-        toast.error("Failed to create task. Please try again.");
-      }
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to create task. Please try again.",
+        }),
+      );
     },
   });
 }
@@ -106,11 +97,9 @@ export function useUpdateCompanyTask() {
       });
     },
     onError: (error) => {
-      if (error instanceof ApiError) {
-        toast.error(error.message || "Failed to update task.");
-      } else {
-        toast.error("An unexpected error occurred.");
-      }
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to update task." }),
+      );
     },
   });
 }
@@ -125,11 +114,9 @@ export function useDeleteCompanyTask() {
       queryClient.invalidateQueries({ queryKey: COMPANY_TASKS_KEYS.all });
     },
     onError: (error) => {
-      if (error instanceof ApiError) {
-        toast.error(error.message || "Cannot delete task.");
-      } else {
-        toast.error("An unexpected error occurred while deleting.");
-      }
+      toast.error(
+        getApiResponseError(error, { fallback: "Cannot delete task." }),
+      );
     },
   });
 }
@@ -145,9 +132,7 @@ export function useCreateTaskType() {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to create task type.",
+        getApiResponseError(error, { fallback: "Failed to create task type." }),
       );
     },
   });
@@ -164,9 +149,7 @@ export function useUpdateTaskType() {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to update task type.",
+        getApiResponseError(error, { fallback: "Failed to update task type." }),
       );
     },
   });
@@ -183,9 +166,7 @@ export function useDeleteTaskType() {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to delete task type.",
+        getApiResponseError(error, { fallback: "Failed to delete task type." }),
       );
     },
   });

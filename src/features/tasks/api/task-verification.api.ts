@@ -55,7 +55,7 @@ export async function reviewTask(
   taskId: string,
   data: ReviewActionValues,
 ): Promise<void> {
-  const schema = ApiResponseSchema(z.any());
+  const schema = ApiResponseSchema(z.unknown());
   await apiClient.patch(endpoints.admin.tasks.review(taskId), data, schema, {
     skipAuthRedirectOn403: true,
   });

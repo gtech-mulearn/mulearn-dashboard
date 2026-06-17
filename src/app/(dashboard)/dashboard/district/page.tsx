@@ -1,4 +1,10 @@
-import { DistrictDashboard } from "@/features/district";
+import dynamic from "next/dynamic";
+
+const DistrictDashboard = dynamic(() =>
+  import("@/features/district").then((mod) => ({
+    default: mod.DistrictDashboard,
+  })),
+);
 
 export default function DistrictPage() {
   return (

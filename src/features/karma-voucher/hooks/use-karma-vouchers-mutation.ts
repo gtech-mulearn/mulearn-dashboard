@@ -1,9 +1,9 @@
 "use client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ApiError } from "@/api";
 import { endpoints } from "@/api/endpoints";
 import { useCsvDownload } from "@/hooks/use-csv-download";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { downloadBlob } from "@/lib/download";
 import {
   deleteKarmaVoucher,
@@ -25,7 +25,7 @@ export function useDeleteKarmaVoucher() {
       toast.success("Voucher deleted");
     },
     onError: (error) =>
-      toast.error(error instanceof ApiError ? error.message : "Delete failed"),
+      toast.error(getApiResponseError(error, { fallback: "Delete failed" })),
   });
 
   return {
@@ -65,7 +65,7 @@ export function useExportVouchersCsv() {
       toast.success("Export successful");
     },
     onError: (error) =>
-      toast.error(error instanceof ApiError ? error.message : "Export failed"),
+      toast.error(getApiResponseError(error, { fallback: "Export failed" })),
   });
 
   return {
@@ -85,7 +85,7 @@ export function useDownloadTemplate() {
     },
     onError: (error) =>
       toast.error(
-        error instanceof ApiError ? error.message : "Template download failed",
+        getApiResponseError(error, { fallback: "Template download failed" }),
       ),
   });
 

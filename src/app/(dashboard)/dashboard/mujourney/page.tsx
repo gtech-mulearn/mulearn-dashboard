@@ -9,6 +9,12 @@
 import { MuJourneyDashboard } from "@/features/mujourney";
 import { fetchPublicLevels } from "@/features/mujourney/api";
 import { isAuthenticated } from "@/lib/auth/server";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "MuJourney",
+  description: "Track your learning journey and progress.",
+};
 
 export default async function MuJourneyPage() {
   const authenticated = await isAuthenticated();

@@ -8,11 +8,68 @@
  */
 
 // API functions (for direct use if needed)
-export * from "./api";
+export {
+  fetchCampusLeaderboard,
+  fetchCampusMentorLeaderboard,
+  fetchIgMentorLeaderboard,
+  fetchMentorLeaderboard,
+  fetchStudentLeaderboard,
+  fetchWadhwaniLeaderboard,
+} from "./api";
+
 // Components
-export * from "./components";
+export {
+  CategorySelector,
+  LeaderboardCard,
+  LeaderboardControls,
+  LeaderboardView,
+  Podium,
+  TimeFrameToggle,
+  WadhwaniTimeFrameToggle,
+} from "./components";
+
 // Hooks (primary way to use the feature)
-export * from "./hooks";
+export { useLeaderboard } from "./hooks";
+
 // Schemas and types
-export * from "./schemas";
-export * from "./types";
+export {
+  ApiResponseSchema,
+  CampusMentorLeaderboardEntrySchema,
+  CampusMentorLeaderboardResponseSchema,
+  CollegeLeaderboardEntrySchema,
+  CollegeLeaderboardResponseSchema,
+  IgMentorLeaderboardEntrySchema,
+  IgMentorLeaderboardResponseSchema,
+  MentorLeaderboardEntrySchema,
+  MentorLeaderboardResponseSchema,
+  StudentLeaderboardEntrySchema,
+  StudentLeaderboardResponseSchema,
+  WadhwaniLeaderboardEntrySchema,
+  WadhwaniLeaderboardResponseSchema,
+} from "./schemas";
+
+export type {
+  CampusMentorLeaderboardEntry,
+  CollegeLeaderboardEntry,
+  CollegeLeaderboardResponse,
+  IgMentorLeaderboardEntry,
+  MentorLeaderboardEntry,
+  StudentLeaderboardEntry,
+  StudentLeaderboardResponse,
+  WadhwaniLeaderboardEntry,
+  WadhwaniLeaderboardResponse,
+} from "./schemas";
+
+// Types
+export type {
+  Category,
+  CategorySelectorProps,
+  GeneralToggleProps,
+  LeaderboardCardProps,
+  LeaderboardData,
+  LeaderboardEntry,
+  PodiumProps,
+  TimeFrame,
+  WadhwaniTimeFrame,
+  WadhwaniToggleProps,
+} from "./types";

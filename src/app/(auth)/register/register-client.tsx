@@ -18,7 +18,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { ApiError } from "@/api";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   type CompanyDetailsValues,
   RegisterForm,
@@ -149,11 +149,11 @@ export function RegisterClient({
       // ── Student / Mentor / Enabler: generic register endpoint ─
       await handleGenericSignup(values);
     } catch (error) {
-      const message =
-        error instanceof ApiError
-          ? error.message
-          : "Registration failed. Please try again.";
-      toast.error(message);
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Registration failed. Please try again.",
+        }),
+      );
     }
   };
 

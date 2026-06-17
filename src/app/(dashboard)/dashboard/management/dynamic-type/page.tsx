@@ -1,20 +1,21 @@
 /**
  * Dynamic Type Admin Page
  *
- * 📍 src/app/(dashboard)/dashboard/management/dynamic-type/page.tsx
- *
  * Route: /dashboard/management/dynamic-type
- * RBAC: Admin only (protected by route-access.ts)
+ * RBAC: Admin only
  */
 
+import { requireRole } from "@/lib/auth/server";
+import { ROLES } from "@/lib/auth/roles";
 import { DynamicTypePage } from "@/features/dynamic-type";
 
 export const metadata = {
-  title: "Manage Dynamic Types | MuLearn Dashboard",
+  title: "Manage Dynamic Types | Management",
   description:
     "Configure dynamic role-type and user-type mappings for the MuLearn platform.",
 };
 
-export default function DynamicTypeAdminPage() {
+export default async function DynamicTypeAdminPage() {
+  await requireRole([ROLES.ADMIN]);
   return <DynamicTypePage />;
 }

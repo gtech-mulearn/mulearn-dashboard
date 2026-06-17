@@ -30,7 +30,11 @@ export function InlineErrorFallback({
             </span>
           </TooltipTrigger>
           <TooltipContent>
-            <p className="max-w-xs">{err.message}</p>
+            <p className="max-w-xs">
+              {process.env.NODE_ENV === "development"
+                ? err.message
+                : "Something went wrong"}
+            </p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

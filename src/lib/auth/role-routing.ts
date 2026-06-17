@@ -24,7 +24,7 @@ import { ROLES } from "./roles";
 export function getRoleHomePath(roles: string[]): string {
   // ── Highest-privilege roles first ────────────────────────────
   if (roles.includes(ROLES.ADMIN)) {
-    return "/dashboard/admin";
+    return "/dashboard/management";
   }
 
   if (roles.includes(ROLES.ASSOCIATE)) {

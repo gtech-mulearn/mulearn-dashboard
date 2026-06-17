@@ -3,7 +3,7 @@
 import { AlertTriangle, BookOpen, CalendarCheck2, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ApiError } from "@/api";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -212,9 +212,9 @@ export function MentorHome() {
         },
         onError: (error) => {
           toast.error(
-            error instanceof ApiError
-              ? error.message
-              : "Failed to save availability",
+            getApiResponseError(error, {
+              fallback: "Failed to save availability",
+            }),
           );
         },
       },

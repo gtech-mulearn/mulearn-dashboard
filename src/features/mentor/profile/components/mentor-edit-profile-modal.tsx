@@ -60,7 +60,7 @@ const MentorEditSchema = z.object({
   expertise: z.array(z.string()).optional(),
   preferred_ig_ids: z.array(z.string()).optional(),
   org: z.string().optional(),
-  profile_pic: z.any().optional(),
+  profile_pic: z.instanceof(File).optional(),
 });
 
 type MentorEditValues = z.infer<typeof MentorEditSchema>;

@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   fetchLearnerApplications,
   resubmitApplication,
@@ -41,10 +42,11 @@ export function useWithdrawApplication() {
       });
       toast.success("Application withdrawn successfully");
     },
-    onError: (err: any) => {
+    onError: (error) => {
       toast.error(
-        err?.response?.message?.general?.[0] ||
-          "Failed to withdraw application",
+        getApiResponseError(error, {
+          fallback: "Failed to withdraw application",
+        }),
       );
     },
   });
@@ -66,11 +68,11 @@ export function useResubmitApplication() {
       });
       toast.success("Application resubmitted successfully");
     },
-    onError: (err: any) => {
+    onError: (error) => {
       toast.error(
-        err?.response?.message?.general?.[0] ||
-          err?.response?.message ||
-          "Failed to resubmit application",
+        getApiResponseError(error, {
+          fallback: "Failed to resubmit application",
+        }),
       );
     },
   });

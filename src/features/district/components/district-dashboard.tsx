@@ -475,7 +475,7 @@ export function DistrictDashboard() {
 
             <Table
               rows={studentRows}
-              isloading={isStudentDetailsLoading || isStudentDetailsFetching}
+              isLoading={isStudentDetailsLoading || isStudentDetailsFetching}
               page={studentPage}
               perPage={studentPerPage}
               columnOrder={studentColumns}
@@ -541,7 +541,7 @@ export function DistrictDashboard() {
 
             <Table
               rows={collegeRows}
-              isloading={isCollegeDetailsLoading || isCollegeDetailsFetching}
+              isLoading={isCollegeDetailsLoading || isCollegeDetailsFetching}
               page={collegePage}
               perPage={collegePerPage}
               columnOrder={collegeColumns}

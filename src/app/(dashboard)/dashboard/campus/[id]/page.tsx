@@ -1,4 +1,10 @@
 import { CampusView } from "@/features/campus";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Campus Details",
+  description: "View details for a specific campus.",
+};
 
 export default async function CampusPage({
   params,

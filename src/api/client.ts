@@ -34,6 +34,20 @@ function getAuthHeaders(): Record<string, string> {
   return headers;
 }
 
+// ─── Token refresh mutex ────────────────────────────────────────────────────
+
+let refreshPromise: Promise<string | null> | null = null;
+
+async function getRefreshedToken(refreshToken: string): Promise<string | null> {
+  if (refreshPromise) return refreshPromise;
+  refreshPromise = refreshAccessToken(refreshToken)
+    .then((result) => result.accessToken ?? null)
+    .finally(() => {
+      refreshPromise = null;
+    });
+  return refreshPromise;
+}
+
 // ─── Token expiry detection ─────────────────────────────────────────────────
 
 function isTokenExpiredError(rawData: unknown): boolean {
@@ -208,8 +222,7 @@ async function request<T>(
       }
 
       try {
-        const newToken = await refreshAccessToken(refreshToken);
-        const newAccessToken = newToken.accessToken;
+        const newAccessToken = await getRefreshedToken(refreshToken);
 
         if (!newAccessToken) {
           authStore.clearTokens();

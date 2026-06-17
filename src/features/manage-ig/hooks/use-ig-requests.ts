@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ApiError } from "@/api";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   submitIgRequest as apiSubmitRequest,
   getIgRequests,
@@ -47,9 +47,9 @@ export function useIGRequests() {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to update request status",
+        getApiResponseError(error, {
+          fallback: "Failed to update request status",
+        }),
       );
     },
   });
@@ -62,9 +62,7 @@ export function useIGRequests() {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to submit IG request",
+        getApiResponseError(error, { fallback: "Failed to submit IG request" }),
       );
     },
   });

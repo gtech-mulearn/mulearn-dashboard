@@ -162,9 +162,9 @@ export default function EventReportPage() {
               >
                 {/* Header on all pages */}
                 <div className="mb-4 flex items-start justify-between border-b border-border">
-                  <h1 className="text-3xl font-bold text-foreground uppercase tracking-wider mt-2">
+                  <h2 className="text-3xl font-bold text-foreground uppercase tracking-wider mt-2">
                     Event Report
-                  </h1>
+                  </h2>
                   <div className="relative h-16 w-32 flex-shrink-0">
                     <Image
                       src="/logo.webp"

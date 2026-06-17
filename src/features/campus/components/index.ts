@@ -1,3 +1,3 @@
-export * from "./campus-view";
-export * from "./stats-cards";
-export * from "./weekly-karma-card";
+export { CampusView } from "./campus-view";
+export { StatsCards } from "./stats-cards";
+export { WeeklyKarmaCard } from "./weekly-karma-card";

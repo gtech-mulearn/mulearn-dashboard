@@ -1,1 +1,6 @@
-export * from "./ig-requests.api";
+export {
+  listIGRequests,
+  createIGRequest,
+  updateIGRequestStatus,
+  deleteIGRequest,
+} from "./ig-requests.api";

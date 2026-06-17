@@ -13,7 +13,8 @@ import {
   updateDepartment,
 } from "../api/departments.api";
 import type { DepartmentFormValues } from "../schemas/departments.schema";
-import { getOrgErrorMessage, useOrgQueryErrorToast } from "./org-error";
+import { getApiResponseError } from "@/hooks/use-get-error";
+import { useOrgQueryErrorToast } from "./org-error";
 
 const DEPT_KEY = "org-departments";
 
@@ -39,7 +40,11 @@ export const useCreateDepartment = () => {
       queryClient.invalidateQueries({ queryKey: [DEPT_KEY], exact: false });
     },
     onError: (error) => {
-      toast.error(getOrgErrorMessage(error, "Failed to create department."));
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to create department.",
+        }),
+      );
     },
   });
 };
@@ -53,7 +58,11 @@ export const useUpdateDepartment = () => {
       queryClient.invalidateQueries({ queryKey: [DEPT_KEY], exact: false });
     },
     onError: (error) => {
-      toast.error(getOrgErrorMessage(error, "Failed to update department."));
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to update department.",
+        }),
+      );
     },
   });
 };
@@ -66,7 +75,11 @@ export const useDeleteDepartment = () => {
       queryClient.invalidateQueries({ queryKey: [DEPT_KEY], exact: false });
     },
     onError: (error) => {
-      toast.error(getOrgErrorMessage(error, "Failed to delete department."));
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to delete department.",
+        }),
+      );
     },
   });
 };

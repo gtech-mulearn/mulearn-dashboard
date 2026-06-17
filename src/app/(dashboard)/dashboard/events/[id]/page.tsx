@@ -1,4 +1,10 @@
 import { EventDetailView } from "@/features/events";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Event Details",
+  description: "View details for a specific event.",
+};
 
 interface EventDetailPageProps {
   params: Promise<{ id: string }>;

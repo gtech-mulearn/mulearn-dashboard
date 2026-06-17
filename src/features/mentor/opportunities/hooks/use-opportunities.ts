@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ApiError } from "@/api";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   createOpportunity,
   deleteOpportunity,
@@ -46,9 +46,9 @@ export function useCreateOpportunity() {
     },
     onError: (error) =>
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to create opportunity",
+        getApiResponseError(error, {
+          fallback: "Failed to create opportunity",
+        }),
       ),
   });
 }
@@ -64,9 +64,9 @@ export function useUpdateOpportunity(id: string) {
     },
     onError: (error) =>
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to update opportunity",
+        getApiResponseError(error, {
+          fallback: "Failed to update opportunity",
+        }),
       ),
   });
 }
@@ -81,9 +81,9 @@ export function useDeleteOpportunity() {
     },
     onError: (error) =>
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to delete opportunity",
+        getApiResponseError(error, {
+          fallback: "Failed to delete opportunity",
+        }),
       ),
   });
 }

@@ -15,6 +15,7 @@ import { Fragment, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Dialog,
@@ -215,7 +216,7 @@ export function ProjectWizard({
       }
       setShowSuccess(true);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Save failed");
+      toast.error(getApiResponseError(err, { fallback: "Save failed" }));
     }
   };
 

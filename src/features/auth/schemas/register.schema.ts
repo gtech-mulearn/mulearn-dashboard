@@ -138,8 +138,8 @@ export const CompanySignupRequestSchema = z.object({
   culture_text: z.string().optional(),
   tech_stack: z.array(z.string()).optional(),
   perks: z.array(z.string()).optional(),
-  testimonials: z.array(z.any()).optional(),
-  gallery: z.array(z.any()).optional(),
+  testimonials: z.array(z.unknown()).optional(),
+  gallery: z.array(z.unknown()).optional(),
 });
 
 /**
@@ -178,8 +178,8 @@ export const CompanySignupResponseDataSchema = z.object({
   culture_text: z.string().nullable().optional(),
   tech_stack: z.array(z.string()).nullable().optional(),
   perks: z.array(z.string()).nullable().optional(),
-  testimonials: z.array(z.any()).nullable().optional(),
-  gallery: z.array(z.any()).nullable().optional(),
+  testimonials: z.array(z.unknown()).nullable().optional(),
+  gallery: z.array(z.unknown()).nullable().optional(),
 });
 
 export const CompanySignupResponseSchema = z

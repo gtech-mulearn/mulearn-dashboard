@@ -1,4 +1,10 @@
-import { CampusManageDashboard } from "@/features/campus-manage";
+import dynamic from "next/dynamic";
+
+const CampusManageDashboard = dynamic(() =>
+  import("@/features/campus-manage").then((mod) => ({
+    default: mod.CampusManageDashboard,
+  })),
+);
 
 export default function CampusManagePage() {
   return (

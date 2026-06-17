@@ -1,1 +1,1 @@
-export * from "./college.api";
+export { fetchColleges } from "./college.api";

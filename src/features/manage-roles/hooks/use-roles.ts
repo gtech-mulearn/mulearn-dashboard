@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   createRole,
   deleteRole,
@@ -44,8 +45,10 @@ export function useCreateRole() {
       queryClient.invalidateQueries({ queryKey: manageRolesKeys.lists() });
       toast.success("Role created successfully");
     },
-    onError: (err: Error) => {
-      toast.error(err.message);
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to create role" }),
+      );
     },
   });
 }
@@ -59,8 +62,10 @@ export function useUpdateRole() {
       queryClient.invalidateQueries({ queryKey: manageRolesKeys.lists() });
       toast.success("Role updated successfully");
     },
-    onError: (err: Error) => {
-      toast.error(err.message);
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to update role" }),
+      );
     },
   });
 }
@@ -73,8 +78,10 @@ export function useDeleteRole() {
       queryClient.invalidateQueries({ queryKey: manageRolesKeys.lists() });
       toast.success("Role deleted successfully");
     },
-    onError: (err: Error) => {
-      toast.error(err.message);
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to delete role" }),
+      );
     },
   });
 }

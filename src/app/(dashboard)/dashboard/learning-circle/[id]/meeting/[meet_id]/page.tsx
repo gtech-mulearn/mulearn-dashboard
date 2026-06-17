@@ -7,6 +7,12 @@
  */
 
 import { MeetingDetailView } from "@/features/learning-circle";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Meeting Details",
+  description: "View details for a learning circle meeting.",
+};
 
 interface PageProps {
   params: Promise<{ id: string; meet_id: string }>;

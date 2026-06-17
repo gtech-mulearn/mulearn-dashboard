@@ -1,2 +1,36 @@
-export * from "./api.types";
-export * from "./intern-form-type";
+export type {
+  TCreateTaskPayload,
+  TInternActivityLog,
+  TInternOverviewStatus,
+  TInternTask,
+  TLeaderboardMe,
+  TLeaderboardRow,
+  TLeaveBalance,
+  TLeaveBalanceItem,
+  TLeaveRequest,
+  TLeaveReviewPayload,
+  TLeaveSubmitPayload,
+  TManageInternItem,
+  TOnboardInternPayload,
+  TPaginatedData,
+  TPagination,
+  TTaskRemarks,
+  TTimesheet,
+  TTimesheetReviewPayload,
+  TTimesheetSubmitPayload,
+  TTimesheetSummary,
+  TTimesheetUpdatePayload,
+  TUpdateInternPayload,
+  TUpdateTaskPayload,
+  TWeeklyReview,
+  TWeeklyReviewReviewPayload,
+  TWeeklyReviewSubmitPayload,
+  TWeeklyReviewUpdatePayload,
+} from "./api.types";
+export type {
+  TApiResponse,
+  TTeam,
+  TWeeklyReviewForm,
+  TWeeklyReviewResponse,
+  TWeeklyReviewResult,
+} from "./intern-form-type";

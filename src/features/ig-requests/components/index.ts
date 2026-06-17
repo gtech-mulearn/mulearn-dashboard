@@ -1,3 +1,3 @@
-export * from "./ig-request-form-dialog";
-export * from "./ig-request-status-badge";
-export * from "./ig-requests-page";
+export { IGRequestFormDialog } from "./ig-request-form-dialog";
+export { IGRequestStatusBadge } from "./ig-request-status-badge";
+export { IGRequestsPage } from "./ig-requests-page";

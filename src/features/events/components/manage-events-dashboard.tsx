@@ -249,7 +249,7 @@ export default function ManageEventsDashboard() {
         <p className="text-sm text-destructive">
           {is403
             ? "You don't have permission to manage events"
-            : error instanceof Error
+            : process.env.NODE_ENV === "development" && error instanceof Error
               ? error.message
               : "Failed to load events"}
         </p>

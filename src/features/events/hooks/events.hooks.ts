@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ApiError } from "@/api/errors";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { useDebounce } from "@/hooks/use-debounce";
 import { eventsApi } from "../api";
 import type {
@@ -19,16 +20,6 @@ import type {
   ViewerInterestStatus,
 } from "../types";
 import { eventKeys } from "./query-keys";
-
-function getErrorMessage(error: unknown, fallback: string): string {
-  if (error instanceof ApiError && error.message) {
-    return error.message;
-  }
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-  return fallback;
-}
 
 function isForbiddenPermissionError(error: unknown, message?: string): boolean {
   if (error instanceof ApiError && error.status === 403) {
@@ -230,8 +221,10 @@ export function useCreateEvent() {
       toast.success("Event created");
       await queryClient.invalidateQueries({ queryKey: eventKeys.all });
     },
-    onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to create event"));
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to create event" }),
+      );
     },
   });
 }
@@ -246,8 +239,10 @@ export function usePatchEvent(eventId: string) {
       toast.success("Event updated");
       await queryClient.invalidateQueries({ queryKey: eventKeys.all });
     },
-    onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to update event"));
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to update event" }),
+      );
     },
   });
 }
@@ -262,8 +257,10 @@ export function useDeleteEvent(eventId: string) {
       queryClient.invalidateQueries({ queryKey: eventKeys.all });
       queryClient.invalidateQueries({ queryKey: eventKeys.manage() });
     },
-    onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to cancel event"));
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to cancel event" }),
+      );
     },
   });
 }
@@ -279,8 +276,10 @@ export function usePublishEvent(eventId: string) {
         queryKey: eventKeys.manageDetail(eventId),
       });
     },
-    onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to publish event"));
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to publish event" }),
+      );
     },
   });
 }
@@ -300,8 +299,10 @@ export function useAddCoOwner(eventId: string) {
         queryKey: eventKeys.manageDetail(eventId),
       });
     },
-    onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to add co-owner"));
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to add co-owner" }),
+      );
     },
   });
 }
@@ -321,8 +322,10 @@ export function useRemoveCoOwner(eventId: string) {
         queryKey: eventKeys.manageDetail(eventId),
       });
     },
-    onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to remove co-owner"));
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to remove co-owner" }),
+      );
     },
   });
 }
@@ -342,8 +345,12 @@ export function useInviteCollaborator(eventId: string) {
         queryKey: eventKeys.manageDetail(eventId),
       });
     },
-    onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to invite collaborator"));
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to invite collaborator",
+        }),
+      );
     },
   });
 }
@@ -363,8 +370,10 @@ export function useAcceptCollaborator(eventId: string) {
         queryKey: eventKeys.manageDetail(eventId),
       });
     },
-    onError: (error: unknown) => {
-      const message = getErrorMessage(error, "Failed to accept collaborator");
+    onError: (error) => {
+      const message = getApiResponseError(error, {
+        fallback: "Failed to accept collaborator",
+      });
       if (isForbiddenPermissionError(error, message)) {
         toast.error(
           "Only the lead of the invited entity can accept this invitation.",
@@ -399,8 +408,10 @@ export function useAcceptCollaboratorInvite() {
         queryKey: eventKeys.manageDetail(variables.eventId),
       });
     },
-    onError: (error: unknown) => {
-      const message = getErrorMessage(error, "Failed to accept collaborator");
+    onError: (error) => {
+      const message = getApiResponseError(error, {
+        fallback: "Failed to accept collaborator",
+      });
       if (isForbiddenPermissionError(error, message)) {
         toast.error(
           "Only the lead of the invited entity can accept this invitation.",
@@ -428,8 +439,10 @@ export function useRejectCollaborator(eventId: string) {
         queryKey: eventKeys.manageDetail(eventId),
       });
     },
-    onError: (error: unknown) => {
-      const message = getErrorMessage(error, "Failed to reject collaborator");
+    onError: (error) => {
+      const message = getApiResponseError(error, {
+        fallback: "Failed to reject collaborator",
+      });
       if (error instanceof ApiError && error.status === 403) {
         toast.error(
           "Only the lead of the invited entity can reject this invitation.",
@@ -466,8 +479,10 @@ export function useRejectCollaboratorInvite() {
         queryKey: eventKeys.manageDetail(variables.eventId),
       });
     },
-    onError: (error: unknown) => {
-      const message = getErrorMessage(error, "Failed to reject collaborator");
+    onError: (error) => {
+      const message = getApiResponseError(error, {
+        fallback: "Failed to reject collaborator",
+      });
       if (error instanceof ApiError && error.status === 403) {
         toast.error(
           "Only the lead of the invited entity can reject this invitation.",
@@ -495,8 +510,12 @@ export function useRemoveCollaborator(eventId: string) {
         queryKey: eventKeys.manageDetail(eventId),
       });
     },
-    onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to remove collaborator"));
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to remove collaborator",
+        }),
+      );
     },
   });
 }
@@ -574,7 +593,9 @@ export function useToggleInterest(eventId: string) {
           queryClient.setQueryData(queryKey, listData);
         }
       }
-      toast.error(getErrorMessage(error, "Failed to update interest"));
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to update interest" }),
+      );
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
@@ -596,8 +617,10 @@ export function useAdminApprove(eventId: string) {
         queryKey: eventKeys.manageLists(),
       });
     },
-    onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to approve event"));
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to approve event" }),
+      );
     },
   });
 }
@@ -615,8 +638,10 @@ export function useAdminReject(eventId: string) {
         queryKey: eventKeys.manageLists(),
       });
     },
-    onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to reject event"));
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to reject event" }),
+      );
     },
   });
 }
@@ -634,8 +659,12 @@ export function useAdminFeature(eventId: string) {
       await queryClient.invalidateQueries({ queryKey: eventKeys.featured() });
       await queryClient.invalidateQueries({ queryKey: eventKeys.lists() });
     },
-    onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to update featured status"));
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to update featured status",
+        }),
+      );
     },
   });
 }

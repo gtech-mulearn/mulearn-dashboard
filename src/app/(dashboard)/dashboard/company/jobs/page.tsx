@@ -65,7 +65,7 @@ export default function CompanyJobsPage() {
               <AlertTriangle className="h-6 w-6 text-destructive" />
             </div>
             <p className="text-sm text-muted-foreground">
-              {error instanceof Error
+              {process.env.NODE_ENV === "development" && error instanceof Error
                 ? error.message
                 : "Failed to load jobs. Please try again."}
             </p>

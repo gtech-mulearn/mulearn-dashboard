@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ApiError } from "@/api";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   bulkIssueAchievements,
   createAchievement,
@@ -28,8 +28,12 @@ export function useCreateAchievement() {
       queryClient.invalidateQueries({ queryKey: ACHIEVEMENT_KEYS.list() });
       toast.success("Achievement created successfully");
     },
-    onError: (err: Error) => {
-      toast.error(err.message ?? "Failed to create achievement");
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to create achievement",
+        }),
+      );
     },
   });
 }
@@ -48,8 +52,12 @@ export function useUpdateAchievement() {
       queryClient.invalidateQueries({ queryKey: ACHIEVEMENT_KEYS.list() });
       toast.success("Achievement updated successfully");
     },
-    onError: (err: Error) => {
-      toast.error(err.message ?? "Failed to update achievement");
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to update achievement",
+        }),
+      );
     },
   });
 }
@@ -78,9 +86,9 @@ export function useDeleteAchievement() {
         queryClient.setQueryData(ACHIEVEMENT_KEYS.list(), context.previous);
       }
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to delete achievement",
+        getApiResponseError(error, {
+          fallback: "Failed to delete achievement",
+        }),
       );
     },
     onSuccess: () => {
@@ -103,8 +111,10 @@ export function useCreateRule() {
       queryClient.invalidateQueries({ queryKey: ACHIEVEMENT_KEYS.rules() });
       toast.success("Rule created successfully");
     },
-    onError: (err: Error) => {
-      toast.error(err.message ?? "Failed to create rule");
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to create rule" }),
+      );
     },
   });
 }
@@ -122,8 +132,10 @@ export function useDeactivateRule() {
       queryClient.invalidateQueries({ queryKey: ACHIEVEMENT_KEYS.rules() });
       toast.success("Rule deactivated");
     },
-    onError: (err: Error) => {
-      toast.error(err.message ?? "Failed to deactivate rule");
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to deactivate rule" }),
+      );
     },
   });
 }
@@ -143,8 +155,10 @@ export function useManualIssue() {
       });
       toast.success("Achievement issued successfully");
     },
-    onError: (err: Error) => {
-      toast.error(err.message ?? "Failed to issue achievement");
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to issue achievement" }),
+      );
     },
   });
 }
@@ -164,8 +178,12 @@ export function useRevokeAchievement() {
       });
       toast.success("Achievement revoked");
     },
-    onError: (err: Error) => {
-      toast.error(err.message ?? "Failed to revoke achievement");
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to revoke achievement",
+        }),
+      );
     },
   });
 }
@@ -185,8 +203,10 @@ export function useBulkIssue() {
       });
       toast.success("Bulk issue processed successfully");
     },
-    onError: (err: Error) => {
-      toast.error(err.message ?? "Bulk issue failed");
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Bulk issue failed" }),
+      );
     },
   });
 }

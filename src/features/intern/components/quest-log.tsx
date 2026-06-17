@@ -5,6 +5,7 @@ import { Activity, Calendar, Clock, Edit2, HelpCircle } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -162,10 +163,10 @@ export function QuestLog() {
       });
       setSelectedItem(null);
     },
-    onError: (error: unknown) => {
-      const msg =
-        error instanceof Error ? error.message : "Failed to update timesheet";
-      toast.error(msg);
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to update timesheet" }),
+      );
     },
   });
 
@@ -182,12 +183,12 @@ export function QuestLog() {
       await queryClient.invalidateQueries({ queryKey: ["intern", "reviews"] });
       setSelectedItem(null);
     },
-    onError: (error: unknown) => {
-      const msg =
-        error instanceof Error
-          ? error.message
-          : "Failed to update weekly review";
-      toast.error(msg);
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to update weekly review",
+        }),
+      );
     },
   });
 

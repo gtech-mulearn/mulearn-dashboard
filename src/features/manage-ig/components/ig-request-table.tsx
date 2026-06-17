@@ -282,7 +282,7 @@ export function IGRequestTable() {
       <DataTableErrorBoundary>
         <Table
           rows={requests as unknown as Data[]}
-          isloading={isLoading}
+          isLoading={isLoading}
           page={page}
           perPage={perPage}
           columnOrder={columnOrder}

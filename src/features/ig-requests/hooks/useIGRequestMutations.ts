@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import type { ApiError } from "@/api/client";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { createIGRequest, deleteIGRequest } from "../api";
 import type { CreateIGRequestForm } from "../schemas";
 import { igRequestKeys } from "./query-keys";
@@ -13,8 +13,11 @@ export function useCreateIGRequest() {
       queryClient.invalidateQueries({ queryKey: igRequestKeys.all });
       toast.success("IG request submitted successfully");
     },
-    onError: (error: ApiError) =>
-      toast.error(error.message || "Failed to submit IG request"),
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to submit IG request" }),
+      );
+    },
   });
 }
 
@@ -26,7 +29,10 @@ export function useDeleteIGRequest() {
       queryClient.invalidateQueries({ queryKey: igRequestKeys.all });
       toast.success("Interest Group request cancelled successfully");
     },
-    onError: (error: ApiError) =>
-      toast.error(error.message || "Failed to cancel IG request"),
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to cancel IG request" }),
+      );
+    },
   });
 }

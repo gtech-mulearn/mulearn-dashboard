@@ -21,7 +21,11 @@ import { refreshAccessToken } from "@/features/auth/api/auth.api";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
-  const returnPath = searchParams.get("ruri") ?? "dashboard";
+  const rawPath = searchParams.get("ruri") ?? "dashboard";
+  const returnPath = rawPath
+    .replace(/^[/\\]+/, "")
+    .replace(/\\/g, "/")
+    .split("?")[0];
 
   const cookieStore = await cookies();
   const refreshToken = cookieStore.get("refreshToken")?.value;
@@ -41,6 +45,7 @@ export async function GET(request: NextRequest) {
     }
 
     cookieStore.set("accessToken", newAccessToken, {
+      httpOnly: true,
       expires: new Date(Date.now() + 86_400_000), // 1 day
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",

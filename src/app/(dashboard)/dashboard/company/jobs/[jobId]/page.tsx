@@ -88,7 +88,7 @@ export default function JobDetailPage() {
               Job not found
             </h2>
             <p className="max-w-md text-center text-sm text-muted-foreground">
-              {error instanceof Error
+              {process.env.NODE_ENV === "development" && error instanceof Error
                 ? error.message
                 : "The job you're looking for doesn't exist or has been deleted."}
             </p>

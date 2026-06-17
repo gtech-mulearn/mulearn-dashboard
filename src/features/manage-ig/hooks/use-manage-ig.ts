@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ApiError } from "@/api";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   createInterestGroup as apiCreateIG,
   deleteInterestGroup as apiDeleteIG,
@@ -40,9 +40,9 @@ export function useInterestGroupsAdmin() {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to create interest group",
+        getApiResponseError(error, {
+          fallback: "Failed to create interest group",
+        }),
       );
     },
   });
@@ -56,9 +56,9 @@ export function useInterestGroupsAdmin() {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to update interest group",
+        getApiResponseError(error, {
+          fallback: "Failed to update interest group",
+        }),
       );
     },
   });
@@ -77,9 +77,9 @@ export function useInterestGroupsAdmin() {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to update interest group",
+        getApiResponseError(error, {
+          fallback: "Failed to update interest group",
+        }),
       );
     },
   });
@@ -92,9 +92,9 @@ export function useInterestGroupsAdmin() {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to delete interest group",
+        getApiResponseError(error, {
+          fallback: "Failed to delete interest group",
+        }),
       );
     },
   });

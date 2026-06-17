@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ApiError } from "@/api";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { applyToJob } from "../api";
 import { LEARNER_APPLICATIONS_KEYS } from "./use-learner-applications";
 import { PUBLIC_JOBS_KEYS } from "./use-public-jobs";
@@ -29,11 +29,11 @@ export function useApplyJob() {
       toast.success("Application submitted successfully.");
     },
     onError: (error) => {
-      if (error instanceof ApiError) {
-        toast.error(error.message);
-      } else {
-        toast.error("Failed to submit application. Please try again.");
-      }
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to submit application. Please try again.",
+        }),
+      );
     },
   });
 }

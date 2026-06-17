@@ -26,7 +26,7 @@ export type CampusSessionMode = (typeof CAMPUS_SESSION_MODES)[number];
 // ─── #1 POST assign-mentor/ ───────────────────────────────────────────────────
 // Request body: { muid: string }
 // Response: generic success envelope with empty response object
-export const AssignMentorResponseSchema = ApiResponseSchema(z.any());
+export const AssignMentorResponseSchema = ApiResponseSchema(z.unknown());
 
 // ─── #2 POST sessions/create/ ─────────────────────────────────────────────────
 // Request body shape (sent to API)

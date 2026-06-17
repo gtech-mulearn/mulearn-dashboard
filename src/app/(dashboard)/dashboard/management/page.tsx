@@ -26,8 +26,15 @@ import {
   Users,
   Wrench,
 } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+
+export const metadata: Metadata = {
+  title: "Management",
+  description:
+    "Manage users, organizations, community settings, and system configurations.",
+};
 
 interface ManagementItem {
   icon: LucideIcon;

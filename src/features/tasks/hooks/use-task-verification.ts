@@ -4,7 +4,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { fetchPendingTasks, reviewTask } from "../api/task-verification.api";
 import type { ReviewActionValues } from "../schemas/task-verification.schema";
-import { getTaskErrorMessage, useTaskQueryErrorToast } from "./task-error";
+import { getApiResponseError } from "@/hooks/use-get-error";
+import { useTaskQueryErrorToast } from "./task-error";
 
 const taskVerificationKeys = {
   all: ["task-verification-list"] as const,
@@ -65,7 +66,9 @@ export function useReviewTask() {
     },
     onError: (error) => {
       toast.error(
-        getTaskErrorMessage(error, "Failed to submit review status."),
+        getApiResponseError(error, {
+          fallback: "Failed to submit review status.",
+        }),
       );
     },
   });

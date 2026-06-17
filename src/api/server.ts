@@ -55,6 +55,7 @@ async function refreshAndSetToken(): Promise<string | null> {
       // Persist the refreshed token so subsequent server requests in this
       // render cycle (and the next page load) use the new token.
       cookieStore.set("accessToken", newAccessToken, {
+        httpOnly: true,
         expires: new Date(Date.now() + 86_400_000), // 1 day
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",

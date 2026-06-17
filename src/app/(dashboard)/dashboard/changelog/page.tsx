@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import ReactMarkdown from "react-markdown";
+import rehypeSanitize from "rehype-sanitize";
 import remarkGfm from "remark-gfm";
 
 export const dynamic = "force-static";
@@ -15,7 +16,12 @@ export default function ChangelogPage() {
   return (
     <article className="prose dark:prose-invert mx-auto py-10 px-4 max-w-3xl">
       <h1>What&apos;s New</h1>
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>{md}</ReactMarkdown>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        rehypePlugins={[rehypeSanitize]}
+      >
+        {md}
+      </ReactMarkdown>
     </article>
   );
 }

@@ -4,6 +4,7 @@ import { ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { endpoints } from "@/api/endpoints";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { Blank } from "@/components/dashboard/table/Blank";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table from "@/components/dashboard/table/Table";
@@ -78,8 +79,10 @@ export default function ManageUsers() {
     try {
       await deleteMutation.mutateAsync(value);
       toast.success("User deleted");
-    } catch {
-      toast.error("Failed to delete user");
+    } catch (error) {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to delete user" }),
+      );
     }
   };
 
@@ -120,7 +123,7 @@ export default function ManageUsers() {
           />
           <Table
             rows={rows}
-            isloading={isLoading}
+            isLoading={isLoading}
             page={currentPage}
             perPage={perPage}
             columnOrder={[

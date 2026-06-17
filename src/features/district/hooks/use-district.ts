@@ -2,7 +2,7 @@
 
 import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ApiError } from "@/api";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   type DistrictCollegeDetailsParams,
   type DistrictStudentDetailsParams,
@@ -87,9 +87,9 @@ export function useDownloadDistrictStudentDetailsCsv() {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to download district student details CSV",
+        getApiResponseError(error, {
+          fallback: "Failed to download district student details CSV",
+        }),
       );
     },
   });
@@ -121,9 +121,9 @@ export function useDownloadDistrictCollegeDetailsCsv() {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to download district college details CSV",
+        getApiResponseError(error, {
+          fallback: "Failed to download district college details CSV",
+        }),
       );
     },
   });

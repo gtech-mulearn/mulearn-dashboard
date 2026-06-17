@@ -104,7 +104,7 @@ export default function EditJobPage() {
               Unable to load job
             </h2>
             <p className="text-sm text-muted-foreground">
-              {error instanceof Error
+              {process.env.NODE_ENV === "development" && error instanceof Error
                 ? error.message
                 : "Please try again later."}
             </p>

@@ -215,7 +215,7 @@ export default function ManageRoles() {
             <div className="min-w-200">
               <Table
                 rows={rows}
-                isloading={isLoading}
+                isLoading={isLoading}
                 page={currentPage}
                 perPage={perPage}
                 columnOrder={columnOrder}

@@ -7,6 +7,12 @@
  */
 
 import { InterestGroupDetailClient } from "@/features/interest-groups";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Interest Group Details",
+  description: "Detailed view of a specific interest group.",
+};
 
 export default async function InterestGroupDetailPage() {
   return <InterestGroupDetailClient />;

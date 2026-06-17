@@ -3,6 +3,7 @@
 import { AlertCircle, CheckCircle2, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -66,7 +67,7 @@ export function BulkImportDialog({
       setSelectedFile(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Import failed");
+      toast.error(getApiResponseError(error, { fallback: "Import failed" }));
       setShowResults(false);
     }
   };

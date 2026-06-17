@@ -1,2 +1,2 @@
-export * from "./location-search-dropdown";
-export * from "./multi-select-dropdown";
+export { LocationSearchDropdown } from "./location-search-dropdown";
+export { MultiSelectDropdown } from "./multi-select-dropdown";

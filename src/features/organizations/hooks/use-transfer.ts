@@ -6,7 +6,8 @@ import {
   transferOrganization,
 } from "../api/transfer.api";
 import type { TransferOrgFormValues } from "../schemas/transfer.schema";
-import { getOrgErrorMessage, useOrgQueryErrorToast } from "./org-error";
+import { getApiResponseError } from "@/hooks/use-get-error";
+import { useOrgQueryErrorToast } from "./org-error";
 
 // ─── Simple Transfer ──────────────────────────────────────────────────────────
 
@@ -15,7 +16,9 @@ export const useTransferOrganization = () =>
     mutationFn: (data: TransferOrgFormValues) => transferOrganization(data),
     onError: (error) => {
       toast.error(
-        getOrgErrorMessage(error, "Failed to transfer organization."),
+        getApiResponseError(error, {
+          fallback: "Failed to transfer organization.",
+        }),
       );
     },
   });
@@ -52,6 +55,8 @@ export const useExecuteMerge = () =>
       source_org: string;
     }) => executeMerge(orgId, source_org),
     onError: (error) => {
-      toast.error(getOrgErrorMessage(error, "Failed to execute merge."));
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to execute merge." }),
+      );
     },
   });

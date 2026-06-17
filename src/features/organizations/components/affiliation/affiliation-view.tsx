@@ -181,7 +181,7 @@ function AffiliationContent() {
             <div className="min-w-[600px]">
               <Table
                 rows={rows}
-                isloading={isLoading}
+                isLoading={isLoading}
                 page={currentPage}
                 perPage={perPage}
                 columnOrder={columnOrder}

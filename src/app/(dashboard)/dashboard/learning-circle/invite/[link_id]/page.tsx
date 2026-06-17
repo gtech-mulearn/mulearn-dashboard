@@ -7,6 +7,12 @@
  */
 
 import { InviteLinkView } from "@/features/learning-circle";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Circle Invitation",
+  description: "Accept or reject a learning circle invitation.",
+};
 
 interface PageProps {
   params: Promise<{ link_id: string }>;

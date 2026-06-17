@@ -17,7 +17,8 @@ import type {
   PublicTaskListParams,
   TaskListParams,
 } from "../types/tasks.types";
-import { getTaskErrorMessage, useTaskQueryErrorToast } from "./task-error";
+import { getApiResponseError } from "@/hooks/use-get-error";
+import { useTaskQueryErrorToast } from "./task-error";
 
 export const useTasks = (
   params: TaskListParams,
@@ -73,7 +74,9 @@ export const useCreateTask = () => {
       });
     },
     onError: (error) => {
-      toast.error(getTaskErrorMessage(error, "Failed to create task."));
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to create task." }),
+      );
     },
   });
 };
@@ -101,7 +104,9 @@ export const useUpdateTask = () => {
       });
     },
     onError: (error) => {
-      toast.error(getTaskErrorMessage(error, "Failed to update task."));
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to update task." }),
+      );
     },
   });
 };
@@ -119,7 +124,9 @@ export const useDeleteTask = () => {
       });
     },
     onError: (error) => {
-      toast.error(getTaskErrorMessage(error, "Failed to delete task."));
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to delete task." }),
+      );
     },
   });
 };
@@ -137,7 +144,9 @@ export const useImportTasks = () => {
       });
     },
     onError: (error) => {
-      toast.error(getTaskErrorMessage(error, "Failed to import tasks."));
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to import tasks." }),
+      );
     },
   });
 };
@@ -158,7 +167,11 @@ export const useDownloadTasksCsv = () => {
   return useMutation({
     mutationFn: downloadTasksCsv,
     onError: (error) => {
-      toast.error(getTaskErrorMessage(error, "Failed to download tasks CSV."));
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to download tasks CSV.",
+        }),
+      );
     },
   });
 };
@@ -168,7 +181,9 @@ export const useDownloadTasksTemplate = () => {
     mutationFn: downloadTasksTemplate,
     onError: (error) => {
       toast.error(
-        getTaskErrorMessage(error, "Failed to download task template."),
+        getApiResponseError(error, {
+          fallback: "Failed to download task template.",
+        }),
       );
     },
   });

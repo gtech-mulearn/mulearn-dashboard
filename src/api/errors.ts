@@ -25,7 +25,9 @@ export class ApiError extends Error {
  * `ApiError`. See src/api/client.ts / server.ts.
  */
 export function logSchemaMismatch(endpoint: string, issues: unknown): void {
-  console.error(`⚠️ API schema mismatch [${endpoint}]`, issues);
+  if (process.env.NODE_ENV === "development") {
+    console.error(`⚠️ API schema mismatch [${endpoint}]`, issues);
+  }
 }
 
 /**

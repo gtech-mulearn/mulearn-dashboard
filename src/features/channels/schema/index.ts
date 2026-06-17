@@ -45,7 +45,7 @@ export const ChannelItemSchema = z.object({
 export type ChannelData = z.infer<typeof ChannelItemSchema>;
 //─── Create Inputs ───────────────────────────────────────────────────────────
 
-export const MutationResponseSchema = z.any();
+export const MutationResponseSchema = z.unknown();
 export const CreateChannelSchema = z.object({
   name: z.string(),
   discord_id: z.string(),

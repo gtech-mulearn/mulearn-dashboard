@@ -260,7 +260,7 @@ export const UpdateProfileRequestSchema = z.object({
 export type UpdateProfileRequest = z.infer<typeof UpdateProfileRequestSchema>;
 
 export const UpdateProfileImageRequestSchema = z.object({
-  profile: z.any(),
+  profile: z.unknown(),
   user_id: z.string(),
 });
 export type UpdateProfileImageRequest = z.infer<
@@ -313,7 +313,7 @@ export const EditProfileFormSchema = z
     org_id: z.string().trim().optional(),
     department_id: z.string().trim().optional(),
     has_college_changes: z.boolean().optional(),
-    profile_pic: z.any().optional(),
+    profile_pic: z.instanceof(File).optional(),
   })
   .superRefine((values, ctx) => {
     if (!values.has_college_changes) return;

@@ -69,7 +69,12 @@ export const EVENT_STATUS_DOT_STYLES: Record<string, string> = {
   cancelled: "bg-destructive",
 };
 
-export * from "./events.ui.constants";
+export {
+  FEATURED_SLIDE_INTERVAL,
+  EVENT_CREATE_WIZARD_STEPS,
+  MANAGE_PANEL_SECTIONS,
+} from "./events.ui.constants";
+export type { ManagePanelSectionValue } from "./events.ui.constants";
 
 export const EVENT_TYPE_BADGE_CONFIG: Record<
   EventType,

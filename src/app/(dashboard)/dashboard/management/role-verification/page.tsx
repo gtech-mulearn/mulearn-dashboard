@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import { RoleVerificationTable } from "@/features/role-verification";
+
+export const metadata: Metadata = {
+  title: "Role Verification",
+  description: "Verify or reject pending user-role link requests.",
+};
 
 export default function RoleVerificationPage() {
   return (

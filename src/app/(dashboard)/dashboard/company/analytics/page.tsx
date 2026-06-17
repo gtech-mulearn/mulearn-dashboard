@@ -192,7 +192,7 @@ function DashboardSummaryView() {
             Failed to load summary analytics
           </p>
           <p className="text-xs mt-1 text-muted-foreground">
-            {error instanceof Error
+            {process.env.NODE_ENV === "development" && error instanceof Error
               ? error.message
               : "Internal Server Error. Please contact administrator if this persists."}
           </p>
@@ -335,7 +335,7 @@ function GigAnalyticsView() {
           Failed to load Gig Analytics
         </p>
         <p className="text-xs mt-1 text-muted-foreground">
-          {error instanceof Error
+          {process.env.NODE_ENV === "development" && error instanceof Error
             ? error.message
             : "Internal Server Error. Please contact administrator if this persists."}
         </p>
@@ -596,7 +596,7 @@ function JobEngagementView() {
               Failed to load job engagement analytics
             </p>
             <p className="text-xs mt-1 text-muted-foreground">
-              {error instanceof Error
+              {process.env.NODE_ENV === "development" && error instanceof Error
                 ? error.message
                 : "Internal Server Error. Please contact administrator if this persists."}
             </p>
@@ -851,7 +851,7 @@ function TalentPoolInsightsView() {
             Failed to load talent pool insights
           </p>
           <p className="text-xs mt-1 text-muted-foreground">
-            {error instanceof Error
+            {process.env.NODE_ENV === "development" && error instanceof Error
               ? error.message
               : "Internal Server Error. Please contact administrator if this persists."}
           </p>

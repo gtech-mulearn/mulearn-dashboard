@@ -1,4 +1,4 @@
-export * from "./useInfiniteScroll";
-export * from "./useSearchCampuses";
-export * from "./useSearchMentors";
-export * from "./useSearchUsers";
+export { useInfiniteScroll } from "./useInfiniteScroll";
+export { useSearchCampuses } from "./useSearchCampuses";
+export { useSearchMentors } from "./useSearchMentors";
+export { useSearchUsers } from "./useSearchUsers";

@@ -120,7 +120,7 @@ export default function VerifyOrgsView() {
         <div className="w-full overflow-x-auto">
           <Table
             rows={rows as unknown as Data[]}
-            isloading={isLoading}
+            isLoading={isLoading}
             page={1}
             perPage={rows.length || 10}
             columnOrder={COLUMNS}

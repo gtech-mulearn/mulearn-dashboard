@@ -1,2 +1,2 @@
-export * from "./task-type-dialog";
+export { TaskTypeDialog } from "./task-type-dialog";
 export { default as TaskTypeView } from "./task-type-view";

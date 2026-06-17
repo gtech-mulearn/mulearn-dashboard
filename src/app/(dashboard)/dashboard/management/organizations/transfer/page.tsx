@@ -1,11 +1,14 @@
+import { requireRole } from "@/lib/auth/server";
+import { ROLES } from "@/lib/auth/roles";
 import { TransferView } from "@/features/organizations";
 
 export const metadata = {
-  title: "Organization Transfer | Management | MuLearn Dashboard",
+  title: "Organization Transfer | Management",
   description:
-    "Transfer or merge organizations. Destructive — source is permanently deleted.",
+    "Transfer or merge organizations. Destructive -- source is permanently deleted.",
 };
 
-export default function OrgTransferPage() {
+export default async function OrgTransferPage() {
+  await requireRole([ROLES.ADMIN]);
   return <TransferView />;
 }

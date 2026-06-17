@@ -8,10 +8,11 @@
 
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { useEffect, useRef } from "react";
 import { toast } from "sonner";
-import { extractDjangoMessage } from "@/api/errors";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { authStore } from "@/lib/auth";
 import { fetchGoogleAuthUrl, fetchGoogleCallback, fetchUserInfo } from "../api";
 import { authKeys } from "./query-keys";
@@ -39,63 +40,66 @@ export function useGoogleAuthUrl() {
 export function useGoogleCallback(code?: string, error?: string) {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const hasRun = useRef(false);
 
-  return useQuery({
-    queryKey: authKeys.googleCallback(code),
-    queryFn: async () => {
-      if (error) {
-        toast.error(extractDjangoMessage(error));
-        router.push("/login");
-        return null;
+  const mutation = useMutation({
+    mutationFn: async ({ code: authCode }: { code: string }) => {
+      const tokenData = await fetchGoogleCallback(authCode);
+
+      if (tokenData.isNewUser === true && tokenData.email) {
+        const params = new URLSearchParams();
+        params.set("email", tokenData.email);
+        if (tokenData.fullName) {
+          params.set("fullName", tokenData.fullName);
+        }
+        router.replace(`/register?${params.toString()}`);
+        return { isNewUser: true };
       }
 
-      if (!code) {
-        toast.error("No authorization code received");
-        router.push("/login");
-        return null;
+      if (tokenData.accessToken && tokenData.refreshToken) {
+        authStore.setTokens(tokenData.accessToken, tokenData.refreshToken);
+      } else {
+        throw new Error("Missing tokens in response");
       }
 
-      try {
-        const tokenData = await fetchGoogleCallback(code);
+      const userInfo = await fetchUserInfo();
 
-        if (tokenData.isNewUser === true && tokenData.email) {
-          const params = new URLSearchParams();
-          params.set("email", tokenData.email);
-          if (tokenData.fullName) {
-            params.set("fullName", tokenData.fullName);
-          }
-          router.replace(`/register?${params.toString()}`);
-          return {
-            isNewUser: true,
-          };
-        }
+      queryClient.clear();
+      queryClient.setQueryData(authKeys.userInfo(), userInfo);
 
-        if (tokenData.accessToken && tokenData.refreshToken) {
-          authStore.setTokens(tokenData.accessToken, tokenData.refreshToken);
-        } else {
-          toast.error("Something went wrong. Please try again.");
-          return null;
-        }
-
-        const userInfo = await fetchUserInfo();
-
-        queryClient.clear();
-        queryClient.setQueryData(authKeys.userInfo(), userInfo);
-
+      return { tokens: tokenData, userInfo, isNewUser: false };
+    },
+    onSuccess: (data) => {
+      if (!data?.isNewUser) {
         toast.success("Welcome back!");
         router.push("/dashboard");
-
-        return {
-          tokens: tokenData,
-          userInfo,
-          isNewUser: false,
-        };
-      } catch (err) {
-        toast.error(extractDjangoMessage(err));
-        router.push("/login");
-        throw err;
       }
     },
-    enabled: !!code || !!error,
+    onError: (err) => {
+      toast.error(
+        getApiResponseError(err, {
+          fallback: "Something went wrong. Please try again.",
+        }),
+      );
+      router.push("/login");
+    },
   });
+
+  useEffect(() => {
+    if (hasRun.current) return;
+
+    if (error) {
+      hasRun.current = true;
+      toast.error(getApiResponseError(error));
+      router.push("/login");
+      return;
+    }
+
+    if (code) {
+      hasRun.current = true;
+      mutation.mutate({ code });
+    }
+  }, [code, error, router, mutation.mutate]);
+
+  return mutation;
 }

@@ -1,2 +1,2 @@
-export * from "./college.keys";
-export * from "./useCollegeLevels";
+export { collegeLevelsKeys } from "./college.keys";
+export { useCollegeLevelsList } from "./useCollegeLevels";

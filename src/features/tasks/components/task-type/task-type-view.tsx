@@ -257,7 +257,7 @@ export default function TaskTypeView() {
         <div className="w-full overflow-x-auto">
           <Table
             rows={rows}
-            isloading={isLoading}
+            isLoading={isLoading}
             page={currentPage}
             perPage={perPage}
             columnOrder={columns}

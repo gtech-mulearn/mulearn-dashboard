@@ -1,8 +1,8 @@
-export * from "./ig-card";
-export * from "./ig-client";
-export * from "./ig-detail";
-export * from "./ig-detail-panel";
-export * from "./ig-form-dialog";
-export * from "./ig-grid";
-export * from "./ig-request-table";
-export * from "./manage-ig-table";
+export { InterestGroupCard } from "./ig-card";
+export { IGClient } from "./ig-client";
+export { IGDetail } from "./ig-detail";
+export { IGDetailPanel } from "./ig-detail-panel";
+export { InterestGroupFormDialog } from "./ig-form-dialog";
+export { InterestGroupsGrid } from "./ig-grid";
+export { IGRequestTable } from "./ig-request-table";
+export { ManageIGTable } from "./manage-ig-table";

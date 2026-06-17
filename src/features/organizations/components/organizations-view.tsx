@@ -12,6 +12,7 @@ import {
 import { useCallback, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { DataTableErrorBoundary } from "@/components/dashboard/DataTableErrorBoundary";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table from "@/components/dashboard/table/Table";
@@ -329,7 +330,7 @@ function OrganizationsContent() {
             <div className="min-w-[600px]">
               <Table
                 rows={rows}
-                isloading={isLoading}
+                isLoading={isLoading}
                 page={currentPage}
                 perPage={perPage}
                 columnOrder={columnOrder}
@@ -464,7 +465,7 @@ function OrgFormDialog({
       }
       handleOpenChange(false);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Operation failed");
+      toast.error(getApiResponseError(err, { fallback: "Operation failed" }));
     }
   };
 

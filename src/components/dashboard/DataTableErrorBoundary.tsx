@@ -4,6 +4,7 @@ import { AlertCircle, Bug, RotateCcw } from "lucide-react";
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { errorLogger } from "@/lib/error-handling/error-logging.service";
 
 interface Props {
   children: ReactNode;
@@ -26,6 +27,9 @@ export class DataTableErrorBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("DataTable Uncaught Error:", error, errorInfo);
+    errorLogger.logError(error, {
+      componentStack: errorInfo.componentStack ?? undefined,
+    });
   }
 
   private handleReset = () => {
@@ -49,11 +53,13 @@ export class DataTableErrorBoundary extends Component<Props, State> {
               {isSchemaError ? "API Schema Mismatch" : "Something went wrong"}
             </AlertTitle>
             <AlertDescription className="mt-2 text-sm opacity-90">
-              {this.state.error?.message ||
-                "An unexpected error occurred while rendering the data table."}
+              {process.env.NODE_ENV === "development"
+                ? this.state.error?.message ||
+                  "An unexpected error occurred while rendering the data table."
+                : "An unexpected error occurred while rendering the data table."}
             </AlertDescription>
 
-            {isSchemaError && (
+            {process.env.NODE_ENV === "development" && isSchemaError && (
               <div className="mt-4 rounded-lg bg-muted p-4 font-mono text-xs overflow-auto max-h-60">
                 <div className="flex items-center gap-2 mb-2 text-brand-blue font-bold uppercase tracking-wider">
                   <Bug className="h-3 w-3" />
