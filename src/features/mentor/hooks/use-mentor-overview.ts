@@ -3,13 +3,14 @@ import { getMentorOverview, getMentorStatus } from "../api/mentor.api";
 import type { MentorOverview, MentorStatus } from "../types";
 import { mentorKeys } from "./query-keys";
 
-export function useMentorOverview() {
+export function useMentorOverview(enabled = true) {
   return useQuery({
     queryKey: mentorKeys.overview(),
     queryFn: async () => {
       const { response } = await getMentorOverview();
       return response as MentorOverview;
     },
+    enabled,
     // Useful because it contains stats that might change, but maybe not constantly
     staleTime: 1000 * 60 * 5,
   });
