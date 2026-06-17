@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,7 +24,13 @@ import { useUpdateIntern } from "@/features/intern";
 interface UpdateDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  intern: { id: string; name: string; guild: string; status: string } | null;
+  intern: {
+    id: string;
+    name: string;
+    guild: string;
+    status: string;
+    role?: "INTERN" | "INTERN_LEAD";
+  } | null;
   guildOptions: string[];
 }
 
@@ -35,6 +42,9 @@ export function UpdateDialog({
 }: UpdateDialogProps) {
   const [updateGuild, setUpdateGuild] = useState("");
   const [updateStatus, setUpdateStatus] = useState("");
+  const [updateRole, setUpdateRole] = useState<"INTERN" | "INTERN_LEAD">(
+    "INTERN",
+  );
 
   const statusColorClass: Record<string, string> = {
     ACTIVE: "text-success",
@@ -48,6 +58,7 @@ export function UpdateDialog({
     if (intern) {
       setUpdateGuild(intern.guild || "");
       setUpdateStatus(intern.status || "ACTIVE");
+      setUpdateRole(intern.role ?? "INTERN");
     }
   }, [intern]);
 
@@ -59,6 +70,7 @@ export function UpdateDialog({
       {
         guild: updateGuild,
         status: updateStatus,
+        role: updateRole,
       },
       {
         onSuccess: () => {
@@ -76,8 +88,8 @@ export function UpdateDialog({
             Edit Intern
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            Modify the guild and base status for {intern?.name}. Approved leave
-            requests control the temporary on-leave state.
+            Modify the guild, base status, and role for {intern?.name}. Approved
+            leave requests control the temporary on-leave state.
           </DialogDescription>
         </DialogHeader>
 
@@ -144,6 +156,42 @@ export function UpdateDialog({
                 </SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-1.5">
+              <Crown className="w-3 h-3 text-amber-500" />
+              Role
+            </Label>
+            <Select
+              value={updateRole}
+              onValueChange={(v) =>
+                setUpdateRole(v as "INTERN" | "INTERN_LEAD")
+              }
+            >
+              <SelectTrigger className="w-full h-10 font-bold uppercase text-xs border-border/40 bg-background/50">
+                <SelectValue placeholder="Select Role" />
+              </SelectTrigger>
+              <SelectContent className="bg-card/95 backdrop-blur-xl border-border/60">
+                <SelectItem
+                  value="INTERN"
+                  className="font-bold uppercase text-xs"
+                >
+                  Intern
+                </SelectItem>
+                <SelectItem
+                  value="INTERN_LEAD"
+                  className="font-bold uppercase text-xs text-amber-500"
+                >
+                  ⭐ Intern Lead
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            {updateRole === "INTERN_LEAD" && (
+              <p className="text-[10px] text-amber-500/80 font-semibold">
+                Intern Lead can upload daily guild minutes.
+              </p>
+            )}
           </div>
 
           <DialogFooter className="pt-4">

@@ -6,6 +6,7 @@ import { ApiError } from "@/api/errors";
 import { internApi, type TInternQueryParams } from "../api";
 import type {
   TLeaveSubmitPayload,
+  TSubmitMinutePayload,
   TTimesheetSubmitPayload,
   TTimesheetUpdatePayload,
   TWeeklyReviewSubmitPayload,
@@ -263,5 +264,29 @@ export function useGuilds() {
   return useQuery({
     queryKey: internKeys.guilds(),
     queryFn: () => internApi.getGuilds(),
+  });
+}
+
+export function useMyMinutes(params?: TInternQueryParams) {
+  return useQuery({
+    queryKey: internKeys.myMinutes(params ?? {}),
+    queryFn: () => internApi.getMyMinutes(params),
+  });
+}
+
+export function useSubmitMinute() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: TSubmitMinutePayload) =>
+      internApi.submitMinute(payload),
+    onSuccess: async () => {
+      toast.success("Minutes uploaded successfully!");
+      await queryClient.invalidateQueries({
+        queryKey: internKeys.myMinutes({}),
+      });
+    },
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, "Failed to upload minutes"));
+    },
   });
 }

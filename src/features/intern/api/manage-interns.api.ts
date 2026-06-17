@@ -5,6 +5,7 @@ import type {
   TLeaveRequest,
   TLeaveReviewPayload,
   TManageInternItem,
+  TMinuteItem,
   TOnboardInternPayload,
   TPaginatedData,
   TTimesheet,
@@ -180,6 +181,16 @@ export const manageInternsApi = {
     await apiClient.patch(
       endpoints.manageInterns.weeklyReviewDetail(id),
       payload,
+    );
+  },
+
+  // ── Minutes (Admin/Lead View) ─────────────────────────────
+  getAllMinutes: async (
+    params?: TInternQueryParams,
+  ): Promise<TPaginatedData<TMinuteItem>> => {
+    const qs = buildQueryString(params);
+    return apiClient.get<TPaginatedData<TMinuteItem>>(
+      `${endpoints.manageInterns.minutes}${qs}`,
     );
   },
 };

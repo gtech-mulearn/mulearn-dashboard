@@ -7,6 +7,7 @@ import { manageInternsApi, type TInternQueryParams } from "../api";
 import type {
   TCreateTaskPayload,
   TLeaveReviewPayload,
+  TManageInternItem,
   TOnboardInternPayload,
   TTimesheetReviewPayload,
   TUpdateInternPayload,
@@ -52,8 +53,38 @@ export function useUpdateIntern(id: string) {
   return useMutation({
     mutationFn: (payload: TUpdateInternPayload) =>
       manageInternsApi.updateIntern(id, payload),
-    onSuccess: async () => {
+    onSuccess: async (_data, payload) => {
       toast.success("Intern updated successfully!");
+
+      // Optimistically patch the role in every cached manage-interns list
+      // This ensures the Role column updates immediately even if the backend
+      // doesn't yet return the 'role' field in its list response.
+      queryClient.setQueriesData(
+        { queryKey: internKeys.manage() },
+        (old: unknown) => {
+          if (!old || typeof old !== "object") return old;
+          const cached = old as {
+            data?: TManageInternItem[];
+            [key: string]: unknown;
+          };
+          if (!Array.isArray(cached.data)) return old;
+          return {
+            ...cached,
+            data: cached.data.map((item) =>
+              item.id === id
+                ? {
+                    ...item,
+                    guild: payload.guild ?? item.guild,
+                    status: payload.status ?? item.status,
+                    role: payload.role ?? item.role,
+                  }
+                : item,
+            ),
+          };
+        },
+      );
+
+      // Invalidate to sync with backend once it's ready
       await queryClient.invalidateQueries({ queryKey: internKeys.manage() });
     },
     onError: (error: unknown) => {
@@ -323,5 +354,13 @@ export function useReviewWeeklyReview(id: string) {
         getErrorMessage(error, "Failed to submit weekly review evaluation"),
       );
     },
+  });
+}
+
+// ── Minutes (Management View) ──────────────────────────────
+export function useManageMinutes(params?: TInternQueryParams) {
+  return useQuery({
+    queryKey: internKeys.manageMinutes(params ?? {}),
+    queryFn: () => manageInternsApi.getAllMinutes(params),
   });
 }

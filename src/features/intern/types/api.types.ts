@@ -14,6 +14,7 @@ export interface TPaginatedData<T> {
 export interface TInternOverviewStatus {
   guild: string;
   status: string;
+  role?: "INTERN" | "INTERN_LEAD";
   total_intern_karma: number;
   daily_streak: number;
   weekly_streak: number;
@@ -227,6 +228,7 @@ export interface TManageInternItem {
   full_name: string;
   muid: string;
   guild: string;
+  role?: "INTERN" | "INTERN_LEAD";
   status: "ACTIVE" | "AT_RISK" | "ON_LEAVE" | "INACTIVE";
   current_status?: "ACTIVE" | "AT_RISK" | "INACTIVE";
   previous_status?: "ACTIVE" | "AT_RISK" | "INACTIVE";
@@ -249,6 +251,7 @@ export interface TOnboardInternPayload {
 export interface TUpdateInternPayload {
   guild?: string;
   status?: string;
+  role?: "INTERN" | "INTERN_LEAD";
 }
 
 export interface TCreateTaskPayload {
@@ -289,4 +292,24 @@ export interface TTimesheetReviewPayload {
 export interface TWeeklyReviewReviewPayload {
   action: "approve" | "reject";
   review_note?: string;
+}
+
+// ── Minutes Types ─────────────────────────────────────────────
+
+export interface TMinuteItem {
+  id: string;
+  date: string;
+  link: string;
+  text?: string | null;
+  guild: string;
+  uploaded_by: string;
+  uploaded_by_name: string;
+  uploaded_by_muid?: string;
+  created_at: string;
+}
+
+export interface TSubmitMinutePayload {
+  date: string;
+  link: string;
+  text?: string;
 }
