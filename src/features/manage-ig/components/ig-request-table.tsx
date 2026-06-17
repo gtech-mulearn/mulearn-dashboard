@@ -124,20 +124,14 @@ export function IGRequestTable() {
       return <span className="font-medium">{igName}</span>;
     }
     if (column === "user_full_name") {
-      const requester =
-        (row as any).requester_name ||
-        (row as any).user_full_name ||
-        (row as any).created_by ||
-        (row as any).updated_by ||
-        "-";
+      const r = row as {
+        requester_name?: string;
+        user_full_name?: string;
+        company_name?: string;
+      };
 
-      const companyName =
-        (row as any).company_name ||
-        (row as any).org_title ||
-        (row as any).organization ||
-        (row as any).org ||
-        (row as any).org_name ||
-        (row as any).company;
+      const requester = r.requester_name || r.user_full_name || "-";
+      const companyName = r.company_name;
 
       return (
         <span className="text-sm">
