@@ -150,7 +150,10 @@ export default function LeaveManagementPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <Badge className="bg-brand-purple/10 text-brand-purple border-brand-purple/20 px-3 py-1 rounded-full font-black text-[10px] uppercase tracking-widest">
+            <Badge
+              variant="default"
+              className="px-3 py-1 rounded-full font-black text-[10px] uppercase tracking-widest"
+            >
               Leave Desk
             </Badge>
           </div>
@@ -273,7 +276,7 @@ export default function LeaveManagementPage() {
                           <td className="p-4 pl-6">
                             <Badge
                               variant="outline"
-                              className="font-bold border-muted-foreground/20 px-2 py-0.5 text-xs uppercase"
+                              className="font-bold px-2 py-0.5 text-xs uppercase"
                             >
                               {req.leave_type}
                             </Badge>
@@ -502,7 +505,7 @@ export default function LeaveManagementPage() {
                   <Button
                     type="submit"
                     disabled={submitLeaveMutation.isPending}
-                    className="h-11 px-8 text-sm shadow-[0_8px_16px_rgba(139,92,246,0.25)] bg-brand-purple hover:bg-brand-purple/90 text-white font-bold rounded-full transition-all duration-300 gap-2"
+                    className="h-11 px-8 text-sm shadow-[0_8px_16px_rgba(139,92,246,0.25)] bg-brand-purple border-brand-purple hover:bg-brand-purple/90 text-white font-bold rounded-full transition-all duration-300 gap-2"
                   >
                     {submitLeaveMutation.isPending ? (
                       <>
