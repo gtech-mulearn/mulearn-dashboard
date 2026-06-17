@@ -97,7 +97,7 @@ export function CourseCard({
           {typeof course.karma === "number" && course.karma > 0 && (
             <Badge
               variant="secondary"
-              className="bg-background/90 backdrop-blur-sm shadow-sm text-warning gap-1 border-0 rounded-full px-3 py-1"
+              className="backdrop-blur-sm shadow-sm gap-1 border-0 rounded-full px-3 py-1"
             >
               <Trophy className="w-3 h-3" />
               {course.karma} Karma
@@ -108,10 +108,7 @@ export function CourseCard({
 
       <CardHeader className="space-y-2 pb-2">
         <div className="flex justify-between items-start gap-2">
-          <Badge
-            variant="outline"
-            className="text-xs font-normal text-muted-foreground border-border rounded-lg"
-          >
+          <Badge variant="outline" className="text-xs font-normal rounded-lg">
             {course.source === "wadhwani" ? "Wadhwani" : "OpenGrad"}
           </Badge>
           <div className="flex gap-2 text-xs text-muted-foreground">

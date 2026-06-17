@@ -9,7 +9,9 @@
 
 import { type ReactNode, Suspense } from "react";
 import { UnauthorizedHandler } from "@/components/auth";
-import { Sidebar } from "@/components/dashboard/sidebar";
+import { AppSidebar } from "@/components/dashboard/app-sidebar";
+import { AppTopbar } from "@/components/dashboard/app-topbar";
+import { DashboardSidebarProvider } from "@/components/dashboard/sidebar-provider";
 import { DashboardContent } from "@/components/layout/dashboard-content";
 import { OnboardingGuard } from "./onboarding-guard";
 
@@ -24,10 +26,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <Suspense fallback={null}>
         <UnauthorizedHandler />
       </Suspense>
-      <div className="min-h-screen bg-muted/40 flex justify-between">
-        <Sidebar />
-        <DashboardContent>{children}</DashboardContent>
-      </div>
+      <DashboardSidebarProvider>
+        <div className="min-h-screen bg-muted/40">
+          <AppTopbar />
+          <AppSidebar />
+          <DashboardContent>{children}</DashboardContent>
+        </div>
+      </DashboardSidebarProvider>
     </OnboardingGuard>
   );
 }

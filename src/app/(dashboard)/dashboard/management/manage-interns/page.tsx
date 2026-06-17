@@ -219,7 +219,7 @@ export default function ManageInternsPage() {
         wrap: (data: string) => (
           <Badge
             variant="outline"
-            className="font-bold uppercase text-muted-foreground/80 tracking-wider"
+            className="font-bold uppercase tracking-wider"
           >
             {data}
           </Badge>

@@ -97,7 +97,7 @@ export function TaskReviewDialog({
                 <h3 className="font-semibold text-base text-foreground">
                   {task.title}
                 </h3>
-                <Badge variant="outline" className="w-fit border-border/80">
+                <Badge variant="outline" className="w-fit">
                   {task.hashtag}
                 </Badge>
               </div>

@@ -120,7 +120,10 @@ export default function InternTasksPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <Badge className="bg-brand-blue/10 text-brand-blue border-brand-blue/20 px-3 py-1 rounded-full font-black text-[10px] uppercase tracking-widest">
+            <Badge
+              variant="default"
+              className="px-3 py-1 rounded-full font-black text-[10px] uppercase tracking-widest"
+            >
               My Quests
             </Badge>
           </div>
@@ -314,8 +317,8 @@ export default function InternTasksPage() {
                     </Badge>
                     {selectedTask.team && (
                       <Badge
-                        variant="outline"
-                        className="bg-brand-blue/10 text-brand-blue border-brand-blue/20 text-[9px] font-black rounded-md uppercase tracking-wider px-2 py-0.5"
+                        variant="default"
+                        className="text-[9px] font-black rounded-md uppercase tracking-wider px-2 py-0.5"
                       >
                         {selectedTask.team}
                       </Badge>
@@ -327,8 +330,8 @@ export default function InternTasksPage() {
                       {getTaskKarma(selectedTask)} Karma
                     </Badge>
                     <Badge
-                      variant="outline"
-                      className="bg-muted/30 text-muted-foreground border-border text-[9px] font-black rounded-md uppercase tracking-wider px-2 py-0.5"
+                      variant="default"
+                      className="text-[9px] font-black rounded-md uppercase tracking-wider px-2 py-0.5"
                     >
                       {selectedTask.category}
                     </Badge>
