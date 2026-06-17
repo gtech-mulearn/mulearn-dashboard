@@ -110,6 +110,9 @@ export const InterestGroupSchema = z.object({
   updated_at: z.string().optional(),
   created_by: z.string().optional(),
   created_at: z.string().optional(),
+  requester_muid: z.string().nullable().optional(),
+  requester_name: z.string().nullable().optional(),
+  company_name: z.string().nullable().optional(),
 });
 
 export const InterestGroupCreateSchema = InterestGroupSchema.omit({
@@ -132,6 +135,9 @@ export const InterestGroupRequestSchema = z.object({
   status: z.enum(["active", "requested", "cancelled", "rejected"]),
   created_at: z.string(),
   updated_at: z.string(),
+  requester_muid: z.string().nullable().optional(),
+  requester_name: z.string().nullable().optional(),
+  company_name: z.string().nullable().optional(),
 });
 
 export type InterestGroup = z.infer<typeof InterestGroupSchema>;
