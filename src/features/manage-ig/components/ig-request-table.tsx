@@ -125,17 +125,27 @@ export function IGRequestTable() {
     }
     if (column === "user_full_name") {
       const requester =
-        (
-          row as {
-            user_full_name?: string;
-            created_by?: string;
-            updated_by?: string;
-          }
-        ).user_full_name ||
-        (row as { created_by?: string }).created_by ||
-        (row as { updated_by?: string }).updated_by ||
+        (row as any).requester_name ||
+        (row as any).user_full_name ||
+        (row as any).created_by ||
+        (row as any).updated_by ||
         "-";
-      return <span className="text-sm">{requester}</span>;
+
+      const companyName =
+        (row as any).company_name ||
+        (row as any).org_title ||
+        (row as any).organization ||
+        (row as any).org ||
+        (row as any).org_name ||
+        (row as any).company;
+
+      return (
+        <span className="text-sm">
+          {requester !== "-" && companyName
+            ? `${requester} (${companyName})`
+            : requester}
+        </span>
+      );
     }
     if (column === "created_at") {
       const dateStr = String(row.created_at || "");
