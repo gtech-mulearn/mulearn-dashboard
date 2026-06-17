@@ -36,16 +36,30 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { MultiSelect } from "@/components/ui/multi-select";
+import { TagInput } from "@/components/ui/tag-input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useInterestGroupsList } from "@/features/home/hooks";
 import { useUpdateMentorProfile } from "@/features/mentor/onboarding/hooks/use-onboarding";
-import type { MentorApplication } from "@/features/mentor/onboarding/schemas";
+import type {
+  MentorApplication,
+  OnboardingFormValues,
+} from "@/features/mentor/onboarding/schemas";
 import { useUpdateProfile, useUpdateProfileImage } from "@/features/profile";
 import type { UserProfile } from "@/features/profile/schemas";
 
 const MentorEditSchema = z.object({
   full_name: z.string().trim().min(1, "Name is required"),
   about: z.string().trim().optional(),
-  expertise: z.string().trim().optional(),
+  expertise: z.array(z.string()).optional(),
+  preferred_ig_ids: z.array(z.string()).optional(),
+  org: z.string().optional(),
   profile_pic: z.any().optional(),
 });
 
@@ -78,12 +92,22 @@ export function MentorEditProfileModal({
     updateProfileImageMutation.isPending ||
     updateMentorProfileMutation.isPending;
 
+  const { data: igList = [] } = useInterestGroupsList();
+  const igOptions = igList.map((ig) => ({ value: ig.id, label: ig.name }));
+
   const form = useForm<MentorEditValues>({
     resolver: zodResolver(MentorEditSchema) as any,
     defaultValues: {
       full_name: userProfile.full_name ?? "",
       about: mentorProfile.about ?? "",
-      expertise: mentorProfile.expertise ?? "",
+      expertise: mentorProfile.expertise
+        ? mentorProfile.expertise
+            .split(",")
+            .map((t) => t.trim())
+            .filter(Boolean)
+        : [],
+      preferred_ig_ids: mentorProfile.preferred_ig_ids ?? [],
+      org: mentorProfile.org ?? "",
       profile_pic: undefined,
     },
   });
@@ -94,7 +118,14 @@ export function MentorEditProfileModal({
       form.reset({
         full_name: userProfile.full_name ?? "",
         about: mentorProfile.about ?? "",
-        expertise: mentorProfile.expertise ?? "",
+        expertise: mentorProfile.expertise
+          ? mentorProfile.expertise
+              .split(",")
+              .map((t) => t.trim())
+              .filter(Boolean)
+          : [],
+        preferred_ig_ids: mentorProfile.preferred_ig_ids ?? [],
+        org: mentorProfile.org ?? "",
         profile_pic: undefined,
       });
       setPreviewUrl(null);
@@ -104,32 +135,48 @@ export function MentorEditProfileModal({
     userProfile.full_name,
     mentorProfile.about,
     mentorProfile.expertise,
+    mentorProfile.preferred_ig_ids,
+    mentorProfile.org,
     form,
   ]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    form.setValue("profile_pic", file);
+    form.setValue("profile_pic", file, { shouldDirty: true });
     const url = URL.createObjectURL(file);
     setPreviewUrl(url);
   };
 
   const handleSubmit = async (values: MentorEditValues) => {
     try {
-      // 1. Update learner profile fields (name)
-      const [firstName, ...lastParts] = (values.full_name ?? "").split(" ");
-      await updateProfileMutation.mutateAsync({
-        first_name: firstName?.trim() ?? "",
-        last_name: lastParts.join(" ").trim(),
-        full_name: values.full_name ?? "",
-      });
+      // 1. Update learner profile fields (name) if changed
+      if (values.full_name !== userProfile.full_name) {
+        const [firstName, ...lastParts] = (values.full_name ?? "").split(" ");
+        await updateProfileMutation.mutateAsync({
+          first_name: firstName?.trim() ?? "",
+          last_name: lastParts.join(" ").trim(),
+          full_name: values.full_name ?? "",
+        });
+      }
 
-      // 2. Update mentor profile fields (about, expertise)
-      await updateMentorProfileMutation.mutateAsync({
-        about: values.about ?? "",
-        expertise: values.expertise ?? "",
-      });
+      // 2. Update mentor profile fields if changed
+      const newExpertise = values.expertise?.join(", ") ?? "";
+      const isAboutChanged = values.about !== (mentorProfile.about ?? "");
+      const isExpertiseChanged =
+        newExpertise !== (mentorProfile.expertise ?? "");
+      const isIgsChanged =
+        JSON.stringify(values.preferred_ig_ids ?? []) !==
+        JSON.stringify(mentorProfile.preferred_ig_ids ?? []);
+
+      if (isAboutChanged || isExpertiseChanged || isIgsChanged) {
+        const payload: Partial<OnboardingFormValues> = {};
+        if (isAboutChanged) payload.about = values.about ?? "";
+        if (isExpertiseChanged) payload.expertise = newExpertise;
+        if (isIgsChanged) payload.preferred_ig_ids = values.preferred_ig_ids;
+
+        await updateMentorProfileMutation.mutateAsync(payload);
+      }
 
       // 3. Update profile photo if changed
       if (values.profile_pic instanceof File) {
@@ -254,26 +301,61 @@ export function MentorEditProfileModal({
               )}
             />
 
-            {/* Expertise tags */}
-            <FormField
-              control={form.control as any}
-              name="expertise"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Expertise</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="e.g. React, Python, Machine Learning"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription className="text-xs">
-                    Enter comma-separated skills or topics you can mentor in.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* Expertise tags (without FormField, plain labels to avoid FormField generic errors with TagInput) */}
+            <div className="space-y-2">
+              <div className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                Expertise
+              </div>
+              <TagInput
+                value={form.watch("expertise") ?? []}
+                onChange={(tags) =>
+                  form.setValue("expertise", tags, { shouldDirty: true })
+                }
+                placeholder="e.g. React, Python (press Enter)"
+              />
+              <p className="text-[0.8rem] text-muted-foreground">
+                Enter comma-separated skills or topics you can mentor in.
+              </p>
+            </div>
+
+            {/* Preferred IGs */}
+            <div className="space-y-2">
+              <div className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                Preferred Interest Groups
+              </div>
+              <MultiSelect
+                options={igOptions}
+                value={form.watch("preferred_ig_ids") ?? []}
+                onChange={(vals) =>
+                  form.setValue("preferred_ig_ids", vals, { shouldDirty: true })
+                }
+                placeholder="Select IGs you want to mentor in..."
+              />
+            </div>
+
+            {/* Affiliation */}
+            <div className="space-y-2">
+              <div className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                Company / Campus Affiliation
+              </div>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div>
+                      <Input
+                        value={form.watch("org") ?? ""}
+                        placeholder="Affiliation"
+                        disabled
+                        className="cursor-not-allowed"
+                      />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Affiliation editing coming soon.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
 
             {/* Read-only: Tier */}
             {mentorProfile.mentor_tier && (

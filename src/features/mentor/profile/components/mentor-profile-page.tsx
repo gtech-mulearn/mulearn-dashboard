@@ -18,8 +18,8 @@
 import { useState } from "react";
 import Loader from "@/app/loading";
 import { useMentorSessions } from "@/features/home/hooks";
+import { useMentorOverview, useMentorStatus } from "@/features/mentor/hooks";
 import { useMentorProfile } from "@/features/mentor/onboarding/hooks/use-onboarding";
-import { useMentorTasks } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
 import { useUserProfile } from "@/features/profile";
 import { ShareProfileModal } from "@/features/profile/components/share-profile-modal";
 import { MentorEditProfileModal } from "./mentor-edit-profile-modal";
@@ -65,13 +65,12 @@ export function MentorProfilePage({
   const { data: scheduledSessions, isLoading: loadingSessions } =
     useMentorSessions("SCHEDULED");
 
-  const { data: pendingTasksData } = useMentorTasks({
-    approval_status: "pending",
-    perPage: 100,
-  });
-  const pendingTasks = pendingTasksData?.data;
+  const { data: overviewData, isLoading: loadingOverview } =
+    useMentorOverview();
+  const { data: statusData, isLoading: loadingStatus } = useMentorStatus();
 
-  const isLoading = loadingUser || loadingMentor;
+  const isLoading =
+    loadingUser || loadingMentor || loadingOverview || loadingStatus;
 
   if (isLoading) return <Loader />;
 
@@ -109,9 +108,8 @@ export function MentorProfilePage({
       {/* Stats Row */}
       <MentorStatsRow
         mentorProfile={mentorProfile}
-        scheduledSessions={scheduledSessions}
-        pendingTasks={pendingTasks}
-        isLoading={loadingSessions}
+        overview={overviewData}
+        isLoading={loadingOverview}
       />
 
       {/* Main content + Sidebar */}
@@ -120,6 +118,7 @@ export function MentorProfilePage({
         <div className="w-full max-w-full overflow-x-hidden lg:order-2 lg:col-span-1">
           <MentorProfileSidebar
             mentorProfile={mentorProfile}
+            statusData={statusData}
             upcomingSessions={scheduledSessions}
             isLoading={loadingSessions}
           />
@@ -137,6 +136,7 @@ export function MentorProfilePage({
               <ScopesTab
                 mentorProfile={mentorProfile}
                 mentorType={mentorType}
+                overview={overviewData}
               />
             )}
             {activeTab === "sessions" && (

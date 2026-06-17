@@ -222,3 +222,19 @@ export async function fetchAvailabilityCalendar(): Promise<
   // extractSlots handles all backend shapes; cast to AvailabilityCalendarSlot
   return extractSlots(res.response) as unknown as AvailabilityCalendarSlot[];
 }
+
+// ─── Overview & Status ───────────────────────────────────────────────────────
+
+export async function getMentorOverview() {
+  return apiClient.get(
+    endpoints.mentor.overview,
+    ApiResponseOf(z.unknown()), // Schema validation handled in hook if needed, or loosely typed
+    { skipAuthRedirectOn403: true },
+  );
+}
+
+export async function getMentorStatus() {
+  return apiClient.get(endpoints.mentor.status, ApiResponseOf(z.unknown()), {
+    skipAuthRedirectOn403: true,
+  });
+}

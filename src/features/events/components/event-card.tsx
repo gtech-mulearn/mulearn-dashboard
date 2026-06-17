@@ -125,12 +125,7 @@ export function EventCard({ event, isManageView, onView }: EventCardProps) {
               <div className="flex items-center gap-2 text-xs opacity-90">
                 <span>{event.interest_count} interested</span>
                 {event.is_collaboration ? (
-                  <Badge
-                    variant="outline"
-                    className="border-primary-foreground/35 bg-primary-foreground/10 text-primary-foreground"
-                  >
-                    Collab
-                  </Badge>
+                  <Badge variant="outline">Collab</Badge>
                 ) : null}
               </div>
             ) : isEnded ? (

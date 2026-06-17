@@ -196,10 +196,10 @@ export function CompanyTasksPage() {
                   {task.description}
                 </p>
                 <div className="flex flex-wrap items-center gap-2 mt-auto pt-4 border-t border-border/50">
-                  <Badge variant="outline" className="text-xs bg-muted/50">
+                  <Badge variant="outline" className="text-xs">
                     Karma: {task.karma}
                   </Badge>
-                  <Badge variant="outline" className="text-xs bg-muted/50">
+                  <Badge variant="outline" className="text-xs">
                     {task.type}
                   </Badge>
                   {task.active && (
