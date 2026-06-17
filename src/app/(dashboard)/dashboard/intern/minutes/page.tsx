@@ -5,14 +5,15 @@ import {
   Clock,
   Crown,
   ExternalLink,
+  Eye,
   FileText,
-  Link2,
   Loader2,
   Pencil,
   ScrollText,
+  Search,
   Upload,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,16 +24,24 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { SectionErrorFallback } from "@/components/ui/errors/SectionErrorFallback";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  type TMinuteItem,
   useInternOverview,
   useMyMinutes,
   useSubmitMinute,
   useUpdateMinute,
-  type TMinuteItem,
 } from "@/features/intern";
 
 function getTodayDateString() {
@@ -46,45 +55,85 @@ export default function InternMinutesPage() {
     overview?.role === "INTERN_LEAD" || overview?.role === "Intern Lead";
 
   const [date, setDate] = useState(getTodayDateString());
-  const [link, setLink] = useState("");
-  const [text, setText] = useState("");
+  const [title, setTitle] = useState("");
+  const [minutesText, setMinutesText] = useState("");
   const [editingMinute, setEditingMinute] = useState<TMinuteItem | null>(null);
+  const [activeTab, setActiveTab] = useState("upload");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [viewingMinute, setViewingMinute] = useState<TMinuteItem | null>(null);
 
   const submitMutation = useSubmitMinute();
   const updateMutation = useUpdateMinute(editingMinute?.id || "");
 
   const { data: minutesData, isLoading: isMinutesLoading } = useMyMinutes({
     page: 1,
-    perPage: 20,
+    perPage: 100, // retrieve more for search/history list
   });
+
+  const filteredMinutes = useMemo(() => {
+    const list = minutesData?.data ?? [];
+    if (!searchQuery.trim()) return list;
+    const query = searchQuery.toLowerCase();
+    return list.filter(
+      (item) =>
+        item.title.toLowerCase().includes(query) ||
+        item.minutes.toLowerCase().includes(query),
+    );
+  }, [minutesData, searchQuery]);
+
+  const renderContentWithLinks = (text: string) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts = text.split(urlRegex).map((part, i) => ({
+      key: `${part}-${i}`,
+      text: part,
+      isUrl: !!part.match(urlRegex),
+    }));
+    return parts.map((item) => {
+      if (item.isUrl) {
+        return (
+          <a
+            key={item.key}
+            href={item.text}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-amber-500 hover:underline inline-flex items-center gap-1 font-bold break-all"
+          >
+            {item.text} <ExternalLink className="w-3 h-3 inline shrink-0" />
+          </a>
+        );
+      }
+      return item.text;
+    });
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!link.trim()) return;
+    if (!title.trim() || !minutesText.trim()) return;
+
+    const payload = {
+      guild: overview?.guild || "Frontend Guild",
+      date,
+      title: title.trim(),
+      minutes: minutesText.trim(),
+    };
 
     if (editingMinute) {
-      updateMutation.mutate(
-        { date, link: link.trim(), text: text.trim() || undefined },
-        {
-          onSuccess: () => {
-            setLink("");
-            setText("");
-            setDate(getTodayDateString());
-            setEditingMinute(null);
-          },
+      updateMutation.mutate(payload, {
+        onSuccess: () => {
+          setTitle("");
+          setMinutesText("");
+          setDate(getTodayDateString());
+          setEditingMinute(null);
         },
-      );
+      });
     } else {
-      submitMutation.mutate(
-        { date, link: link.trim(), text: text.trim() || undefined },
-        {
-          onSuccess: () => {
-            setLink("");
-            setText("");
-            setDate(getTodayDateString());
-          },
+      submitMutation.mutate(payload, {
+        onSuccess: () => {
+          setTitle("");
+          setMinutesText("");
+          setDate(getTodayDateString());
         },
-      );
+      });
     }
   };
 
@@ -109,224 +158,313 @@ export default function InternMinutesPage() {
             className="gap-1.5 px-4 py-2 text-sm font-bold text-amber-500 border-amber-500/30 bg-amber-500/5"
           >
             <Crown className="w-4 h-4" />
-            {overview.guild} — Intern Lead
+            {overview.guild}
           </Badge>
         )}
       </div>
 
-      {/* Upload Form */}
-      <ErrorBoundary FallbackComponent={SectionErrorFallback}>
-        <Card className="bg-card/60 backdrop-blur-xl border-border/60 shadow-lg">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-base font-black uppercase tracking-widest flex items-center gap-2">
-              <Upload className="w-4 h-4 text-amber-500" />
-              Upload Minutes
-            </CardTitle>
-            <CardDescription className="text-xs">
-              Submit today&apos;s meeting notes link or paste a brief summary.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Date */}
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-1.5">
-                  <Calendar className="w-3 h-3" />
-                  Meeting Date
-                </Label>
-                <Input
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="h-10 border-border/40 bg-background/50 font-medium"
-                  required
-                />
-              </div>
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="w-full space-y-6"
+      >
+        <TabsList className="bg-muted/30 border border-border/40 p-1 rounded-xl w-fit">
+          <TabsTrigger
+            value="upload"
+            className="font-black uppercase text-xs tracking-wider px-6 py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm"
+          >
+            {editingMinute ? "Edit Minutes" : "Upload Minutes"}
+          </TabsTrigger>
+          <TabsTrigger
+            value="history"
+            className="font-black uppercase text-xs tracking-wider px-6 py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm"
+          >
+            Minutes History
+          </TabsTrigger>
+        </TabsList>
 
-              {/* Link */}
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-1.5">
-                  <Link2 className="w-3 h-3" />
-                  Minutes Document Link
-                  <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  type="url"
-                  placeholder="https://docs.google.com/..."
-                  value={link}
-                  onChange={(e) => setLink(e.target.value)}
-                  className="h-10 border-border/40 bg-background/50 font-medium"
-                  required
-                />
-              </div>
+        <TabsContent value="upload">
+          {/* Upload Form */}
+          <ErrorBoundary FallbackComponent={SectionErrorFallback}>
+            <Card className="bg-card/60 backdrop-blur-xl border-border/60 shadow-lg">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-base font-black uppercase tracking-widest flex items-center gap-2">
+                  <Upload className="w-4 h-4 text-amber-500" />
+                  {editingMinute ? "Edit Minutes" : "Upload Minutes"}
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  {editingMinute
+                    ? "Update meeting details or link for this day."
+                    : "Submit today's meeting notes link or paste a brief summary."}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  {/* Date */}
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-1.5">
+                      <Calendar className="w-3 h-3" />
+                      Meeting Date
+                    </Label>
+                    <Input
+                      type="date"
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                      className="h-10 border-border/40 bg-background/50 font-medium"
+                      required
+                    />
+                  </div>
 
-              {/* Optional text */}
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-1.5">
-                  <FileText className="w-3 h-3" />
-                  Notes (Optional)
-                </Label>
-                <Textarea
-                  placeholder="Brief summary or remarks from the meeting..."
-                  value={text}
-                  onChange={(e) => setText(e.target.value)}
-                  rows={3}
-                  className="border-border/40 bg-background/50 font-medium resize-none"
-                />
-              </div>
+                  {/* Title */}
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-1.5">
+                      <FileText className="w-3 h-3" />
+                      Meeting Title
+                      <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      type="text"
+                      placeholder="e.g. Daily Standup — June 17"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      className="h-10 border-border/40 bg-background/50 font-medium"
+                      required
+                    />
+                  </div>
 
-              <div className="flex gap-3">
-                <Button
-                  type="submit"
-                  variant="default"
-                  disabled={
-                    submitMutation.isPending ||
-                    updateMutation.isPending ||
-                    !link.trim()
-                  }
-                  className="flex-1 gap-2 text-[10px] tracking-widest h-10 bg-amber-500 hover:bg-amber-500/90 text-black font-black"
-                >
-                  {submitMutation.isPending || updateMutation.isPending ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Saving...
-                    </>
-                  ) : editingMinute ? (
-                    <>
-                      <Upload className="w-4 h-4" />
-                      Update Minutes
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="w-4 h-4" />
-                      Upload Minutes
-                    </>
-                  )}
-                </Button>
-                {editingMinute && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setEditingMinute(null);
-                      setLink("");
-                      setText("");
-                      setDate(getTodayDateString());
-                    }}
-                    className="gap-2 text-[10px] tracking-widest h-10"
-                  >
-                    Cancel
-                  </Button>
-                )}
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      </ErrorBoundary>
+                  {/* Minutes Details */}
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-1.5">
+                      <ScrollText className="w-3 h-3" />
+                      Minutes
+                      <span className="text-destructive">*</span>
+                    </Label>
+                    <Textarea
+                      placeholder="https://notion.com/..."
+                      value={minutesText}
+                      onChange={(e) => setMinutesText(e.target.value)}
+                      rows={6}
+                      className="border-border/40 bg-background/50 font-medium resize-none"
+                      required
+                    />
+                  </div>
 
-      {/* Previous Minutes Log */}
-      <ErrorBoundary FallbackComponent={SectionErrorFallback}>
-        <div className="space-y-4">
-          <div>
-            <h3 className="text-xl font-black uppercase tracking-widest flex items-center gap-2">
-              <Clock className="w-5 h-5 text-muted-foreground" />
-              Previous Minutes
-            </h3>
-            <p className="text-[10px] font-bold uppercase text-muted-foreground/60 tracking-wider mt-1">
-              All uploaded minutes for your guild
-            </p>
-          </div>
-
-          {isMinutesLoading ? (
-            <div className="flex items-center justify-center py-16">
-              <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-            </div>
-          ) : !minutesData?.data?.length ? (
-            <Card className="bg-card/40 border-border/40">
-              <CardContent className="flex flex-col items-center justify-center py-16 gap-3">
-                <ScrollText className="w-12 h-12 text-muted-foreground/30" />
-                <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
-                  No minutes uploaded yet
-                </p>
-                <p className="text-xs text-muted-foreground/60">
-                  Start by uploading the first meeting minutes above.
-                </p>
+                  <div className="flex gap-3">
+                    <Button
+                      type="submit"
+                      variant="default"
+                      disabled={
+                        submitMutation.isPending ||
+                        updateMutation.isPending ||
+                        !title.trim() ||
+                        !minutesText.trim()
+                      }
+                      className="flex-1 gap-2 text-[10px] tracking-widest h-10 bg-amber-500 hover:bg-amber-500/90 text-black font-black"
+                    >
+                      {submitMutation.isPending || updateMutation.isPending ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Saving...
+                        </>
+                      ) : editingMinute ? (
+                        <>
+                          <Upload className="w-4 h-4" />
+                          Update Minutes
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-4 h-4" />
+                          Upload Minutes
+                        </>
+                      )}
+                    </Button>
+                    {editingMinute && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setEditingMinute(null);
+                          setTitle("");
+                          setMinutesText("");
+                          setDate(getTodayDateString());
+                        }}
+                        className="gap-2 text-[10px] tracking-widest h-10"
+                      >
+                        Cancel
+                      </Button>
+                    )}
+                  </div>
+                </form>
               </CardContent>
             </Card>
-          ) : (
-            <div className="space-y-3">
-              {minutesData.data.map((item) => (
-                <Card
-                  key={item.id}
-                  className="bg-card/40 border-border/40 hover:bg-card/60 transition-colors group"
-                >
-                  <CardContent className="flex items-start justify-between gap-4 p-4">
-                    <div className="flex items-start gap-3 min-w-0">
-                      <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 shrink-0">
-                        <ScrollText className="w-4 h-4 text-amber-500" />
-                      </div>
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2 mb-1">
-                          <span className="text-sm font-black text-foreground">
-                            {new Date(item.date).toLocaleDateString(undefined, {
-                              weekday: "short",
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            })}
-                          </span>
-                        </div>
-                        {item.text && (
-                          <p className="text-xs text-muted-foreground line-clamp-2">
-                            {item.text}
-                          </p>
-                        )}
-                        <p className="text-[10px] text-muted-foreground/60 font-medium mt-1">
-                          Uploaded{" "}
-                          {new Date(item.created_at).toLocaleDateString(
-                            undefined,
-                            { month: "short", day: "numeric", year: "numeric" },
-                          )}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <Button
-                        size="icon-sm"
-                        variant="ghost"
-                        onClick={() => {
-                          setEditingMinute(item);
-                          setDate(item.date);
-                          setLink(item.link);
-                          setText(item.text ?? "");
-                        }}
-                        className="rounded-lg text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10"
-                        title="Edit Minutes"
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </Button>
-                      <a
-                        href={item.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <Button
-                          size="icon-sm"
-                          variant="ghost"
-                          className="rounded-lg text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10"
-                          title="Open Minutes"
-                        >
-                          <ExternalLink className="w-4 h-4" />
-                        </Button>
-                      </a>
-                    </div>
+          </ErrorBoundary>
+        </TabsContent>
+
+        <TabsContent value="history">
+          {/* Previous Minutes Log */}
+          <ErrorBoundary FallbackComponent={SectionErrorFallback}>
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+                <div className="relative flex-1 max-w-xs">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
+                  <Input
+                    type="text"
+                    placeholder="Search minutes..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="h-9 pl-8 pr-7 text-xs border-border/40 bg-background/50 font-medium placeholder:text-muted-foreground/50 w-full"
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery("")}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-foreground text-xs font-bold"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+                <div className="text-[10px] font-bold uppercase text-muted-foreground/60 tracking-wider">
+                  {filteredMinutes.length} entries found
+                </div>
+              </div>
+
+              {isMinutesLoading ? (
+                <div className="flex items-center justify-center py-16">
+                  <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                </div>
+              ) : !filteredMinutes.length ? (
+                <Card className="bg-card/40 border-border/40">
+                  <CardContent className="flex flex-col items-center justify-center py-16 gap-3">
+                    <ScrollText className="w-12 h-12 text-muted-foreground/30" />
+                    <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
+                      No minutes found
+                    </p>
+                    <p className="text-xs text-muted-foreground/60">
+                      Try adjusting your search query or upload some minutes.
+                    </p>
                   </CardContent>
                 </Card>
-              ))}
+              ) : (
+                <div className="space-y-2.5">
+                  {filteredMinutes.map((item) => (
+                    <Card
+                      key={item.id}
+                      className="bg-card/40 border-border/40 hover:bg-card/60 transition-colors group p-3"
+                    >
+                      <div className="flex items-center justify-between gap-4 min-w-0">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <div className="p-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 shrink-0">
+                            <ScrollText className="w-3.5 h-3.5 text-amber-500" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-baseline gap-2">
+                              <h4 className="text-xs font-black text-foreground truncate max-w-[200px] sm:max-w-xs uppercase tracking-wider">
+                                {item.title}
+                              </h4>
+                              <span className="text-[9px] text-muted-foreground/60 font-semibold shrink-0 uppercase tracking-widest">
+                                •{" "}
+                                {new Date(item.date).toLocaleDateString(
+                                  undefined,
+                                  {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  },
+                                )}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-muted-foreground/70 truncate mt-0.5 font-medium leading-none">
+                              {item.minutes}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1 shrink-0">
+                          <Button
+                            size="icon-sm"
+                            variant="ghost"
+                            onClick={() => setViewingMinute(item)}
+                            className="rounded-lg text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10 h-8 w-8"
+                            title="View Details"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button
+                            size="icon-sm"
+                            variant="ghost"
+                            onClick={() => {
+                              setEditingMinute(item);
+                              setDate(item.date);
+                              setTitle(item.title);
+                              setMinutesText(item.minutes);
+                              setActiveTab("upload");
+                            }}
+                            className="rounded-lg text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10 h-8 w-8"
+                            title="Edit Minutes"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      </ErrorBoundary>
+          </ErrorBoundary>
+        </TabsContent>
+      </Tabs>
+
+      {/* View Details Dialog */}
+      <Dialog
+        open={viewingMinute !== null}
+        onOpenChange={(open) => {
+          if (!open) setViewingMinute(null);
+        }}
+      >
+        <DialogContent className="bg-card/95 backdrop-blur-xl border-border/60 w-full max-w-[calc(100%-2rem)] sm:max-w-xl p-4 sm:p-6">
+          <DialogHeader>
+            <div className="flex flex-wrap gap-2 items-center text-xs text-muted-foreground mb-1.5 font-bold uppercase tracking-wider">
+              <span>
+                {viewingMinute &&
+                  new Date(viewingMinute.date).toLocaleDateString(undefined, {
+                    weekday: "long",
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+              </span>
+              <span>•</span>
+              <Badge
+                variant="outline"
+                className="font-bold border-amber-500/30 text-amber-500 bg-amber-500/5 text-[10px]"
+              >
+                {viewingMinute?.guild}
+              </Badge>
+            </div>
+            <DialogTitle className="text-xl font-black uppercase tracking-tight text-foreground">
+              {viewingMinute?.title}
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground font-medium mt-1">
+              Uploaded by {viewingMinute?.uploaded_by_name}{" "}
+              {viewingMinute?.uploaded_by_muid &&
+                `(${viewingMinute.uploaded_by_muid})`}{" "}
+              on{" "}
+              {viewingMinute &&
+                new Date(viewingMinute.created_at).toLocaleDateString()}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-2">
+              Minutes Details
+            </h4>
+            <div className="max-h-[350px] overflow-y-auto whitespace-pre-wrap font-medium text-sm leading-relaxed text-muted-foreground bg-muted/20 p-4 rounded-xl border border-border/40">
+              {viewingMinute && renderContentWithLinks(viewingMinute.minutes)}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

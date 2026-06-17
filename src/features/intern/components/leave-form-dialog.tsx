@@ -37,9 +37,9 @@ const getTodayDateString = () => {
 };
 
 export function LeaveFormDialog({ open, onOpenChange }: LeaveFormDialogProps) {
-  const [leaveType, setLeaveType] = useState<
-    "SICK" | "CASUAL" | "WFH" | "EMERGENCY"
-  >("CASUAL");
+  const [leaveType, setLeaveType] = useState<"SICK" | "CASUAL" | "EMERGENCY">(
+    "CASUAL",
+  );
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [reason, setReason] = useState("");
@@ -134,7 +134,7 @@ export function LeaveFormDialog({ open, onOpenChange }: LeaveFormDialogProps) {
             <Select
               value={leaveType}
               onValueChange={(val) =>
-                setLeaveType(val as "SICK" | "CASUAL" | "WFH" | "EMERGENCY")
+                setLeaveType(val as "SICK" | "CASUAL" | "EMERGENCY")
               }
             >
               <SelectTrigger className="w-full h-10 font-bold uppercase text-xs border-border/40 bg-background/50">
@@ -146,9 +146,6 @@ export function LeaveFormDialog({ open, onOpenChange }: LeaveFormDialogProps) {
                 </SelectItem>
                 <SelectItem value="SICK" className="uppercase text-xs">
                   Sick Leave
-                </SelectItem>
-                <SelectItem value="WFH" className="uppercase text-xs">
-                  Work From Home
                 </SelectItem>
                 <SelectItem value="EMERGENCY" className="uppercase text-xs">
                   Emergency Leave

@@ -45,7 +45,7 @@ export default function LeaveManagementPage() {
 
   // Inline form state
   const [leaveType, setLeaveType] = useState<
-    "SICK" | "CASUAL" | "WFH" | "EMERGENCY" | ""
+    "SICK" | "CASUAL" | "EMERGENCY" | ""
   >("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -121,16 +121,6 @@ export default function LeaveManagementPage() {
       textColor: "text-destructive",
       icon: AlertCircle,
       balance: balance?.SICK,
-    },
-    {
-      key: "WFH",
-      title: "Work From Home",
-      desc: "Remote work days allowed",
-      color: "from-brand-purple/20 to-brand-purple/5",
-      borderColor: "border-brand-purple/30",
-      textColor: "text-brand-purple",
-      icon: Home,
-      balance: balance?.WFH,
     },
     {
       key: "EMERGENCY",
@@ -426,9 +416,7 @@ export default function LeaveManagementPage() {
                       required
                       value={leaveType}
                       onValueChange={(v) =>
-                        setLeaveType(
-                          v as "SICK" | "CASUAL" | "WFH" | "EMERGENCY",
-                        )
+                        setLeaveType(v as "SICK" | "CASUAL" | "EMERGENCY")
                       }
                     >
                       <SelectTrigger className="w-full bg-background/50 border-border/50 h-10 font-bold focus:ring-brand-purple/30">
@@ -443,9 +431,6 @@ export default function LeaveManagementPage() {
                         </SelectItem>
                         <SelectItem value="SICK" className="font-bold text-xs">
                           Sick Leave
-                        </SelectItem>
-                        <SelectItem value="WFH" className="font-bold text-xs">
-                          Work From Home
                         </SelectItem>
                         <SelectItem
                           value="EMERGENCY"

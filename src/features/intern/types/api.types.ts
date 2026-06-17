@@ -299,8 +299,8 @@ export interface TWeeklyReviewReviewPayload {
 export interface TMinuteItem {
   id: string;
   date: string;
-  link: string;
-  text?: string | null;
+  title: string;
+  minutes: string;
   guild: string;
   uploaded_by: string;
   uploaded_by_name: string;
@@ -309,7 +309,8 @@ export interface TMinuteItem {
 }
 
 export interface TSubmitMinutePayload {
+  guild: string;
   date: string;
-  link: string;
-  text?: string;
+  title: string;
+  minutes: string;
 }

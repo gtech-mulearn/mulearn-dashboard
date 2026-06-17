@@ -4,6 +4,7 @@ import {
   ArrowUpDown,
   Crown,
   ExternalLink,
+  Eye,
   Filter,
   Loader2,
   ScrollText,
@@ -20,6 +21,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { SectionErrorFallback } from "@/components/ui/errors/SectionErrorFallback";
 import {
   Select,
@@ -29,6 +37,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  type TMinuteItem,
   useGuilds,
   useInternOverview,
   useManageMinutes,
@@ -59,6 +68,32 @@ export default function ManageMinutesPage() {
   const [perPage] = useState(20);
   const [guildFilter, setGuildFilter] = useState("all");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [viewingMinute, setViewingMinute] = useState<TMinuteItem | null>(null);
+
+  const renderContentWithLinks = (text: string) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts = text.split(urlRegex).map((part, i) => ({
+      key: `${part}-${i}`,
+      text: part,
+      isUrl: !!part.match(urlRegex),
+    }));
+    return parts.map((item) => {
+      if (item.isUrl) {
+        return (
+          <a
+            key={item.key}
+            href={item.text}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-amber-500 hover:underline inline-flex items-center gap-1 font-bold break-all"
+          >
+            {item.text} <ExternalLink className="w-3 h-3 inline shrink-0" />
+          </a>
+        );
+      }
+      return item.text;
+    });
+  };
 
   const { data: guildsData = [] } = useGuilds();
   const guildOptions = useMemo(
@@ -105,7 +140,7 @@ export default function ManageMinutesPage() {
             className="gap-1.5 px-4 py-2 text-sm font-bold text-amber-500 border-amber-500/30 bg-amber-500/5"
           >
             <Crown className="w-4 h-4" />
-            {internGuild} — Intern Lead
+            {internGuild}
           </Badge>
         )}
       </div>
@@ -207,9 +242,18 @@ export default function ManageMinutesPage() {
             <>
               {/* Table header */}
               <div className="rounded-xl border border-border/40 bg-card/40 backdrop-blur-sm overflow-hidden">
-                <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 px-4 py-3 bg-muted/20 border-b border-border/20">
+                <div
+                  className={
+                    isAdmin
+                      ? "grid grid-cols-[130px_1.2fr_90px_130px_2fr_55px] gap-4 px-4 py-3 bg-muted/20 border-b border-border/20"
+                      : "grid grid-cols-[130px_1.5fr_130px_2.5fr_55px] gap-4 px-4 py-3 bg-muted/20 border-b border-border/20"
+                  }
+                >
                   <span className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground">
                     Date
+                  </span>
+                  <span className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground">
+                    Title
                   </span>
                   {isAdmin && (
                     <span className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground">
@@ -220,10 +264,10 @@ export default function ManageMinutesPage() {
                     Uploaded By
                   </span>
                   <span className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground">
-                    Notes
+                    Minutes Details
                   </span>
                   <span className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground text-center">
-                    Link
+                    Action
                   </span>
                 </div>
 
@@ -231,7 +275,11 @@ export default function ManageMinutesPage() {
                   {minutes.map((item) => (
                     <div
                       key={item.id}
-                      className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 px-4 py-3.5 items-center hover:bg-muted/10 transition-colors"
+                      className={
+                        isAdmin
+                          ? "grid grid-cols-[130px_1.2fr_90px_130px_2fr_55px] gap-4 px-4 py-3.5 items-center hover:bg-muted/10 transition-colors"
+                          : "grid grid-cols-[130px_1.5fr_130px_2.5fr_55px] gap-4 px-4 py-3.5 items-center hover:bg-muted/10 transition-colors"
+                      }
                     >
                       {/* Date */}
                       <div className="flex items-center gap-3">
@@ -244,17 +292,19 @@ export default function ManageMinutesPage() {
                               weekday: "short",
                               month: "short",
                               day: "numeric",
-                              year: "numeric",
                             })}
                           </p>
                           <p className="text-[10px] text-muted-foreground/60">
-                            Uploaded{" "}
-                            {new Date(item.created_at).toLocaleDateString(
-                              undefined,
-                              { month: "short", day: "numeric" },
-                            )}
+                            Year {new Date(item.date).getFullYear()}
                           </p>
                         </div>
+                      </div>
+
+                      {/* Title */}
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-foreground truncate">
+                          {item.title}
+                        </p>
                       </div>
 
                       {/* Guild (admin only) */}
@@ -268,46 +318,35 @@ export default function ManageMinutesPage() {
                       )}
 
                       {/* Uploaded by */}
-                      <div className="text-right">
-                        <p className="text-xs font-bold text-foreground">
+                      <div>
+                        <p className="text-xs font-bold text-foreground truncate">
                           {item.uploaded_by_name}
                         </p>
                         {item.uploaded_by_muid && (
-                          <p className="text-[10px] text-muted-foreground/60 uppercase tracking-widest">
+                          <p className="text-[10px] text-muted-foreground/60 uppercase tracking-widest font-mono">
                             {item.uploaded_by_muid}
                           </p>
                         )}
                       </div>
 
-                      {/* Notes */}
-                      <div className="max-w-[180px] text-right">
-                        {item.text ? (
-                          <p className="text-xs text-muted-foreground line-clamp-2">
-                            {item.text}
-                          </p>
-                        ) : (
-                          <span className="text-xs text-muted-foreground/40 italic">
-                            —
-                          </span>
-                        )}
+                      {/* Minutes Details Snippet */}
+                      <div className="min-w-0">
+                        <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                          {item.minutes}
+                        </p>
                       </div>
 
-                      {/* Link */}
+                      {/* View Details Action */}
                       <div className="flex justify-center">
-                        <a
-                          href={item.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                        <Button
+                          size="icon-sm"
+                          variant="ghost"
+                          onClick={() => setViewingMinute(item)}
+                          className="rounded-lg text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10"
+                          title="View Details"
                         >
-                          <Button
-                            size="icon-sm"
-                            variant="ghost"
-                            className="rounded-lg text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10"
-                            title="Open Minutes"
-                          >
-                            <ExternalLink className="w-4 h-4" />
-                          </Button>
-                        </a>
+                          <Eye className="w-4 h-4" />
+                        </Button>
                       </div>
                     </div>
                   ))}
@@ -333,6 +372,56 @@ export default function ManageMinutesPage() {
           )}
         </div>
       </ErrorBoundary>
+
+      {/* View Details Dialog */}
+      <Dialog
+        open={viewingMinute !== null}
+        onOpenChange={(open) => {
+          if (!open) setViewingMinute(null);
+        }}
+      >
+        <DialogContent className="bg-card/95 backdrop-blur-xl border-border/60 w-full max-w-[calc(100%-2rem)] sm:max-w-xl p-4 sm:p-6">
+          <DialogHeader>
+            <div className="flex flex-wrap gap-2 items-center text-xs text-muted-foreground mb-1.5 font-bold uppercase tracking-wider">
+              <span>
+                {viewingMinute &&
+                  new Date(viewingMinute.date).toLocaleDateString(undefined, {
+                    weekday: "long",
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+              </span>
+              <span>•</span>
+              <Badge
+                variant="outline"
+                className="font-bold border-amber-500/30 text-amber-500 bg-amber-500/5 text-[10px]"
+              >
+                {viewingMinute?.guild}
+              </Badge>
+            </div>
+            <DialogTitle className="text-xl font-black uppercase tracking-tight text-foreground">
+              {viewingMinute?.title}
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground font-medium mt-1">
+              Uploaded by {viewingMinute?.uploaded_by_name}{" "}
+              {viewingMinute?.uploaded_by_muid &&
+                `(${viewingMinute.uploaded_by_muid})`}{" "}
+              on{" "}
+              {viewingMinute &&
+                new Date(viewingMinute.created_at).toLocaleDateString()}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-2">
+              Minutes Details
+            </h4>
+            <div className="max-h-[350px] overflow-y-auto whitespace-pre-wrap font-medium text-sm leading-relaxed text-muted-foreground bg-muted/20 p-4 rounded-xl border border-border/40">
+              {viewingMinute && renderContentWithLinks(viewingMinute.minutes)}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
