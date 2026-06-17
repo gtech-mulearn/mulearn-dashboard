@@ -26,7 +26,7 @@ export function AppTopbar() {
   const isStudent = data?.roles.includes(ROLES.STUDENT) ?? false;
 
   return (
-    <header className="fixed top-4 left-4 right-4 z-[60] h-14 rounded-full bg-background/95 backdrop-blur-md border border-border shadow-md flex items-center px-3 justify-between gap-4">
+    <header className="fixed top-4 left-4 right-4 z-[40] h-14 rounded-full bg-background/95 backdrop-blur-md border border-border shadow-md flex items-center px-3 justify-between gap-4">
       {/* Left: trigger + logo */}
       <div className="flex items-center gap-2">
         <SidebarTrigger className="rounded-full w-9 h-9 text-muted-foreground" />

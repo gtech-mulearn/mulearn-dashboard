@@ -1,6 +1,7 @@
 "use client";
 
 import { LogOut } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
@@ -14,6 +15,7 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -29,7 +31,7 @@ import { useUIStore } from "@/stores/ui-store";
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { state } = useSidebar();
+  const { state, isMobile } = useSidebar();
   const { mainItems, managementItems, bottomItems } = useFilteredNav();
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
 
@@ -85,6 +87,22 @@ export function AppSidebar() {
         variant="floating"
         className="!top-[80px] !bottom-4 !left-4 !h-auto !z-50"
       >
+        {isMobile && (
+          <SidebarHeader className="px-4 py-5 border-b border-border">
+            <Link href="/dashboard" className="flex items-center">
+              <Image
+                src="/logo.webp"
+                alt="μLearn"
+                width={120}
+                height={38}
+                priority
+                style={{ height: "auto" }}
+                className="h-8 w-auto"
+              />
+            </Link>
+          </SidebarHeader>
+        )}
+
         <SidebarContent className={isCollapsed ? "p-2" : "p-3"}>
           <SidebarGroup className="p-0">
             <SidebarGroupContent>
