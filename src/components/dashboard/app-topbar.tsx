@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserInfo } from "@/features/auth/hooks/use-session";
-import { NotificationPopover } from "@/features/notification/components/notification-popover";
+// import { NotificationPopover } from "@/features/notification/components/notification-popover";
 import { ROLES } from "@/lib/auth/roles";
 import { cn } from "@/lib/utils";
 
@@ -47,7 +47,7 @@ export function AppTopbar() {
       <div className="flex items-center gap-2">
         <ThemeToggle />
 
-        {isStudent && <NotificationPopover />}
+        {/* {isStudent && <NotificationPopover />} */}
 
         {isLoading ? (
           <div className="flex items-center gap-2 pr-1">
