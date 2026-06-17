@@ -1,11 +1,11 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
-  IGRequestListResponseSchema,
-  CreateIGRequestResponseSchema,
-  UpdateIGRequestStatusResponseSchema,
   type CreateIGRequestForm,
+  CreateIGRequestResponseSchema,
+  IGRequestListResponseSchema,
   type UpdateIGRequestStatusForm,
+  UpdateIGRequestStatusResponseSchema,
 } from "../schemas";
 
 interface ListIGRequestsParams {

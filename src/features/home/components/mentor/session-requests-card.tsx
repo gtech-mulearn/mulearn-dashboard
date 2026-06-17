@@ -1,12 +1,12 @@
 "use client";
 
 import { Check, Inbox, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserInfo } from "@/features/auth";
 import { useAcceptSession } from "@/features/mentor/hooks/use-session-actions";
 import type { OverviewSessionListItem } from "../../schemas/home.schema";
-import { Button } from "@/components/ui/button";
 
 type Props = {
   sessions: OverviewSessionListItem[];

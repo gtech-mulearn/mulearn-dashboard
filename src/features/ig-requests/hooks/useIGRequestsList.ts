@@ -1,4 +1,4 @@
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { listIGRequests } from "../api";
 import { igRequestKeys } from "./query-keys";
 
