@@ -198,7 +198,7 @@ export function IGSelector({
               >
                 {formatLevel(ig.level)}
               </Badge>
-              <Badge className="rounded-lg border border-brand-blue bg-brand-blue  hover:bg-brand-blue/80 px-2 py-0.5">
+              <Badge variant="default" className="rounded-lg px-2 py-0.5">
                 {formatKarma(ig.karma)}
               </Badge>
             </div>

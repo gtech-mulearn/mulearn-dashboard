@@ -416,7 +416,7 @@ export function ProjectDetailModal({
                           <Badge
                             key={s.id}
                             variant="secondary"
-                            className="text-[12px] px-2.5 py-1 bg-card border shadow-sm"
+                            className="text-[12px] px-2.5 py-1 shadow-sm"
                           >
                             {s.name}
                           </Badge>

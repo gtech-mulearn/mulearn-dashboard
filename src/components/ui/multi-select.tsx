@@ -68,15 +68,24 @@ export function MultiSelect({
 
   return (
     <div ref={containerRef} className={cn("relative w-full", className)}>
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={() => setOpen((v) => !v)}
+      <div
+        role="combobox"
+        aria-expanded={open}
+        tabIndex={disabled ? -1 : 0}
+        onClick={() => {
+          if (!disabled) setOpen((v) => !v);
+        }}
+        onKeyDown={(e) => {
+          if (disabled) return;
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setOpen((v) => !v);
+          }
+        }}
         className={cn(
-          "flex min-h-10 w-full flex-wrap items-center gap-1.5 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
-          "focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
-          "disabled:cursor-not-allowed disabled:opacity-50",
-          "text-left",
+          "flex min-h-10 w-full flex-wrap items-center gap-1.5 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background outline-none",
+          "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+          disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
         )}
       >
         {selectedLabels.length === 0 ? (
@@ -102,7 +111,7 @@ export function MultiSelect({
             open && "rotate-180",
           )}
         />
-      </button>
+      </div>
 
       {open && (
         <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-md">

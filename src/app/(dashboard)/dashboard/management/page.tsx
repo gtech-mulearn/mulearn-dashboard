@@ -1,9 +1,11 @@
 import {
   AlertTriangle,
   ArrowRight,
+  Bell,
   Briefcase,
   Building,
   Building2,
+  CalendarCheck,
   CheckCircle,
   GraduationCap,
   Link as LinkIcon,
@@ -63,6 +65,13 @@ const MANAGEMENT_ITEMS: ManagementItem[] = [
     description: "Create, edit, and configure user achievements.",
     path: "/dashboard/management/manage-achievements",
     color: "bg-chart-4/10 text-chart-4",
+  },
+  {
+    icon: CalendarCheck,
+    title: "Session Verification",
+    description: "Approve or reject mentor-submitted sessions.",
+    path: "/dashboard/management/session-verification",
+    color: "bg-chart-3/10 text-chart-3",
   },
   {
     icon: Users,
@@ -204,6 +213,13 @@ const MANAGEMENT_ITEMS: ManagementItem[] = [
     path: "/dashboard/management/dynamic-type",
     color: "bg-chart-5/10 text-chart-5",
   },
+  // {
+  //   icon: Bell,
+  //   title: "Notifications",
+  //   description: "Create and manage broadcast notifications for users.",
+  //   path: "/dashboard/management/notifications",
+  //   color: "bg-chart-1/10 text-chart-1",
+  // },
 ];
 
 export default function ManagementPage() {

@@ -232,7 +232,10 @@ export default function TimesheetPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <Badge className="bg-brand-blue/10 text-brand-blue border-brand-blue/20 px-3 py-1 rounded-full font-black text-[10px] uppercase tracking-widest">
+            <Badge
+              variant="default"
+              className="px-3 py-1 rounded-full font-black text-[10px] uppercase tracking-widest"
+            >
               Daily Quest
             </Badge>
           </div>
@@ -302,7 +305,10 @@ export default function TimesheetPage() {
                         Detail your heroic deeds for today
                       </CardDescription>
                     </div>
-                    <Badge className="bg-brand-blue/10 text-brand-blue border-brand-blue/30 px-4 py-1.5 font-black text-xs">
+                    <Badge
+                      variant="default"
+                      className="px-4 py-1.5 font-black text-xs"
+                    >
                       {new Date().toLocaleDateString(undefined, {
                         weekday: "long",
                         month: "short",
@@ -646,7 +652,10 @@ export default function TimesheetPage() {
                   </div>
                 </div>
                 <div className="flex flex-col items-end gap-0.5">
-                  <Badge className="bg-brand-blue/10 text-brand-blue border-brand-blue/30 font-black text-[10px] px-2 py-0.5">
+                  <Badge
+                    variant="secondary"
+                    className="font-black text-[10px] px-2 py-0.5"
+                  >
                     {multiplier} Point Boost
                   </Badge>
                   <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground/60">

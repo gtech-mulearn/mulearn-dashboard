@@ -21,17 +21,20 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { MentorApplication } from "@/features/mentor/onboarding/schemas";
-import { useTaskIgDropdown } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
+import type { MentorOverview } from "@/features/mentor/types";
 import type { MentorType } from "../mentor-profile-header";
 
 interface ScopesTabProps {
   mentorProfile: MentorApplication;
   mentorType: MentorType;
+  overview: MentorOverview | undefined;
 }
 
-export function ScopesTab({ mentorProfile, mentorType }: ScopesTabProps) {
-  const { data: igList = [], isLoading } = useTaskIgDropdown();
-
+export function ScopesTab({
+  mentorProfile,
+  mentorType,
+  overview,
+}: ScopesTabProps) {
   if (mentorType === "company" || mentorType === "campus") {
     const Icon = mentorType === "company" ? Building2 : GraduationCap;
     const label = mentorType === "company" ? "Company" : "Campus";
@@ -67,6 +70,11 @@ export function ScopesTab({ mentorProfile, mentorType }: ScopesTabProps) {
   }
 
   // IG / Platform mentor: show IG scopes
+  const igScopes =
+    overview?.scopes?.filter(
+      (s) => s.scope_type === "Interest Group" || s.scope_type === "IG",
+    ) ?? [];
+
   return (
     <Card className="rounded-2xl border-border/50">
       <CardHeader>
@@ -79,22 +87,24 @@ export function ScopesTab({ mentorProfile, mentorType }: ScopesTabProps) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {isLoading ? (
+        {!overview ? (
           <div className="space-y-2">
             {[1, 2, 3].map((i) => (
               <Skeleton key={i} className="h-14 w-full rounded-xl" />
             ))}
           </div>
-        ) : igList.length > 0 ? (
+        ) : igScopes.length > 0 ? (
           <ul className="space-y-2">
-            {igList.map((ig) => (
+            {igScopes.map((scope) => (
               <li
-                key={ig.id}
+                key={scope.scope_name}
                 className="flex items-center gap-3 rounded-xl border border-border/50 bg-muted/40 px-4 py-3"
               >
                 <Target className="h-4 w-4 shrink-0 text-primary/60" />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{ig.name}</p>
+                  <p className="truncate text-sm font-medium">
+                    {scope.scope_name}
+                  </p>
                 </div>
                 <Link
                   href="/dashboard/mentor/sessions"

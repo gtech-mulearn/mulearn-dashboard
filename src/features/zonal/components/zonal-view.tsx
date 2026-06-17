@@ -528,10 +528,7 @@ export function ZonalDashboardView() {
               customCellRender={(column, row) => {
                 if (column === "level") {
                   return (
-                    <Badge
-                      variant="outline"
-                      className="border-primary/20 bg-primary/10 text-xs font-semibold text-primary"
-                    >
+                    <Badge variant="outline" className="text-xs font-semibold">
                       {String(row.level ?? "-")}
                     </Badge>
                   );
@@ -597,10 +594,7 @@ export function ZonalDashboardView() {
               customCellRender={(column, row) => {
                 if (column === "level") {
                   return (
-                    <Badge
-                      variant="outline"
-                      className="border-primary/20 bg-primary/10 text-xs font-semibold text-primary"
-                    >
+                    <Badge variant="outline" className="text-xs font-semibold">
                       {String(row.level ?? "-")}
                     </Badge>
                   );

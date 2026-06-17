@@ -84,19 +84,15 @@ export default function CompanyJobsPage() {
           )}
 
         {/* Job list */}
-        {!isLoading &&
-          !isError &&
-          data &&
-          data.jobs &&
-          data.jobs.length > 0 && (
-            <JobsList
-              jobs={data.jobs}
-              pagination={data.pagination}
-              currentPage={page}
-              onPageChange={setPage}
-              onViewJob={handleViewJob}
-            />
-          )}
+        {!isLoading && !isError && data?.jobs && data.jobs.length > 0 && (
+          <JobsList
+            jobs={data.jobs}
+            pagination={data.pagination}
+            currentPage={page}
+            onPageChange={setPage}
+            onViewJob={handleViewJob}
+          />
+        )}
       </div>
     </CompanyStatusGuard>
   );

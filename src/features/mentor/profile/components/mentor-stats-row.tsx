@@ -15,14 +15,12 @@
 import { BookCheck, Clock, Users, Zap } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { MentorSession } from "@/features/home/schemas/home.schema";
 import type { MentorApplication } from "@/features/mentor/onboarding/schemas";
-import type { MentorTask } from "@/features/mentor/tasks/schemas";
+import type { MentorOverview } from "@/features/mentor/types";
 
 interface MentorStatsRowProps {
   mentorProfile: MentorApplication | undefined;
-  scheduledSessions: MentorSession[] | undefined;
-  pendingTasks: MentorTask[] | undefined;
+  overview: MentorOverview | undefined;
   isLoading: boolean;
 }
 
@@ -37,17 +35,24 @@ interface StatCardItem {
 
 export function MentorStatsRow({
   mentorProfile,
-  scheduledSessions,
-  pendingTasks,
+  overview,
   isLoading,
 }: MentorStatsRowProps) {
   const hours = mentorProfile?.hours ?? 0;
-  const sessionsCompleted = scheduledSessions?.length ?? 0;
-  // Active learners: rough estimate = max_participants summed across scheduled sessions
-  const activeLearners = scheduledSessions
-    ? scheduledSessions.reduce((sum, s) => sum + (s.max_participants ?? 0), 0)
-    : 0;
-  const pendingReviews = pendingTasks?.length ?? 0;
+
+  let sessionsCompleted = 0;
+  let activeLearners = 0;
+  let pendingReviews = 0;
+
+  if (overview?.scopes) {
+    for (const scope of overview.scopes) {
+      const m = scope.metrics || {};
+      sessionsCompleted += m.completed_sessions ?? 0;
+      activeLearners += m.active_learners ?? m.active_ig_learners ?? 0;
+      pendingReviews +=
+        m.pending_task_reviews ?? m.pending_appraisals ?? m.pending_tasks ?? 0;
+    }
+  }
 
   const stats: StatCardItem[] = [
     {

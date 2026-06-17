@@ -32,3 +32,28 @@ export type AvailabilityCalendarSlot = {
   created_at?: string;
   updated_at?: string;
 };
+
+export type MentorScopeMetrics = {
+  completed_sessions?: number;
+  active_learners?: number;
+  active_ig_learners?: number;
+  pending_task_reviews?: number;
+  pending_appraisals?: number;
+  pending_tasks?: number;
+  [key: string]: number | undefined;
+};
+
+export type MentorScope = {
+  scope_name: string;
+  scope_type: string;
+  metrics: MentorScopeMetrics;
+};
+
+export type MentorOverview = {
+  scopes: MentorScope[];
+};
+
+export type MentorStatus = {
+  status: "APPROVED" | "PENDING" | "REJECTED" | string;
+  organization?: string | null;
+};

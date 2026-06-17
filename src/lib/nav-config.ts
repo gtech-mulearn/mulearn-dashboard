@@ -22,7 +22,6 @@ import {
   FileText,
   Folder,
   Globe,
-  GraduationCap,
   Home,
   LayoutDashboard,
   LineChart,
