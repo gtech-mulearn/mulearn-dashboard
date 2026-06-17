@@ -61,7 +61,6 @@ export default function TimesheetPage() {
   const { data: tasksData } = useInternTasks({ page: 1, perPage: 100 });
   const { data: profile } = useUserProfile();
 
-  const [category, setCategory] = useState<string>("");
   const [hours, setHours] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [blockers, setBlockers] = useState<string>("");
@@ -174,7 +173,7 @@ export default function TimesheetPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!category || !hours || !description) {
+    if (!hours || !description) {
       toast.error("Please fill in all required fields.");
       return;
     }
@@ -184,18 +183,22 @@ export default function TimesheetPage() {
     submitTimesheetMutation.mutate(
       {
         entry_date: dateStr,
-        category,
-        hours,
+        hours: parseFloat(hours),
         description,
         blockers: blockers || "None",
         task:
-          linkedTaskId && linkedTaskId !== "none" ? linkedTaskId : undefined,
-        task_status:
-          linkedTaskId && linkedTaskId !== "none" ? taskStatus : undefined,
+          linkedTaskId && linkedTaskId !== "none"
+            ? [
+                {
+                  task_id: linkedTaskId,
+                  status: taskStatus,
+                  remark: "",
+                },
+              ]
+            : undefined,
       },
       {
         onSuccess: () => {
-          setCategory("");
           setHours("");
           setDescription("");
           setBlockers("");
@@ -213,22 +216,6 @@ export default function TimesheetPage() {
 
   const activeTasks =
     tasksData?.data?.filter((t) => t.status !== "COMPLETED") || [];
-
-  // Build category list from GET /timesheets/ API
-  const CATEGORY_LABELS: Record<string, string> = {
-    DEVELOPMENT: "Development / Coding",
-    DESIGN: "UI/UX Arts / Design",
-    TESTING: "QA / Testing",
-  };
-  const apiCategories = Array.from(
-    new Set(
-      (timesheetsData?.data ?? []).map((ts) => ts.category).filter(Boolean),
-    ),
-  );
-  const allCategories =
-    apiCategories.length > 0
-      ? apiCategories
-      : ["DEVELOPMENT", "DESIGN", "TESTING"];
 
   if (isTodayLoading || isHistoryLoading || isTimesheetsLoading) {
     return (
@@ -327,32 +314,6 @@ export default function TimesheetPage() {
                 <CardContent className="space-y-6 pt-8">
                   <div className="grid gap-6 md:grid-cols-2">
                     <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                        Quest Category
-                      </Label>
-                      <Select
-                        required
-                        onValueChange={setCategory}
-                        value={category}
-                      >
-                        <SelectTrigger className="w-full bg-background/50 border-border/50 !h-10 font-bold focus:ring-brand-blue/30">
-                          <SelectValue placeholder="Choose your discipline..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {allCategories.map((cat) => (
-                            <SelectItem
-                              key={cat}
-                              value={cat}
-                              className="font-bold uppercase text-xs"
-                            >
-                              {CATEGORY_LABELS[cat] ?? cat.replace(/_/g, " ")}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
                       <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
                         <Clock className="w-3 h-3" />
                         Time Channelled
@@ -371,10 +332,7 @@ export default function TimesheetPage() {
                         />
                       </div>
                     </div>
-                  </div>
 
-                  {/* Task Linker Section */}
-                  <div className="grid gap-6 md:grid-cols-2">
                     <div className="space-y-2">
                       <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
                         Link to Assigned Task
@@ -412,8 +370,10 @@ export default function TimesheetPage() {
                         </SelectContent>
                       </Select>
                     </div>
+                  </div>
 
-                    {linkedTaskId && linkedTaskId !== "none" && (
+                  {linkedTaskId && linkedTaskId !== "none" && (
+                    <div className="grid gap-6 md:grid-cols-2">
                       <div className="space-y-2">
                         <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
                           Update Task Status
@@ -427,10 +387,10 @@ export default function TimesheetPage() {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem
-                              value="TODO"
+                              value="WAITING_FOR_REVIEW"
                               className="font-bold uppercase text-xs"
                             >
-                              To Do
+                              Waiting for Review
                             </SelectItem>
                             <SelectItem
                               value="IN_PROGRESS"
@@ -453,8 +413,8 @@ export default function TimesheetPage() {
                           </SelectContent>
                         </Select>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
 
                   <div className="space-y-2">
                     <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">

@@ -10,7 +10,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import Pagination from "@/components/dashboard/table/pagination";
 import { Badge } from "@/components/ui/badge";
@@ -36,13 +36,16 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  manageInternsApi,
   useCreateTask,
   useDeleteTask,
   useGuilds,
   useManageTasks,
   useUpdateTask,
+  useVerifyTask,
 } from "@/features/intern";
 import type { TInternTask } from "@/features/intern/types";
+import { getTaskGuild } from "@/features/intern/utils/intern-helpers";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useSearch } from "@/hooks/use-search";
 
@@ -50,7 +53,7 @@ import { useSearch } from "@/hooks/use-search";
 
 const COMPLEXITY_OPTIONS = ["LOW", "MEDIUM", "HIGH", "CRITICAL"] as const;
 const _STATUS_OPTIONS = [
-  "TODO",
+  "WAITING_FOR_REVIEW",
   "IN_PROGRESS",
   "COMPLETED",
   "ON_HOLD",
@@ -77,6 +80,7 @@ const blankForm = {
   description: "",
   category: "",
   complexity: "MEDIUM" as (typeof COMPLEXITY_OPTIONS)[number],
+  karma: "",
   assigned_to: "",
   assigneeName: "",
   assigneeMuid: "",
@@ -89,11 +93,18 @@ export default function AdminTasksPage() {
   const [searchText, setSearchText] = useState("");
   const [page, setPage] = useState(1);
   const perPage = 15;
+  const [guildFilter, setGuildFilter] = useState("ALL");
+  const [complexityFilter, setComplexityFilter] = useState("ALL");
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [categoryFilter, setCategoryFilter] = useState("ALL");
 
   // Dialogs
   const [createOpen, setCreateOpen] = useState(false);
   const [editTask, setEditTask] = useState<TInternTask | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [verifyTarget, setVerifyTarget] = useState<TInternTask | null>(null);
+  const [verifyKarma, setVerifyKarma] = useState("");
+  const [isFetchingDetail, setIsFetchingDetail] = useState(false);
 
   // Form state
   const [form, setForm] = useState({ ...blankForm });
@@ -113,6 +124,10 @@ export default function AdminTasksPage() {
     page,
     perPage,
     search: debouncedSearch || undefined,
+    guild: guildFilter === "ALL" ? undefined : guildFilter,
+    complexity: complexityFilter === "ALL" ? undefined : complexityFilter,
+    status: statusFilter === "ALL" ? undefined : statusFilter,
+    category: categoryFilter === "ALL" ? undefined : categoryFilter,
   });
 
   const { data: guilds = [] } = useGuilds();
@@ -138,8 +153,36 @@ export default function AdminTasksPage() {
   const createMutation = useCreateTask();
   const updateMutation = useUpdateTask(editTask?.id ?? "");
   const deleteMutation = useDeleteTask();
+  const verifyMutation = useVerifyTask();
 
-  const tasks = tasksData?.data ?? [];
+  const tasks = useMemo(() => {
+    let list = tasksData?.data ?? [];
+    if (statusFilter !== "ALL") {
+      list = list.filter((task) => task.status === statusFilter);
+    }
+    if (guildFilter !== "ALL") {
+      list = list.filter((task) => {
+        const guild = getTaskGuild(task);
+        return (
+          guild.toUpperCase().includes(guildFilter.toUpperCase()) ||
+          guildFilter.toUpperCase().includes(guild.toUpperCase())
+        );
+      });
+    }
+    if (complexityFilter !== "ALL") {
+      list = list.filter((task) => task.complexity === complexityFilter);
+    }
+    if (categoryFilter !== "ALL") {
+      list = list.filter((task) => task.category === categoryFilter);
+    }
+    return list;
+  }, [
+    tasksData?.data,
+    statusFilter,
+    guildFilter,
+    complexityFilter,
+    categoryFilter,
+  ]);
 
   // ── Create task ───────────────────────────────────────────
   const handleCreate = (e: React.FormEvent) => {
@@ -159,6 +202,7 @@ export default function AdminTasksPage() {
         description: form.description,
         category: form.category,
         complexity: form.complexity,
+        karma_awarded: form.karma ? Number(form.karma) : undefined,
         assigned_to: form.assigned_to,
         team: form.team || undefined,
         deadline: form.deadline || undefined,
@@ -183,6 +227,7 @@ export default function AdminTasksPage() {
         description: form.description || undefined,
         category: form.category || undefined,
         complexity: form.complexity || undefined,
+        karma_awarded: form.karma ? Number(form.karma) : undefined,
         team: form.team || undefined,
         deadline: form.deadline || undefined,
       },
@@ -203,6 +248,22 @@ export default function AdminTasksPage() {
     });
   };
 
+  const handleVerifySubmit = () => {
+    if (!verifyTarget) return;
+    const karmaVal = verifyKarma ? Number(verifyKarma) : 0;
+    verifyMutation.mutate(
+      {
+        id: verifyTarget.id,
+        karma_awarded: karmaVal,
+      },
+      {
+        onSuccess: () => {
+          setVerifyTarget(null);
+        },
+      },
+    );
+  };
+
   // ── Open edit dialog with pre-filled values ───────────────
   const openEdit = (task: TInternTask) => {
     setEditTask(task);
@@ -211,6 +272,10 @@ export default function AdminTasksPage() {
       description: task.description,
       category: task.category,
       complexity: task.complexity as (typeof COMPLEXITY_OPTIONS)[number],
+      karma:
+        task.karma_awarded !== undefined && task.karma_awarded !== null
+          ? String(task.karma_awarded)
+          : "",
       assigned_to: task.assigned_to,
       assigneeName: task.assigned_to_name ?? "",
       assigneeMuid: "",
@@ -250,8 +315,8 @@ export default function AdminTasksPage() {
       </div>
 
       {/* Search bar */}
-      <div className="flex items-center gap-4 bg-card/40 backdrop-blur-md border border-border/40 p-4 rounded-2xl shadow-md">
-        <div className="relative flex-1">
+      <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 bg-card/40 backdrop-blur-md border border-border/40 p-4 rounded-2xl shadow-md">
+        <div className="relative w-full md:w-48 focus-within:md:w-80 transition-all duration-300 ease-in-out shrink-0">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
           <Input
             placeholder="Search tasks by title..."
@@ -260,8 +325,110 @@ export default function AdminTasksPage() {
               setSearchText(e.target.value);
               setPage(1);
             }}
-            className="pl-10 h-10 bg-background/50 border-border/50 font-medium"
+            className="w-full pl-10 h-10 bg-background/50 border-border/50 font-medium"
           />
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 flex-1">
+          <Select
+            value={guildFilter}
+            onValueChange={(value) => {
+              setGuildFilter(value);
+              setPage(1);
+            }}
+          >
+            <SelectTrigger className="w-full h-10 bg-background/50 border-border/50 font-bold text-xs uppercase">
+              <SelectValue placeholder="Filter by Guild" />
+            </SelectTrigger>
+            <SelectContent className="bg-card font-bold border-border/60">
+              <SelectItem value="ALL" className="font-bold text-xs uppercase">
+                All Guilds
+              </SelectItem>
+              {teams.map((team) => (
+                <SelectItem
+                  key={team}
+                  value={team}
+                  className="font-bold text-xs uppercase"
+                >
+                  {team.replace(/_/g, " ")}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={complexityFilter}
+            onValueChange={(value) => {
+              setComplexityFilter(value);
+              setPage(1);
+            }}
+          >
+            <SelectTrigger className="w-full h-10 bg-background/50 border-border/50 font-bold text-xs uppercase">
+              <SelectValue placeholder="Filter by Complexity" />
+            </SelectTrigger>
+            <SelectContent className="bg-card font-bold border-border/60">
+              <SelectItem value="ALL" className="font-bold text-xs uppercase">
+                All Complexities
+              </SelectItem>
+              {COMPLEXITY_OPTIONS.map((complexity) => (
+                <SelectItem
+                  key={complexity}
+                  value={complexity}
+                  className="font-bold text-xs uppercase"
+                >
+                  {complexity}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={statusFilter}
+            onValueChange={(value) => {
+              setStatusFilter(value);
+              setPage(1);
+            }}
+          >
+            <SelectTrigger className="w-full h-10 bg-background/50 border-border/50 font-bold text-xs uppercase">
+              <SelectValue placeholder="Filter by Status" />
+            </SelectTrigger>
+            <SelectContent className="bg-card font-bold border-border/60">
+              <SelectItem value="ALL" className="font-bold text-xs uppercase">
+                All Statuses
+              </SelectItem>
+              {_STATUS_OPTIONS.map((status) => (
+                <SelectItem
+                  key={status}
+                  value={status}
+                  className="font-bold text-xs uppercase"
+                >
+                  {status.replace(/_/g, " ")}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={categoryFilter}
+            onValueChange={(value) => {
+              setCategoryFilter(value);
+              setPage(1);
+            }}
+          >
+            <SelectTrigger className="w-full h-10 bg-background/50 border-border/50 font-bold text-xs uppercase">
+              <SelectValue placeholder="Filter by Category" />
+            </SelectTrigger>
+            <SelectContent className="bg-card font-bold border-border/60">
+              <SelectItem value="ALL" className="font-bold text-xs uppercase">
+                All Categories
+              </SelectItem>
+              {categories.map((category) => (
+                <SelectItem
+                  key={category}
+                  value={category}
+                  className="font-bold text-xs uppercase"
+                >
+                  {category.replace(/_/g, " ")}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -287,7 +454,11 @@ export default function AdminTasksPage() {
                   <tr className="border-b border-border/20 bg-muted/10 text-[10px] font-black uppercase text-muted-foreground tracking-widest">
                     <th className="p-4 pl-6">Title</th>
                     <th className="p-4">Assigned To</th>
+                    <th className="p-4">MUID</th>
+                    <th className="p-4">Guild</th>
                     <th className="p-4">Complexity</th>
+                    <th className="p-4">Karma</th>
+                    <th className="p-4">Status</th>
                     <th className="p-4">Deadline</th>
                     <th className="p-4 pr-6 text-right">Actions</th>
                   </tr>
@@ -309,6 +480,12 @@ export default function AdminTasksPage() {
                       <td className="p-4 text-xs font-semibold text-foreground">
                         {task.assigned_to_name ?? task.assigned_to}
                       </td>
+                      <td className="p-4 text-xs font-semibold text-muted-foreground">
+                        {task.assigned_to_muid || "—"}
+                      </td>
+                      <td className="p-4 text-xs font-semibold text-muted-foreground">
+                        {getTaskGuild(task).replace(/_/g, " ")}
+                      </td>
                       <td className="p-4">
                         <Badge
                           variant="outline"
@@ -316,6 +493,27 @@ export default function AdminTasksPage() {
                         >
                           {task.complexity}
                         </Badge>
+                      </td>
+                      <td className="p-4 text-xs font-black text-foreground">
+                        {task.karma_awarded ?? 0}
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-1.5">
+                          <Badge
+                            variant="outline"
+                            className="text-[9px] font-black uppercase tracking-widest"
+                          >
+                            {task.status.replace(/_/g, " ")}
+                          </Badge>
+                          {task.is_verified && (
+                            <Badge
+                              variant="outline"
+                              className="bg-success/10 border-success/30 text-success text-[8px] font-black uppercase tracking-wide h-4 px-1"
+                            >
+                              Verified
+                            </Badge>
+                          )}
+                        </div>
                       </td>
 
                       <td className="p-4 text-xs font-semibold text-muted-foreground">
@@ -337,6 +535,39 @@ export default function AdminTasksPage() {
                       </td>
                       <td className="p-4 pr-6 text-right">
                         <div className="flex items-center justify-end gap-2">
+                          {task.status === "COMPLETED" && !task.is_verified && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={async () => {
+                                setVerifyTarget(task);
+                                setVerifyKarma(
+                                  task.karma_awarded
+                                    ? String(task.karma_awarded)
+                                    : "",
+                                );
+                                setIsFetchingDetail(true);
+                                try {
+                                  const detail =
+                                    await manageInternsApi.getTaskDetail(
+                                      task.id,
+                                    );
+                                  setVerifyTarget(detail);
+                                } catch (error) {
+                                  console.error(
+                                    "Failed to fetch task detail",
+                                    error,
+                                  );
+                                } finally {
+                                  setIsFetchingDetail(false);
+                                }
+                              }}
+                              className="h-8 w-8 p-0 border-success/30 text-success hover:bg-success/10"
+                              title="Verify Task"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                            </Button>
+                          )}
                           <Button
                             size="sm"
                             variant="outline"
@@ -360,7 +591,7 @@ export default function AdminTasksPage() {
                   {tasks.length === 0 && (
                     <tr>
                       <td
-                        colSpan={6}
+                        colSpan={9}
                         className="p-16 text-center text-xs text-muted-foreground italic uppercase tracking-wider"
                       >
                         No tasks found. Use &quot;Assign New Task&quot; to
@@ -438,8 +669,8 @@ export default function AdminTasksPage() {
               />
             </div>
 
-            {/* Category + Complexity */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Category + Complexity + Karma */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                   Category <span className="text-destructive">*</span>
@@ -492,6 +723,19 @@ export default function AdminTasksPage() {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                  Karma
+                </Label>
+                <Input
+                  type="number"
+                  min="0"
+                  placeholder="e.g. 100"
+                  value={form.karma}
+                  onChange={(e) => setForm({ ...form, karma: e.target.value })}
+                  className="h-10 bg-background/50 border-border/50 font-bold"
+                />
               </div>
             </div>
 
@@ -571,7 +815,7 @@ export default function AdminTasksPage() {
             </div>
 
             {/* Team + Deadline */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                   Team
@@ -731,6 +975,19 @@ export default function AdminTasksPage() {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                  Karma
+                </Label>
+                <Input
+                  type="number"
+                  min="0"
+                  placeholder="e.g. 100"
+                  value={form.karma}
+                  onChange={(e) => setForm({ ...form, karma: e.target.value })}
+                  className="h-10 bg-background/50 border-border/50 font-bold"
+                />
+              </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -834,6 +1091,102 @@ export default function AdminTasksPage() {
               ) : (
                 <>
                   <Trash2 className="w-4 h-4" /> Delete Task
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Verify Task Dialog ──────────────────────────────────── */}
+      <Dialog
+        open={!!verifyTarget}
+        onOpenChange={(o) => !o && setVerifyTarget(null)}
+      >
+        <DialogContent className="max-w-md border-border/40 bg-card backdrop-blur-xl">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-black uppercase tracking-widest text-success flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5" /> Verify Completed Task
+            </DialogTitle>
+            <DialogDescription className="text-sm font-medium text-muted-foreground mt-2">
+              Approve and verify achievements for this task. You can override
+              the awarded karma value below.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-3">
+            <div className="space-y-1">
+              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
+                Task
+              </span>
+              <span className="font-bold text-foreground text-sm">
+                {verifyTarget?.title}
+              </span>
+            </div>
+            <div className="space-y-1">
+              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
+                Assigned To
+              </span>
+              <span className="font-semibold text-foreground text-xs">
+                {verifyTarget?.assigned_to_name || verifyTarget?.assigned_to}
+              </span>
+            </div>
+            <div className="space-y-1">
+              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
+                Submission Link
+              </span>
+              {verifyTarget?.output_link ? (
+                <a
+                  href={verifyTarget.output_link}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-xs font-bold text-brand-blue hover:underline break-all"
+                >
+                  {verifyTarget.output_link}
+                </a>
+              ) : isFetchingDetail ? (
+                <span className="text-xs text-muted-foreground italic flex items-center gap-1.5">
+                  <Spinner className="w-3 h-3 text-muted-foreground" /> Loading
+                  submission link...
+                </span>
+              ) : (
+                <span className="text-xs text-muted-foreground italic">
+                  No submission link provided
+                </span>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                Karma Points Awarded
+              </Label>
+              <Input
+                type="number"
+                min="0"
+                value={verifyKarma}
+                onChange={(e) => setVerifyKarma(e.target.value)}
+                className="h-10 bg-background/50 border-border/50 font-bold"
+              />
+            </div>
+          </div>
+          <DialogFooter className="pt-2">
+            <Button
+              variant="outline"
+              onClick={() => setVerifyTarget(null)}
+              className="font-bold"
+            >
+              Cancel
+            </Button>
+            <Button
+              disabled={verifyMutation.isPending}
+              onClick={handleVerifySubmit}
+              className="bg-success hover:bg-success/90 text-white font-bold gap-2"
+            >
+              {verifyMutation.isPending ? (
+                <>
+                  <Spinner className="w-4 h-4" /> Verifying...
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="w-4 h-4" /> Verify & Award
                 </>
               )}
             </Button>

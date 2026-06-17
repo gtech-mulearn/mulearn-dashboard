@@ -1242,6 +1242,8 @@ export const endpoints = {
     export: "/api/v1/dashboard/manage-interns/interns/export/",
     tasks: "/api/v1/dashboard/manage-interns/tasks/",
     taskDetail: (id: string) => `/api/v1/dashboard/manage-interns/tasks/${id}/`,
+    taskVerify: (id: string) =>
+      `/api/v1/dashboard/manage-interns/tasks/${id}/verify/`,
     leave: "/api/v1/dashboard/manage-interns/leave/",
     leaveReview: (id: string) =>
       `/api/v1/dashboard/manage-interns/leave/${id}/review/`,

@@ -2,7 +2,7 @@
 
 import { Check, Loader2, Plus, X } from "lucide-react";
 import type * as React from "react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -34,7 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useOnboardIntern } from "@/features/intern";
+import { useManageInternsList, useOnboardIntern } from "@/features/intern";
 import { type UserResult, useSearch } from "@/hooks/use-search";
 
 interface OnboardDialogProps {
@@ -60,12 +60,21 @@ export function OnboardDialog({
   const [onboardStatus, setOnboardStatus] = useState("ACTIVE");
   const [popoverOpen, setPopoverOpen] = useState(false);
 
-  const { query, results, isLoading, handleSearch, clearResults } = useSearch();
+  const { data: internsListData } = useManageInternsList({
+    page: 1,
+    perPage: 1000,
+  });
+
+  const excludedMuids = useMemo(() => {
+    return (internsListData?.data ?? []).map((i) => i.muid).filter(Boolean);
+  }, [internsListData]);
+
+  const { query, results, isLoading, handleSearch, clearResults } =
+    useSearch(excludedMuids);
 
   const statusColorClass: Record<string, string> = {
     ACTIVE: "text-success",
     AT_RISK: "text-warning",
-    ON_LEAVE: "text-brand-blue",
     INACTIVE: "text-muted-foreground",
   };
 
@@ -119,7 +128,8 @@ export function OnboardDialog({
             Onboard Intern
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            Search for a user by MUID and assign their guild and status.
+            Search for a user by MUID and assign their guild and base status.
+            Leave state is handled from approved leave requests.
           </DialogDescription>
         </DialogHeader>
 
@@ -317,12 +327,6 @@ export function OnboardDialog({
                   className="font-bold uppercase text-xs text-warning"
                 >
                   At Risk
-                </SelectItem>
-                <SelectItem
-                  value="ON_LEAVE"
-                  className="font-bold uppercase text-xs text-brand-blue"
-                >
-                  On Leave
                 </SelectItem>
                 <SelectItem
                   value="INACTIVE"

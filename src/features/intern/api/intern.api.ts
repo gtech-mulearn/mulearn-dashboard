@@ -26,6 +26,10 @@ export interface TInternQueryParams {
   sortBy?: string;
   sortOrder?: string;
   status?: string;
+  guild?: string;
+  complexity?: string;
+  category?: string;
+  team?: string;
 }
 
 function buildQueryString(params?: TInternQueryParams): string {
@@ -40,6 +44,10 @@ function buildQueryString(params?: TInternQueryParams): string {
   if (params.sortBy) searchParams.set("sortBy", params.sortBy);
   if (params.sortOrder) searchParams.set("sortOrder", params.sortOrder);
   if (params.status) searchParams.set("status", params.status);
+  if (params.guild) searchParams.set("guild", params.guild);
+  if (params.complexity) searchParams.set("complexity", params.complexity);
+  if (params.category) searchParams.set("category", params.category);
+  if (params.team) searchParams.set("team", params.team);
   const qStr = searchParams.toString();
   return qStr ? `?${qStr}` : "";
 }
@@ -159,9 +167,13 @@ export const internApi = {
 
   updateMyTaskStatus: async (
     id: string,
-    status: "TODO" | "IN_PROGRESS" | "COMPLETED" | "ON_HOLD",
+    status: "WAITING_FOR_REVIEW" | "IN_PROGRESS" | "COMPLETED" | "ON_HOLD",
+    output_link?: string,
   ): Promise<void> => {
-    await apiClient.patch(endpoints.intern.taskDetail(id), { status });
+    await apiClient.patch(endpoints.intern.taskDetail(id), {
+      status,
+      output_link,
+    });
   },
 
   // ── Leave Management ───────────────────────────────────────

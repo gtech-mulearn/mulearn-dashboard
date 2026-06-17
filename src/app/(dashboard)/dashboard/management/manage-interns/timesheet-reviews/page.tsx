@@ -40,6 +40,10 @@ import {
   useReviewWeeklyReview,
 } from "@/features/intern/hooks/use-manage-interns";
 import type { TTimesheet, TWeeklyReview } from "@/features/intern/types";
+import {
+  formatTasksAssigned,
+  formatTasksCompleted,
+} from "@/features/intern/utils/intern-helpers";
 
 export default function TimesheetReviewsPage() {
   const [searchText, setSearchText] = useState("");
@@ -141,19 +145,7 @@ export default function TimesheetReviewsPage() {
             </span>
           ),
         },
-        {
-          column: "category",
-          Label: "Category",
-          isSortable: true,
-          wrap: (data: string) => (
-            <Badge
-              variant="outline"
-              className="font-bold uppercase text-muted-foreground/80 tracking-wider"
-            >
-              {String(data)}
-            </Badge>
-          ),
-        },
+
         {
           column: "hours",
           Label: "Hours",
@@ -549,15 +541,7 @@ export default function TimesheetReviewsPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="flex flex-col gap-1 items-start">
-                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
-                        Category
-                      </span>
-                      <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground font-bold text-xs uppercase tracking-wider mt-1">
-                        {selectedTimesheet.category}
-                      </div>
-                    </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1">
                       <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
                         Time Spent
@@ -819,33 +803,33 @@ export default function TimesheetReviewsPage() {
                   )}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-border/20 pt-3">
-                    {selectedWeeklyReview.tasks_assigned && (
-                      <div className="flex flex-col gap-1">
-                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
-                          Tasks Assigned
-                        </span>
-                        <div className="bg-muted/30 p-2 rounded-lg border border-border/10 max-h-32 overflow-y-auto leading-relaxed mt-1 text-xs">
-                          <MarkdownRenderer
-                            content={selectedWeeklyReview.tasks_assigned}
-                            className="text-xs"
-                          />
-                        </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
+                        Tasks Assigned
+                      </span>
+                      <div className="bg-muted/30 p-2 rounded-lg border border-border/10 max-h-32 overflow-y-auto leading-relaxed mt-1 text-xs">
+                        <MarkdownRenderer
+                          content={formatTasksAssigned(
+                            selectedWeeklyReview.tasks_assigned,
+                          )}
+                          className="text-xs"
+                        />
                       </div>
-                    )}
+                    </div>
 
-                    {selectedWeeklyReview.tasks_completed && (
-                      <div className="flex flex-col gap-1">
-                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
-                          Tasks Completed
-                        </span>
-                        <div className="bg-muted/30 p-2 rounded-lg border border-border/10 max-h-32 overflow-y-auto leading-relaxed mt-1 text-xs">
-                          <MarkdownRenderer
-                            content={selectedWeeklyReview.tasks_completed}
-                            className="text-xs"
-                          />
-                        </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
+                        Tasks Completed
+                      </span>
+                      <div className="bg-muted/30 p-2 rounded-lg border border-border/10 max-h-32 overflow-y-auto leading-relaxed mt-1 text-xs">
+                        <MarkdownRenderer
+                          content={formatTasksCompleted(
+                            selectedWeeklyReview.tasks_completed,
+                          )}
+                          className="text-xs"
+                        />
                       </div>
-                    )}
+                    </div>
                   </div>
 
                   {(remarks?.learnings ||

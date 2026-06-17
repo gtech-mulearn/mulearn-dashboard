@@ -155,6 +155,26 @@ export function useDeleteTask() {
   });
 }
 
+export function useVerifyTask() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      karma_awarded,
+    }: {
+      id: string;
+      karma_awarded: number;
+    }) => manageInternsApi.verifyTask(id, { karma_awarded }),
+    onSuccess: async () => {
+      toast.success("Task verified successfully!");
+      await queryClient.invalidateQueries({ queryKey: internKeys.manage() });
+    },
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, "Failed to verify task"));
+    },
+  });
+}
+
 // ── Leave Review ───────────────────────────────────────────
 export function useManageLeaves(params?: TInternQueryParams) {
   return useQuery({

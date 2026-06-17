@@ -2,7 +2,9 @@
 
 import { Clock, Search } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -14,6 +16,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -31,6 +34,7 @@ import {
   useInternTasks,
   useUpdateTaskStatus,
 } from "@/features/intern";
+import { getTaskKarma } from "@/features/intern/utils/intern-helpers";
 import { useDebounce } from "@/hooks/use-debounce";
 
 const getComplexityColor = (complexity: string) => {
@@ -63,6 +67,10 @@ export default function InternTasksPage() {
 
   const updateStatusMutation = useUpdateTaskStatus();
 
+  const [completingTaskId, setCompletingTaskId] = useState<string | null>(null);
+  const [outputLink, setOutputLink] = useState("");
+  const [isSubmitLinkOpen, setIsSubmitLinkOpen] = useState(false);
+
   const tasks = tasksResponse?.data || [];
   const filteredTasks = tasks.filter((t) => {
     return statusFilter === "ALL" || t.status === statusFilter;
@@ -72,7 +80,39 @@ export default function InternTasksPage() {
     taskId: string,
     newStatus: TInternTask["status"],
   ) => {
-    updateStatusMutation.mutate({ id: taskId, status: newStatus });
+    if (newStatus === "COMPLETED") {
+      setCompletingTaskId(taskId);
+      setOutputLink("");
+      setIsSubmitLinkOpen(true);
+    } else {
+      updateStatusMutation.mutate({ id: taskId, status: newStatus });
+    }
+  };
+
+  const handleConfirmComplete = () => {
+    if (!completingTaskId) return;
+    if (!outputLink.trim()) {
+      toast.error("Please enter a valid submission URL");
+      return;
+    }
+    updateStatusMutation.mutate(
+      { id: completingTaskId, status: "COMPLETED", outputLink },
+      {
+        onSuccess: () => {
+          setIsSubmitLinkOpen(false);
+          setCompletingTaskId(null);
+          setOutputLink("");
+          // If the selected task in the detailed dialog is the one that was completed, update its status
+          if (selectedTask && selectedTask.id === completingTaskId) {
+            setSelectedTask((prev) =>
+              prev
+                ? { ...prev, status: "COMPLETED", output_link: outputLink }
+                : null,
+            );
+          }
+        },
+      },
+    );
   };
 
   return (
@@ -115,8 +155,11 @@ export default function InternTasksPage() {
               <SelectItem value="ALL" className="uppercase text-[10px]">
                 All Statuses
               </SelectItem>
-              <SelectItem value="TODO" className="uppercase text-[10px]">
-                To Do
+              <SelectItem
+                value="WAITING_FOR_REVIEW"
+                className="uppercase text-[10px]"
+              >
+                Waiting for Review
               </SelectItem>
               <SelectItem value="IN_PROGRESS" className="uppercase text-[10px]">
                 In Progress
@@ -147,12 +190,20 @@ export default function InternTasksPage() {
             >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between gap-2 mb-2">
-                  <Badge
-                    variant="outline"
-                    className={`text-[9px] uppercase font-black tracking-widest ${getComplexityColor(task.complexity)}`}
-                  >
-                    {task.complexity}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      variant="outline"
+                      className={`text-[9px] uppercase font-black tracking-widest ${getComplexityColor(task.complexity)}`}
+                    >
+                      {task.complexity}
+                    </Badge>
+                    <Badge
+                      variant="outline"
+                      className="text-[9px] uppercase font-black tracking-widest bg-success/10 text-success border-success/20"
+                    >
+                      {getTaskKarma(task)} Karma
+                    </Badge>
+                  </div>
                   {task.deadline && (
                     <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-mono font-bold">
                       <Clock className="w-3 h-3" />
@@ -179,7 +230,16 @@ export default function InternTasksPage() {
                 >
                   <div className="flex items-center gap-2">
                     <Select
-                      value={task.status}
+                      value={
+                        [
+                          "WAITING_FOR_REVIEW",
+                          "IN_PROGRESS",
+                          "COMPLETED",
+                          "ON_HOLD",
+                        ].includes(task.status)
+                          ? task.status
+                          : undefined
+                      }
                       onValueChange={(val) =>
                         handleStatusChange(
                           task.id,
@@ -189,14 +249,14 @@ export default function InternTasksPage() {
                       disabled={updateStatusMutation.isPending}
                     >
                       <SelectTrigger className="h-8 font-black uppercase text-[9px] tracking-widest w-[110px] border-border/50 bg-background/50 rounded-lg">
-                        <SelectValue placeholder="Update" />
+                        <SelectValue placeholder="TODO" />
                       </SelectTrigger>
                       <SelectContent className="bg-card font-bold border-border/60">
                         <SelectItem
-                          value="TODO"
+                          value="WAITING_FOR_REVIEW"
                           className="uppercase text-[9px]"
                         >
-                          To Do
+                          Waiting for Review
                         </SelectItem>
                         <SelectItem
                           value="IN_PROGRESS"
@@ -262,6 +322,12 @@ export default function InternTasksPage() {
                     )}
                     <Badge
                       variant="outline"
+                      className="bg-success/10 text-success border-success/20 text-[9px] font-black rounded-md uppercase tracking-wider px-2 py-0.5"
+                    >
+                      {getTaskKarma(selectedTask)} Karma
+                    </Badge>
+                    <Badge
+                      variant="outline"
                       className="bg-muted/30 text-muted-foreground border-border text-[9px] font-black rounded-md uppercase tracking-wider px-2 py-0.5"
                     >
                       {selectedTask.category}
@@ -289,17 +355,6 @@ export default function InternTasksPage() {
                 {/* Grid info */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1 bg-background/25 border border-border/20 p-3 rounded-xl">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">
-                      Created By
-                    </p>
-                    <p className="text-sm font-bold text-foreground">
-                      {selectedTask.created_by_name ||
-                        selectedTask.created_by ||
-                        "Admin/Mentor"}
-                    </p>
-                  </div>
-
-                  <div className="space-y-1 bg-background/25 border border-border/20 p-3 rounded-xl">
                     <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 flex items-center gap-1">
                       <Clock className="w-3 h-3 text-muted-foreground/50" />
                       Deadline
@@ -317,6 +372,40 @@ export default function InternTasksPage() {
                         : "No deadline"}
                     </p>
                   </div>
+                  <div className="space-y-1 bg-background/25 border border-border/20 p-3 rounded-xl">
+                    <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">
+                      Created By
+                    </p>
+                    <p className="text-sm font-bold text-foreground">
+                      {selectedTask.created_by_name ||
+                        selectedTask.created_by ||
+                        "Admin/Mentor"}
+                    </p>
+                  </div>
+                  <div className="space-y-1 bg-background/25 border border-border/20 p-3 rounded-xl">
+                    <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">
+                      Karma
+                    </p>
+                    <p className="text-sm font-bold text-foreground">
+                      {getTaskKarma(selectedTask)}
+                    </p>
+                  </div>
+                  {selectedTask.status === "COMPLETED" &&
+                    selectedTask.output_link && (
+                      <div className="space-y-1 bg-background/25 border border-border/20 p-3 rounded-xl col-span-1 sm:col-span-2">
+                        <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">
+                          Submission Link
+                        </p>
+                        <a
+                          href={selectedTask.output_link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs font-bold text-brand-blue hover:underline break-all"
+                        >
+                          {selectedTask.output_link}
+                        </a>
+                      </div>
+                    )}
                 </div>
 
                 {/* Status Updater inside modal */}
@@ -332,29 +421,43 @@ export default function InternTasksPage() {
 
                   <div className="flex items-center gap-3 w-full sm:w-auto">
                     <Select
-                      value={selectedTask.status}
+                      value={
+                        [
+                          "WAITING_FOR_REVIEW",
+                          "IN_PROGRESS",
+                          "COMPLETED",
+                          "ON_HOLD",
+                        ].includes(selectedTask.status)
+                          ? selectedTask.status
+                          : undefined
+                      }
                       onValueChange={(val) => {
                         handleStatusChange(
                           selectedTask.id,
                           val as TInternTask["status"],
                         );
-                        setSelectedTask((prev) =>
-                          prev
-                            ? { ...prev, status: val as TInternTask["status"] }
-                            : null,
-                        );
+                        if (val !== "COMPLETED") {
+                          setSelectedTask((prev) =>
+                            prev
+                              ? {
+                                  ...prev,
+                                  status: val as TInternTask["status"],
+                                }
+                              : null,
+                          );
+                        }
                       }}
                       disabled={updateStatusMutation.isPending}
                     >
                       <SelectTrigger className="h-9 font-black uppercase text-[10px] tracking-widest w-[130px] border-border/50 bg-background/50 rounded-lg">
-                        <SelectValue placeholder="Update" />
+                        <SelectValue placeholder="TODO" />
                       </SelectTrigger>
                       <SelectContent className="bg-card font-bold border-border/60">
                         <SelectItem
-                          value="TODO"
+                          value="WAITING_FOR_REVIEW"
                           className="uppercase text-[9px]"
                         >
-                          To Do
+                          Waiting for Review
                         </SelectItem>
                         <SelectItem
                           value="IN_PROGRESS"
@@ -381,6 +484,65 @@ export default function InternTasksPage() {
               </div>
             </>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Submit deliverables link dialog */}
+      <Dialog open={isSubmitLinkOpen} onOpenChange={setIsSubmitLinkOpen}>
+        <DialogContent className="w-full max-w-[calc(100%-2rem)] sm:max-w-md border-border/40 bg-card/95 backdrop-blur-2xl shadow-2xl">
+          <DialogHeader className="pb-4 border-b border-border/20">
+            <DialogTitle className="text-xl font-black uppercase tracking-tight text-foreground">
+              Submit Task Deliverables
+            </DialogTitle>
+            <DialogDescription className="text-xs font-semibold text-muted-foreground mt-1">
+              Please provide the submission link (e.g., GitHub PR, Figma link,
+              document) to mark this task as completed.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 pt-4">
+            <div className="space-y-1.5">
+              <label
+                htmlFor="output-link-input"
+                className="text-[10px] font-black uppercase tracking-widest text-muted-foreground"
+              >
+                Submission URL / Output Link
+              </label>
+              <Input
+                id="output-link-input"
+                type="url"
+                placeholder="https://github.com/... or similar"
+                value={outputLink}
+                onChange={(e) => setOutputLink(e.target.value)}
+                className="bg-background/50 border-border/50 font-medium focus-visible:ring-brand-blue"
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="border-t border-border/20 pt-4 flex items-center justify-end gap-2 mt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setIsSubmitLinkOpen(false);
+                setCompletingTaskId(null);
+                setOutputLink("");
+              }}
+              className="font-black text-[10px] uppercase tracking-widest h-9"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handleConfirmComplete}
+              disabled={updateStatusMutation.isPending}
+              className="font-black text-[10px] uppercase tracking-widest h-9 bg-brand-blue hover:bg-brand-blue/80 text-white"
+            >
+              {updateStatusMutation.isPending
+                ? "Submitting..."
+                : "Complete Task"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

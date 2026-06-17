@@ -23,7 +23,7 @@ export function ActiveQuests() {
                   Daily Log
                 </h4>
                 <p className="text-xs text-muted-foreground mt-1 font-medium">
-                  Log today's work to earn 50 points
+                  Log today's work to earn 25 points
                 </p>
               </div>
             </CardContent>
@@ -56,10 +56,10 @@ export function ActiveQuests() {
               </div>
               <div>
                 <h4 className="font-black text-lg group-hover:text-brand-purple transition-colors uppercase tracking-tight">
-                  Reflection
+                  Weekly Log
                 </h4>
                 <p className="text-xs text-muted-foreground mt-1 font-medium">
-                  Weekly summary for up to 200 points
+                  Log week's work to earn 50 points
                 </p>
               </div>
             </CardContent>

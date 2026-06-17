@@ -5,6 +5,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useInternOverview, useLeaderboardMe } from "@/features/intern";
 
+const getRankMilestone = (rank: number | string) => {
+  const r = Number(rank);
+  if (isNaN(r) || r <= 0) return "Actively competing in leaderboard";
+  if (r === 1) return "👑 Currently at the peak!";
+  if (r <= 3)
+    return `🔥 ${r - 1} ${r - 1 === 1 ? "rank" : "ranks"} away from Rank 1`;
+  if (r <= 10)
+    return `🏆 ${r - 3} ${r - 3 === 1 ? "rank" : "ranks"} away from the Podium`;
+  if (r <= 50)
+    return `⚡ ${r - 10} ${r - 10 === 1 ? "rank" : "ranks"} away from the Top 10`;
+  return `🚀 ${r - 50} ${r - 50 === 1 ? "rank" : "ranks"} away from the Top 50`;
+};
+
 export function InternStatsCards() {
   const { data: overview, isLoading: isOverviewLoading } = useInternOverview();
   const { data: meRank, isLoading: isMeLoading } = useLeaderboardMe();
@@ -36,6 +49,7 @@ export function InternStatsCards() {
   const userScore = overview?.score ?? 0;
   const userDailyStreak = overview?.daily_streak ?? 0;
   const userWeeklyStreak = overview?.weekly_streak ?? 0;
+  const userLongestDailyStreak = overview?.longest_daily_streak ?? 0;
   const userGuild = overview?.guild || "—";
   const userRank = meRank?.rank ?? "—";
 
@@ -93,7 +107,7 @@ export function InternStatsCards() {
             />
           </div>
           <p className="text-[10px] text-muted-foreground mt-2 font-bold uppercase tracking-widest">
-            Weekly Streak: {userWeeklyStreak} Weeks
+            Longest Streak: {userLongestDailyStreak} Days
           </p>
         </CardContent>
       </Card>
@@ -111,8 +125,8 @@ export function InternStatsCards() {
           <div className="text-3xl font-black font-mono tracking-tighter text-foreground">
             #{userRank}
           </div>
-          <p className="text-[10px] text-success mt-2 font-bold uppercase tracking-widest">
-            Complexity score: {overview?.complexity_score || 0}
+          <p className="text-[10px] text-brand-purple mt-2 font-bold uppercase tracking-widest">
+            {getRankMilestone(userRank)}
           </p>
         </CardContent>
       </Card>
