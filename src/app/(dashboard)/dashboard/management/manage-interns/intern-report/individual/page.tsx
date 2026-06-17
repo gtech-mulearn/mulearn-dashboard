@@ -138,7 +138,7 @@ export default function IndividualReportPage() {
                         <div className="flex items-center gap-2">
                           <Badge
                             variant="outline"
-                            className="font-bold text-[9px] uppercase tracking-widest bg-muted/30"
+                            className="font-bold text-[9px] uppercase tracking-widest"
                           >
                             {review.team}
                           </Badge>

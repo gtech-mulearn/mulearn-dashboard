@@ -136,10 +136,7 @@ function CourseOverlay({
                 </Badge>
               )}
               {typeof course.karma === "number" && course.karma > 0 && (
-                <Badge
-                  variant="secondary"
-                  className="gap-1 text-warning rounded-lg"
-                >
+                <Badge variant="secondary" className="gap-1 rounded-lg">
                   <Trophy className="w-3 h-3" />
                   {course.karma} Karma
                 </Badge>
