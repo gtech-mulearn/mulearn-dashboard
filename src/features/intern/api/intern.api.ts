@@ -248,6 +248,13 @@ export const internApi = {
     await apiClient.post(endpoints.intern.minutes, payload);
   },
 
+  updateMinute: async (
+    id: string,
+    payload: TSubmitMinutePayload,
+  ): Promise<void> => {
+    await apiClient.patch(endpoints.intern.minuteDetail(id), payload);
+  },
+
   getMyMinutes: async (
     params?: TInternQueryParams,
   ): Promise<TPaginatedData<TMinuteItem>> => {

@@ -86,6 +86,9 @@ export function useUpdateIntern(id: string) {
 
       // Invalidate to sync with backend once it's ready
       await queryClient.invalidateQueries({ queryKey: internKeys.manage() });
+      await queryClient.invalidateQueries({
+        queryKey: internKeys.overviewStatus(),
+      });
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error, "Failed to update intern"));

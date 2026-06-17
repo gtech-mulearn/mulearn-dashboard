@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Crown } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -29,7 +29,7 @@ interface UpdateDialogProps {
     name: string;
     guild: string;
     status: string;
-    role?: "INTERN" | "INTERN_LEAD";
+    role?: "INTERN" | "INTERN_LEAD" | "Intern" | "Intern Lead";
   } | null;
   guildOptions: string[];
 }
@@ -58,7 +58,11 @@ export function UpdateDialog({
     if (intern) {
       setUpdateGuild(intern.guild || "");
       setUpdateStatus(intern.status || "ACTIVE");
-      setUpdateRole(intern.role ?? "INTERN");
+      const normalizedRole =
+        intern.role === "Intern Lead" || intern.role === "INTERN_LEAD"
+          ? "INTERN_LEAD"
+          : "INTERN";
+      setUpdateRole(normalizedRole);
     }
   }, [intern]);
 
@@ -70,7 +74,7 @@ export function UpdateDialog({
       {
         guild: updateGuild,
         status: updateStatus,
-        role: updateRole,
+        role: updateRole === "INTERN_LEAD" ? "Intern Lead" : "Intern",
       },
       {
         onSuccess: () => {

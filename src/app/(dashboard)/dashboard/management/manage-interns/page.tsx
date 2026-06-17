@@ -117,7 +117,7 @@ export default function ManageInternsPage() {
     name: string;
     guild: string;
     status: string;
-    role?: "INTERN" | "INTERN_LEAD";
+    role?: "INTERN" | "INTERN_LEAD" | "Intern" | "Intern Lead";
   } | null>(null);
   const [deactivateIntern, setDeactivateIntern] = useState<{
     id: string;
@@ -182,10 +182,14 @@ export default function ManageInternsPage() {
     }
 
     if (roleFilter !== "all") {
-      resolvedRows = resolvedRows.filter(
-        (item) =>
-          (item.role ?? "INTERN").toUpperCase() === roleFilter.toUpperCase(),
-      );
+      resolvedRows = resolvedRows.filter((item) => {
+        const itemRole = item.role ?? "INTERN";
+        const normalized =
+          itemRole === "Intern Lead" || itemRole === "INTERN_LEAD"
+            ? "INTERN_LEAD"
+            : "INTERN";
+        return normalized === roleFilter;
+      });
     }
 
     return resolvedRows as unknown as Data[];
@@ -235,7 +239,7 @@ export default function ManageInternsPage() {
         Label: "Role",
         isSortable: true,
         wrap: (data: string) =>
-          data === "INTERN_LEAD" ? (
+          data === "INTERN_LEAD" || data === "Intern Lead" ? (
             <Badge
               variant="outline"
               className="gap-1 font-bold text-amber-500 border-amber-500/30 bg-amber-500/5"
@@ -483,7 +487,7 @@ export default function ManageInternsPage() {
                       status: getEditableStatus(
                         row as unknown as TManageInternItem,
                       ),
-                      role: (row.role as "INTERN" | "INTERN_LEAD") ?? "INTERN",
+                      role: (row.role as any) ?? "INTERN",
                     });
                   }}
                   className="rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"

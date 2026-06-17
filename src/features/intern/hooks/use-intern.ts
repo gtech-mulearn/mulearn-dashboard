@@ -284,9 +284,38 @@ export function useSubmitMinute() {
       await queryClient.invalidateQueries({
         queryKey: internKeys.myMinutes({}),
       });
+      await queryClient.invalidateQueries({
+        queryKey: ["manage-minutes"],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["intern", "manage", "minutes"],
+      });
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error, "Failed to upload minutes"));
+    },
+  });
+}
+
+export function useUpdateMinute(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: TSubmitMinutePayload) =>
+      internApi.updateMinute(id, payload),
+    onSuccess: async () => {
+      toast.success("Minutes updated successfully!");
+      await queryClient.invalidateQueries({
+        queryKey: internKeys.myMinutes({}),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["manage-minutes"],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["intern", "manage", "minutes"],
+      });
+    },
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, "Failed to update minutes"));
     },
   });
 }

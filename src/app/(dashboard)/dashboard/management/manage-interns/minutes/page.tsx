@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import {
   ArrowUpDown,
   Crown,
@@ -9,6 +8,7 @@ import {
   Loader2,
   ScrollText,
 } from "lucide-react";
+import { useMemo, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import Pagination from "@/components/dashboard/table/pagination";
 import { Badge } from "@/components/ui/badge";
@@ -29,9 +29,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  useGuilds,
   useInternOverview,
   useManageMinutes,
-  useGuilds,
 } from "@/features/intern";
 import { usePermissions } from "@/hooks/use-permissions";
 import { ROLES } from "@/lib/auth/roles";
@@ -51,7 +51,8 @@ export default function ManageMinutesPage() {
   const isAdmin = hasRole([ROLES.ADMIN, ROLES.ASSOCIATE]);
 
   const { data: overview } = useInternOverview();
-  const isInternLead = overview?.role === "INTERN_LEAD";
+  const isInternLead =
+    overview?.role === "INTERN_LEAD" || overview?.role === "Intern Lead";
   const internGuild = overview?.guild;
 
   const [page, setPage] = useState(1);

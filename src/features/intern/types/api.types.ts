@@ -14,7 +14,7 @@ export interface TPaginatedData<T> {
 export interface TInternOverviewStatus {
   guild: string;
   status: string;
-  role?: "INTERN" | "INTERN_LEAD";
+  role?: "INTERN" | "INTERN_LEAD" | "Intern" | "Intern Lead";
   total_intern_karma: number;
   daily_streak: number;
   weekly_streak: number;
@@ -228,7 +228,7 @@ export interface TManageInternItem {
   full_name: string;
   muid: string;
   guild: string;
-  role?: "INTERN" | "INTERN_LEAD";
+  role?: "INTERN" | "INTERN_LEAD" | "Intern" | "Intern Lead";
   status: "ACTIVE" | "AT_RISK" | "ON_LEAVE" | "INACTIVE";
   current_status?: "ACTIVE" | "AT_RISK" | "INACTIVE";
   previous_status?: "ACTIVE" | "AT_RISK" | "INACTIVE";
@@ -251,7 +251,7 @@ export interface TOnboardInternPayload {
 export interface TUpdateInternPayload {
   guild?: string;
   status?: string;
-  role?: "INTERN" | "INTERN_LEAD";
+  role?: "INTERN" | "INTERN_LEAD" | "Intern" | "Intern Lead";
 }
 
 export interface TCreateTaskPayload {

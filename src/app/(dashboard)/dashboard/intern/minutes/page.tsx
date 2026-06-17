@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   Calendar,
   Clock,
@@ -9,9 +8,11 @@ import {
   FileText,
   Link2,
   Loader2,
+  Pencil,
   ScrollText,
   Upload,
 } from "lucide-react";
+import { useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,14 +23,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { SectionErrorFallback } from "@/components/ui/errors/SectionErrorFallback";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { SectionErrorFallback } from "@/components/ui/errors/SectionErrorFallback";
 import { Textarea } from "@/components/ui/textarea";
 import {
   useInternOverview,
   useMyMinutes,
   useSubmitMinute,
+  useUpdateMinute,
+  type TMinuteItem,
 } from "@/features/intern";
 
 function getTodayDateString() {
@@ -39,13 +42,17 @@ function getTodayDateString() {
 
 export default function InternMinutesPage() {
   const { data: overview } = useInternOverview();
-  const isInternLead = overview?.role === "INTERN_LEAD";
+  const isInternLead =
+    overview?.role === "INTERN_LEAD" || overview?.role === "Intern Lead";
 
   const [date, setDate] = useState(getTodayDateString());
   const [link, setLink] = useState("");
   const [text, setText] = useState("");
+  const [editingMinute, setEditingMinute] = useState<TMinuteItem | null>(null);
 
   const submitMutation = useSubmitMinute();
+  const updateMutation = useUpdateMinute(editingMinute?.id || "");
+
   const { data: minutesData, isLoading: isMinutesLoading } = useMyMinutes({
     page: 1,
     perPage: 20,
@@ -54,37 +61,32 @@ export default function InternMinutesPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!link.trim()) return;
-    submitMutation.mutate(
-      { date, link: link.trim(), text: text.trim() || undefined },
-      {
-        onSuccess: () => {
-          setLink("");
-          setText("");
-          setDate(getTodayDateString());
-        },
-      },
-    );
-  };
 
-  // Not an intern lead — show access denied
-  if (overview && !isInternLead) {
-    return (
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="text-center space-y-4 max-w-md">
-          <div className="w-20 h-20 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto">
-            <Crown className="w-10 h-10 text-amber-500/60" />
-          </div>
-          <h2 className="text-2xl font-black uppercase tracking-tight">
-            Intern Leads Only
-          </h2>
-          <p className="text-muted-foreground text-sm">
-            The Guild Minutes page is only accessible to Intern Leads. Ask your
-            admin to promote you if needed.
-          </p>
-        </div>
-      </div>
-    );
-  }
+    if (editingMinute) {
+      updateMutation.mutate(
+        { date, link: link.trim(), text: text.trim() || undefined },
+        {
+          onSuccess: () => {
+            setLink("");
+            setText("");
+            setDate(getTodayDateString());
+            setEditingMinute(null);
+          },
+        },
+      );
+    } else {
+      submitMutation.mutate(
+        { date, link: link.trim(), text: text.trim() || undefined },
+        {
+          onSuccess: () => {
+            setLink("");
+            setText("");
+            setDate(getTodayDateString());
+          },
+        },
+      );
+    }
+  };
 
   return (
     <div className="flex-1 space-y-8 p-4 md:p-8 pt-6 max-w-5xl mx-auto w-full bg-background/50">
@@ -173,24 +175,50 @@ export default function InternMinutesPage() {
                 />
               </div>
 
-              <Button
-                type="submit"
-                variant="default"
-                disabled={submitMutation.isPending || !link.trim()}
-                className="w-full gap-2 text-[10px] tracking-widest h-10 bg-amber-500 hover:bg-amber-500/90 text-black font-black"
-              >
-                {submitMutation.isPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Uploading...
-                  </>
-                ) : (
-                  <>
-                    <Upload className="w-4 h-4" />
-                    Upload Minutes
-                  </>
+              <div className="flex gap-3">
+                <Button
+                  type="submit"
+                  variant="default"
+                  disabled={
+                    submitMutation.isPending ||
+                    updateMutation.isPending ||
+                    !link.trim()
+                  }
+                  className="flex-1 gap-2 text-[10px] tracking-widest h-10 bg-amber-500 hover:bg-amber-500/90 text-black font-black"
+                >
+                  {submitMutation.isPending || updateMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : editingMinute ? (
+                    <>
+                      <Upload className="w-4 h-4" />
+                      Update Minutes
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4" />
+                      Upload Minutes
+                    </>
+                  )}
+                </Button>
+                {editingMinute && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setEditingMinute(null);
+                      setLink("");
+                      setText("");
+                      setDate(getTodayDateString());
+                    }}
+                    className="gap-2 text-[10px] tracking-widest h-10"
+                  >
+                    Cancel
+                  </Button>
                 )}
-              </Button>
+              </div>
             </form>
           </CardContent>
         </Card>
@@ -262,21 +290,36 @@ export default function InternMinutesPage() {
                         </p>
                       </div>
                     </div>
-                    <a
-                      href={item.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="shrink-0"
-                    >
+                    <div className="flex items-center gap-1.5 shrink-0">
                       <Button
                         size="icon-sm"
                         variant="ghost"
+                        onClick={() => {
+                          setEditingMinute(item);
+                          setDate(item.date);
+                          setLink(item.link);
+                          setText(item.text ?? "");
+                        }}
                         className="rounded-lg text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10"
-                        title="Open Minutes"
+                        title="Edit Minutes"
                       >
-                        <ExternalLink className="w-4 h-4" />
+                        <Pencil className="w-4 h-4" />
                       </Button>
-                    </a>
+                      <a
+                        href={item.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Button
+                          size="icon-sm"
+                          variant="ghost"
+                          className="rounded-lg text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10"
+                          title="Open Minutes"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </Button>
+                      </a>
+                    </div>
                   </CardContent>
                 </Card>
               ))}
