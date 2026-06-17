@@ -101,8 +101,8 @@ function SessionRow({
         </div>
       </TableCell>
       <TableCell>
-        {session.ig_name ? (
-          session.ig_name
+        {(session.ig_name ?? session.entity_name) ? (
+          (session.ig_name ?? session.entity_name)
         ) : (
           <Badge variant="outline">Global</Badge>
         )}
