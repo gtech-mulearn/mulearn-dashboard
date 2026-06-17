@@ -74,10 +74,11 @@ export default function ProfilePage() {
 
   // Mentor status — only fetched to decide which view to render.
   // Uses the same hook the mentor onboarding flow already relies on.
-  const { data: mentorStatus } = useMentorApplication();
+  const isMentorRole = profile?.roles?.includes(ROLES.MENTOR) ?? false;
+  const { data: mentorStatus } = useMentorApplication(isMentorRole);
 
   // Fetch overview to match Home page logic (if scopes > 0, they are verified)
-  const { data: mentorOverview } = useMentorOverview();
+  const { data: mentorOverview } = useMentorOverview(isMentorRole);
   const isVerifiedMentor =
     mentorStatus?.status === "APPROVED" ||
     (mentorOverview?.scopes?.length ?? 0) > 0;
