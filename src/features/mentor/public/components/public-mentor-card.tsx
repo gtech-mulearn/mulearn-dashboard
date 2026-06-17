@@ -125,7 +125,7 @@ export function PublicMentorCard({ mentorId }: PublicMentorCardProps) {
                 {profile.mentor_tier && (
                   <Badge
                     variant="secondary"
-                    className="capitalize px-3 py-1 text-sm bg-primary/10 text-primary hover:bg-primary/20"
+                    className="capitalize px-3 py-1 text-sm"
                   >
                     <Shield className="mr-1.5 h-3.5 w-3.5" />
                     {profile.mentor_tier}
@@ -173,11 +173,7 @@ export function PublicMentorCard({ mentorId }: PublicMentorCardProps) {
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {expertiseTags.map((tag) => (
-                    <Badge
-                      key={tag}
-                      variant="outline"
-                      className="bg-muted/40 font-medium"
-                    >
+                    <Badge key={tag} variant="outline" className="font-medium">
                       {tag}
                     </Badge>
                   ))}
