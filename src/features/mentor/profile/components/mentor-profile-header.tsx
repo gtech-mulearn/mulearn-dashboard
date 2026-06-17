@@ -26,7 +26,7 @@ import {
   Users,
 } from "lucide-react";
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import type { MentorApplication } from "@/features/mentor/onboarding/schemas";
@@ -57,22 +57,22 @@ const MENTOR_TYPE_CONFIG: Record<
   ig: {
     label: "IG Mentor",
     icon: BookUser,
-    color: "bg-violet-500/20 text-violet-300 ring-violet-500/30",
+    color: "bg-violet-500/20 text-white ring-violet-500/30",
   },
   platform: {
     label: "Platform Mentor",
     icon: Users,
-    color: "bg-blue-500/20 text-blue-300 ring-blue-500/30",
+    color: "bg-blue-500/20 text-white ring-blue-500/30",
   },
   company: {
     label: "Company Mentor",
     icon: Building2,
-    color: "bg-amber-500/20 text-amber-300 ring-amber-500/30",
+    color: "bg-amber-500/20 text-white ring-amber-500/30",
   },
   campus: {
     label: "Campus Mentor",
     icon: GraduationCap,
-    color: "bg-emerald-500/20 text-emerald-300 ring-emerald-500/30",
+    color: "bg-emerald-500/20 text-white ring-emerald-500/30",
   },
 };
 
@@ -93,6 +93,17 @@ export function MentorProfileHeader({
 }: MentorProfileHeaderProps) {
   const [imageError, setImageError] = useState(false);
   const [coverError, setCoverError] = useState(false);
+
+  // Reset errors if the profile picture or cover changes
+  // biome-ignore lint/correctness/useExhaustiveDependencies: We want to trigger a reset ONLY when the URL string changes.
+  useEffect(() => {
+    setImageError(false);
+  }, [userProfile.profile_pic]);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: We want to trigger a reset ONLY when the URL string changes.
+  useEffect(() => {
+    setCoverError(false);
+  }, [userProfile.cover_pic]);
 
   const mentorType = deriveMentorType(mentorProfile);
   const typeConfig = MENTOR_TYPE_CONFIG[mentorType];
@@ -198,12 +209,12 @@ export function MentorProfileHeader({
 
               {/* Verified / Pending */}
               {isVerified ? (
-                <span className="flex items-center gap-1 rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-medium text-emerald-300 ring-1 ring-emerald-500/30 backdrop-blur-sm sm:text-xs">
+                <span className="flex items-center gap-1 rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-medium text-white ring-1 ring-emerald-500/30 backdrop-blur-sm sm:text-xs">
                   <CheckCircle2 className="h-3 w-3" />
                   Verified
                 </span>
               ) : (
-                <span className="flex items-center gap-1 rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-medium text-amber-300 ring-1 ring-amber-500/30 backdrop-blur-sm sm:text-xs">
+                <span className="flex items-center gap-1 rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-medium text-white ring-1 ring-amber-500/30 backdrop-blur-sm sm:text-xs">
                   <Clock className="h-3 w-3" />
                   Pending
                 </span>
@@ -211,7 +222,7 @@ export function MentorProfileHeader({
 
               {/* Mentor since */}
               {mentorSince && (
-                <span className="text-[10px] text-white/70 drop-shadow sm:text-xs">
+                <span className="text-[10px] text-white drop-shadow sm:text-xs">
                   Mentor since {mentorSince}
                 </span>
               )}

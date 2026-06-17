@@ -1293,11 +1293,7 @@ export function CampusManageDashboard() {
                                     <Tooltip
                                       cursor={{ fill: "transparent" }}
                                       content={({ active, payload }) => {
-                                        if (
-                                          active &&
-                                          payload &&
-                                          payload.length
-                                        ) {
+                                        if (active && payload?.length) {
                                           const point = payload[0]
                                             .payload as ClusterKarmaPoint;
                                           return (
@@ -1457,11 +1453,7 @@ export function CampusManageDashboard() {
                                     </Pie>
                                     <Tooltip
                                       content={({ active, payload }) => {
-                                        if (
-                                          active &&
-                                          payload &&
-                                          payload.length
-                                        ) {
+                                        if (active && payload?.length) {
                                           return (
                                             <div className="rounded-xl border border-border/60 bg-background/95 p-2.5 shadow-xl backdrop-blur-sm">
                                               <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">

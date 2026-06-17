@@ -8,9 +8,11 @@
 
 "use client";
 
+import { Clock } from "lucide-react";
 import { useState } from "react";
 import Loader from "@/app/loading";
 import { CompanyProfilePage } from "@/features/company-jobs/components";
+import { useMentorOverview } from "@/features/mentor/hooks";
 import {
   useMentorApplication,
   useMentorProfile,
@@ -73,14 +75,19 @@ export default function ProfilePage() {
   // Mentor status — only fetched to decide which view to render.
   // Uses the same hook the mentor onboarding flow already relies on.
   const { data: mentorStatus } = useMentorApplication();
-  const { data: mentorProfile } = useMentorProfile(
-    mentorStatus?.status === "APPROVED",
-  );
+
+  // Fetch overview to match Home page logic (if scopes > 0, they are verified)
+  const { data: mentorOverview } = useMentorOverview();
+  const isVerifiedMentor =
+    mentorStatus?.status === "APPROVED" ||
+    (mentorOverview?.scopes?.length ?? 0) > 0;
+
+  const { data: mentorProfile } = useMentorProfile(isVerifiedMentor);
 
   const isMentor =
     !showLearnerView &&
     profile?.roles.includes(ROLES.MENTOR) &&
-    mentorStatus?.status === "APPROVED";
+    isVerifiedMentor;
 
   const updateProfileMutation = useUpdateProfile();
   const { data: editableProfile } = useEditableProfile();
@@ -222,8 +229,23 @@ export default function ProfilePage() {
   const monthDifference = getMonthDifference(profile.joined);
   const currentLevel = getCurrentLevel(profile.level);
 
+  const isPendingMentor =
+    !isVerifiedMentor && mentorStatus?.status === "PENDING";
+
   return (
     <div className="w-full max-w-full space-y-6 overflow-x-hidden">
+      {isPendingMentor && !showLearnerView && (
+        <div className="flex items-center gap-3 rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-amber-500/90 shadow-sm backdrop-blur-sm">
+          <Clock className="h-5 w-5 shrink-0" />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium">Pending Verification</p>
+            <p className="text-xs opacity-80">
+              Your mentor application is currently under review by the team.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="w-full max-w-full overflow-hidden">
         <ProfileHeader
           profile={profile}

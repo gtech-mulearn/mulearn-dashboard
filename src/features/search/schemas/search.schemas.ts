@@ -50,24 +50,25 @@ export const userSearchResponseSchema = ApiResponseSchema(userSearchDataSchema);
 // ============================================
 
 export const campusSearchResultSchema = z.object({
-  id: z.union([z.string(), z.number()]).transform((val) => String(val)),
-  code: z.string(),
-  title: z.string(),
+  id: z
+    .union([z.string(), z.number(), z.null(), z.undefined()])
+    .transform((val) => (val != null ? String(val) : "unknown")),
+  code: z.preprocess((val) => (val == null ? "" : String(val)), z.string()),
+  title: z.preprocess((val) => (val == null ? "" : String(val)), z.string()),
   zone: z.string().nullable().optional(),
   district: z.string().nullable().optional(),
-  member_count: z
-    .union([z.number(), z.string(), z.null(), z.undefined()])
-    .transform((val) => {
-      if (val === null || val === undefined) return 0;
-      return typeof val === "string" ? parseInt(val, 10) || 0 : val;
-    }),
-  rank: z
-    .union([z.number(), z.string(), z.null(), z.undefined()])
-    .transform((val) => {
-      if (val === null || val === undefined) return null;
-      return typeof val === "string" ? parseInt(val, 10) || null : val;
-    })
-    .nullable(),
+  member_count: z.preprocess((val) => {
+    if (val === null || val === undefined) return 0;
+    if (typeof val === "string") return parseInt(val, 10) || 0;
+    if (typeof val === "number") return val;
+    return 0;
+  }, z.number()),
+  rank: z.preprocess((val) => {
+    if (val === null || val === undefined) return null;
+    if (typeof val === "string") return parseInt(val, 10) || null;
+    if (typeof val === "number") return val;
+    return null;
+  }, z.number().nullable()),
 });
 
 export const campusSearchDataSchema = z.object({

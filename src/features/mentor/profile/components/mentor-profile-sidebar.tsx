@@ -11,6 +11,7 @@
 
 import {
   BookOpen,
+  Building2,
   CalendarDays,
   ChevronRight,
   Clock,
@@ -22,11 +23,13 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { MentorSession } from "@/features/home/schemas/home.schema";
+import type { MentorSession } from "@/features/home/schemas";
 import type { MentorApplication } from "@/features/mentor/onboarding/schemas";
+import type { MentorStatus } from "@/features/mentor/types";
 
 interface MentorProfileSidebarProps {
   mentorProfile: MentorApplication;
+  statusData: MentorStatus | undefined;
   upcomingSessions: MentorSession[] | undefined;
   isLoading: boolean;
 }
@@ -45,16 +48,9 @@ const QUICK_LINKS = [
     active: true,
   },
   {
-    href: "#",
+    href: "/dashboard/mentor/mentees",
     label: "Mentees",
     icon: Users,
-    active: false,
-    badge: "Soon",
-  },
-  {
-    href: "/dashboard/mentor/opportunities",
-    label: "Opportunities",
-    icon: Sparkles,
     active: true,
   },
 ];
@@ -70,11 +66,13 @@ function formatDateTime(iso: string) {
 
 export function MentorProfileSidebar({
   mentorProfile,
+  statusData,
   upcomingSessions,
   isLoading,
 }: MentorProfileSidebarProps) {
   const nextSession = upcomingSessions?.[0];
   const tier = mentorProfile.mentor_tier;
+  const affiliation = statusData?.organization;
 
   return (
     <div className="space-y-4">
@@ -84,7 +82,7 @@ export function MentorProfileSidebar({
           <CardTitle className="text-sm font-semibold">Quick Actions</CardTitle>
         </CardHeader>
         <CardContent className="space-y-1 p-2">
-          {QUICK_LINKS.map(({ href, label, icon: Icon, active, badge }) => (
+          {QUICK_LINKS.map(({ href, label, icon: Icon, active }) => (
             <Link
               key={label}
               href={active ? href : "#"}
@@ -95,13 +93,7 @@ export function MentorProfileSidebar({
             >
               <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
               <span className="flex-1">{label}</span>
-              {badge ? (
-                <Badge variant="secondary" className="text-[10px] font-normal">
-                  {badge}
-                </Badge>
-              ) : (
-                <ChevronRight className="h-4 w-4 text-muted-foreground/50" />
-              )}
+              <ChevronRight className="h-4 w-4 text-muted-foreground/50" />
             </Link>
           ))}
         </CardContent>
@@ -119,6 +111,15 @@ export function MentorProfileSidebar({
               <Shield className="h-4 w-4 shrink-0 text-muted-foreground" />
               <span className="text-muted-foreground">Tier</span>
               <span className="ml-auto font-medium capitalize">{tier}</span>
+            </div>
+          )}
+
+          {/* Affiliation */}
+          {affiliation && (
+            <div className="flex items-center gap-2">
+              <Building2 className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <span className="text-muted-foreground">Affiliation</span>
+              <span className="ml-auto font-medium">{affiliation}</span>
             </div>
           )}
 

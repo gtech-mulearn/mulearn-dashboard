@@ -5,6 +5,7 @@ import {
   Briefcase,
   Building,
   Building2,
+  CalendarCheck,
   CheckCircle,
   GraduationCap,
   Link as LinkIcon,
@@ -64,6 +65,13 @@ const MANAGEMENT_ITEMS: ManagementItem[] = [
     description: "Create, edit, and configure user achievements.",
     path: "/dashboard/management/manage-achievements",
     color: "bg-chart-4/10 text-chart-4",
+  },
+  {
+    icon: CalendarCheck,
+    title: "Session Verification",
+    description: "Approve or reject mentor-submitted sessions.",
+    path: "/dashboard/management/session-verification",
+    color: "bg-chart-3/10 text-chart-3",
   },
   {
     icon: Users,
