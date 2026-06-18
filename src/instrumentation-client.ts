@@ -7,3 +7,5 @@ Sentry.init({
   enableLogs: true,
   sendDefaultPii: false,
 });
+
+export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;

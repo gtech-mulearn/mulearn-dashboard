@@ -11,12 +11,10 @@ import dynamic from "next/dynamic";
 import { fetchPublicLevels } from "@/features/mujourney/api";
 import { isAuthenticated } from "@/lib/auth/server";
 
-const MuJourneyDashboard = dynamic(
-  () =>
-    import("@/features/mujourney").then((mod) => ({
-      default: mod.MuJourneyDashboard,
-    })),
-  { ssr: false },
+const MuJourneyDashboard = dynamic(() =>
+  import("@/features/mujourney").then((mod) => ({
+    default: mod.MuJourneyDashboard,
+  })),
 );
 
 export const metadata: Metadata = {

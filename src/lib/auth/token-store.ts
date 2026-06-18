@@ -34,10 +34,6 @@ export const authStore = {
     return Cookies.get(ACCESS_TOKEN_KEY);
   },
 
-  getRefreshToken: () => {
-    return Cookies.get("refreshToken");
-  },
-
   clearTokens: async () => {
     await fetch("/api/auth/set-tokens", { method: "DELETE" });
     Cookies.remove(IS_AUTHENTICATED_KEY);

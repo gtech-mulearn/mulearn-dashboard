@@ -14,12 +14,10 @@ import { useRef, useState } from "react";
 import type { Task } from "../schemas";
 import { TaskCard } from "./TaskCard";
 
-const TaskDetailPanel = dynamic(
-  () =>
-    import("./TaskDetailPanel").then((mod) => ({
-      default: mod.TaskDetailPanel,
-    })),
-  { ssr: false },
+const TaskDetailPanel = dynamic(() =>
+  import("./TaskDetailPanel").then((mod) => ({
+    default: mod.TaskDetailPanel,
+  })),
 );
 
 interface TaskListProps {

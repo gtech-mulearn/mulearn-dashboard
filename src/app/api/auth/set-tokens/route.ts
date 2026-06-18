@@ -15,8 +15,10 @@ export async function POST(request: Request) {
   const cookieStore = await cookies();
   const isProduction = process.env.NODE_ENV === "production";
 
+  // accessToken must be JS-readable so the API client can attach Authorization header.
+  // refreshToken below is httpOnly — only the server-side refresh route reads it.
   cookieStore.set("accessToken", accessToken, {
-    httpOnly: true,
+    httpOnly: false,
     expires: new Date(Date.now() + 86_400_000), // 1 day
     secure: isProduction,
     sameSite: "strict",
