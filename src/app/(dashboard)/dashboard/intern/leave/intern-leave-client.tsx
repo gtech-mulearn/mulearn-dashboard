@@ -45,7 +45,7 @@ export function LeaveManagementPageClient() {
 
   // Inline form state
   const [leaveType, setLeaveType] = useState<
-    "SICK" | "CASUAL" | "WFH" | "EMERGENCY" | ""
+    "SICK" | "CASUAL" | "EMERGENCY" | ""
   >("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -123,16 +123,6 @@ export function LeaveManagementPageClient() {
       balance: balance?.SICK,
     },
     {
-      key: "WFH",
-      title: "Work From Home",
-      desc: "Remote work days allowed",
-      color: "from-brand-purple/20 to-brand-purple/5",
-      borderColor: "border-brand-purple/30",
-      textColor: "text-brand-purple",
-      icon: Home,
-      balance: balance?.WFH,
-    },
-    {
       key: "EMERGENCY",
       title: "Emergency Leave",
       desc: "Unforeseen urgent situations",
@@ -189,7 +179,7 @@ export function LeaveManagementPageClient() {
 
         <TabsContent value="balance" className="space-y-6 outline-none">
           {/* Leave balance cards grid */}
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-6 sm:grid-cols-3">
             {balanceCategories.map((cat) => {
               const Icon = cat.icon;
               const used = cat.balance?.used ?? 0;
@@ -426,9 +416,7 @@ export function LeaveManagementPageClient() {
                       required
                       value={leaveType}
                       onValueChange={(v) =>
-                        setLeaveType(
-                          v as "SICK" | "CASUAL" | "WFH" | "EMERGENCY",
-                        )
+                        setLeaveType(v as "SICK" | "CASUAL" | "EMERGENCY")
                       }
                     >
                       <SelectTrigger className="w-full bg-background/50 border-border/50 h-10 font-bold focus:ring-brand-purple/30">
@@ -443,9 +431,6 @@ export function LeaveManagementPageClient() {
                         </SelectItem>
                         <SelectItem value="SICK" className="font-bold text-xs">
                           Sick Leave
-                        </SelectItem>
-                        <SelectItem value="WFH" className="font-bold text-xs">
-                          Work From Home
                         </SelectItem>
                         <SelectItem
                           value="EMERGENCY"

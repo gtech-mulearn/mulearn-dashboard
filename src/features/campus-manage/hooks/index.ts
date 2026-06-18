@@ -8,6 +8,7 @@ export {
   useCreateIgChapter,
   useDeleteIgChapter,
   useDeleteSocialLink,
+  useDownloadStudentCsv,
   useEventDistribution,
   useExecomMembers,
   useExecomRoles,

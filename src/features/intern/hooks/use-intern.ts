@@ -307,7 +307,9 @@ export function useSubmitMinute() {
       });
     },
     onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to upload minutes"));
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to upload minutes" }),
+      );
     },
   });
 }
@@ -330,7 +332,9 @@ export function useUpdateMinute(id: string) {
       });
     },
     onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to update minutes"));
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to upload minutes" }),
+      );
     },
   });
 }

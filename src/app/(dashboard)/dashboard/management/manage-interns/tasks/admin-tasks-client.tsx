@@ -3,19 +3,19 @@
 import {
   CalendarDays,
   CheckCircle2,
-  Clock,
   Edit,
   Plus,
   Search,
   Trash2,
   X,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import Pagination from "@/components/dashboard/table/pagination";
+import Table from "@/components/dashboard/table/Table";
+import THead from "@/components/dashboard/table/Thead";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -184,6 +184,214 @@ export function AdminTasksPageClient() {
     categoryFilter,
   ]);
 
+  const columnOrder = useMemo(
+    () => [
+      {
+        column: "title",
+        Label: "Title",
+        isSortable: false,
+        width: "min-w-[150px]",
+      },
+      {
+        column: "assigned_to_name",
+        Label: "Assigned To",
+        isSortable: false,
+        width: "min-w-[200px]",
+      },
+      { column: "guild", Label: "Guild", isSortable: false, width: "w-36" },
+      {
+        column: "complexity",
+        Label: "Complexity",
+        isSortable: false,
+        width: "w-28",
+      },
+      {
+        column: "karma_awarded",
+        Label: "Karma",
+        isSortable: false,
+        width: "w-20",
+      },
+      { column: "status", Label: "Status", isSortable: false, width: "w-40" },
+      {
+        column: "deadline",
+        Label: "Deadline",
+        isSortable: false,
+        width: "w-32",
+      },
+    ],
+    [],
+  );
+
+  const tableRows = useMemo(() => {
+    return tasks.map((task) => ({
+      ...task,
+      full_name: task.title, // Map to full_name for mobile card header
+    })) as unknown as import("@/components/dashboard/table/Table").Data[];
+  }, [tasks]);
+
+  const customCellRender = useCallback(
+    (
+      column: string,
+      row: import("@/components/dashboard/table/Table").Data,
+    ) => {
+      const task = row as unknown as TInternTask;
+      switch (column) {
+        case "title":
+          return (
+            <div className="flex flex-col">
+              <span
+                className="font-bold text-foreground uppercase tracking-tight text-sm truncate max-w-[150px]"
+                title={task.title}
+              >
+                {task.title}
+              </span>
+              <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest leading-none mt-1 line-clamp-1">
+                {task.description}
+              </span>
+            </div>
+          );
+        case "assigned_to_name":
+          return (
+            <div className="flex flex-col">
+              <span
+                className="font-bold text-foreground uppercase tracking-tight text-sm truncate max-w-[200px]"
+                title={task.assigned_to_name ?? task.assigned_to}
+              >
+                {task.assigned_to_name ?? task.assigned_to}
+              </span>
+              {task.assigned_to_muid && (
+                <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest leading-none mt-1">
+                  {task.assigned_to_muid}
+                </span>
+              )}
+            </div>
+          );
+        case "guild":
+          return (
+            <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground font-bold uppercase tracking-wider">
+              {getTaskGuild(task).replace(/_/g, " ")}
+            </div>
+          );
+        case "complexity":
+          return (
+            <div
+              className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 font-bold uppercase tracking-wider ${complexityColor(task.complexity)}`}
+            >
+              {task.complexity}
+            </div>
+          );
+        case "karma_awarded":
+          return (
+            <span className="text-xs font-bold text-foreground">
+              {task.karma_awarded ?? 0}
+            </span>
+          );
+        case "status":
+          return (
+            <div className="flex items-center gap-1.5">
+              <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 gap-1.5 text-foreground border-border">
+                {task.status.replace(/_/g, " ")}
+              </div>
+              {task.is_verified && (
+                <div className="inline-flex items-center rounded-full border py-0.5 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 bg-success/10 border-success/30 text-success text-[8px] font-black uppercase tracking-wide h-4 px-1">
+                  Verified
+                </div>
+              )}
+            </div>
+          );
+        case "deadline":
+          return (
+            <span className="text-xs font-bold text-foreground">
+              {task.deadline
+                ? new Date(task.deadline).toLocaleDateString(undefined, {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })
+                : "—"}
+            </span>
+          );
+        default:
+          return null;
+      }
+    },
+    [],
+  );
+
+  // ── Open edit dialog with pre-filled values ───────────────
+  const openEdit = useCallback((task: TInternTask) => {
+    setEditTask(task);
+    setForm({
+      title: task.title,
+      description: task.description,
+      category: task.category,
+      complexity: task.complexity as (typeof COMPLEXITY_OPTIONS)[number],
+      karma:
+        task.karma_awarded !== undefined && task.karma_awarded !== null
+          ? String(task.karma_awarded)
+          : "",
+      assigned_to: task.assigned_to,
+      assigneeName: task.assigned_to_name ?? "",
+      assigneeMuid: "",
+      team: task.team ?? "",
+      deadline: task.deadline?.slice(0, 10) ?? "",
+    });
+  }, []);
+
+  const customActionRender = useCallback(
+    (row: import("@/components/dashboard/table/Table").Data) => {
+      const task = row as unknown as TInternTask;
+      return (
+        <div className="flex items-center justify-center gap-1">
+          {task.status === "COMPLETED" && !task.is_verified && (
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={async () => {
+                setVerifyTarget(task);
+                setVerifyKarma(
+                  task.karma_awarded ? String(task.karma_awarded) : "",
+                );
+                setIsFetchingDetail(true);
+                try {
+                  const detail = await manageInternsApi.getTaskDetail(task.id);
+                  setVerifyTarget(detail);
+                } catch (error) {
+                  console.error("Failed to fetch task detail", error);
+                } finally {
+                  setIsFetchingDetail(false);
+                }
+              }}
+              className="rounded-md text-muted-foreground hover:bg-muted hover:text-success size-8"
+              title="Verify Task"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5" />
+            </Button>
+          )}
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => openEdit(task)}
+            className="rounded-md text-muted-foreground hover:bg-muted hover:text-foreground size-8"
+            title="Edit Task"
+          >
+            <Edit className="w-3.5 h-3.5" />
+          </Button>
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => setDeleteTarget(task.id)}
+            className="rounded-md text-muted-foreground hover:bg-muted hover:text-destructive size-8"
+            title="Delete Task"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </Button>
+        </div>
+      );
+    },
+    [openEdit],
+  );
+
   // ── Create task ───────────────────────────────────────────
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -262,26 +470,6 @@ export function AdminTasksPageClient() {
         },
       },
     );
-  };
-
-  // ── Open edit dialog with pre-filled values ───────────────
-  const openEdit = (task: TInternTask) => {
-    setEditTask(task);
-    setForm({
-      title: task.title,
-      description: task.description,
-      category: task.category,
-      complexity: task.complexity as (typeof COMPLEXITY_OPTIONS)[number],
-      karma:
-        task.karma_awarded !== undefined && task.karma_awarded !== null
-          ? String(task.karma_awarded)
-          : "",
-      assigned_to: task.assigned_to,
-      assigneeName: task.assigned_to_name ?? "",
-      assigneeMuid: "",
-      team: task.team ?? "",
-      deadline: task.deadline?.slice(0, 10) ?? "",
-    });
   };
 
   return (
@@ -441,172 +629,24 @@ export function AdminTasksPageClient() {
           <Spinner className="w-8 h-8 text-primary" />
         </div>
       ) : (
-        <Card className="border-border/40 bg-card/40 backdrop-blur-md overflow-hidden shadow-xl">
-          <CardHeader className="pb-4 border-b border-border/20">
-            <CardTitle className="text-lg font-black uppercase tracking-widest flex items-center gap-2">
-              Task Register
-              <span className="text-xs text-muted-foreground font-bold normal-case tracking-normal">
-                ({tasksData?.pagination?.count ?? 0} tasks)
-              </span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-border/20 bg-muted/10 text-[10px] font-black uppercase text-muted-foreground tracking-widest">
-                    <th className="p-4 pl-6">Title</th>
-                    <th className="p-4">Assigned To</th>
-                    <th className="p-4">MUID</th>
-                    <th className="p-4">Guild</th>
-                    <th className="p-4">Complexity</th>
-                    <th className="p-4">Karma</th>
-                    <th className="p-4">Status</th>
-                    <th className="p-4">Deadline</th>
-                    <th className="p-4 pr-6 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/20">
-                  {tasks.map((task) => (
-                    <tr
-                      key={task.id}
-                      className="hover:bg-muted/10 transition-colors text-sm group"
-                    >
-                      <td className="p-4 pl-6 max-w-xs">
-                        <p className="font-bold text-foreground truncate">
-                          {task.title}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground font-medium line-clamp-1 mt-0.5">
-                          {task.description}
-                        </p>
-                      </td>
-                      <td className="p-4 text-xs font-semibold text-foreground">
-                        {task.assigned_to_name ?? task.assigned_to}
-                      </td>
-                      <td className="p-4 text-xs font-semibold text-muted-foreground">
-                        {task.assigned_to_muid || "—"}
-                      </td>
-                      <td className="p-4 text-xs font-semibold text-muted-foreground">
-                        {getTaskGuild(task).replace(/_/g, " ")}
-                      </td>
-                      <td className="p-4">
-                        <Badge
-                          variant="outline"
-                          className={`text-[9px] font-black uppercase tracking-widest ${complexityColor(task.complexity)}`}
-                        >
-                          {task.complexity}
-                        </Badge>
-                      </td>
-                      <td className="p-4 text-xs font-black text-foreground">
-                        {task.karma_awarded ?? 0}
-                      </td>
-                      <td className="p-4">
-                        <div className="flex items-center gap-1.5">
-                          <Badge
-                            variant="outline"
-                            className="text-[9px] font-black uppercase tracking-widest"
-                          >
-                            {task.status.replace(/_/g, " ")}
-                          </Badge>
-                          {task.is_verified && (
-                            <Badge
-                              variant="outline"
-                              className="bg-success/10 border-success/30 text-success text-[8px] font-black uppercase tracking-wide h-4 px-1"
-                            >
-                              Verified
-                            </Badge>
-                          )}
-                        </div>
-                      </td>
-
-                      <td className="p-4 text-xs font-semibold text-muted-foreground">
-                        {task.deadline ? (
-                          <div className="flex items-center gap-1 text-[10px]">
-                            <Clock className="w-3 h-3" />
-                            {new Date(task.deadline).toLocaleDateString(
-                              undefined,
-                              {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              },
-                            )}
-                          </div>
-                        ) : (
-                          "—"
-                        )}
-                      </td>
-                      <td className="p-4 pr-6 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          {task.status === "COMPLETED" && !task.is_verified && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={async () => {
-                                setVerifyTarget(task);
-                                setVerifyKarma(
-                                  task.karma_awarded
-                                    ? String(task.karma_awarded)
-                                    : "",
-                                );
-                                setIsFetchingDetail(true);
-                                try {
-                                  const detail =
-                                    await manageInternsApi.getTaskDetail(
-                                      task.id,
-                                    );
-                                  setVerifyTarget(detail);
-                                } catch (error) {
-                                  console.error(
-                                    "Failed to fetch task detail",
-                                    error,
-                                  );
-                                } finally {
-                                  setIsFetchingDetail(false);
-                                }
-                              }}
-                              className="h-8 w-8 p-0 border-success/30 text-success hover:bg-success/10"
-                              title="Verify Task"
-                            >
-                              <CheckCircle2 className="w-3.5 h-3.5" />
-                            </Button>
-                          )}
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => openEdit(task)}
-                            className="h-8 w-8 p-0 border-border/50"
-                          >
-                            <Edit className="w-3.5 h-3.5" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setDeleteTarget(task.id)}
-                            className="h-8 w-8 p-0 border-destructive/30 text-destructive hover:bg-destructive/10"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {tasks.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan={9}
-                        className="p-16 text-center text-xs text-muted-foreground italic uppercase tracking-wider"
-                      >
-                        No tasks found. Use &quot;Assign New Task&quot; to
-                        create one.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Pagination */}
+        <Table
+          rows={tableRows}
+          isLoading={isLoading}
+          page={page}
+          perPage={perPage}
+          columnOrder={columnOrder}
+          id={["id"]}
+          slNoCellClassName="font-black text-muted-foreground/40"
+          customCellRender={customCellRender}
+          customActionRender={customActionRender}
+        >
+          <THead
+            columnOrder={columnOrder}
+            onIconClick={() => {}}
+            action
+            thClassName="bg-muted/20 border-b border-border/20 h-12 font-black uppercase text-[9px] tracking-[0.3em]"
+          />
+          <div>
             {tasksData?.pagination && tasksData.pagination.totalPages > 1 && (
               <div className="p-4 border-t border-border/20">
                 <Pagination
@@ -623,8 +663,9 @@ export function AdminTasksPageClient() {
                 />
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+          <div />
+        </Table>
       )}
 
       {/* ── Create Task Dialog ──────────────────────────────────── */}
