@@ -179,7 +179,7 @@ export default function LeaveManagementPage() {
 
         <TabsContent value="balance" className="space-y-6 outline-none">
           {/* Leave balance cards grid */}
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-6 sm:grid-cols-3">
             {balanceCategories.map((cat) => {
               const Icon = cat.icon;
               const used = cat.balance?.used ?? 0;

@@ -76,6 +76,9 @@ export interface TTimesheetSubmitPayload {
 }
 
 export interface TTimesheetUpdatePayload {
+  hours?: number;
+  description?: string;
+  blockers?: string;
   end_of_day_note?: string;
   edit_reason: string; // mandatory
 }
@@ -182,7 +185,7 @@ export interface TInternTask {
 
 export interface TLeaveRequest {
   id: string;
-  leave_type: "SICK" | "CASUAL" | "WFH" | "EMERGENCY";
+  leave_type: "SICK" | "CASUAL" | "EMERGENCY";
   start_date: string;
   end_date: string;
   reason: string;
@@ -191,10 +194,11 @@ export interface TLeaveRequest {
   created_at: string;
   duration_days?: number;
   user_name?: string;
+  user_muid?: string;
 }
 
 export interface TLeaveSubmitPayload {
-  leave_type: "SICK" | "CASUAL" | "WFH" | "EMERGENCY";
+  leave_type: "SICK" | "CASUAL" | "EMERGENCY";
   start_date: string;
   end_date: string;
   reason: string;
@@ -302,9 +306,10 @@ export interface TMinuteItem {
   title: string;
   minutes: string;
   guild: string;
-  uploaded_by: string;
-  uploaded_by_name: string;
+  uploaded_by?: string;
+  uploaded_by_name?: string;
   uploaded_by_muid?: string;
+  created_by_name?: string;
   created_at: string;
 }
 

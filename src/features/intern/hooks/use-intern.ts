@@ -267,10 +267,11 @@ export function useGuilds() {
   });
 }
 
-export function useMyMinutes(params?: TInternQueryParams) {
+export function useMyMinutes(params?: TInternQueryParams, enabled = true) {
   return useQuery({
     queryKey: internKeys.myMinutes(params ?? {}),
     queryFn: () => internApi.getMyMinutes(params),
+    enabled,
   });
 }
 
@@ -282,7 +283,7 @@ export function useSubmitMinute() {
     onSuccess: async () => {
       toast.success("Minutes uploaded successfully!");
       await queryClient.invalidateQueries({
-        queryKey: internKeys.myMinutes({}),
+        queryKey: ["intern", "minutes", "mine"],
       });
       await queryClient.invalidateQueries({
         queryKey: ["manage-minutes"],
@@ -305,7 +306,7 @@ export function useUpdateMinute(id: string) {
     onSuccess: async () => {
       toast.success("Minutes updated successfully!");
       await queryClient.invalidateQueries({
-        queryKey: internKeys.myMinutes({}),
+        queryKey: ["intern", "minutes", "mine"],
       });
       await queryClient.invalidateQueries({
         queryKey: ["manage-minutes"],

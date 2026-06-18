@@ -92,8 +92,8 @@ export function UpdateDialog({
             Edit Intern
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            Modify the guild, base status, and role for {intern?.name}. Approved
-            leave requests control the temporary on-leave state.
+            Update the guild, status, and role for {intern?.name}. Temporary "On
+            Leave" status is managed automatically via approved leave requests.
           </DialogDescription>
         </DialogHeader>
 

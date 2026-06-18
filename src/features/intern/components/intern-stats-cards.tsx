@@ -48,7 +48,7 @@ const getRankMilestone = (rank: number | string) => {
       `🔥 Just ${steps} ${stepWord} away from the absolute peak!`,
       "🔥 Rank 1 is within your grasp!",
       "🔥 Next stop: The very top.",
-      "🔥 Breathing down the neck of #1!",
+      "🔥 Hot on the trail of #1",
     ];
     return rank1Messages[r % rank1Messages.length];
   }

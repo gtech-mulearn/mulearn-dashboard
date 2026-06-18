@@ -1255,7 +1255,7 @@ export const endpoints = {
     reviews: "/api/v1/dashboard/manage-interns/reviews/",
     weeklyReviewDetail: (id: string) =>
       `/api/v1/dashboard/manage-interns/reviews/reviews/${id}/review/`,
-    minutes: "/api/v1/dashboard/manage-interns/minutes/",
+    minutes: "/api/v1/dashboard/intern/minutes/",
   },
 
   // ============================================

@@ -62,11 +62,11 @@ export const routeAccessMap: Record<string, RouteConfig> = {
 
   // ── Intern Dashboard ─────────────────────────────
   "/dashboard/intern": {
-    roles: [ROLES.ADMIN, ROLES.INTERN],
+    roles: [ROLES.ADMIN, ROLES.INTERN, ROLES.INTERN_LEAD],
   },
 
   "/dashboard/intern/minutes": {
-    roles: [ROLES.ADMIN, ROLES.INTERN],
+    roles: [ROLES.ADMIN, ROLES.INTERN, ROLES.INTERN_LEAD],
   },
 
   // ── Interest Group Dashboard ─────────────────────────────
@@ -101,7 +101,7 @@ export const routeAccessMap: Record<string, RouteConfig> = {
     roles: [ROLES.ADMIN, ROLES.ASSOCIATE],
   },
   "/dashboard/management/manage-interns/minutes": {
-    roles: [ROLES.ADMIN, ROLES.ASSOCIATE, ROLES.INTERN],
+    roles: [ROLES.ADMIN, ROLES.ASSOCIATE, ROLES.INTERN, ROLES.INTERN_LEAD],
   },
   "/dashboard/management/manage-interest-groups": {
     roles: [ROLES.ADMIN],

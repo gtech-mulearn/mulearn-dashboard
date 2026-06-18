@@ -252,7 +252,7 @@ export const internApi = {
     id: string,
     payload: TSubmitMinutePayload,
   ): Promise<void> => {
-    await apiClient.patch(endpoints.intern.minuteDetail(id), payload);
+    await apiClient.put(endpoints.intern.minuteDetail(id), payload);
   },
 
   getMyMinutes: async (

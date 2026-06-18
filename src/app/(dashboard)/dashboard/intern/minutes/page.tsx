@@ -43,35 +43,75 @@ import {
   useSubmitMinute,
   useUpdateMinute,
 } from "@/features/intern";
+import { usePermissions } from "@/hooks/use-permissions";
+import { ROLES } from "@/lib/auth/roles";
 
 function getTodayDateString() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
+function trimMinutesText(text: string) {
+  if (!text) return "";
+  if (text.startsWith("http://") || text.startsWith("https://")) {
+    try {
+      const url = new URL(text);
+      const displayUrl =
+        url.hostname + (url.pathname !== "/" ? url.pathname : "");
+      if (displayUrl.length > 50) {
+        return `${displayUrl.substring(0, 47)}...`;
+      }
+      return displayUrl;
+    } catch {
+      if (text.length > 50) {
+        return `${text.substring(0, 47)}...`;
+      }
+      return text;
+    }
+  }
+  return text;
+}
+
 export default function InternMinutesPage() {
   const { data: overview } = useInternOverview();
+  const { hasRole } = usePermissions();
   const isInternLead =
-    overview?.role === "INTERN_LEAD" || overview?.role === "Intern Lead";
+    overview?.role === "INTERN_LEAD" ||
+    overview?.role === "Intern Lead" ||
+    hasRole([ROLES.INTERN_LEAD, ROLES.ADMIN]);
 
   const [date, setDate] = useState(getTodayDateString());
   const [title, setTitle] = useState("");
   const [minutesText, setMinutesText] = useState("");
   const [editingMinute, setEditingMinute] = useState<TMinuteItem | null>(null);
-  const [activeTab, setActiveTab] = useState("upload");
+  const [userSelectedTab, setUserSelectedTab] = useState<string | null>(null);
+  const activeTab = userSelectedTab || (isInternLead ? "upload" : "history");
+  const setActiveTab = setUserSelectedTab;
   const [searchQuery, setSearchQuery] = useState("");
   const [viewingMinute, setViewingMinute] = useState<TMinuteItem | null>(null);
 
   const submitMutation = useSubmitMinute();
   const updateMutation = useUpdateMinute(editingMinute?.id || "");
 
-  const { data: minutesData, isLoading: isMinutesLoading } = useMyMinutes({
-    page: 1,
-    perPage: 100, // retrieve more for search/history list
-  });
+  const { data: minutesData, isLoading: isMinutesLoading } = useMyMinutes(
+    {
+      page: 1,
+      perPage: 100, // retrieve more for search/history list
+      guild: overview?.guild || undefined,
+    },
+    !!overview,
+  );
 
   const filteredMinutes = useMemo(() => {
-    const list = minutesData?.data ?? [];
+    let list = minutesData?.data ?? [];
+
+    // Filter to only show minutes uploaded for the user's guild
+    if (overview?.guild) {
+      list = list.filter(
+        (item) => item.guild?.toLowerCase() === overview.guild.toLowerCase(),
+      );
+    }
+
     if (!searchQuery.trim()) return list;
     const query = searchQuery.toLowerCase();
     return list.filter(
@@ -79,7 +119,7 @@ export default function InternMinutesPage() {
         item.title.toLowerCase().includes(query) ||
         item.minutes.toLowerCase().includes(query),
     );
-  }, [minutesData, searchQuery]);
+  }, [minutesData, overview?.guild, searchQuery]);
 
   const renderContentWithLinks = (text: string) => {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -169,12 +209,14 @@ export default function InternMinutesPage() {
         className="w-full space-y-6"
       >
         <TabsList className="bg-muted/30 border border-border/40 p-1 rounded-xl w-fit">
-          <TabsTrigger
-            value="upload"
-            className="font-black uppercase text-xs tracking-wider px-6 py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm"
-          >
-            {editingMinute ? "Edit Minutes" : "Upload Minutes"}
-          </TabsTrigger>
+          {isInternLead && (
+            <TabsTrigger
+              value="upload"
+              className="font-black uppercase text-xs tracking-wider px-6 py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm"
+            >
+              {editingMinute ? "Edit Minutes" : "Upload Minutes"}
+            </TabsTrigger>
+          )}
           <TabsTrigger
             value="history"
             className="font-black uppercase text-xs tracking-wider px-6 py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm"
@@ -183,122 +225,125 @@ export default function InternMinutesPage() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="upload">
-          {/* Upload Form */}
-          <ErrorBoundary FallbackComponent={SectionErrorFallback}>
-            <Card className="bg-card/60 backdrop-blur-xl border-border/60 shadow-lg">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-base font-black uppercase tracking-widest flex items-center gap-2">
-                  <Upload className="w-4 h-4 text-amber-500" />
-                  {editingMinute ? "Edit Minutes" : "Upload Minutes"}
-                </CardTitle>
-                <CardDescription className="text-xs">
-                  {editingMinute
-                    ? "Update meeting details or link for this day."
-                    : "Submit today's meeting notes link or paste a brief summary."}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  {/* Date */}
-                  <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-1.5">
-                      <Calendar className="w-3 h-3" />
-                      Meeting Date
-                    </Label>
-                    <Input
-                      type="date"
-                      value={date}
-                      onChange={(e) => setDate(e.target.value)}
-                      className="h-10 border-border/40 bg-background/50 font-medium"
-                      required
-                    />
-                  </div>
+        {isInternLead && (
+          <TabsContent value="upload">
+            {/* Upload Form */}
+            <ErrorBoundary FallbackComponent={SectionErrorFallback}>
+              <Card className="bg-card/60 backdrop-blur-xl border-border/60 shadow-lg">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-base font-black uppercase tracking-widest flex items-center gap-2">
+                    <Upload className="w-4 h-4 text-amber-500" />
+                    {editingMinute ? "Edit Minutes" : "Upload Minutes"}
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    {editingMinute
+                      ? "Update meeting details or link for this day."
+                      : "Submit today's meeting notes link or paste a brief summary."}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleSubmit} className="space-y-5">
+                    {/* Date */}
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-1.5">
+                        <Calendar className="w-3 h-3" />
+                        Meeting Date
+                      </Label>
+                      <Input
+                        type="date"
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
+                        className="h-10 border-border/40 bg-background/50 font-medium"
+                        required
+                      />
+                    </div>
 
-                  {/* Title */}
-                  <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-1.5">
-                      <FileText className="w-3 h-3" />
-                      Meeting Title
-                      <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      type="text"
-                      placeholder="e.g. Daily Standup — June 17"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      className="h-10 border-border/40 bg-background/50 font-medium"
-                      required
-                    />
-                  </div>
+                    {/* Title */}
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-1.5">
+                        <FileText className="w-3 h-3" />
+                        Meeting Title
+                        <span className="text-destructive">*</span>
+                      </Label>
+                      <Input
+                        type="text"
+                        placeholder="e.g. Daily Standup"
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        className="h-10 border-border/40 bg-background/50 font-medium"
+                        required
+                      />
+                    </div>
 
-                  {/* Minutes Details */}
-                  <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-1.5">
-                      <ScrollText className="w-3 h-3" />
-                      Minutes
-                      <span className="text-destructive">*</span>
-                    </Label>
-                    <Textarea
-                      placeholder="https://notion.com/..."
-                      value={minutesText}
-                      onChange={(e) => setMinutesText(e.target.value)}
-                      rows={6}
-                      className="border-border/40 bg-background/50 font-medium resize-none"
-                      required
-                    />
-                  </div>
+                    {/* Minutes Details */}
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-1.5">
+                        <ScrollText className="w-3 h-3" />
+                        Minutes
+                        <span className="text-destructive">*</span>
+                      </Label>
+                      <Textarea
+                        placeholder="https://notion.com/..."
+                        value={minutesText}
+                        onChange={(e) => setMinutesText(e.target.value)}
+                        rows={6}
+                        className="border-border/40 bg-background/50 font-medium resize-none"
+                        required
+                      />
+                    </div>
 
-                  <div className="flex gap-3">
-                    <Button
-                      type="submit"
-                      variant="default"
-                      disabled={
-                        submitMutation.isPending ||
-                        updateMutation.isPending ||
-                        !title.trim() ||
-                        !minutesText.trim()
-                      }
-                      className="flex-1 gap-2 text-[10px] tracking-widest h-10 bg-amber-500 hover:bg-amber-500/90 text-black font-black"
-                    >
-                      {submitMutation.isPending || updateMutation.isPending ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          Saving...
-                        </>
-                      ) : editingMinute ? (
-                        <>
-                          <Upload className="w-4 h-4" />
-                          Update Minutes
-                        </>
-                      ) : (
-                        <>
-                          <Upload className="w-4 h-4" />
-                          Upload Minutes
-                        </>
-                      )}
-                    </Button>
-                    {editingMinute && (
+                    <div className="flex gap-3">
                       <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => {
-                          setEditingMinute(null);
-                          setTitle("");
-                          setMinutesText("");
-                          setDate(getTodayDateString());
-                        }}
-                        className="gap-2 text-[10px] tracking-widest h-10"
+                        type="submit"
+                        variant="default"
+                        disabled={
+                          submitMutation.isPending ||
+                          updateMutation.isPending ||
+                          !title.trim() ||
+                          !minutesText.trim()
+                        }
+                        className="flex-1 gap-2 text-[10px] tracking-widest h-10 bg-amber-500 hover:bg-amber-500/90 text-black font-black"
                       >
-                        Cancel
+                        {submitMutation.isPending ||
+                        updateMutation.isPending ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Saving...
+                          </>
+                        ) : editingMinute ? (
+                          <>
+                            <Upload className="w-4 h-4" />
+                            Update Minutes
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="w-4 h-4" />
+                            Upload Minutes
+                          </>
+                        )}
                       </Button>
-                    )}
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
-          </ErrorBoundary>
-        </TabsContent>
+                      {editingMinute && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            setEditingMinute(null);
+                            setTitle("");
+                            setMinutesText("");
+                            setDate(getTodayDateString());
+                          }}
+                          className="gap-2 text-[10px] tracking-widest h-10"
+                        >
+                          Cancel
+                        </Button>
+                      )}
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
+            </ErrorBoundary>
+          </TabsContent>
+        )}
 
         <TabsContent value="history">
           {/* Previous Minutes Log */}
@@ -375,7 +420,7 @@ export default function InternMinutesPage() {
                               </span>
                             </div>
                             <p className="text-[11px] text-muted-foreground/70 truncate mt-0.5 font-medium leading-none">
-                              {item.minutes}
+                              {trimMinutesText(item.minutes)}
                             </p>
                           </div>
                         </div>
@@ -390,21 +435,23 @@ export default function InternMinutesPage() {
                           >
                             <Eye className="w-3.5 h-3.5" />
                           </Button>
-                          <Button
-                            size="icon-sm"
-                            variant="ghost"
-                            onClick={() => {
-                              setEditingMinute(item);
-                              setDate(item.date);
-                              setTitle(item.title);
-                              setMinutesText(item.minutes);
-                              setActiveTab("upload");
-                            }}
-                            className="rounded-lg text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10 h-8 w-8"
-                            title="Edit Minutes"
-                          >
-                            <Pencil className="w-3.5 h-3.5" />
-                          </Button>
+                          {isInternLead && (
+                            <Button
+                              size="icon-sm"
+                              variant="ghost"
+                              onClick={() => {
+                                setEditingMinute(item);
+                                setDate(item.date);
+                                setTitle(item.title);
+                                setMinutesText(item.minutes);
+                                setActiveTab("upload");
+                              }}
+                              className="rounded-lg text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10 h-8 w-8"
+                              title="Edit Minutes"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </Card>
@@ -447,7 +494,10 @@ export default function InternMinutesPage() {
               {viewingMinute?.title}
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground font-medium mt-1">
-              Uploaded by {viewingMinute?.uploaded_by_name}{" "}
+              Uploaded by{" "}
+              {viewingMinute?.uploaded_by_name ||
+                viewingMinute?.created_by_name ||
+                "Unknown"}{" "}
               {viewingMinute?.uploaded_by_muid &&
                 `(${viewingMinute.uploaded_by_muid})`}{" "}
               on{" "}

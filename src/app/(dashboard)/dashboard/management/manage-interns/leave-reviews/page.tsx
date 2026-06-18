@@ -93,7 +93,7 @@ export default function LeaveReviewsPage() {
             {String(data || (row as any).full_name || "Unknown")}
           </span>
           <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest leading-none mt-1">
-            {(row as any).muid || ""}
+            {(row as any).user_muid || (row as any).muid || ""}
           </span>
         </div>
       ),
@@ -351,7 +351,8 @@ export default function LeaveReviewsPage() {
 
           {selectedLeave &&
             (() => {
-              const muid = (selectedLeave as any).muid || "";
+              const muid =
+                selectedLeave.user_muid || (selectedLeave as any).muid || "";
               const days =
                 selectedLeave.duration_days ||
                 calculateDurationDays(
@@ -441,7 +442,7 @@ export default function LeaveReviewsPage() {
                       <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
                         Duration Days
                       </span>
-                      <span className="font-black text-brand-purple text-sm">
+                      <span className="font-bold text-foreground text-sm">
                         {days ? `${days} Day${days > 1 ? "s" : ""}` : "-"}
                       </span>
                     </div>
