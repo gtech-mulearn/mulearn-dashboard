@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { ApiError } from "@/api";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Dialog,
   DialogContent,
@@ -43,6 +44,8 @@ export function TransferIgRoleDialog({
   defaultIgCode,
 }: TransferIgRoleDialogProps) {
   const [open, setOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingValues, setPendingValues] = useState<FormValues | null>(null);
   const [selectedUser, setSelectedUser] = useState<{
     muid: string;
     name: string;
@@ -66,12 +69,19 @@ export function TransferIgRoleDialog({
   };
 
   const onSubmit = (values: FormValues) => {
+    setPendingValues(values);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirm = () => {
+    if (!pendingValues) return;
     transfer(
-      { muid: values.muid, igCode: values.igCode },
+      { muid: pendingValues.muid, igCode: pendingValues.igCode },
       {
         onSuccess: () => {
           toast.success("IG lead role transferred");
           setOpen(false);
+          setConfirmOpen(false);
           form.reset({ muid: "", igCode: defaultIgCode ?? "" });
           setSelectedUser(null);
         },
@@ -81,78 +91,93 @@ export function TransferIgRoleDialog({
               ? error.message
               : "Failed to transfer IG lead role",
           );
+          setConfirmOpen(false);
         },
       },
     );
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Transfer IG Lead Role</DialogTitle>
-          <DialogDescription>
-            Select the member to become the new IG lead and the interest group.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-1.5">
-            <p className="text-sm font-medium">Interest Group</p>
-            <Select
-              value={form.watch("igCode")}
-              onValueChange={(val) =>
-                form.setValue("igCode", val, { shouldValidate: true })
-              }
-              disabled={isLoadingCodes || isPending}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select IG..." />
-              </SelectTrigger>
-              <SelectContent>
-                {igCodes.map((code) => (
-                  <SelectItem key={code} value={code}>
-                    {code}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {form.formState.errors.igCode && (
-              <p className="text-xs text-destructive">
-                {form.formState.errors.igCode.message}
-              </p>
-            )}
-          </div>
-          <div className="space-y-1.5">
-            <p className="text-sm font-medium">New IG Lead</p>
-            <MuidSearchInput
-              onSelectUser={handleSelectUser}
-              selectedUser={selectedUser}
-              onClear={handleClear}
-              keepOpen
-              placeholder="Search by name or MUID..."
-              disabled={isPending}
-            />
-            {form.formState.errors.muid && (
-              <p className="text-xs text-destructive">
-                {form.formState.errors.muid.message}
-              </p>
-            )}
-          </div>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => setOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isPending}>
-              {isPending ? "Transferring..." : "Transfer"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>{trigger}</DialogTrigger>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Transfer IG Lead Role</DialogTitle>
+            <DialogDescription>
+              Select the member to become the new IG lead and the interest
+              group.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="space-y-1.5">
+              <p className="text-sm font-medium">Interest Group</p>
+              <Select
+                value={form.watch("igCode")}
+                onValueChange={(val) =>
+                  form.setValue("igCode", val, { shouldValidate: true })
+                }
+                disabled={isLoadingCodes || isPending}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select IG..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {igCodes.map((code) => (
+                    <SelectItem key={code} value={code}>
+                      {code}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {form.formState.errors.igCode && (
+                <p className="text-xs text-destructive">
+                  {form.formState.errors.igCode.message}
+                </p>
+              )}
+            </div>
+            <div className="space-y-1.5">
+              <p className="text-sm font-medium">New IG Lead</p>
+              <MuidSearchInput
+                onSelectUser={handleSelectUser}
+                selectedUser={selectedUser}
+                onClear={handleClear}
+                keepOpen
+                placeholder="Search by name or MUID..."
+                disabled={isPending}
+              />
+              {form.formState.errors.muid && (
+                <p className="text-xs text-destructive">
+                  {form.formState.errors.muid.message}
+                </p>
+              )}
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isPending}>
+                {isPending ? "Transferring..." : "Transfer"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Are you absolutely sure?"
+        description="This will transfer the IG Lead role to the selected member. The current IG Lead will lose that role immediately."
+        confirmLabel={isPending ? "Transferring..." : "Yes, transfer"}
+        onConfirm={handleConfirm}
+        isPending={isPending}
+        variant="destructive"
+      />
+    </>
   );
 }
