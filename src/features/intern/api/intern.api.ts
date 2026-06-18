@@ -8,7 +8,9 @@ import type {
   TLeaveBalance,
   TLeaveRequest,
   TLeaveSubmitPayload,
+  TMinuteItem,
   TPaginatedData,
+  TSubmitMinutePayload,
   TTimesheet,
   TTimesheetSubmitPayload,
   TTimesheetSummary,
@@ -239,5 +241,26 @@ export const internApi = {
   // ── Guilds ─────────────────────────────────────────────────
   getGuilds: async (): Promise<string[]> => {
     return apiClient.get<string[]>(endpoints.intern.guilds);
+  },
+
+  // ── Minutes ────────────────────────────────────────────────
+  submitMinute: async (payload: TSubmitMinutePayload): Promise<void> => {
+    await apiClient.post(endpoints.intern.minutes, payload);
+  },
+
+  updateMinute: async (
+    id: string,
+    payload: TSubmitMinutePayload,
+  ): Promise<void> => {
+    await apiClient.put(endpoints.intern.minuteDetail(id), payload);
+  },
+
+  getMyMinutes: async (
+    params?: TInternQueryParams,
+  ): Promise<TPaginatedData<TMinuteItem>> => {
+    const qs = buildQueryString(params);
+    return apiClient.get<TPaginatedData<TMinuteItem>>(
+      `${endpoints.intern.minutes}${qs}`,
+    );
   },
 };

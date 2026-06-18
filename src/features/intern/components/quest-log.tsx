@@ -358,6 +358,9 @@ export function QuestLog() {
 
     if (selectedItem.type === "timesheet") {
       const payload: TTimesheetUpdatePayload = {
+        hours: Number(tsHours),
+        description: tsDescription,
+        blockers: tsBlockers || "None",
         end_of_day_note: tsEndOfDayNote,
         edit_reason: tsEditReason || "Self correction of details",
       };
@@ -669,8 +672,10 @@ export function QuestLog() {
                         max="24"
                         value={tsHours}
                         onChange={(e) => setTsHours(e.target.value)}
-                        disabled={true}
-                        className="bg-background/50 border-border/50 font-medium cursor-not-allowed"
+                        disabled={
+                          selectedItem.status !== "PENDING" || !isEditMode
+                        }
+                        className={`bg-background/50 border-border/50 font-medium ${selectedItem.status !== "PENDING" || !isEditMode ? "cursor-not-allowed" : ""}`}
                       />
                     </div>
 
@@ -682,9 +687,11 @@ export function QuestLog() {
                       <Textarea
                         value={tsDescription}
                         onChange={(e) => setTsDescription(e.target.value)}
-                        disabled={true}
+                        disabled={
+                          selectedItem.status !== "PENDING" || !isEditMode
+                        }
                         rows={4}
-                        className="bg-background/50 border-border/50 font-medium resize-none cursor-not-allowed"
+                        className={`bg-background/50 border-border/50 font-medium resize-none ${selectedItem.status !== "PENDING" || !isEditMode ? "cursor-not-allowed" : ""}`}
                       />
                     </div>
 
@@ -696,9 +703,11 @@ export function QuestLog() {
                       <Textarea
                         value={tsBlockers}
                         onChange={(e) => setTsBlockers(e.target.value)}
-                        disabled={true}
+                        disabled={
+                          selectedItem.status !== "PENDING" || !isEditMode
+                        }
                         rows={2}
-                        className="bg-background/50 border-border/50 font-medium resize-none cursor-not-allowed"
+                        className={`bg-background/50 border-border/50 font-medium resize-none ${selectedItem.status !== "PENDING" || !isEditMode ? "cursor-not-allowed" : ""}`}
                       />
                     </div>
 

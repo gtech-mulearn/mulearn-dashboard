@@ -6,6 +6,7 @@ import { ApiError } from "@/api/errors";
 import { internApi, type TInternQueryParams } from "../api";
 import type {
   TLeaveSubmitPayload,
+  TSubmitMinutePayload,
   TTimesheetSubmitPayload,
   TTimesheetUpdatePayload,
   TWeeklyReviewSubmitPayload,
@@ -263,5 +264,59 @@ export function useGuilds() {
   return useQuery({
     queryKey: internKeys.guilds(),
     queryFn: () => internApi.getGuilds(),
+  });
+}
+
+export function useMyMinutes(params?: TInternQueryParams, enabled = true) {
+  return useQuery({
+    queryKey: internKeys.myMinutes(params ?? {}),
+    queryFn: () => internApi.getMyMinutes(params),
+    enabled,
+  });
+}
+
+export function useSubmitMinute() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: TSubmitMinutePayload) =>
+      internApi.submitMinute(payload),
+    onSuccess: async () => {
+      toast.success("Minutes uploaded successfully!");
+      await queryClient.invalidateQueries({
+        queryKey: ["intern", "minutes", "mine"],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["manage-minutes"],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["intern", "manage", "minutes"],
+      });
+    },
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, "Failed to upload minutes"));
+    },
+  });
+}
+
+export function useUpdateMinute(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: TSubmitMinutePayload) =>
+      internApi.updateMinute(id, payload),
+    onSuccess: async () => {
+      toast.success("Minutes updated successfully!");
+      await queryClient.invalidateQueries({
+        queryKey: ["intern", "minutes", "mine"],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["manage-minutes"],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["intern", "manage", "minutes"],
+      });
+    },
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, "Failed to update minutes"));
+    },
   });
 }

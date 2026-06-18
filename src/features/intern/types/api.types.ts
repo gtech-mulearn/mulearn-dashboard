@@ -14,6 +14,7 @@ export interface TPaginatedData<T> {
 export interface TInternOverviewStatus {
   guild: string;
   status: string;
+  role?: "INTERN" | "INTERN_LEAD" | "Intern" | "Intern Lead";
   total_intern_karma: number;
   daily_streak: number;
   weekly_streak: number;
@@ -75,6 +76,9 @@ export interface TTimesheetSubmitPayload {
 }
 
 export interface TTimesheetUpdatePayload {
+  hours?: number;
+  description?: string;
+  blockers?: string;
   end_of_day_note?: string;
   edit_reason: string; // mandatory
 }
@@ -181,7 +185,7 @@ export interface TInternTask {
 
 export interface TLeaveRequest {
   id: string;
-  leave_type: "SICK" | "CASUAL" | "WFH" | "EMERGENCY";
+  leave_type: "SICK" | "CASUAL" | "EMERGENCY";
   start_date: string;
   end_date: string;
   reason: string;
@@ -190,10 +194,11 @@ export interface TLeaveRequest {
   created_at: string;
   duration_days?: number;
   user_name?: string;
+  user_muid?: string;
 }
 
 export interface TLeaveSubmitPayload {
-  leave_type: "SICK" | "CASUAL" | "WFH" | "EMERGENCY";
+  leave_type: "SICK" | "CASUAL" | "EMERGENCY";
   start_date: string;
   end_date: string;
   reason: string;
@@ -227,6 +232,7 @@ export interface TManageInternItem {
   full_name: string;
   muid: string;
   guild: string;
+  role?: "INTERN" | "INTERN_LEAD" | "Intern" | "Intern Lead";
   status: "ACTIVE" | "AT_RISK" | "ON_LEAVE" | "INACTIVE";
   current_status?: "ACTIVE" | "AT_RISK" | "INACTIVE";
   previous_status?: "ACTIVE" | "AT_RISK" | "INACTIVE";
@@ -249,6 +255,7 @@ export interface TOnboardInternPayload {
 export interface TUpdateInternPayload {
   guild?: string;
   status?: string;
+  role?: "INTERN" | "INTERN_LEAD" | "Intern" | "Intern Lead";
 }
 
 export interface TCreateTaskPayload {
@@ -289,4 +296,26 @@ export interface TTimesheetReviewPayload {
 export interface TWeeklyReviewReviewPayload {
   action: "approve" | "reject";
   review_note?: string;
+}
+
+// ── Minutes Types ─────────────────────────────────────────────
+
+export interface TMinuteItem {
+  id: string;
+  date: string;
+  title: string;
+  minutes: string;
+  guild: string;
+  uploaded_by?: string;
+  uploaded_by_name?: string;
+  uploaded_by_muid?: string;
+  created_by_name?: string;
+  created_at: string;
+}
+
+export interface TSubmitMinutePayload {
+  guild: string;
+  date: string;
+  title: string;
+  minutes: string;
 }

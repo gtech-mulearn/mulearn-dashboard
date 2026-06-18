@@ -30,6 +30,8 @@ export const internKeys = {
     [...internKeys.leaderboard(), "full", params] as const,
   leaderboardMe: () => [...internKeys.leaderboard(), "me"] as const,
   guilds: () => [...internKeys.all, "guilds"] as const,
+  myMinutes: (params: TInternQueryParams) =>
+    [...internKeys.all, "minutes", "mine", params] as const,
 
   // Admin Manage Dashboard
   manage: () => [...internKeys.all, "manage"] as const,
@@ -44,4 +46,6 @@ export const internKeys = {
     [...internKeys.manage(), "timesheets", params] as const,
   manageReviews: (params: TInternQueryParams) =>
     [...internKeys.manage(), "reviews", params] as const,
+  manageMinutes: (params: TInternQueryParams) =>
+    [...internKeys.manage(), "minutes", params] as const,
 };

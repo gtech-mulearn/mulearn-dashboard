@@ -4,6 +4,7 @@ import {
   AlertTriangle,
   Calendar,
   CheckCircle2,
+  Crown,
   ListTodo,
   PauseCircle,
   Pencil,
@@ -101,6 +102,7 @@ export default function ManageInternsPage() {
   const [perPage, setPerPage] = useState(10);
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [roleFilter, setRoleFilter] = useState("all");
   const [sortBy, setSortBy] = useState<string | undefined>(undefined);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | undefined>(
     undefined,
@@ -115,6 +117,7 @@ export default function ManageInternsPage() {
     name: string;
     guild: string;
     status: string;
+    role?: "INTERN" | "INTERN_LEAD" | "Intern" | "Intern Lead";
   } | null>(null);
   const [deactivateIntern, setDeactivateIntern] = useState<{
     id: string;
@@ -166,34 +169,40 @@ export default function ManageInternsPage() {
 
   const rows = useMemo(() => {
     const data = (listData?.data ?? []) as unknown as TManageInternItem[];
-    const resolvedRows = data.map((item) => ({
+    let resolvedRows = data.map((item) => ({
       ...item,
       resolved_status: resolveInternStatus(item),
     }));
 
-    if (statusFilter === "all") return resolvedRows as unknown as Data[];
+    if (statusFilter !== "all") {
+      resolvedRows = resolvedRows.filter(
+        (item) =>
+          item.resolved_status?.toUpperCase() === statusFilter.toUpperCase(),
+      );
+    }
 
-    return resolvedRows.filter(
-      (item) =>
-        item.resolved_status?.toUpperCase() === statusFilter.toUpperCase(),
-    ) as unknown as Data[];
-  }, [listData, statusFilter]);
+    if (roleFilter !== "all") {
+      resolvedRows = resolvedRows.filter((item) => {
+        const itemRole = item.role ?? "INTERN";
+        const normalized =
+          itemRole === "Intern Lead" || itemRole === "INTERN_LEAD"
+            ? "INTERN_LEAD"
+            : "INTERN";
+        return normalized === roleFilter;
+      });
+    }
+
+    return resolvedRows as unknown as Data[];
+  }, [listData, statusFilter, roleFilter]);
 
   const totalPages = listData?.pagination?.totalPages ?? 1;
   const totalCount = listData?.pagination?.count ?? 0;
 
-  const isBackendFiltered = useMemo(() => {
-    if (statusFilter === "all" || !listData?.data) return true;
-    return (listData.data as any[]).every(
-      (item) =>
-        resolveInternStatus(item).toUpperCase() === statusFilter.toUpperCase(),
-    );
-  }, [listData, statusFilter]);
-
-  const displayedTotalCount = isBackendFiltered ? totalCount : rows.length;
-  const displayedTotalPages = isBackendFiltered
-    ? totalPages
-    : Math.ceil(rows.length / perPage) || 1;
+  const isClientFiltered = statusFilter !== "all" || roleFilter !== "all";
+  const displayedTotalCount = isClientFiltered ? rows.length : totalCount;
+  const displayedTotalPages = isClientFiltered
+    ? Math.ceil(rows.length / perPage) || 1
+    : totalPages;
 
   const tableColumns = useMemo(() => {
     return [
@@ -224,6 +233,28 @@ export default function ManageInternsPage() {
             {data}
           </Badge>
         ),
+      },
+      {
+        column: "role",
+        Label: "Role",
+        isSortable: true,
+        wrap: (data: string) =>
+          data === "INTERN_LEAD" || data === "Intern Lead" ? (
+            <Badge
+              variant="outline"
+              className="gap-1 font-bold text-amber-500 border-amber-500/30 bg-amber-500/5"
+            >
+              <Crown className="w-3 h-3" />
+              Intern Lead
+            </Badge>
+          ) : (
+            <Badge
+              variant="outline"
+              className="font-bold text-muted-foreground border-border"
+            >
+              Intern
+            </Badge>
+          ),
       },
       {
         column: "resolved_status",
@@ -306,6 +337,15 @@ export default function ManageInternsPage() {
               Reports
             </Button>
           </Link>
+          <Link href="/dashboard/management/manage-interns/minutes">
+            <Button
+              variant="default"
+              className="gap-2 text-[10px] tracking-widest h-10 shadow-lg bg-amber-500 hover:bg-amber-500/90 text-black"
+            >
+              <Crown className="w-4 h-4" />
+              Minutes
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -370,6 +410,37 @@ export default function ManageInternsPage() {
                   </SelectItem>
                 </SelectContent>
               </Select>
+              <Select
+                value={roleFilter}
+                onValueChange={(val) => {
+                  setRoleFilter(val);
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger className="w-[180px] h-10 font-black uppercase text-[10px] tracking-widest border-border/40 bg-card/40">
+                  <SelectValue placeholder="Filter by Role" />
+                </SelectTrigger>
+                <SelectContent className="bg-card/95 backdrop-blur-xl border-border/60">
+                  <SelectItem
+                    value="all"
+                    className="font-bold uppercase text-[10px]"
+                  >
+                    All Roles
+                  </SelectItem>
+                  <SelectItem
+                    value="INTERN"
+                    className="font-bold uppercase text-[10px]"
+                  >
+                    Intern
+                  </SelectItem>
+                  <SelectItem
+                    value="INTERN_LEAD"
+                    className="font-bold uppercase text-[10px] text-amber-500"
+                  >
+                    ⭐ Intern Lead
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -416,6 +487,7 @@ export default function ManageInternsPage() {
                       status: getEditableStatus(
                         row as unknown as TManageInternItem,
                       ),
+                      role: (row.role as any) ?? "INTERN",
                     });
                   }}
                   className="rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
