@@ -6,6 +6,7 @@ import {
   BookOpen,
   Briefcase,
   CalendarDays,
+  Download,
   ExternalLink,
   Facebook,
   Github,
@@ -58,6 +59,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Combobox } from "@/components/ui/combobox";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -96,6 +98,7 @@ import {
   useCampusOverview,
   useChangeStudentType,
   useDeleteSocialLink,
+  useDownloadStudentCsv,
   useEventDistribution,
   useExecomMembers,
   useIgChapters,
@@ -106,6 +109,7 @@ import {
 import type {
   CampusEventFilters,
   CampusLeaderboardFilters,
+  CampusLeaderboardItem,
   ClusterKarmaPoint,
   IgChapter,
   SocialLink,
@@ -553,6 +557,12 @@ export function CampusManageDashboard() {
     useRemoveExecomMember();
   const { mutate: changeStudentType, isPending: isChangingType } =
     useChangeStudentType();
+  const { mutate: downloadCsv, isPending: isDownloadingCsv } =
+    useDownloadStudentCsv();
+
+  // ─── Student type change confirmation state ──
+  const [pendingStudent, setPendingStudent] =
+    useState<CampusLeaderboardItem | null>(null);
 
   // ─── Chapter editing state ──
   const [editingChapter, setEditingChapter] = useState<IgChapter | null>(null);
@@ -1017,6 +1027,34 @@ export function CampusManageDashboard() {
                     { label: "Status: Student", value: "student" },
                   ]}
                 />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-9 gap-2 rounded-full"
+                  disabled={isDownloadingCsv}
+                  onClick={() =>
+                    downloadCsv(
+                      { alumni: leaderboardFilters.alumni },
+                      {
+                        onSuccess: () =>
+                          toast.success("Student details exported"),
+                        onError: (error) =>
+                          toast.error(
+                            error instanceof ApiError
+                              ? error.message
+                              : "Failed to export student details",
+                          ),
+                      },
+                    )
+                  }
+                >
+                  {isDownloadingCsv ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4" />
+                  )}
+                  Export CSV
+                </Button>
               </div>
             </div>
 
@@ -1112,30 +1150,7 @@ export function CampusManageDashboard() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                   <DropdownMenuItem
-                                    onClick={() =>
-                                      changeStudentType(
-                                        {
-                                          memberId: student.id,
-                                          data: {
-                                            is_alumni: !student.alumni,
-                                          },
-                                        },
-                                        {
-                                          onSuccess: () =>
-                                            toast.success(
-                                              student.alumni
-                                                ? "Marked as active student"
-                                                : "Marked as alumni",
-                                            ),
-                                          onError: (error) =>
-                                            toast.error(
-                                              error instanceof ApiError
-                                                ? error.message
-                                                : "Failed to update student type",
-                                            ),
-                                        },
-                                      )
-                                    }
+                                    onClick={() => setPendingStudent(student)}
                                   >
                                     {student.alumni
                                       ? "Mark as Active"
@@ -2313,6 +2328,57 @@ export function CampusManageDashboard() {
           </section>
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={pendingStudent !== null}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) setPendingStudent(null);
+        }}
+        title={
+          pendingStudent?.alumni ? "Mark as active student?" : "Mark as alumni?"
+        }
+        description={
+          pendingStudent?.alumni
+            ? `This will mark ${pendingStudent?.name ?? "this student"} as an active student of the campus.`
+            : `This will mark ${pendingStudent?.name ?? "this student"} as alumni. They will be excluded from active student views.`
+        }
+        confirmLabel={
+          isChangingType
+            ? "Updating..."
+            : pendingStudent?.alumni
+              ? "Yes, mark as active"
+              : "Yes, mark as alumni"
+        }
+        isPending={isChangingType}
+        variant="warning"
+        onConfirm={() => {
+          if (!pendingStudent) return;
+          changeStudentType(
+            {
+              memberId: pendingStudent.id,
+              data: { is_alumni: !pendingStudent.alumni },
+            },
+            {
+              onSuccess: () => {
+                toast.success(
+                  pendingStudent.alumni
+                    ? "Marked as active student"
+                    : "Marked as alumni",
+                );
+                setPendingStudent(null);
+              },
+              onError: (error) => {
+                toast.error(
+                  error instanceof ApiError
+                    ? error.message
+                    : "Failed to update student type",
+                );
+                setPendingStudent(null);
+              },
+            },
+          );
+        }}
+      />
     </div>
   );
 }

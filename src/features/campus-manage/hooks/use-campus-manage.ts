@@ -172,6 +172,13 @@ export function useTransferIgRole() {
   });
 }
 
+export function useDownloadStudentCsv() {
+  return useMutation({
+    mutationFn: (filters?: { alumni?: "all" | "alumni" | "student" }) =>
+      campusManageApi.downloadStudentDetailsCsv(filters),
+  });
+}
+
 export function useChangeStudentType() {
   return useMutation({
     mutationFn: ({

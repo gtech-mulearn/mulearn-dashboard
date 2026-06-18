@@ -457,6 +457,32 @@ export const campusManageApi = {
     };
   },
 
+  async downloadStudentDetailsCsv(filters?: {
+    alumni?: "all" | "alumni" | "student";
+  }): Promise<void> {
+    const params = new URLSearchParams();
+    if (filters && filters.alumni && filters.alumni !== "all") {
+      params.set("is_alumni", String(filters.alumni === "alumni"));
+    }
+    const suffix = params.toString();
+    const endpoint = suffix
+      ? `${endpoints.campusManage.studentDetailsCsv}?${suffix}`
+      : endpoints.campusManage.studentDetailsCsv;
+
+    const blob = await apiClient.get<Blob>(endpoint, undefined, {
+      responseType: "blob",
+    });
+
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "campus-student-details.csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  },
+
   async getStudentLevels(): Promise<StudentLevelCount[]> {
     const raw = await apiClient.get<unknown>(
       endpoints.campusManage.studentLevel,
