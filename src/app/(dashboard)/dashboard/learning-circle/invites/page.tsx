@@ -6,8 +6,8 @@
  * Shows current user's pending circle invitations.
  */
 
-import { PendingInvites } from "@/features/learning-circle";
 import type { Metadata } from "next";
+import { PendingInvites } from "@/features/learning-circle";
 
 export const metadata: Metadata = {
   title: "My Invitations",

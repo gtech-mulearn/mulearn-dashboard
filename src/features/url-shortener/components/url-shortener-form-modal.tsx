@@ -17,12 +17,12 @@ import { Label } from "@/components/ui/label";
 import {
   useCreateShortUrl,
   useUpdateShortUrl,
-} from "@/features/url-shortner/hooks/use-short-urls";
+} from "@/features/url-shortener/hooks/use-short-urls";
 import {
   ShortUrlFormSchema,
   type ShortUrlFormValues,
   type ShortUrlItem,
-} from "@/features/url-shortner/schemas/shortner.schema";
+} from "@/features/url-shortener/schemas/shortener.schema";
 
 interface UrlShortenerFormModalProps {
   open: boolean;

@@ -1,1 +1,1 @@
-export * from "./channel-page";
+export { default as ChannelsPage } from "./channel-page";

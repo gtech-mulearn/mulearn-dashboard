@@ -1,42 +1,40 @@
 export {
-  getAdminInterestGroups,
   createInterestGroup,
-  updateInterestGroup,
-  partialUpdateInterestGroup,
   deleteInterestGroup,
   exportIgCSV,
+  getAdminInterestGroups,
   getIgRequests,
-  updateIgRequestStatus,
+  partialUpdateInterestGroup,
   submitIgRequest,
+  updateIgRequestStatus,
+  updateInterestGroup,
 } from "./api";
 
 export {
-  InterestGroupCard,
   IGClient,
   IGDetail,
   IGDetailPanel,
+  IGRequestTable,
+  InterestGroupCard,
   InterestGroupFormDialog,
   InterestGroupsGrid,
-  IGRequestTable,
   ManageIGTable,
 } from "./components";
 
 export { useIGRequests, useInterestGroupsAdmin } from "./hooks";
-
-export {
-  InterestGroupSchema,
-  InterestGroupCreateSchema,
-  InterestGroupUpdateSchema,
-  InterestGroupRequestSchema,
-  InterestGroupListResponseSchema,
-  InterestGroupRequestListResponseSchema,
-} from "./schemas";
-
 export type {
   InterestGroup,
   InterestGroupCreate,
-  InterestGroupUpdate,
-  InterestGroupRequest,
   InterestGroupListResponse,
+  InterestGroupRequest,
   InterestGroupRequestListResponse,
+  InterestGroupUpdate,
+} from "./schemas";
+export {
+  InterestGroupCreateSchema,
+  InterestGroupListResponseSchema,
+  InterestGroupRequestListResponseSchema,
+  InterestGroupRequestSchema,
+  InterestGroupSchema,
+  InterestGroupUpdateSchema,
 } from "./schemas";

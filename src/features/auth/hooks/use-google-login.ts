@@ -57,7 +57,10 @@ export function useGoogleCallback(code?: string, error?: string) {
       }
 
       if (tokenData.accessToken && tokenData.refreshToken) {
-        authStore.setTokens(tokenData.accessToken, tokenData.refreshToken);
+        await authStore.setTokens(
+          tokenData.accessToken,
+          tokenData.refreshToken,
+        );
       } else {
         throw new Error("Missing tokens in response");
       }

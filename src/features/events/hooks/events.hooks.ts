@@ -3,8 +3,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ApiError } from "@/api/errors";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import { useDebounce } from "@/hooks/use-debounce";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { eventsApi } from "../api";
 import type {
   CollaboratorInviteBody,

@@ -10,7 +10,6 @@ import { AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -26,6 +25,7 @@ import {
   useResetPassword,
   useVerifyResetToken,
 } from "@/features/auth";
+import { getApiResponseError } from "@/hooks/use-get-error";
 
 interface ResetPasswordClientProps {
   token?: string;

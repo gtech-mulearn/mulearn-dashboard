@@ -27,11 +27,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <UnauthorizedHandler />
       </Suspense>
       <DashboardSidebarProvider>
-        <div className="min-h-screen bg-muted/40">
+        <main className="min-h-screen bg-muted/40">
           <AppTopbar />
           <AppSidebar />
           <DashboardContent>{children}</DashboardContent>
-        </div>
+        </main>
       </DashboardSidebarProvider>
     </OnboardingGuard>
   );

@@ -1,3 +1,14 @@
+export type {
+  CampusMentorLeaderboardEntry,
+  CollegeLeaderboardEntry,
+  CollegeLeaderboardResponse,
+  IgMentorLeaderboardEntry,
+  MentorLeaderboardEntry,
+  StudentLeaderboardEntry,
+  StudentLeaderboardResponse,
+  WadhwaniLeaderboardEntry,
+  WadhwaniLeaderboardResponse,
+} from "./leaderboard.schema";
 export {
   ApiResponseSchema,
   CampusMentorLeaderboardEntrySchema,
@@ -12,16 +23,4 @@ export {
   StudentLeaderboardResponseSchema,
   WadhwaniLeaderboardEntrySchema,
   WadhwaniLeaderboardResponseSchema,
-} from "./leaderboard.schema";
-
-export type {
-  CampusMentorLeaderboardEntry,
-  CollegeLeaderboardEntry,
-  CollegeLeaderboardResponse,
-  IgMentorLeaderboardEntry,
-  MentorLeaderboardEntry,
-  StudentLeaderboardEntry,
-  StudentLeaderboardResponse,
-  WadhwaniLeaderboardEntry,
-  WadhwaniLeaderboardResponse,
 } from "./leaderboard.schema";

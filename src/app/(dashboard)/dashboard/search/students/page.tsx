@@ -1,5 +1,5 @@
-import { StudentsSearchClient } from "@/features/search";
 import type { Metadata } from "next";
+import { StudentsSearchClient } from "@/features/search";
 
 export const metadata: Metadata = {
   title: "Search Students",

@@ -1,8 +1,8 @@
 export type {
-  CampusInfo,
-  WeeklyKarma,
-  WeeklyKarmaDay,
-  WeeklyKarmaCardProps,
-  StatCardProps,
   CampusDashboardProps,
+  CampusInfo,
+  StatCardProps,
+  WeeklyKarma,
+  WeeklyKarmaCardProps,
+  WeeklyKarmaDay,
 } from "./campus.types";

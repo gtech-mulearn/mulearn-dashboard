@@ -1,6 +1,6 @@
 export {
-  changePassword,
   changeOrganization,
+  changePassword,
   getColleges,
   getDepartments,
 } from "./api";
@@ -10,21 +10,21 @@ export {
   useColleges,
   useDepartments,
 } from "./hooks";
-export {
-  ChangePasswordRequestSchema,
-  ChangePasswordResponseSchema,
-  CollegeSchema,
-  CollegeResponseSchema,
-  DepartmentSchema,
-  DepartmentResponseSchema,
-  ChangeOrganizationRequestSchema,
-  ChangeOrganizationResponseSchema,
-} from "./schemas";
 export type {
-  College,
-  Department,
-  ChangePasswordFormValues,
-  ChangePasswordResponse,
   ChangeOrganizationFormValues,
   ChangeOrganizationResponse,
+  ChangePasswordFormValues,
+  ChangePasswordResponse,
+  College,
+  Department,
+} from "./schemas";
+export {
+  ChangeOrganizationRequestSchema,
+  ChangeOrganizationResponseSchema,
+  ChangePasswordRequestSchema,
+  ChangePasswordResponseSchema,
+  CollegeResponseSchema,
+  CollegeSchema,
+  DepartmentResponseSchema,
+  DepartmentSchema,
 } from "./schemas";

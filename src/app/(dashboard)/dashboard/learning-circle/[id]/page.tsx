@@ -6,8 +6,8 @@
  * Individual circle detail view.
  */
 
-import { CircleDetail } from "@/features/learning-circle";
 import type { Metadata } from "next";
+import { CircleDetail } from "@/features/learning-circle";
 
 export const metadata: Metadata = {
   title: "Learning Circle Details",

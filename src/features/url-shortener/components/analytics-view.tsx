@@ -1,22 +1,52 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { use } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  BrowserBreakdown,
   CityBreakdown,
-  ClicksChart,
-  CountryBreakdown,
-  DeviceBreakdown,
   IpBreakdown,
-  PlatformBreakdown,
   RegionBreakdown,
   SourceBreakdown,
-  TimelineChart,
   useShortUrlAnalytics,
-} from "@/features/url-shortner";
+} from "@/features/url-shortener";
+
+const BrowserBreakdown = dynamic(
+  () =>
+    import("./browser-breakdown").then((m) => ({
+      default: m.BrowserBreakdown,
+    })),
+  { ssr: false },
+);
+const ClicksChart = dynamic(
+  () => import("./clicks-chart").then((m) => ({ default: m.ClicksChart })),
+  { ssr: false },
+);
+const CountryBreakdown = dynamic(
+  () =>
+    import("./country-breakdown").then((m) => ({
+      default: m.CountryBreakdown,
+    })),
+  { ssr: false },
+);
+const DeviceBreakdown = dynamic(
+  () =>
+    import("./device-breakdown").then((m) => ({ default: m.DeviceBreakdown })),
+  { ssr: false },
+);
+const PlatformBreakdown = dynamic(
+  () =>
+    import("./platform-breakdown").then((m) => ({
+      default: m.PlatformBreakdown,
+    })),
+  { ssr: false },
+);
+const TimelineChart = dynamic(
+  () => import("./timeline-chart").then((m) => ({ default: m.TimelineChart })),
+  { ssr: false },
+);
 
 interface AnalyticsViewProps {
   params: Promise<{

@@ -19,13 +19,37 @@ import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 import { refreshAccessToken } from "@/features/auth/api/auth.api";
 
-export async function GET(request: NextRequest) {
-  const { searchParams } = request.nextUrl;
-  const rawPath = searchParams.get("ruri") ?? "dashboard";
-  const returnPath = rawPath
+const ALLOWED_PATH_PREFIX = [
+  "dashboard",
+  "profile",
+  "callback",
+  "login",
+  "register",
+  "onboarding",
+];
+
+function sanitizeReturnPath(raw: string): string {
+  const cleaned = raw
     .replace(/^[/\\]+/, "")
     .replace(/\\/g, "/")
     .split("?")[0];
+
+  const firstSegment = cleaned.split("/")[0];
+  if (!ALLOWED_PATH_PREFIX.includes(firstSegment)) {
+    return "dashboard";
+  }
+
+  if (/[:@]/.test(cleaned)) {
+    return "dashboard";
+  }
+
+  return cleaned;
+}
+
+export async function GET(request: NextRequest) {
+  const { searchParams } = request.nextUrl;
+  const rawPath = searchParams.get("ruri") ?? "dashboard";
+  const returnPath = sanitizeReturnPath(rawPath);
 
   const cookieStore = await cookies();
   const refreshToken = cookieStore.get("refreshToken")?.value;

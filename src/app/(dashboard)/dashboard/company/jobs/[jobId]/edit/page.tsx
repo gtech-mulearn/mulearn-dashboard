@@ -1,150 +1,16 @@
-"use client";
+import type { Metadata } from "next";
+import { EditJobPageClient } from "./job-edit-client";
 
-/**
- * Edit Job Page
- *
- * 📍 src/app/(dashboard)/dashboard/company/jobs/[jobId]/edit/page.tsx
- *
- * Pre-fills the stepper with existing job data for editing.
- */
+export const metadata: Metadata = {
+  title: "Edit Job",
+  description: "Edit an existing job listing.",
+};
 
-import { AlertTriangle, ArrowLeft } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
-import { useCallback } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  CompanyStatusGuard,
-  JobDetailSkeleton,
-  JobStepper,
-} from "@/features/company-jobs/components";
-import { useJobDetail, useUpdateJob } from "@/features/company-jobs/hooks";
-import type { JobFormValues } from "@/features/company-jobs/schemas";
-import type { JobRule } from "@/features/company-jobs/types";
+interface PageProps {
+  params: Promise<{ jobId: string }>;
+}
 
-export default function EditJobPage() {
-  const params = useParams<{ jobId: string }>();
-  const router = useRouter();
-  const jobId = params.jobId;
-
-  const { data: job, isLoading, isError, error } = useJobDetail(jobId);
-  const updateJobMutation = useUpdateJob();
-
-  const handleCancel = useCallback(() => {
-    router.push(`/dashboard/company/jobs/${jobId}`);
-  }, [router, jobId]);
-
-  const parseNumber = useCallback((val: string | number | undefined | null) => {
-    if (val === undefined || val === null || val === "") return undefined;
-    if (typeof val === "number") return val;
-    const clean = val.replace(/[^0-9.]/g, "");
-    const parsed = parseFloat(clean);
-    return Number.isNaN(parsed) ? undefined : parsed;
-  }, []);
-
-  const handleSubmit = useCallback(
-    async (values: JobFormValues, _rules: JobRule[]) => {
-      try {
-        const isGig = values.job_type === "Gig";
-        await updateJobMutation.mutateAsync({
-          jobId,
-          payload: {
-            title: values.title,
-            experience: values.experience,
-            job_description: values.job_description,
-            location: values.location,
-            job_type: values.job_type,
-            certificate_provided: values.certificate_provided ? "Yes" : "No",
-            ...(isGig
-              ? {
-                  duration_value:
-                    values.duration_value != null
-                      ? Number(values.duration_value)
-                      : null,
-                  duration_unit: values.duration_unit || null,
-                  hourly_rate: parseNumber(values.hourly_rate) ?? null,
-                  deliverables:
-                    values.deliverables && values.deliverables.length > 0
-                      ? values.deliverables.join(", ")
-                      : null,
-                  stipend: parseNumber(values.stipend) ?? null,
-                  salary_range: null,
-                }
-              : {
-                  salary_range: values.salary_range,
-                  duration_value: null,
-                  duration_unit: null,
-                  hourly_rate: null,
-                  deliverables: null,
-                  stipend: null,
-                }),
-          },
-        });
-
-        router.push(`/dashboard/company/jobs/${jobId}`);
-      } catch {
-        // Error handled by mutation's onError
-      }
-    },
-    [jobId, updateJobMutation, router, parseNumber],
-  );
-
-  return (
-    <CompanyStatusGuard>
-      <div className="space-y-6 p-1">
-        {/* Loading */}
-        {isLoading && <JobDetailSkeleton />}
-
-        {/* Error */}
-        {isError && !isLoading && (
-          <div className="flex min-h-[400px] flex-col items-center justify-center gap-4">
-            <div className="rounded-full bg-destructive/10 p-4">
-              <AlertTriangle className="h-8 w-8 text-destructive" />
-            </div>
-            <h2 className="text-lg font-semibold text-foreground">
-              Unable to load job
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              {process.env.NODE_ENV === "development" && error instanceof Error
-                ? error.message
-                : "Please try again later."}
-            </p>
-            <Button variant="outline" onClick={handleCancel}>
-              Go Back
-            </Button>
-          </div>
-        )}
-
-        {/* Edit stepper */}
-        {!isLoading && !isError && job && (
-          <>
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleCancel}
-                className="gap-1.5 text-muted-foreground"
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                  Edit Job
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                  Update &ldquo;{job.title}&rdquo;
-                </p>
-              </div>
-            </div>
-
-            <JobStepper
-              initialJob={job}
-              onSubmit={handleSubmit}
-              onCancel={handleCancel}
-              isSubmitting={updateJobMutation.isPending}
-            />
-          </>
-        )}
-      </div>
-    </CompanyStatusGuard>
-  );
+export default async function EditJobPage({ params }: PageProps) {
+  const { jobId } = await params;
+  return <EditJobPageClient jobId={jobId} />;
 }

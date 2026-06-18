@@ -18,7 +18,6 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   type CompanyDetailsValues,
   RegisterForm,
@@ -36,6 +35,7 @@ import {
   useRoles,
   useSelectOrganization,
 } from "@/features/onboarding";
+import { getApiResponseError } from "@/hooks/use-get-error";
 
 interface RegisterClientProps {
   redirectUri?: string;

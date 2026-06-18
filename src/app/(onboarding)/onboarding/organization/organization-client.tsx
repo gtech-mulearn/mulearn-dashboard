@@ -8,7 +8,6 @@
 
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   OrganizationForm,
   useColleges,
@@ -16,6 +15,7 @@ import {
   useDepartments,
   useSelectOrganization,
 } from "@/features/onboarding";
+import { getApiResponseError } from "@/hooks/use-get-error";
 
 interface OrganizationClientProps {
   redirectUri?: string;

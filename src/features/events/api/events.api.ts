@@ -24,6 +24,19 @@ import type {
   PendingInvitesData,
 } from "../types";
 
+type EventOrganizerShape = {
+  type?: string;
+  ig?: unknown;
+  campus?: unknown;
+  company?: unknown;
+  campus_ig_id?: string | null;
+  organiser_type?: string;
+  organiser_ig?: unknown;
+  organiser_campus?: unknown;
+  organiser_company?: unknown;
+  organiser_ci_id?: string | null;
+};
+
 type EventShape = {
   id?: string;
   status?: string | null;
@@ -31,6 +44,7 @@ type EventShape = {
   end_datetime?: string;
   event_type?: string | null;
   category_name?: string | null;
+  organizer?: EventOrganizerShape;
 };
 
 const PENDING_STATUS_GROUP = [
@@ -54,8 +68,7 @@ function mirrorEventTypeToCategory<T extends EventShape>(event: T): T {
   const categoryName = event.category_name ?? null;
 
   // Normalize organizer properties if they use the 'organiser_' prefix
-  // Using 'any' since EventShape does not fully type the organizer field
-  const org = (event as any).organizer;
+  const org = event.organizer;
   if (org && typeof org === "object") {
     if (org.type === undefined && org.organiser_type !== undefined) {
       org.type = org.organiser_type;

@@ -1,17 +1,16 @@
-export {
-  InterestGroupSchema,
-  InterestGroupCreateSchema,
-  InterestGroupUpdateSchema,
-  InterestGroupRequestSchema,
-  InterestGroupListResponseSchema,
-  InterestGroupRequestListResponseSchema,
-} from "./manage-ig.schema";
-
 export type {
   InterestGroup,
   InterestGroupCreate,
-  InterestGroupUpdate,
-  InterestGroupRequest,
   InterestGroupListResponse,
+  InterestGroupRequest,
   InterestGroupRequestListResponse,
+  InterestGroupUpdate,
+} from "./manage-ig.schema";
+export {
+  InterestGroupCreateSchema,
+  InterestGroupListResponseSchema,
+  InterestGroupRequestListResponseSchema,
+  InterestGroupRequestSchema,
+  InterestGroupSchema,
+  InterestGroupUpdateSchema,
 } from "./manage-ig.schema";

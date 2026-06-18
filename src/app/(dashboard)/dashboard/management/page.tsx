@@ -28,6 +28,8 @@ import {
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ROLES } from "@/lib/auth/roles";
+import { requireRole } from "@/lib/auth/server";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -229,7 +231,8 @@ const MANAGEMENT_ITEMS: ManagementItem[] = [
   // },
 ];
 
-export default function ManagementPage() {
+export default async function ManagementPage() {
+  await requireRole([ROLES.ADMIN]);
   return (
     <div className="container mx-auto space-y-8 p-8">
       <div>

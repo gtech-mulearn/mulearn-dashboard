@@ -1,10 +1,10 @@
+import type { Metadata } from "next";
 import {
   type Category,
   LeaderboardView,
   type TimeFrame,
   type WadhwaniTimeFrame,
 } from "@/features/leaderboard";
-import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Leaderboard",

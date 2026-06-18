@@ -1,6 +1,6 @@
-import { requireRole } from "@/lib/auth/server";
-import { ROLES } from "@/lib/auth/roles";
 import { ManageCompaniesTable } from "@/features/manage-companies";
+import { ROLES } from "@/lib/auth/roles";
+import { requireRole } from "@/lib/auth/server";
 
 export const metadata = {
   title: "Manage Companies | Management",

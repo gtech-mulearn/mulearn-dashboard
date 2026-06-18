@@ -6,9 +6,9 @@
  * Main page showing all learning circles.
  */
 
+import type { Metadata } from "next";
 import { CircleList } from "@/features/learning-circle";
 import { LearningCircleHeader } from "./learning-circle-header";
-import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Learning Circles",

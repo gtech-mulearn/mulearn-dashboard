@@ -6,7 +6,7 @@ import {
   GenericMutationResponseSchema,
   type ShortUrlListData,
   ShortUrlListResponseSchema,
-} from "../schemas/shortner.schema";
+} from "../schemas/shortener.schema";
 
 interface ShortUrlListParams {
   pageIndex: number;

@@ -1,11 +1,11 @@
-export {
-  venueTypeSchema,
-  createEventSchema,
-  updateEventSchema,
-  eventListParamsSchema,
-} from "./events.schema";
 export type {
   CreateEventSchema,
-  UpdateEventSchema,
   EventListParamsSchema,
+  UpdateEventSchema,
+} from "./events.schema";
+export {
+  createEventSchema,
+  eventListParamsSchema,
+  updateEventSchema,
+  venueTypeSchema,
 } from "./events.schema";

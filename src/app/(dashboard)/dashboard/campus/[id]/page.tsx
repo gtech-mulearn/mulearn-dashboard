@@ -1,5 +1,5 @@
-import { CampusView } from "@/features/campus";
 import type { Metadata } from "next";
+import { CampusView } from "@/features/campus";
 
 export const metadata: Metadata = {
   title: "Campus Details",

@@ -12,7 +12,6 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   LoginForm,
   OTPLoginForm,
@@ -20,6 +19,7 @@ import {
   useLoginWithPassword,
   useRequestOTP,
 } from "@/features/auth";
+import { getApiResponseError } from "@/hooks/use-get-error";
 
 interface LoginClientProps {
   redirectUri?: string;

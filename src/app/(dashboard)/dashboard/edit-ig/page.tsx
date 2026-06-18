@@ -1,5 +1,5 @@
-import { IGClient } from "@/features/manage-ig";
 import type { Metadata } from "next";
+import { IGClient } from "@/features/manage-ig";
 
 export const metadata: Metadata = {
   title: "Interest Groups",

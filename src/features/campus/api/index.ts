@@ -1,7 +1,7 @@
+export type { CampusSessionListParams } from "./campus.api";
 export {
-  campusService,
   assignCampusMentor,
+  campusService,
   createCampusSession,
   fetchCampusSessions,
 } from "./campus.api";
-export type { CampusSessionListParams } from "./campus.api";

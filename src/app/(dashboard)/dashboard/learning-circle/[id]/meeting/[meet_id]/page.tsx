@@ -6,8 +6,8 @@
  * Individual meeting detail view within a circle.
  */
 
-import { MeetingDetailView } from "@/features/learning-circle";
 import type { Metadata } from "next";
+import { MeetingDetailView } from "@/features/learning-circle";
 
 export const metadata: Metadata = {
   title: "Meeting Details",

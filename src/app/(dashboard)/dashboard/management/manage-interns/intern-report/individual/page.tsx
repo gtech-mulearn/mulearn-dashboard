@@ -1,5 +1,5 @@
-import { requireRole } from "@/lib/auth/server";
 import { ROLES } from "@/lib/auth/roles";
+import { requireRole } from "@/lib/auth/server";
 import { IndividualReportPageClient } from "./individual-report-client";
 
 export const metadata = {

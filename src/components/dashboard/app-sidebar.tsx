@@ -37,8 +37,8 @@ export function AppSidebar() {
 
   const isCollapsed = state === "collapsed";
 
-  const handleLogout = useCallback(() => {
-    authStore.clearTokens();
+  const handleLogout = useCallback(async () => {
+    await authStore.clearTokens();
     useUIStore.getState().resetUI();
     toast.success("Logged out successfully");
     router.replace("/login");

@@ -155,6 +155,7 @@ export async function fetchDistrictsDropdown(
   return mapToOptions(data.districts || data);
 }
 
+export type { DepartmentListData, DepartmentParams } from "./departments.api";
 // ─── New org-module APIs ──────────────────────────────────────────────────────
 export {
   createDepartment,
@@ -162,7 +163,6 @@ export {
   fetchDepartments,
   updateDepartment,
 } from "./departments.api";
-export type { DepartmentListData, DepartmentParams } from "./departments.api";
 export {
   executeMerge,
   fetchMergePreview,

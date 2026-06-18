@@ -20,7 +20,15 @@ export {
   useSearchMentors,
   useSearchUsers,
 } from "./hooks";
-
+export type {
+  CampusSearchData,
+  CampusSearchResponse,
+  CampusSearchResult,
+  SearchType,
+  UserSearchData,
+  UserSearchResponse,
+  UserSearchResult,
+} from "./schemas";
 // Schemas and types
 export {
   ApiResponseSchema,
@@ -30,14 +38,4 @@ export {
   userSearchDataSchema,
   userSearchResponseSchema,
   userSearchResultSchema,
-} from "./schemas";
-
-export type {
-  CampusSearchData,
-  CampusSearchResponse,
-  CampusSearchResult,
-  SearchType,
-  UserSearchData,
-  UserSearchResponse,
-  UserSearchResult,
 } from "./schemas";

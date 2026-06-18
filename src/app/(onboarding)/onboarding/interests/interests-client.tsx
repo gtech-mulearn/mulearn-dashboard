@@ -12,7 +12,6 @@ import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import { OptionCard } from "@/components/ui/option-card";
 import { useUserInfo } from "@/features/auth";
 import {
@@ -21,6 +20,7 @@ import {
   useSelectDomains,
   useSelectEndgoals,
 } from "@/features/onboarding";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { getRoleHomePath } from "@/lib/auth";
 
 interface InterestsClientProps {

@@ -122,6 +122,11 @@ export type OrgFormValues = z.infer<typeof OrgFormSchema>;
 
 // ─── Sub-schema barrels ───────────────────────────────────────────────────────
 
+export type {
+  AffiliationFormValues,
+  AffiliationItem,
+  AffiliationListData,
+} from "./affiliation.schema";
 export {
   AffiliationFormSchema,
   AffiliationItemSchema,
@@ -129,10 +134,9 @@ export {
   AffiliationListResponseSchema,
 } from "./affiliation.schema";
 export type {
-  AffiliationFormValues,
-  AffiliationItem,
-  AffiliationListData,
-} from "./affiliation.schema";
+  DepartmentFormValues,
+  DepartmentItem,
+} from "./departments.schema";
 export {
   DepartmentFormSchema,
   DepartmentItemSchema,
@@ -141,32 +145,28 @@ export {
   PaginatedDataSchema,
 } from "./departments.schema";
 export type {
-  DepartmentFormValues,
-  DepartmentItem,
-} from "./departments.schema";
-export {
-  MergeMutationResponseSchema,
-  MergeOrgFormSchema,
-  MergePreviewDataSchema,
-  MergePreviewResponseSchema,
-  MergeImpactItemSchema,
-  TransferOrgFormSchema,
-  TransferResponseSchema,
-} from "./transfer.schema";
-export type {
   MergeImpactItem,
   MergeOrgFormValues,
   MergePreviewData,
   TransferOrgFormValues,
 } from "./transfer.schema";
 export {
+  MergeImpactItemSchema,
+  MergeMutationResponseSchema,
+  MergeOrgFormSchema,
+  MergePreviewDataSchema,
+  MergePreviewResponseSchema,
+  TransferOrgFormSchema,
+  TransferResponseSchema,
+} from "./transfer.schema";
+export type {
+  UnverifiedOrgItem,
+  VerifyOrgFormValues,
+} from "./verification.schema";
+export {
   OrgTypeSchema,
   UnverifiedOrgItemSchema,
   UnverifiedOrgListResponseSchema,
   VerificationMutationResponseSchema,
   VerifyOrgFormSchema,
-} from "./verification.schema";
-export type {
-  UnverifiedOrgItem,
-  VerifyOrgFormValues,
 } from "./verification.schema";

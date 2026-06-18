@@ -8,6 +8,38 @@ export interface LoggerAdapter {
   log(error: Error, context?: ErrorLogContext): void;
 }
 
+const PII_KEYS = new Set([
+  "email",
+  "password",
+  "phone",
+  "address",
+  "ssn",
+  "token",
+  "accessToken",
+  "refreshToken",
+  "authorization",
+  "cookie",
+  "secret",
+  "creditCard",
+  "cardNumber",
+]);
+
+function scrubPII(context: ErrorLogContext): ErrorLogContext {
+  const cleaned: ErrorLogContext = {};
+  for (const [key, value] of Object.entries(context)) {
+    if (PII_KEYS.has(key.toLowerCase()) || PII_KEYS.has(key)) {
+      cleaned[key] = "[REDACTED]";
+    } else if (typeof value === "string" && /\S+@\S+\.\S+/.test(value)) {
+      cleaned[key] = "[REDACTED_EMAIL]";
+    } else if (value && typeof value === "object" && !Array.isArray(value)) {
+      cleaned[key] = scrubPII(value as ErrorLogContext);
+    } else {
+      cleaned[key] = value;
+    }
+  }
+  return cleaned;
+}
+
 class ConsoleLogger implements LoggerAdapter {
   log(error: Error, context?: ErrorLogContext): void {
     if (process.env.NODE_ENV === "development") {
@@ -31,7 +63,6 @@ class ErrorLoggingService {
   private adapters: LoggerAdapter[] = [];
 
   private constructor() {
-    // Register default adapters
     this.registerAdapter(new ConsoleLogger());
   }
 
@@ -47,8 +78,9 @@ class ErrorLoggingService {
   }
 
   public logError(error: Error, context?: ErrorLogContext): void {
+    const safeContext = context ? scrubPII(context) : context;
     this.adapters.forEach((adapter) => {
-      adapter.log(error, context);
+      adapter.log(error, safeContext);
     });
   }
 }

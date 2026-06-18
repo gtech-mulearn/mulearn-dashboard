@@ -1,5 +1,5 @@
-import { IGRequestsPage } from "@/features/ig-requests";
 import type { Metadata } from "next";
+import { IGRequestsPage } from "@/features/ig-requests";
 
 export const metadata: Metadata = {
   title: "IG Requests",

@@ -4,7 +4,6 @@ import { Link2, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import { Blank } from "@/components/dashboard/table/Blank";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table from "@/components/dashboard/table/Table";
@@ -15,8 +14,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   useDeleteShortUrl,
   useShortUrlsList,
-} from "@/features/url-shortner/hooks/use-short-urls";
-import type { ShortUrlItem } from "@/features/url-shortner/schemas/shortner.schema";
+} from "@/features/url-shortener/hooks/use-short-urls";
+import type { ShortUrlItem } from "@/features/url-shortener/schemas/shortener.schema";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { UrlShortenerFormModal } from "./url-shortener-form-modal";
 
 const COLUMNS = [

@@ -2,7 +2,6 @@
 
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import { DataTableErrorBoundary } from "@/components/dashboard/DataTableErrorBoundary";
 import THead from "@/components/dashboard/table/Thead";
 import { Button } from "@/components/ui/button";
@@ -16,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   useAddChannel,
   useChannel,

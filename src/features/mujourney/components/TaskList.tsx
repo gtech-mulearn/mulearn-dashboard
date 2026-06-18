@@ -9,10 +9,18 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useRef, useState } from "react";
 import type { Task } from "../schemas";
 import { TaskCard } from "./TaskCard";
-import { TaskDetailPanel } from "./TaskDetailPanel";
+
+const TaskDetailPanel = dynamic(
+  () =>
+    import("./TaskDetailPanel").then((mod) => ({
+      default: mod.TaskDetailPanel,
+    })),
+  { ssr: false },
+);
 
 interface TaskListProps {
   tasks: Task[];

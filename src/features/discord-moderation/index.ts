@@ -7,14 +7,13 @@
  * Import from here, not from internal files.
  */
 
+export type { LeaderboardParams, TaskListParams } from "./api";
 // API functions
 export {
   fetchModeratorLeaderboard,
   fetchPendingCounts,
   fetchTaskList,
 } from "./api";
-
-export type { LeaderboardParams, TaskListParams } from "./api";
 
 // Components (primary entry point)
 export {
@@ -34,7 +33,15 @@ export {
   usePendingCounts,
   useTaskList,
 } from "./hooks";
-
+export type {
+  LeaderboardOption,
+  ModeratorLeaderboardData,
+  ModeratorLeaderboardItem,
+  PendingCounts,
+  TaskListData,
+  TaskLog,
+  TaskStatus,
+} from "./schemas";
 // Schemas and types
 export {
   ApiResponseSchema,
@@ -47,14 +54,4 @@ export {
   TaskListDataSchema,
   TaskListResponseSchema,
   TaskLogSchema,
-} from "./schemas";
-
-export type {
-  LeaderboardOption,
-  ModeratorLeaderboardData,
-  ModeratorLeaderboardItem,
-  PendingCounts,
-  TaskListData,
-  TaskLog,
-  TaskStatus,
 } from "./schemas";

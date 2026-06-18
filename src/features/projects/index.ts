@@ -22,9 +22,9 @@ export {
   ProjectLinksEditor,
   ProjectMemberPicker,
   ProjectSkillPicker,
-  ProjectWizard,
   ProjectsListingPage,
   ProjectsTab,
+  ProjectWizard,
 } from "./components";
 export {
   projectsKeys,
@@ -43,6 +43,19 @@ export {
   useUpdateProjectStatus,
   useVoteProject,
 } from "./hooks";
+export type {
+  AddMemberRequest,
+  Pagination,
+  Project,
+  ProjectComment,
+  ProjectFormValues,
+  ProjectLink,
+  ProjectLinkFormValue,
+  ProjectMember,
+  ProjectSkill,
+  ProjectStatus,
+  ProjectVote,
+} from "./schemas";
 export {
   CommentMutationResponseSchema,
   EmptyResponseSchema,
@@ -62,17 +75,4 @@ export {
   ProjectsListResponseSchema,
   VoteMutationResponseSchema,
   VoteSchema,
-} from "./schemas";
-export type {
-  AddMemberRequest,
-  Pagination,
-  Project,
-  ProjectComment,
-  ProjectFormValues,
-  ProjectLink,
-  ProjectLinkFormValue,
-  ProjectMember,
-  ProjectSkill,
-  ProjectStatus,
-  ProjectVote,
 } from "./schemas";

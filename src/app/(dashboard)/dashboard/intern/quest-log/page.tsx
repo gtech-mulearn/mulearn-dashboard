@@ -1,5 +1,5 @@
-import { QuestLogHistory } from "@/features/intern";
 import type { Metadata } from "next";
+import { QuestLogHistory } from "@/features/intern";
 
 export const metadata: Metadata = {
   title: "Quest Log",

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   createTaskType,
   deleteTaskType,
@@ -8,7 +9,6 @@ import {
   updateTaskType,
 } from "../api/task-type.api";
 import type { UpdateTaskTypeInput } from "../schemas/task-type.schema";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import { useTaskQueryErrorToast } from "./task-error";
 
 export const useTaskTypes = (

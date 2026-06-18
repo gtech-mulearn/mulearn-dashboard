@@ -5,9 +5,9 @@
  * RBAC: Admin + Tech Team
  */
 
-import { requireRole } from "@/lib/auth/server";
-import { ROLES } from "@/lib/auth/roles";
 import { ErrorLogPage } from "@/features/error-log";
+import { ROLES } from "@/lib/auth/roles";
+import { requireRole } from "@/lib/auth/server";
 
 export const metadata = {
   title: "System Error Log | Management",

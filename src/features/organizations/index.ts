@@ -7,6 +7,12 @@
  * Import from here, not from internal files.
  */
 
+export type {
+  DepartmentListData,
+  DepartmentParams,
+  FetchAffiliationsParams,
+  FetchOrgsParams,
+} from "./api";
 export {
   createAffiliation,
   createDepartment,
@@ -30,12 +36,6 @@ export {
   updateAffiliation,
   updateDepartment,
   verifyOrganization,
-} from "./api";
-export type {
-  DepartmentListData,
-  DepartmentParams,
-  FetchAffiliationsParams,
-  FetchOrgsParams,
 } from "./api";
 export {
   AffiliationFormDialog,
@@ -73,6 +73,25 @@ export {
   useUpdateDepartment,
   useVerifyOrganization,
 } from "./hooks";
+export type {
+  AffiliationDropdownItem,
+  AffiliationFormValues,
+  AffiliationItem,
+  AffiliationListData,
+  DepartmentFormValues,
+  DepartmentItem,
+  LocationOption,
+  MergeImpactItem,
+  MergeOrgFormValues,
+  MergePreviewData,
+  OrgFormValues,
+  OrgInfo,
+  OrgListData,
+  OrgType,
+  TransferOrgFormValues,
+  UnverifiedOrgItem,
+  VerifyOrgFormValues,
+} from "./schemas";
 export {
   AffiliationDropdownItemSchema,
   AffiliationDropdownListResponseSchema,
@@ -106,23 +125,4 @@ export {
   UnverifiedOrgListResponseSchema,
   VerificationMutationResponseSchema,
   VerifyOrgFormSchema,
-} from "./schemas";
-export type {
-  AffiliationDropdownItem,
-  AffiliationFormValues,
-  AffiliationItem,
-  AffiliationListData,
-  DepartmentFormValues,
-  DepartmentItem,
-  LocationOption,
-  MergeImpactItem,
-  MergeOrgFormValues,
-  MergePreviewData,
-  OrgFormValues,
-  OrgInfo,
-  OrgListData,
-  OrgType,
-  TransferOrgFormValues,
-  UnverifiedOrgItem,
-  VerifyOrgFormValues,
 } from "./schemas";

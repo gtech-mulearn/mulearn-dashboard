@@ -19,6 +19,7 @@ import Table, { type Data } from "@/components/dashboard/table/Table";
 import TableTop from "@/components/dashboard/table/TableTop";
 import THead from "@/components/dashboard/table/Thead";
 import { useTaskList } from "../hooks";
+import type { TaskLog } from "../schemas";
 
 // ─── Status badge ────────────────────────────────────────────────────────────
 
@@ -112,7 +113,7 @@ function TaskListTableContent() {
     sortBy,
   });
 
-  const allRows = (data?.data ?? []) as unknown as Data[];
+  const allRows = data?.data ?? ([] as TaskLog[]);
 
   const rows = search.trim()
     ? allRows.filter((row) =>

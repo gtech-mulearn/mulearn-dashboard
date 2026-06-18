@@ -5,7 +5,6 @@ import { Activity, Calendar, Clock, Edit2, HelpCircle } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -56,6 +55,7 @@ import type {
   TWeeklyReviewUpdatePayload,
 } from "@/features/intern/types";
 import { getTaskKarma } from "@/features/intern/utils/intern-helpers";
+import { getApiResponseError } from "@/hooks/use-get-error";
 
 type UnifiedActivity = {
   id: string;
@@ -618,7 +618,14 @@ export function QuestLog() {
                       <Select
                         value={(selectedItem.raw as TInternTask).status}
                         onValueChange={(val) => {
-                          handleTaskStatusChange(selectedItem.id, val as any);
+                          handleTaskStatusChange(
+                            selectedItem.id,
+                            val as
+                              | "WAITING_FOR_REVIEW"
+                              | "IN_PROGRESS"
+                              | "COMPLETED"
+                              | "ON_HOLD",
+                          );
                         }}
                       >
                         <SelectTrigger className="w-full bg-background/50 border-border/50 font-bold uppercase text-[10px] tracking-wider mt-1">

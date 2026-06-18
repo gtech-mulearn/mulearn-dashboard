@@ -1,8 +1,14 @@
 import fs from "node:fs";
 import path from "node:path";
+import type { Metadata } from "next";
 import ReactMarkdown from "react-markdown";
 import rehypeSanitize from "rehype-sanitize";
 import remarkGfm from "remark-gfm";
+
+export const metadata: Metadata = {
+  title: "Changelog",
+  description: "View the latest updates and changes.",
+};
 
 export const dynamic = "force-static";
 

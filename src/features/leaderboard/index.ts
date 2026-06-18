@@ -30,7 +30,17 @@ export {
 
 // Hooks (primary way to use the feature)
 export { useLeaderboard } from "./hooks";
-
+export type {
+  CampusMentorLeaderboardEntry,
+  CollegeLeaderboardEntry,
+  CollegeLeaderboardResponse,
+  IgMentorLeaderboardEntry,
+  MentorLeaderboardEntry,
+  StudentLeaderboardEntry,
+  StudentLeaderboardResponse,
+  WadhwaniLeaderboardEntry,
+  WadhwaniLeaderboardResponse,
+} from "./schemas";
 // Schemas and types
 export {
   ApiResponseSchema,
@@ -46,18 +56,6 @@ export {
   StudentLeaderboardResponseSchema,
   WadhwaniLeaderboardEntrySchema,
   WadhwaniLeaderboardResponseSchema,
-} from "./schemas";
-
-export type {
-  CampusMentorLeaderboardEntry,
-  CollegeLeaderboardEntry,
-  CollegeLeaderboardResponse,
-  IgMentorLeaderboardEntry,
-  MentorLeaderboardEntry,
-  StudentLeaderboardEntry,
-  StudentLeaderboardResponse,
-  WadhwaniLeaderboardEntry,
-  WadhwaniLeaderboardResponse,
 } from "./schemas";
 
 // Types

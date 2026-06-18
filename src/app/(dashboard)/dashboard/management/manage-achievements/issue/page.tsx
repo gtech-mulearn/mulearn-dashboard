@@ -1,6 +1,6 @@
-import { requireRole } from "@/lib/auth/server";
-import { ROLES } from "@/lib/auth/roles";
 import { IssueRevokePanel } from "@/features/achievements/components";
+import { ROLES } from "@/lib/auth/roles";
+import { requireRole } from "@/lib/auth/server";
 
 export const metadata = {
   title: "Issue / Revoke Achievement | Management",

@@ -1,3 +1,16 @@
+export type {
+  AddMemberRequest,
+  Pagination,
+  Project,
+  ProjectComment,
+  ProjectFormValues,
+  ProjectLink,
+  ProjectLinkFormValue,
+  ProjectMember,
+  ProjectSkill,
+  ProjectStatus,
+  ProjectVote,
+} from "./projects.schema";
 export {
   CommentMutationResponseSchema,
   EmptyResponseSchema,
@@ -17,17 +30,4 @@ export {
   ProjectsListResponseSchema,
   VoteMutationResponseSchema,
   VoteSchema,
-} from "./projects.schema";
-export type {
-  AddMemberRequest,
-  Pagination,
-  Project,
-  ProjectComment,
-  ProjectFormValues,
-  ProjectLink,
-  ProjectLinkFormValue,
-  ProjectMember,
-  ProjectSkill,
-  ProjectStatus,
-  ProjectVote,
 } from "./projects.schema";

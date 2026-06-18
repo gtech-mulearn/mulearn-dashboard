@@ -1,5 +1,5 @@
-import { AnalyticsView } from "@/features/url-shortner";
 import type { Metadata } from "next";
+import { AnalyticsView } from "@/features/url-shortener";
 
 export const metadata: Metadata = {
   title: "URL Analytics",

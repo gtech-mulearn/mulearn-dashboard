@@ -1,11 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   fetchUnverifiedOrgs,
   verifyOrganization,
 } from "../api/verification.api";
 import type { VerifyOrgFormValues } from "../schemas/verification.schema";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import { useOrgQueryErrorToast } from "./org-error";
 
 const VERIFY_KEY = "org-unverified";

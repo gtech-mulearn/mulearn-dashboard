@@ -162,7 +162,7 @@ async function request<T>(
           const { accessToken: newAccessToken } =
             await refreshAccessToken(refreshToken);
           if (newAccessToken) {
-            authStore.setTokens(newAccessToken, refreshToken);
+            await authStore.setTokens(newAccessToken, refreshToken);
             const retryRes = await fetch(
               `${env.NEXT_PUBLIC_DJANGO_API_URL}${endpoint}`,
               {
@@ -210,7 +210,7 @@ async function request<T>(
       const refreshToken = authStore.getRefreshToken();
 
       if (!refreshToken) {
-        authStore.clearTokens();
+        await authStore.clearTokens();
         if (typeof window !== "undefined") {
           window.location.href = "/login";
         }
@@ -225,7 +225,7 @@ async function request<T>(
         const newAccessToken = await getRefreshedToken(refreshToken);
 
         if (!newAccessToken) {
-          authStore.clearTokens();
+          await authStore.clearTokens();
           if (typeof window !== "undefined") {
             window.location.href = "/login";
           }
@@ -262,7 +262,7 @@ async function request<T>(
           retryRes.status === 403 ||
           isTokenExpiredError(retryData)
         ) {
-          authStore.clearTokens();
+          await authStore.clearTokens();
           if (typeof window !== "undefined") {
             window.location.href = "/login";
           }
@@ -290,7 +290,7 @@ async function request<T>(
         }
         return retryData?.response ?? (retryData as T);
       } catch {
-        authStore.clearTokens();
+        await authStore.clearTokens();
         if (typeof window !== "undefined") {
           window.location.href = "/login";
         }

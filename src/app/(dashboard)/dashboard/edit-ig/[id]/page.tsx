@@ -1,5 +1,5 @@
-import { IGDetail } from "@/features/manage-ig";
 import type { Metadata } from "next";
+import { IGDetail } from "@/features/manage-ig";
 
 export const metadata: Metadata = {
   title: "Interest Group Details",

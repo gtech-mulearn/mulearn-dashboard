@@ -28,7 +28,7 @@ export {
   validateRegistrationData,
   verifyResetToken,
 } from "./api";
-
+export type { CompanyDetailsValues, Role } from "./components";
 // Components
 export {
   ForgotPasswordForm,
@@ -39,8 +39,6 @@ export {
   RegisterRoleSelection,
   ResetPasswordForm,
 } from "./components";
-
-export type { CompanyDetailsValues, Role } from "./components";
 
 // Hooks (primary way to use the feature)
 export {
@@ -60,7 +58,39 @@ export {
   useUserProfile,
   useVerifyResetToken,
 } from "./hooks";
-
+export type {
+  CompanyOnboardingStatus,
+  CompanySignupRequest,
+  CompanySignupResponse,
+  CompanySignupResponseData,
+  EmailVerificationRequest,
+  EmailVerificationResponse,
+  ForgotPasswordRequest,
+  GoogleAuthUrlResponse,
+  GoogleAuthUrlResponseData,
+  GoogleCallbackResponseData,
+  IntegrationData,
+  InterestGroup,
+  KarmaDistribution,
+  LoginRequest,
+  LoginResponse,
+  LoginResponseData,
+  ReferralData,
+  RefreshTokenRequest,
+  RefreshTokenResponse,
+  RegisterInterestData,
+  RegisterRequest,
+  RegisterResponse,
+  RegisterResponseData,
+  RegisterUserData,
+  RequestOTPRequest,
+  ResetPasswordRequest,
+  UserInfo,
+  UserInfoResponse,
+  UserProfile,
+  UserProfileResponse,
+  VerifyResetTokenResponse,
+} from "./schemas";
 // Schemas and types
 export {
   ApiResponseSchema,
@@ -96,38 +126,4 @@ export {
   UserProfileResponseSchema,
   UserProfileSchema,
   VerifyResetTokenResponseSchema,
-} from "./schemas";
-
-export type {
-  CompanyOnboardingStatus,
-  CompanySignupRequest,
-  CompanySignupResponse,
-  CompanySignupResponseData,
-  EmailVerificationRequest,
-  EmailVerificationResponse,
-  ForgotPasswordRequest,
-  GoogleAuthUrlResponse,
-  GoogleAuthUrlResponseData,
-  GoogleCallbackResponseData,
-  IntegrationData,
-  InterestGroup,
-  KarmaDistribution,
-  LoginRequest,
-  LoginResponse,
-  LoginResponseData,
-  ReferralData,
-  RefreshTokenRequest,
-  RefreshTokenResponse,
-  RegisterInterestData,
-  RegisterRequest,
-  RegisterResponse,
-  RegisterResponseData,
-  RegisterUserData,
-  RequestOTPRequest,
-  ResetPasswordRequest,
-  UserInfo,
-  UserInfoResponse,
-  UserProfile,
-  UserProfileResponse,
-  VerifyResetTokenResponse,
 } from "./schemas";

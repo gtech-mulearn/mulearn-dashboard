@@ -1,6 +1,6 @@
+import type { Metadata } from "next";
 import { ManageEventsDashboard } from "@/features/events";
 import { requireAuth } from "@/lib/auth/server";
-import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Manage Events",

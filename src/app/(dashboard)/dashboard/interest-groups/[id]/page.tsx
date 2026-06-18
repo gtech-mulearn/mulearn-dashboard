@@ -6,8 +6,8 @@
  * Detailed view of a specific interest group.
  */
 
-import { InterestGroupDetailClient } from "@/features/interest-groups";
 import type { Metadata } from "next";
+import { InterestGroupDetailClient } from "@/features/interest-groups";
 
 export const metadata: Metadata = {
   title: "Interest Group Details",

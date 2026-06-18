@@ -1,11 +1,11 @@
 export {
-  getAdminInterestGroups,
   createInterestGroup,
-  updateInterestGroup,
-  partialUpdateInterestGroup,
   deleteInterestGroup,
   exportIgCSV,
+  getAdminInterestGroups,
   getIgRequests,
-  updateIgRequestStatus,
+  partialUpdateInterestGroup,
   submitIgRequest,
+  updateIgRequestStatus,
+  updateInterestGroup,
 } from "./manage-ig.api";

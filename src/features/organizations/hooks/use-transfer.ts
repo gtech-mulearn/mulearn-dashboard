@@ -1,12 +1,12 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   executeMerge,
   fetchMergePreview,
   transferOrganization,
 } from "../api/transfer.api";
 import type { TransferOrgFormValues } from "../schemas/transfer.schema";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import { useOrgQueryErrorToast } from "./org-error";
 
 // ─── Simple Transfer ──────────────────────────────────────────────────────────

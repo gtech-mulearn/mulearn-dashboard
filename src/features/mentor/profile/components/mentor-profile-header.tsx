@@ -133,7 +133,6 @@ export function MentorProfileHeader({
         fill
         className="object-cover"
         priority
-        unoptimized={Boolean(userProfile.cover_pic)}
         onError={() => setCoverError(true)}
         sizes="100vw"
       />

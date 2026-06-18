@@ -5,6 +5,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   createDepartment,
   type DepartmentParams,
@@ -13,7 +14,6 @@ import {
   updateDepartment,
 } from "../api/departments.api";
 import type { DepartmentFormValues } from "../schemas/departments.schema";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import { useOrgQueryErrorToast } from "./org-error";
 
 const DEPT_KEY = "org-departments";

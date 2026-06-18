@@ -1,6 +1,6 @@
-import { requireRole } from "@/lib/auth/server";
-import { ROLES } from "@/lib/auth/roles";
 import { OrganizationsView } from "@/features/organizations";
+import { ROLES } from "@/lib/auth/roles";
+import { requireRole } from "@/lib/auth/server";
 
 export const metadata = {
   title: "Organizations | Management",

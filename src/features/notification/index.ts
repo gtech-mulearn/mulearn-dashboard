@@ -33,6 +33,15 @@ export {
   useTargetOptions,
   useUpdateBroadcast,
 } from "./hooks";
+export type {
+  AdminBroadcast,
+  BroadcastCreatePayload,
+  BroadcastNotification,
+  DirectNotification,
+  NotificationListResponse,
+  TargetOption,
+  TargetType,
+} from "./schemas";
 export {
   AdminBroadcastListResponseSchema,
   AdminBroadcastSchema,
@@ -42,13 +51,4 @@ export {
   NotificationListResponseSchema,
   TARGET_TYPE_LABELS,
   TARGET_TYPES,
-} from "./schemas";
-export type {
-  AdminBroadcast,
-  BroadcastCreatePayload,
-  BroadcastNotification,
-  DirectNotification,
-  NotificationListResponse,
-  TargetOption,
-  TargetType,
 } from "./schemas";

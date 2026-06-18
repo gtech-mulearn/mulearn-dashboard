@@ -1,10 +1,10 @@
+export type { TaskTypeListData, TaskTypeParams } from "./task-type.api";
 export {
   createTaskType,
   deleteTaskType,
   fetchTaskTypes,
   updateTaskType,
 } from "./task-type.api";
-export type { TaskTypeListData, TaskTypeParams } from "./task-type.api";
 export { fetchPendingTasks, reviewTask } from "./task-verification.api";
 export {
   createTask,

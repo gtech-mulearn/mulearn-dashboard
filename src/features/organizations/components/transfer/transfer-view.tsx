@@ -54,7 +54,7 @@ export default function TransferView() {
       <CardContent className="px-0">
         <Tabs
           value={activeTab}
-          onValueChange={(v) => setActiveTab(v as any)}
+          onValueChange={(v) => setActiveTab(v as "transfer" | "merge")}
           className="space-y-6"
         >
           <TabsList className="grid w-full grid-cols-2 max-w-md">

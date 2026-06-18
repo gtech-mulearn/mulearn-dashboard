@@ -1,6 +1,6 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ProjectsListingPage } from "@/features/projects";
-import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Projects",

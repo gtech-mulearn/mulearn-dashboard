@@ -13,7 +13,7 @@ import {
   fetchShortUrlAnalytics,
   fetchShortUrls,
   updateShortUrl,
-} from "../api/shortner.api";
+} from "../api/shortener.api";
 
 const SHORT_URL_KEYS = {
   all: ["short-urls"] as const,

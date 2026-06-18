@@ -5,9 +5,9 @@
  * RBAC: Admin only
  */
 
-import { requireRole } from "@/lib/auth/server";
-import { ROLES } from "@/lib/auth/roles";
 import { DynamicTypePage } from "@/features/dynamic-type";
+import { ROLES } from "@/lib/auth/roles";
+import { requireRole } from "@/lib/auth/server";
 
 export const metadata = {
   title: "Manage Dynamic Types | Management",

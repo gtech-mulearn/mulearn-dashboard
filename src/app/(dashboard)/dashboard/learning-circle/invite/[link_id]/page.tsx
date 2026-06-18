@@ -6,8 +6,8 @@
  * Accept or reject a circle invitation via shareable link.
  */
 
-import { InviteLinkView } from "@/features/learning-circle";
 import type { Metadata } from "next";
+import { InviteLinkView } from "@/features/learning-circle";
 
 export const metadata: Metadata = {
   title: "Circle Invitation",

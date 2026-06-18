@@ -1,9 +1,9 @@
 export {
-  useCampusInfo,
-  useWeeklyKarma,
   campusMentorKeys,
-  useCampusSessions,
   useAssignCampusMentor,
+  useCampusInfo,
+  useCampusSessions,
   useCreateCampusSession,
+  useWeeklyKarma,
 } from "./campus.hooks";
 export { campusKeys } from "./query-keys";

@@ -1,7 +1,5 @@
 /**
- * Public Profile Page
- *
- * 📍 src/app/(dashboard)/dashboard/profile/[muid]/page.tsx
+ * Public Profile Page (Client Component)
  *
  * View another user's public profile.
  */
@@ -9,7 +7,6 @@
 "use client";
 
 import { ShieldX } from "lucide-react";
-import { useParams } from "next/navigation";
 import { useState } from "react";
 import Loader from "@/app/loading";
 import { usePublicCompanyProfile } from "@/features/company-jobs";
@@ -32,16 +29,21 @@ import {
 import { ProjectsTab } from "@/features/projects";
 import { ROLES } from "@/lib/auth/roles";
 
-export default function PublicProfilePage() {
-  const params = useParams();
-  const muidParam = decodeURIComponent(params.muid as string);
+interface PublicProfilePageClientProps {
+  muid: string;
+}
+
+export function PublicProfilePageClient({
+  muid: muidParam,
+}: PublicProfilePageClientProps) {
+  const decodedMuid = decodeURIComponent(muidParam);
 
   // Companies use slugs (e.g. techcorp-india), users use MUIDs (e.g. john@mulearn)
   // MUIDs always contain an '@'. Slugs never do.
-  const isCompanySlug = !muidParam.includes("@");
+  const isCompanySlug = !decodedMuid.includes("@");
 
-  const companySlug = isCompanySlug ? muidParam.toLowerCase() : "";
-  const muid = isCompanySlug ? "" : muidParam;
+  const companySlug = isCompanySlug ? decodedMuid.toLowerCase() : "";
+  const muid = isCompanySlug ? "" : decodedMuid;
 
   const [activeTab, setActiveTab] = useState<ProfileTab>("basic-details");
 
@@ -74,7 +76,7 @@ export default function PublicProfilePage() {
 
   // 1. Render company view immediately if company data loaded successfully
   if (companyQuery.data) {
-    return <CompanyPublicView slug={companySlug || muidParam} />;
+    return <CompanyPublicView slug={companySlug || decodedMuid} />;
   }
 
   // 2. Wait if company query is still loading

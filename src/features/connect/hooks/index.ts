@@ -1,2 +1,2 @@
-export * from "./query-keys";
-export * from "./use-connect";
+export { connectKeys } from "./query-keys";
+export { useQseverseInfo } from "./use-connect";

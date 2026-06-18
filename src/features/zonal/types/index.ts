@@ -1,1 +1,15 @@
-export * from "./zonal.types";
+export type {
+  CollegeListParams,
+  CollegeListResponse,
+  Pagination,
+  SortDirection,
+  SortState,
+  StudentLevelResponse,
+  StudentListParams,
+  StudentListResponse,
+  TopDistrictsResponse,
+  TStudentLevel,
+  TTopDistrict,
+  ZoneDetails,
+  ZoneDetailsResponse,
+} from "./zonal.types";

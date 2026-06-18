@@ -1,5 +1,5 @@
-import { SessionsPage } from "@/features/mentor/sessions/components/sessions-page";
 import type { Metadata } from "next";
+import { SessionsPage } from "@/features/mentor/sessions/components/sessions-page";
 
 export const metadata: Metadata = {
   title: "Mentor Sessions",

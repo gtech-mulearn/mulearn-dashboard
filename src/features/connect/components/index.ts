@@ -1,2 +1,2 @@
-export * from "./connect-discord";
-export * from "./connect-qseverse";
+export { DiscordConnectDialog } from "./connect-discord";
+export { QseverseConnectDialog } from "./connect-qseverse";

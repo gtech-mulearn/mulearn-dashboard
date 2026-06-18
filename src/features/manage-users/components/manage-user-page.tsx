@@ -4,7 +4,6 @@ import { ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { endpoints } from "@/api/endpoints";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import { Blank } from "@/components/dashboard/table/Blank";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table from "@/components/dashboard/table/Table";
@@ -26,6 +25,7 @@ import {
   useManageUsersList,
 } from "@/features/manage-users/hooks";
 import type { ManageUserListItem } from "@/features/manage-users/schemas";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { UserForm } from "./user-form";
 
 export default function ManageUsers() {

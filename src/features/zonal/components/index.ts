@@ -1,1 +1,1 @@
-export * from "./zonal-view";
+export { ZonalDashboardView } from "./zonal-view";

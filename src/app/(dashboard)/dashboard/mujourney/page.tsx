@@ -6,10 +6,18 @@
  * Main MuJourney interface with tabs
  */
 
-import { MuJourneyDashboard } from "@/features/mujourney";
+import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import { fetchPublicLevels } from "@/features/mujourney/api";
 import { isAuthenticated } from "@/lib/auth/server";
-import type { Metadata } from "next";
+
+const MuJourneyDashboard = dynamic(
+  () =>
+    import("@/features/mujourney").then((mod) => ({
+      default: mod.MuJourneyDashboard,
+    })),
+  { ssr: false },
+);
 
 export const metadata: Metadata = {
   title: "MuJourney",

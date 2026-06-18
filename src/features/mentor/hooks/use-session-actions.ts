@@ -6,8 +6,8 @@ import {
   acceptSessionRequest,
   declineSessionRequest,
 } from "@/features/home/api/home.api";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import { homeKeys } from "@/features/home/hooks";
+import { getApiResponseError } from "@/hooks/use-get-error";
 
 export function useAcceptSession() {
   const queryClient = useQueryClient();

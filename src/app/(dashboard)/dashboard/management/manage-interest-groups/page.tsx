@@ -1,5 +1,5 @@
-import { requireRole } from "@/lib/auth/server";
 import { ROLES } from "@/lib/auth/roles";
+import { requireRole } from "@/lib/auth/server";
 import { ManageInterestGroupsPageClient } from "./manage-interest-groups-client";
 
 export const metadata = {

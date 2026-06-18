@@ -8,8 +8,8 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import { ForgotPasswordForm, useForgotPassword } from "@/features/auth";
+import { getApiResponseError } from "@/hooks/use-get-error";
 
 export function ForgotPasswordClient() {
   const [isSuccess, setIsSuccess] = useState(false);

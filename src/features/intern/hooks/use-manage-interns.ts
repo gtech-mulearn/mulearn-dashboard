@@ -233,39 +233,18 @@ export function useReviewTimesheet(id: string) {
           ? "Timesheet approved — streak & score updated!"
           : "Timesheet rejected — streak reset to 0!",
       );
-      await queryClient.invalidateQueries({
-        queryKey: ["manage-timesheets"],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["manage-weekly-reviews"],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["intern-overview-status"],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["leaderboard"],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["quest-log-activity"],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["intern", "manage", "timesheets"],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["intern", "manage", "reviews"],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["intern", "overview", "status"],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["intern", "leaderboard"],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["intern", "overview", "activity"],
-      });
       await queryClient.invalidateQueries({ queryKey: internKeys.manage() });
       await queryClient.invalidateQueries({
         queryKey: internKeys.timesheets(),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: internKeys.reviews(),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: internKeys.overviewStatus(),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: internKeys.leaderboard(),
       });
     },
     onError: (error) => {
@@ -301,38 +280,17 @@ export function useReviewWeeklyReview(id: string) {
           ? "Weekly review approved — +200 score & weekly streak updated!"
           : "Weekly review rejected — streak reset to 0!",
       );
-      await queryClient.invalidateQueries({
-        queryKey: ["manage-timesheets"],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["manage-weekly-reviews"],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["intern-overview-status"],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["leaderboard"],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["quest-log-activity"],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["intern", "manage", "timesheets"],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["intern", "manage", "reviews"],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["intern", "overview", "status"],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["intern", "leaderboard"],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["intern", "overview", "activity"],
-      });
       await queryClient.invalidateQueries({ queryKey: internKeys.manage() });
       await queryClient.invalidateQueries({ queryKey: internKeys.reviews() });
+      await queryClient.invalidateQueries({
+        queryKey: internKeys.timesheets(),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: internKeys.overviewStatus(),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: internKeys.leaderboard(),
+      });
     },
     onError: (error) => {
       toast.error(

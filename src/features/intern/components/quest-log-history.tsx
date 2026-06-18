@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -43,6 +42,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { internApi } from "../api/intern.api";
 import {
   useInternTasks,
@@ -449,7 +449,9 @@ export function QuestLogHistory() {
           <div className="w-full sm:w-44">
             <Select
               value={filterType}
-              onValueChange={(val) => setFilterType(val as any)}
+              onValueChange={(val) =>
+                setFilterType(val as "all" | "timesheet" | "task")
+              }
             >
               <SelectTrigger className="w-full bg-background/40 border-border/40 font-bold uppercase text-[10px] tracking-wider">
                 <SelectValue placeholder="All Types" />
@@ -471,7 +473,17 @@ export function QuestLogHistory() {
           <div className="w-full sm:w-44">
             <Select
               value={filterStatus}
-              onValueChange={(val) => setFilterStatus(val as any)}
+              onValueChange={(val) =>
+                setFilterStatus(
+                  val as
+                    | "all"
+                    | "PENDING"
+                    | "APPROVED"
+                    | "REJECTED"
+                    | "CANCELLED"
+                    | "COMPLETED",
+                )
+              }
             >
               <SelectTrigger className="w-full bg-background/40 border-border/40 font-bold uppercase text-[10px] tracking-wider">
                 <SelectValue placeholder="All Statuses" />
@@ -747,7 +759,14 @@ export function QuestLogHistory() {
                       <Select
                         value={(selectedItem.raw as TInternTask).status}
                         onValueChange={(val) => {
-                          handleTaskStatusChange(selectedItem.id, val as any);
+                          handleTaskStatusChange(
+                            selectedItem.id,
+                            val as
+                              | "WAITING_FOR_REVIEW"
+                              | "IN_PROGRESS"
+                              | "COMPLETED"
+                              | "ON_HOLD",
+                          );
                         }}
                       >
                         <SelectTrigger className="w-full bg-background/50 border-border/50 font-bold uppercase text-[10px] tracking-wider mt-1">
