@@ -25,11 +25,9 @@ export function DashboardContent({ children }: DashboardContentProps) {
   return (
     <main
       className={cn(
-        "min-h-screen w-full overflow-x-hidden",
-        // clear topbar (top-4 + h-14 = 72px) + 8px visual gap
-        "pt-[85px] pl-4 pr-4 pb-4",
-        // clear floating sidebar (left-4 + width = 256/80px) + 8px visual gap
-        isSidebarExpanded ? "lg:pl-[264px]" : "lg:pl-[88px]",
+        "min-h-screen w-full overflow-x-hidden transition-[padding-left] duration-200 ease-linear",
+        "pt-20 pl-4 pr-4 pb-4",
+        isSidebarExpanded ? "lg:pl-[248px]" : "lg:pl-[56px]",
       )}
     >
       <div className="bg-background rounded-2xl shadow-sm p-4 min-h-[calc(100vh-6rem)]">
