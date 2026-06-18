@@ -124,11 +124,7 @@ export function StepCulture() {
           </div>
           <div className="flex flex-wrap gap-2">
             {techStack.map((t: string) => (
-              <Badge
-                key={t}
-                variant="outline"
-                className="gap-1 bg-background text-foreground"
-              >
+              <Badge key={t} variant="outline" className="gap-1 bg-background">
                 {t}
                 <button
                   type="button"
@@ -171,11 +167,7 @@ export function StepCulture() {
           </div>
           <div className="flex flex-wrap gap-2">
             {perks.map((p: string) => (
-              <Badge
-                key={p}
-                variant="outline"
-                className="gap-1 bg-background text-foreground"
-              >
+              <Badge key={p} variant="outline" className="gap-1">
                 {p}
                 <button
                   type="button"

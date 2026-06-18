@@ -105,11 +105,7 @@ export function TaskDetailModal({ taskId, onClose }: TaskDetailModalProps) {
                   </h3>
                   <div className="flex flex-wrap gap-2">
                     {task.skills.map((skill) => (
-                      <Badge
-                        key={skill.id}
-                        variant="outline"
-                        className="bg-background"
-                      >
+                      <Badge key={skill.id} variant="outline">
                         {skill.name}
                       </Badge>
                     ))}
