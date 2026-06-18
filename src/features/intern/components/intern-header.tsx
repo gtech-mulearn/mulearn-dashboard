@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar } from "lucide-react";
+import { Calendar, ScrollText } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -39,6 +39,8 @@ export function InternHeader() {
   const userStatus = overview?.status || "ACTIVE";
   const userLevel = profile?.level || "1";
   const profilePic = profile?.profile_pic || null;
+  const isInternLead =
+    overview?.role === "INTERN_LEAD" || overview?.role === "Intern Lead";
 
   const initials = userDisplayName
     .split(" ")
@@ -88,6 +90,15 @@ export function InternHeader() {
           >
             <Calendar className="w-4 h-4" />
             Leave Desk
+          </Button>
+        </Link>
+        <Link href="/dashboard/intern/minutes">
+          <Button
+            variant="outline"
+            className="gap-2 text-[10px] tracking-widest h-10 shadow-lg border-amber-500/40 text-amber-500 hover:bg-amber-500/10 hover:text-amber-500"
+          >
+            <ScrollText className="w-4 h-4" />
+            Minutes
           </Button>
         </Link>
         <Badge

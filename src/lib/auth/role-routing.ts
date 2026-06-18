@@ -46,7 +46,7 @@ export function getRoleHomePath(roles: string[]): string {
   }
 
   // ── Intern dashboard ─────────────────────────────────────────
-  if (roles.includes(ROLES.INTERN)) {
+  if (roles.includes(ROLES.INTERN) || roles.includes(ROLES.INTERN_LEAD)) {
     return "/dashboard/intern";
   }
 

@@ -25,7 +25,7 @@ export const CampusView = ({ id }: CampusDashboardProps) => {
     );
   }
 
-  if (!info || !weeklyData.length) {
+  if (!info) {
     return (
       <div className="flex flex-col items-center justify-center p-20 text-center">
         <div className="text-destructive p-4 rounded-full mb-4">

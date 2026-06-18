@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { ApiError } from "@/api";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Dialog,
   DialogContent,
@@ -31,6 +32,8 @@ interface TransferEnablerDialogProps {
 
 export function TransferEnablerDialog({ trigger }: TransferEnablerDialogProps) {
   const [open, setOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingMuid, setPendingMuid] = useState<string | null>(null);
   const [selectedUser, setSelectedUser] = useState<{
     muid: string;
     name: string;
@@ -53,10 +56,17 @@ export function TransferEnablerDialog({ trigger }: TransferEnablerDialogProps) {
   };
 
   const onSubmit = (values: FormValues) => {
-    transfer(values.muid, {
+    setPendingMuid(values.muid);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirm = () => {
+    if (!pendingMuid) return;
+    transfer(pendingMuid, {
       onSuccess: () => {
         toast.success("Lead Enabler role transferred");
         setOpen(false);
+        setConfirmOpen(false);
         form.reset();
         setSelectedUser(null);
       },
@@ -66,49 +76,63 @@ export function TransferEnablerDialog({ trigger }: TransferEnablerDialogProps) {
             ? error.message
             : "Failed to transfer enabler role",
         );
+        setConfirmOpen(false);
       },
     });
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Transfer Lead Enabler</DialogTitle>
-          <DialogDescription>
-            Select the member who will become the new Lead Enabler for this
-            campus.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <MuidSearchInput
-            onSelectUser={handleSelectUser}
-            selectedUser={selectedUser}
-            onClear={handleClear}
-            keepOpen
-            placeholder="Search by name or MUID..."
-            disabled={isPending}
-          />
-          {form.formState.errors.muid && (
-            <p className="text-xs text-destructive">
-              {form.formState.errors.muid.message}
-            </p>
-          )}
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => setOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isPending}>
-              {isPending ? "Transferring..." : "Transfer"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>{trigger}</DialogTrigger>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Transfer Lead Enabler</DialogTitle>
+            <DialogDescription>
+              Select the member who will become the new Lead Enabler for this
+              campus.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <MuidSearchInput
+              onSelectUser={handleSelectUser}
+              selectedUser={selectedUser}
+              onClear={handleClear}
+              keepOpen
+              placeholder="Search by name or MUID..."
+              disabled={isPending}
+            />
+            {form.formState.errors.muid && (
+              <p className="text-xs text-destructive">
+                {form.formState.errors.muid.message}
+              </p>
+            )}
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" variant="destructive" disabled={isPending}>
+                Transfer
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Are you absolutely sure?"
+        description="This will transfer the Lead Enabler role to the selected member. The current Lead Enabler will lose that role immediately."
+        confirmLabel={isPending ? "Transferring..." : "Yes, transfer"}
+        onConfirm={handleConfirm}
+        isPending={isPending}
+        variant="destructive"
+      />
+    </>
   );
 }
