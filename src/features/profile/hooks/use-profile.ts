@@ -47,7 +47,7 @@ const PROFILE_STALE_TIME = 5 * 60 * 1000;
  */
 export function useUserProfile() {
   const hasToken =
-    typeof window !== "undefined" ? !!authStore.getAccessToken() : false;
+    typeof window !== "undefined" ? authStore.isAuthenticated() : false;
   return useQuery({
     queryKey: profileKeys.profile(),
     queryFn: getUserProfile,

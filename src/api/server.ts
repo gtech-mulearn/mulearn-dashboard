@@ -8,8 +8,8 @@
 
 import { cookies } from "next/headers";
 import type { z } from "zod";
-import { refreshAccessToken } from "@/features/auth/api/auth.api";
-import { env } from "../../config/env";
+import { getBaseUrl } from "./base-url.server";
+import { refreshAccessTokenServer } from "./refresh.server";
 import { ApiError, extractDjangoMessage, logSchemaMismatch } from "./errors";
 
 // ─── URL + Headers ──────────────────────────────────────────────────────────
@@ -19,10 +19,6 @@ if (process.env.NODE_ENV === "production" && !process.env.BACKEND_URL) {
     "[server] BACKEND_URL is not set — falling back to NEXT_PUBLIC_DJANGO_API_URL. " +
       "Set BACKEND_URL to an internal VPC endpoint for better performance and security.",
   );
-}
-
-function getBaseUrl(): string {
-  return env.BACKEND_URL ?? env.NEXT_PUBLIC_DJANGO_API_URL;
 }
 
 const BASE_HEADERS: Record<string, string> = {
@@ -48,16 +44,20 @@ async function refreshAndSetToken(): Promise<string | null> {
   if (!refreshToken) return null;
 
   try {
-    const result = await refreshAccessToken(refreshToken);
-    const newAccessToken = result.accessToken;
+    const newAccessToken = await refreshAccessTokenServer(refreshToken);
 
     if (newAccessToken) {
-      // Persist the refreshed token so subsequent server requests in this
-      // render cycle (and the next page load) use the new token.
+      const isProduction = process.env.NODE_ENV === "production";
       cookieStore.set("accessToken", newAccessToken, {
         httpOnly: true,
-        expires: new Date(Date.now() + 86_400_000), // 1 day
-        secure: process.env.NODE_ENV === "production",
+        expires: new Date(Date.now() + 86_400_000),
+        secure: isProduction,
+        sameSite: "strict",
+        path: "/",
+      });
+      cookieStore.set("isAuthenticated", "true", {
+        expires: new Date(Date.now() + 86_400_000),
+        secure: isProduction,
         sameSite: "strict",
         path: "/",
       });
