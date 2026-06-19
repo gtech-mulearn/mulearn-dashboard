@@ -54,7 +54,6 @@ export const metadata: Metadata = {
       "μLearn is a community-driven learning platform empowering students to learn, build, and grow together.",
     images: ["/logo.webp"],
   },
-  manifest: "/manifest.json",
   alternates: {
     canonical: "https://app.mulearn.org",
   },
