@@ -1,4 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   addCountry,
   deleteCountry,
@@ -39,6 +41,11 @@ export const useAddCountry = () => {
         exact: false,
       });
     },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to add country" }),
+      );
+    },
   });
 };
 
@@ -54,6 +61,11 @@ export const useUpdateCountry = () => {
         exact: false,
       });
     },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to update country" }),
+      );
+    },
   });
 };
 
@@ -68,6 +80,11 @@ export const useDeleteCountry = () => {
         queryKey: ["country-dropdown"],
         exact: false,
       });
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to delete country" }),
+      );
     },
   });
 };

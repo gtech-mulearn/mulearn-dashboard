@@ -1,4 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { OPENGRAD_COURSE_METADATA } from "../api/constants";
 import {
   enrollOpenGradUser,
@@ -58,6 +60,13 @@ export const useOpenGradCourses = () => {
       if (data.redirect_url) {
         window.open(data.redirect_url, "_blank");
       }
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to enroll in course",
+        }),
+      );
     },
   });
 
