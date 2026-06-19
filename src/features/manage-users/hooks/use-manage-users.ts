@@ -10,9 +10,11 @@ import { toast } from "sonner";
 import { endpoints } from "@/api/endpoints";
 import { useCsvDownload } from "@/hooks/use-csv-download";
 import {
+  assignUserRole,
   deleteManageUser,
   fetchCollegesAndDepartments,
   fetchCommunities,
+  fetchCompanies,
   fetchCountries,
   fetchDistricts,
   fetchInterests,
@@ -21,6 +23,7 @@ import {
   fetchRoles,
   fetchStates,
   searchLocations,
+  UserRoles,
   updateManageUser,
 } from "../api";
 import { manageUsersKeys } from "./query-keys";
@@ -164,6 +167,29 @@ export function useUpdateManageUser() {
   });
 }
 
+export const UseRolesDropdown = (enabled = false) => {
+  return useQuery({
+    queryKey: manageUsersKeys.meta(),
+    queryFn: fetchRoles,
+    enabled,
+    refetchOnWindowFocus: false,
+  });
+};
+
+export function AddRoles() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: UserRoles,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["Roles"], exact: false });
+      queryClient.invalidateQueries({
+        queryKey: ["Roles-dropdown"],
+        exact: false,
+      });
+    },
+  });
+}
+
 export function useDeleteManageUser() {
   const queryClient = useQueryClient();
 
@@ -180,4 +206,28 @@ export function useManageUsersCsvDownload(
   csvPath: string = endpoints.manageUsers.csv,
 ) {
   return useCsvDownload(csvPath, "manage-users.csv");
+}
+
+export function useAssignUserRole(userId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: assignUserRole,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: manageUsersKeys.detail(userId),
+      });
+      queryClient.invalidateQueries({ queryKey: manageUsersKeys.lists() });
+    },
+  });
+}
+
+export function useCompanies() {
+  return useQuery({
+    queryKey: ["companies"],
+    queryFn: fetchCompanies,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 20 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
 }

@@ -1,8 +1,11 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
+  type AssignRolePayload,
+  AssignRoleResponseSchema,
   CollegesByDistrictResponseSchema,
   CommunitiesResponseSchema,
+  CompaniesResponseSchema,
   CountriesResponseSchema,
   DistrictsResponseSchema,
   GenericMutationResponseSchema,
@@ -80,7 +83,13 @@ export async function fetchManageUserDetail(
     ManageUserDetailResponseSchema,
   );
 
-  return response.response;
+  const res = response.response as Record<string, any>;
+  return {
+    ...(res as any),
+    message: res.message ?? "Success",
+    intern_guild_created: res.intern_guild_created,
+    mentor_profile_created: res.mentor_profile_created,
+  } as ManageUserDetail;
 }
 
 export async function updateManageUser(
@@ -115,6 +124,17 @@ export async function fetchRoles(): Promise<UiOption[]> {
     endpoints.manageUsers.roles,
     RolesResponseSchema,
   );
+  return sortOptions(response.response.roles.map(toOption));
+}
+
+export async function UserRoles(user_id: string): Promise<UiOption[]> {
+  if (!user_id) return [];
+  const response = await apiClient.post(
+    endpoints.manageUsers.userRoles,
+    { user_id },
+    RolesResponseSchema,
+  );
+
   return sortOptions(response.response.roles.map(toOption));
 }
 
@@ -226,4 +246,34 @@ export async function fetchCollegesAndDepartments(districtId: string): Promise<{
     colleges: sortOptions([...colleges, ...schools]),
     departments: sortOptions(departments),
   };
+}
+
+export async function assignUserRole(payload: AssignRolePayload): Promise<{
+  message: string;
+  intern_guild_created?: boolean;
+  mentor_profile_created?: boolean;
+}> {
+  const response = await apiClient.post(
+    endpoints.manageUsers.userRoles,
+    payload,
+    AssignRoleResponseSchema,
+  );
+  const res = response.response as Record<string, any>;
+  return {
+    message: res.message ?? "Success",
+    intern_guild_created: res.intern_guild_created,
+    mentor_profile_created: res.mentor_profile_created,
+  };
+}
+
+export async function fetchCompanies(): Promise<UiOption[]> {
+  const response = await apiClient.get(
+    endpoints.manageUsers.Company,
+    CompaniesResponseSchema,
+  );
+
+  return response.response.companies.map((company) => ({
+    value: company.id,
+    label: company.title,
+  }));
 }

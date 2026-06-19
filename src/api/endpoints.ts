@@ -978,8 +978,10 @@ export const endpoints = {
 
     /** GET - List communities */
     communities: "/api/v1/register/community/list/",
+    Company: "/api/v1/dashboard/organisation/institutes/Company/",
     /** GET - List roles */
     roles: "/api/v1/register/role/list/",
+    userRoles: "/api/v1/dashboard/roles/user-role/",
     /** GET - List area of interest / interest groups */
     areasOfInterest: "/api/v1/register/area-of-interest/list/",
     /** POST - List colleges by district */

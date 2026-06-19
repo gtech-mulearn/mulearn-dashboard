@@ -51,11 +51,11 @@ export function normalizePayload(
     payload.district = values.location_id || values.district_id;
   }
 
-  if (dirty.college_id || dirty.communities || dirty.department_id) {
+  if (dirty.college_id || dirty.community || dirty.department_id) {
     payload.organizations = values.college_id
-      ? [values.college_id, ...values.communities]
-      : values.communities;
-    payload.community = values.communities;
+      ? [values.college_id, ...values.community]
+      : values.community;
+    /*payload.community = values.community;*/
     payload.department = values.department_id;
   }
 
