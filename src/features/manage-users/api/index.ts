@@ -1,6 +1,8 @@
 export {
+  assignUserRole,
   deleteManageUser,
   fetchCollegesAndDepartments,
+  fetchCompanies,
   fetchCommunities,
   fetchCountries,
   fetchDistricts,
@@ -11,4 +13,5 @@ export {
   fetchStates,
   searchLocations,
   updateManageUser,
+  UserRoles,
 } from "./manageUsers.api";

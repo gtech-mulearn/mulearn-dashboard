@@ -138,6 +138,7 @@ export const ManageUserDetailSchema = z.object({
     .default(""),
   role: z.unknown().optional().transform(toStringArray).default([]),
   roles: z.unknown().optional().transform(toStringArray).default([]),
+  community: z.unknown().optional().transform(toStringArray).default([]),
   organizations: z.array(OrganizationSchema).nullable().optional().default([]),
   interest_groups: z.unknown().optional().transform(toStringArray).default([]),
   graduation_year: z.number().nullable().optional(),
@@ -275,7 +276,7 @@ export const ManageUserFormSchema = z.object({
     ),
   discord_id: z.string().trim().optional(),
   location_id: z.string().optional(),
-  communities: z.array(z.string()),
+  community: z.array(z.string()),
   roles: z.array(z.string()),
   interest_groups: z.array(z.string()),
   country_id: z.string().optional(),
@@ -316,3 +317,145 @@ export type UpdateManageUserPayload = {
   graduation_year?: number;
   community?: string[];
 };
+
+// ── Role Assignment Payload ──────────────────────────────────────────────────
+
+export const MentorTierSchema = z.enum([
+  "MENTOR",
+  "IG_MENTOR",
+  "CAMPUS_MENTOR",
+  "COMPANY_MENTOR",
+]);
+export type MentorTier = z.infer<typeof MentorTierSchema>;
+
+/**
+ * Discriminated-union payload for POST /api/v1/dashboard/roles/user-role/
+ * Each variant maps to a different role type.
+ */
+export type AssignRolePayload =
+  | {
+      /** General / Campus Lead / Admin – no extras needed */
+      user_id: string;
+      role_id: string;
+    }
+  | {
+      /** Intern – guild is required */
+      user_id: string;
+      role_id: string;
+      guild: string;
+    }
+  | {
+      /** General platform mentor */
+      user_id: string;
+      role_id: string;
+      mentor_tier: "MENTOR";
+    }
+  | {
+      /** IG mentor – list of IG UUIDs */
+      user_id: string;
+      role_id: string;
+      mentor_tier: "IG_MENTOR";
+      ig_ids: string[];
+    }
+  | {
+      /** Campus / Company mentor – single org UUID */
+      user_id: string;
+      role_id: string;
+      mentor_tier: "CAMPUS_MENTOR" | "COMPANY_MENTOR";
+      org_id: string;
+    };
+
+export const AssignRoleResponseSchema = z
+  .object({
+    hasError: z.boolean(),
+    statusCode: z.number(),
+    message: z.record(z.string(), z.array(z.string())).optional(),
+    response: z
+      .object({
+        message: z.string().optional(),
+        intern_guild_created: z.boolean().optional(),
+        mentor_profile_created: z.boolean().optional(),
+      })
+      .passthrough(),
+  })
+  .passthrough();
+
+// ── Zod form schema for the "Assign Role" dialog ────────────────────────────
+
+export const INTERN_ROLE_NAME = "intern";
+export const MENTOR_ROLE_NAME = "mentor";
+
+/**
+ * Form schema used by the AssignRoleDialog.
+ * `role_type` is derived on the client from the role's name (lower-case match).
+ */
+export const AssignRoleFormSchema = z
+  .object({
+    role_id: z.string().min(1, "Please select a role"),
+    role_type: z.enum(["general", "intern", "mentor"]).default("general"),
+
+    // Intern extras
+    guild: z.string().optional(),
+
+    // Mentor extras
+    mentor_tier: MentorTierSchema.optional(),
+    ig_ids: z.array(z.string()).optional(),
+    org_id: z.string().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.role_type === "intern" && !data.guild?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["guild"],
+        message: "Guild is required for the Intern role",
+      });
+    }
+
+    if (data.role_type === "mentor") {
+      if (!data.mentor_tier) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["mentor_tier"],
+          message: "Please select a mentor tier",
+        });
+      }
+
+      if (
+        data.mentor_tier === "IG_MENTOR" &&
+        (!data.ig_ids || data.ig_ids.length === 0)
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["ig_ids"],
+          message: "At least one Interest Group is required",
+        });
+      }
+
+      if (
+        (data.mentor_tier === "CAMPUS_MENTOR" ||
+          data.mentor_tier === "COMPANY_MENTOR") &&
+        !data.org_id?.trim()
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["org_id"],
+          message: "Organisation is required for this mentor tier",
+        });
+      }
+    }
+  });
+
+export type AssignRoleFormValues = z.infer<typeof AssignRoleFormSchema>;
+
+export const CompaniesResponseSchema = ApiResponseSchema(
+  z.object({
+    companies: z.array(
+      z.object({
+        id: z
+          .union([z.string(), z.number()])
+          .transform((value) => String(value)),
+        title: z.string(),
+      }),
+    ),
+  }),
+);

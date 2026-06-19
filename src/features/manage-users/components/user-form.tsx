@@ -9,6 +9,7 @@ import Loader from "@/app/loading";
 import { Form } from "@/components/ui/form";
 import {
   useCollegeData,
+  useCompanies,
   useDistricts,
   useLocationSearch,
   useManageUserDetail,
@@ -51,7 +52,7 @@ export const UserForm = forwardRef<
       mobile: "",
       discord_id: "",
       location_id: "",
-      communities: [],
+      community: [],
       roles: [],
       interest_groups: [],
       country_id: "",
@@ -75,6 +76,7 @@ export const UserForm = forwardRef<
 
   const colleges = collegeData?.colleges ?? [];
   const departments = collegeData?.departments ?? [];
+  const { data: companies = [] } = useCompanies();
   const isBusy =
     isDetailLoading || isMetaLoading || updateUserMutation.isPending;
 
@@ -101,7 +103,7 @@ export const UserForm = forwardRef<
       mobile: detail.mobile ?? "",
       discord_id: detail.discord_id ?? "",
       location_id: detail.district ?? "",
-      communities: selectedCommunities,
+      community: selectedCommunities,
       roles: selectedRoles,
       interest_groups: detail.interest_groups ?? [],
       country_id: resolveOptionValue(
@@ -162,7 +164,7 @@ export const UserForm = forwardRef<
     }
   }, [detail, states, districts, colleges, departments, form]);
 
-  const selectedCommunities = form.watch("communities");
+  const selectedCommunities = form.watch("community");
   const selectedRoles = form.watch("roles");
   const selectedInterests = form.watch("interest_groups");
 
@@ -171,12 +173,15 @@ export const UserForm = forwardRef<
     value: string,
     checked: boolean,
   ) => {
-    const currentValues = form.getValues(fieldName);
+    const formFieldName = fieldName === "communities" ? "community" : fieldName;
+    const currentValues = form.getValues(
+      formFieldName as "community" | "roles" | "interest_groups",
+    );
     const nextValues = checked
       ? [...new Set([...currentValues, value])]
       : currentValues.filter((item) => item !== value);
 
-    form.setValue(fieldName, nextValues, { shouldDirty: true });
+    form.setValue(formFieldName, nextValues, { shouldDirty: true });
   };
 
   const handleSubmit = async (values: ManageUserFormValues) => {
@@ -249,6 +254,9 @@ export const UserForm = forwardRef<
         <BasicInfoSection
           control={form.control}
           isBusy={isBusy}
+          user_id={id}
+          colleges={colleges}
+          companies={companies}
           locationSearch={locationSearch}
           isLocationMenuOpen={isLocationMenuOpen}
           isLocationFetching={isLocationFetching}

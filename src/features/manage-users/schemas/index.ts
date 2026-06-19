@@ -1,4 +1,5 @@
 export type {
+  AssignRolePayload,
   ManageUserDetail,
   ManageUserFormValues,
   ManageUserListItem,
@@ -8,11 +9,14 @@ export type {
 } from "./manage-users.schema";
 export {
   ApiResponseSchema,
+  AssignRoleResponseSchema,
   CollegesByDistrictResponseSchema,
   CommunitiesResponseSchema,
+  CompaniesResponseSchema,
   CountriesResponseSchema,
   DistrictsResponseSchema,
   GenericMutationResponseSchema,
+  INTERN_ROLE_NAME,
   InterestsResponseSchema,
   LocationSearchResponseSchema,
   ManageUserDetailResponseSchema,
@@ -21,6 +25,7 @@ export {
   ManageUserListItemSchema,
   ManageUsersListDataSchema,
   ManageUsersListResponseSchema,
+  MENTOR_ROLE_NAME,
   OrganizationSchema,
   PaginationSchema,
   RolesResponseSchema,
