@@ -275,7 +275,10 @@ export function MentorHome() {
       </Card>
 
       {/* Weekly Availability */}
-      <Card className="rounded-2xl border bg-card shadow-sm">
+      <Card
+        id="weekly-availability"
+        className="rounded-2xl border bg-card shadow-sm scroll-mt-20"
+      >
         <CardHeader className="flex-row items-center justify-between px-5 py-4">
           <div className="flex items-center gap-2.5">
             <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10">
