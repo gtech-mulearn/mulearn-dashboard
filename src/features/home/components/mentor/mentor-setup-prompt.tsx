@@ -3,6 +3,7 @@
 import { Loader2, UserCheck } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { useMentorIgRoles, useSwitchMentorPersona } from "../../hooks/use-home";
 
 export function MentorSetupPrompt() {
@@ -101,15 +102,16 @@ export function MentorSetupPrompt() {
         })}
       </div>
 
-      <button
+      <Button
         type="button"
+        variant="default"
         disabled={!selectedId || switchPersona.isPending}
         onClick={() => selectedId && switchPersona.mutate(selectedId)}
-        className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+        className="rounded-full px-6"
       >
         {switchPersona.isPending && <Loader2 className="size-4 animate-spin" />}
         Activate dashboard
-      </button>
+      </Button>
 
       {switchPersona.isError && (
         <p className="mt-3 text-xs text-destructive">

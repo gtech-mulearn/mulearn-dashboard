@@ -187,7 +187,7 @@ export const AnalyticsView = ({ params }: AnalyticsViewProps) => {
       <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
         <div className="space-y-3">
           <div className="flex flex-col md:flex-row md:items-center gap-3 bg-secondary p-4 rounded-lg border border-border/50">
-            <span className="font-semibold bg-primary text-primary-foreground px-3 py-1 rounded text-sm flex-shrink-0">
+            <span className="font-semibold bg-brand-blue/10 text-brand-blue px-3 py-1 rounded text-sm flex-shrink-0">
               Short
             </span>
             <div className="flex-1 bg-card p-3 rounded border border-border flex items-center justify-between group overflow-x-auto">
@@ -198,7 +198,7 @@ export const AnalyticsView = ({ params }: AnalyticsViewProps) => {
           </div>
 
           <div className="flex flex-col md:flex-row md:items-center gap-3 bg-secondary p-4 rounded-lg border border-border/50">
-            <span className="font-semibold bg-primary text-primary-foreground px-3 py-1 rounded text-sm flex-shrink-0">
+            <span className="font-semibold bg-brand-purple/10 text-brand-purple px-3 py-1 rounded text-sm flex-shrink-0">
               Long
             </span>
             <div className="flex-1 bg-card p-3 rounded border border-border flex items-center justify-between group overflow-x-auto">

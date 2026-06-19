@@ -10,6 +10,7 @@
 
 import { Info, LogIn } from "lucide-react";
 import { useCallback, useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -120,21 +121,21 @@ export function JoinMeetingModal({
 
           {/* Actions */}
           <div className="flex justify-end gap-3 border-t border-border pt-5">
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={() => onOpenChange(false)}
-              className="rounded-xl border border-border bg-card px-5 py-2.5 text-[13px] font-semibold text-foreground transition-colors hover:bg-muted"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
+              variant="trusty"
               disabled={isPending || code.length !== 6}
-              className="flex items-center gap-2 rounded-xl bg-success px-5 py-2.5 text-[13px] font-bold text-primary-foreground shadow-[0_4px_12px_rgba(16,185,129,0.3)] transition-all hover:bg-success/90 disabled:opacity-50"
             >
               {isPending && <Spinner className="h-4 w-4" />}
               Join Meeting
-            </button>
+            </Button>
           </div>
         </form>
       </DialogContent>

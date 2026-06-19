@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { Textarea } from "@/components/ui/textarea";
+import { chipColor } from "@/lib/chip-colors";
 import {
   useCommentOnProject,
   useDeleteComment,
@@ -415,8 +416,7 @@ export function ProjectDetailModal({
                         {project.skills.map((s) => (
                           <Badge
                             key={s.id}
-                            variant="secondary"
-                            className="text-[12px] px-2.5 py-1 shadow-sm"
+                            className={`text-[12px] px-2.5 py-1 shadow-sm ${chipColor(s.name)}`}
                           >
                             {s.name}
                           </Badge>

@@ -11,6 +11,7 @@
 import { Crown } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -138,24 +139,22 @@ export function TransferLeadModal({
         </div>
 
         <div className="flex justify-end gap-2.5 border-t border-border px-6 py-4">
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={() => onOpenChange(false)}
-            className="h-9 rounded-xl px-4 text-[13px] font-semibold text-muted-foreground
-              transition-all duration-150 hover:bg-muted"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="default"
             onClick={handleTransfer}
             disabled={!selectedMemberId || transferLead.isPending}
-            className="flex h-9 items-center gap-2 rounded-xl bg-foreground px-5 text-[13px] font-semibold text-background
-              transition-all duration-150 hover:bg-foreground/90 disabled:opacity-40"
           >
             {transferLead.isPending && <Spinner className="h-3.5 w-3.5" />}
             Transfer Lead
-          </button>
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

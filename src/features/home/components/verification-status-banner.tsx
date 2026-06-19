@@ -13,6 +13,7 @@
 
 import { AlertCircle, CheckCircle, Clock, X, XCircle } from "lucide-react";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import { useCompanyOnboardingStatus } from "@/features/auth/hooks";
 import { useUserProfile } from "@/features/auth/hooks/use-session";
 import { useMentorApplication } from "@/features/mentor/onboarding/hooks/use-onboarding";
@@ -77,13 +78,15 @@ export function VerificationStatusBanner({
                 access.
               </p>
             </div>
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon"
               onClick={handleDismissSuccess}
-              className="text-success hover:text-success/80 transition-colors"
+              className="text-success hover:text-success/80"
             >
               <X className="h-4 w-4" />
-            </button>
+            </Button>
           </div>
         );
       }

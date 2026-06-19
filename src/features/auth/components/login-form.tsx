@@ -153,13 +153,9 @@ export function LoginForm({
               Forgot password?
             </Link>
             {onSwitchToOTP && (
-              <button
-                type="button"
-                onClick={onSwitchToOTP}
-                className="text-primary hover:underline"
-              >
+              <Button type="button" variant="link" onClick={onSwitchToOTP}>
                 Login with OTP
-              </button>
+              </Button>
             )}
           </div>
 

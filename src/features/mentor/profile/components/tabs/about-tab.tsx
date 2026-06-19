@@ -13,6 +13,7 @@
 import { FileText, Tag } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { MentorApplication } from "@/features/mentor/onboarding/schemas";
+import { chipColor } from "@/lib/chip-colors";
 
 interface AboutTabProps {
   mentorProfile: MentorApplication;
@@ -64,7 +65,7 @@ export function AboutTab({ mentorProfile }: AboutTabProps) {
               {expertiseTags.map((tag) => (
                 <span
                   key={tag}
-                  className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary ring-1 ring-primary/20"
+                  className={`rounded-full px-3 py-1 text-xs font-medium ${chipColor(tag)}`}
                 >
                   {tag}
                 </span>

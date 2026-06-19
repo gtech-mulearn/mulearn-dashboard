@@ -42,10 +42,10 @@ function getStatusBadge(m: MentorApplicationListItem) {
         ? "REJECTED"
         : "PENDING");
 
-  if (status === "APPROVED") return <Badge variant="default">Approved</Badge>;
+  if (status === "APPROVED") return <Badge variant="success">Approved</Badge>;
   if (status === "REJECTED")
     return <Badge variant="destructive">Rejected</Badge>;
-  return <Badge variant="secondary">Pending</Badge>;
+  return <Badge variant="warning">Pending</Badge>;
 }
 
 function isApprovedMentor(m: MentorApplicationListItem): boolean {

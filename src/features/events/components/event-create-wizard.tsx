@@ -565,12 +565,7 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                         <Check className="h-4 w-4" />
                       </Button>
                     ) : (
-                      <Button
-                        variant="outline"
-                        size="icon-sm"
-                        disabled
-                        className="!border-border !text-muted-foreground"
-                      >
+                      <Button variant="secondary" size="icon-sm" disabled>
                         {stepIndex}
                       </Button>
                     )}

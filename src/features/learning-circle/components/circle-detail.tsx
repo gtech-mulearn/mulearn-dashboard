@@ -24,6 +24,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import {
   useCircleDetail,
@@ -120,33 +121,41 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
             {/* ActionBar: Mark Complete & Icons */}
             <div className="flex items-center justify-between mt-5">
               <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  className="flex items-center gap-2 rounded-xl border border-border px-3 py-1.5 text-[13px] font-semibold text-foreground transition hover:bg-muted"
-                >
-                  <Check className="h-4 w-4 text-muted-foreground" />
-                  {permissions.role
-                    ? `Joined as ${permissions.role === "lead" ? "Lead" : "Member"}`
-                    : "Join Circle"}
-                </button>
+                {permissions.role ? (
+                  <span className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-[13px] font-semibold text-foreground">
+                    <Check className="h-4 w-4 text-success" />
+                    {`Joined as ${permissions.role === "lead" ? "Lead" : "Member"}`}
+                  </span>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="default"
+                    onClick={handleJoin}
+                    disabled={joinCircle.isPending}
+                  >
+                    {joinCircle.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <UserPlus className="h-4 w-4" />
+                    )}
+                    Join Circle
+                  </Button>
+                )}
               </div>
 
               {permissions.canEditCircle && (
-                <div className="flex items-center gap-1 text-muted-foreground">
-                  <button
+                <div className="flex items-center gap-1">
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="icon"
                     onClick={() => setShowEditModal(true)}
-                    className="p-2 transition hover:text-foreground"
                   >
                     <Edit className="h-4 w-4" />
-                  </button>
-                  {/* Fake icons for pixel-perfect ref */}
-                  <button
-                    type="button"
-                    className="p-2 transition hover:text-foreground"
-                  >
+                  </Button>
+                  <Button type="button" variant="ghost" size="icon">
                     <Users className="h-4 w-4" />
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>
@@ -226,14 +235,16 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
                 </button>
               </div>
               {permissions.canCreateMeeting && (
-                <button
+                <Button
                   type="button"
+                  variant="default"
+                  size="sm"
                   onClick={() => setShowCreateMeetingModal(true)}
-                  className="mb-2 inline-flex items-center gap-1.5 rounded-lg bg-foreground px-3 py-1.5 text-[12px] font-semibold text-background transition-all hover:bg-foreground/90 active:scale-95 shadow-sm"
+                  className="mb-2"
                 >
                   <Plus className="h-3.5 w-3.5" />
                   Schedule
-                </button>
+                </Button>
               )}
             </div>
 
@@ -263,14 +274,16 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
                         </p>
                       </div>
                     </div>
-                    <button
+                    <Button
                       type="button"
+                      variant="default"
+                      size="sm"
                       onClick={() => setShowCreateMeetingModal(true)}
-                      className="shrink-0 inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-[12px] font-semibold text-primary-foreground transition-all hover:bg-primary/90 active:scale-95"
+                      className="shrink-0"
                     >
                       <Plus className="h-3.5 w-3.5" />
                       Schedule
-                    </button>
+                    </Button>
                   </div>
                 )}
 
@@ -295,33 +308,17 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
                     Schedule a meeting to get started
                   </p>
                   {permissions.canCreateMeeting && (
-                    <button
+                    <Button
                       type="button"
+                      variant="outline"
+                      size="sm"
                       onClick={() => setShowCreateMeetingModal(true)}
-                      className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-card border border-border shadow-sm px-4 py-2 text-xs font-semibold text-foreground transition-[box-shadow,background-color] hover:bg-muted hover:shadow"
+                      className="mt-4"
                     >
                       <Plus className="h-3.5 w-3.5" />
                       Schedule Meeting
-                    </button>
+                    </Button>
                   )}
-                </div>
-              )}
-
-              {permissions.role === null && (
-                <div className="mt-8 pt-6 border-t border-border">
-                  <button
-                    type="button"
-                    className="inline-flex items-center gap-2 rounded-lg bg-foreground px-5 py-2.5 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 disabled:opacity-50"
-                    onClick={handleJoin}
-                    disabled={joinCircle.isPending}
-                  >
-                    {joinCircle.isPending ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <UserPlus className="h-4 w-4" />
-                    )}
-                    Join Circle
-                  </button>
                 </div>
               )}
             </div>

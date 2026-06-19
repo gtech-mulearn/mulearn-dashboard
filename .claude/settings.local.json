@@ -27,7 +27,8 @@
       "PowerShell(npx biome check src/features/events/hooks/ 2>&1)",
       "PowerShell(npx biome check --write src/features/events/hooks/ 2>&1)",
       "Bash(npx --yes madge@latest --circular --extensions ts,tsx --ts-config tsconfig.json src)",
-      "PowerShell(npx vitest run src/lib/auth/route-access.test.ts src/features/profile/components/badges.test.tsx 2>&1)"
+      "PowerShell(npx vitest run src/lib/auth/route-access.test.ts src/features/profile/components/badges.test.tsx 2>&1)",
+      "PowerShell(npm run typecheck)"
     ]
   }
 }

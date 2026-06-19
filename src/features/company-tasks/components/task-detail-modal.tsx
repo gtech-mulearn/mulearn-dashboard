@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { chipColor } from "@/lib/chip-colors";
 import { useCompanyTaskDetail } from "../hooks/use-company-tasks";
 
 interface TaskDetailModalProps {
@@ -105,7 +106,7 @@ export function TaskDetailModal({ taskId, onClose }: TaskDetailModalProps) {
                   </h3>
                   <div className="flex flex-wrap gap-2">
                     {task.skills.map((skill) => (
-                      <Badge key={skill.id} variant="outline">
+                      <Badge key={skill.id} className={chipColor(skill.name)}>
                         {skill.name}
                       </Badge>
                     ))}

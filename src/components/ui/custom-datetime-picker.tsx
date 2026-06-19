@@ -58,8 +58,8 @@ function CustomDayButton({
       }
       className={cn(
         "flex aspect-square size-auto w-full min-w-8 items-center justify-center font-normal text-[0.8rem]",
-        "rounded-full transition-all duration-200 text-black dark:text-white cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800",
-        "data-[selected-single=true]:!bg-blue-600 data-[selected-single=true]:!text-white data-[selected-single=true]:font-bold",
+        "rounded-full transition-all duration-200 text-foreground cursor-pointer hover:bg-muted",
+        "data-[selected-single=true]:!bg-brand-blue data-[selected-single=true]:!text-primary-foreground data-[selected-single=true]:font-bold",
         className,
       )}
       {...props}
@@ -195,8 +195,8 @@ function TimeWheel({
             className={cn(
               "absolute left-0 right-0 flex items-center justify-center select-none cursor-pointer",
               isSelected
-                ? "text-black font-bold dark:text-white"
-                : "text-gray-500 font-normal dark:text-gray-400",
+                ? "text-foreground font-bold"
+                : "text-muted-foreground font-normal",
             )}
             onClick={() => {
               if (isDragging) return;
@@ -282,13 +282,12 @@ export function CustomDateTimePicker({
           disabled={disabled}
           className={cn(
             "w-full justify-start text-left font-normal shadow-sm rounded-xl py-6",
-            "!border-gray-300 dark:!border-zinc-700 hover:!bg-gray-50 dark:hover:!bg-zinc-900 !text-black dark:!text-white",
             !date && "text-muted-foreground",
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
           {date ? (
-            <div className="flex flex-1 items-center justify-between text-black dark:text-white">
+            <div className="flex flex-1 items-center justify-between text-foreground">
               <span>{format(date, "PPP")}</span>
               {!hideTime && <span>{format(date, "p")}</span>}
             </div>
@@ -299,12 +298,12 @@ export function CustomDateTimePicker({
           )}
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-auto max-w-max p-0 bg-white dark:bg-zinc-950 rounded-2xl shadow-xl overflow-hidden">
+      <DialogContent className="w-auto max-w-max p-0 bg-background rounded-2xl shadow-xl overflow-hidden">
         <DialogTitle className="sr-only">Select Date and Time</DialogTitle>
         <div className="flex flex-col md:flex-row max-h-[85vh] overflow-y-auto overflow-x-hidden">
           <div
             className={cn(
-              "p-4 border-zinc-100 dark:border-zinc-800",
+              "p-4 border-border",
               !hideTime && "border-b md:border-b-0 md:border-r",
             )}
           >
@@ -313,7 +312,7 @@ export function CustomDateTimePicker({
               selected={date}
               onSelect={handleDateSelect}
               showOutsideDays={false}
-              className="text-black dark:text-white"
+              className="text-foreground"
               components={{
                 DayButton: CustomDayButton,
                 MonthCaption: (props: any) => {
@@ -325,10 +324,10 @@ export function CustomDateTimePicker({
                   return (
                     <div className={props.className}>
                       <div className="flex flex-col items-center justify-center gap-1">
-                        <span className="text-xl font-bold text-black dark:text-white leading-none">
+                        <span className="text-xl font-bold text-foreground leading-none">
                           {format(date, "MMMM")}
                         </span>
-                        <span className="text-[0.7rem] font-bold text-black dark:text-white leading-none">
+                        <span className="text-[0.7rem] font-bold text-foreground leading-none">
                           {format(date, "yyyy")}
                         </span>
                       </div>
@@ -338,20 +337,20 @@ export function CustomDateTimePicker({
               }}
               classNames={{
                 weekday:
-                  "text-gray-400 dark:text-gray-500 rounded-md flex-1 font-medium text-[0.7rem] uppercase select-none text-center",
+                  "text-muted-foreground rounded-md flex-1 font-medium text-[0.7rem] uppercase select-none text-center",
                 caption_label: "flex items-center justify-center",
                 month_caption: "flex items-center justify-center pt-2 pb-4",
                 nav: "flex items-center w-full absolute top-2 inset-x-0 justify-between px-2 pointer-events-none",
                 button_previous:
-                  "h-8 w-8 rounded-full bg-white dark:bg-zinc-900 shadow-sm border flex items-center justify-center text-blue-600 hover:bg-zinc-50 pointer-events-auto cursor-pointer",
+                  "h-8 w-8 rounded-full bg-background shadow-sm border flex items-center justify-center text-foreground hover:bg-muted pointer-events-auto cursor-pointer",
                 button_next:
-                  "h-8 w-8 rounded-full bg-white dark:bg-zinc-900 shadow-sm border flex items-center justify-center text-blue-600 hover:bg-zinc-50 pointer-events-auto cursor-pointer",
+                  "h-8 w-8 rounded-full bg-background shadow-sm border flex items-center justify-center text-foreground hover:bg-muted pointer-events-auto cursor-pointer",
                 today: "!bg-transparent",
               }}
             />
           </div>
           {!hideTime && (
-            <div className="flex items-center justify-center p-3 gap-2 bg-zinc-50 dark:bg-zinc-900/50">
+            <div className="flex items-center justify-center p-3 gap-2 bg-muted/50">
               <TimeWheel
                 items={HOURS}
                 selectedValue={date ? format(date, "HH") : "00"}
@@ -406,7 +405,7 @@ export function ScrollableTimePicker({
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="center">
-        <div className="flex justify-center gap-4 py-4 px-6 select-none bg-zinc-50 dark:bg-zinc-900/50 rounded-md">
+        <div className="flex justify-center gap-4 py-4 px-6 select-none bg-muted/50 rounded-md">
           <TimeWheel
             items={HOURS}
             selectedValue={selectedHour}

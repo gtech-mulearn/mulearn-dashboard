@@ -90,6 +90,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { chipColor } from "@/lib/chip-colors";
 import { cn } from "@/lib/utils";
 import {
   useAddExecomMember,
@@ -1627,8 +1628,10 @@ export function CampusManageDashboard() {
                                   event.tags.map((tag) => (
                                     <Badge
                                       key={`${event.id}-${tag || "unnamed"}`}
-                                      variant="secondary"
-                                      className="h-5 shrink-0 px-2 text-[9px] font-bold uppercase tracking-wider"
+                                      className={cn(
+                                        "h-5 shrink-0 px-2 text-[9px] font-bold uppercase tracking-wider",
+                                        chipColor(tag),
+                                      )}
                                     >
                                       {tag}
                                     </Badge>

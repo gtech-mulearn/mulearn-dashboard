@@ -308,7 +308,11 @@ export function IssueVCModal({
   const renderFooter = () => {
     // Already issued or just issued - show close button
     if (is_issued || issuedCredential) {
-      return <Button onClick={() => handleOpenChange(false)}>Close</Button>;
+      return (
+        <Button variant="secondary" onClick={() => handleOpenChange(false)}>
+          Close
+        </Button>
+      );
     }
 
     // No DIDs - show only close

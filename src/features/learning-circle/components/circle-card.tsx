@@ -266,9 +266,9 @@ export function CircleCard({ circle }: CircleCardProps) {
               onClick={handleJoin}
               disabled={joinCircle.isPending}
               className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full
-                bg-card/90 dark:bg-white/10 dark:hover:bg-white/20 dark:text-foreground
+                bg-card/90 dark:bg-muted/40 dark:hover:bg-muted/60 dark:text-foreground
                 backdrop-blur-sm text-muted-foreground shadow-sm
-                border border-black/[0.04] dark:border-white/[0.08]
+                border border-border/60
                 transition-all duration-200
                 hover:shadow-md hover:scale-110
                 active:scale-95 disabled:opacity-40"
