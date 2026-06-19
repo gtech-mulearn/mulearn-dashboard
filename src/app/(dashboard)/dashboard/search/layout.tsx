@@ -7,6 +7,7 @@
  */
 
 import type { ReactNode } from "react";
+import { PageHeader } from "@/components/ui/page-header";
 
 interface SearchLayoutProps {
   children: ReactNode;
@@ -14,22 +15,16 @@ interface SearchLayoutProps {
 
 export default function SearchLayout({ children }: SearchLayoutProps) {
   return (
-    <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-7xl px-6 py-10">
-        {/* Header */}
-        <div className="mb-10">
-          <h1 className="text-5xl font-bold text-foreground mb-4">
-            Find & Connect
-          </h1>
-          <p className="text-muted-foreground text-lg max-w-3xl">
-            Browse and connect with members across our global community to share
-            knowledge and grow together.
-          </p>
-        </div>
+    <div className="mx-auto w-full max-w-7xl">
+      {/* Header */}
+      <PageHeader
+        title="Find & Connect"
+        description="Browse and connect with members across our global community to share knowledge and grow together."
+        className="mb-10"
+      />
 
-        {/* Page Content */}
-        {children}
-      </div>
+      {/* Page Content */}
+      {children}
     </div>
   );
 }

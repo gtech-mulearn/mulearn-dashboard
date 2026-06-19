@@ -181,7 +181,7 @@ export function CreateMeetingModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex flex-col gap-0 p-0 sm:max-w-[700px] max-h-[92vh]">
+      <DialogContent className="flex flex-col gap-0 p-0 sm:max-w-[700px]">
         {/* ── Header ── */}
         <DialogHeader className="shrink-0 px-8 pt-7 pb-5 border-b border-border/40">
           <DialogTitle className="flex items-center gap-3.5 text-lg">

@@ -28,7 +28,12 @@ export const authStore = {
       sameSite: "strict",
     });
   },
-
+  /**
+   * Client-readable session flag. Stays set across short-lived access-token
+   * expiry (the refresh token is httpOnly and not visible to JS), so this is
+   * the signal for "the user has a session" even when the access-token cookie
+   * has already expired and needs a refresh.
+   */
   isAuthenticated: () => {
     return Cookies.get(IS_AUTHENTICATED_KEY) === "true";
   },

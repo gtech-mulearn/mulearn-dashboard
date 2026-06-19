@@ -116,8 +116,8 @@ export function CreateTaskModal({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
+      <DialogContent className="flex flex-col gap-0 p-0 sm:max-w-[425px]">
+        <DialogHeader className="shrink-0 px-6 pt-6 pb-4">
           <DialogTitle>
             {taskToEdit ? "Edit Company Task" : "Create Company Task"}
           </DialogTitle>
@@ -127,86 +127,88 @@ export function CreateTaskModal({
               : "Submit a new task for community engagement. It will be reviewed by an admin."}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
-          <div className="space-y-2">
-            <label htmlFor="task-title" className="text-sm font-medium">
-              Task Title <span className="text-destructive">*</span>
-            </label>
-            <Input
-              id="task-title"
-              placeholder="e.g., Build a REST API with Django"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              disabled={isPending}
-              required
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col min-h-0">
+          <div className="overflow-y-auto px-6 py-4 space-y-4">
             <div className="space-y-2">
-              <label htmlFor="task-hashtag" className="text-sm font-medium">
-                Hashtag <span className="text-destructive">*</span>
+              <label htmlFor="task-title" className="text-sm font-medium">
+                Task Title <span className="text-destructive">*</span>
               </label>
               <Input
-                id="task-hashtag"
-                placeholder="#techcorp-api"
-                value={hashtag}
-                onChange={(e) => setHashtag(e.target.value)}
+                id="task-title"
+                placeholder="e.g., Build a REST API with Django"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
                 disabled={isPending}
                 required
               />
             </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label htmlFor="task-hashtag" className="text-sm font-medium">
+                  Hashtag <span className="text-destructive">*</span>
+                </label>
+                <Input
+                  id="task-hashtag"
+                  placeholder="#techcorp-api"
+                  value={hashtag}
+                  onChange={(e) => setHashtag(e.target.value)}
+                  disabled={isPending}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="task-karma" className="text-sm font-medium">
+                  Karma Points <span className="text-destructive">*</span>
+                </label>
+                <Input
+                  id="task-karma"
+                  type="number"
+                  min="0"
+                  placeholder="150"
+                  value={karma}
+                  onChange={(e) => setKarma(e.target.value)}
+                  disabled={isPending}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="task-type" className="text-sm font-medium">
+                  Task Type <span className="text-destructive">*</span>
+                </label>
+                <Select
+                  value={type}
+                  onValueChange={setType}
+                  disabled={isPending || !taskTypes.length}
+                >
+                  <SelectTrigger id="task-type">
+                    <SelectValue placeholder="Select task type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {taskTypes.map((t: any) => (
+                      <SelectItem key={t.id} value={t.id}>
+                        {t.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
             <div className="space-y-2">
-              <label htmlFor="task-karma" className="text-sm font-medium">
-                Karma Points <span className="text-destructive">*</span>
+              <label htmlFor="task-desc" className="text-sm font-medium">
+                Description <span className="text-destructive">*</span>
               </label>
-              <Input
-                id="task-karma"
-                type="number"
-                min="0"
-                placeholder="150"
-                value={karma}
-                onChange={(e) => setKarma(e.target.value)}
+              <Textarea
+                id="task-desc"
+                placeholder="Provide clear instructions for the task..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
                 disabled={isPending}
+                rows={4}
                 required
               />
             </div>
-            <div className="space-y-2">
-              <label htmlFor="task-type" className="text-sm font-medium">
-                Task Type <span className="text-destructive">*</span>
-              </label>
-              <Select
-                value={type}
-                onValueChange={setType}
-                disabled={isPending || !taskTypes.length}
-              >
-                <SelectTrigger id="task-type">
-                  <SelectValue placeholder="Select task type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {taskTypes.map((t: any) => (
-                    <SelectItem key={t.id} value={t.id}>
-                      {t.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
           </div>
-          <div className="space-y-2">
-            <label htmlFor="task-desc" className="text-sm font-medium">
-              Description <span className="text-destructive">*</span>
-            </label>
-            <Textarea
-              id="task-desc"
-              placeholder="Provide clear instructions for the task..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              disabled={isPending}
-              rows={4}
-              required
-            />
-          </div>
-          <DialogFooter className="pt-2">
+          <DialogFooter className="shrink-0 px-6 py-4 border-t border-border">
             <Button
               type="button"
               variant="outline"

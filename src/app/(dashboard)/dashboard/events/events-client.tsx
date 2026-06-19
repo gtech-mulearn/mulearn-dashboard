@@ -60,7 +60,7 @@ export function EventsPageClient() {
   return (
     <main className="flex-1 lc-fade-in">
       {/* Sticky header: title + search + filter pills */}
-      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border px-6 pt-6 pb-4 md:px-8 md:pt-8">
+      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border pt-6 pb-4 md:pt-8">
         <h1 className="mb-4 text-2xl font-bold text-foreground md:text-3xl">
           Events
         </h1>
@@ -74,7 +74,7 @@ export function EventsPageClient() {
       </div>
 
       {/* Scrollable content */}
-      <div className="space-y-6 px-6 py-6 md:px-8">
+      <div className="space-y-6 py-6">
         <FeaturedEventsCarousel />
 
         {isLoading ? (

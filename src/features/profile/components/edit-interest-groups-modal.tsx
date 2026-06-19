@@ -97,7 +97,7 @@ export function EditInterestGroupsModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[88vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-md">
+      <DialogContent className="flex flex-col gap-0 overflow-hidden p-0 sm:max-w-md">
         {/* Header */}
         <div className="shrink-0 border-b border-border/60 px-6 pb-4 pt-6">
           <DialogTitle className="text-base font-semibold tracking-tight">

@@ -228,7 +228,7 @@ export function TimesheetPageClient() {
   const hasSubmittedToday = !!todayTimesheet;
 
   return (
-    <div className="flex-1 space-y-8 p-4 md:p-8 pt-6 max-w-7xl mx-auto w-full bg-background/50">
+    <div className="space-y-8 max-w-7xl mx-auto w-full">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <div className="flex items-center gap-2 mb-2">

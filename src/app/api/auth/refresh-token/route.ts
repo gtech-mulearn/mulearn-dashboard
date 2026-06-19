@@ -37,6 +37,17 @@ export async function POST() {
       path: "/",
     });
 
+    // Keep the client-readable session flag alive in step with the access
+    // token so a still-valid refresh session isn't mistaken for "logged out"
+    // by client guards once the original flag expires.
+    cookieStore.set("isAuthenticated", "true", {
+      httpOnly: true,
+      expires: new Date(Date.now() + 86_400_000),
+      secure: isProduction,
+      sameSite: "strict",
+      path: "/",
+    });
+
     return NextResponse.json({ success: true });
   } catch {
     cookieStore.delete("refreshToken");
