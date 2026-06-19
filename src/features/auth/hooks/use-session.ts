@@ -24,9 +24,7 @@ import { authKeys } from "./query-keys";
  */
 export function useUserInfo() {
   const hasToken =
-    typeof window !== "undefined"
-      ? !!(authStore.getAccessToken() || authStore.getRefreshToken())
-      : false;
+    typeof window !== "undefined" ? !!authStore.getAccessToken() : false;
   return useQuery({
     queryKey: authKeys.userInfo(),
     queryFn: fetchUserInfo,

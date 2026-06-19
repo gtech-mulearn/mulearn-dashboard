@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   createOrganization,
   deleteOrganization,
@@ -55,8 +56,12 @@ export function useCreateOrg() {
       queryClient.invalidateQueries({ queryKey: organizationsKeys.lists() });
       toast.success("Organization created successfully");
     },
-    onError: (err: Error) => {
-      toast.error(err.message);
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to create organization",
+        }),
+      );
     },
   });
 }
@@ -72,8 +77,12 @@ export function useEditOrg() {
       queryClient.invalidateQueries({ queryKey: organizationsKeys.lists() });
       toast.success("Organization updated successfully");
     },
-    onError: (err: Error) => {
-      toast.error(err.message);
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to update organization",
+        }),
+      );
     },
   });
 }
@@ -88,8 +97,12 @@ export function useDeleteOrg() {
       queryClient.invalidateQueries({ queryKey: organizationsKeys.lists() });
       toast.success("Organization deleted successfully");
     },
-    onError: (err: Error) => {
-      toast.error(err.message);
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to delete organization",
+        }),
+      );
     },
   });
 }

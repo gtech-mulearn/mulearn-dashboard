@@ -186,8 +186,8 @@ export const SubmitFeedbackSchema = z.object({
 export type SubmitFeedbackValues = z.infer<typeof SubmitFeedbackSchema>;
 
 // ─── Generic response ─────────────────────────────────────────────────────────
-export const GenericResponseSchema = ApiResponseSchema(z.any());
-export const RemindResponseSchema = ApiResponseSchema(z.any());
+export const GenericResponseSchema = ApiResponseSchema(z.unknown());
+export const RemindResponseSchema = ApiResponseSchema(z.unknown());
 
 // ─── Kept for backward compatibility with existing components ─────────────────
 export const ApproveSessionFormSchema = AdminVerifySessionSchema;

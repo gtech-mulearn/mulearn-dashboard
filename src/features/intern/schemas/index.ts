@@ -6,4 +6,8 @@
  * Barrel export for all schemas.
  */
 
-export * from "./intern-form-schema";
+export type {
+  TeamFormValues,
+  WeeklyReviewFormValues,
+} from "./intern-form-schema";
+export { teamSchema, weeklyReviewSchema } from "./intern-form-schema";

@@ -6,7 +6,7 @@ export const ApiEnvelopeSchema = <T extends z.ZodTypeAny>(schema: T) =>
   z.object({
     hasError: z.boolean(),
     statusCode: z.number(),
-    message: z.any().optional(),
+    message: z.record(z.string(), z.array(z.string())).optional().nullable(),
     response: schema,
   });
 
@@ -86,7 +86,7 @@ export type DropdownItem = z.infer<typeof DropdownItemSchema>;
 
 // ─── Mutation Response (POST / PATCH / DELETE) ───────────────────────────────
 
-export const MutationResponseSchema = ApiEnvelopeSchema(z.any());
+export const MutationResponseSchema = ApiEnvelopeSchema(z.unknown());
 
 // ─── Create Inputs ───────────────────────────────────────────────────────────
 

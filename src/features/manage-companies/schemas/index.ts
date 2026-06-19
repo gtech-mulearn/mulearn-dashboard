@@ -102,7 +102,7 @@ export const CompanyDetailsSchema = z
     culture_text: z.string().nullable().optional(),
     tech_stack: z.array(z.string()).nullable().optional(),
     perks: z.array(z.string()).nullable().optional(),
-    testimonials: z.array(z.any()).nullable().optional(),
+    testimonials: z.array(z.unknown()).nullable().optional(),
     gallery: z.array(z.string()).nullable().optional(),
     status: z.string(),
     rejection_reason: z.string().nullable().optional(),

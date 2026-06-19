@@ -84,13 +84,7 @@ export function ImageUpload({
 
       {previewUrl ? (
         <div className="group relative h-32 w-32 overflow-hidden rounded-lg border bg-muted">
-          <Image
-            src={previewUrl}
-            alt="Preview"
-            fill
-            className="object-cover"
-            unoptimized
-          />
+          <Image src={previewUrl} alt="Preview" fill className="object-cover" />
           {!disabled && (
             <div className="absolute inset-0 flex items-center justify-center gap-2 bg-foreground/50 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
               <Button

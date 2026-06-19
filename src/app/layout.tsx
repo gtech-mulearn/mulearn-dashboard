@@ -20,6 +20,7 @@ const geist = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://app.mulearn.org"),
   title: {
     default: "μLearn Dashboard",
     template: "%s | μLearn",
@@ -34,6 +35,29 @@ export const metadata: Metadata = {
     "technology",
     "education",
   ],
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://app.mulearn.org",
+    siteName: "μLearn",
+    title: "μLearn Dashboard",
+    description:
+      "μLearn is a community-driven learning platform empowering students to learn, build, and grow together.",
+    images: [
+      { url: "/logo.webp", width: 512, height: 512, alt: "μLearn Logo" },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "μLearn Dashboard",
+    description:
+      "μLearn is a community-driven learning platform empowering students to learn, build, and grow together.",
+    images: ["/logo.webp"],
+  },
+  manifest: "/manifest.json",
+  alternates: {
+    canonical: "https://app.mulearn.org",
+  },
 };
 
 export default function RootLayout({

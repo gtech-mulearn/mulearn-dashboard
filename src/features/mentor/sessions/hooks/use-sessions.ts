@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { mentorKeys } from "@/features/mentor/hooks/query-keys";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   createSession,
   deleteSession,
@@ -104,8 +105,10 @@ export function useCreateSession() {
       toast.success("Session created and pending approval.");
       void qc.invalidateQueries({ queryKey: mentorKeys.sessions.all });
     },
-    onError: (err: Error) =>
-      toast.error(err.message ?? "Failed to create session"),
+    onError: (error) =>
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to create session" }),
+      ),
   });
 }
 
@@ -118,8 +121,10 @@ export function useUpdateSession(id: string) {
       toast.success("Session updated.");
       void qc.invalidateQueries({ queryKey: mentorKeys.sessions.all });
     },
-    onError: (err: Error) =>
-      toast.error(err.message ?? "Failed to update session"),
+    onError: (error) =>
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to update session" }),
+      ),
   });
 }
 
@@ -132,8 +137,10 @@ export function useDeleteSession() {
       toast.success("Session deleted.");
       void qc.invalidateQueries({ queryKey: mentorKeys.sessions.all });
     },
-    onError: (err: Error) =>
-      toast.error(err.message ?? "Failed to delete session"),
+    onError: (error) =>
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to delete session" }),
+      ),
   });
 }
 
@@ -156,7 +163,8 @@ export function useVerifySession() {
       );
       void qc.invalidateQueries({ queryKey: mentorKeys.sessions.all });
     },
-    onError: (err: Error) => toast.error(err.message ?? "Action failed"),
+    onError: (error) =>
+      toast.error(getApiResponseError(error, { fallback: "Action failed" })),
   });
 }
 
@@ -172,8 +180,10 @@ export function useJoinSession() {
       toast.success("Successfully joined the session.");
       void qc.invalidateQueries({ queryKey: mentorKeys.sessions.all });
     },
-    onError: (err: Error) =>
-      toast.error(err.message ?? "Failed to join session"),
+    onError: (error) =>
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to join session" }),
+      ),
   });
 }
 
@@ -220,8 +230,10 @@ export function useAddParticipant(sessionId: string) {
         queryKey: mentorKeys.sessions.participants(sessionId),
       });
     },
-    onError: (err: Error) =>
-      toast.error(err.message ?? "Failed to add participant"),
+    onError: (error) =>
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to add participant" }),
+      ),
   });
 }
 
@@ -242,8 +254,12 @@ export function useUpdateParticipant(sessionId: string) {
         queryKey: mentorKeys.sessions.participants(sessionId),
       });
     },
-    onError: (err: Error) =>
-      toast.error(err.message ?? "Failed to update participant"),
+    onError: (error) =>
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to update participant",
+        }),
+      ),
   });
 }
 
@@ -262,8 +278,10 @@ export function useSubmitFeedback() {
       toast.success("Feedback submitted successfully.");
       void qc.invalidateQueries({ queryKey: mentorKeys.sessions.all });
     },
-    onError: (err: Error) =>
-      toast.error(err.message ?? "Failed to submit feedback"),
+    onError: (error) =>
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to submit feedback" }),
+      ),
   });
 }
 

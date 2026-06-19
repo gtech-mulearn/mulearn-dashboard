@@ -6,4 +6,4 @@
  * Public exports for search API functions.
  */
 
-export * from "./search.api";
+export { searchCampuses, searchMentors, searchUsers } from "./search.api";

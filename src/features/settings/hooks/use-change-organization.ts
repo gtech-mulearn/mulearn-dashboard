@@ -3,10 +3,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ApiError } from "@/api";
 import { authKeys } from "@/features/auth/hooks/query-keys";
 import { profileKeys } from "@/features/profile/hooks/query-keys";
 import { changeOrganization } from "@/features/settings";
+import { getApiResponseError } from "@/hooks/use-get-error";
 
 export function useChangeOrganization() {
   const router = useRouter();
@@ -27,9 +27,9 @@ export function useChangeOrganization() {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Something went wrong. Please try again.",
+        getApiResponseError(error, {
+          fallback: "Something went wrong. Please try again.",
+        }),
       );
     },
   });

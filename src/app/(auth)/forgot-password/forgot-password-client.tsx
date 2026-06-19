@@ -8,8 +8,8 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { ApiError } from "@/api";
 import { ForgotPasswordForm, useForgotPassword } from "@/features/auth";
+import { getApiResponseError } from "@/hooks/use-get-error";
 
 export function ForgotPasswordClient() {
   const [isSuccess, setIsSuccess] = useState(false);
@@ -21,11 +21,11 @@ export function ForgotPasswordClient() {
       setIsSuccess(true);
       toast.success("Reset link sent to your email!");
     } catch (error) {
-      const message =
-        error instanceof ApiError
-          ? error.message
-          : "Failed to send reset link. Please check your email/MuID.";
-      toast.error(message);
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to send reset link. Please check your email/MuID.",
+        }),
+      );
     }
   };
 

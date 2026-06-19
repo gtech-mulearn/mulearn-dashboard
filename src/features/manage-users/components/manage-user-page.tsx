@@ -25,6 +25,7 @@ import {
   useManageUsersList,
 } from "@/features/manage-users/hooks";
 import type { ManageUserListItem } from "@/features/manage-users/schemas";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { UserForm } from "./user-form";
 
 export default function ManageUsers() {
@@ -78,8 +79,10 @@ export default function ManageUsers() {
     try {
       await deleteMutation.mutateAsync(value);
       toast.success("User deleted");
-    } catch {
-      toast.error("Failed to delete user");
+    } catch (error) {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to delete user" }),
+      );
     }
   };
 
@@ -120,7 +123,7 @@ export default function ManageUsers() {
           />
           <Table
             rows={rows}
-            isloading={isLoading}
+            isLoading={isLoading}
             page={currentPage}
             perPage={perPage}
             columnOrder={[

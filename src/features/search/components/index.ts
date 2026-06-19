@@ -1,8 +1,8 @@
-export * from "./CampusesSearchClient";
-export * from "./CampusSearchCard";
-export * from "./MentorsSearchClient";
-export * from "./SearchInput";
-export * from "./SearchResults";
-export * from "./SearchTabsClient";
-export * from "./StudentsSearchClient";
-export * from "./UserSearchCard";
+export { CampusesSearchClient } from "./CampusesSearchClient";
+export { CampusSearchCard } from "./CampusSearchCard";
+export { MentorsSearchClient } from "./MentorsSearchClient";
+export { SearchInput } from "./SearchInput";
+export { SearchResults } from "./SearchResults";
+export { SearchTabsClient } from "./SearchTabsClient";
+export { StudentsSearchClient } from "./StudentsSearchClient";
+export { UserSearchCard } from "./UserSearchCard";

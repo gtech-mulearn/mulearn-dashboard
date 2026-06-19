@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { changePassword } from "@/features/settings";
+import { getApiResponseError } from "@/hooks/use-get-error";
 
 export function useChangePassword() {
   const router = useRouter();
@@ -17,9 +18,12 @@ export function useChangePassword() {
       toast.success(msg);
       router.push("/dashboard/profile");
     },
-    onError: (error: Error) => {
-      const msg = error.message || "Something went wrong. Please try again.";
-      toast.error(msg);
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Something went wrong. Please try again.",
+        }),
+      );
     },
   });
 }

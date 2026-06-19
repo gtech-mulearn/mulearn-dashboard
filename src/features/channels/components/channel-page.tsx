@@ -2,7 +2,6 @@
 
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { ApiError } from "@/api";
 import { DataTableErrorBoundary } from "@/components/dashboard/DataTableErrorBoundary";
 import THead from "@/components/dashboard/table/Thead";
 import { Button } from "@/components/ui/button";
@@ -16,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   useAddChannel,
   useChannel,
@@ -95,9 +95,7 @@ function ChannelContent() {
       },
       onError: (error) =>
         toast.error(
-          error instanceof ApiError
-            ? error.message
-            : "Failed to delete channel.",
+          getApiResponseError(error, { fallback: "Failed to delete channel." }),
         ),
     });
   }, [deleteMutation, deleteTarget]);
@@ -121,9 +119,9 @@ function ChannelContent() {
         },
         onError: (error) =>
           toast.error(
-            error instanceof ApiError
-              ? error.message
-              : "Failed to create channel.",
+            getApiResponseError(error, {
+              fallback: "Failed to create channel.",
+            }),
           ),
       });
     },
@@ -160,9 +158,9 @@ function ChannelContent() {
           },
           onError: (error) =>
             toast.error(
-              error instanceof ApiError
-                ? error.message
-                : "Failed to update channel.",
+              getApiResponseError(error, {
+                fallback: "Failed to update channel.",
+              }),
             ),
         },
       );

@@ -1,1 +1,1 @@
-export * from "./use-leaderboard";
+export { useLeaderboard } from "./use-leaderboard";

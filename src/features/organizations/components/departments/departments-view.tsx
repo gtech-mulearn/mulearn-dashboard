@@ -224,7 +224,7 @@ export default function DepartmentsView() {
         <div className="w-full overflow-x-auto">
           <Table
             rows={rows}
-            isloading={isLoading || isFetching}
+            isLoading={isLoading || isFetching}
             page={currentPage}
             perPage={perPage}
             columnOrder={COLUMNS}

@@ -1,7 +1,6 @@
 "use client";
 
 import { LogOut } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
@@ -15,7 +14,6 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -31,14 +29,14 @@ import { useUIStore } from "@/stores/ui-store";
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { state, isMobile } = useSidebar();
+  const { state } = useSidebar();
   const { mainItems, managementItems, bottomItems } = useFilteredNav();
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
 
   const isCollapsed = state === "collapsed";
 
-  const handleLogout = useCallback(() => {
-    authStore.clearTokens();
+  const handleLogout = useCallback(async () => {
+    await authStore.clearTokens();
     useUIStore.getState().resetUI();
     toast.success("Logged out successfully");
     router.replace("/login");
@@ -84,25 +82,9 @@ export function AppSidebar() {
     <>
       <Sidebar
         collapsible="icon"
-        variant="floating"
-        className="!top-[80px] !bottom-4 !left-4 !h-auto !z-50"
+        variant="sidebar"
+        className="!top-[68px] !h-[calc(100svh-68px)] !z-40 *:!rounded-none"
       >
-        {isMobile && (
-          <SidebarHeader className="px-4 py-5 border-b border-border">
-            <Link href="/dashboard" className="flex items-center">
-              <Image
-                src="/logo.webp"
-                alt="μLearn"
-                width={120}
-                height={38}
-                priority
-                style={{ height: "auto" }}
-                className="h-8 w-auto"
-              />
-            </Link>
-          </SidebarHeader>
-        )}
-
         <SidebarContent className={isCollapsed ? "p-2" : "p-3"}>
           <SidebarGroup className="p-0">
             <SidebarGroupContent>

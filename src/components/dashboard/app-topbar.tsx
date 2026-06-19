@@ -7,8 +7,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserInfo } from "@/features/auth/hooks/use-session";
-// import { NotificationPopover } from "@/features/notification/components/notification-popover";
-import { ROLES } from "@/lib/auth/roles";
 import { cn } from "@/lib/utils";
 
 function getInitials(name: string) {
@@ -22,12 +20,8 @@ function getInitials(name: string) {
 
 export function AppTopbar() {
   const { data, isLoading } = useUserInfo();
-
-  const isStudent = data?.roles.includes(ROLES.STUDENT) ?? false;
-
   return (
-    <header className="fixed top-4 left-4 right-4 z-[40] h-14 rounded-full bg-background/95 backdrop-blur-md border border-border shadow-md flex items-center px-3 justify-between gap-4">
-      {/* Left: trigger + logo */}
+    <header className="fixed top-0 left-0 right-0 z-[50] h-17 bg-background border-b border-border flex items-center px-4 justify-between gap-4">
       <div className="flex items-center gap-2">
         <SidebarTrigger className="rounded-full w-9 h-9 text-muted-foreground" />
         <Link href="/dashboard" className="flex items-center">
@@ -43,12 +37,8 @@ export function AppTopbar() {
         </Link>
       </div>
 
-      {/* Right: notification (student only) + theme + avatar + user info */}
       <div className="flex items-center gap-2">
         <ThemeToggle />
-
-        {/* {isStudent && <NotificationPopover />} */}
-
         {isLoading ? (
           <div className="flex items-center gap-2 pr-1">
             <Skeleton className="w-8 h-8 rounded-full" />

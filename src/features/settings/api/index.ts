@@ -1,1 +1,6 @@
-export * from "./settings.api";
+export {
+  changeOrganization,
+  changePassword,
+  getColleges,
+  getDepartments,
+} from "./settings.api";

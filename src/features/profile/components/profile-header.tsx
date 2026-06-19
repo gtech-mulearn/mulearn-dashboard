@@ -128,7 +128,6 @@ export function ProfileHeader({
         fill
         className="object-cover"
         priority
-        unoptimized={hasCustomCover}
         onError={() => setCoverError(true)}
         sizes="100vw"
       />

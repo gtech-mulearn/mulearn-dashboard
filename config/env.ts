@@ -7,26 +7,20 @@ export const env = createEnv({
    * ❗ These are NOT exposed to the browser
    */
   server: {
-    // Optional internal backend URL for server→backend calls (e.g. http://backend:8000).
-    // Falls back to NEXT_PUBLIC_DJANGO_API_URL when not set.
     BACKEND_URL: z.string().url().optional(),
+    SENTRY_AUTH_TOKEN: z.string().optional(),
   },
 
-  /*
-   * Client-side environment variables
-   * ❗ MUST start with NEXT_PUBLIC_
-   */
   client: {
     NEXT_PUBLIC_DJANGO_API_URL: z.string().url(),
     NEXT_PUBLIC_DISCORD_AUTH_URL: z.string().url(),
+    NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
   },
 
-  /*
-   * Runtime values
-   * Required for Next.js App Router
-   */
   runtimeEnv: {
     BACKEND_URL: process.env.BACKEND_URL,
+    SENTRY_AUTH_TOKEN: process.env.SENTRY_AUTH_TOKEN,
+    NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
     NEXT_PUBLIC_DJANGO_API_URL: process.env.NEXT_PUBLIC_DJANGO_API_URL,
     NEXT_PUBLIC_DISCORD_AUTH_URL: process.env.NEXT_PUBLIC_DISCORD_AUTH_URL,
   },

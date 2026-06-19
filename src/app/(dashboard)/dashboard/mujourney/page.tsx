@@ -6,9 +6,21 @@
  * Main MuJourney interface with tabs
  */
 
-import { MuJourneyDashboard } from "@/features/mujourney";
+import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import { fetchPublicLevels } from "@/features/mujourney/api";
 import { isAuthenticated } from "@/lib/auth/server";
+
+const MuJourneyDashboard = dynamic(() =>
+  import("@/features/mujourney").then((mod) => ({
+    default: mod.MuJourneyDashboard,
+  })),
+);
+
+export const metadata: Metadata = {
+  title: "MuJourney",
+  description: "Track your learning journey and progress.",
+};
 
 export default async function MuJourneyPage() {
   const authenticated = await isAuthenticated();

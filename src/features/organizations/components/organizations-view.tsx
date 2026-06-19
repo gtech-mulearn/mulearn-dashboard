@@ -34,6 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   useAffiliations,
   useCountriesDropdown,
@@ -329,7 +330,7 @@ function OrganizationsContent() {
             <div className="min-w-[600px]">
               <Table
                 rows={rows}
-                isloading={isLoading}
+                isLoading={isLoading}
                 page={currentPage}
                 perPage={perPage}
                 columnOrder={columnOrder}
@@ -464,7 +465,7 @@ function OrgFormDialog({
       }
       handleOpenChange(false);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Operation failed");
+      toast.error(getApiResponseError(err, { fallback: "Operation failed" }));
     }
   };
 

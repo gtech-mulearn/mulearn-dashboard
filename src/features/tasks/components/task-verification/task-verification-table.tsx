@@ -148,7 +148,7 @@ export function TaskVerificationTable({
 
         <Table
           rows={tableRows}
-          isloading={isLoading}
+          isLoading={isLoading}
           page={page}
           perPage={perPage}
           columnOrder={COLUMN_ORDER}

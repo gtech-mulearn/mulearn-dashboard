@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   type AssignUserRolePayload,
   assignUserRole,
@@ -73,8 +74,10 @@ export function useAssignUserRole(roleId: string) {
       });
       toast.success("Role assigned");
     },
-    onError: (err: Error) => {
-      toast.error(err.message);
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to assign role" }),
+      );
     },
   });
 }
@@ -96,8 +99,10 @@ export function useRemoveUserRole(roleId: string) {
       });
       toast.success("Role removed");
     },
-    onError: (err: Error) => {
-      toast.error(err.message);
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to remove role" }),
+      );
     },
   });
 }
@@ -118,8 +123,10 @@ export function useBulkAssignRole(roleId: string) {
       });
       toast.success("Roles bulk-assigned");
     },
-    onError: (err: Error) => {
-      toast.error(err.message);
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to bulk-assign roles" }),
+      );
     },
   });
 }
@@ -140,8 +147,10 @@ export function useBulkRemoveRole(roleId: string) {
       });
       toast.success("Roles bulk-removed");
     },
-    onError: (err: Error) => {
-      toast.error(err.message);
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to bulk-remove roles" }),
+      );
     },
   });
 }
@@ -156,7 +165,9 @@ export function useBaseTemplateDownload() {
     try {
       await downloadBaseTemplate();
     } catch (err) {
-      toast.error((err as Error).message);
+      toast.error(
+        getApiResponseError(err, { fallback: "Failed to download template" }),
+      );
     } finally {
       setIsDownloading(false);
     }

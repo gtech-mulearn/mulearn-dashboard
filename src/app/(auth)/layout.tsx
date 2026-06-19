@@ -51,9 +51,9 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
       </div>
 
       {/* Main Content - Right Side */}
-      <div className="flex-1 flex flex-col items-center justify-center p-6 md:p-8">
+      <main className="flex-1 flex flex-col items-center justify-center p-6 md:p-8">
         <div className="w-full max-w-[400px] space-y-6">{children}</div>
-      </div>
+      </main>
     </div>
   );
 }

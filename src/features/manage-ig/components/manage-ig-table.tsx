@@ -193,7 +193,7 @@ export function ManageIGTable() {
       <DataTableErrorBoundary>
         <Table
           rows={interestGroups as unknown as Data[]}
-          isloading={isLoading}
+          isLoading={isLoading}
           page={page}
           perPage={perPage}
           columnOrder={columnOrder}

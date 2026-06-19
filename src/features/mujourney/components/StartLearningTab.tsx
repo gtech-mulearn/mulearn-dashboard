@@ -71,7 +71,9 @@ export function StartLearningTab({
       <div className="flex items-center justify-center py-12">
         <div className="text-center space-y-4">
           <p className="text-destructive">Failed to load levels</p>
-          <p className="text-sm text-muted-foreground">{error.message}</p>
+          {process.env.NODE_ENV === "development" && (
+            <p className="text-sm text-muted-foreground">{error.message}</p>
+          )}
         </div>
       </div>
     );

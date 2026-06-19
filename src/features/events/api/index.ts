@@ -1,1 +1,1 @@
-export * from "./events.api";
+export { eventsApi } from "./events.api";

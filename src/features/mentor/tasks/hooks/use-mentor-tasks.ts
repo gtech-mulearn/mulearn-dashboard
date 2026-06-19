@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ApiError } from "@/api";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   createMentorTask,
   deleteMentorTask,
@@ -109,7 +109,7 @@ export function useCreateMentorTask() {
     },
     onError: (error) =>
       toast.error(
-        error instanceof ApiError ? error.message : "Failed to create task",
+        getApiResponseError(error, { fallback: "Failed to create task" }),
       ),
   });
 }
@@ -126,7 +126,7 @@ export function useUpdateMentorTask(taskId: string) {
     },
     onError: (error) =>
       toast.error(
-        error instanceof ApiError ? error.message : "Failed to update task",
+        getApiResponseError(error, { fallback: "Failed to update task" }),
       ),
   });
 }
@@ -142,7 +142,7 @@ export function useDeleteMentorTask() {
     },
     onError: (error) =>
       toast.error(
-        error instanceof ApiError ? error.message : "Failed to delete task",
+        getApiResponseError(error, { fallback: "Failed to delete task" }),
       ),
   });
 }

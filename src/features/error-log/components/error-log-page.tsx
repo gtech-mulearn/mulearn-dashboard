@@ -171,7 +171,7 @@ export function ErrorLogPage() {
       {/* ── Log entries table ────────────────────────────────── */}
       <Table
         rows={pageSlice}
-        isloading={isLoading}
+        isLoading={isLoading}
         page={page}
         perPage={perPage}
         columnOrder={COLUMN_ORDER}

@@ -46,7 +46,7 @@ export function CompanyStatusGuard({ children }: CompanyStatusGuardProps) {
           Unable to load company profile
         </h2>
         <p className="max-w-md text-center text-sm text-muted-foreground">
-          {error instanceof Error
+          {process.env.NODE_ENV === "development" && error instanceof Error
             ? error.message
             : "An unexpected error occurred. Please try again later."}
         </p>

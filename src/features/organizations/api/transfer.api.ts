@@ -23,10 +23,8 @@ export async function fetchMergePreview(
   source_org: string,
 ): Promise<MergePreviewData> {
   const response = await apiClient.get(
-    endpoints.organization.merge(orgId),
+    `${endpoints.organization.merge(orgId)}?source_org=${encodeURIComponent(source_org)}`,
     MergePreviewResponseSchema,
-    // Pass source_org as query param — GET with body is unusual, so we use params
-    { params: { source_org } } as any,
   );
   const payload = response.response ?? response.data;
   if (!payload) throw new Error("No preview data returned");

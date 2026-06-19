@@ -6,10 +6,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { z } from "zod";
-// Import the specific module, not the @/features/auth barrel: importing the
-// barrel pulls the entire auth feature (components, hooks) into the API layer
-// and creates a circular dependency (api/client → features/auth → … → api/client).
-import { refreshAccessToken } from "@/features/auth/api/auth.api";
 import { env } from "../../config/env";
 import { authStore } from "../lib/auth";
 import { ApiError, extractDjangoMessage, logSchemaMismatch } from "./errors";
@@ -32,6 +28,24 @@ function getAuthHeaders(): Record<string, string> {
   }
 
   return headers;
+}
+
+// ─── Token refresh mutex ────────────────────────────────────────────────────
+
+let refreshPromise: Promise<string | null> | null = null;
+
+async function getRefreshedToken(): Promise<string | null> {
+  if (refreshPromise) return refreshPromise;
+  refreshPromise = fetch("/api/auth/refresh-token", { method: "POST" })
+    .then(async (res) => {
+      if (!res.ok) return null;
+      const data = await res.json();
+      return (data as { accessToken?: string }).accessToken ?? null;
+    })
+    .finally(() => {
+      refreshPromise = null;
+    });
+  return refreshPromise;
 }
 
 // ─── Token expiry detection ─────────────────────────────────────────────────
@@ -142,31 +156,26 @@ async function request<T>(
     // file. On any other failure, throw a real ApiError (the caller must NOT
     // write the response to disk).
     if (options.authenticated && (res.status === 401 || res.status === 403)) {
-      const refreshToken = authStore.getRefreshToken();
-      if (refreshToken) {
-        try {
-          const { accessToken: newAccessToken } =
-            await refreshAccessToken(refreshToken);
-          if (newAccessToken) {
-            authStore.setTokens(newAccessToken, refreshToken);
-            const retryRes = await fetch(
-              `${env.NEXT_PUBLIC_DJANGO_API_URL}${endpoint}`,
-              {
-                method: options.method,
-                headers: {
-                  ...requestHeaders,
-                  Authorization: `Bearer ${newAccessToken}`,
-                  ...options.headers,
-                },
+      try {
+        const newAccessToken = await getRefreshedToken();
+        if (newAccessToken) {
+          const retryRes = await fetch(
+            `${env.NEXT_PUBLIC_DJANGO_API_URL}${endpoint}`,
+            {
+              method: options.method,
+              headers: {
+                ...requestHeaders,
+                Authorization: `Bearer ${newAccessToken}`,
+                ...options.headers,
               },
-            );
-            if (retryRes.ok) {
-              return (await retryRes.blob()) as T;
-            }
+            },
+          );
+          if (retryRes.ok) {
+            return (await retryRes.blob()) as T;
           }
-        } catch {
-          // fall through to the error throw below
         }
+      } catch {
+        // fall through to the error throw below
       }
     }
 
@@ -193,37 +202,16 @@ async function request<T>(
     }
 
     if (res.status === 401 || is403 || isExpired) {
-      const refreshToken = authStore.getRefreshToken();
-
-      if (!refreshToken) {
-        authStore.clearTokens();
-        if (typeof window !== "undefined") {
-          window.location.href = "/login";
-        }
-        throw new ApiError(
-          res.status,
-          "Unauthorized - redirecting to login",
-          rawData,
-        );
-      }
-
       try {
-        const newToken = await refreshAccessToken(refreshToken);
-        const newAccessToken = newToken.accessToken;
+        const newAccessToken = await getRefreshedToken();
 
         if (!newAccessToken) {
-          authStore.clearTokens();
+          await authStore.clearTokens();
           if (typeof window !== "undefined") {
             window.location.href = "/login";
           }
-          throw new ApiError(
-            res.status,
-            "Token refresh failed - no new token",
-            null,
-          );
+          throw new ApiError(res.status, "Token refresh failed", null);
         }
-
-        authStore.setTokens(newAccessToken, refreshToken);
 
         const retryRes = await fetch(
           `${env.NEXT_PUBLIC_DJANGO_API_URL}${endpoint}`,
@@ -249,7 +237,7 @@ async function request<T>(
           retryRes.status === 403 ||
           isTokenExpiredError(retryData)
         ) {
-          authStore.clearTokens();
+          await authStore.clearTokens();
           if (typeof window !== "undefined") {
             window.location.href = "/login";
           }
@@ -277,7 +265,7 @@ async function request<T>(
         }
         return retryData?.response ?? (retryData as T);
       } catch {
-        authStore.clearTokens();
+        await authStore.clearTokens();
         if (typeof window !== "undefined") {
           window.location.href = "/login";
         }

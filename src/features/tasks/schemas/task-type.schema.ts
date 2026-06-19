@@ -42,7 +42,7 @@ export const TaskTypeItemSchema = z.object({
 
 export type TaskTypeData = z.infer<typeof TaskTypeItemSchema>;
 
-export const MutationResponseSchema = z.any();
+export const MutationResponseSchema = z.unknown();
 
 export const CreateTaskTypeSchema = z.object({
   title: z.string().min(1, "Title is required"),

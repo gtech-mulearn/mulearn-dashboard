@@ -1,29 +1,30 @@
 /**
  * Auth Token Store
  *
- * 📍 src/lib/auth/token-store.ts
+ * Manages access and refresh tokens using a hybrid approach:
+ * - Access token: client-readable cookie (needed for Authorization header)
+ * - Refresh token: httpOnly cookie via server route handler (not JS-accessible)
+ * - isAuthenticated: client-readable flag for UI state
  *
- * Manages access and refresh tokens using cookies.
- * This allows middleware to access tokens for route protection.
- *
- * Previously located at src/lib/auth.ts — moved here to colocate
- * with the rest of the auth library.
+ * Token writes go through /api/auth/set-tokens to set httpOnly refresh token.
+ * Token clears go through DELETE /api/auth/set-tokens.
  */
 
 import Cookies from "js-cookie";
 
 const ACCESS_TOKEN_KEY = "accessToken";
-const REFRESH_TOKEN_KEY = "refreshToken";
+const IS_AUTHENTICATED_KEY = "isAuthenticated";
 
 export const authStore = {
-  setTokens: (accessToken: string, refreshToken: string) => {
-    Cookies.set(ACCESS_TOKEN_KEY, accessToken, {
-      expires: 1, // 1 day
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+  setTokens: async (accessToken: string, refreshToken: string) => {
+    await fetch("/api/auth/set-tokens", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ accessToken, refreshToken }),
     });
-    Cookies.set(REFRESH_TOKEN_KEY, refreshToken, {
-      expires: 7, // 7 days
+
+    Cookies.set(IS_AUTHENTICATED_KEY, "true", {
+      expires: 1,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
     });
@@ -33,12 +34,8 @@ export const authStore = {
     return Cookies.get(ACCESS_TOKEN_KEY);
   },
 
-  getRefreshToken: () => {
-    return Cookies.get(REFRESH_TOKEN_KEY);
-  },
-
-  clearTokens: () => {
-    Cookies.remove(ACCESS_TOKEN_KEY);
-    Cookies.remove(REFRESH_TOKEN_KEY);
+  clearTokens: async () => {
+    await fetch("/api/auth/set-tokens", { method: "DELETE" });
+    Cookies.remove(IS_AUTHENTICATED_KEY);
   },
 };

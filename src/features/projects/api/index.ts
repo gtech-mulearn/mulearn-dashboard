@@ -1,1 +1,16 @@
-export * from "./projects.api";
+export {
+  addMember,
+  commentOnProject,
+  createProject,
+  deleteComment,
+  deleteProject,
+  deleteVote,
+  getProject,
+  listMembers,
+  listProjects,
+  listProjectsForMuid,
+  removeMember,
+  updateProject,
+  updateProjectStatus,
+  voteProject,
+} from "./projects.api";

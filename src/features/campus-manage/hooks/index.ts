@@ -1,2 +1,27 @@
-export * from "./query-keys";
-export * from "./use-campus-manage";
+export { campusManageKeys } from "./query-keys";
+export {
+  useAddExecomMember,
+  useCampusEvents,
+  useCampusLeaderboard,
+  useCampusOverview,
+  useChangeStudentType,
+  useCreateIgChapter,
+  useDeleteIgChapter,
+  useDeleteSocialLink,
+  useDownloadStudentCsv,
+  useEventDistribution,
+  useExecomMembers,
+  useExecomRoles,
+  useGlobalIgs,
+  useIgChapters,
+  useIgCodes,
+  useKarmaByCluster,
+  useRemoveExecomMember,
+  useStudentLevels,
+  useTransferEnablerRole,
+  useTransferIgRole,
+  useTransferLeadRole,
+  useUpdateIgChapter,
+  useUpsertSocialLink,
+  useUserProfile,
+} from "./use-campus-manage";

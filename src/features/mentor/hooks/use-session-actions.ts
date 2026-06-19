@@ -7,6 +7,7 @@ import {
   declineSessionRequest,
 } from "@/features/home/api/home.api";
 import { homeKeys } from "@/features/home/hooks";
+import { getApiResponseError } from "@/hooks/use-get-error";
 
 export function useAcceptSession() {
   const queryClient = useQueryClient();
@@ -18,8 +19,10 @@ export function useAcceptSession() {
       sessionId: string;
       userId: string;
     }) => acceptSessionRequest(sessionId, userId),
-    onError: (err: Error) => {
-      toast.error(err.message ?? "Failed to accept session");
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to accept session" }),
+      );
     },
     onSuccess: () => {
       toast.success("Session accepted");
@@ -42,8 +45,10 @@ export function useDeclineSession() {
       sessionId: string;
       userId: string;
     }) => declineSessionRequest(sessionId, userId),
-    onError: (err: Error) => {
-      toast.error(err.message ?? "Failed to decline session");
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to decline session" }),
+      );
     },
     onSuccess: () => {
       toast.success("Session declined");

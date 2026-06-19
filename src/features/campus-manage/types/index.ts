@@ -1,1 +1,20 @@
-export * from "./campus-manage.types";
+export type {
+  CampusEvent,
+  CampusEventFilters,
+  CampusEventsResponse,
+  CampusLeaderboardFilters,
+  CampusLeaderboardItem,
+  CampusLeaderboardResponse,
+  CampusOverview,
+  ClusterKarmaPoint,
+  EventDistributionPoint,
+  ExecomMember,
+  IgChapter,
+  KarmaByClusterItem,
+  KarmaByClusterResponse,
+  PaginationInfo,
+  SocialLink,
+  SocialLinks,
+  StudentLevelCount,
+  TrendPoint,
+} from "./campus-manage.types";

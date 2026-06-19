@@ -55,6 +55,7 @@ import type {
   TWeeklyReviewUpdatePayload,
 } from "@/features/intern/types";
 import { getTaskKarma } from "@/features/intern/utils/intern-helpers";
+import { getApiResponseError } from "@/hooks/use-get-error";
 
 type UnifiedActivity = {
   id: string;
@@ -162,10 +163,10 @@ export function QuestLog() {
       });
       setSelectedItem(null);
     },
-    onError: (error: unknown) => {
-      const msg =
-        error instanceof Error ? error.message : "Failed to update timesheet";
-      toast.error(msg);
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to update timesheet" }),
+      );
     },
   });
 
@@ -182,12 +183,12 @@ export function QuestLog() {
       await queryClient.invalidateQueries({ queryKey: ["intern", "reviews"] });
       setSelectedItem(null);
     },
-    onError: (error: unknown) => {
-      const msg =
-        error instanceof Error
-          ? error.message
-          : "Failed to update weekly review";
-      toast.error(msg);
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to update weekly review",
+        }),
+      );
     },
   });
 
@@ -620,7 +621,14 @@ export function QuestLog() {
                       <Select
                         value={(selectedItem.raw as TInternTask).status}
                         onValueChange={(val) => {
-                          handleTaskStatusChange(selectedItem.id, val as any);
+                          handleTaskStatusChange(
+                            selectedItem.id,
+                            val as
+                              | "WAITING_FOR_REVIEW"
+                              | "IN_PROGRESS"
+                              | "COMPLETED"
+                              | "ON_HOLD",
+                          );
                         }}
                       >
                         <SelectTrigger className="w-full bg-background/50 border-border/50 font-bold uppercase text-[10px] tracking-wider mt-1">

@@ -1,1 +1,1 @@
-export * from "./zonal.api";
+export { triggerCsvDownload, zonalApi } from "./zonal.api";

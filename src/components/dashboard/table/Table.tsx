@@ -19,7 +19,7 @@ export interface Data {
 
 type TableProps = {
   rows: Data[];
-  isloading?: boolean;
+  isLoading?: boolean;
   children?: [ReactNode?, ReactNode?, ReactNode?];
   page: number;
   perPage: number;
@@ -135,7 +135,7 @@ const Table: FC<TableProps> = (props) => {
 
   return (
     <>
-      {props.isloading && (
+      {props.isLoading && (
         <div className="rounded-xl border border-border bg-card px-3 py-10 text-center md:hidden">
           <Loader />
         </div>
@@ -148,7 +148,7 @@ const Table: FC<TableProps> = (props) => {
       >
         <table className="w-full border-collapse table-fixed">
           {props.children?.[0]}
-          {props.isloading ? (
+          {props.isLoading ? (
             <tbody>
               <tr>
                 <td
@@ -292,7 +292,7 @@ const Table: FC<TableProps> = (props) => {
         </div>
       )}
 
-      {!props.isloading && hasData && (
+      {!props.isLoading && hasData && (
         <div className="space-y-3 md:hidden">
           {props.rows.map((rowData, index) => (
             <div
@@ -419,13 +419,13 @@ const Table: FC<TableProps> = (props) => {
         </div>
       )}
 
-      {!props.isloading && !hasData && (
+      {!props.isLoading && !hasData && (
         <div className="rounded-xl border border-border bg-card p-8 text-center text-muted-foreground">
           No data to display
         </div>
       )}
 
-      {!props.isloading && hasData && (
+      {!props.isLoading && hasData && (
         <div className="mt-4">{props.children?.[1]}</div>
       )}
 

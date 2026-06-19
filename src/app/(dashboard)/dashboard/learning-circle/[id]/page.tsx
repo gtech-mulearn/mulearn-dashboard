@@ -6,7 +6,13 @@
  * Individual circle detail view.
  */
 
+import type { Metadata } from "next";
 import { CircleDetail } from "@/features/learning-circle";
+
+export const metadata: Metadata = {
+  title: "Learning Circle Details",
+  description: "View details for a specific learning circle.",
+};
 
 interface PageProps {
   params: Promise<{ id: string }>;

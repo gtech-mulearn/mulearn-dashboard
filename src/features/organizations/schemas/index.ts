@@ -122,7 +122,51 @@ export type OrgFormValues = z.infer<typeof OrgFormSchema>;
 
 // ─── Sub-schema barrels ───────────────────────────────────────────────────────
 
-export * from "./affiliation.schema";
-export * from "./departments.schema";
-export * from "./transfer.schema";
-export * from "./verification.schema";
+export type {
+  AffiliationFormValues,
+  AffiliationItem,
+  AffiliationListData,
+} from "./affiliation.schema";
+export {
+  AffiliationFormSchema,
+  AffiliationItemSchema,
+  AffiliationListDataSchema,
+  AffiliationListResponseSchema,
+} from "./affiliation.schema";
+export type {
+  DepartmentFormValues,
+  DepartmentItem,
+} from "./departments.schema";
+export {
+  DepartmentFormSchema,
+  DepartmentItemSchema,
+  DepartmentMutationResponseSchema,
+  DepartmentsListResponseSchema,
+  PaginatedDataSchema,
+} from "./departments.schema";
+export type {
+  MergeImpactItem,
+  MergeOrgFormValues,
+  MergePreviewData,
+  TransferOrgFormValues,
+} from "./transfer.schema";
+export {
+  MergeImpactItemSchema,
+  MergeMutationResponseSchema,
+  MergeOrgFormSchema,
+  MergePreviewDataSchema,
+  MergePreviewResponseSchema,
+  TransferOrgFormSchema,
+  TransferResponseSchema,
+} from "./transfer.schema";
+export type {
+  UnverifiedOrgItem,
+  VerifyOrgFormValues,
+} from "./verification.schema";
+export {
+  OrgTypeSchema,
+  UnverifiedOrgItemSchema,
+  UnverifiedOrgListResponseSchema,
+  VerificationMutationResponseSchema,
+  VerifyOrgFormSchema,
+} from "./verification.schema";

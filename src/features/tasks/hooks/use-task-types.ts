@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   createTaskType,
   deleteTaskType,
@@ -8,7 +9,7 @@ import {
   updateTaskType,
 } from "../api/task-type.api";
 import type { UpdateTaskTypeInput } from "../schemas/task-type.schema";
-import { getTaskErrorMessage, useTaskQueryErrorToast } from "./task-error";
+import { useTaskQueryErrorToast } from "./task-error";
 
 export const useTaskTypes = (
   params: TaskTypeParams,
@@ -34,7 +35,9 @@ export const useCreateTaskType = () => {
       queryClient.invalidateQueries({ queryKey: ["task-types"], exact: false });
     },
     onError: (error) => {
-      toast.error(getTaskErrorMessage(error, "Failed to create task type."));
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to create task type." }),
+      );
     },
   });
 };
@@ -49,7 +52,9 @@ export const useUpdateTaskType = () => {
       queryClient.invalidateQueries({ queryKey: ["task-types"], exact: false });
     },
     onError: (error) => {
-      toast.error(getTaskErrorMessage(error, "Failed to update task type."));
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to update task type." }),
+      );
     },
   });
 };
@@ -63,7 +68,9 @@ export const useDeleteTaskType = () => {
       queryClient.invalidateQueries({ queryKey: ["task-types"], exact: false });
     },
     onError: (error) => {
-      toast.error(getTaskErrorMessage(error, "Failed to delete task type."));
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to delete task type." }),
+      );
     },
   });
 };

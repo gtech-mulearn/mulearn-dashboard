@@ -366,7 +366,7 @@ export default function ManageCompaniesTable() {
             <div className="min-w-200">
               <Table
                 rows={rows as any}
-                isloading={isLoading}
+                isLoading={isLoading}
                 page={currentPage}
                 perPage={perPage}
                 columnOrder={columnOrder}

@@ -66,7 +66,11 @@ export function ActiveQuests() {
           </Card>
         </Link>
 
-        <Link href="http://mulearn.org/r/internplaybook" target="_blank">
+        <Link
+          href="https://mulearn.org/r/internplaybook"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           <Card className="h-full border-2 quest-card-warning transition-all cursor-pointer group shadow-lg">
             <CardContent className="p-6 flex flex-col items-center text-center gap-4">
               <div className="p-4 bg-warning/10 rounded-2xl group-hover:scale-110 transition-transform">

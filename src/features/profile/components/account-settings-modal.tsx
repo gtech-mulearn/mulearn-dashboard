@@ -34,9 +34,8 @@ export function AccountSettingsModal({
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const handleLogout = () => {
-    // Clear all tokens
-    authStore.clearTokens();
+  const handleLogout = async () => {
+    await authStore.clearTokens();
 
     // Reset UI state
     useUIStore.getState().resetUI();
@@ -63,14 +62,14 @@ export function AccountSettingsModal({
       onClick: handleChangePassword,
       variant: "default" as const,
     },
-    {
-      id: "privacy",
-      icon: Shield,
-      label: "Privacy Settings",
-      description: "Manage your data and privacy",
-      onClick: () => toast.info("Coming soon"),
-      variant: "default" as const,
-    },
+    // {
+    //   id: "privacy",
+    //   icon: Shield,
+    //   label: "Privacy Settings",
+    //   description: "Manage your data and privacy",
+    //   onClick: () => toast.info("Coming soon"),
+    //   variant: "default" as const,
+    // },
     {
       id: "logout",
       icon: LogOut,

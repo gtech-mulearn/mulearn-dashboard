@@ -42,6 +42,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { internApi } from "../api/intern.api";
 import {
   useInternTasks,
@@ -194,10 +195,10 @@ export function QuestLogHistory() {
       });
       setSelectedItem(null);
     },
-    onError: (error: unknown) => {
-      const msg =
-        error instanceof Error ? error.message : "Failed to update timesheet";
-      toast.error(msg);
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to update timesheet" }),
+      );
     },
   });
 
@@ -214,12 +215,12 @@ export function QuestLogHistory() {
       await queryClient.invalidateQueries({ queryKey: ["intern", "reviews"] });
       setSelectedItem(null);
     },
-    onError: (error: unknown) => {
-      const msg =
-        error instanceof Error
-          ? error.message
-          : "Failed to update weekly review";
-      toast.error(msg);
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to update weekly review",
+        }),
+      );
     },
   });
 
@@ -451,7 +452,9 @@ export function QuestLogHistory() {
           <div className="w-full sm:w-44">
             <Select
               value={filterType}
-              onValueChange={(val) => setFilterType(val as any)}
+              onValueChange={(val) =>
+                setFilterType(val as "all" | "timesheet" | "task")
+              }
             >
               <SelectTrigger className="w-full bg-background/40 border-border/40 font-bold uppercase text-[10px] tracking-wider">
                 <SelectValue placeholder="All Types" />
@@ -473,7 +476,17 @@ export function QuestLogHistory() {
           <div className="w-full sm:w-44">
             <Select
               value={filterStatus}
-              onValueChange={(val) => setFilterStatus(val as any)}
+              onValueChange={(val) =>
+                setFilterStatus(
+                  val as
+                    | "all"
+                    | "PENDING"
+                    | "APPROVED"
+                    | "REJECTED"
+                    | "CANCELLED"
+                    | "COMPLETED",
+                )
+              }
             >
               <SelectTrigger className="w-full bg-background/40 border-border/40 font-bold uppercase text-[10px] tracking-wider">
                 <SelectValue placeholder="All Statuses" />
@@ -749,7 +762,14 @@ export function QuestLogHistory() {
                       <Select
                         value={(selectedItem.raw as TInternTask).status}
                         onValueChange={(val) => {
-                          handleTaskStatusChange(selectedItem.id, val as any);
+                          handleTaskStatusChange(
+                            selectedItem.id,
+                            val as
+                              | "WAITING_FOR_REVIEW"
+                              | "IN_PROGRESS"
+                              | "COMPLETED"
+                              | "ON_HOLD",
+                          );
                         }}
                       >
                         <SelectTrigger className="w-full bg-background/50 border-border/50 font-bold uppercase text-[10px] tracking-wider mt-1">

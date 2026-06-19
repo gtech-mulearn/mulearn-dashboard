@@ -10,7 +10,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ApiError } from "@/api";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { createJobRule, deleteJobRule, updateJobRule } from "../api";
 import type { CreateRulePayload, Job, UpdateRulePayload } from "../types";
 import { JOBS_KEYS } from "./use-jobs";
@@ -54,9 +54,9 @@ export function useCreateJobRule(jobId: string) {
         queryClient.setQueryData(JOBS_KEYS.detail(jobId), context.previousJob);
       }
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to add eligibility rule",
+        getApiResponseError(error, {
+          fallback: "Failed to add eligibility rule",
+        }),
       );
     },
     onSettled: () => {
@@ -117,9 +117,9 @@ export function useUpdateJobRule(jobId: string) {
         queryClient.setQueryData(JOBS_KEYS.detail(jobId), context.previousJob);
       }
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to update eligibility rule",
+        getApiResponseError(error, {
+          fallback: "Failed to update eligibility rule",
+        }),
       );
     },
     onSettled: () => {
@@ -164,9 +164,9 @@ export function useDeleteJobRule(jobId: string) {
         queryClient.setQueryData(JOBS_KEYS.detail(jobId), context.previousJob);
       }
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to remove eligibility rule",
+        getApiResponseError(error, {
+          fallback: "Failed to remove eligibility rule",
+        }),
       );
     },
     onSettled: () => {

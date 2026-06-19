@@ -86,7 +86,7 @@ export function RoleVerificationTable() {
 
       <Table
         rows={tableRows}
-        isloading={isLoading}
+        isLoading={isLoading}
         page={page}
         perPage={perPage}
         columnOrder={COLUMN_ORDER}

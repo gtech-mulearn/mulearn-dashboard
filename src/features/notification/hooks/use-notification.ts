@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ApiError } from "@/api/client";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   createBroadcast,
   deleteAllBroadcasts,
@@ -27,6 +27,7 @@ export function useNotifications() {
     queryKey: notificationKeys.list(),
     queryFn: getUserNotifications,
     refetchInterval: REFETCH_INTERVAL,
+    refetchIntervalInBackground: false,
   });
 }
 
@@ -37,10 +38,12 @@ export function useDeleteDirectNotification() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: notificationKeys.list() });
     },
-    onError: (err) => {
-      const msg =
-        err instanceof ApiError ? err.message : "Failed to delete notification";
-      toast.error(msg);
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to delete notification",
+        }),
+      );
     },
   });
 }
@@ -53,10 +56,12 @@ export function useDeleteAllDirectNotifications() {
       queryClient.invalidateQueries({ queryKey: notificationKeys.list() });
       toast.success("All notifications cleared");
     },
-    onError: (err) => {
-      const msg =
-        err instanceof ApiError ? err.message : "Failed to clear notifications";
-      toast.error(msg);
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to clear notifications",
+        }),
+      );
     },
   });
 }
@@ -78,10 +83,10 @@ export function useCreateBroadcast() {
       });
       toast.success("Broadcast created");
     },
-    onError: (err) => {
-      const msg =
-        err instanceof ApiError ? err.message : "Failed to create broadcast";
-      toast.error(msg);
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to create broadcast" }),
+      );
     },
   });
 }
@@ -102,10 +107,10 @@ export function useUpdateBroadcast() {
       });
       toast.success("Broadcast updated");
     },
-    onError: (err) => {
-      const msg =
-        err instanceof ApiError ? err.message : "Failed to update broadcast";
-      toast.error(msg);
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to update broadcast" }),
+      );
     },
   });
 }
@@ -120,10 +125,10 @@ export function useDeleteBroadcast() {
       });
       toast.success("Broadcast deleted");
     },
-    onError: (err) => {
-      const msg =
-        err instanceof ApiError ? err.message : "Failed to delete broadcast";
-      toast.error(msg);
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to delete broadcast" }),
+      );
     },
   });
 }
@@ -138,10 +143,10 @@ export function useDeleteAllBroadcasts() {
       });
       toast.success("All broadcasts deleted");
     },
-    onError: (err) => {
-      const msg =
-        err instanceof ApiError ? err.message : "Failed to delete broadcasts";
-      toast.error(msg);
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to delete broadcasts" }),
+      );
     },
   });
 }

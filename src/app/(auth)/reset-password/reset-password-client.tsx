@@ -10,7 +10,6 @@ import { AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ApiError } from "@/api";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -26,6 +25,7 @@ import {
   useResetPassword,
   useVerifyResetToken,
 } from "@/features/auth";
+import { getApiResponseError } from "@/hooks/use-get-error";
 
 interface ResetPasswordClientProps {
   token?: string;
@@ -103,11 +103,11 @@ export function ResetPasswordClient({ token }: ResetPasswordClientProps) {
       setIsSuccess(true);
       toast.success("Password reset successfully!");
     } catch (error) {
-      const message =
-        error instanceof ApiError
-          ? error.message
-          : "Failed to reset password. Please try again.";
-      toast.error(message);
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to reset password. Please try again.",
+        }),
+      );
     }
   };
 

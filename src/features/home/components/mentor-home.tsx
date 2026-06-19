@@ -3,7 +3,6 @@
 import { AlertTriangle, BookOpen, CalendarCheck2, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ApiError } from "@/api";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +19,7 @@ import {
 } from "@/features/mentor/onboarding/hooks/use-onboarding";
 import { useTaskIgDropdown } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
 import type { WeeklySchedule } from "@/features/mentor/types";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { useMentorOverview, useMentorSessions } from "../hooks";
 import { MentorHeroCard } from "./mentor/mentor-hero-card";
 import { MentorSetupPrompt } from "./mentor/mentor-setup-prompt";
@@ -212,9 +212,9 @@ export function MentorHome() {
         },
         onError: (error) => {
           toast.error(
-            error instanceof ApiError
-              ? error.message
-              : "Failed to save availability",
+            getApiResponseError(error, {
+              fallback: "Failed to save availability",
+            }),
           );
         },
       },

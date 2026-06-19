@@ -1,3 +1,3 @@
-export * from "./CourseCard";
-export * from "./CourseSection";
-export * from "./CourseSkeleton";
+export { CourseCard } from "./CourseCard";
+export { CourseSection } from "./CourseSection";
+export { CourseSkeleton } from "./CourseSkeleton";

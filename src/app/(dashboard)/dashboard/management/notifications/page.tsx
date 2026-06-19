@@ -1,6 +1,15 @@
+import type { Metadata } from "next";
 import { NotificationManageCard } from "@/features/notification/components/manage/notification-manage-card";
+import { ROLES } from "@/lib/auth/roles";
+import { requireRole } from "@/lib/auth/server";
 
-export default function NotificationsManagePage() {
+export const metadata: Metadata = {
+  title: "Notifications",
+  description: "Manage broadcast notifications sent to users.",
+};
+
+export default async function NotificationsManagePage() {
+  await requireRole([ROLES.ADMIN]);
   return (
     <div className="p-6 space-y-6">
       <div>

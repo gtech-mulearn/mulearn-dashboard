@@ -8,7 +8,6 @@
 
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ApiError } from "@/api";
 import {
   OrganizationForm,
   useColleges,
@@ -16,6 +15,7 @@ import {
   useDepartments,
   useSelectOrganization,
 } from "@/features/onboarding";
+import { getApiResponseError } from "@/hooks/use-get-error";
 
 interface OrganizationClientProps {
   redirectUri?: string;
@@ -51,11 +51,11 @@ export function OrganizationClient({ redirectUri }: OrganizationClientProps) {
         : "/onboarding/interests";
       router.push(nextPath);
     } catch (error) {
-      const message =
-        error instanceof ApiError
-          ? error.message
-          : "Failed to save organization. Please try again.";
-      toast.error(message);
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to save organization. Please try again.",
+        }),
+      );
     }
   };
 

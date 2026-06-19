@@ -141,4 +141,4 @@ export const JoinSessionResponseSchema = z.object({
 });
 
 // ─── Generic response ─────────────────────────────────────────────────────────
-export const GenericResponseSchema = ApiResponseSchema(z.any());
+export const GenericResponseSchema = ApiResponseSchema(z.unknown());

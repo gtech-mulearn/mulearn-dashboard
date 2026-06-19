@@ -10,7 +10,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ApiError } from "@/api";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { createJob, deleteJob, updateJob } from "../api";
 import type {
   CreateJobPayload,
@@ -34,8 +34,10 @@ export function useCreateJob() {
       });
       toast.success("Job created successfully");
     },
-    onError: (err: Error) => {
-      toast.error(err.message ?? "Failed to create job");
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to create job" }),
+      );
     },
   });
 }
@@ -64,8 +66,10 @@ export function useUpdateJob() {
       });
       toast.success("Job updated successfully");
     },
-    onError: (err: Error) => {
-      toast.error(err.message ?? "Failed to update job");
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to update job" }),
+      );
     },
   });
 }
@@ -112,7 +116,7 @@ export function useDeleteJob() {
         }
       }
       toast.error(
-        error instanceof ApiError ? error.message : "Failed to delete job",
+        getApiResponseError(error, { fallback: "Failed to delete job" }),
       );
     },
     onSettled: () => {

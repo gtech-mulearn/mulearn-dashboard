@@ -44,4 +44,4 @@ export const VerifyOrgFormSchema = z.object({
 
 export type VerifyOrgFormValues = z.infer<typeof VerifyOrgFormSchema>;
 
-export const VerificationMutationResponseSchema = z.any();
+export const VerificationMutationResponseSchema = z.unknown();

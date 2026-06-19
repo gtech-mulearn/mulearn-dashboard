@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   useAddCountry,
   useAddDistrict,
@@ -257,7 +258,7 @@ function LocationContent() {
       setEditingItem(null);
       reset({ label: "", country: "", state: "", zone: "" });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Operation failed");
+      toast.error(getApiResponseError(err, { fallback: "Operation failed" }));
     }
   };
 

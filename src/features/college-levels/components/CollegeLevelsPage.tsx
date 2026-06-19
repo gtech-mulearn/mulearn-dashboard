@@ -110,7 +110,7 @@ export default function CollegeLevelsPage() {
 
         <Table
           rows={rows}
-          isloading={isLoading}
+          isLoading={isLoading}
           page={currentPage}
           perPage={perPage}
           columnOrder={columns}

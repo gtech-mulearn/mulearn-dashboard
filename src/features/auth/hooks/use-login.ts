@@ -36,7 +36,7 @@ export function useLoginWithPassword() {
       const tokenData = await loginWithPassword(emailOrMuid, password);
 
       // 2. Save tokens to store (cookies)
-      authStore.setTokens(tokenData.accessToken, tokenData.refreshToken);
+      await authStore.setTokens(tokenData.accessToken, tokenData.refreshToken);
 
       // 3. Fetch user info immediately after login
       const userInfo = await fetchUserInfo();
@@ -66,7 +66,7 @@ export function useLoginWithOTP() {
       const tokenData = await loginWithOTP(emailOrMuid, otp);
 
       // 2. Save tokens
-      authStore.setTokens(tokenData.accessToken, tokenData.refreshToken);
+      await authStore.setTokens(tokenData.accessToken, tokenData.refreshToken);
 
       // 3. Fetch user info immediately after login
       const userInfo = await fetchUserInfo();

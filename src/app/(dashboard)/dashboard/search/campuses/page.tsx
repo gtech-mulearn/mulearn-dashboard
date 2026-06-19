@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import { CampusesSearchClient } from "@/features/search";
+
+export const metadata: Metadata = {
+  title: "Search Campuses",
+  description: "Search and discover campuses.",
+};
 
 export default function CampusesSearchPage() {
   return (

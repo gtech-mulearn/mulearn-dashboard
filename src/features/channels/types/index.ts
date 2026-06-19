@@ -1,1 +1,6 @@
-export * from "./channel-types";
+export type {
+  ChannelData,
+  ChannelListData,
+  ChannelParams,
+  PaginatedData,
+} from "./channel-types";

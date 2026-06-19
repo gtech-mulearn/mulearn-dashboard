@@ -1,1 +1,1 @@
-export * from "./campus-manage.api";
+export { campusManageApi } from "./campus-manage.api";

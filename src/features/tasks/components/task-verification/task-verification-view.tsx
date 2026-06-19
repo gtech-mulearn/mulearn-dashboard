@@ -34,7 +34,9 @@ export function TaskVerificationView() {
         <div className="flex flex-wrap items-center gap-3">
           <Select
             value={sourceFilter}
-            onValueChange={(val) => setSourceFilter(val as any)}
+            onValueChange={(val) =>
+              setSourceFilter(val as "mentor" | "company" | "all")
+            }
           >
             <SelectTrigger className="w-full max-w-[180px] sm:w-[180px] bg-background border-border text-foreground">
               <SelectValue placeholder="Filter by Submitter..." />
@@ -53,7 +55,9 @@ export function TaskVerificationView() {
 
       <Tabs
         value={activeTab}
-        onValueChange={(v) => setActiveTab(v as any)}
+        onValueChange={(v) =>
+          setActiveTab(v as "pending" | "approved" | "rejected")
+        }
         className="w-full"
       >
         <TabsList className="bg-muted border border-border/60">

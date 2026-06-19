@@ -93,7 +93,7 @@ function KarmaVoucherContent() {
           />
           <Table
             rows={rows as unknown as Data[]}
-            isloading={isLoading}
+            isLoading={isLoading}
             page={currentPage}
             perPage={perPage}
             columnOrder={[

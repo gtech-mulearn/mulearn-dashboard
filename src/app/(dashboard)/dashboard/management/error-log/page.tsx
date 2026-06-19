@@ -1,20 +1,21 @@
 /**
  * Error Log Admin Page
  *
- * 📍 src/app/(dashboard)/dashboard/management/error-log/page.tsx
- *
  * Route: /dashboard/management/error-log
- * RBAC: Admin + Tech Team (protected by route-access.ts)
+ * RBAC: Admin + Tech Team
  */
 
 import { ErrorLogPage } from "@/features/error-log";
+import { ROLES } from "@/lib/auth/roles";
+import { requireRole } from "@/lib/auth/server";
 
 export const metadata = {
-  title: "System Error Log | MuLearn Dashboard",
+  title: "System Error Log | Management",
   description:
     "View, download, and manage backend error logs for the MuLearn platform.",
 };
 
-export default function ErrorLogAdminPage() {
+export default async function ErrorLogAdminPage() {
+  await requireRole([ROLES.ADMIN, ROLES.TECH_TEAM]);
   return <ErrorLogPage />;
 }

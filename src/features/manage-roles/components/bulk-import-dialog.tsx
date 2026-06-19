@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   useBaseTemplateDownload,
   useBulkExcelImport,
@@ -66,7 +67,7 @@ export function BulkImportDialog({
       setSelectedFile(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Import failed");
+      toast.error(getApiResponseError(error, { fallback: "Import failed" }));
       setShowResults(false);
     }
   };

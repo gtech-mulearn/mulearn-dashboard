@@ -16,7 +16,6 @@ function resolveMediaUrl(url: string | null | undefined): string | null {
   return `${process.env.NEXT_PUBLIC_DJANGO_API_URL ?? ""}${url}`;
 }
 
-import { ApiError } from "@/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,6 +24,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { useDeleteVote, useVoteProject } from "../hooks";
 import type { Project } from "../schemas";
 
@@ -108,14 +108,14 @@ export function ProjectCard({
       removeVote.mutate(userVote.id, {
         onError: (error) =>
           toast.error(
-            error instanceof ApiError ? error.message : "Failed to remove vote",
+            getApiResponseError(error, { fallback: "Failed to remove vote" }),
           ),
       });
     } else {
       vote.mutate("upvote", {
         onError: (error) =>
           toast.error(
-            error instanceof ApiError ? error.message : "Failed to upvote",
+            getApiResponseError(error, { fallback: "Failed to upvote" }),
           ),
       });
     }
@@ -143,7 +143,6 @@ export function ProjectCard({
             alt=""
             width={48}
             height={48}
-            unoptimized
             className="h-12 w-12 rounded-full object-cover border border-border/40 shrink-0"
           />
         ) : (

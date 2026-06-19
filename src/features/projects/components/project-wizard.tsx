@@ -33,6 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   type Project,
   ProjectFormSchema,
@@ -215,7 +216,7 @@ export function ProjectWizard({
       }
       setShowSuccess(true);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Save failed");
+      toast.error(getApiResponseError(err, { fallback: "Save failed" }));
     }
   };
 

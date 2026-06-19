@@ -1,6 +1,15 @@
+import type { Metadata } from "next";
 import { RoleVerificationTable } from "@/features/role-verification";
+import { ROLES } from "@/lib/auth/roles";
+import { requireRole } from "@/lib/auth/server";
 
-export default function RoleVerificationPage() {
+export const metadata: Metadata = {
+  title: "Role Verification",
+  description: "Verify or reject pending user-role link requests.",
+};
+
+export default async function RoleVerificationPage() {
+  await requireRole([ROLES.ADMIN]);
   return (
     <div className="container mx-auto space-y-6 p-4 md:p-8">
       <div>

@@ -8,8 +8,8 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ApiError } from "@/api";
 import { authKeys } from "@/features/auth/hooks/query-keys";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   deleteCoverPic,
   issueVC,
@@ -47,9 +47,9 @@ export function useTogglePublicProfile() {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to update profile visibility",
+        getApiResponseError(error, {
+          fallback: "Failed to update profile visibility",
+        }),
       );
     },
   });
@@ -70,9 +70,9 @@ export function useUpdateSocials() {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to update social links",
+        getApiResponseError(error, {
+          fallback: "Failed to update social links",
+        }),
       );
     },
   });
@@ -94,9 +94,9 @@ export function useUpdatePreferences() {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to update preferences",
+        getApiResponseError(error, {
+          fallback: "Failed to update preferences",
+        }),
       );
     },
   });
@@ -128,9 +128,9 @@ export function useUpdateProfileImage() {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to update profile image",
+        getApiResponseError(error, {
+          fallback: "Failed to update profile image",
+        }),
       );
     },
   });
@@ -161,8 +161,12 @@ export function useUploadCoverPic() {
       });
       toast.success("Cover photo updated");
     },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to update cover photo");
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to update cover photo",
+        }),
+      );
     },
   });
 }
@@ -191,8 +195,12 @@ export function useDeleteCoverPic() {
       });
       toast.success("Cover photo removed");
     },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to remove cover photo");
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to remove cover photo",
+        }),
+      );
     },
   });
 }
@@ -214,7 +222,7 @@ export function useUpdateProfile() {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError ? error.message : "Failed to update profile",
+        getApiResponseError(error, { fallback: "Failed to update profile" }),
       );
     },
   });
@@ -254,9 +262,9 @@ export function useIssueVCMutation() {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to issue Verifiable Credential",
+        getApiResponseError(error, {
+          fallback: "Failed to issue Verifiable Credential",
+        }),
       );
     },
   });

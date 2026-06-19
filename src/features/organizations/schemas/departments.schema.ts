@@ -58,4 +58,4 @@ export const DepartmentFormSchema = z.object({
 
 export type DepartmentFormValues = z.infer<typeof DepartmentFormSchema>;
 
-export const DepartmentMutationResponseSchema = z.any();
+export const DepartmentMutationResponseSchema = z.unknown();

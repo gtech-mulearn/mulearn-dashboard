@@ -1,11 +1,14 @@
 import { IssueRevokePanel } from "@/features/achievements/components";
+import { ROLES } from "@/lib/auth/roles";
+import { requireRole } from "@/lib/auth/server";
 
 export const metadata = {
-  title: "Issue / Revoke Achievement | MuLearn Dashboard",
+  title: "Issue / Revoke Achievement | Management",
   description: "Manually issue or revoke achievements for users.",
 };
 
-export default function IssuePage() {
+export default async function IssuePage() {
+  await requireRole([ROLES.ADMIN]);
   return (
     <div className="container py-8">
       <IssueRevokePanel />

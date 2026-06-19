@@ -1,1 +1,17 @@
-export * from "./achievements.api";
+export {
+  bulkIssueAchievements,
+  createAchievement,
+  createRule,
+  deactivateRule,
+  debugAchievement,
+  deleteAchievement,
+  downloadBulkTemplate,
+  fetchAchievements,
+  fetchAuditLogs,
+  fetchIssuedLogs,
+  fetchRules,
+  manualIssue,
+  revokeAchievement,
+  simulateForUser,
+  updateAchievement,
+} from "./achievements.api";

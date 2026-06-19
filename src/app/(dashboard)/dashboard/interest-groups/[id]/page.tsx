@@ -6,7 +6,13 @@
  * Detailed view of a specific interest group.
  */
 
+import type { Metadata } from "next";
 import { InterestGroupDetailClient } from "@/features/interest-groups";
+
+export const metadata: Metadata = {
+  title: "Interest Group Details",
+  description: "Detailed view of a specific interest group.",
+};
 
 export default async function InterestGroupDetailPage() {
   return <InterestGroupDetailClient />;

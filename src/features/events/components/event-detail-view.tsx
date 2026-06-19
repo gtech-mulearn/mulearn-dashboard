@@ -36,7 +36,9 @@ export function EventDetailView({
   if ((isError || !event) && !initialEvent) {
     return (
       <p className="text-sm text-destructive">
-        {error instanceof Error ? error.message : "Failed to load event"}
+        {process.env.NODE_ENV === "development" && error instanceof Error
+          ? error.message
+          : "Failed to load event"}
       </p>
     );
   }

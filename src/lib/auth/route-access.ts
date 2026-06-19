@@ -75,12 +75,6 @@ export const routeAccessMap: Record<string, RouteConfig> = {
     dynamicCheck: (roles) => roles.some((r) => r.endsWith(" IGLead")),
   },
 
-  // ── Admin Routes ─────────────────────────────────────────
-  // Broad admin prefix — catches any /dashboard/admin/* route
-  "/dashboard/admin": {
-    roles: [ROLES.ADMIN],
-  },
-
   // ── Management Routes (Admin only) ───────────────────────
   "/dashboard/management": {
     roles: [ROLES.ADMIN],

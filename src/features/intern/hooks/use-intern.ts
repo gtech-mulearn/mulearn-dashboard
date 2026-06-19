@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ApiError } from "@/api/errors";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { internApi, type TInternQueryParams } from "../api";
 import type {
   TLeaveSubmitPayload,
@@ -13,16 +13,6 @@ import type {
   TWeeklyReviewUpdatePayload,
 } from "../types";
 import { internKeys } from "./query-keys";
-
-function getErrorMessage(error: unknown, fallback: string): string {
-  if (error instanceof ApiError && error.message) {
-    return error.message;
-  }
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-  return fallback;
-}
 
 export function useInternOverview() {
   return useQuery({
@@ -81,8 +71,10 @@ export function useSubmitTimesheet() {
         queryKey: internKeys.overviewStatus(),
       });
     },
-    onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to submit timesheet"));
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to submit timesheet" }),
+      );
     },
   });
 }
@@ -98,8 +90,10 @@ export function useEditTimesheet(id: string) {
         queryKey: internKeys.timesheets(),
       });
     },
-    onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to update timesheet"));
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to update timesheet" }),
+      );
     },
   });
 }
@@ -138,8 +132,12 @@ export function useSubmitWeeklyReview() {
         queryKey: internKeys.overviewStatus(),
       });
     },
-    onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to submit weekly review"));
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to submit weekly review",
+        }),
+      );
     },
   });
 }
@@ -153,8 +151,12 @@ export function useEditWeeklyReview(id: string) {
       toast.success("Weekly review updated successfully!");
       await queryClient.invalidateQueries({ queryKey: internKeys.reviews() });
     },
-    onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to update weekly review"));
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to update weekly review",
+        }),
+      );
     },
   });
 }
@@ -197,8 +199,12 @@ export function useUpdateTaskStatus() {
         queryKey: internKeys.leaderboardMe(),
       });
     },
-    onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to update task status"));
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to update task status",
+        }),
+      );
     },
   });
 }
@@ -219,8 +225,12 @@ export function useSubmitLeave() {
       toast.success("Leave request submitted successfully!");
       await queryClient.invalidateQueries({ queryKey: internKeys.leaves() });
     },
-    onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to submit leave request"));
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to submit leave request",
+        }),
+      );
     },
   });
 }
@@ -233,8 +243,12 @@ export function useCancelLeave() {
       toast.success("Leave request cancelled successfully!");
       await queryClient.invalidateQueries({ queryKey: internKeys.leaves() });
     },
-    onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to cancel leave request"));
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to cancel leave request",
+        }),
+      );
     },
   });
 }
@@ -293,7 +307,9 @@ export function useSubmitMinute() {
       });
     },
     onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to upload minutes"));
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to upload minutes" }),
+      );
     },
   });
 }
@@ -316,7 +332,9 @@ export function useUpdateMinute(id: string) {
       });
     },
     onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Failed to update minutes"));
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to upload minutes" }),
+      );
     },
   });
 }

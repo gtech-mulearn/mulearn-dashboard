@@ -32,7 +32,7 @@ export function useRegister() {
 
       // 2. Save tokens to cookies BEFORE fetching user info
       const { accessToken, refreshToken } = registerResponse.response;
-      authStore.setTokens(accessToken, refreshToken);
+      await authStore.setTokens(accessToken, refreshToken);
 
       // 3. Fetch user info after tokens are saved
       const userInfoResponse = await fetchUserInfo();

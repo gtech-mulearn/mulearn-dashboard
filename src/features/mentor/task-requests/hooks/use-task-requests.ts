@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ApiError } from "@/api";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   createTaskRequest,
   fetchTaskRequest,
@@ -51,9 +51,9 @@ export function useCreateTaskRequest() {
     },
     onError: (error) =>
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to create task request",
+        getApiResponseError(error, {
+          fallback: "Failed to create task request",
+        }),
       ),
   });
 }
@@ -69,9 +69,9 @@ export function useReviewTaskRequest() {
     },
     onError: (error) =>
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to update task request",
+        getApiResponseError(error, {
+          fallback: "Failed to update task request",
+        }),
       ),
   });
 }
@@ -93,7 +93,11 @@ export function useWithdrawTaskRequest() {
       void queryClient.invalidateQueries({ queryKey: taskRequestKeys.all });
       toast.success("Task request withdrawn");
     },
-    onError: (err: Error) =>
-      toast.error(err.message ?? "Failed to withdraw task request"),
+    onError: (error) =>
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to withdraw task request",
+        }),
+      ),
   });
 }

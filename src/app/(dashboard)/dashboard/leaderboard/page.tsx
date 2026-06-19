@@ -1,9 +1,15 @@
+import type { Metadata } from "next";
 import {
   type Category,
   LeaderboardView,
   type TimeFrame,
   type WadhwaniTimeFrame,
 } from "@/features/leaderboard";
+
+export const metadata: Metadata = {
+  title: "Leaderboard",
+  description: "View student, campus, and mentor leaderboard rankings.",
+};
 
 interface LeaderboardPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;

@@ -1,2 +1,2 @@
-export * from "./useOpenGradCourses";
-export * from "./useWadhwaniCourses";
+export { useOpenGradCourses } from "./useOpenGradCourses";
+export { useWadhwaniCourses } from "./useWadhwaniCourses";

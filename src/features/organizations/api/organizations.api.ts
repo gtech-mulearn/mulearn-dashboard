@@ -155,9 +155,22 @@ export async function fetchDistrictsDropdown(
   return mapToOptions(data.districts || data);
 }
 
+export type { DepartmentListData, DepartmentParams } from "./departments.api";
 // ─── New org-module APIs ──────────────────────────────────────────────────────
-export * from "./departments.api";
-export * from "./transfer.api";
-export * from "./verification.api";
+export {
+  createDepartment,
+  deleteDepartment,
+  fetchDepartments,
+  updateDepartment,
+} from "./departments.api";
+export {
+  executeMerge,
+  fetchMergePreview,
+  transferOrganization,
+} from "./transfer.api";
+export {
+  fetchUnverifiedOrgs,
+  verifyOrganization,
+} from "./verification.api";
 // Re-export types for convenience
 export type { AffiliationItem, OrgFormValues, OrgInfo, OrgListData };

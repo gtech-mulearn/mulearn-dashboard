@@ -1,11 +1,14 @@
 import { AuditLogsTable } from "@/features/achievements/components";
+import { ROLES } from "@/lib/auth/roles";
+import { requireRole } from "@/lib/auth/server";
 
 export const metadata = {
-  title: "Audit Logs | MuLearn Dashboard",
+  title: "Audit Logs | Management",
   description: "View achievement audit trail.",
 };
 
-export default function AuditLogsPage() {
+export default async function AuditLogsPage() {
+  await requireRole([ROLES.ADMIN]);
   return (
     <div className="container py-8">
       <AuditLogsTable />

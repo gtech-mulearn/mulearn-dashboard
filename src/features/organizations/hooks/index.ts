@@ -5,7 +5,7 @@
  */
 
 // Error utilities
-export { getOrgErrorMessage, useOrgQueryErrorToast } from "./org-error";
+export { useOrgQueryErrorToast } from "./org-error";
 // Query keys
 export { affiliationKeys, organizationsKeys } from "./query-keys";
 

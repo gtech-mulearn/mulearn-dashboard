@@ -18,7 +18,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ApiError } from "@/api";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { clearLog, dismissLogEntry, downloadLogFile } from "../api";
 import type { ErrorLogEntry, LogType } from "../schemas";
 import { errorLogKeys } from "./query-keys";
@@ -47,8 +47,12 @@ export function useDownloadLogFile() {
       triggerBlobDownload(blob, `${type}-log.log`);
       toast.success(`Downloaded ${type} log file`);
     },
-    onError: (_err: unknown, type: LogType) => {
-      toast.error(`Failed to download ${type} log file`);
+    onError: (error: unknown, type: LogType) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: `Failed to download ${type} log file`,
+        }),
+      );
     },
   });
 }
@@ -66,8 +70,12 @@ export function useClearLog() {
       queryClient.invalidateQueries({ queryKey: errorLogKeys.list() });
       toast.success(`${capitalize(type)} logs cleared`);
     },
-    onError: (_err: unknown, type: LogType) => {
-      toast.error(`Failed to clear ${type} logs`);
+    onError: (error: unknown, type: LogType) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: `Failed to clear ${type} logs`,
+        }),
+      );
     },
   });
 }
@@ -105,9 +113,7 @@ export function useDismissLogEntry() {
         queryClient.setQueryData(errorLogKeys.list(), context.previous);
       }
       toast.error(
-        error instanceof ApiError
-          ? error.message
-          : "Failed to dismiss log entry",
+        getApiResponseError(error, { fallback: "Failed to dismiss log entry" }),
       );
     },
 

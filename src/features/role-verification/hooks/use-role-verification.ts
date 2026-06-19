@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { endpoints } from "@/api/endpoints";
 import { useCsvDownload } from "@/hooks/use-csv-download";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   deleteRoleVerification,
   fetchRoleVerifications,
@@ -42,7 +43,9 @@ export function useVerifyRole() {
       });
     },
     onError: (error) => {
-      toast.error(error.message || "Failed to verify role");
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to verify role" }),
+      );
     },
   });
 }
@@ -59,7 +62,9 @@ export function useDeleteRoleVerification() {
       });
     },
     onError: (error) => {
-      toast.error(error.message || "Failed to delete request");
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to delete request" }),
+      );
     },
   });
 }

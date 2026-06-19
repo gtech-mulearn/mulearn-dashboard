@@ -125,7 +125,7 @@ export function DynamicRoleTable() {
       {/* Reusable Table — children[0]=THead, children[1]=Pagination, children[2]=Blank */}
       <Table
         rows={pageSlice}
-        isloading={isLoading}
+        isLoading={isLoading}
         page={page}
         perPage={perPage}
         columnOrder={COLUMN_ORDER}

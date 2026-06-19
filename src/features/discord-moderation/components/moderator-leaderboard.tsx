@@ -12,9 +12,9 @@
 import { useState } from "react";
 import { Blank } from "@/components/dashboard/table/Blank";
 import Pagination from "@/components/dashboard/table/pagination";
-import Table, { type Data } from "@/components/dashboard/table/Table";
+import Table from "@/components/dashboard/table/Table";
 import { useModeratorBoard } from "../hooks";
-import type { LeaderboardOption } from "../schemas";
+import type { LeaderboardOption, ModeratorLeaderboardItem } from "../schemas";
 
 // ─── Column definitions ───────────────────────────────────────────────────────
 
@@ -58,7 +58,7 @@ export function ModeratorLeaderboard({ option }: ModeratorLeaderboardProps) {
     perPage,
   });
 
-  const rows = (data?.data ?? []) as unknown as Data[];
+  const rows = data?.data ?? ([] as ModeratorLeaderboardItem[]);
   const totalPages = data?.pagination?.totalPages ?? 1;
   const totalCount = data?.pagination?.total ?? 0;
 
@@ -67,7 +67,7 @@ export function ModeratorLeaderboard({ option }: ModeratorLeaderboardProps) {
   return (
     <Table
       rows={rows}
-      isloading={isLoading}
+      isLoading={isLoading}
       page={currentPage}
       perPage={perPage}
       columnOrder={COLUMN_ORDER}

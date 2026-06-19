@@ -259,8 +259,8 @@ const companyDetailsSchema = z.object({
   cultureText: z.string().optional(),
   techStack: z.array(z.string()).optional(),
   perks: z.array(z.string()).optional(),
-  testimonials: z.array(z.any()).optional(),
-  gallery: z.array(z.any()).optional(),
+  testimonials: z.array(z.unknown()).optional(),
+  gallery: z.array(z.unknown()).optional(),
 });
 
 type RoleDetailsValues =

@@ -37,4 +37,4 @@ export const RoleVerificationListResponseSchema = ApiResponseSchema(
   RoleVerificationListSchema,
 );
 
-export const GenericMutationResponseSchema = ApiResponseSchema(z.any());
+export const GenericMutationResponseSchema = ApiResponseSchema(z.unknown());

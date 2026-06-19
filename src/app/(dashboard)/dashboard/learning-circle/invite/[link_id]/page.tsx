@@ -6,7 +6,13 @@
  * Accept or reject a circle invitation via shareable link.
  */
 
+import type { Metadata } from "next";
 import { InviteLinkView } from "@/features/learning-circle";
+
+export const metadata: Metadata = {
+  title: "Circle Invitation",
+  description: "Accept or reject a learning circle invitation.",
+};
 
 interface PageProps {
   params: Promise<{ link_id: string }>;

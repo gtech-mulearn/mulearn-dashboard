@@ -1,4 +1,4 @@
-export * from "./campus-manage-dashboard";
+export { CampusManageDashboard } from "./campus-manage-dashboard";
 export { IgChapterEditDialog } from "./ig-chapter-edit-dialog";
 export { IgChapterFormDialog } from "./ig-chapter-form-dialog";
 export { StudentLevelsCard } from "./student-levels-card";

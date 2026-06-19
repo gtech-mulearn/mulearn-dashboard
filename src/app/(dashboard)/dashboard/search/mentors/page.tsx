@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import { MentorsSearchClient } from "@/features/search";
+
+export const metadata: Metadata = {
+  title: "Search Mentors",
+  description: "Search and discover mentors.",
+};
 
 export default function MentorsSearchPage() {
   return (

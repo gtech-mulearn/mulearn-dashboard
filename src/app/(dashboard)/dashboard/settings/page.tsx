@@ -1,7 +1,13 @@
 import { Building2, ChevronRight, User2 } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+
+export const metadata: Metadata = {
+  title: "Settings",
+  description: "Manage your account and organization settings.",
+};
 
 export default function SettingsPage() {
   return (

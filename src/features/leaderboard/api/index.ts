@@ -1,1 +1,8 @@
-export * from "./leaderboard.api";
+export {
+  fetchCampusLeaderboard,
+  fetchCampusMentorLeaderboard,
+  fetchIgMentorLeaderboard,
+  fetchMentorLeaderboard,
+  fetchStudentLeaderboard,
+  fetchWadhwaniLeaderboard,
+} from "./leaderboard.api";

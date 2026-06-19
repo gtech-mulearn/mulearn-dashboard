@@ -1,1 +1,1 @@
-export * from "./connect.api";
+export { fetchQseverseInfo } from "./connect.api";

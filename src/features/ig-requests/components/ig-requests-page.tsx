@@ -110,7 +110,7 @@ export function IGRequestsPage() {
 
       <div className="rounded-md bg-background">
         <Table
-          isloading={isLoading}
+          isLoading={isLoading}
           rows={rows}
           page={page}
           perPage={perPage}

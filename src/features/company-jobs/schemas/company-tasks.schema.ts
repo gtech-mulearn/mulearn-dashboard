@@ -85,8 +85,8 @@ export const CompanyTaskListResponseSchema = ApiResponseSchema(
 export const CompanyTaskDetailResponseSchema =
   ApiResponseSchema(CompanyTaskSchema);
 
-export const CompanyTaskCreateResponseSchema = ApiResponseSchema(z.any());
-export const CompanyTaskGenericResponseSchema = ApiResponseSchema(z.any());
+export const CompanyTaskCreateResponseSchema = ApiResponseSchema(z.unknown());
+export const CompanyTaskGenericResponseSchema = ApiResponseSchema(z.unknown());
 
 // ─── Form schema — POST /tasks/ ───────────────────────────────────────────────
 // Note: ig and channel are NOT part of the company task create serializer.

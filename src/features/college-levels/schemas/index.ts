@@ -1,1 +1,4 @@
-export * from "./college.schema";
+export {
+  ApiResponseSchema,
+  GetOrganizationsResponseSchema,
+} from "./college.schema";
