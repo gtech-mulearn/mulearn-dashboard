@@ -34,6 +34,16 @@ export const authStore = {
     return Cookies.get(ACCESS_TOKEN_KEY);
   },
 
+  /**
+   * Client-readable session flag. Stays set across short-lived access-token
+   * expiry (the refresh token is httpOnly and not visible to JS), so this is
+   * the signal for "the user has a session" even when the access-token cookie
+   * has already expired and needs a refresh.
+   */
+  isAuthenticated: () => {
+    return Cookies.get(IS_AUTHENTICATED_KEY) === "true";
+  },
+
   clearTokens: async () => {
     await fetch("/api/auth/set-tokens", { method: "DELETE" });
     Cookies.remove(IS_AUTHENTICATED_KEY);
