@@ -90,12 +90,12 @@ export function AccountSettingsModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="flex flex-col gap-0 p-0 sm:max-w-md">
+        <DialogHeader className="shrink-0 px-6 pt-6 pb-4">
           <DialogTitle>Account Settings</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-2 py-4">
+        <div className="overflow-y-auto px-6 py-4 space-y-2">
           {settingsItems.map((item) => (
             <button
               key={item.id}
@@ -139,7 +139,7 @@ export function AccountSettingsModal({
         </div>
 
         {/* Close Button */}
-        <div className="flex justify-end">
+        <div className="shrink-0 flex justify-end px-6 py-4 border-t border-border">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Close
           </Button>

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default async function RoleVerificationPage() {
   await requireRole([ROLES.ADMIN]);
   return (
-    <div className="container mx-auto space-y-6 p-4 md:p-8">
+    <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
           Role Verification Management

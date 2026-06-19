@@ -199,7 +199,7 @@ export function InternReportPageClient() {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto py-8 px-4 space-y-8 bg-background/50">
+    <div className="max-w-7xl mx-auto space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h2 className="text-4xl font-black tracking-tighter text-foreground uppercase flex items-center gap-3">

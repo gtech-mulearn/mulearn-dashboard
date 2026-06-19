@@ -68,8 +68,8 @@ export function JoinMeetingModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[400px]">
-        <DialogHeader>
+      <DialogContent className="flex flex-col gap-0 p-0 sm:max-w-[400px]">
+        <DialogHeader className="shrink-0 px-6 pt-6 pb-4">
           <DialogTitle className="flex items-center gap-3 text-lg">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-success/10 shadow-sm">
               <LogIn className="h-5 w-5 text-success" />
@@ -83,44 +83,46 @@ export function JoinMeetingModal({
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="mt-5 space-y-5">
-          {/* Meeting Code Input */}
-          <div className="space-y-2">
-            <Label
-              htmlFor="code"
-              className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground"
-            >
-              Meeting Code
-            </Label>
-            <Input
-              id="code"
-              value={code}
-              onChange={handleCodeChange}
-              placeholder="ABC123"
-              className="h-14 rounded-xl border-border bg-muted/50 text-center text-2xl font-bold tracking-[0.3em] uppercase shadow-none transition-colors focus:border-success/30 focus:bg-card"
-              maxLength={6}
-              autoFocus
-            />
-            <div className="flex justify-center">
-              <span
-                className={`text-[11px] font-semibold ${code.length === 6 ? "text-success" : "text-muted-foreground"}`}
+        <form onSubmit={handleSubmit} className="flex flex-col min-h-0">
+          <div className="overflow-y-auto px-6 py-5 space-y-5">
+            {/* Meeting Code Input */}
+            <div className="space-y-2">
+              <Label
+                htmlFor="code"
+                className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground"
               >
-                {code.length}/6 characters
-              </span>
+                Meeting Code
+              </Label>
+              <Input
+                id="code"
+                value={code}
+                onChange={handleCodeChange}
+                placeholder="ABC123"
+                className="h-14 rounded-xl border-border bg-muted/50 text-center text-2xl font-bold tracking-[0.3em] uppercase shadow-none transition-colors focus:border-success/30 focus:bg-card"
+                maxLength={6}
+                autoFocus
+              />
+              <div className="flex justify-center">
+                <span
+                  className={`text-[11px] font-semibold ${code.length === 6 ? "text-success" : "text-muted-foreground"}`}
+                >
+                  {code.length}/6 characters
+                </span>
+              </div>
+            </div>
+
+            {/* Info Box */}
+            <div className="flex items-start gap-3 rounded-xl bg-primary/5 p-3.5">
+              <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+              <p className="text-[12px] leading-relaxed text-primary">
+                Get the meeting code from the organizer or scan the QR code they
+                share.
+              </p>
             </div>
           </div>
 
-          {/* Info Box */}
-          <div className="flex items-start gap-3 rounded-xl bg-primary/5 p-3.5">
-            <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-            <p className="text-[12px] leading-relaxed text-primary">
-              Get the meeting code from the organizer or scan the QR code they
-              share.
-            </p>
-          </div>
-
           {/* Actions */}
-          <div className="flex justify-end gap-3 border-t border-border pt-5">
+          <div className="shrink-0 flex justify-end gap-3 px-6 py-4 border-t border-border">
             <Button
               type="button"
               variant="outline"

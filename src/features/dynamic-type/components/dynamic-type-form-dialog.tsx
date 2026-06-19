@@ -444,8 +444,8 @@ export function DynamicTypeFormDialog(props: DynamicTypeFormDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px]">
-        <DialogHeader>
+      <DialogContent className="flex flex-col gap-0 p-0 sm:max-w-[480px]">
+        <DialogHeader className="shrink-0 px-6 pt-6 pb-4">
           <DialogTitle className="flex items-center gap-2 text-xl">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
               {tab === "role" ? (
@@ -461,27 +461,29 @@ export function DynamicTypeFormDialog(props: DynamicTypeFormDialogProps) {
           </DialogDescription>
         </DialogHeader>
 
-        {/* Render the correct sub-form based on mode + tab */}
-        {mode === "create" && tab === "role" && (
-          <CreateRoleForm onClose={handleClose} />
-        )}
-        {mode === "create" && tab === "user" && (
-          <CreateUserForm onClose={handleClose} />
-        )}
-        {isEditRoleProps(props) && (
-          <EditRoleForm
-            editId={props.editId}
-            initialRole={props.initialRole}
-            onClose={handleClose}
-          />
-        )}
-        {isEditUserProps(props) && (
-          <EditUserForm
-            editId={props.editId}
-            initialMuid={props.initialMuid}
-            onClose={handleClose}
-          />
-        )}
+        <div className="overflow-y-auto px-6 pb-6">
+          {/* Render the correct sub-form based on mode + tab */}
+          {mode === "create" && tab === "role" && (
+            <CreateRoleForm onClose={handleClose} />
+          )}
+          {mode === "create" && tab === "user" && (
+            <CreateUserForm onClose={handleClose} />
+          )}
+          {isEditRoleProps(props) && (
+            <EditRoleForm
+              editId={props.editId}
+              initialRole={props.initialRole}
+              onClose={handleClose}
+            />
+          )}
+          {isEditUserProps(props) && (
+            <EditUserForm
+              editId={props.editId}
+              initialMuid={props.initialMuid}
+              onClose={handleClose}
+            />
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );

@@ -175,19 +175,21 @@ export default function ManageUsers() {
       </Card>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-h-[92vh] overflow-y-auto rounded-3xl border border-border bg-card sm:max-w-5xl">
+        <DialogContent className="flex flex-col gap-0 p-0 rounded-3xl border border-border bg-card sm:max-w-5xl">
           <DialogHeader className="sr-only">
             <DialogTitle>Edit User</DialogTitle>
             <DialogDescription>
               Enter the details of the user.
             </DialogDescription>
           </DialogHeader>
-          <UserForm
-            id={selectedId}
-            closeModal={() => setIsModalOpen(false)}
-            formId="manage-users-edit-form"
-          />
-          <DialogFooter className="grid grid-cols-1 gap-3 pt-1 sm:grid-cols-2">
+          <div className="overflow-y-auto px-6 py-6">
+            <UserForm
+              id={selectedId}
+              closeModal={() => setIsModalOpen(false)}
+              formId="manage-users-edit-form"
+            />
+          </div>
+          <DialogFooter className="shrink-0 grid grid-cols-1 gap-3 px-6 py-4 border-t border-border sm:grid-cols-2">
             <Button
               type="button"
               variant="outline"

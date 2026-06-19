@@ -4,7 +4,7 @@ import { IGRequestTable, ManageIGTable } from "@/features/manage-ig";
 
 export function ManageInterestGroupsPageClient() {
   return (
-    <div className="container mx-auto py-6">
+    <div>
       <Tabs defaultValue="manage" className="w-full">
         <div className="mb-6">
           <TabsList className="w-full sm:w-auto overflow-x-auto">

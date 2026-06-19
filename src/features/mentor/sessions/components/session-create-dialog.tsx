@@ -100,234 +100,236 @@ export function SessionCreateDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="flex flex-col gap-0 p-0 max-w-lg">
+        <DialogHeader className="shrink-0 px-6 pt-6 pb-4">
           <DialogTitle>New Session</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit as any)}
-            className="space-y-4"
+            className="flex flex-col min-h-0"
           >
-            <FormField
-              control={form.control as any}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Title</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Session title" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="overflow-y-auto px-6 py-4 space-y-4">
+              <FormField
+                control={form.control as any}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Session title" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control as any}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="What will you cover?"
-                      rows={3}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control as any}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="What will you cover?"
+                        rows={3}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control as any}
-              name="ig_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Interest Group</FormLabel>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div>
+              <FormField
+                control={form.control as any}
+                name="ig_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Interest Group</FormLabel>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div>
+                          <Select
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select Interest Group" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {myIgs.map((ig) => (
+                                <SelectItem key={ig.id} value={ig.id}>
+                                  {ig.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </TooltipTrigger>
+                      {myIgs.length === 0 && (
+                        <TooltipContent>
+                          Link to an IG first via your profile
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control as any}
+                name="starts_at"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Starts At</FormLabel>
+                    <FormControl>
+                      <CustomDateTimePicker
+                        value={field.value}
+                        onChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control as any}
+                name="ends_at"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Ends At</FormLabel>
+                    <FormControl>
+                      <CustomDateTimePicker
+                        value={field.value}
+                        onChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control as any}
+                name="meeting_link"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Meeting Link</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="url"
+                        placeholder="https://meet.google.com/..."
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control as any}
+                name="is_recurring"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">
+                        Recurring Session
+                      </FormLabel>
+                      <div className="text-sm text-muted-foreground">
+                        Repeat this session on a schedule.
+                      </div>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              {isRecurring && (
+                <div className="grid grid-cols-2 gap-4 rounded-lg border p-4 bg-muted/20">
+                  <FormField
+                    control={form.control as any}
+                    name="recurrence_type"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Frequency</FormLabel>
                         <Select
                           value={field.value}
                           onValueChange={field.onChange}
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Select Interest Group" />
+                              <SelectValue placeholder="Select..." />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {myIgs.map((ig) => (
-                              <SelectItem key={ig.id} value={ig.id}>
-                                {ig.name}
-                              </SelectItem>
-                            ))}
+                            <SelectItem value="DAILY">Daily</SelectItem>
+                            <SelectItem value="WEEKLY">Weekly</SelectItem>
+                            <SelectItem value="MONTHLY">Monthly</SelectItem>
                           </SelectContent>
                         </Select>
-                      </div>
-                    </TooltipTrigger>
-                    {myIgs.length === 0 && (
-                      <TooltipContent>
-                        Link to an IG first via your profile
-                      </TooltipContent>
+                        <FormMessage />
+                      </FormItem>
                     )}
-                  </Tooltip>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                  />
 
-            <FormField
-              control={form.control as any}
-              name="starts_at"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Starts At</FormLabel>
-                  <FormControl>
-                    <CustomDateTimePicker
-                      value={field.value}
-                      onChange={field.onChange}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control as any}
-              name="ends_at"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Ends At</FormLabel>
-                  <FormControl>
-                    <CustomDateTimePicker
-                      value={field.value}
-                      onChange={field.onChange}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control as any}
-              name="meeting_link"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Meeting Link</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="url"
-                      placeholder="https://meet.google.com/..."
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control as any}
-              name="is_recurring"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                  <div className="space-y-0.5">
-                    <FormLabel className="text-base">
-                      Recurring Session
-                    </FormLabel>
-                    <div className="text-sm text-muted-foreground">
-                      Repeat this session on a schedule.
-                    </div>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            {isRecurring && (
-              <div className="grid grid-cols-2 gap-4 rounded-lg border p-4 bg-muted/20">
-                <FormField
-                  control={form.control as any}
-                  name="recurrence_type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Frequency</FormLabel>
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
+                  <FormField
+                    control={form.control as any}
+                    name="recurrence_interval"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Every X{" "}
+                          {form.watch("recurrence_type")?.toLowerCase() ||
+                            "weeks"}
+                        </FormLabel>
                         <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select..." />
-                          </SelectTrigger>
+                          <Input
+                            type="number"
+                            min={1}
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(parseInt(e.target.value, 10) || 1)
+                            }
+                          />
                         </FormControl>
-                        <SelectContent>
-                          <SelectItem value="DAILY">Daily</SelectItem>
-                          <SelectItem value="WEEKLY">Weekly</SelectItem>
-                          <SelectItem value="MONTHLY">Monthly</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control as any}
-                  name="recurrence_interval"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Every X{" "}
-                        {form.watch("recurrence_type")?.toLowerCase() ||
-                          "weeks"}
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min={1}
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(parseInt(e.target.value, 10) || 1)
-                          }
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={form.control as any}
+                    name="recurrence_end_date"
+                    render={({ field }) => (
+                      <FormItem className="col-span-2">
+                        <FormLabel>End Series On</FormLabel>
+                        <FormControl>
+                          <CustomDateTimePicker
+                            value={field.value}
+                            onChange={field.onChange}
+                            hideTime
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
+            </div>
 
-                <FormField
-                  control={form.control as any}
-                  name="recurrence_end_date"
-                  render={({ field }) => (
-                    <FormItem className="col-span-2">
-                      <FormLabel>End Series On</FormLabel>
-                      <FormControl>
-                        <CustomDateTimePicker
-                          value={field.value}
-                          onChange={field.onChange}
-                          hideTime
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
-
-            <div className="flex justify-end gap-2 pt-2">
+            <div className="shrink-0 flex justify-end gap-2 px-6 py-4 border-t border-border">
               <Button
                 type="button"
                 variant="outline"
