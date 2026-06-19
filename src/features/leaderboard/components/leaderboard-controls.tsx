@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
+import { PageHeader } from "@/components/ui/page-header";
 import {
   type Category,
   CategorySelector,
@@ -42,14 +43,11 @@ export function LeaderboardControls({
   return (
     <div className="mb-8 md:mb-10">
       {/* Page header */}
-      <div className="text-center mb-8 md:mb-10">
-        <h1 className="text-2xl md:text-4xl font-black text-foreground tracking-tight">
-          Leaderboard
-        </h1>
-        <p className="text-sm md:text-base text-muted-foreground mt-2">
-          Recognizing top learners in the µLearn community.
-        </p>
-      </div>
+      <PageHeader
+        title="Leaderboard"
+        description="Recognizing top learners in the µLearn community."
+        className="mb-8 md:mb-10"
+      />
 
       {/* Controls row */}
       <div className="flex flex-col md:flex-row gap-3 items-center justify-between">

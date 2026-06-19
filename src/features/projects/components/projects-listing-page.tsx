@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import Pagination from "@/components/dashboard/table/pagination";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PageHeader } from "@/components/ui/page-header";
 import { useUserProfile } from "@/features/profile";
 import { useDebounce } from "@/hooks/use-debounce";
 import { usePublicProjects } from "../hooks";
@@ -59,25 +60,29 @@ export function ProjectsListingPage() {
     <main className="flex-1 lc-fade-in">
       {/* Sticky header */}
       <div className="sticky top-0 z-30 border-b border-border bg-background/95 px-6 pb-4 pt-6 backdrop-blur-sm md:px-8 md:pt-8">
-        <div className="flex items-center justify-between gap-4">
-          <h1 className="text-2xl font-bold text-foreground md:text-3xl">
-            Projects
-            {pagination && (
-              <span className="ml-2 text-base font-normal text-muted-foreground">
-                ({pagination.count} total)
-              </span>
-            )}
-          </h1>
-          <div className="w-full max-w-xs">
-            <Input
-              aria-label="Search projects"
-              placeholder="Search projects…"
-              value={search}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="h-9"
-            />
-          </div>
-        </div>
+        <PageHeader
+          title={
+            <>
+              Projects
+              {pagination && (
+                <span className="ml-2 text-base font-normal text-muted-foreground">
+                  ({pagination.count} total)
+                </span>
+              )}
+            </>
+          }
+          action={
+            <div className="w-full sm:max-w-xs">
+              <Input
+                aria-label="Search projects"
+                placeholder="Search projects…"
+                value={search}
+                onChange={(e) => handleSearch(e.target.value)}
+                className="h-9"
+              />
+            </div>
+          }
+        />
       </div>
 
       {/* Scrollable content */}
