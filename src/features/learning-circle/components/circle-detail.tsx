@@ -92,7 +92,7 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
     circle.description && circle.description !== circle.title;
 
   return (
-    <div className="w-full bg-background px-6 py-6 pb-20 min-h-screen">
+    <div className="w-full pb-12">
       {/* Back */}
       <Link
         href="/dashboard/learning-circle"
@@ -107,13 +107,13 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
         {/* ════ LEFT COLUMN ════ */}
         <div className="flex-1 space-y-8 min-w-0">
           {/* ── Main Info Card ── */}
-          <div className="rounded-[24px] bg-card p-8 shadow-[0_2px_20px_rgba(0,0,0,0.02)] border border-border">
+          <div className="rounded-[24px] bg-card p-4 sm:p-6 lg:p-8 shadow-[0_2px_20px_rgba(0,0,0,0.02)] border border-border">
             {/* Top Bar: Avrio - Branding */}
-            <div className="flex items-center justify-between pb-4 border-b border-border">
-              <span className="text-[15px] font-bold text-foreground">
+            <div className="flex items-center justify-between gap-3 pb-4 border-b border-border">
+              <span className="min-w-0 truncate text-[15px] font-bold text-foreground">
                 Learning Circle — {circle.ig ?? "General"}
               </span>
-              <span className="inline-flex rounded-lg border border-border px-3 py-1 text-[12px] font-semibold text-foreground">
+              <span className="shrink-0 inline-flex rounded-lg border border-border px-3 py-1 text-[12px] font-semibold text-foreground">
                 Active
               </span>
             </div>
@@ -178,11 +178,11 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
             {/* Properties Grid */}
             <div className="mt-8 space-y-5">
               {/* Lead / Assigned */}
-              <div className="flex items-center">
-                <span className="w-32 text-[14px] text-muted-foreground">
+              <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-0">
+                <span className="w-32 shrink-0 text-[14px] text-muted-foreground">
                   Circle Lead
                 </span>
-                <div className="flex -space-x-1.5">
+                <div className="flex min-w-0 -space-x-1.5">
                   <div className="relative h-7 w-7 rounded-full border-2 border-card bg-muted overflow-hidden">
                     {circle.created_by.profile_pic ? (
                       <Image
@@ -199,25 +199,25 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
                       </div>
                     )}
                   </div>
-                  <span className="ml-3 text-[14px] font-semibold text-foreground self-center">
+                  <span className="ml-3 min-w-0 truncate text-[14px] font-semibold text-foreground self-center">
                     {circle.created_by.full_name}
                   </span>
                 </div>
               </div>
 
               {/* Tags / Metrics */}
-              <div className="flex items-center">
-                <span className="w-32 text-[14px] text-muted-foreground">
+              <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-0">
+                <span className="w-32 shrink-0 text-[14px] text-muted-foreground">
                   Metrics
                 </span>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <span className="inline-flex rounded-full bg-brand-purple/10 px-3 py-0.5 text-[12px] font-bold text-brand-purple">
                     #{circle.rank ?? 0} Rank
                   </span>
                   <span className="inline-flex rounded-full bg-warning/10 px-3 py-0.5 text-[12px] font-bold text-warning">
                     {circle.total_karma ?? 0} Karma
                   </span>
-                  <span className="inline-flex rounded-full bg-primary/10 px-3 py-0.5 text-[12px] font-bold text-primary">
+                  <span className="inline-flex max-w-full truncate rounded-full bg-primary/10 px-3 py-0.5 text-[12px] font-bold text-primary">
                     {circle.ig}
                   </span>
                 </div>
@@ -328,7 +328,7 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
         {/* ════ RIGHT COLUMN (Sidebar) ════ */}
         <div className="w-full lg:w-[320px] shrink-0 space-y-6">
           {/* ── Members Card ── */}
-          <div className="w-full rounded-2xl bg-card p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-border flex flex-col">
+          <div className="w-full rounded-2xl bg-card p-4 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-border flex flex-col">
             <h3 className="text-[16px] font-bold text-foreground mb-5">
               Members
             </h3>
@@ -368,7 +368,7 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
             <button
               type="button"
               onClick={() => setShowTransferLeadModal(true)}
-              className="group flex w-full items-center justify-between rounded-2xl bg-card p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-border transition-all hover:bg-warning/5 hover:border-warning/20 active:scale-[0.98]"
+              className="group flex w-full items-center justify-between rounded-2xl bg-card p-4 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-border transition-all hover:bg-warning/5 hover:border-warning/20 active:scale-[0.98]"
             >
               <div className="flex items-center gap-3">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-warning/10 border border-warning/20">
@@ -383,7 +383,7 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
           )}
 
           {permissions.canDeleteCircle && (
-            <div className="w-full rounded-2xl bg-card p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-destructive/20 flex flex-col items-center justify-between sm:flex-row gap-4">
+            <div className="w-full rounded-2xl bg-card p-4 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-destructive/20 flex flex-col items-center justify-between sm:flex-row gap-4">
               <div className="flex min-w-0 flex-1 flex-col text-center sm:text-left">
                 <span className="text-[14px] font-semibold text-foreground">
                   Delete Circle

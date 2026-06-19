@@ -269,19 +269,19 @@ export function MeetingDetailView({
       )}
 
       {/* ─── Hero Header / Info Grid Card ─── */}
-      <div className="w-full rounded-2xl bg-card p-8 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-border flex flex-col">
-        <div className="flex items-center justify-between pb-4 border-b border-border mb-6">
-          <span className="text-[15px] font-bold text-foreground flex items-center gap-2">
-            Meeting — {meeting.ig}
+      <div className="w-full rounded-2xl bg-card p-4 sm:p-6 lg:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-border flex flex-col">
+        <div className="flex items-center justify-between gap-3 pb-4 border-b border-border mb-6">
+          <span className="min-w-0 text-[15px] font-bold text-foreground flex items-center gap-2">
+            <span className="truncate">Meeting — {meeting.ig}</span>
             {status.dot && (
-              <span className="relative flex h-2 w-2 ml-1">
+              <span className="relative flex h-2 w-2 ml-1 shrink-0">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
               </span>
             )}
           </span>
           <span
-            className={`inline-flex rounded-lg px-3 py-1 text-[12px] font-semibold ${
+            className={`shrink-0 inline-flex rounded-lg px-3 py-1 text-[12px] font-semibold ${
               status === STATUS_CONFIG.ended
                 ? "bg-muted text-muted-foreground"
                 : status === STATUS_CONFIG.live
@@ -295,9 +295,9 @@ export function MeetingDetailView({
           </span>
         </div>
 
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex-1 pr-6">
-            <h1 className="text-[28px] font-bold tracking-tight text-foreground">
+        <div className="flex flex-col gap-4 mb-8 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0 flex-1 sm:pr-6">
+            <h1 className="text-[22px] sm:text-[28px] font-bold tracking-tight text-foreground break-words">
               {meeting.title}
             </h1>
             {meeting.description && (
@@ -307,7 +307,7 @@ export function MeetingDetailView({
             )}
           </div>
 
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 sm:shrink-0">
             {permissions.canEditMeeting && !meeting.is_ended && (
               <Button
                 type="button"
@@ -494,8 +494,8 @@ export function MeetingDetailView({
       </div>
 
       {/* ─── Attendees ─── */}
-      <div className="w-full rounded-2xl bg-card p-8 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-border flex flex-col">
-        <h3 className="text-[16px] font-bold text-foreground mb-6 flex items-center gap-2">
+      <div className="w-full rounded-2xl bg-card p-4 sm:p-6 lg:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-border flex flex-col">
+        <h3 className="text-[16px] font-bold text-foreground mb-6 flex items-center gap-2 flex-wrap">
           Attendees{" "}
           <span className="text-sm font-medium text-muted-foreground">
             ({joinedAttendees.length} joined

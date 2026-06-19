@@ -18,7 +18,7 @@ export function InterestGroupsClient() {
   const groups = data?.response?.interestGroup || [];
 
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-8 px-4 py-8 md:px-6 lg:px-8">
+    <div className="w-full max-w-7xl mx-auto space-y-8 py-6 sm:py-8">
       {/* Header Section */}
       <div className="space-y-4">
         <div className="flex items-center gap-3">
