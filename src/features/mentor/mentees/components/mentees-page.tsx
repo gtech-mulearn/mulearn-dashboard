@@ -148,7 +148,6 @@ export function MenteesPage() {
               <TableHead>Mentee</TableHead>
               <TableHead>Last Status</TableHead>
               <TableHead className="text-right">Sessions</TableHead>
-              <TableHead className="text-right">Participants</TableHead>
               <TableHead className="text-right">Feedback</TableHead>
             </TableRow>
           </TableHeader>
@@ -185,17 +184,6 @@ export function MenteesPage() {
                   </TableCell>
                   <TableCell className="text-right font-medium">
                     {mentee.session_count}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="gap-1.5"
-                      onClick={() => openParticipants(mentee.last_session_id)}
-                    >
-                      <Users className="size-3.5" />
-                      View
-                    </Button>
                   </TableCell>
                   <TableCell className="text-right">
                     <Button

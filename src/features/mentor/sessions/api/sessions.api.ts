@@ -7,6 +7,7 @@ import type {
   SessionParticipant,
   SubmitFeedbackValues,
   UpdateParticipantValues,
+  AddParticipantFormValues,
 } from "../schemas";
 import {
   GenericResponseSchema,
@@ -313,6 +314,18 @@ export async function fetchParticipants(
     data: res.response.data,
     totalPages: res.response.pagination?.totalPages ?? 1,
   };
+}
+
+export async function addParticipant(
+  sessionId: string,
+  data: AddParticipantFormValues,
+): Promise<void> {
+  await apiClient.post(
+    endpoints.mentor.sessionParticipantAdd(sessionId),
+    { muid: data.muid },
+    GenericResponseSchema,
+    OPT,
+  );
 }
 
 // ─── #21 PATCH /session/participant/update/<link_id>/ ────────────────────────
