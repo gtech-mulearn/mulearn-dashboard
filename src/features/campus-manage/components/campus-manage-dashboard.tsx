@@ -52,7 +52,7 @@ import {
   YAxis,
 } from "recharts";
 import { toast } from "sonner";
-import { ApiError } from "@/api";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import Pagination from "@/components/dashboard/table/pagination";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -1041,9 +1041,9 @@ export function CampusManageDashboard() {
                           toast.success("Student details exported"),
                         onError: (error) =>
                           toast.error(
-                            error instanceof ApiError
-                              ? error.message
-                              : "Failed to export student details",
+                            getApiResponseError(error, {
+                              fallback: "Failed to export student details",
+                            }),
                           ),
                       },
                     )
@@ -2372,9 +2372,9 @@ export function CampusManageDashboard() {
               },
               onError: (error) => {
                 toast.error(
-                  error instanceof ApiError
-                    ? error.message
-                    : "Failed to update student type",
+                  getApiResponseError(error, {
+                    fallback: "Failed to update student type",
+                  }),
                 );
                 setPendingStudent(null);
               },

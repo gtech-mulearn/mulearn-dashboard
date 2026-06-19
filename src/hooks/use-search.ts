@@ -1,4 +1,5 @@
 import * as React from "react";
+import { toast } from "sonner";
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import { getApiResponseError } from "@/hooks/use-get-error";
@@ -53,7 +54,7 @@ export function useSearch(excludedMuids: string[] = EMPTY_EXCLUDED) {
       })
       .catch((error) => {
         if (!cancelled) {
-          console.error(
+          toast.error(
             getApiResponseError(error, { fallback: "Search failed" }),
           );
           setResults((prev) => (prev.length === 0 ? prev : []));

@@ -3,6 +3,7 @@
 import { Loader2, MessageSquarePlus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -41,8 +42,12 @@ export function SessionFeedbackDialog({
           setFeedback("");
           onOpenChange(false);
         },
-        onError: () => {
-          toast.error("Failed to submit feedback. Please try again.");
+        onError: (error) => {
+          toast.error(
+            getApiResponseError(error, {
+              fallback: "Failed to submit feedback. Please try again.",
+            }),
+          );
         },
       },
     );
