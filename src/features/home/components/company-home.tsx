@@ -45,12 +45,17 @@ export function CompanyHome() {
         isLoading={jobsLoading || profileLoading}
         isVerified={isVerified}
       />
-      <CompanyStatCards quickStats={quickStats} isLoading={summaryLoading} />
+      <CompanyStatCards
+        quickStats={quickStats}
+        isLoading={summaryLoading}
+        isVerified={isVerified}
+      />
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_296px]">
-        <ActiveJobListingsCard />
+        <ActiveJobListingsCard isVerified={isVerified} />
         <TalentPoolCard
           talentPool={summary?.talent_pool}
           isLoading={summaryLoading}
+          isVerified={isVerified}
         />
       </div>
     </div>

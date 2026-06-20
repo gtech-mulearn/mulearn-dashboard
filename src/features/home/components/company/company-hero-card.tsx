@@ -29,22 +29,25 @@ export function CompanyHeroCard({ jobsPosted, isLoading, isVerified }: Props) {
           Post jobs with karma and level filters — reach talent that&apos;s
           actually ready.
         </p>
-        <div className="flex flex-wrap gap-3">
-          <Link
-            href="/dashboard/company/jobs/create"
-            className="inline-flex items-center gap-1.5 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            <Plus className="size-4" />
-            Post a Job
-          </Link>
-          <Link
-            href="/dashboard/talent-pool"
-            className="inline-flex items-center gap-1.5 rounded-full border border-background/30 px-5 py-2.5 text-sm font-semibold text-background/70 transition-colors hover:border-background/60 hover:text-background"
-          >
-            <Users className="size-4" />
-            Browse Talent
-          </Link>
-        </div>
+
+        {isVerified && (
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="/dashboard/company/jobs/create"
+              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+            >
+              <Plus className="size-4" />
+              Post a Job
+            </Link>
+            <Link
+              href="/dashboard/talent-pool"
+              className="inline-flex items-center gap-1.5 rounded-full border border-background/30 px-5 py-2.5 text-sm font-semibold text-background/70 transition-colors hover:border-background/60 hover:text-background"
+            >
+              <Users className="size-4" />
+              Browse Talent
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );
