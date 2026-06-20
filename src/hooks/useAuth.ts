@@ -13,14 +13,14 @@ import { authStore } from "@/lib/auth";
 
 export function useAuth() {
   // Initialize state based on current cookie existence
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
-    () => !!authStore.getAccessToken(),
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() =>
+    authStore.isAuthenticated(),
   );
 
   useEffect(() => {
     // Function to check auth state
     const checkAuth = () => {
-      const hasToken = !!authStore.getAccessToken();
+      const hasToken = authStore.isAuthenticated();
       setIsAuthenticated((prev) => {
         if (prev !== hasToken) return hasToken;
         return prev;

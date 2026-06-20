@@ -23,7 +23,7 @@ export function InterestButton({
   const router = useRouter();
   const mutation = useToggleInterest(eventId);
   const isInterested = status === "interested";
-  const isLoggedIn = !!authStore.getAccessToken();
+  const isLoggedIn = authStore.isAuthenticated();
 
   const handleClick = () => {
     if (!isLoggedIn) {

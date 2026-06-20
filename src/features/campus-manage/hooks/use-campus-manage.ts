@@ -1,6 +1,8 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { campusManageApi } from "../api";
 import type { CampusEventFilters, CampusLeaderboardFilters } from "../types";
 import { campusManageKeys } from "./query-keys";
@@ -90,6 +92,13 @@ export function useAddExecomMember() {
         }),
       ]);
     },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to add execom member",
+        }),
+      );
+    },
   });
 }
 
@@ -102,6 +111,13 @@ export function useRemoveExecomMember() {
       void queryClient.invalidateQueries({
         queryKey: campusManageKeys.execom(),
       });
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to remove execom member",
+        }),
+      );
     },
   });
 }
@@ -118,6 +134,13 @@ export function useTransferLeadRole() {
         }),
       ]);
     },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to transfer lead role",
+        }),
+      );
+    },
   });
 }
 
@@ -132,6 +155,13 @@ export function useTransferEnablerRole() {
           queryKey: campusManageKeys.overview(),
         }),
       ]);
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to transfer enabler role",
+        }),
+      );
     },
   });
 }
@@ -169,6 +199,13 @@ export function useTransferIgRole() {
         queryKey: campusManageKeys.igChapters(),
       });
     },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to transfer IG role",
+        }),
+      );
+    },
   });
 }
 
@@ -176,6 +213,11 @@ export function useDownloadStudentCsv() {
   return useMutation({
     mutationFn: (filters?: { alumni?: "all" | "alumni" | "student" }) =>
       campusManageApi.downloadStudentDetailsCsv(filters),
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to download CSV" }),
+      );
+    },
   });
 }
 
@@ -188,6 +230,13 @@ export function useChangeStudentType() {
       memberId: string;
       data: Record<string, unknown>;
     }) => campusManageApi.changeStudentType(memberId, data),
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to change student type",
+        }),
+      );
+    },
   });
 }
 
@@ -208,6 +257,13 @@ export function useCreateIgChapter() {
         queryKey: campusManageKeys.igChapters(),
       });
     },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to create IG chapter",
+        }),
+      );
+    },
   });
 }
 
@@ -226,6 +282,13 @@ export function useUpdateIgChapter() {
         queryKey: campusManageKeys.igChapters(),
       });
     },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to update IG chapter",
+        }),
+      );
+    },
   });
 }
 
@@ -238,6 +301,13 @@ export function useDeleteIgChapter() {
       void queryClient.invalidateQueries({
         queryKey: campusManageKeys.igChapters(),
       });
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to delete IG chapter",
+        }),
+      );
     },
   });
 }
@@ -252,6 +322,13 @@ export function useUpsertSocialLink() {
         queryKey: campusManageKeys.overview(),
       });
     },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to save social link",
+        }),
+      );
+    },
   });
 }
 
@@ -263,6 +340,13 @@ export function useDeleteSocialLink() {
       void queryClient.invalidateQueries({
         queryKey: campusManageKeys.overview(),
       });
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to delete social link",
+        }),
+      );
     },
   });
 }

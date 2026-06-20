@@ -36,7 +36,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
         {/* Illustration */}
         <div className="z-10 flex justify-start ">
           <Image
-            src="/layout/Group.png"
+            src="/layout/group.webp"
             alt="Community Illustration"
             width={400}
             height={300}
