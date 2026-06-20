@@ -1,7 +1,6 @@
 import { ArrowRight, Trophy } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTopPerformers } from "../hooks/use-home";
 
@@ -49,15 +48,16 @@ function RankIndicator({ rank }: { rank: number }) {
 export function KarmaEarnersCard() {
   const { data: performers, isLoading } = useTopPerformers();
   return (
-    <Card className="rounded-2xl border bg-card shadow-sm">
-      <CardHeader className="flex-row items-center justify-between">
+    <div className="overflow-hidden rounded-2xl border bg-card shadow-sm">
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 py-4">
         <div className="flex items-center gap-2">
           <div className="flex size-8 items-center justify-center rounded-xl bg-warning/10">
             <Trophy className="size-4 text-warning" />
           </div>
-          <CardTitle className="text-base font-bold text-foreground">
+          <span className="text-base font-bold text-foreground">
             Top Performers
-          </CardTitle>
+          </span>
         </div>
         <Link
           href="/dashboard/leaderboard"
@@ -66,8 +66,9 @@ export function KarmaEarnersCard() {
           Full board
           <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
         </Link>
-      </CardHeader>
-      <CardContent className="px-4 pt-0">
+      </div>
+      {/* Content */}
+      <div className="px-5 pb-5">
         {isLoading ? (
           <div className="space-y-3">
             {[0, 1, 2].map((i) => (
@@ -125,7 +126,7 @@ export function KarmaEarnersCard() {
             })}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

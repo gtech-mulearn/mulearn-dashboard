@@ -1,18 +1,20 @@
-import { Briefcase, Search, Trophy, Users, Zap } from "lucide-react";
+import {
+  Briefcase,
+  CalendarDays,
+  FolderKanban,
+  Search,
+  Users,
+  Zap,
+} from "lucide-react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 
 type QuickActionRowProps = {
   circleCount: number;
-  rank: number | null;
   jobCount: number;
 };
 
-export function QuickActionRow({
-  circleCount,
-  rank,
-  jobCount,
-}: QuickActionRowProps) {
+export function QuickActionRow({ circleCount, jobCount }: QuickActionRowProps) {
   const actions = [
     {
       id: "mujourney",
@@ -23,15 +25,6 @@ export function QuickActionRow({
       iconBg: "bg-primary/10",
       iconColor: "text-primary",
     },
-    // {
-    //   id: "claim-karma",
-    //   label: "Claim Karma",
-    //   sub: "Submit your tasks",
-    //   href: "/dashboard/mujourney",
-    //   icon: Layers,
-    //   iconBg: "bg-success/10",
-    //   iconColor: "text-success",
-    // },
     {
       id: "my-circles",
       label: "My Circles",
@@ -42,11 +35,20 @@ export function QuickActionRow({
       iconColor: "text-brand-purple",
     },
     {
-      id: "leaderboard",
-      label: "Leaderboard",
-      sub: rank != null ? `You're ranked #${rank}` : "View rankings",
-      href: "/dashboard/leaderboard",
-      icon: Trophy,
+      id: "events",
+      label: "Events",
+      sub: "Discover upcoming events",
+      href: "/dashboard/events",
+      icon: CalendarDays,
+      iconBg: "bg-success/10",
+      iconColor: "text-success",
+    },
+    {
+      id: "projects",
+      label: "Projects",
+      sub: "Explore open projects",
+      href: "/dashboard/projects",
+      icon: FolderKanban,
       iconBg: "bg-warning/10",
       iconColor: "text-warning",
     },
@@ -71,7 +73,7 @@ export function QuickActionRow({
   ] as const;
 
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-6">
       {actions.map(
         ({ id, label, sub, href, icon: Icon, iconBg, iconColor }) => (
           <Link key={id} href={href}>
