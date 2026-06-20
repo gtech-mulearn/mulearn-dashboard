@@ -1,6 +1,8 @@
 import type { z } from "zod";
 import { apiClient, publicApiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
+import { fetchCompanyOnboardingStatus } from "@/features/auth/api/auth.api";
+import { getEditableUserProfile } from "@/features/profile/api/profile.api";
 import type { PublicCompanyProfile, PublicJobsBySlugData } from "../schemas";
 import {
   AdminSummaryResponseSchema,
@@ -60,11 +62,37 @@ import type {
 // ─── Company Profile ────────────────────────────────────────
 
 export async function fetchCompanyProfile(): Promise<CompanyProfile> {
+  // Check verification status first
+  const statusRes = await fetchCompanyOnboardingStatus();
+  const status = statusRes.status;
+
+  // If pending or rejected, fallback to the editable user profile
+  // and construct a minimal CompanyProfile shape for the UI
+  if (status === "pending" || status === "rejected") {
+    const profile = await getEditableUserProfile();
+    return {
+      id: "pending-or-rejected",
+      name: profile.full_name || "",
+      email: profile.email || "",
+      description: "",
+      ...(statusRes as Record<string, unknown>),
+      status: status,
+      rejection_reason: statusRes.rejection_reason || null,
+      // The rest of the fields will be naturally undefined/null
+    } as unknown as CompanyProfile;
+  }
+
+  // Active company — fetch full profile
   const res = await apiClient.get(
     endpoints.company.profile,
     CompanyProfileResponseSchema,
   );
-  return res.response;
+
+  // Explicitly inject the 'verified' status so the UI knows the company is active
+  return {
+    ...res.response,
+    status: "verified",
+  };
 }
 
 // ─── Jobs CRUD ──────────────────────────────────────────────
