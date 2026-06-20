@@ -1,4 +1,4 @@
-import { Users, Lock } from "lucide-react";
+import { Lock, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { CompanyTalentPool } from "../../schemas/home.schema";

@@ -21,24 +21,12 @@ interface MuVoyageProps {
   isLoading?: boolean;
 }
 
-// Level images - using public path
-const LEVEL_IMAGES = [
-  "/images/levels/level1.webp",
-  "/images/levels/level2.webp",
-  "/images/levels/level3.webp",
-  "/images/levels/level4.webp",
-  "/images/levels/level5.webp",
-  "/images/levels/level6.webp",
-  "/images/levels/level7.webp",
-];
-
 export function MuVoyage({
   userLevels,
   currentLevel,
   isLoading,
 }: MuVoyageProps) {
   const [expandedLevels, setExpandedLevels] = useState<string[]>([]);
-  const [imageError, setImageError] = useState(false);
 
   if (isLoading) {
     return (
@@ -92,49 +80,24 @@ export function MuVoyage({
 
   return (
     <div className="rounded-2xl bg-card p-6 shadow-sm sm:p-8">
-      {/* Current Level Header */}
-      {currentLevelData && (
-        <div className="mb-6 space-y-4">
-          <div className="flex items-center gap-4">
-            {/* Level Image */}
-            <div className="relative h-16 w-16 shrink-0">
-              {!imageError && (
-                <Image
-                  src={LEVEL_IMAGES[currentLevel - 1] || LEVEL_IMAGES[0]}
-                  alt={`Level ${currentLevel}`}
-                  fill
-                  className="object-contain"
-                  onError={() => setImageError(true)}
-                />
-              )}
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold text-foreground">
-                {currentLevelData.name}
-              </h3>
-            </div>
+      {/* Current Level Progress Bar */}
+      {currentLevelData && currentLevel < 4 && (
+        <div className="mb-6 space-y-2">
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">
+              {getProgressPercent(currentLevelData)}% complete
+            </span>
+            <span className="text-muted-foreground">
+              {getCompletedKarma(currentLevelData)}/
+              {getTotalKarma(currentLevelData)} Karma
+            </span>
           </div>
-
-          {/* Progress Bar - only show if not level 4+ */}
-          {currentLevel < 4 && (
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">
-                  {getProgressPercent(currentLevelData)}% complete
-                </span>
-                <span className="text-muted-foreground">
-                  {getCompletedKarma(currentLevelData)}/
-                  {getTotalKarma(currentLevelData)} Karma
-                </span>
-              </div>
-              <div className="h-2 overflow-hidden rounded-full bg-muted">
-                <div
-                  className="h-full rounded-full bg-success transition-all duration-500"
-                  style={{ width: `${getProgressPercent(currentLevelData)}%` }}
-                />
-              </div>
-            </div>
-          )}
+          <div className="h-2 overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full rounded-full bg-success transition-all duration-500"
+              style={{ width: `${getProgressPercent(currentLevelData)}%` }}
+            />
+          </div>
         </div>
       )}
 

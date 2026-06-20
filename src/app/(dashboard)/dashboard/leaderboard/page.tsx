@@ -3,26 +3,19 @@ import {
   type Category,
   LeaderboardView,
   type TimeFrame,
-  type WadhwaniTimeFrame,
 } from "@/features/leaderboard";
 
 export const metadata: Metadata = {
   title: "Leaderboard",
-  description: "View student, campus, and mentor leaderboard rankings.",
+  description: "View student and campus leaderboard rankings.",
 };
 
 interface LeaderboardPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-const validCategories: Category[] = [
-  "students",
-  "campus",
-  "wadhwani",
-  "mentors",
-];
+const validCategories: Category[] = ["students", "campus"];
 const validTimeframes: TimeFrame[] = ["monthly", "overall"];
-const validWadhwaniTimeframes: WadhwaniTimeFrame[] = ["campus", "zonal"];
 
 export default async function LeaderboardPage(props: LeaderboardPageProps) {
   const searchParams = await props.searchParams;
@@ -35,18 +28,12 @@ export default async function LeaderboardPage(props: LeaderboardPageProps) {
   )
     ? (searchParams.timeframe as TimeFrame)
     : "monthly";
-  const wadhwaniTimeframe = validWadhwaniTimeframes.includes(
-    searchParams.wadhwaniTimeframe as WadhwaniTimeFrame,
-  )
-    ? (searchParams.wadhwaniTimeframe as WadhwaniTimeFrame)
-    : "campus";
 
   return (
     <LeaderboardView
-      key={`${category}-${timeframe}-${wadhwaniTimeframe}`}
+      key={`${category}-${timeframe}`}
       category={category}
       timeframe={timeframe}
-      wadhwaniTimeframe={wadhwaniTimeframe}
     />
   );
 }

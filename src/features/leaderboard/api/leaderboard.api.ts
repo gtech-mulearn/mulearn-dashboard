@@ -13,18 +13,10 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
-  type CampusMentorLeaderboardEntry,
-  CampusMentorLeaderboardResponseSchema,
   type CollegeLeaderboardEntry,
   CollegeLeaderboardResponseSchema,
-  type IgMentorLeaderboardEntry,
-  IgMentorLeaderboardResponseSchema,
-  type MentorLeaderboardEntry,
-  MentorLeaderboardResponseSchema,
   type StudentLeaderboardEntry,
   StudentLeaderboardResponseSchema,
-  type WadhwaniLeaderboardEntry,
-  WadhwaniLeaderboardResponseSchema,
 } from "@/features/leaderboard";
 
 /**
@@ -57,69 +49,6 @@ export async function fetchCampusLeaderboard(
   const response = await apiClient.get(
     endpoint,
     CollegeLeaderboardResponseSchema,
-  );
-  return response.response;
-}
-
-/**
- * Fetch Wadhwani leaderboard (campus or zonal)
- */
-export async function fetchWadhwaniLeaderboard(
-  campus: boolean = false,
-): Promise<WadhwaniLeaderboardEntry[]> {
-  const endpoint = campus
-    ? endpoints.leaderboard.wadhwaniCollege
-    : endpoints.leaderboard.wadhwaniZonal;
-
-  const response = await apiClient.get(
-    endpoint,
-    WadhwaniLeaderboardResponseSchema,
-  );
-  return response.response;
-}
-
-/**
- * Fetch mentor leaderboard
- */
-export async function fetchMentorLeaderboard(): Promise<
-  MentorLeaderboardEntry[]
-> {
-  const response = await apiClient.get(
-    "/api/v1/dashboard/mentor/leaderboard/",
-    MentorLeaderboardResponseSchema,
-    { skipAuthRedirectOn403: true },
-  );
-  return response.response.data;
-}
-
-/**
- * §6.1 — Fetch IG Mentor leaderboard for a specific Interest Group.
- * Ranked by completed sessions in that IG (desc), then total karma (tiebreaker).
- * Public endpoint — no auth required.
- */
-export async function fetchIgMentorLeaderboard(
-  igId: string,
-): Promise<IgMentorLeaderboardEntry[]> {
-  const response = await apiClient.get(
-    endpoints.leaderboard.igMentor(igId),
-    IgMentorLeaderboardResponseSchema,
-    { skipAuthRedirectOn403: true },
-  );
-  return response.response;
-}
-
-/**
- * §6.2 — Fetch Campus Mentor leaderboard for a specific campus (college org).
- * Ranked by completed campus sessions (desc), then total karma (tiebreaker).
- * Public endpoint — no auth required.
- */
-export async function fetchCampusMentorLeaderboard(
-  campusId: string,
-): Promise<CampusMentorLeaderboardEntry[]> {
-  const response = await apiClient.get(
-    endpoints.leaderboard.campusMentor(campusId),
-    CampusMentorLeaderboardResponseSchema,
-    { skipAuthRedirectOn403: true },
   );
   return response.response;
 }

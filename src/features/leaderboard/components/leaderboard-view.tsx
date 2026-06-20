@@ -4,7 +4,7 @@ import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLeaderboard } from "../hooks/use-leaderboard";
-import type { Category, TimeFrame, WadhwaniTimeFrame } from "../types";
+import type { Category, TimeFrame } from "../types";
 import { LeaderboardCard } from "./leaderboard-card";
 import { LeaderboardControls } from "./leaderboard-controls";
 import { Podium } from "./podium";
@@ -12,27 +12,15 @@ import { Podium } from "./podium";
 interface LeaderboardViewProps {
   category: Category;
   timeframe: TimeFrame;
-  wadhwaniTimeframe: WadhwaniTimeFrame;
 }
 
-export function LeaderboardView({
-  category,
-  timeframe,
-  wadhwaniTimeframe,
-}: LeaderboardViewProps) {
-  const { data, isLoading, isError } = useLeaderboard(
-    category,
-    category === "wadhwani" ? wadhwaniTimeframe : timeframe,
-  );
+export function LeaderboardView({ category, timeframe }: LeaderboardViewProps) {
+  const { data, isLoading, isError } = useLeaderboard(category, timeframe);
 
   return (
     <div className="max-w-7xl mx-auto min-h-screen px-4 pb-12">
       {/* Controls */}
-      <LeaderboardControls
-        category={category}
-        timeframe={timeframe}
-        wadhwaniTimeframe={wadhwaniTimeframe}
-      />
+      <LeaderboardControls category={category} timeframe={timeframe} />
 
       {isLoading ? (
         <div className="space-y-8">

@@ -45,7 +45,7 @@ export function HomeStatsPanel({
           <span className="text-xl font-bold text-foreground">
             {karma.toLocaleString()}
           </span>
-          <span className="ml-1 text-xs text-muted-foreground">pts</span>
+          <span className="ml-1 text-xs text-muted-foreground">Karma</span>
         </span>
       ),
       badge: karmaDelta !== 0 ? <DeltaBadge value={karmaDelta} /> : null,
@@ -74,14 +74,16 @@ export function HomeStatsPanel({
     {
       label: "Streak",
       value: (
-        <span>
-          <span className="text-xl font-bold text-foreground">
-            {streakDays}
+        <span className="flex items-center gap-1">
+          <Flame className="size-4 text-warning" />
+          <span className="flex items-baseline gap-1">
+            <span className="text-xl font-bold text-foreground">
+              {streakDays}
+            </span>
+            <span className="text-xs text-muted-foreground">days</span>
           </span>
-          <span className="ml-1 text-xs text-muted-foreground">days</span>
         </span>
       ),
-      badge: <Flame className="size-4 text-warning" />,
     },
   ];
   return (
