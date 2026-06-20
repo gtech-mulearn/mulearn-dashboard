@@ -14,3 +14,4 @@ export * from "./StartLearningTab";
 export * from "./TaskCard";
 export * from "./TaskDetailPanel";
 export * from "./TaskList";
+export * from "./GameProgressBar";
