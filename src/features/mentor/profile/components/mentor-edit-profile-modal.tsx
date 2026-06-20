@@ -57,7 +57,10 @@ import type { UserProfile } from "@/features/profile/schemas";
 const MentorEditSchema = z.object({
   full_name: z.string().trim().min(1, "Name is required"),
   about: z.string().trim().optional(),
-  expertise: z.array(z.string()).optional(),
+  expertise: z
+    .array(z.string())
+    .min(3, "Please provide at least three areas of expertise")
+    .optional(),
   preferred_ig_ids: z.array(z.string()).optional(),
   org: z.string().optional(),
   profile_pic: z.instanceof(File).optional(),

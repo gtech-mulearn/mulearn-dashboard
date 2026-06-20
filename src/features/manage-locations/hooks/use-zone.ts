@@ -1,4 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   addZone,
   deleteZone,
@@ -36,6 +38,11 @@ export const useAddZone = () => {
       queryClient.invalidateQueries({ queryKey: ["zones"] });
       queryClient.invalidateQueries({ queryKey: ["zone-dropdown"] });
     },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to add zone" }),
+      );
+    },
   });
 };
 
@@ -48,6 +55,11 @@ export const useUpdateZone = () => {
       queryClient.invalidateQueries({ queryKey: ["zones"] });
       queryClient.invalidateQueries({ queryKey: ["zone-dropdown"] });
     },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to update zone" }),
+      );
+    },
   });
 };
 
@@ -59,6 +71,11 @@ export const useDeleteZone = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["zones"] });
       queryClient.invalidateQueries({ queryKey: ["zone-dropdown"] });
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to delete zone" }),
+      );
     },
   });
 };

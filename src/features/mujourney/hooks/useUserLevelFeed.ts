@@ -17,7 +17,7 @@ import { mujourneyKeys } from "./query-keys";
  * Hook for fetching user's level feed/history
  */
 export function useUserLevelFeed() {
-  const isAuthenticated = !!authStore.getAccessToken();
+  const isAuthenticated = authStore.isAuthenticated();
 
   return useQuery({
     queryKey: mujourneyKeys.userLevelFeed(),

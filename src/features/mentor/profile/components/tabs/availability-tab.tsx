@@ -47,7 +47,7 @@ export function AvailabilityTab() {
           Weekly Availability
         </CardTitle>
         <Button asChild size="sm" variant="outline" className="gap-1.5 text-xs">
-          <Link href="/dashboard/mentor/sessions">
+          <Link href="/dashboard#weekly-availability">
             Edit <ExternalLink className="h-3.5 w-3.5" />
           </Link>
         </Button>
@@ -65,7 +65,9 @@ export function AvailabilityTab() {
             <Clock className="h-8 w-8 opacity-30" />
             <p className="text-sm">No availability set.</p>
             <Button asChild size="sm" variant="outline">
-              <Link href="/dashboard/mentor/sessions">Set Availability</Link>
+              <Link href="/dashboard#weekly-availability">
+                Set Availability
+              </Link>
             </Button>
           </div>
         ) : (

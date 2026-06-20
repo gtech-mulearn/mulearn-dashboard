@@ -10,6 +10,8 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { authStore } from "@/lib/auth";
 import { fetchUserInfo, loginWithOTP, loginWithPassword } from "../api";
 import { authKeys } from "./query-keys";
@@ -51,6 +53,13 @@ export function useLoginWithPassword() {
       queryClient.clear();
       queryClient.setQueryData(authKeys.userInfo(), data.userInfo);
     },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Login failed. Please try again",
+        }),
+      );
+    },
   });
 }
 
@@ -80,6 +89,13 @@ export function useLoginWithOTP() {
       // Clear stale queries — clear() removes without refetching (safe post-login)
       queryClient.clear();
       queryClient.setQueryData(authKeys.userInfo(), data.userInfo);
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Login failed. Please try again",
+        }),
+      );
     },
   });
 }

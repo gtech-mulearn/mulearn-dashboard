@@ -30,6 +30,13 @@ export function useGoogleAuthUrl() {
       }
       return redirect_url;
     },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to initiate Google login",
+        }),
+      );
+    },
   });
 }
 
@@ -93,7 +100,9 @@ export function useGoogleCallback(code?: string, error?: string) {
 
     if (error) {
       hasRun.current = true;
-      toast.error(getApiResponseError(error));
+      toast.error(
+        getApiResponseError(error, { fallback: "Google login failed" }),
+      );
       router.push("/login");
       return;
     }

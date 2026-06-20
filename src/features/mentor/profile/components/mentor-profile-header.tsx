@@ -32,7 +32,7 @@ import { Button } from "@/components/ui/button";
 import type { MentorApplication } from "@/features/mentor/onboarding/schemas";
 import type { UserProfile } from "@/features/profile/schemas";
 
-const DEFAULT_COVER = "/images/profile-banner.png";
+const DEFAULT_COVER = "/images/profile-banner.webp";
 
 export type MentorType = "ig" | "platform" | "company" | "campus";
 
@@ -140,8 +140,8 @@ export function MentorProfileHeader({
       {/* Gradient overlay */}
       <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/80 via-black/35 to-transparent" />
 
-      {/* Top-right: Switch to Learner View */}
-      <div className="absolute right-3 top-3 z-20 flex gap-2">
+      {/* Top-left: Switch to Learner View */}
+      <div className="absolute left-3 top-3 z-20 flex gap-2">
         <Button
           type="button"
           size="sm"

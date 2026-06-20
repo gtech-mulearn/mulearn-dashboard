@@ -2,6 +2,7 @@
 
 import { ChevronLeft, ChevronRight, Plus, Trash2 } from "lucide-react";
 import { useId, useState } from "react";
+import { toast } from "sonner";
 import { ScrollableTimePicker } from "@/components/ui/custom-datetime-picker";
 import { cn } from "@/lib/utils";
 import type { TimeSlot, WeeklySchedule } from "../types";
@@ -40,8 +41,28 @@ function toggleDay(
 
 function addSlot(schedule: WeeklySchedule, day: number): WeeklySchedule {
   const slots = getSlots(schedule, day);
+
+  let newSlot: TimeSlot | null = null;
+  for (let hour = 8; hour <= 21; hour++) {
+    const start = `${hour.toString().padStart(2, "0")}:00`;
+    const end = `${(hour + 1).toString().padStart(2, "0")}:00`;
+
+    const overlaps = slots.some((s) => start < s.end && end > s.start);
+    if (!overlaps) {
+      newSlot = { start, end };
+      break;
+    }
+  }
+
+  if (!newSlot) {
+    toast.error("No available 1-hour slots left on this day.", {
+      id: "no-slots",
+    });
+    return schedule;
+  }
+
   const rest = schedule.filter((d) => d.day !== day);
-  return [...rest, { day, slots: [...slots, { ...DEFAULT_SLOT }] }];
+  return [...rest, { day, slots: [...slots, newSlot] }];
 }
 
 function removeSlot(
@@ -61,11 +82,26 @@ function updateSlot(
   idx: number,
   patch: Partial<TimeSlot>,
 ): WeeklySchedule {
-  const slots = getSlots(schedule, day).map((s, i) =>
-    i === idx ? { ...s, ...patch } : s,
-  );
+  const slots = getSlots(schedule, day);
+  const newSlot = { ...slots[idx], ...patch };
+
+  if (newSlot.start >= newSlot.end) {
+    toast.error("Start time must be before end time.", { id: "invalid-time" });
+    return schedule;
+  }
+
+  const newSlots = slots.map((s, i) => (i === idx ? newSlot : s));
+
+  const sorted = [...newSlots].sort((a, b) => a.start.localeCompare(b.start));
+  for (let i = 0; i < sorted.length - 1; i++) {
+    if (sorted[i].end > sorted[i + 1].start) {
+      toast.error("Time slots cannot overlap.", { id: "overlap-time" });
+      return schedule;
+    }
+  }
+
   const rest = schedule.filter((d) => d.day !== day);
-  return [...rest, { day, slots }];
+  return [...rest, { day, slots: newSlots }];
 }
 
 // ─── Component ───────────────────────────────────────────────

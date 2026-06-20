@@ -201,8 +201,7 @@ export const KarmaAwardFormSchema = z.object({
 export type KarmaAwardFormValues = z.infer<typeof KarmaAwardFormSchema>;
 
 export const AddParticipantFormSchema = z.object({
-  user: z.string().min(1, "User ID is required"),
-  participant_role: z.enum(PARTICIPANT_ROLES),
+  muid: z.string().min(1, "User ID or MUID is required"),
 });
 export type AddParticipantFormValues = z.infer<typeof AddParticipantFormSchema>;
 
