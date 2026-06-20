@@ -14,23 +14,49 @@ export const GenericMutationResponseSchema = ApiResponseSchema(
   z.object({}).passthrough(),
 );
 
-export const PaginationSchema = z.object({
-  count: z.number().optional(),
-  totalPages: z.number().optional(),
-  isNext: z.boolean().optional(),
-  isPrev: z.boolean().optional(),
-  nextPage: z.union([z.string(), z.number()]).nullable().optional(),
-});
+export const PaginationSchema = z
+  .object({
+    count: z.number().optional(),
+    total: z.number().optional(),
+    totalPages: z.number().optional(),
+    isNext: z.boolean().optional(),
+    isPrev: z.boolean().optional(),
+    nextPage: z.union([z.string(), z.number()]).nullable().optional(),
+    total_pages: z.number().optional(),
+    current_page: z.number().optional(),
+    next: z.union([z.string(), z.number()]).nullable().optional(),
+    previous: z.union([z.string(), z.number()]).nullable().optional(),
+    page: z.number().optional(),
+    perPage: z.number().optional(),
+    per_page: z.number().optional(),
+  })
+  .transform((val) => {
+    const totalPages = val.totalPages ?? val.total_pages ?? 1;
+    const currentPage = val.page ?? val.current_page ?? 1;
+    const nextPage =
+      val.nextPage ??
+      (val.next != null && val.next !== "" ? currentPage + 1 : null);
+    const isNext = val.isNext ?? !!val.next;
+    const isPrev = val.isPrev ?? !!val.previous;
+
+    return {
+      count: val.count ?? val.total,
+      totalPages,
+      isNext,
+      isPrev,
+      nextPage,
+    };
+  });
 
 // ─── Company Status ───────────────────────────────────────────────────────────
 
 export const CompanyStatusSchema = z.enum([
   "pending_verification",
+  "pending",
   "active",
   "rejected",
   "inactive",
   "verified",
-  "",
 ]);
 
 // ─── Company Verification Item ────────────────────────────────────────────────
