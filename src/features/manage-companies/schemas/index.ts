@@ -147,16 +147,7 @@ export const CompanyDetailsSchema = z
 export const CompanyDetailsResponseSchema =
   ApiResponseSchema(CompanyDetailsSchema);
 
-export const VerificationActionResponseSchema = ApiResponseSchema(
-  z
-    .object({
-      company_id: z.string().optional(),
-      status: z.string().optional(),
-      verified_at: z.string().nullable().optional(),
-      rejection_reason: z.string().nullable().optional(),
-    })
-    .passthrough(),
-);
+export const VerificationActionResponseSchema = GenericMutationResponseSchema;
 
 // ─── Form Schemas ─────────────────────────────────────────────────────────────
 
