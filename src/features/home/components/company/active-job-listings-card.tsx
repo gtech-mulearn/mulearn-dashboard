@@ -6,6 +6,7 @@ import {
   DollarSign,
   MapPin,
   Plus,
+  Lock,
 } from "lucide-react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -65,32 +66,51 @@ function JobRow({ job }: { job: Job }) {
   );
 }
 
-export function ActiveJobListingsCard() {
+export function ActiveJobListingsCard({
+  isVerified = true,
+}: {
+  isVerified?: boolean;
+}) {
   // JobsListParams does not support a status filter — filter client-side
   const { data, isLoading } = useJobs({ pageIndex: 1 });
   const jobs = (data?.jobs ?? []).filter((j) => j.status === "Active");
 
   return (
-    <Card className="rounded-2xl border bg-card shadow-sm">
+    <Card
+      className={`rounded-2xl border bg-card shadow-sm relative ${!isVerified ? "opacity-70 pointer-events-none" : ""}`}
+    >
       <CardHeader className="flex-row items-center justify-between px-5 py-4">
         <div className="flex items-center gap-2.5">
           <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10">
             <Building2 className="size-4 text-primary" />
           </div>
-          <CardTitle className="text-base font-bold text-foreground">
+          <CardTitle className="flex items-center gap-1.5 text-base font-bold text-foreground">
+            {!isVerified && <Lock className="size-4" />}
             Active Job Listings
           </CardTitle>
         </div>
-        <Link
-          href="/dashboard/company/jobs/create"
-          className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-        >
-          <Plus className="size-3.5" />
-          Post New
-        </Link>
+        {!isVerified ? (
+          <span className="inline-flex items-center rounded-md bg-muted px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Locked
+          </span>
+        ) : (
+          <Link
+            href="/dashboard/company/jobs/create"
+            className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            <Plus className="size-3.5" />
+            Post New
+          </Link>
+        )}
       </CardHeader>
       <CardContent className="px-5 pb-5 pt-0">
-        {isLoading ? (
+        {!isVerified ? (
+          <div className="py-10 text-center">
+            <p className="text-sm text-muted-foreground">
+              Available after company verification.
+            </p>
+          </div>
+        ) : isLoading ? (
           <div className="space-y-4">
             {[0, 1, 2, 3].map((i) => (
               <div key={i} className="flex items-center justify-between py-1">

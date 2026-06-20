@@ -1,13 +1,14 @@
-import { Briefcase, CheckCircle2, Users } from "lucide-react";
+import { Briefcase, CheckCircle2, Lock, Users } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { CompanyQuickStats } from "../../schemas/home.schema";
 
 type Props = {
   quickStats?: CompanyQuickStats;
   isLoading: boolean;
+  isVerified?: boolean;
 };
 
-export function CompanyStatCards({ quickStats, isLoading }: Props) {
+export function CompanyStatCards({ quickStats, isLoading, isVerified }: Props) {
   const cards = [
     {
       key: "jobsPosted",
@@ -45,13 +46,21 @@ export function CompanyStatCards({ quickStats, isLoading }: Props) {
         return (
           <div
             key={card.key}
-            className="rounded-2xl border bg-card p-5 shadow-sm"
+            className={`relative rounded-2xl border bg-card p-5 shadow-sm ${!isVerified ? "opacity-70 pointer-events-none" : ""}`}
           >
-            <div
-              className={`mb-3 flex size-10 items-center justify-center rounded-xl ${card.iconBg}`}
-            >
-              <Icon className={`size-5 ${card.iconColor}`} />
+            <div className="flex items-start justify-between">
+              <div
+                className={`mb-3 flex size-10 items-center justify-center rounded-xl ${card.iconBg}`}
+              >
+                <Icon className={`size-5 ${card.iconColor}`} />
+              </div>
+              {!isVerified && (
+                <span className="inline-flex items-center rounded-md bg-muted px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Locked
+                </span>
+              )}
             </div>
+
             {isLoading ? (
               <>
                 <Skeleton className="mb-1.5 h-8 w-16 rounded-md" />
@@ -60,13 +69,16 @@ export function CompanyStatCards({ quickStats, isLoading }: Props) {
             ) : (
               <>
                 <p className="text-3xl font-bold tracking-tight text-foreground">
-                  {card.value}
+                  {!isVerified ? "—" : card.value}
                 </p>
-                <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <p className="mt-0.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  {!isVerified && <Lock className="size-3" />}
                   {card.label}
                 </p>
                 <p className="mt-2.5 text-xs text-muted-foreground">
-                  {card.subLabel}
+                  {!isVerified
+                    ? "Available after company verification."
+                    : card.subLabel}
                 </p>
               </>
             )}
