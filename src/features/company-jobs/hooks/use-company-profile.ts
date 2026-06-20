@@ -24,13 +24,14 @@ export const COMPANY_KEYS = {
     [...COMPANY_KEYS.all, "public-jobs", slug] as const,
 };
 
-export function useCompanyProfile() {
+export function useCompanyProfile(options?: { enabled?: boolean }) {
   const query = useQuery({
     queryKey: COMPANY_KEYS.profile(),
     queryFn: fetchCompanyProfile,
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
     refetchOnWindowFocus: false,
+    enabled: options?.enabled ?? true,
   });
 
   return {
