@@ -85,7 +85,7 @@ export function ApplicationRow({ application }: ApplicationRowProps) {
     <div className="flex items-center gap-4 rounded-xl border border-border bg-card px-4 py-3 transition-colors hover:bg-muted/30">
       {job.company_logo && (
         <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border bg-muted">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+          {/* biome-ignore lint/performance/noImgElement: external logo URL, next/image would require configuring all possible domains */}
           <img
             src={job.company_logo}
             alt={job.company_name || "Company"}

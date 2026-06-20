@@ -2,7 +2,6 @@
 
 import {
   Calendar,
-  Clock,
   Crown,
   ExternalLink,
   Eye,

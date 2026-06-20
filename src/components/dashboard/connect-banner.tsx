@@ -2,7 +2,7 @@
 
 import { X } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useUserInfo } from "@/features/auth";
@@ -22,10 +22,16 @@ export function ConnectAccountsBanner() {
     (state) => state.dismissConnectBanner,
   );
   const user = useUserInfo();
+  const [mounted, setMounted] = useState(false);
   const [isDiscordDialogOpen, setIsDiscordDialogOpen] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const ALLOWED_ROUTES = ["/dashboard/profile", "/dashboard/mujourney"];
   const isAllowedRoute = ALLOWED_ROUTES.includes(pathname);
-  if (!isAllowedRoute) return null;
+  if (!mounted || !isAllowedRoute) return null;
   if (isConnectBannerDismissed) return null;
   if (user.isLoading) {
     return <Spinner className="h-8 w-8" />;

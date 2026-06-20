@@ -39,7 +39,7 @@ export function InternHeader() {
   const userStatus = overview?.status || "ACTIVE";
   const userLevel = profile?.level || "1";
   const profilePic = profile?.profile_pic || userInfo?.profile_pic || null;
-  const isInternLead =
+  const _isInternLead =
     overview?.role === "INTERN_LEAD" || overview?.role === "Intern Lead";
 
   const initials = userDisplayName

@@ -34,7 +34,7 @@ const RANK_MILESTONE_MESSAGES = {
 const getRankMilestone = (rank: number | string) => {
   const r = Number(rank);
 
-  if (isNaN(r) || r <= 0) return "Actively competing in leaderboard";
+  if (Number.isNaN(r) || r <= 0) return "Actively competing in leaderboard";
 
   if (r === 1) {
     const pool = RANK_MILESTONE_MESSAGES.peak;
@@ -97,7 +97,7 @@ export function InternStatsCards() {
 
   const userScore = overview?.score ?? 0;
   const userDailyStreak = overview?.daily_streak ?? 0;
-  const userWeeklyStreak = overview?.weekly_streak ?? 0;
+  const _userWeeklyStreak = overview?.weekly_streak ?? 0;
   const userLongestDailyStreak = overview?.longest_daily_streak ?? 0;
   const userGuild = overview?.guild || "—";
   const userRank = meRank?.rank ?? "—";

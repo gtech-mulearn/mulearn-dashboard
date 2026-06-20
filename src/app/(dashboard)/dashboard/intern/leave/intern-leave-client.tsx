@@ -5,7 +5,6 @@ import {
   AlertTriangle,
   CalendarDays,
   FileText,
-  Home,
   PlaneTakeoff,
   Send,
 } from "lucide-react";

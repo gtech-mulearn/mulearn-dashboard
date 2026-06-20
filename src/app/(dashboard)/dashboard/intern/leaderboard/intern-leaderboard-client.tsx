@@ -101,7 +101,7 @@ export function LeaderboardPageClient() {
       };
     });
 
-  const userDisplayName =
+  const _userDisplayName =
     profile?.full_name || userInfo?.full_name || "Alex Doe";
   const userRank = meRank?.rank ?? "-";
   const userScore = meRank?.score ?? 0;
@@ -113,7 +113,7 @@ export function LeaderboardPageClient() {
       isSortable: false,
       width: "w-16",
       wrap: (
-        data: string | import("react").ReactElement,
+        _data: string | import("react").ReactElement,
         _id: string,
         row: Data,
       ) => <span className="text-muted-foreground font-bold">{row.rank}</span>,
