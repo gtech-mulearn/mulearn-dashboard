@@ -77,29 +77,6 @@ export function VerificationStatusBanner({
       status === "verified";
 
     if (isSuccess) {
-      if (!successDismissed) {
-        return (
-          <div className="flex items-start gap-3 rounded-xl border border-success/30 bg-success/10 px-4 py-3 text-sm text-success">
-            <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-success" />
-            <div className="flex-1">
-              <p className="font-semibold">Company verified successfully</p>
-              <p className="mt-0.5 text-success/80">
-                Your company profile has been approved. You now have full
-                access.
-              </p>
-            </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={handleDismissSuccess}
-              className="text-success hover:text-success/80"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        );
-      }
       return null;
     }
 

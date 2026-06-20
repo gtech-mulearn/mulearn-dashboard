@@ -2,7 +2,7 @@
 
 import { useUserInfo, useUserProfile } from "@/features/auth/hooks/use-session";
 import {
-  useCalendarEvents,
+  useGlobalCalendarEvents,
   useInterestGroupsList,
   useLearnerHomeSummary,
 } from "../hooks";
@@ -19,7 +19,7 @@ export function MuLearnerHome() {
   const { data: interestGroups, isLoading: loadingGroups } =
     useInterestGroupsList();
   const { data: calendarEvents, isLoading: loadingCalendar } =
-    useCalendarEvents();
+    useGlobalCalendarEvents();
   const { data: summary } = useLearnerHomeSummary();
 
   const displayName = userInfo?.full_name?.split(" ")[0] ?? "Learner";
@@ -31,11 +31,11 @@ export function MuLearnerHome() {
 
   return (
     <div className="space-y-5">
-      <QuickActionRow
-        circleCount={circleCount}
-        rank={rank}
-        jobCount={jobCount}
-      />
+      {/* Desktop: Quick Actions at the top */}
+      <div className="hidden lg:block">
+        <QuickActionRow circleCount={circleCount} jobCount={jobCount} />
+      </div>
+
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_296px]">
         <div className="space-y-5">
           <HeroCard
@@ -45,7 +45,13 @@ export function MuLearnerHome() {
             activeCircles={circleCount}
             streakDays={summary?.stats.streak_days ?? 0}
           />
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-[3fr_2fr]">
+
+          {/* Mobile: Quick Actions directly below HeroCard */}
+          <div className="block lg:hidden">
+            <QuickActionRow circleCount={circleCount} jobCount={jobCount} />
+          </div>
+
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-[3fr_2fr]">
             <LearningCirclesCard
               userInterestGroups={userProfile?.interest_groups}
             />

@@ -46,15 +46,24 @@ const PROFILE_STALE_TIME = 5 * 60 * 1000;
 /**
  * Fetch current user's full profile.
  * Data is cached and deduplicated across components.
+ *
+ * This is the single canonical hook for the current user's profile. Both the
+ * `profile` and `auth` feature barrels expose it under the same query key
+ * (`profileKeys.profile()`), so every caller shares one cache entry / one
+ * network request, and profile mutations invalidate all of them.
+ *
+ * @param options.enabled - When false, the query is skipped entirely (no
+ *   network request). Defaults to true. The query is additionally gated on an
+ *   authenticated session.
  */
-export function useUserProfile() {
+export function useUserProfile(options?: { enabled?: boolean }) {
   const hasToken =
     typeof window !== "undefined" ? authStore.isAuthenticated() : false;
   return useQuery({
     queryKey: profileKeys.profile(),
     queryFn: getUserProfile,
     staleTime: PROFILE_STALE_TIME,
-    enabled: hasToken,
+    enabled: hasToken && (options?.enabled ?? true),
   });
 }
 

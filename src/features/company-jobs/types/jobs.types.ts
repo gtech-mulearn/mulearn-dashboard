@@ -284,6 +284,7 @@ export interface CompanyProfile {
   legal_name?: string | null;
   verified_at?: string | null;
   created_at?: string;
+  rejection_reason?: string | null;
   // Frontend-only permission flags (not from API)
   can_edit_profile?: boolean;
   can_access_advanced_features?: boolean;

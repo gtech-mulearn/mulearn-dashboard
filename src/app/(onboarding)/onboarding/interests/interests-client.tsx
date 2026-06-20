@@ -8,12 +8,14 @@
 
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { OptionCard } from "@/components/ui/option-card";
 import { useUserInfo } from "@/features/auth";
+import { authKeys } from "@/features/auth/hooks/query-keys";
 import {
   InterestSelector,
   PathwayQuiz,
@@ -37,13 +39,17 @@ export function InterestsClient({ redirectUri, mode }: InterestsClientProps) {
   const { data: user, isLoading: isLoadingUser } = useUserInfo();
   const selectDomains = useSelectDomains();
   const selectEndgoals = useSelectEndgoals();
+  const queryClient = useQueryClient();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Redirect if user already has domains selected
+  // Redirect if user already has domains selected (suppressed while submitting,
+  // so the completion handler owns navigation and honors redirectUri).
   useEffect(() => {
+    if (isSubmitting) return;
     if (!isLoadingUser && user?.user_domains && user.user_domains.length > 0) {
       router.replace(getRoleHomePath(user.roles));
     }
-  }, [user, isLoadingUser, router]);
+  }, [user, isLoadingUser, router, isSubmitting]);
 
   const getRedirectPath = () => {
     if (redirectUri && redirectUri !== "noredirect") {
@@ -56,12 +62,13 @@ export function InterestsClient({ redirectUri, mode }: InterestsClientProps) {
 
   const handleQuizComplete = async (pathways: string[]) => {
     try {
+      setIsSubmitting(true);
       await selectDomains.mutateAsync(pathways);
+      await queryClient.invalidateQueries({ queryKey: authKeys.userInfo() });
       toast.success("Pathways saved! Welcome to μLearn!");
-      // Small delay to allow cache to invalidate and refresh
-      await new Promise((resolve) => setTimeout(resolve, 500));
       router.replace(getRedirectPath());
     } catch (error) {
+      setIsSubmitting(false);
       toast.error(
         getApiResponseError(error, {
           fallback: "Failed to save pathways. Please try again.",
@@ -75,13 +82,14 @@ export function InterestsClient({ redirectUri, mode }: InterestsClientProps) {
     endgoals: string[],
   ) => {
     try {
+      setIsSubmitting(true);
       await selectDomains.mutateAsync(pathways);
       await selectEndgoals.mutateAsync(endgoals);
+      await queryClient.invalidateQueries({ queryKey: authKeys.userInfo() });
       toast.success("Interests saved! Welcome to μLearn!");
-      // Small delay to allow cache to invalidate and refresh
-      await new Promise((resolve) => setTimeout(resolve, 500));
       router.replace(getRedirectPath());
     } catch (error) {
+      setIsSubmitting(false);
       toast.error(
         getApiResponseError(error, {
           fallback: "Failed to save interests. Please try again.",

@@ -111,11 +111,13 @@ export function PublicProfilePageClient({
 
   const monthDifference = getMonthDifference(profile.joined);
   const currentLevel = getCurrentLevel(profile.level);
+  const isOwnProfile =
+    !!viewer?.muid && !!profile?.muid && viewer.muid === profile.muid;
 
   return (
     <div className="space-y-6">
       {/* Profile Header */}
-      <ProfileHeader profile={profile} isOwnProfile={false} />
+      <ProfileHeader profile={profile} isOwnProfile={isOwnProfile} />
 
       {/* Stats */}
       <ProfileStats profile={profile} monthDifference={monthDifference} />
@@ -132,6 +134,7 @@ export function PublicProfilePageClient({
                 profile={profile}
                 userLog={userLog}
                 isLoading={isLoadingLog}
+                isOwnProfile={isOwnProfile}
               />
             )}
             {activeTab === "karma-history" && (
@@ -153,14 +156,14 @@ export function PublicProfilePageClient({
               </div>
             )}
             {activeTab === "badges" && (
-              <Badges muid={muid} isOwnProfile={false} />
+              <Badges muid={muid} isOwnProfile={isOwnProfile} />
             )}
             {activeTab === "projects" && (
               <ProjectsTab
                 muid={muid}
                 ownerMuid={muid}
                 currentUserId={viewer?.id ?? null}
-                isOwnProfile={false}
+                isOwnProfile={isOwnProfile}
               />
             )}
           </div>
@@ -168,7 +171,7 @@ export function PublicProfilePageClient({
 
         {/* Right: Sidebar (without settings for public profiles) */}
         <div className="lg:col-span-1">
-          <ProfileSidebar profile={profile} isOwnProfile={false} />
+          <ProfileSidebar profile={profile} isOwnProfile={isOwnProfile} />
         </div>
       </div>
     </div>

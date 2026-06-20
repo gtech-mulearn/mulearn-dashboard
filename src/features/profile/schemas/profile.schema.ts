@@ -93,6 +93,14 @@ export const UserProfileSchema = z.object({
   joined: z.string(),
   is_public: z.boolean().nullable(),
   roles: z.array(z.string()),
+  // Verification fields returned by the same user-profile endpoint. Used by the
+  // home verification banner (Enabler/role verification). Optional because not
+  // every consumer/role populates them.
+  role_verification: z
+    .array(z.object({ role: z.string(), is_verified: z.boolean() }))
+    .optional(),
+  is_verified: z.boolean().optional(),
+  lead_enabler_verified: z.boolean().optional(),
   interest_groups: z.array(InterestGroupSchema),
   karma_distribution: z.array(KarmaDistributionSchema),
 });

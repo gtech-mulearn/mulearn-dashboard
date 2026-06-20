@@ -7,6 +7,4 @@ export type {
   LeaderboardEntry,
   PodiumProps,
   TimeFrame,
-  WadhwaniTimeFrame,
-  WadhwaniToggleProps,
 } from "./leaderboard.type";

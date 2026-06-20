@@ -3,9 +3,11 @@
 import {
   Building2,
   CalendarDays,
+  CheckCircle,
   CheckCircle2,
   Globe,
   Linkedin,
+  Lock,
   MapPin,
   Pencil,
   Share2,
@@ -39,7 +41,8 @@ export function CompanyProfileHeader({
   foundedYear,
   remotePolicy,
 }: CompanyProfileHeaderProps) {
-  const isVerified = profile.status === "active";
+  const isVerified =
+    profile.status === "active" || profile.status === "verified";
 
   // Logo / initials
   const initials = profile.name
@@ -199,17 +202,31 @@ export function CompanyProfileHeader({
                       <span className="hidden sm:inline">Edit Profile</span>
                     </Link>
                   </Button>
-                  <Button
-                    aria-label="Post a Job"
-                    size="sm"
-                    asChild
-                    variant="default"
-                    className="gap-1 rounded-full text-xs sm:gap-1.5 sm:text-sm bg-background px-3 text-foreground hover:bg-background/90 border-none"
-                  >
-                    <Link href="/dashboard/company/jobs/create">
+                  {isVerified ? (
+                    <Button
+                      aria-label="Post a Job"
+                      size="sm"
+                      asChild
+                      variant="default"
+                      className="gap-1 rounded-full text-xs sm:gap-1.5 sm:text-sm bg-background px-3 text-foreground hover:bg-background/90 border-none"
+                    >
+                      <Link href="/dashboard/company/jobs/create">
+                        Post a Job
+                      </Link>
+                    </Button>
+                  ) : (
+                    <Button
+                      aria-label="Post a Job (Locked)"
+                      size="sm"
+                      disabled
+                      title="Available after company verification"
+                      variant="default"
+                      className="gap-1 rounded-full text-xs sm:gap-1.5 sm:text-sm bg-background px-3 text-foreground/50 border-none disabled:opacity-100 disabled:pointer-events-auto cursor-not-allowed"
+                    >
+                      <Lock className="size-3.5 mr-0.5" />
                       Post a Job
-                    </Link>
-                  </Button>
+                    </Button>
+                  )}
                 </>
               ) : (
                 <>

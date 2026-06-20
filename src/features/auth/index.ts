@@ -16,7 +16,6 @@ export {
   fetchGoogleCallback,
   fetchPublicUserProfile,
   fetchUserInfo,
-  fetchUserProfile,
   loginWithOTP,
   loginWithPassword,
   registerUser,

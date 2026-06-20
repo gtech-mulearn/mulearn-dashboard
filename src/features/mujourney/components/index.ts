@@ -6,6 +6,7 @@
 
 export * from "./BecomeExpertTab";
 export * from "./EventsTab";
+export * from "./GameProgressBar";
 export * from "./JourneyHeader";
 export * from "./JourneyTabs";
 export * from "./LevelCard";

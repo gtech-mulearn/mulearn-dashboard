@@ -1,5 +1,20 @@
-import { apiClient } from "@/api/client";
+import { apiClient, publicApiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
+import {
+  type CalendarBuckets,
+  type CalendarEventBuckets,
+  type CalendarEventItem,
+  type CalendarSessionItem,
+  fetchCampusEventCalendar,
+  fetchCampusMentorSessionCalendar,
+  fetchCompanyEventCalendar,
+  fetchCompanySessionCalendar,
+  fetchGlobalEventCalendar,
+  fetchIgEventCalendar,
+  fetchIgMentorSessionCalendar,
+} from "@/features/company-jobs/api";
+import { OrgListResponseSchema } from "@/features/organizations/schemas";
+import type { CalendarEvent } from "../schemas";
 
 import {
   CalendarEventsResponseSchema,
@@ -188,6 +203,19 @@ export async function getCompanyHomeSummary(params?: {
   return response.response;
 }
 
+// ============================================
+// Company Org ID (from Organisation table)
+// ============================================
+
+export async function getCompanyOrgId(
+  companyName: string,
+): Promise<string | null> {
+  const url = `${endpoints.organizations.listByType("company")}?search=${encodeURIComponent(companyName)}&perPage=1&pageIndex=1`;
+  const response = await apiClient.get(url, OrgListResponseSchema);
+  const match = response.response.data[0];
+  return match?.id ?? null;
+}
+
 // Learner endpoints require auth — 403 intentionally triggers global redirect
 export async function getLearnerStreak() {
   const response = await apiClient.get(
@@ -267,4 +295,110 @@ export async function declineSessionRequest(
     undefined,
     { skipAuthRedirectOn403: true },
   );
+}
+
+// ============================================
+// Global Event Calendar (/api/v1/calendar/events/)
+// ============================================
+
+const CATEGORY_TO_TYPE: Record<string, CalendarEvent["type"]> = {
+  hackathon: "hackathon",
+  workshop: "workshop",
+  meetup: "meetup",
+};
+
+function mapEventItemToCalendarEvent(item: CalendarEventItem): CalendarEvent {
+  const rawCategory = (item.category_name ?? "").toLowerCase();
+  return {
+    id: item.id,
+    title: item.title,
+    description: "",
+    date: item.start,
+    type: CATEGORY_TO_TYPE[rawCategory] ?? "other",
+    location: item.venue_type ?? "",
+    link: item.slug ? `/dashboard/events/${item.slug}` : "",
+  };
+}
+
+function flattenBuckets(buckets: CalendarEventBuckets): CalendarEvent[] {
+  return [...buckets.upcoming, ...buckets.ongoing, ...buckets.completed].map(
+    mapEventItemToCalendarEvent,
+  );
+}
+
+export async function getGlobalCalendarEvents(): Promise<CalendarEvent[]> {
+  const buckets = await fetchGlobalEventCalendar();
+  return flattenBuckets(buckets);
+}
+
+export async function getCompanyCalendarEvents(
+  companyId: string,
+): Promise<CalendarEvent[]> {
+  const buckets = await fetchCompanyEventCalendar(companyId);
+  return flattenBuckets(buckets);
+}
+
+export async function getCampusCalendarEvents(
+  campusId: string,
+): Promise<CalendarEvent[]> {
+  const buckets = await fetchCampusEventCalendar(campusId);
+  return flattenBuckets(buckets);
+}
+
+export async function getIgCalendarEvents(
+  igId: string,
+): Promise<CalendarEvent[]> {
+  const buckets = await fetchIgEventCalendar(igId);
+  return flattenBuckets(buckets);
+}
+
+// ============================================
+// Session Calendar → CalendarEvent mapping
+// ============================================
+
+const SESSION_STATUS_TYPE: Record<string, CalendarEvent["type"]> = {
+  SCHEDULED: "workshop",
+  COMPLETED: "other",
+  CANCELLED: "deadline",
+};
+
+function mapSessionItemToCalendarEvent(
+  item: CalendarSessionItem,
+): CalendarEvent {
+  return {
+    id: item.id,
+    title: item.title,
+    description: item.description ?? "",
+    date: item.starts_at,
+    type: SESSION_STATUS_TYPE[item.status] ?? "other",
+    location: item.venue ?? item.mode ?? "",
+    link: item.meeting_link ?? "",
+  };
+}
+
+function flattenSessionBuckets(buckets: CalendarBuckets): CalendarEvent[] {
+  return [...buckets.upcoming, ...buckets.ongoing, ...buckets.completed].map(
+    mapSessionItemToCalendarEvent,
+  );
+}
+
+export async function getCompanySessionCalendarEvents(
+  companyOrgId: string,
+): Promise<CalendarEvent[]> {
+  const buckets = await fetchCompanySessionCalendar(companyOrgId);
+  return flattenSessionBuckets(buckets);
+}
+
+export async function getIgMentorSessionCalendarEvents(
+  igId: string,
+): Promise<CalendarEvent[]> {
+  const buckets = await fetchIgMentorSessionCalendar(igId);
+  return flattenSessionBuckets(buckets);
+}
+
+export async function getCampusMentorSessionCalendarEvents(
+  campusId: string,
+): Promise<CalendarEvent[]> {
+  const buckets = await fetchCampusMentorSessionCalendar(campusId);
+  return flattenSessionBuckets(buckets);
 }

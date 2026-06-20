@@ -22,12 +22,14 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { MentorSession } from "@/features/home/schemas";
-import type { MentorApplication } from "@/features/mentor/onboarding/schemas";
-import type { MentorStatus } from "@/features/mentor/types";
+import type {
+  MentorApplication,
+  MentorStatusData,
+} from "@/features/mentor/onboarding/schemas";
 
 interface MentorProfileSidebarProps {
   mentorProfile: MentorApplication;
-  statusData: MentorStatus | undefined;
+  statusData: MentorStatusData | undefined;
   upcomingSessions: MentorSession[] | undefined;
   isLoading: boolean;
 }
