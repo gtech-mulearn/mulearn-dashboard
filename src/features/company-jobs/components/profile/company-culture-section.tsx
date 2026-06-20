@@ -11,6 +11,7 @@
 
 import { Code2, Heart, Layers } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { chipColor } from "@/lib/chip-colors";
 
 interface CompanyCultureSectionProps {
   cultureText?: string | null;
@@ -60,7 +61,7 @@ export function CompanyCultureSection({
               {techStack.map((tech) => (
                 <span
                   key={tech}
-                  className="rounded-full border border-border bg-muted/50 px-3 py-1 text-xs font-medium text-foreground"
+                  className={`rounded-full px-3 py-1 text-xs font-medium ${chipColor(tech)}`}
                 >
                   {tech}
                 </span>
@@ -80,7 +81,7 @@ export function CompanyCultureSection({
               {perks.map((perk) => (
                 <span
                   key={perk}
-                  className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary"
+                  className={`rounded-full px-3 py-1 text-xs font-medium ${chipColor(perk)}`}
                 >
                   {perk}
                 </span>

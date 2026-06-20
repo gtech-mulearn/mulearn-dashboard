@@ -295,9 +295,13 @@ export const endpoints = {
       "/api/v1/dashboard/mentor/session/participant/history/",
 
     // ── #20 GET/POST  session/participant/list/<session_id>/ ─────────────────
-    /** GET/POST - List or add participants for a session */
+    /** GET - List participants for a session */
     sessionParticipantList: (sessionId: string) =>
       `/api/v1/dashboard/mentor/session/participant/list/${sessionId}/`,
+
+    /** POST - Add a participant to a session */
+    sessionParticipantAdd: (sessionId: string) =>
+      `/api/v1/dashboard/mentor/session/participant/add/${sessionId}/`,
 
     // ── #21 PATCH  session/participant/update/<link_id>/ ─────────────────────
     /** PATCH - Mentor updates attendance/progress for one participant */
@@ -442,6 +446,7 @@ export const endpoints = {
     manage: "/api/v1/dashboard/events/manage/",
     myInvites: "/api/v1/dashboard/events/my-invites/",
     admin: "/api/v1/dashboard/events/admin/",
+    mentor: "/api/v1/dashboard/events/mentor/",
     ig: "/api/v1/dashboard/events/ig/",
     campus: "/api/v1/dashboard/events/campus/",
     campusIg: "/api/v1/dashboard/events/campus-ig/",

@@ -26,6 +26,7 @@ interface EventSearchSelectProps {
   selectedName?: string | null;
   placeholder?: string;
   disabled?: boolean;
+  campusContextLabel?: string | null;
 }
 
 interface EventSearchInviteProps {
@@ -109,7 +110,15 @@ function normalizeScopeTargets(
 }
 
 function SelectMode(props: EventSearchSelectProps) {
-  const { type, value, onChange, selectedName, placeholder, disabled } = props;
+  const {
+    type,
+    value,
+    onChange,
+    selectedName,
+    placeholder,
+    disabled,
+    campusContextLabel,
+  } = props;
   const [query, setQuery] = useState("");
   const [internalSelectedName, setInternalSelectedName] = useState(
     selectedName ?? "",
@@ -203,7 +212,10 @@ function SelectMode(props: EventSearchSelectProps) {
                 >
                   <p className="font-medium">{label}</p>
                   <p className="text-xs capitalize text-muted-foreground">
-                    {(target.collaborator_type ?? "ig").replace(/_/g, " ")}
+                    {target.collaborator_type === "campus_ig" &&
+                    campusContextLabel
+                      ? `Campus IG · ${campusContextLabel}`
+                      : (target.collaborator_type ?? "ig").replace(/_/g, " ")}
                   </p>
                 </button>
               );

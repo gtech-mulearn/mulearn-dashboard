@@ -52,7 +52,7 @@ import {
   YAxis,
 } from "recharts";
 import { toast } from "sonner";
-import { ApiError } from "@/api";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import Pagination from "@/components/dashboard/table/pagination";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -90,6 +90,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { chipColor } from "@/lib/chip-colors";
 import { cn } from "@/lib/utils";
 import {
   useAddExecomMember,
@@ -1040,9 +1041,9 @@ export function CampusManageDashboard() {
                           toast.success("Student details exported"),
                         onError: (error) =>
                           toast.error(
-                            error instanceof ApiError
-                              ? error.message
-                              : "Failed to export student details",
+                            getApiResponseError(error, {
+                              fallback: "Failed to export student details",
+                            }),
                           ),
                       },
                     )
@@ -1213,7 +1214,7 @@ export function CampusManageDashboard() {
               {/* Main Column */}
               <div className="min-w-0 flex-1">
                 <Tabs defaultValue="analytics" className="w-full">
-                  <TabsList className="mb-6 flex h-auto w-full gap-1 overflow-x-auto rounded-xl bg-muted p-1">
+                  <TabsList className="scrollbar-none mb-6 flex h-auto w-full justify-start gap-1 overflow-x-auto rounded-xl bg-muted p-1">
                     {[
                       { value: "analytics", label: "Analytics" },
                       { value: "events", label: "Events" },
@@ -1223,7 +1224,7 @@ export function CampusManageDashboard() {
                       <TabsTrigger
                         key={tab.value}
                         value={tab.value}
-                        className="relative whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-all data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-card/50 data-[state=inactive]:hover:text-foreground"
+                        className="relative shrink-0 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-all data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-card/50 data-[state=inactive]:hover:text-foreground"
                       >
                         {tab.label}
                       </TabsTrigger>
@@ -1627,8 +1628,10 @@ export function CampusManageDashboard() {
                                   event.tags.map((tag) => (
                                     <Badge
                                       key={`${event.id}-${tag || "unnamed"}`}
-                                      variant="secondary"
-                                      className="h-5 shrink-0 px-2 text-[9px] font-bold uppercase tracking-wider"
+                                      className={cn(
+                                        "h-5 shrink-0 px-2 text-[9px] font-bold uppercase tracking-wider",
+                                        chipColor(tag),
+                                      )}
                                     >
                                       {tag}
                                     </Badge>
@@ -2369,9 +2372,9 @@ export function CampusManageDashboard() {
               },
               onError: (error) => {
                 toast.error(
-                  error instanceof ApiError
-                    ? error.message
-                    : "Failed to update student type",
+                  getApiResponseError(error, {
+                    fallback: "Failed to update student type",
+                  }),
                 );
                 setPendingStudent(null);
               },

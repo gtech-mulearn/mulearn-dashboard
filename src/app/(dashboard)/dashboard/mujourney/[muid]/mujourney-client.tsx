@@ -51,7 +51,7 @@ export function PublicUserJourneyPageClient({
   const { full_name, levels } = data.response;
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl space-y-8">
+    <div className="space-y-8">
       {/* Back Button */}
       <Button variant="ghost" asChild>
         <Link href="/mujourney" className="gap-2">

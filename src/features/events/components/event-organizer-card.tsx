@@ -42,7 +42,10 @@ export function EventOrganizerCard({
           </div>
         )}
         <div className="min-w-0">
-          <p className="truncate text-sm font-bold text-foreground">
+          <p
+            title={organizerName}
+            className="text-sm font-bold text-foreground wrap-break-word line-clamp-2"
+          >
             {organizerName}
           </p>
           {event.organizer.type !== "admin" && (

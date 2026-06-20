@@ -19,7 +19,6 @@ export {
   fetchUserProfile,
   loginWithOTP,
   loginWithPassword,
-  refreshAccessToken,
   registerUser,
   requestLoginOTP,
   requestPasswordReset,

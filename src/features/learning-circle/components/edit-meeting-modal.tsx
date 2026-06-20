@@ -14,6 +14,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -136,15 +137,15 @@ export function EditMeetingModal({
       onOpenChange(false);
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to save meeting",
+        getApiResponseError(error, { fallback: "Failed to save meeting" }),
       );
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[520px]">
-        <DialogHeader>
+      <DialogContent className="flex flex-col gap-0 p-0 sm:max-w-[520px]">
+        <DialogHeader className="shrink-0 px-6 pt-6 pb-4">
           <DialogTitle className="flex items-center gap-3 text-lg">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 shadow-sm">
               <Edit2 className="h-5 w-5 text-primary" />
@@ -158,164 +159,169 @@ export function EditMeetingModal({
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="mt-5 space-y-5">
-          <div className="space-y-2">
-            <Label
-              htmlFor="title"
-              className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-            >
-              Meeting Title
-            </Label>
-            <Input
-              id="title"
-              {...register("title")}
-              className="rounded-xl border-border/40 shadow-sm"
-            />
-            {errors.title && (
-              <p className="text-xs font-medium text-destructive">
-                {errors.title.message}
-              </p>
-            )}
-          </div>
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="flex flex-col min-h-0"
+        >
+          <div className="overflow-y-auto px-6 py-5 space-y-5">
+            <div className="space-y-2">
+              <Label
+                htmlFor="title"
+                className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+              >
+                Meeting Title
+              </Label>
+              <Input
+                id="title"
+                {...register("title")}
+                className="rounded-xl border-border/40 shadow-sm"
+              />
+              {errors.title && (
+                <p className="text-xs font-medium text-destructive">
+                  {errors.title.message}
+                </p>
+              )}
+            </div>
 
-          <div className="space-y-2">
-            <Label
-              htmlFor="description"
-              className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-            >
-              Description
-            </Label>
-            <Textarea
-              id="description"
-              {...register("description")}
-              className="resize-none rounded-xl border-border/40 shadow-sm"
-            />
-            {errors.description && (
-              <p className="text-xs font-medium text-destructive">
-                {errors.description.message}
-              </p>
-            )}
-          </div>
+            <div className="space-y-2">
+              <Label
+                htmlFor="description"
+                className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+              >
+                Description
+              </Label>
+              <Textarea
+                id="description"
+                {...register("description")}
+                className="resize-none rounded-xl border-border/40 shadow-sm"
+              />
+              {errors.description && (
+                <p className="text-xs font-medium text-destructive">
+                  {errors.description.message}
+                </p>
+              )}
+            </div>
 
-          <div className="space-y-2">
-            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Meeting Mode
-            </Label>
-            <Select
-              defaultValue={meeting.mode}
-              onValueChange={(value) => {
-                setValue("mode", value as "online" | "offline");
-                if (value === "offline") setValue("platform", null);
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select mode" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="online">Online</SelectItem>
-                <SelectItem value="offline">Offline</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {mode === "online" && (
             <div className="space-y-2">
               <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Platform
+                Meeting Mode
               </Label>
               <Select
-                defaultValue={
-                  PLATFORMS.includes(meeting.meet_place as Platform)
-                    ? meeting.meet_place
-                    : undefined
-                }
-                onValueChange={(value) =>
-                  setValue("platform", value as Platform)
-                }
+                defaultValue={meeting.mode}
+                onValueChange={(value) => {
+                  setValue("mode", value as "online" | "offline");
+                  if (value === "offline") setValue("platform", null);
+                }}
               >
-                <SelectTrigger className="rounded-xl border-border/40 shadow-sm">
-                  <SelectValue placeholder="Select platform" />
+                <SelectTrigger>
+                  <SelectValue placeholder="Select mode" />
                 </SelectTrigger>
                 <SelectContent>
-                  {PLATFORMS.map((p) => (
-                    <SelectItem key={p} value={p}>
-                      {p}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="online">Online</SelectItem>
+                  <SelectItem value="offline">Offline</SelectItem>
                 </SelectContent>
               </Select>
-              {errors.platform && (
-                <p className="text-xs font-medium text-destructive">
-                  {errors.platform.message}
-                </p>
-              )}
             </div>
-          )}
 
-          <div className="space-y-2">
-            <Label
-              htmlFor="meet_place"
-              className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-            >
-              {mode === "online" ? "Meeting Link" : "Meeting Location"}
-            </Label>
-            <Input
-              id="meet_place"
-              {...register("meet_place")}
-              className="rounded-xl border-border/40 shadow-sm"
-            />
-            {errors.meet_place && (
-              <p className="text-xs font-medium text-destructive">
-                {errors.meet_place.message}
-              </p>
+            {mode === "online" && (
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Platform
+                </Label>
+                <Select
+                  defaultValue={
+                    PLATFORMS.includes(meeting.meet_place as Platform)
+                      ? meeting.meet_place
+                      : undefined
+                  }
+                  onValueChange={(value) =>
+                    setValue("platform", value as Platform)
+                  }
+                >
+                  <SelectTrigger className="rounded-xl border-border/40 shadow-sm">
+                    <SelectValue placeholder="Select platform" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PLATFORMS.map((p) => (
+                      <SelectItem key={p} value={p}>
+                        {p}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.platform && (
+                  <p className="text-xs font-medium text-destructive">
+                    {errors.platform.message}
+                  </p>
+                )}
+              </div>
             )}
-          </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label
-                htmlFor="meet_time"
+                htmlFor="meet_place"
                 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
               >
-                Date & Time
+                {mode === "online" ? "Meeting Link" : "Meeting Location"}
               </Label>
               <Input
-                id="meet_time"
-                type="datetime-local"
-                {...register("meet_time")}
+                id="meet_place"
+                {...register("meet_place")}
                 className="rounded-xl border-border/40 shadow-sm"
               />
-              {errors.meet_time && (
+              {errors.meet_place && (
                 <p className="text-xs font-medium text-destructive">
-                  {errors.meet_time.message}
+                  {errors.meet_place.message}
                 </p>
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label
-                htmlFor="duration"
-                className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-              >
-                Duration (hours)
-              </Label>
-              <Input
-                id="duration"
-                type="number"
-                min={1}
-                max={24}
-                {...register("duration", { valueAsNumber: true })}
-                className="rounded-xl border-border/40 shadow-sm"
-              />
-              {errors.duration && (
-                <p className="text-xs font-medium text-destructive">
-                  {errors.duration.message}
-                </p>
-              )}
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label
+                  htmlFor="meet_time"
+                  className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                >
+                  Date & Time
+                </Label>
+                <Input
+                  id="meet_time"
+                  type="datetime-local"
+                  {...register("meet_time")}
+                  className="rounded-xl border-border/40 shadow-sm"
+                />
+                {errors.meet_time && (
+                  <p className="text-xs font-medium text-destructive">
+                    {errors.meet_time.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label
+                  htmlFor="duration"
+                  className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                >
+                  Duration (hours)
+                </Label>
+                <Input
+                  id="duration"
+                  type="number"
+                  min={1}
+                  max={24}
+                  {...register("duration", { valueAsNumber: true })}
+                  className="rounded-xl border-border/40 shadow-sm"
+                />
+                {errors.duration && (
+                  <p className="text-xs font-medium text-destructive">
+                    {errors.duration.message}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 border-t border-border/30 pt-5">
+          <div className="shrink-0 flex justify-end gap-3 px-6 py-4 border-t border-border/30">
             <Button
               type="button"
               variant="outline"

@@ -502,14 +502,16 @@ export function RegisterRoleDetails({
     <div className="w-full space-y-6">
       {/* Back button */}
       {onBack && (
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={onBack}
-          className="self-start p-2 -ml-2 text-muted-foreground hover:text-foreground transition-colors"
+          className="self-start -ml-2"
           type="button"
           disabled={isLoading}
         >
           <ArrowLeft className="w-5 h-5" />
-        </button>
+        </Button>
       )}
 
       {/* Header */}

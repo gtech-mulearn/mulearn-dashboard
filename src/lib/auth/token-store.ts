@@ -1,18 +1,17 @@
 /**
  * Auth Token Store
  *
- * Manages access and refresh tokens using a hybrid approach:
- * - Access token: client-readable cookie (needed for Authorization header)
- * - Refresh token: httpOnly cookie via server route handler (not JS-accessible)
+ * Manages access and refresh tokens using httpOnly cookies via server routes.
+ * - Access token: httpOnly cookie (never JS-accessible)
+ * - Refresh token: httpOnly cookie via server route handler
  * - isAuthenticated: client-readable flag for UI state
  *
- * Token writes go through /api/auth/set-tokens to set httpOnly refresh token.
+ * Token writes go through /api/auth/set-tokens to set httpOnly cookies.
  * Token clears go through DELETE /api/auth/set-tokens.
  */
 
 import Cookies from "js-cookie";
 
-const ACCESS_TOKEN_KEY = "accessToken";
 const IS_AUTHENTICATED_KEY = "isAuthenticated";
 
 export const authStore = {
@@ -29,9 +28,14 @@ export const authStore = {
       sameSite: "strict",
     });
   },
-
-  getAccessToken: () => {
-    return Cookies.get(ACCESS_TOKEN_KEY);
+  /**
+   * Client-readable session flag. Stays set across short-lived access-token
+   * expiry (the refresh token is httpOnly and not visible to JS), so this is
+   * the signal for "the user has a session" even when the access-token cookie
+   * has already expired and needs a refresh.
+   */
+  isAuthenticated: () => {
+    return Cookies.get(IS_AUTHENTICATED_KEY) === "true";
   },
 
   clearTokens: async () => {

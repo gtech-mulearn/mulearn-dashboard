@@ -112,6 +112,7 @@ export function JobStepper({
         steps={steps}
         currentStepIndex={currentStepIndex}
         onStepClick={goToStep}
+        ariaLabel="Job creation progress"
       />
 
       {/* Step content */}

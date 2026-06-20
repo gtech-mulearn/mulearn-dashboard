@@ -141,6 +141,17 @@ export const NAV_ITEMS: readonly NavItem[] = [
     section: "main",
   },
   {
+    id: "learner-sessions",
+    title: "Session",
+    href: "/dashboard/sessions",
+    icon: Users,
+    section: "main",
+    dynamicCheck: (roles) =>
+      !roles.some(
+        (r) => r === ROLES.MENTOR || r === ROLES.COMPANY || r === ROLES.ADMIN,
+      ),
+  },
+  {
     id: "events",
     title: "Events",
     href: "/dashboard/events",

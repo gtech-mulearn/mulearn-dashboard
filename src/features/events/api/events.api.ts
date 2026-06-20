@@ -1,4 +1,5 @@
 import { apiClient, endpoints } from "@/api";
+import type { ApprovalTier } from "../lib/events.policy";
 import type {
   CollaboratorInviteBody,
   CollaboratorsListData,
@@ -577,29 +578,34 @@ export const eventsApi = {
     return fetchListWithStatusFallback(endpoints.events.admin, params);
   },
 
-  adminApprove: async (
+  approveEvent: async (
     id: string,
+    tier: ApprovalTier,
     note?: string,
   ): Promise<EventMutationData> => {
     return apiClient.post<EventMutationData>(
-      `${endpoints.events.admin}${id}/approve/`,
-      {
-        note,
-      },
+      `${endpoints.events[tier]}${id}/approve/`,
+      { note },
     );
   },
 
-  adminReject: async (
+  rejectEvent: async (
     id: string,
+    tier: ApprovalTier,
     reason: string,
   ): Promise<EventMutationData> => {
     return apiClient.post<EventMutationData>(
-      `${endpoints.events.admin}${id}/reject/`,
-      {
-        reason,
-      },
+      `${endpoints.events[tier]}${id}/reject/`,
+      { reason },
     );
   },
+
+  // Back-compat thin delegators (DRY).
+  adminApprove: async (id: string, note?: string): Promise<EventMutationData> =>
+    eventsApi.approveEvent(id, "admin", note),
+
+  adminReject: async (id: string, reason: string): Promise<EventMutationData> =>
+    eventsApi.rejectEvent(id, "admin", reason),
 
   adminFeature: async (
     id: string,

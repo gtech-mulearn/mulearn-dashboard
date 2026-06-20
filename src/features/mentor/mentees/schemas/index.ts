@@ -84,7 +84,10 @@ export const SessionParticipantListResponseSchema = z.object({
   hasError: z.boolean().optional(),
   statusCode: z.number().optional(),
   message: z.object({ general: z.array(z.string()).optional() }).optional(),
-  response: z.array(SessionParticipantListItemSchema),
+  response: z.object({
+    data: z.array(SessionParticipantListItemSchema),
+    pagination: z.record(z.string(), z.unknown()).optional(),
+  }),
 });
 
 // ─── Mentee View ───────────────────────────────────────────────────────────────

@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -76,8 +77,12 @@ export function UpdateParticipantDialog({
           toast.success("Participant updated successfully!");
           onOpenChange(false);
         },
-        onError: () => {
-          toast.error("Failed to update participant. Please try again.");
+        onError: (error) => {
+          toast.error(
+            getApiResponseError(error, {
+              fallback: "Failed to update participant. Please try again.",
+            }),
+          );
         },
       },
     );

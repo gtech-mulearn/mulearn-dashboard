@@ -29,6 +29,7 @@ import {
   useDeleteEvent,
   useManageEventDetail,
 } from "../hooks";
+import { canApproveStatus } from "../lib/events.policy";
 import type {
   HistoryLogEntryProps,
   ManageEventDetailViewProps,
@@ -170,13 +171,18 @@ export function ManageEventDetailView({
     queryFn: () => apiClient.get<Record<string, unknown>>(endpoints.user.info),
   });
 
-  const canApprove = Boolean(
-    (userInfo?.is_staff as boolean | undefined) ||
-      (Array.isArray(userInfo?.roles) &&
-        (userInfo.roles as string[]).includes(ROLES.ADMIN)),
-  );
-  const canAdmin = canApprove;
-  const canSelfPublish = canApprove || event?.organizer.type === "company";
+  const viewerRoles = Array.isArray(userInfo?.roles)
+    ? (userInfo.roles as string[])
+    : [];
+  const isStaff = (userInfo?.is_staff as boolean | undefined) ?? false;
+  const isAdmin = isStaff || viewerRoles.includes(ROLES.ADMIN);
+
+  // Can the viewer act at THIS event's current approval stage (mentor/campus/admin)?
+  const canApprove = event
+    ? canApproveStatus(event.status, viewerRoles, isStaff)
+    : false;
+  const canAdmin = isAdmin;
+  const canSelfPublish = isAdmin || event?.organizer.type === "company";
 
   const deleteEvent = useDeleteEvent(eventId);
   const adminFeature = useAdminFeature(eventId);

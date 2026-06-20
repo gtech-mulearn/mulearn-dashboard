@@ -25,10 +25,15 @@ export const RULE_TYPE_OPTIONS = [
   { value: "max_karma", label: "Max Karma" },
   { value: "min_level", label: "Min Level" },
   { value: "max_level", label: "Max Level" },
-  { value: "skill", label: "Skill" },
-  { value: "interest_group", label: "Interest Group" },
-  { value: "achievement", label: "Achievement" },
 ] as const;
+
+// ─── Rule value input categories ────────────────────────────
+// Drive the Add-Rule value field: Karma → numeric input, Level → dropdown of
+// fetched levels (value = level_order). Both are compared via int() on the
+// backend, so they MUST be non-negative integers.
+
+export const KARMA_RULE_TYPES = ["min_karma", "max_karma"] as const;
+export const LEVEL_RULE_TYPES = ["min_level", "max_level"] as const;
 
 // ─── Min Level Options ──────────────────────────────────────
 
@@ -134,5 +139,17 @@ export const JOB_STATUS_CONFIG = {
     dotColor: "bg-amber-500",
     textColor: "text-amber-700",
     bgColor: "bg-amber-50",
+  },
+  Closed: {
+    label: "Closed",
+    dotColor: "bg-rose-500",
+    textColor: "text-rose-700",
+    bgColor: "bg-rose-50",
+  },
+  Expired: {
+    label: "Expired",
+    dotColor: "bg-gray-400",
+    textColor: "text-gray-600",
+    bgColor: "bg-gray-50",
   },
 } as const;

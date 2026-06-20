@@ -6,6 +6,7 @@ import { ApiError } from "@/api/errors";
 import { useDebounce } from "@/hooks/use-debounce";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import { eventsApi } from "../api";
+import type { ApprovalTier } from "../lib/events.policy";
 import type {
   CollaboratorInviteBody,
   CollaboratorType,
@@ -604,18 +605,22 @@ export function useToggleInterest(eventId: string) {
   });
 }
 
-export function useAdminApprove(eventId: string) {
+export function useEventApproval(eventId: string) {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (note?: string) => eventsApi.adminApprove(eventId, note),
+
+  const invalidate = async () => {
+    await queryClient.invalidateQueries({
+      queryKey: eventKeys.manageDetail(eventId),
+    });
+    await queryClient.invalidateQueries({ queryKey: eventKeys.manageLists() });
+  };
+
+  const approve = useMutation({
+    mutationFn: ({ tier, note }: { tier: ApprovalTier; note?: string }) =>
+      eventsApi.approveEvent(eventId, tier, note),
     onSuccess: async () => {
       toast.success("Event approved");
-      await queryClient.invalidateQueries({
-        queryKey: eventKeys.manageDetail(eventId),
-      });
-      await queryClient.invalidateQueries({
-        queryKey: eventKeys.manageLists(),
-      });
+      await invalidate();
     },
     onError: (error) => {
       toast.error(
@@ -623,20 +628,13 @@ export function useAdminApprove(eventId: string) {
       );
     },
   });
-}
 
-export function useAdminReject(eventId: string) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (reason: string) => eventsApi.adminReject(eventId, reason),
+  const reject = useMutation({
+    mutationFn: ({ tier, reason }: { tier: ApprovalTier; reason: string }) =>
+      eventsApi.rejectEvent(eventId, tier, reason),
     onSuccess: async () => {
-      toast.success("Event returned to draft");
-      await queryClient.invalidateQueries({
-        queryKey: eventKeys.manageDetail(eventId),
-      });
-      await queryClient.invalidateQueries({
-        queryKey: eventKeys.manageLists(),
-      });
+      toast.success("Event sent back");
+      await invalidate();
     },
     onError: (error) => {
       toast.error(
@@ -644,6 +642,26 @@ export function useAdminReject(eventId: string) {
       );
     },
   });
+
+  return { approve, reject };
+}
+
+export function useAdminApprove(eventId: string) {
+  const { approve } = useEventApproval(eventId);
+  return {
+    ...approve,
+    mutate: (note?: string, options?: Parameters<typeof approve.mutate>[1]) =>
+      approve.mutate({ tier: "admin", note }, options),
+  };
+}
+
+export function useAdminReject(eventId: string) {
+  const { reject } = useEventApproval(eventId);
+  return {
+    ...reject,
+    mutate: (reason: string, options?: Parameters<typeof reject.mutate>[1]) =>
+      reject.mutate({ tier: "admin", reason }, options),
+  };
 }
 
 export function useAdminFeature(eventId: string) {

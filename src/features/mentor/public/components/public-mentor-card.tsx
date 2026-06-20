@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { chipColor } from "@/lib/chip-colors";
 import {
   usePublicMentorAvailability,
   usePublicMentorProfile,
@@ -173,7 +174,10 @@ export function PublicMentorCard({ mentorId }: PublicMentorCardProps) {
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {expertiseTags.map((tag) => (
-                    <Badge key={tag} variant="outline" className="font-medium">
+                    <Badge
+                      key={tag}
+                      className={`font-medium ${chipColor(tag)}`}
+                    >
                       {tag}
                     </Badge>
                   ))}

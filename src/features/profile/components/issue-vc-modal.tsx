@@ -308,7 +308,11 @@ export function IssueVCModal({
   const renderFooter = () => {
     // Already issued or just issued - show close button
     if (is_issued || issuedCredential) {
-      return <Button onClick={() => handleOpenChange(false)}>Close</Button>;
+      return (
+        <Button variant="secondary" onClick={() => handleOpenChange(false)}>
+          Close
+        </Button>
+      );
     }
 
     // No DIDs - show only close
@@ -354,14 +358,16 @@ export function IssueVCModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="flex flex-col gap-0 p-0 sm:max-w-md">
+        <DialogHeader className="shrink-0 px-6 pt-6 pb-4">
           <DialogTitle>{getTitle()}</DialogTitle>
         </DialogHeader>
 
-        <div className="py-4">{renderContent()}</div>
+        <div className="overflow-y-auto px-6 py-4">{renderContent()}</div>
 
-        <div className="flex justify-end gap-2">{renderFooter()}</div>
+        <div className="shrink-0 flex justify-end gap-2 px-6 py-4 border-t border-border">
+          {renderFooter()}
+        </div>
       </DialogContent>
     </Dialog>
   );

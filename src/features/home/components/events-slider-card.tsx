@@ -123,8 +123,9 @@ export function EventsSliderCard() {
           <div className="flex items-center justify-between pt-2">
             <Button
               asChild
+              variant="secondary"
               size="lg"
-              className="group/btn h-12 rounded-full bg-background px-6 text-base font-semibold text-foreground shadow-lg transition-all hover:bg-background/90 hover:shadow-xl hover:scale-105"
+              className="group/btn h-12 rounded-full px-6 text-base font-semibold shadow-lg transition-all hover:shadow-xl hover:scale-105"
             >
               <Link
                 href={`/dashboard/events/${currentEvent.id}`}

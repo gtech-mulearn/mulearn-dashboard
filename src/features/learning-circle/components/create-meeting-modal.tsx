@@ -14,6 +14,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -174,14 +175,14 @@ export function CreateMeetingModal({
       onOpenChange(false);
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to create meeting",
+        getApiResponseError(error, { fallback: "Failed to create meeting" }),
       );
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex flex-col gap-0 p-0 sm:max-w-[700px] max-h-[92vh]">
+      <DialogContent className="flex flex-col gap-0 p-0 sm:max-w-[700px]">
         {/* ── Header ── */}
         <DialogHeader className="shrink-0 px-8 pt-7 pb-5 border-b border-border/40">
           <DialogTitle className="flex items-center gap-3.5 text-lg">

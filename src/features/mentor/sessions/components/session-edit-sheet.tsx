@@ -23,7 +23,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
-import { useUpdateSession } from "../hooks/use-sessions";
+import { useSessionDetail, useUpdateSession } from "../hooks/use-sessions";
 import type { Session } from "../schemas";
 
 const EditSchema = z
@@ -55,7 +55,12 @@ export function SessionEditSheet({
   open,
   onOpenChange,
 }: SessionEditSheetProps) {
-  const { mutate: update, isPending } = useUpdateSession(session?.id ?? "");
+  const { data: detail } = useSessionDetail(session?.id ?? "", open);
+  const currentSession = detail ?? session;
+
+  const { mutate: update, isPending } = useUpdateSession(
+    currentSession?.id ?? "",
+  );
 
   const form = useForm<EditFormValues>({
     resolver: zodResolver(EditSchema),
@@ -69,16 +74,16 @@ export function SessionEditSheet({
   });
 
   useEffect(() => {
-    if (session && open) {
+    if (currentSession && open) {
       form.reset({
-        title: session.title,
-        description: session.description ?? "",
-        starts_at: session.starts_at?.slice(0, 16) ?? "",
-        ends_at: session.ends_at?.slice(0, 16) ?? "",
-        meeting_link: session.meeting_link ?? "",
+        title: currentSession.title,
+        description: currentSession.description ?? "",
+        starts_at: currentSession.starts_at?.slice(0, 16) ?? "",
+        ends_at: currentSession.ends_at?.slice(0, 16) ?? "",
+        meeting_link: currentSession.meeting_link ?? "",
       });
     }
-  }, [session, open, form]);
+  }, [currentSession, open, form]);
 
   function onSubmit(values: EditFormValues) {
     update(values, {
@@ -126,7 +131,7 @@ export function SessionEditSheet({
                 )}
               />
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="starts_at"

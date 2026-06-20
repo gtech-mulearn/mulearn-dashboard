@@ -49,7 +49,7 @@ export function NotificationPopover() {
         >
           <Bell className="h-5 w-5 text-muted-foreground" />
           {unreadCount > 0 && (
-            <Badge className="-right-1 -top-1 absolute h-5 w-5 items-center justify-center rounded-full p-0 text-xs">
+            <Badge className="-right-1 -top-1 absolute h-5 w-5 items-center justify-center rounded-full border-transparent bg-destructive p-0 text-destructive-foreground text-xs">
               {unreadCount > 99 ? "99+" : unreadCount}
             </Badge>
           )}

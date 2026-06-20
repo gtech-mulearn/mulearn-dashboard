@@ -62,8 +62,8 @@ export function NominateMentorModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
+      <DialogContent className="flex flex-col gap-0 p-0 sm:max-w-[425px]">
+        <DialogHeader className="shrink-0 px-6 pt-6 pb-4">
           <DialogTitle>Nominate Company Mentor</DialogTitle>
           <DialogDescription>
             Nominate a platform user to be a mentor for your company. They must
@@ -72,45 +72,53 @@ export function NominateMentorModal({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="muid"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>User MUID</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g. arjun-menon@mulearn" {...field} />
-                  </FormControl>
-                  <p className="text-[11px] text-muted-foreground mt-1">
-                    Enter the user's unique platform μLearn ID (MUID), not their
-                    email address.
-                  </p>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="flex flex-col min-h-0"
+          >
+            <div className="overflow-y-auto px-6 py-4 space-y-4">
+              <FormField
+                control={form.control}
+                name="muid"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>User MUID</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="e.g. arjun-menon@mulearn"
+                        {...field}
+                      />
+                    </FormControl>
+                    <p className="text-[11px] text-muted-foreground mt-1">
+                      Enter the user's unique platform μLearn ID (MUID), not
+                      their email address.
+                    </p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="reason"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Reason for Nomination</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Why are they a good fit as a mentor? (e.g. active contributor, strong technical skills)"
-                      className="resize-none"
-                      rows={4}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="reason"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Reason for Nomination</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Why are they a good fit as a mentor? (e.g. active contributor, strong technical skills)"
+                        className="resize-none"
+                        rows={4}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
-            <div className="flex justify-end gap-3 pt-4">
+            <div className="shrink-0 flex justify-end gap-3 px-6 py-4 border-t border-border">
               <Button
                 type="button"
                 variant="outline"

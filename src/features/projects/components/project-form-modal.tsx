@@ -83,145 +83,147 @@ export function ProjectFormModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="flex flex-col gap-0 p-0 max-w-2xl">
+        <DialogHeader className="shrink-0 px-6 pt-6 pb-4">
           <DialogTitle>{project ? "Edit Project" : "New Project"}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={submit} className="space-y-4">
-          <div>
-            <Label>Title</Label>
-            <Input {...form.register("title")} />
-            {form.formState.errors.title && (
-              <p className="text-xs text-destructive">
-                {form.formState.errors.title.message}
-              </p>
+        <form onSubmit={submit} className="flex flex-col min-h-0">
+          <div className="overflow-y-auto px-6 py-4 space-y-4">
+            <div>
+              <Label>Title</Label>
+              <Input {...form.register("title")} />
+              {form.formState.errors.title && (
+                <p className="text-xs text-destructive">
+                  {form.formState.errors.title.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <Label>Description</Label>
+              <Controller
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <MarkdownEditor
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Describe your project using Markdown…"
+                    rows={8}
+                    error={form.formState.errors.description?.message}
+                  />
+                )}
+              />
+            </div>
+
+            <div>
+              <Label>Status</Label>
+              <Controller
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="draft">
+                        Draft (only you can see)
+                      </SelectItem>
+                      <SelectItem value="published">
+                        Published (visible on profile)
+                      </SelectItem>
+                      <SelectItem value="archived">
+                        Archived (hidden, kept for reference)
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </div>
+
+            <div>
+              <Label>Logo</Label>
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setLogo(e.target.files?.[0])}
+              />
+            </div>
+
+            <div>
+              <Label>Images</Label>
+              <Input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(e) => setImages(Array.from(e.target.files ?? []))}
+              />
+            </div>
+
+            <div>
+              <Label>Links</Label>
+              <Controller
+                control={form.control}
+                name="links"
+                render={({ field }) => (
+                  <ProjectLinksEditor
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
+                )}
+              />
+            </div>
+
+            <div>
+              <Label>Skills</Label>
+              <Controller
+                control={form.control}
+                name="skill_ids"
+                render={({ field }) => (
+                  <ProjectSkillPicker
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
+                )}
+              />
+            </div>
+
+            {project && (onAddLinkedMember || onAddExternalMember) && (
+              <div className="space-y-2">
+                <Label>Team Members</Label>
+                <MemberList
+                  members={members}
+                  onRemove={
+                    onRemoveMember
+                      ? (id) => {
+                          void onRemoveMember(id);
+                        }
+                      : undefined
+                  }
+                />
+                <ProjectMemberPicker
+                  excludeMuids={[ownerMuid, ...linkedMemberMuids]}
+                  onPickLinked={
+                    onAddLinkedMember
+                      ? (muid) => {
+                          void onAddLinkedMember(muid);
+                        }
+                      : () => {}
+                  }
+                  onPickExternal={
+                    onAddExternalMember
+                      ? (name) => {
+                          void onAddExternalMember(name);
+                        }
+                      : () => {}
+                  }
+                />
+              </div>
             )}
           </div>
 
-          <div>
-            <Label>Description</Label>
-            <Controller
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <MarkdownEditor
-                  value={field.value}
-                  onChange={field.onChange}
-                  placeholder="Describe your project using Markdown…"
-                  rows={8}
-                  error={form.formState.errors.description?.message}
-                />
-              )}
-            />
-          </div>
-
-          <div>
-            <Label>Status</Label>
-            <Controller
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="draft">
-                      Draft (only you can see)
-                    </SelectItem>
-                    <SelectItem value="published">
-                      Published (visible on profile)
-                    </SelectItem>
-                    <SelectItem value="archived">
-                      Archived (hidden, kept for reference)
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
-            />
-          </div>
-
-          <div>
-            <Label>Logo</Label>
-            <Input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setLogo(e.target.files?.[0])}
-            />
-          </div>
-
-          <div>
-            <Label>Images</Label>
-            <Input
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={(e) => setImages(Array.from(e.target.files ?? []))}
-            />
-          </div>
-
-          <div>
-            <Label>Links</Label>
-            <Controller
-              control={form.control}
-              name="links"
-              render={({ field }) => (
-                <ProjectLinksEditor
-                  value={field.value}
-                  onChange={field.onChange}
-                />
-              )}
-            />
-          </div>
-
-          <div>
-            <Label>Skills</Label>
-            <Controller
-              control={form.control}
-              name="skill_ids"
-              render={({ field }) => (
-                <ProjectSkillPicker
-                  value={field.value}
-                  onChange={field.onChange}
-                />
-              )}
-            />
-          </div>
-
-          {project && (onAddLinkedMember || onAddExternalMember) && (
-            <div className="space-y-2">
-              <Label>Team Members</Label>
-              <MemberList
-                members={members}
-                onRemove={
-                  onRemoveMember
-                    ? (id) => {
-                        void onRemoveMember(id);
-                      }
-                    : undefined
-                }
-              />
-              <ProjectMemberPicker
-                excludeMuids={[ownerMuid, ...linkedMemberMuids]}
-                onPickLinked={
-                  onAddLinkedMember
-                    ? (muid) => {
-                        void onAddLinkedMember(muid);
-                      }
-                    : () => {}
-                }
-                onPickExternal={
-                  onAddExternalMember
-                    ? (name) => {
-                        void onAddExternalMember(name);
-                      }
-                    : () => {}
-                }
-              />
-            </div>
-          )}
-
-          <DialogFooter>
+          <DialogFooter className="shrink-0 px-6 py-4 border-t border-border">
             <Button
               type="button"
               variant="ghost"

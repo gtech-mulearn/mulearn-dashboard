@@ -79,7 +79,13 @@ export const MentorApplicationResponseSchema = ApiResponseSchema(
 // ─── Form values for POST/PATCH /register/ ───────────────────────────────────
 export const OnboardingFormSchema = z.object({
   about: z.string().min(50, "About must be at least 50 characters"),
-  expertise: z.string().min(3, "Expertise is required"),
+  expertise: z
+    .string()
+    .refine(
+      (val) =>
+        val.split(",").filter((item) => item.trim().length > 0).length >= 3,
+      "Please provide at least three areas of expertise, separated by commas",
+    ),
   reason: z.string().min(30, "Reason must be at least 30 characters"),
   hours: z.number().min(0).optional(),
   preferred_ig_ids: z

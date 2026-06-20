@@ -14,7 +14,7 @@ import { getInterestGroupsList } from "../api";
 import { igKeys } from "./query-keys";
 
 export function useInterestGroupsList(orderBy?: string) {
-  const isAuthenticated = !!authStore.getAccessToken();
+  const isAuthenticated = authStore.isAuthenticated();
 
   return useQuery({
     queryKey: igKeys.list(orderBy),

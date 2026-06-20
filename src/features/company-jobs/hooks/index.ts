@@ -23,6 +23,10 @@ export {
   useUpdateCompanyTask,
 } from "./use-company-tasks";
 export {
+  type EligibilityLevel,
+  useEligibilityLevels,
+} from "./use-eligibility-refs";
+export {
   JOB_APPLICANTS_KEYS,
   useJobApplicants,
   useUpdateApplicantStatus,

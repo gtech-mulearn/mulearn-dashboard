@@ -104,50 +104,48 @@ export default function ChangelogPage() {
   }
 
   return (
-    <div id="top" className="min-h-screen bg-background">
-      <div className="mx-auto max-w-4xl px-4 py-6 sm:py-20">
-        {/* Hero Section */}
-        <div className="flex flex-col items-start gap-6 mb-16">
-          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-foreground font-display">
-            Changelog
-          </h1>
-          <p className="text-muted-foreground text-lg max-w-2xl leading-relaxed">
-            Stay up to date with the latest changes to μLearn Dashboard! Since
-            the first release, we&apos;ve been working hard to make the platform
-            the best it can be. Thanks everyone for your feedback! ❤️
-          </p>
-          <div className="flex flex-wrap items-center gap-3 mt-2">
-            <a
-              href="https://mulearn.org/donate"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 font-medium transition-colors text-sm"
-            >
-              Give us some support!
-            </a>
-          </div>
-        </div>
-
-        {/* Markdown Content */}
-        <article className="prose-none">
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            rehypePlugins={[rehypeSanitize]}
-            components={components}
-          >
-            {md}
-          </ReactMarkdown>
-        </article>
-
-        {/* Back to top button */}
-        <div className="flex justify-end mt-20">
+    <div id="top" className="mx-auto w-full max-w-4xl py-6 sm:py-20">
+      {/* Hero Section */}
+      <div className="flex flex-col items-start gap-6 mb-16">
+        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-foreground font-display">
+          Changelog
+        </h1>
+        <p className="text-muted-foreground text-lg max-w-2xl leading-relaxed">
+          Stay up to date with the latest changes to μLearn Dashboard! Since the
+          first release, we&apos;ve been working hard to make the platform the
+          best it can be. Thanks everyone for your feedback! ❤️
+        </p>
+        <div className="flex flex-wrap items-center gap-3 mt-2">
           <a
-            href="#top"
+            href="https://mulearn.org/donate"
+            target="_blank"
+            rel="noreferrer"
             className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 font-medium transition-colors text-sm"
           >
-            Back to the top &uarr;
+            Give us some support!
           </a>
         </div>
+      </div>
+
+      {/* Markdown Content */}
+      <article className="prose-none">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          rehypePlugins={[rehypeSanitize]}
+          components={components}
+        >
+          {md}
+        </ReactMarkdown>
+      </article>
+
+      {/* Back to top button */}
+      <div className="flex justify-end mt-20">
+        <a
+          href="#top"
+          className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 font-medium transition-colors text-sm"
+        >
+          Back to the top &uarr;
+        </a>
       </div>
     </div>
   );

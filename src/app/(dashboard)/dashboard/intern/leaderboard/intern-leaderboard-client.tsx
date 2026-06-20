@@ -147,7 +147,7 @@ export function LeaderboardPageClient() {
   const others = searchText ? listRows : listRows.filter((row) => row.rank > 3);
 
   return (
-    <div className="flex-1 space-y-8 p-8 pt-6 max-w-7xl mx-auto w-full bg-background/50">
+    <div className="space-y-8 max-w-7xl mx-auto w-full">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
