@@ -14,7 +14,6 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -32,6 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { useCreateMeeting } from "../hooks";
 
 const DAYS_OF_WEEK = [

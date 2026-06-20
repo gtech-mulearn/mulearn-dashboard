@@ -80,4 +80,23 @@ describe("proxy auth routing", () => {
     );
     expect(locationOf(res)).toBeNull();
   });
+
+  describe("public dashboard routes (no auth required)", () => {
+    it.each([
+      "/dashboard/mujourney",
+      "/dashboard/mujourney/MULEARN-1234",
+      "/dashboard/search",
+      "/dashboard/search/students",
+      "/dashboard/interest-groups",
+      "/dashboard/interest-groups/abc-123",
+    ])("does NOT redirect logged-out users from %s", (path) => {
+      const res = proxy(requestFor(path, {}));
+      expect(locationOf(res)).toBeNull();
+    });
+
+    it("still redirects logged-out users from a protected route", () => {
+      const res = proxy(requestFor("/dashboard/projects", {}));
+      expect(locationOf(res)).toBe("/login");
+    });
+  });
 });

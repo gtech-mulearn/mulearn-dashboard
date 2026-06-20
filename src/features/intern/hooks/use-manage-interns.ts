@@ -6,9 +6,12 @@ import { getApiResponseError } from "@/hooks/use-get-error";
 import { manageInternsApi, type TInternQueryParams } from "../api";
 import type {
   TCreateTaskPayload,
+  TInternTask,
+  TLeaveRequest,
   TLeaveReviewPayload,
   TManageInternItem,
   TOnboardInternPayload,
+  TPaginatedData,
   TTimesheetReviewPayload,
   TUpdateInternPayload,
   TUpdateTaskPayload,
@@ -217,11 +220,33 @@ export function useVerifyTask() {
   });
 }
 
+export function useTasksByIntern(muid: string, params?: TInternQueryParams) {
+  return useQuery<TPaginatedData<TInternTask>>({
+    queryKey: [
+      ...internKeys.manage(),
+      "tasks",
+      "by-intern",
+      muid,
+      params ?? {},
+    ],
+    queryFn: () => manageInternsApi.getTasksByIntern(muid, params),
+    enabled: !!muid,
+  });
+}
+
 // ── Leave Review ───────────────────────────────────────────
 export function useManageLeaves(params?: TInternQueryParams) {
   return useQuery({
     queryKey: internKeys.manageLeaves(params ?? {}),
     queryFn: () => manageInternsApi.getLeaveRequests(params),
+  });
+}
+
+export function useLeaveDetail(id: string) {
+  return useQuery<TLeaveRequest>({
+    queryKey: [...internKeys.manage(), "leaves", "detail", id],
+    queryFn: () => manageInternsApi.getLeaveDetail(id),
+    enabled: !!id,
   });
 }
 

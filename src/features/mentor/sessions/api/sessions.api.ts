@@ -1,13 +1,13 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import type {
+  AddParticipantFormValues,
   AdminVerifySessionValues,
   Session,
   SessionFormValues,
   SessionParticipant,
   SubmitFeedbackValues,
   UpdateParticipantValues,
-  AddParticipantFormValues,
 } from "../schemas";
 import {
   GenericResponseSchema,
