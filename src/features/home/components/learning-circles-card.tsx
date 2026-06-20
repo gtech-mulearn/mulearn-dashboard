@@ -16,7 +16,10 @@ const ACCENT_VARS = [
 ] as const;
 
 type LearningCirclesCardProps = {
-  userInterestGroups?: { id: string; name: string }[];
+  // Only the interest-group name is used (matched against circle names), so accept
+  // any shape carrying a name — keeps this compatible with the canonical
+  // UserProfile["interest_groups"] type.
+  userInterestGroups?: { name: string }[];
 };
 
 export function LearningCirclesCard({

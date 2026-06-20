@@ -3,15 +3,15 @@
 import {
   Building2,
   CalendarDays,
+  CheckCircle,
   CheckCircle2,
   Globe,
   Linkedin,
+  Lock,
   MapPin,
   Pencil,
   Share2,
   Users,
-  CheckCircle,
-  Lock,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";

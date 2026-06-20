@@ -133,17 +133,6 @@ export async function fetchUserInfo(): Promise<UserInfo> {
 }
 
 /**
- * Get full user profile
- */
-export async function fetchUserProfile(): Promise<UserProfile> {
-  const response = await apiClient.get(
-    endpoints.user.profile,
-    UserProfileResponseSchema,
-  );
-  return response.response;
-}
-
-/**
  * Get public user profile by muid
  */
 export async function fetchPublicUserProfile(

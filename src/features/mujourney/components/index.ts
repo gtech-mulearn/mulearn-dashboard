@@ -6,6 +6,7 @@
 
 export * from "./BecomeExpertTab";
 export * from "./EventsTab";
+export * from "./GameProgressBar";
 export * from "./JourneyHeader";
 export * from "./JourneyTabs";
 export * from "./LevelCard";
@@ -14,4 +15,3 @@ export * from "./StartLearningTab";
 export * from "./TaskCard";
 export * from "./TaskDetailPanel";
 export * from "./TaskList";
-export * from "./GameProgressBar";

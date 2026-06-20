@@ -7,7 +7,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserInfo } from "@/features/auth/hooks/use-session";
+import { useCompanyProfile } from "@/features/company-jobs/hooks/use-company-profile";
 import { GameProgressBar } from "@/features/mujourney/components/GameProgressBar";
+import { ROLES } from "@/lib/auth/roles";
 
 function getInitials(name: string) {
   return name

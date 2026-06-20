@@ -8,10 +8,10 @@ import {
   FileText,
   Globe,
   Linkedin,
+  Lock,
   Mail,
   Pencil,
   Users,
-  Lock,
 } from "lucide-react";
 import Link from "next/link";
 import Loader from "@/app/loading";

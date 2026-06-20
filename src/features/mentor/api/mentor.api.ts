@@ -232,9 +232,3 @@ export async function getMentorOverview() {
     { skipAuthRedirectOn403: true },
   );
 }
-
-export async function getMentorStatus() {
-  return apiClient.get(endpoints.mentor.status, ApiResponseOf(z.unknown()), {
-    skipAuthRedirectOn403: true,
-  });
-}

@@ -1,9 +1,9 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import { updateCompanyRegistration } from "@/features/auth/api/register.api";
+import type { CompanySignupRequest } from "@/features/auth/schemas";
 import { CompanyProfileResponseSchema } from "@/features/company-jobs/schemas";
 import type { CompanyProfile } from "@/features/company-jobs/types";
-import type { CompanySignupRequest } from "@/features/auth/schemas";
 import type { ProfileEditFormValues } from "../schemas";
 
 export async function updateCompanyProfile(

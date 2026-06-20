@@ -14,11 +14,12 @@ const ReactQueryDevtools =
       )
     : () => null;
 
-function makeQueryClient() {
+export function makeQueryClient() {
   return new QueryClient({
     defaultOptions: {
       queries: {
         staleTime: 60 * 1000,
+        refetchOnWindowFocus: false,
         retry: (failureCount, error) => {
           const status =
             error && typeof error === "object" && "status" in error

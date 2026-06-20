@@ -1,7 +1,10 @@
 import { apiClient, publicApiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
-import { OrgListResponseSchema } from "@/features/organizations/schemas";
 import {
+  type CalendarBuckets,
+  type CalendarEventBuckets,
+  type CalendarEventItem,
+  type CalendarSessionItem,
   fetchCampusEventCalendar,
   fetchCampusMentorSessionCalendar,
   fetchCompanyEventCalendar,
@@ -9,11 +12,8 @@ import {
   fetchGlobalEventCalendar,
   fetchIgEventCalendar,
   fetchIgMentorSessionCalendar,
-  type CalendarBuckets,
-  type CalendarEventBuckets,
-  type CalendarEventItem,
-  type CalendarSessionItem,
 } from "@/features/company-jobs/api";
+import { OrgListResponseSchema } from "@/features/organizations/schemas";
 import type { CalendarEvent } from "../schemas";
 
 import {
