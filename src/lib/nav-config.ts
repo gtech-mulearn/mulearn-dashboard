@@ -204,7 +204,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     href: "/dashboard/intern",
     icon: LayoutDashboard,
     section: "main",
-    roles: [ROLES.INTERN, ROLES.INTERN_LEAD, ROLES.ADMIN],
+    roles: [ROLES.INTERN, ROLES.INTERN_LEAD],
   },
 
   // ── Management Section (role-gated) ───────────────────────

@@ -9,7 +9,7 @@ export function ActiveQuests() {
     <div className="space-y-4">
       <h3 className="text-lg font-black uppercase tracking-widest flex items-center gap-2">
         <Zap className="w-5 h-5 text-warning fill-warning" />
-        Active Quests
+        Activites
       </h3>
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Link href="/dashboard/intern/timesheet">
@@ -20,7 +20,7 @@ export function ActiveQuests() {
               </div>
               <div>
                 <h4 className="font-black text-lg group-hover:text-brand-blue transition-colors uppercase tracking-tight">
-                  Daily Log
+                  Daily Timesheet
                 </h4>
                 <p className="text-xs text-muted-foreground mt-1 font-medium">
                   Log today's work to earn 25 points
@@ -56,7 +56,7 @@ export function ActiveQuests() {
               </div>
               <div>
                 <h4 className="font-black text-lg group-hover:text-brand-purple transition-colors uppercase tracking-tight">
-                  Weekly Log
+                  Weekly Timesheet
                 </h4>
                 <p className="text-xs text-muted-foreground mt-1 font-medium">
                   Log week's work to earn 50 points

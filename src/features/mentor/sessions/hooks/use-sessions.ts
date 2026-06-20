@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { mentorKeys } from "@/features/mentor/hooks/query-keys";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
+  addParticipant,
   createSession,
   deleteSession,
   fetchAdminSessions,
@@ -18,7 +19,6 @@ import {
   updateParticipant,
   updateSession,
   verifySession,
-  addParticipant,
 } from "../api/sessions.api";
 import type {
   AddParticipantFormValues,

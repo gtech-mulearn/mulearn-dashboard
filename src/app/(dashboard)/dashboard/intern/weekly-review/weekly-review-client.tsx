@@ -36,11 +36,11 @@ export function WeeklyReviewPageClient() {
               variant="default"
               className="px-3 py-1 rounded-full font-black text-[10px] uppercase tracking-widest"
             >
-              Weekly Review
+              Weekly Timesheet
             </Badge>
           </div>
           <h2 className="text-4xl font-black tracking-tighter text-foreground uppercase flex items-center gap-3">
-            Weekly Review
+            Weekly Timesheet
           </h2>
           <p className="text-muted-foreground mt-1 font-medium italic">
             Reflect on your progress and achievements. Submissions close on{" "}

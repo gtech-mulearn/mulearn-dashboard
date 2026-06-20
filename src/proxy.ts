@@ -17,6 +17,7 @@
 
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { isPublicDashboardRoute } from "@/lib/auth/public-routes";
 import { findRouteConfig } from "@/lib/auth/route-access";
 
 // ─── Single Source of Truth ────────────────────────────────
@@ -52,14 +53,9 @@ function isOnboardingRoute(pathname: string): boolean {
 }
 
 function isProtectedRoute(pathname: string): boolean {
-  // Exclude public profile pages: /dashboard/profile/[slug]
-  // Note: /dashboard/profile/ (with optional trailing slash) is protected, but /dashboard/profile/some-slug is public
-  const parts = pathname.split("/").filter(Boolean);
-  if (
-    parts.length === 3 &&
-    parts[0] === "dashboard" &&
-    parts[1] === "profile"
-  ) {
+  // Public dashboard routes (mujourney, search, interest-groups, public
+  // profile) are viewable without auth — single source of truth in public-routes.ts.
+  if (isPublicDashboardRoute(pathname)) {
     return false;
   }
 

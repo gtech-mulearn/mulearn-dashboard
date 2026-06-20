@@ -3,7 +3,6 @@
 import { Loader2, MessageSquarePlus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { useSubmitFeedback } from "../hooks/use-mentees";
 
 interface SessionFeedbackDialogProps {

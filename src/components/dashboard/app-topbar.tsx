@@ -7,6 +7,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserInfo } from "@/features/auth/hooks/use-session";
+import { useCompanyProfile } from "@/features/company-jobs/hooks";
+import { ROLES } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
 function getInitials(name: string) {
@@ -20,6 +22,21 @@ function getInitials(name: string) {
 
 export function AppTopbar() {
   const { data, isLoading } = useUserInfo();
+
+  // Company accounts: show the company profile (name + logo) in the topbar,
+  // not the logged-in creator's personal details. Gated so the company
+  // profile is only fetched for users with the Company role.
+  const isCompany = data?.roles?.includes(ROLES.COMPANY) ?? false;
+  const { profile: companyProfile } = useCompanyProfile({ enabled: isCompany });
+
+  const displayName =
+    isCompany && companyProfile?.name ? companyProfile.name : data?.full_name;
+  const displayImage =
+    isCompany && companyProfile?.logo
+      ? companyProfile.logo
+      : (data?.profile_pic ?? undefined);
+  const displaySubtitle =
+    isCompany && companyProfile?.name ? "Company" : data?.muid;
   return (
     <header className="fixed top-0 left-0 right-0 z-[50] h-17 bg-background border-b border-border flex items-center px-4 justify-between gap-4">
       <div className="flex items-center gap-2">
@@ -50,22 +67,36 @@ export function AppTopbar() {
         ) : data ? (
           <div className="flex items-center gap-2 pr-1">
             <Avatar className="w-8 h-8 shrink-0">
-              <AvatarImage
-                src={data.profile_pic ?? undefined}
-                alt={data.full_name}
-              />
+              <AvatarImage src={displayImage} alt={displayName ?? ""} />
               <AvatarFallback className="text-xs font-semibold">
-                {getInitials(data.full_name)}
+                {getInitials(displayName ?? "")}
               </AvatarFallback>
             </Avatar>
             <div className={cn("hidden sm:flex flex-col leading-tight")}>
               <span className="text-sm font-semibold truncate max-w-[120px]">
-                {data.full_name}
+                {displayName}
               </span>
-              <span className="text-xs text-muted-foreground">{data.muid}</span>
+              <span className="text-xs text-muted-foreground">
+                {displaySubtitle}
+              </span>
             </div>
           </div>
-        ) : null}
+        ) : (
+          <div className="flex items-center gap-2 pr-1">
+            <Link
+              href="/login"
+              className="text-sm font-medium px-3 py-1.5 rounded-md text-foreground hover:bg-muted transition-colors"
+            >
+              Log in
+            </Link>
+            <Link
+              href="/register"
+              className="text-sm font-medium px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              Sign up
+            </Link>
+          </div>
+        )}
       </div>
     </header>
   );
