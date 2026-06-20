@@ -175,8 +175,6 @@ export const routeAccessMap: Record<string, RouteConfig> = {
     roles: [ROLES.ADMIN, ROLES.ASSOCIATE],
   },
 
- 
-
   // ── Events Management ────────────────────────────────────
   "/dashboard/manage-events": {
     roles: [

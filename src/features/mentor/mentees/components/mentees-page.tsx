@@ -1,6 +1,6 @@
 "use client";
 
-import { LogIn, MessageSquarePlus, Search, Users } from "lucide-react";
+import { LogIn, MessageSquarePlus, Search } from "lucide-react";
 import { useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -74,7 +74,7 @@ export function MenteesPage({ title = "Mentees" }: { title?: string } = {}) {
     );
   });
 
-  function openParticipants(sessionId: string) {
+  function _openParticipants(sessionId: string) {
     setParticipantSheet({ open: true, sessionId });
   }
 

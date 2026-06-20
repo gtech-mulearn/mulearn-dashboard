@@ -19,7 +19,6 @@ import {
   Calendar,
   CalendarDays,
   ClipboardCheck,
-  ClipboardList,
   FileText,
   Folder,
   Globe,

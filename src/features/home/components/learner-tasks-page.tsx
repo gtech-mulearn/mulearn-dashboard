@@ -11,11 +11,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useDebounce } from "@/hooks/use-debounce";
-import { usePublicTasks } from "@/features/tasks/hooks";
 import { LevelCard } from "@/features/mujourney/components/LevelCard";
 import type { UserLevelData } from "@/features/mujourney/schemas";
+import { usePublicTasks } from "@/features/tasks/hooks";
 import type { PublicTaskListParams } from "@/features/tasks/types/tasks.types";
+import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
 
 // ─── Constants ─────────────────────────────────────────────────────────
@@ -49,7 +49,11 @@ const PER_PAGE_OPTIONS = [10, 20, 50];
 
 type EventFilter = "all" | "event_only";
 
-const EVENT_FILTER_OPTIONS: { label: string; value: EventFilter; icon?: boolean }[] = [
+const EVENT_FILTER_OPTIONS: {
+  label: string;
+  value: EventFilter;
+  icon?: boolean;
+}[] = [
   { label: "All Tasks", value: "all" },
   { label: "Event Tasks", value: "event_only", icon: true },
 ];
@@ -61,7 +65,9 @@ export function LearnerTasksPage() {
   const [perPage, setPerPage] = useState(20);
   const [searchInput, setSearchInput] = useState("");
   const [sortBy, setSortBy] = useState("");
-  const [taskSource, setTaskSource] = useState<PublicTaskListParams["task_source"] | "">("");
+  const [taskSource, setTaskSource] = useState<
+    PublicTaskListParams["task_source"] | ""
+  >("");
   const [eventFilter, setEventFilter] = useState<EventFilter>("all");
 
   const debouncedSearch = useDebounce(searchInput, 400);
@@ -85,8 +91,6 @@ export function LearnerTasksPage() {
 
   // ─── Handlers ──────────────────────────────────────────────────────
 
-  const resetPage = useCallback(() => setCurrentPage(1), []);
-
   const handleSearch = useCallback((val: string) => {
     setSearchInput(val);
     setCurrentPage(1);
@@ -98,7 +102,9 @@ export function LearnerTasksPage() {
   }, []);
 
   const handleTaskSource = useCallback((val: string) => {
-    setTaskSource(val === "__all__" ? "" : (val as PublicTaskListParams["task_source"]));
+    setTaskSource(
+      val === "__all__" ? "" : (val as PublicTaskListParams["task_source"]),
+    );
     setCurrentPage(1);
   }, []);
 
@@ -142,7 +148,7 @@ export function LearnerTasksPage() {
         map.set(levelKey, []);
       }
 
-      map.get(levelKey)!.push({
+      map.get(levelKey)?.push({
         task_id: task.id,
         task_name: task.title,
         task_description: task.description ?? "",
@@ -226,7 +232,10 @@ export function LearnerTasksPage() {
           value={taskSource || "__all__"}
           onValueChange={handleTaskSource}
         >
-          <SelectTrigger id="task-source" className="h-9 text-sm w-[190px] shrink-0">
+          <SelectTrigger
+            id="task-source"
+            className="h-9 text-sm w-[190px] shrink-0"
+          >
             <SelectValue placeholder="All Sources" />
           </SelectTrigger>
           <SelectContent>
@@ -243,7 +252,10 @@ export function LearnerTasksPage() {
 
         {/* Sort */}
         <Select value={sortBy || "__none__"} onValueChange={handleSort}>
-          <SelectTrigger id="task-sort" className="h-9 text-sm w-[180px] shrink-0">
+          <SelectTrigger
+            id="task-sort"
+            className="h-9 text-sm w-[180px] shrink-0"
+          >
             <SlidersHorizontal className="size-3.5 mr-1 text-muted-foreground shrink-0" />
             <SelectValue placeholder="Sort by..." />
           </SelectTrigger>
@@ -261,7 +273,10 @@ export function LearnerTasksPage() {
 
         {/* Per page */}
         <Select value={String(perPage)} onValueChange={handlePerPage}>
-          <SelectTrigger id="task-per-page" className="h-9 text-sm w-[80px] shrink-0">
+          <SelectTrigger
+            id="task-per-page"
+            className="h-9 text-sm w-[80px] shrink-0"
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -299,7 +314,9 @@ export function LearnerTasksPage() {
                   {Math.min(currentPage * perPage, totalCount)}
                 </span>{" "}
                 of{" "}
-                <span className="font-semibold text-foreground">{totalCount}</span>{" "}
+                <span className="font-semibold text-foreground">
+                  {totalCount}
+                </span>{" "}
                 tasks
               </>
             ) : (
@@ -307,7 +324,9 @@ export function LearnerTasksPage() {
             )}
           </span>
           {isFetching && !isLoading && (
-            <span className="text-xs text-primary animate-pulse">Updating...</span>
+            <span className="text-xs text-primary animate-pulse">
+              Updating...
+            </span>
           )}
         </div>
       )}
@@ -325,7 +344,9 @@ export function LearnerTasksPage() {
           <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-muted">
             <BookOpen className="size-7 text-muted-foreground" />
           </div>
-          <h3 className="text-base font-semibold text-foreground">No tasks found</h3>
+          <h3 className="text-base font-semibold text-foreground">
+            No tasks found
+          </h3>
           <p className="mt-1 text-sm text-muted-foreground max-w-xs">
             {searchInput
               ? `No tasks match "${searchInput}". Try a different keyword.`
@@ -367,7 +388,8 @@ export function LearnerTasksPage() {
           </Button>
           <span className="text-sm text-muted-foreground px-2">
             Page{" "}
-            <span className="font-semibold text-foreground">{currentPage}</span> of{" "}
+            <span className="font-semibold text-foreground">{currentPage}</span>{" "}
+            of{" "}
             <span className="font-semibold text-foreground">{totalPages}</span>
           </span>
           <Button

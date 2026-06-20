@@ -5,7 +5,6 @@ import { CheckCircle2, ShieldAlert, Sparkles, Target, Zap } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,

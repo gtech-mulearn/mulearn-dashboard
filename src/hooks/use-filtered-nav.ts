@@ -15,14 +15,14 @@
 "use client";
 
 import { useMemo } from "react";
+import { useMentorStatus } from "@/features/mentor/hooks";
 import { usePermissions } from "@/hooks/use-permissions";
+import { ROLES } from "@/lib/auth/roles";
 import {
+  type DynamicNavContext,
   NAV_ITEMS,
   type NavItem,
-  type DynamicNavContext,
 } from "@/lib/nav-config";
-import { useMentorStatus } from "@/features/mentor/hooks";
-import { ROLES } from "@/lib/auth/roles";
 
 interface UseFilteredNavReturn {
   /** Main navigation items visible to the current user */

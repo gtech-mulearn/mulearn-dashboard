@@ -9,7 +9,7 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { KeyRound, LogOut, Shield, Trash2 } from "lucide-react";
+import { KeyRound, LogOut, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";

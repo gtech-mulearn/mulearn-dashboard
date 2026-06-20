@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
+import { LearnerTasksPage } from "@/features/home/components/learner-tasks-page";
 import {
   BecomeExpertTab,
   EventsTab,
@@ -11,7 +12,6 @@ import {
   useInterestGroups,
   useStartLearning,
 } from "@/features/mujourney";
-import { LearnerTasksPage } from "@/features/home/components/learner-tasks-page";
 import type { GetUserLevelsResponse } from "@/features/mujourney/schemas";
 
 interface MuJourneyDashboardProps {

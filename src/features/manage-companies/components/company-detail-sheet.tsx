@@ -41,7 +41,7 @@ function formatDate(dateString: string | null | undefined): string {
   });
 }
 
-const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
+const _STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   pending_verification: {
     label: "Pending Verification",
     className: "border-warning/50 bg-warning/10 text-warning",

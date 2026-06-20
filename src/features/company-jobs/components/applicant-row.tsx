@@ -47,7 +47,7 @@ function getInitials(name: string): string {
     .toUpperCase();
 }
 
-export function ApplicantRow({ applicant, jobId }: ApplicantRowProps) {
+export function ApplicantRow({ applicant, jobId: _jobId }: ApplicantRowProps) {
   const { mutate: updateStatus, isPending } = useUpdateApplicantStatus();
   const nextStatuses =
     APP_STATUS_TRANSITIONS[applicant.status as AppStatus] || [];

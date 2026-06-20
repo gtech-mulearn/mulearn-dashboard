@@ -184,7 +184,7 @@ function FullMergeFlow() {
   const {
     data: previewData,
     isLoading: isPreviewLoading,
-    isError: isPreviewError,
+    isError: _isPreviewError,
     refetch: triggerPreview,
   } = useMergePreview(destId, sourceCode, { enabled: false });
 

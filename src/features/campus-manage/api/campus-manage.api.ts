@@ -461,7 +461,7 @@ export const campusManageApi = {
     alumni?: "all" | "alumni" | "student";
   }): Promise<void> {
     const params = new URLSearchParams();
-    if (filters && filters.alumni && filters.alumni !== "all") {
+    if (filters?.alumni && filters.alumni !== "all") {
       params.set("is_alumni", String(filters.alumni === "alumni"));
     }
     const suffix = params.toString();

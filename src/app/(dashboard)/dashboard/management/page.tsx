@@ -1,7 +1,6 @@
 import {
   AlertTriangle,
   ArrowRight,
-  Bell,
   Briefcase,
   Building,
   Building2,

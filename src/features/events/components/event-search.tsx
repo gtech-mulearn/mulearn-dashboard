@@ -68,11 +68,11 @@ function normalizeScopeTargets(
     colleges?: unknown[];
   } | null;
   const items = Array.isArray(paginated?.data)
-    ? paginated!.data!
+    ? paginated?.data!
     : Array.isArray(paginated?.interestGroup)
-      ? paginated!.interestGroup!
+      ? paginated?.interestGroup!
       : Array.isArray(paginated?.colleges)
-        ? paginated!.colleges!
+        ? paginated?.colleges!
         : Array.isArray(data)
           ? data
           : [];
