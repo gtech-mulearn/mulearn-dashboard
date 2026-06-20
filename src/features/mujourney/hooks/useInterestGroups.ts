@@ -6,7 +6,7 @@ import { authStore } from "@/lib/auth";
 import { mujourneyKeys } from "./query-keys";
 
 export function useInterestGroups() {
-  const isAuthenticated = !!authStore.getAccessToken();
+  const isAuthenticated = authStore.isAuthenticated();
 
   return useQuery({
     queryKey: mujourneyKeys.interestGroups(),

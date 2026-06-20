@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   enrollWadhwaniUser,
   fetchWadhwaniCourses,
@@ -81,8 +82,12 @@ export const useWadhwaniCourses = () => {
         window.open(data.redirect_url, "_blank");
       }
     },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to enroll. Please try again.");
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to enroll. Please try again.",
+        }),
+      );
     },
   });
 

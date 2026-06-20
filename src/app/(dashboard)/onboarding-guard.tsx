@@ -26,8 +26,7 @@ export function OnboardingGuard({ children }: OnboardingGuardProps) {
 
   // Session signal: a live access token OR the session flag that outlives it.
   // When absent, there's nothing to refresh against → the user must log in.
-  const hasSession =
-    authStore.isAuthenticated() || !!authStore.getAccessToken();
+  const hasSession = authStore.isAuthenticated();
 
   const parts = pathname.split("/").filter(Boolean);
   const isPublicProfile =

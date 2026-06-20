@@ -19,12 +19,12 @@ const ONBOARDING_KEYS = {
 };
 
 const no403Retry = (failureCount: number, error: unknown) => {
-  if (
-    error instanceof Error &&
-    "status" in error &&
-    (error as { status: number }).status === 403
-  )
-    return false;
+  if (error instanceof Error && "status" in error) {
+    const status = (error as { status: number }).status;
+    if (status === 403 || status === 404 || status === 400) {
+      return false;
+    }
+  }
   return failureCount < 2;
 };
 

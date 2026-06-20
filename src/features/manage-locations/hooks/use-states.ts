@@ -1,4 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   addState,
   deleteState,
@@ -36,6 +38,11 @@ export const useAddState = () => {
       queryClient.invalidateQueries({ queryKey: ["states"] });
       queryClient.invalidateQueries({ queryKey: ["state-dropdown"] });
     },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to add state" }),
+      );
+    },
   });
 };
 
@@ -51,6 +58,11 @@ export const useUpdateState = () => {
         exact: false,
       });
     },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to update state" }),
+      );
+    },
   });
 };
 
@@ -62,6 +74,11 @@ export const useDeleteState = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["states"] });
       queryClient.invalidateQueries({ queryKey: ["state-dropdown"] });
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to delete state" }),
+      );
     },
   });
 };

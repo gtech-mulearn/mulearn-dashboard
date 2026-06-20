@@ -20,7 +20,6 @@ import {
   GoogleCallbackResponseSchema,
   type LoginResponseData,
   LoginResponseSchema,
-  RefreshTokenResponseSchema,
   RequestOTPResponseSchema,
   ResetPasswordResponseSchema,
   type UserInfo,
@@ -73,24 +72,6 @@ export async function requestLoginOTP(emailOrMuid: string): Promise<void> {
     { emailOrMuid },
     RequestOTPResponseSchema,
   );
-}
-
-// ============================================
-// Token Functions
-// ============================================
-
-/**
- * Refresh access token using refresh token
- */
-export async function refreshAccessToken(
-  refreshToken: string,
-): Promise<{ accessToken: string }> {
-  const response = await publicApiClient.post(
-    endpoints.auth.refreshToken,
-    { refreshToken },
-    RefreshTokenResponseSchema,
-  );
-  return response.response;
 }
 
 // ============================================

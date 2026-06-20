@@ -19,7 +19,7 @@ import { mujourneyKeys } from "./query-keys";
  * Hook for logged-in users - shows unlocked levels first
  */
 export function useUserLevels(initialData?: GetUserLevelsResponse | null) {
-  const isAuthenticated = !!authStore.getAccessToken();
+  const isAuthenticated = authStore.isAuthenticated();
 
   return useQuery({
     queryKey: mujourneyKeys.userLevels(),
@@ -34,7 +34,7 @@ export function useUserLevels(initialData?: GetUserLevelsResponse | null) {
  * Hook for public users - shows all levels
  */
 export function usePublicLevels() {
-  const isAuthenticated = !!authStore.getAccessToken();
+  const isAuthenticated = authStore.isAuthenticated();
 
   return useQuery({
     queryKey: mujourneyKeys.publicLevels(),

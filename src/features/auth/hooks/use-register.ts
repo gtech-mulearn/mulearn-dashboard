@@ -9,6 +9,8 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { authStore } from "@/lib/auth";
 import {
   companySignup,
@@ -47,12 +49,9 @@ export function useRegister() {
       queryClient.setQueryData(authKeys.userInfo(), data.userInfo);
     },
     onError: (error) => {
-      if (process.env.NODE_ENV === "development") {
-        console.error(
-          "[useRegister] Error:",
-          error instanceof Error ? error.message : "Unknown error",
-        );
-      }
+      toast.error(
+        getApiResponseError(error, { fallback: "Registration failed" }),
+      );
     },
   });
 }
@@ -70,12 +69,11 @@ export function useCompanyRegister() {
       return response.response;
     },
     onError: (error) => {
-      if (process.env.NODE_ENV === "development") {
-        console.error(
-          "[useCompanyRegister] Error:",
-          error instanceof Error ? error.message : "Unknown error",
-        );
-      }
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Company registration failed",
+        }),
+      );
     },
   });
 }
@@ -92,12 +90,11 @@ export function useUpdateCompanyRegister() {
       return response.response;
     },
     onError: (error) => {
-      if (process.env.NODE_ENV === "development") {
-        console.error(
-          "[useUpdateCompanyRegister] Error:",
-          error instanceof Error ? error.message : "Unknown error",
-        );
-      }
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to update company registration",
+        }),
+      );
     },
   });
 }

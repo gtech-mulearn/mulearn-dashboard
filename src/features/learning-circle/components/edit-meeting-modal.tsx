@@ -14,6 +14,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -136,7 +137,7 @@ export function EditMeetingModal({
       onOpenChange(false);
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to save meeting",
+        getApiResponseError(error, { fallback: "Failed to save meeting" }),
       );
     }
   };

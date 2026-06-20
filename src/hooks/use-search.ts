@@ -1,6 +1,8 @@
 import * as React from "react";
+import { toast } from "sonner";
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { useDebounce } from "./use-debounce";
 
 export interface UserResult {
@@ -50,8 +52,11 @@ export function useSearch(excludedMuids: string[] = EMPTY_EXCLUDED) {
           setResults(users.filter((u) => !stableExcluded.includes(u.muid)));
         }
       })
-      .catch(() => {
+      .catch((error) => {
         if (!cancelled) {
+          toast.error(
+            getApiResponseError(error, { fallback: "Search failed" }),
+          );
           setResults((prev) => (prev.length === 0 ? prev : []));
         }
       })

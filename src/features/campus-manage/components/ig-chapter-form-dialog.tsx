@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { ApiError } from "@/api";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -80,9 +80,9 @@ export function IgChapterFormDialog({ trigger }: IgChapterFormDialogProps) {
         },
         onError: (error) => {
           toast.error(
-            error instanceof ApiError
-              ? error.message
-              : "Failed to create IG chapter",
+            getApiResponseError(error, {
+              fallback: "Failed to create IG chapter",
+            }),
           );
         },
       },

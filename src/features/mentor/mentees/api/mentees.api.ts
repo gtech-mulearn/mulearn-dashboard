@@ -90,7 +90,7 @@ export async function fetchSessionParticipants(sessionId: string) {
     SessionParticipantListResponseSchema,
     { skipAuthRedirectOn403: true },
   );
-  return res.response;
+  return res.response.data;
 }
 
 // ─── Update Participant ────────────────────────────────────────────────────────
