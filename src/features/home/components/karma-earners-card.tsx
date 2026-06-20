@@ -2,6 +2,7 @@ import { ArrowRight, Trophy } from "lucide-react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useTopPerformers } from "../hooks/use-home";
 
 // TODO: per-user avatar colors are a meaningful categorical palette — leave as-is
@@ -90,12 +91,19 @@ export function KarmaEarnersCard() {
                   <div className="flex w-5 shrink-0 items-center justify-center">
                     <RankIndicator rank={rank} />
                   </div>
-                  <div
-                    className="flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-bold"
-                    style={{ backgroundColor: colors.bg, color: colors.text }}
-                  >
-                    {initials(p.full_name)}
-                  </div>
+                  <Avatar className="size-9 shrink-0">
+                    <AvatarImage
+                      src={p.profile_pic}
+                      alt={p.full_name}
+                      className="object-cover"
+                    />
+                    <AvatarFallback
+                      className="text-sm font-bold"
+                      style={{ backgroundColor: colors.bg, color: colors.text }}
+                    >
+                      {initials(p.full_name)}
+                    </AvatarFallback>
+                  </Avatar>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold text-foreground">
                       {p.full_name}
