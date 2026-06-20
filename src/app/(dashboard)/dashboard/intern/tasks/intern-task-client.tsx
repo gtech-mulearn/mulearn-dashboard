@@ -124,7 +124,7 @@ export function InternTasksPageClient() {
               variant="default"
               className="px-3 py-1 rounded-full font-black text-[10px] uppercase tracking-widest"
             >
-              My Quests
+              Tasks
             </Badge>
           </div>
           <h2 className="text-4xl font-black tracking-tighter text-foreground uppercase">

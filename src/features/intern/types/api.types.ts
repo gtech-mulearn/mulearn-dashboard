@@ -40,6 +40,7 @@ export interface TLeaderboardRow {
   score: number;
   rank: number;
   status?: string;
+  profile_pic?: string | null;
 }
 
 export interface TTimesheet {
