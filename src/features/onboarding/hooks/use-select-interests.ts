@@ -7,6 +7,8 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { authKeys } from "@/features/auth/hooks/query-keys";
 import { selectDomains, selectEndgoals } from "../api";
 
@@ -25,6 +27,11 @@ export function useSelectDomains() {
       // Invalidate user info to reflect new selections
       queryClient.invalidateQueries({ queryKey: authKeys.userInfo() });
     },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to save domains" }),
+      );
+    },
   });
 }
 
@@ -42,6 +49,11 @@ export function useSelectEndgoals() {
     onSuccess: () => {
       // Invalidate user info to reflect new selections
       queryClient.invalidateQueries({ queryKey: authKeys.userInfo() });
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to save endgoals" }),
+      );
     },
   });
 }

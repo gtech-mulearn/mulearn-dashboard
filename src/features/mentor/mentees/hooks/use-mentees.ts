@@ -1,6 +1,8 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   fetchMentees,
   fetchParticipantHistory,
@@ -45,6 +47,13 @@ export function useSubmitFeedback() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: menteeKeys.all });
     },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to submit feedback",
+        }),
+      );
+    },
   });
 }
 
@@ -87,6 +96,13 @@ export function useUpdateParticipant(sessionId: string) {
         queryKey: menteeKeys.list(),
       });
     },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to update participant",
+        }),
+      );
+    },
   });
 }
 
@@ -96,6 +112,11 @@ export function useJoinSession() {
     mutationFn: (sessionId: string) => joinSession(sessionId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: menteeKeys.all });
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to join session" }),
+      );
     },
   });
 }

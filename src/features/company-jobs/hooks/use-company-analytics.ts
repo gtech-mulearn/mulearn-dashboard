@@ -1,6 +1,8 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   fetchAdminSummary,
   fetchCompanyDashboardSummary,
@@ -50,6 +52,11 @@ export function useCompanyDashboardSummary(params?: {
 export function useTrackJobView() {
   return useMutation({
     mutationFn: (jobId: string) => trackJobView(jobId),
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to track job view" }),
+      );
+    },
   });
 }
 
