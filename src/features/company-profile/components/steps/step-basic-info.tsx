@@ -3,6 +3,7 @@
 import { useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useCompanyProfile } from "@/features/company-jobs/hooks/use-company-profile";
 import type { ProfileEditFormValues } from "../../schemas";
 
 const COMPANY_SIZE_OPTIONS = [
@@ -20,6 +21,10 @@ export function StepBasicInfo() {
     watch,
     formState: { errors },
   } = useFormContext<ProfileEditFormValues>();
+
+  const { profile } = useCompanyProfile({ enabled: false });
+  const isResubmitting =
+    profile?.status === "pending" || profile?.status === "rejected";
 
   return (
     <div className="space-y-6">
@@ -47,22 +52,26 @@ export function StepBasicInfo() {
           )}
         </div>
 
-        <div className="space-y-1 sm:col-span-2">
-          <p className="text-sm font-medium text-foreground">
-            Slug <span className="text-destructive">*</span>
-          </p>
-          <Input
-            {...register("slug")}
-            className="rounded-xl border-border bg-background"
-            placeholder="e.g. acme-corporation"
-          />
-          <p className="text-xs text-muted-foreground">
-            URL-friendly identifier (lowercase letters, numbers, hyphens)
-          </p>
-          {errors.slug?.message && (
-            <p className="text-xs text-destructive">{errors.slug.message}</p>
-          )}
-        </div>
+        {!isResubmitting ? (
+          <div className="space-y-1 sm:col-span-2">
+            <p className="text-sm font-medium text-foreground">
+              Slug <span className="text-destructive">*</span>
+            </p>
+            <Input
+              {...register("slug")}
+              className="rounded-xl border-border bg-background"
+              placeholder="e.g. acme-corporation"
+            />
+            <p className="text-xs text-muted-foreground">
+              URL-friendly identifier (lowercase letters, numbers, hyphens)
+            </p>
+            {errors.slug?.message && (
+              <p className="text-xs text-destructive">{errors.slug.message}</p>
+            )}
+          </div>
+        ) : (
+          <input type="hidden" {...register("slug")} value="dummy-slug" />
+        )}
 
         <div className="space-y-1 sm:col-span-2">
           <p className="text-sm font-medium text-foreground">

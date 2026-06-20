@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOut } from "lucide-react";
+import { Lock, LogOut } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
@@ -20,8 +20,11 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { VersionBadge } from "@/components/ui/version-badge";
+import { useCompanyProfile } from "@/features/company-jobs/hooks/use-company-profile";
+import { useUserProfile } from "@/features/profile";
 import { useFilteredNav } from "@/hooks/use-filtered-nav";
 import { authStore } from "@/lib/auth";
+import { ROLES } from "@/lib/auth/roles";
 import type { NavItem } from "@/lib/nav-config";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/stores/ui-store";
@@ -34,6 +37,13 @@ export function AppSidebar() {
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
 
   const isCollapsed = state === "collapsed";
+
+  const { data: userProfile } = useUserProfile();
+  const isCompany = userProfile?.roles?.includes(ROLES.COMPANY);
+  const { profile: companyProfile } = useCompanyProfile({
+    enabled: !!isCompany,
+  });
+  const isCompanyVerified = companyProfile?.status === "verified";
 
   const handleLogout = useCallback(async () => {
     await authStore.clearTokens();
@@ -51,25 +61,53 @@ export function AppSidebar() {
   );
 
   const renderNavItem = (item: NavItem) => {
-    const Icon = item.icon;
     const active = isActive(item.href);
+
+    // Determine if this item is a locked company feature
+    const isRestrictedCompanyFeature =
+      isCompany &&
+      !isCompanyVerified &&
+      (item.roles?.includes(ROLES.COMPANY) ||
+        item.id === "talent-pool" ||
+        item.id === "company-jobs" ||
+        item.id === "company-tasks" ||
+        item.id === "company-mentors" ||
+        item.id === "company-ig-requests" ||
+        item.id === "company-analytics");
+
+    const Icon = isRestrictedCompanyFeature ? Lock : item.icon;
 
     return (
       <SidebarMenuItem key={item.id}>
         <SidebarMenuButton
           asChild
           isActive={active}
-          tooltip={item.title}
+          tooltip={
+            isRestrictedCompanyFeature
+              ? "Available after company verification"
+              : item.title
+          }
           className={cn(
             "rounded-xl h-auto py-2.5 px-3 gap-3 transition-all",
             active
               ? "!bg-primary !text-primary-foreground !shadow-md hover:!bg-primary hover:!text-primary-foreground"
               : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+            isRestrictedCompanyFeature && "opacity-70",
           )}
         >
           <Link href={item.linkHref ?? item.href} prefetch={false}>
-            <Icon className="w-5 h-5 shrink-0" />
-            <span className="text-sm font-medium whitespace-nowrap">
+            <Icon
+              className={cn(
+                "w-5 h-5 shrink-0",
+                isRestrictedCompanyFeature && "text-muted-foreground/70",
+              )}
+            />
+            <span
+              className={cn(
+                "text-sm font-medium whitespace-nowrap flex items-center gap-2",
+                isRestrictedCompanyFeature && "text-muted-foreground",
+              )}
+            >
               {item.title}
             </span>
           </Link>

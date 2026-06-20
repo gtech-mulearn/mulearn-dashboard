@@ -8,6 +8,7 @@
 
 import { useFormContext, useWatch } from "react-hook-form";
 import { Badge } from "@/components/ui/badge";
+import { useCompanyProfile } from "@/features/company-jobs/hooks/use-company-profile";
 import type { ProfileEditFormValues } from "../../schemas";
 
 function ReviewRow({
@@ -64,6 +65,9 @@ function TagList({ items }: { items: string[] | null | undefined }) {
 export function StepReview() {
   const form = useFormContext<ProfileEditFormValues>();
   const values = useWatch({ control: form.control }) as ProfileEditFormValues;
+  const { profile } = useCompanyProfile({ enabled: false });
+  const isResubmitting =
+    profile?.status === "pending" || profile?.status === "rejected";
 
   return (
     <div className="space-y-6">
@@ -80,7 +84,9 @@ export function StepReview() {
         {/* Basic Info */}
         <ReviewSection title="Basic Info">
           <ReviewRow label="Company Name" value={values.name || null} />
-          <ReviewRow label="Slug" value={values.slug || null} />
+          {!isResubmitting && (
+            <ReviewRow label="Slug" value={values.slug || null} />
+          )}
           <ReviewRow label="Description" value={values.description || null} />
           <ReviewRow
             label="Industry / Sector"
