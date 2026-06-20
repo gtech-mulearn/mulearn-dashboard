@@ -42,7 +42,7 @@ const STATUS_VARIANTS: Record<
   INVITED: { label: "Invited", variant: "secondary" },
 };
 
-export function MenteesPage() {
+export function MenteesPage({ title = "Mentees" }: { title?: string } = {}) {
   const [search, setSearch] = useState("");
 
   // Participant-sheet state: tracks which session's participants to show
@@ -88,7 +88,7 @@ export function MenteesPage() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">Mentees</h1>
+            <h1 className="text-2xl font-bold">{title}</h1>
             {data && (
               <p className="text-sm text-muted-foreground">
                 {data.totalItems} mentee{data.totalItems !== 1 ? "s" : ""}
