@@ -15,6 +15,7 @@ import {
   Loader2,
   Pencil,
   PencilLine,
+  RefreshCw,
   Share2,
   Trash2,
 } from "lucide-react";
@@ -44,6 +45,7 @@ interface ProfileHeaderProps {
   onDeleteCover?: () => Promise<unknown>;
   /** True while a cover mutation is in flight (disables controls + shows spinner). */
   isCoverPending?: boolean;
+  onSwitchToMentor?: () => void;
 }
 
 export function ProfileHeader({
@@ -54,6 +56,7 @@ export function ProfileHeader({
   onUploadCover,
   onDeleteCover,
   isCoverPending = false,
+  onSwitchToMentor,
 }: ProfileHeaderProps) {
   const [imageError, setImageError] = useState(false);
   const [coverError, setCoverError] = useState(false);
@@ -134,6 +137,22 @@ export function ProfileHeader({
 
       {/* Readability gradient — minute at top, deeper at bottom where text sits */}
       <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/75 via-black/30 to-transparent" />
+
+      {/* Top-left: Switch to Mentor View */}
+      {onSwitchToMentor && (
+        <div className="absolute left-3 top-3 z-20 flex gap-2">
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            onClick={onSwitchToMentor}
+            className="gap-1.5 rounded-full border-white/20 bg-black/40 px-3 text-xs text-white backdrop-blur-sm hover:bg-black/60"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Mentor View</span>
+          </Button>
+        </div>
+      )}
 
       {/* Cover edit control — own profile only, floating top-right */}
       {showCoverControls && (

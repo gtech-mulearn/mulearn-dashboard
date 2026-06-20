@@ -256,6 +256,11 @@ export function ProfilePageClient() {
           isCoverPending={
             uploadCoverPicMutation.isPending || deleteCoverPicMutation.isPending
           }
+          onSwitchToMentor={
+            profile?.roles.includes(ROLES.MENTOR) && isVerifiedMentor
+              ? () => setShowLearnerView(false)
+              : undefined
+          }
         />
       </div>
 

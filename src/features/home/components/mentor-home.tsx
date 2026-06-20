@@ -16,6 +16,7 @@ import { MentorOnboardingForm } from "@/features/mentor/onboarding/components/me
 import {
   deriveOnboardingState,
   useMentorApplication,
+  useMentorProfile,
 } from "@/features/mentor/onboarding/hooks/use-onboarding";
 import { useTaskIgDropdown } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
 import type { WeeklySchedule } from "@/features/mentor/types";
@@ -47,6 +48,10 @@ export function MentorHome() {
     appError as Error | null,
   );
 
+  const { data: mentorProfile, isLoading: profileLoading } = useMentorProfile(
+    onboardingState === "rejected",
+  );
+
   const {
     data: overview,
     isLoading: overviewLoading,
@@ -76,7 +81,7 @@ export function MentorHome() {
   const isDirty = !scheduleEqual(localSchedule, savedSchedule);
 
   // Step 1: wait for application to load
-  if (appLoading) {
+  if (appLoading || (onboardingState === "rejected" && profileLoading)) {
     return (
       <div className="space-y-4">
         <Skeleton className="h-32 w-full" />
@@ -100,21 +105,21 @@ export function MentorHome() {
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            Your application was not approved.
+            <span className="font-semibold">
+              Your application was not approved.
+            </span>
             {application?.verification_note && (
-              <span className="mt-1 block font-medium">
+              <span className="mt-1 block text-sm">
+                <span className="font-medium">Reason: </span>
                 {application.verification_note}
               </span>
             )}
+            <span className="mt-2 block text-sm">
+              Please review your details below and resubmit your application.
+            </span>
           </AlertDescription>
         </Alert>
-        {/* Cast to unknown to allow passing partial data to form for editing */}
-        <MentorOnboardingForm
-          existing={
-            application as unknown as import("@/features/mentor/onboarding/schemas").MentorApplication
-          }
-          isEdit
-        />
+        <MentorOnboardingForm existing={mentorProfile} isEdit isReapply />
       </div>
     );
   }
@@ -275,7 +280,10 @@ export function MentorHome() {
       </Card>
 
       {/* Weekly Availability */}
-      <Card className="rounded-2xl border bg-card shadow-sm">
+      <Card
+        id="weekly-availability"
+        className="rounded-2xl border bg-card shadow-sm scroll-mt-20"
+      >
         <CardHeader className="flex-row items-center justify-between px-5 py-4">
           <div className="flex items-center gap-2.5">
             <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10">

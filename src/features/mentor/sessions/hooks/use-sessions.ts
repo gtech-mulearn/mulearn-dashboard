@@ -18,6 +18,7 @@ import {
   updateParticipant,
   updateSession,
   verifySession,
+  addParticipant,
 } from "../api/sessions.api";
 import type {
   AddParticipantFormValues,
@@ -215,15 +216,11 @@ export function useParticipants(sessionId: string) {
 }
 
 // ─── #20 POST invite — Add a participant to a session ────────────────────────
-// The doc does not have a separate add-participant endpoint; we use joinSession
-// logic. This hook is kept for backward compat with the participants dialog.
 export function useAddParticipant(sessionId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: AddParticipantFormValues) =>
-      // Wrap as a join on behalf of user — sends user + role to session/participant/list
-      // If your backend exposes a direct add endpoint, swap the URL here.
-      joinSession(sessionId).then(() => data),
+      addParticipant(sessionId, data),
     onSuccess: () => {
       toast.success("Participant added.");
       void qc.invalidateQueries({

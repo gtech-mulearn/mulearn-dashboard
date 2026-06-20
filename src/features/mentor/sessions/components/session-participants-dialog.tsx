@@ -22,13 +22,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -87,8 +81,7 @@ export function SessionParticipantsDialog({
   const form = useForm<AddParticipantFormValues>({
     resolver: zodResolver(AddParticipantFormSchema),
     defaultValues: {
-      user: "",
-      participant_role: "MENTEE",
+      muid: "",
     },
   });
 
@@ -183,35 +176,13 @@ export function SessionParticipantsDialog({
           >
             <FormField
               control={form.control}
-              name="user"
+              name="muid"
               render={({ field }) => (
                 <FormItem className="flex-1">
                   <FormLabel>User MUID / ID</FormLabel>
                   <FormControl>
                     <Input placeholder="Enter user ID or MUID" {...field} />
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="participant_role"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Role</FormLabel>
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <FormControl>
-                      <SelectTrigger className="w-36">
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="MENTEE">Mentee</SelectItem>
-                      <SelectItem value="CO_MENTOR">Co-Mentor</SelectItem>
-                      <SelectItem value="MENTOR">Mentor</SelectItem>
-                    </SelectContent>
-                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

@@ -59,6 +59,7 @@ export function useVerifyMentor() {
     }) => verifyMentor(mentorId, data),
     onSuccess: (_result, { data }) => {
       void queryClient.invalidateQueries({ queryKey: mentorVerifyKeys.all });
+      void queryClient.invalidateQueries({ queryKey: ["mentor-onboarding"] });
       toast.success(
         data.status === "APPROVED"
           ? "Mentor approved successfully."
