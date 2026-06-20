@@ -55,13 +55,14 @@ export async function fetchCompanyVerificationRequests(
  */
 export async function verifyCompany(
   companyId: string,
-  payload: VerificationActionFormValues,
-): Promise<void> {
-  await apiClient.patch(
+  payload: { status: string; rejection_reason?: string },
+) {
+  const res = await apiClient.patch(
     endpoints.company.verify(companyId),
     payload,
     VerificationActionResponseSchema,
   );
+  return res.response;
 }
 
 /**
