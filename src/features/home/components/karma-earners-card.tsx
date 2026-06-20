@@ -1,8 +1,8 @@
 import { ArrowRight, Trophy } from "lucide-react";
 import Link from "next/link";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useTopPerformers } from "../hooks/use-home";
 
 // TODO: per-user avatar colors are a meaningful categorical palette — leave as-is
