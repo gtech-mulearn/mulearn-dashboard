@@ -30,6 +30,10 @@ export {
   updateCompanyTask,
 } from "./company-tasks.api";
 export {
+  type EligibilityLevel,
+  fetchEligibilityLevels,
+} from "./eligibility-refs.api";
+export {
   applyToJob,
   createJob,
   createJobRule,
