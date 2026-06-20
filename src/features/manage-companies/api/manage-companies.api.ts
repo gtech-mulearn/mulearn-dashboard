@@ -5,8 +5,8 @@ import {
   CompanyDetailsResponseSchema,
   type CompanyVerificationListData,
   CompanyVerificationListResponseSchema,
-  type VerificationActionFormValues,
   GenericMutationResponseSchema,
+  type VerificationActionFormValues,
 } from "../schemas";
 
 // ─── Types ────────────────────────────────────────────────────────────────────

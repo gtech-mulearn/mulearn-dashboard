@@ -3,7 +3,6 @@
 import { ArrowRight, Plus, Users, Users2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCircles } from "@/features/learning-circle";
 import type { LearningCircle } from "@/features/learning-circle/schemas/circle.schema";
@@ -35,15 +34,16 @@ export function LearningCirclesCard({
   const hasCircles = visible.length > 0;
 
   return (
-    <Card className="h-full rounded-2xl border bg-card shadow-sm">
-      <CardHeader className="flex-row items-center justify-between px-5 py-4">
+    <div className="h-full overflow-hidden rounded-2xl border bg-card shadow-sm">
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 py-4">
         <div className="flex items-center gap-2.5">
           <div className="flex size-9 items-center justify-center rounded-xl bg-brand-purple/10">
             <Users2 className="size-4 text-brand-purple" />
           </div>
-          <CardTitle className="text-base font-bold text-foreground">
+          <span className="text-base font-bold text-foreground">
             Learning Circles
-          </CardTitle>
+          </span>
         </div>
         {hasCircles && (
           <Link
@@ -54,17 +54,18 @@ export function LearningCirclesCard({
             <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
           </Link>
         )}
-      </CardHeader>
-      <CardContent className="px-5 pb-5 pt-0">
+      </div>
+      {/* Content */}
+      <div className="px-5 pb-5">
         {isLoading ? (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {[0, 1, 2, 3].map((i) => (
               <Skeleton key={i} className="h-24 w-full rounded-xl" />
             ))}
           </div>
         ) : hasCircles ? (
           <>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {visible.map((circle, i) => (
                 <CircleCard
                   key={circle.id}
@@ -103,8 +104,8 @@ export function LearningCirclesCard({
             </Button>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
@@ -118,17 +119,17 @@ function CircleCard({
   return (
     <Link
       href={`/dashboard/learning-circle/${circle.id}`}
-      className="flex flex-col gap-3 rounded-xl border bg-card p-4 transition-shadow hover:shadow-md"
+      className="flex flex-col justify-between gap-3 rounded-xl border bg-card p-4 transition-shadow hover:shadow-md h-full"
     >
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-2">
         <div
-          className="flex size-9 items-center justify-center rounded-xl"
+          className="flex size-9 shrink-0 items-center justify-center rounded-xl"
           style={{ backgroundColor: accent.bg }}
         >
           <Users className="size-4" style={{ color: accent.color }} />
         </div>
         <div
-          className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold"
+          className="flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold"
           style={{ backgroundColor: accent.bg, color: accent.color }}
         >
           <Users2 className="size-3" />
@@ -136,10 +137,16 @@ function CircleCard({
         </div>
       </div>
       <div className="min-w-0">
-        <p className="truncate text-sm font-bold text-foreground">
+        <p
+          className="line-clamp-2 text-sm font-bold text-foreground"
+          title={circle.title}
+        >
           {circle.title}
         </p>
-        <p className="mt-0.5 truncate text-xs text-muted-foreground">
+        <p
+          className="mt-0.5 truncate text-xs text-muted-foreground"
+          title={circle.ig}
+        >
           {circle.ig}
         </p>
       </div>

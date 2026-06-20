@@ -1,6 +1,5 @@
 import { ArrowRight, Layers } from "lucide-react";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { InterestGroupListItem } from "../schemas";
 
@@ -25,15 +24,16 @@ export function InterestGroupsCard({
 }: InterestGroupsCardProps) {
   const visible = groups.slice(0, 6);
   return (
-    <Card className="h-full rounded-2xl border bg-card shadow-sm">
-      <CardHeader className="flex-row items-center justify-between px-5 py-4">
+    <div className="h-full overflow-hidden rounded-2xl border bg-card shadow-sm">
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 py-4">
         <div className="flex items-center gap-2.5">
           <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10">
             <Layers className="size-4 text-primary" />
           </div>
-          <CardTitle className="text-base font-bold text-foreground">
+          <span className="text-base font-bold text-foreground">
             Interest Groups
-          </CardTitle>
+          </span>
         </div>
         <Link
           href="/dashboard/interest-groups"
@@ -42,8 +42,9 @@ export function InterestGroupsCard({
           Browse
           <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
         </Link>
-      </CardHeader>
-      <CardContent className="px-5 pb-12 pt-0">
+      </div>
+      {/* Content */}
+      <div className="px-5 pb-5">
         {isLoading ? (
           <div className="space-y-3">
             {[0, 1, 2, 3, 4, 5].map((i) => (
@@ -85,7 +86,7 @@ export function InterestGroupsCard({
             })}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

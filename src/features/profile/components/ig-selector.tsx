@@ -122,7 +122,7 @@ export function IGSelector({
       {/* Header */}
       <div className="mb-3 flex items-center justify-between">
         <span className="text-sm font-semibold text-foreground">
-          {isOwnProfile ? "Your Interest Groups" : "Interest Groups"}
+          {isOwnProfile ? "Your Interest Groups" : "Interest group"}
         </span>
         <div className="flex gap-2">
           {canEdit && !editMode && (

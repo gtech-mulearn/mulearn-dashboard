@@ -10,11 +10,7 @@
 // API functions (for direct use if needed)
 export {
   fetchCampusLeaderboard,
-  fetchCampusMentorLeaderboard,
-  fetchIgMentorLeaderboard,
-  fetchMentorLeaderboard,
   fetchStudentLeaderboard,
-  fetchWadhwaniLeaderboard,
 } from "./api";
 
 // Components
@@ -25,37 +21,23 @@ export {
   LeaderboardView,
   Podium,
   TimeFrameToggle,
-  WadhwaniTimeFrameToggle,
 } from "./components";
 
 // Hooks (primary way to use the feature)
 export { useLeaderboard } from "./hooks";
 export type {
-  CampusMentorLeaderboardEntry,
   CollegeLeaderboardEntry,
   CollegeLeaderboardResponse,
-  IgMentorLeaderboardEntry,
-  MentorLeaderboardEntry,
   StudentLeaderboardEntry,
   StudentLeaderboardResponse,
-  WadhwaniLeaderboardEntry,
-  WadhwaniLeaderboardResponse,
 } from "./schemas";
 // Schemas and types
 export {
   ApiResponseSchema,
-  CampusMentorLeaderboardEntrySchema,
-  CampusMentorLeaderboardResponseSchema,
   CollegeLeaderboardEntrySchema,
   CollegeLeaderboardResponseSchema,
-  IgMentorLeaderboardEntrySchema,
-  IgMentorLeaderboardResponseSchema,
-  MentorLeaderboardEntrySchema,
-  MentorLeaderboardResponseSchema,
   StudentLeaderboardEntrySchema,
   StudentLeaderboardResponseSchema,
-  WadhwaniLeaderboardEntrySchema,
-  WadhwaniLeaderboardResponseSchema,
 } from "./schemas";
 
 // Types
@@ -68,6 +50,4 @@ export type {
   LeaderboardEntry,
   PodiumProps,
   TimeFrame,
-  WadhwaniTimeFrame,
-  WadhwaniToggleProps,
 } from "./types";

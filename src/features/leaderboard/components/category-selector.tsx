@@ -21,16 +21,6 @@ const categories: { value: Category; label: string; icon: ReactNode }[] = [
     label: "Campus",
     icon: <Building2 className="w-4 h-4" />,
   },
-  {
-    value: "wadhwani",
-    label: "Wadhwani",
-    icon: <Award className="w-4 h-4" />,
-  },
-  {
-    value: "mentors",
-    label: "Mentors",
-    icon: <GraduationCap className="w-4 h-4" />,
-  },
 ];
 
 export function CategorySelector({
