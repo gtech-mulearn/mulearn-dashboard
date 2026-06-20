@@ -98,17 +98,11 @@ export function RoleVerificationTable() {
           const rowData = row as RoleVerificationItem;
           if (column === "verified") {
             return rowData.verified ? (
-              <Badge
-                variant="default"
-                className="bg-success/10 text-success hover:bg-success/10 cursor-default"
-              >
+              <Badge variant="success" className="cursor-default">
                 Verified
               </Badge>
             ) : (
-              <Badge
-                variant="outline"
-                className="text-yellow-600 border-yellow-200 bg-yellow-50 cursor-default"
-              >
+              <Badge variant="warning" className="cursor-default">
                 Pending
               </Badge>
             );

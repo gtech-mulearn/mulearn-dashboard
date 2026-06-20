@@ -9,6 +9,7 @@
 import {
   ArrowLeft,
   Award,
+  Ban,
   Briefcase,
   Calendar,
   Clock,
@@ -17,15 +18,18 @@ import {
   MapPin,
   Package,
   Plus,
+  RefreshCw,
   Timer,
   Trash2,
   Wallet,
 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { JOB_STATUS_CONFIG } from "../constants";
+import { useUpdateJob } from "../hooks";
 import type { RuleFormValues } from "../schemas";
 import type { Job } from "../types";
 import { ApplicantsSection } from "./applicants-section";
@@ -59,6 +63,28 @@ export function JobDetailView({
 }: JobDetailViewProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showRuleDialog, setShowRuleDialog] = useState(false);
+
+  const { mutate: updateJob, isPending: isUpdatingStatus } = useUpdateJob();
+
+  const isClosed = job.status === "Closed";
+  // Only offer the close/reopen toggle for live listings (Active) or already
+  // closed jobs — not for Draft/Expired where it has no meaning.
+  const canToggleStatus = job.status === "Active" || isClosed;
+
+  const handleToggleStatus = () => {
+    const nextStatus = isClosed ? "Active" : "Closed";
+    updateJob(
+      { jobId: job.id, payload: { status: nextStatus } },
+      {
+        onSuccess: () =>
+          toast.success(isClosed ? "Job reopened" : "Job closed"),
+        onError: () =>
+          toast.error(
+            isClosed ? "Failed to reopen job" : "Failed to close job",
+          ),
+      },
+    );
+  };
 
   const statusConfig =
     JOB_STATUS_CONFIG[job.status as keyof typeof JOB_STATUS_CONFIG] ??
@@ -125,7 +151,23 @@ export function JobDetailView({
             </div>
           </div>
 
-          <div className="flex gap-2 shrink-0">
+          <div className="flex flex-wrap gap-2 shrink-0">
+            {canToggleStatus && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleToggleStatus}
+                disabled={isUpdatingStatus}
+                className="gap-1.5"
+              >
+                {isClosed ? (
+                  <RefreshCw className="h-3.5 w-3.5" />
+                ) : (
+                  <Ban className="h-3.5 w-3.5" />
+                )}
+                {isClosed ? "Reopen Job" : "Close Job"}
+              </Button>
+            )}
             <Button
               variant="outline"
               size="sm"

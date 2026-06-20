@@ -75,139 +75,137 @@ export function EventReportPageClient() {
   const pages = getPages(details);
 
   return (
-    <div className="min-h-screen bg-muted p-6 md:p-8">
-      <div className="mx-auto max-w-7xl">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">
-              Event Report Generator
-            </h1>
-            <p className="text-muted-foreground">
-              Create and download event reports as PDF
-            </p>
-          </div>
-          <Button
-            variant={"default"}
-            onClick={handleDownloadPDF}
-            className="flex items-center gap-2 print:hidden"
-          >
-            <Download size={20} />
-            Download PDF
-          </Button>
+    <div className="mx-auto w-full max-w-7xl">
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">
+            Event Report Generator
+          </h1>
+          <p className="text-muted-foreground">
+            Create and download event reports as PDF
+          </p>
         </div>
+        <Button
+          variant={"default"}
+          onClick={handleDownloadPDF}
+          className="flex items-center gap-2 print:hidden"
+        >
+          <Download size={20} />
+          Download PDF
+        </Button>
+      </div>
 
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-          {/* Left Column - Form */}
-          <div className="space-y-6 lg:col-span-4 print:hidden">
-            <div className="rounded-xl border border-border bg-card p-6 shadow-sm sticky top-8">
-              <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-card-foreground">
-                <FileText size={20} className="text-primary" />
-                Report Details
-              </h2>
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+        {/* Left Column - Form */}
+        <div className="space-y-6 lg:col-span-4 print:hidden">
+          <div className="rounded-xl border border-border bg-card p-6 shadow-sm sticky top-8">
+            <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-card-foreground">
+              <FileText size={20} className="text-primary" />
+              Report Details
+            </h2>
 
-              <div className="space-y-4">
-                <div>
-                  <label
-                    htmlFor="title"
-                    className="mb-1 block text-sm font-medium text-foreground"
-                  >
-                    Report Title
-                  </label>
-                  <input
-                    type="text"
-                    id="title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
-                    placeholder="Enter report title..."
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="details"
-                    className="mb-1 block text-sm font-medium text-foreground"
-                  >
-                    Report Content
-                  </label>
-                  <textarea
-                    id="details"
-                    value={details}
-                    onChange={(e) => setDetails(e.target.value)}
-                    rows={16}
-                    className="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
-                    placeholder="Enter report details..."
-                  />
-                </div>
-                <Button variant={"default"} onClick={handleDownloadPDF}>
-                  Generate PDF
-                </Button>
+            <div className="space-y-4">
+              <div>
+                <label
+                  htmlFor="title"
+                  className="mb-1 block text-sm font-medium text-foreground"
+                >
+                  Report Title
+                </label>
+                <input
+                  type="text"
+                  id="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+                  placeholder="Enter report title..."
+                />
               </div>
+
+              <div>
+                <label
+                  htmlFor="details"
+                  className="mb-1 block text-sm font-medium text-foreground"
+                >
+                  Report Content
+                </label>
+                <textarea
+                  id="details"
+                  value={details}
+                  onChange={(e) => setDetails(e.target.value)}
+                  rows={16}
+                  className="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+                  placeholder="Enter report details..."
+                />
+              </div>
+              <Button variant={"default"} onClick={handleDownloadPDF}>
+                Generate PDF
+              </Button>
             </div>
           </div>
+        </div>
 
-          {/* Right Column - A4 Previews */}
-          <div className="flex flex-col items-center overflow-auto lg:col-span-8 print:col-span-12 print:overflow-visible gap-8 print:gap-0 pb-8">
-            {pages.map((pageContent, index) => (
-              <div
-                key={pageContent.id}
-                className="relative bg-background shadow-xl print:shadow-none shrink-0 print:break-inside-avoid print:break-after-page"
-                style={{
-                  width: "210mm",
-                  minHeight: "297mm",
-                  padding: "20mm",
-                }}
-              >
-                {/* Header on all pages */}
-                <div className="mb-4 flex items-start justify-between border-b border-border">
-                  <h2 className="text-3xl font-bold text-foreground uppercase tracking-wider mt-2">
-                    Event Report
-                  </h2>
-                  <div className="relative h-16 w-32 flex-shrink-0">
-                    <Image
-                      src="/logo.webp"
-                      alt="Logo"
-                      width={100}
-                      height={100}
-                      className="object-contain object-right"
-                      style={{ width: "100%", height: "100%" }}
-                    />
-                  </div>
-                </div>
-
-                {/* Title & Date only on first page */}
-                {index === 0 && (
-                  <div className="mb-8">
-                    <h2 className="text-2xl font-bold text-foreground break-words">
-                      {title || "Untitled Report"}
-                    </h2>
-                    <p className="mt-2 text-sm text-muted-foreground font-medium">
-                      Date: {new Date().toLocaleDateString()}
-                    </p>
-                  </div>
-                )}
-
-                {/* Content */}
-                <div className="prose max-w-none text-foreground">
-                  {pageContent.paragraphs.map((p) => (
-                    <p
-                      key={p.id}
-                      className="whitespace-pre-wrap leading-relaxed min-h-[1.5rem]"
-                    >
-                      {p.text}
-                    </p>
-                  ))}
-                </div>
-
-                {/* Footer explicitly rendered on every page */}
-                <div className="absolute bottom-[20mm] left-[20mm] right-[20mm] flex items-center justify-end border-t border-border pt-4 text-sm text-muted-foreground">
-                  <span>
-                    Page {index + 1} of {pages.length}
-                  </span>
+        {/* Right Column - A4 Previews */}
+        <div className="flex flex-col items-center overflow-auto lg:col-span-8 print:col-span-12 print:overflow-visible gap-8 print:gap-0 pb-8">
+          {pages.map((pageContent, index) => (
+            <div
+              key={pageContent.id}
+              className="relative bg-background shadow-xl print:shadow-none shrink-0 print:break-inside-avoid print:break-after-page p-6 sm:p-[20mm] print:p-[20mm]"
+              style={{
+                width: "210mm",
+                maxWidth: "100%",
+                minHeight: "297mm",
+              }}
+            >
+              {/* Header on all pages */}
+              <div className="mb-4 flex items-start justify-between border-b border-border">
+                <h2 className="text-3xl font-bold text-foreground uppercase tracking-wider mt-2">
+                  Event Report
+                </h2>
+                <div className="relative h-16 w-32 flex-shrink-0">
+                  <Image
+                    src="/logo.webp"
+                    alt="Logo"
+                    width={100}
+                    height={100}
+                    className="object-contain object-right"
+                    style={{ width: "100%", height: "100%" }}
+                  />
                 </div>
               </div>
-            ))}
-          </div>
+
+              {/* Title & Date only on first page */}
+              {index === 0 && (
+                <div className="mb-8">
+                  <h2 className="text-2xl font-bold text-foreground break-words">
+                    {title || "Untitled Report"}
+                  </h2>
+                  <p className="mt-2 text-sm text-muted-foreground font-medium">
+                    Date: {new Date().toLocaleDateString()}
+                  </p>
+                </div>
+              )}
+
+              {/* Content */}
+              <div className="prose max-w-none text-foreground">
+                {pageContent.paragraphs.map((p) => (
+                  <p
+                    key={p.id}
+                    className="whitespace-pre-wrap leading-relaxed min-h-[1.5rem]"
+                  >
+                    {p.text}
+                  </p>
+                ))}
+              </div>
+
+              {/* Footer explicitly rendered on every page */}
+              <div className="absolute bottom-[20mm] left-[20mm] right-[20mm] flex items-center justify-end border-t border-border pt-4 text-sm text-muted-foreground">
+                <span>
+                  Page {index + 1} of {pages.length}
+                </span>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

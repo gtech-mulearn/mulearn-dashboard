@@ -155,7 +155,7 @@ export function AvailabilitySlotPicker({ value, onChange, disabled }: Props) {
                       onClick={() => onChange(toggleDay(value, num, !enabled))}
                       className={cn(
                         "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200",
-                        enabled ? "bg-primary" : "bg-muted-foreground/20",
+                        enabled ? "bg-brand-blue" : "bg-muted-foreground/20",
                         disabled && "cursor-not-allowed opacity-40",
                       )}
                     >

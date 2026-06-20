@@ -27,7 +27,7 @@ export function LearnerCard({ learner }: LearnerCardProps) {
           <p className="truncate font-semibold text-foreground group-hover:text-primary transition-colors">
             {learner.full_name}
           </p>
-          <p className="text-xs text-muted-foreground">@{learner.muid}</p>
+          <p className="text-xs text-muted-foreground">{learner.muid}</p>
           {learner.email && (
             <p
               className="text-[10px] text-muted-foreground truncate"

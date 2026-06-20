@@ -24,6 +24,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import {
   useCircleDetail,
@@ -91,7 +92,7 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
     circle.description && circle.description !== circle.title;
 
   return (
-    <div className="w-full bg-background px-6 py-6 pb-20 min-h-screen">
+    <div className="w-full pb-12">
       {/* Back */}
       <Link
         href="/dashboard/learning-circle"
@@ -106,13 +107,13 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
         {/* ════ LEFT COLUMN ════ */}
         <div className="flex-1 space-y-8 min-w-0">
           {/* ── Main Info Card ── */}
-          <div className="rounded-[24px] bg-card p-8 shadow-[0_2px_20px_rgba(0,0,0,0.02)] border border-border">
+          <div className="rounded-[24px] bg-card p-4 sm:p-6 lg:p-8 shadow-[0_2px_20px_rgba(0,0,0,0.02)] border border-border">
             {/* Top Bar: Avrio - Branding */}
-            <div className="flex items-center justify-between pb-4 border-b border-border">
-              <span className="text-[15px] font-bold text-foreground">
+            <div className="flex items-center justify-between gap-3 pb-4 border-b border-border">
+              <span className="min-w-0 truncate text-[15px] font-bold text-foreground">
                 Learning Circle — {circle.ig ?? "General"}
               </span>
-              <span className="inline-flex rounded-lg border border-border px-3 py-1 text-[12px] font-semibold text-foreground">
+              <span className="shrink-0 inline-flex rounded-lg border border-border px-3 py-1 text-[12px] font-semibold text-foreground">
                 Active
               </span>
             </div>
@@ -120,33 +121,41 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
             {/* ActionBar: Mark Complete & Icons */}
             <div className="flex items-center justify-between mt-5">
               <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  className="flex items-center gap-2 rounded-xl border border-border px-3 py-1.5 text-[13px] font-semibold text-foreground transition hover:bg-muted"
-                >
-                  <Check className="h-4 w-4 text-muted-foreground" />
-                  {permissions.role
-                    ? `Joined as ${permissions.role === "lead" ? "Lead" : "Member"}`
-                    : "Join Circle"}
-                </button>
+                {permissions.role ? (
+                  <span className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-[13px] font-semibold text-foreground">
+                    <Check className="h-4 w-4 text-success" />
+                    {`Joined as ${permissions.role === "lead" ? "Lead" : "Member"}`}
+                  </span>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="default"
+                    onClick={handleJoin}
+                    disabled={joinCircle.isPending}
+                  >
+                    {joinCircle.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <UserPlus className="h-4 w-4" />
+                    )}
+                    Join Circle
+                  </Button>
+                )}
               </div>
 
               {permissions.canEditCircle && (
-                <div className="flex items-center gap-1 text-muted-foreground">
-                  <button
+                <div className="flex items-center gap-1">
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="icon"
                     onClick={() => setShowEditModal(true)}
-                    className="p-2 transition hover:text-foreground"
                   >
                     <Edit className="h-4 w-4" />
-                  </button>
-                  {/* Fake icons for pixel-perfect ref */}
-                  <button
-                    type="button"
-                    className="p-2 transition hover:text-foreground"
-                  >
+                  </Button>
+                  <Button type="button" variant="ghost" size="icon">
                     <Users className="h-4 w-4" />
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>
@@ -169,11 +178,11 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
             {/* Properties Grid */}
             <div className="mt-8 space-y-5">
               {/* Lead / Assigned */}
-              <div className="flex items-center">
-                <span className="w-32 text-[14px] text-muted-foreground">
+              <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-0">
+                <span className="w-32 shrink-0 text-[14px] text-muted-foreground">
                   Circle Lead
                 </span>
-                <div className="flex -space-x-1.5">
+                <div className="flex min-w-0 -space-x-1.5">
                   <div className="relative h-7 w-7 rounded-full border-2 border-card bg-muted overflow-hidden">
                     {circle.created_by.profile_pic ? (
                       <Image
@@ -190,25 +199,25 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
                       </div>
                     )}
                   </div>
-                  <span className="ml-3 text-[14px] font-semibold text-foreground self-center">
+                  <span className="ml-3 min-w-0 truncate text-[14px] font-semibold text-foreground self-center">
                     {circle.created_by.full_name}
                   </span>
                 </div>
               </div>
 
               {/* Tags / Metrics */}
-              <div className="flex items-center">
-                <span className="w-32 text-[14px] text-muted-foreground">
+              <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-0">
+                <span className="w-32 shrink-0 text-[14px] text-muted-foreground">
                   Metrics
                 </span>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <span className="inline-flex rounded-full bg-brand-purple/10 px-3 py-0.5 text-[12px] font-bold text-brand-purple">
                     #{circle.rank ?? 0} Rank
                   </span>
                   <span className="inline-flex rounded-full bg-warning/10 px-3 py-0.5 text-[12px] font-bold text-warning">
                     {circle.total_karma ?? 0} Karma
                   </span>
-                  <span className="inline-flex rounded-full bg-primary/10 px-3 py-0.5 text-[12px] font-bold text-primary">
+                  <span className="inline-flex max-w-full truncate rounded-full bg-primary/10 px-3 py-0.5 text-[12px] font-bold text-primary">
                     {circle.ig}
                   </span>
                 </div>
@@ -226,14 +235,16 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
                 </button>
               </div>
               {permissions.canCreateMeeting && (
-                <button
+                <Button
                   type="button"
+                  variant="default"
+                  size="sm"
                   onClick={() => setShowCreateMeetingModal(true)}
-                  className="mb-2 inline-flex items-center gap-1.5 rounded-lg bg-foreground px-3 py-1.5 text-[12px] font-semibold text-background transition-all hover:bg-foreground/90 active:scale-95 shadow-sm"
+                  className="mb-2"
                 >
                   <Plus className="h-3.5 w-3.5" />
                   Schedule
-                </button>
+                </Button>
               )}
             </div>
 
@@ -263,14 +274,16 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
                         </p>
                       </div>
                     </div>
-                    <button
+                    <Button
                       type="button"
+                      variant="default"
+                      size="sm"
                       onClick={() => setShowCreateMeetingModal(true)}
-                      className="shrink-0 inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-[12px] font-semibold text-primary-foreground transition-all hover:bg-primary/90 active:scale-95"
+                      className="shrink-0"
                     >
                       <Plus className="h-3.5 w-3.5" />
                       Schedule
-                    </button>
+                    </Button>
                   </div>
                 )}
 
@@ -295,33 +308,17 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
                     Schedule a meeting to get started
                   </p>
                   {permissions.canCreateMeeting && (
-                    <button
+                    <Button
                       type="button"
+                      variant="outline"
+                      size="sm"
                       onClick={() => setShowCreateMeetingModal(true)}
-                      className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-card border border-border shadow-sm px-4 py-2 text-xs font-semibold text-foreground transition-[box-shadow,background-color] hover:bg-muted hover:shadow"
+                      className="mt-4"
                     >
                       <Plus className="h-3.5 w-3.5" />
                       Schedule Meeting
-                    </button>
+                    </Button>
                   )}
-                </div>
-              )}
-
-              {permissions.role === null && (
-                <div className="mt-8 pt-6 border-t border-border">
-                  <button
-                    type="button"
-                    className="inline-flex items-center gap-2 rounded-lg bg-foreground px-5 py-2.5 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 disabled:opacity-50"
-                    onClick={handleJoin}
-                    disabled={joinCircle.isPending}
-                  >
-                    {joinCircle.isPending ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <UserPlus className="h-4 w-4" />
-                    )}
-                    Join Circle
-                  </button>
                 </div>
               )}
             </div>
@@ -331,7 +328,7 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
         {/* ════ RIGHT COLUMN (Sidebar) ════ */}
         <div className="w-full lg:w-[320px] shrink-0 space-y-6">
           {/* ── Members Card ── */}
-          <div className="w-full rounded-2xl bg-card p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-border flex flex-col">
+          <div className="w-full rounded-2xl bg-card p-4 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-border flex flex-col">
             <h3 className="text-[16px] font-bold text-foreground mb-5">
               Members
             </h3>
@@ -371,7 +368,7 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
             <button
               type="button"
               onClick={() => setShowTransferLeadModal(true)}
-              className="group flex w-full items-center justify-between rounded-2xl bg-card p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-border transition-all hover:bg-warning/5 hover:border-warning/20 active:scale-[0.98]"
+              className="group flex w-full items-center justify-between rounded-2xl bg-card p-4 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-border transition-all hover:bg-warning/5 hover:border-warning/20 active:scale-[0.98]"
             >
               <div className="flex items-center gap-3">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-warning/10 border border-warning/20">
@@ -386,7 +383,7 @@ export function CircleDetail({ circleId }: CircleDetailProps) {
           )}
 
           {permissions.canDeleteCircle && (
-            <div className="w-full rounded-2xl bg-card p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-destructive/20 flex flex-col items-center justify-between sm:flex-row gap-4">
+            <div className="w-full rounded-2xl bg-card p-4 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-destructive/20 flex flex-col items-center justify-between sm:flex-row gap-4">
               <div className="flex min-w-0 flex-1 flex-col text-center sm:text-left">
                 <span className="text-[14px] font-semibold text-foreground">
                   Delete Circle

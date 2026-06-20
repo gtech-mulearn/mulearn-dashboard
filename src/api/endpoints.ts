@@ -442,6 +442,7 @@ export const endpoints = {
     manage: "/api/v1/dashboard/events/manage/",
     myInvites: "/api/v1/dashboard/events/my-invites/",
     admin: "/api/v1/dashboard/events/admin/",
+    mentor: "/api/v1/dashboard/events/mentor/",
     ig: "/api/v1/dashboard/events/ig/",
     campus: "/api/v1/dashboard/events/campus/",
     campusIg: "/api/v1/dashboard/events/campus-ig/",

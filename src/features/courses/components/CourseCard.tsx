@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
+import { chipColor } from "@/lib/chip-colors";
 import type { UnifiedCourse } from "../schemas/courses.schemas";
 
 const DISCORD_SUBMIT_LINK =
@@ -135,13 +136,14 @@ export function CourseCard({
         <CardDescription className="text-sm leading-relaxed text-muted-foreground">
           {truncateDescription(description)}
           {isLongDesc && (
-            <button
+            <Button
               type="button"
-              className="ml-1 text-primary hover:underline cursor-pointer text-sm font-medium"
+              variant="ghost"
+              className="ml-1 text-sm font-medium"
               onClick={onReadMore}
             >
               Read More
-            </button>
+            </Button>
           )}
         </CardDescription>
 
@@ -150,7 +152,7 @@ export function CourseCard({
             {course.hashtags.map((tag) => (
               <span
                 key={tag}
-                className="text-[10px] px-2.5 py-1 bg-muted text-muted-foreground rounded-full border border-border font-medium"
+                className={`text-[10px] px-2.5 py-1 rounded-full font-medium ${chipColor(tag)}`}
               >
                 {tag}
               </span>

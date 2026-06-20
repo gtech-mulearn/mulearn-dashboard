@@ -31,28 +31,32 @@ function getDisplayName(m: MentorApplicationListItem): string {
   return m.user_full_name ?? m.full_name ?? "—";
 }
 
-function getStatusBadge(m: MentorApplicationListItem) {
-  // Doc: status is "PENDING" | "APPROVED" | "REJECTED"
-  // Backward compat: fall back to is_verified boolean if status not present
-  const status =
+// Doc: status is "PENDING" | "APPROVED" | "REJECTED"
+// Backward compat: fall back to is_verified boolean if status not present
+function resolveStatus(
+  m: MentorApplicationListItem,
+): "PENDING" | "APPROVED" | "REJECTED" {
+  return (
     m.status ??
     (m.is_verified === true
       ? "APPROVED"
       : m.verification_note
         ? "REJECTED"
-        : "PENDING");
-
-  if (status === "APPROVED") return <Badge variant="default">Approved</Badge>;
-  if (status === "REJECTED")
-    return <Badge variant="destructive">Rejected</Badge>;
-  return <Badge variant="secondary">Pending</Badge>;
+        : "PENDING")
+  );
 }
 
-function isApprovedMentor(m: MentorApplicationListItem): boolean {
-  return (
-    m.status === "APPROVED" ||
-    (m.status === undefined && m.is_verified === true)
-  );
+function getStatusBadge(m: MentorApplicationListItem) {
+  const status = resolveStatus(m);
+  if (status === "APPROVED") return <Badge variant="success">Approved</Badge>;
+  if (status === "REJECTED")
+    return <Badge variant="destructive">Rejected</Badge>;
+  return <Badge variant="warning">Pending</Badge>;
+}
+
+// Action buttons only make sense for applications still awaiting a decision.
+function isActionable(m: MentorApplicationListItem): boolean {
+  return resolveStatus(m) === "PENDING";
 }
 
 // ─── Table Component ──────────────────────────────────────────────────────────
@@ -125,38 +129,38 @@ function MentorTable({
             </TableCell>
             {showActions && (
               <TableCell>
-                <div className="flex items-center gap-1">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950"
-                        onClick={() => onVerify(m, "approve")}
-                        disabled={isApprovedMentor(m)}
-                      >
-                        <CheckCircle className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {isApprovedMentor(m) ? "Already approved" : "Approve"}
-                    </TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                        onClick={() => onVerify(m, "reject")}
-                        disabled={isApprovedMentor(m)}
-                      >
-                        <XCircle className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Reject</TooltipContent>
-                  </Tooltip>
-                </div>
+                {isActionable(m) ? (
+                  <div className="flex items-center gap-1">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950"
+                          onClick={() => onVerify(m, "approve")}
+                        >
+                          <CheckCircle className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Approve</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                          onClick={() => onVerify(m, "reject")}
+                        >
+                          <XCircle className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Reject</TooltipContent>
+                    </Tooltip>
+                  </div>
+                ) : (
+                  <span className="text-sm text-muted-foreground">—</span>
+                )}
               </TableCell>
             )}
           </TableRow>

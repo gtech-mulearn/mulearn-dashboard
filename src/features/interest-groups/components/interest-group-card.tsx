@@ -31,14 +31,14 @@ export function InterestGroupCard({ group, gradient }: InterestGroupCardProps) {
 
       <div className="absolute inset-0 bg-foreground/10 mix-blend-overlay transition-opacity duration-500 group-hover:opacity-0" />
 
-      <div className="absolute left-4 right-4 top-4 sm:left-5 sm:top-5 flex items-start justify-between z-10 transition-transform duration-500 group-hover:-translate-y-1">
-        <div className="rounded-full bg-muted/80 px-3 py-1 sm:px-4 sm:py-1.5 shadow-md">
-          <p className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-widest">
+      <div className="absolute left-4 right-4 top-4 sm:left-5 sm:right-5 sm:top-5 flex items-start justify-between gap-2 z-10 transition-transform duration-500 group-hover:-translate-y-1">
+        <div className="min-w-0 rounded-full bg-muted/80 px-3 py-1 sm:px-4 sm:py-1.5 shadow-md">
+          <p className="truncate text-[9px] sm:text-[10px] font-extrabold uppercase tracking-widest">
             {group.category}
           </p>
         </div>
         {group.code && (
-          <div className="rounded-full bg-muted/80 px-2 py-1 sm:px-3 sm:py-1.5 shadow-md">
+          <div className="shrink-0 rounded-full bg-muted/80 px-2 py-1 sm:px-3 sm:py-1.5 shadow-md">
             <p className="text-[9px] sm:text-xs font-bold tracking-widest">
               {group.code}
             </p>

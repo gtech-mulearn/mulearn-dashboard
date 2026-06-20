@@ -816,10 +816,33 @@ export type RequirementsStepValues = z.infer<typeof RequirementsStepSchema>;
 
 // ─── Rule Form Schema ───────────────────────────────────────
 
-export const RuleFormSchema = z.object({
-  rule_type: z.string().min(1, "Rule type is required"),
-  rule_value: z.string().min(1, "Please select a value"),
-});
+// All rule values (Karma + Level) are compared with int() on the backend, so
+// they MUST be non-negative integers. Kept inline because schemas import only
+// from the types layer.
+const NUMERIC_RULE_TYPE_SET = new Set([
+  "min_karma",
+  "max_karma",
+  "min_level",
+  "max_level",
+]);
+
+export const RuleFormSchema = z
+  .object({
+    rule_type: z.string().min(1, "Rule type is required"),
+    rule_value: z.string().min(1, "Please select a value"),
+  })
+  .superRefine((val, ctx) => {
+    if (
+      NUMERIC_RULE_TYPE_SET.has(val.rule_type) &&
+      !/^\d+$/.test(val.rule_value.trim())
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["rule_value"],
+        message: "Enter a valid whole number.",
+      });
+    }
+  });
 
 export type RuleFormValues = z.infer<typeof RuleFormSchema>;
 

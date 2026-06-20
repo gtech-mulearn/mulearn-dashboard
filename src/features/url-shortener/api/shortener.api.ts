@@ -1,7 +1,8 @@
-import { apiClient } from "@/api/client";
+import { ApiError, apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
   type AnalyticsData,
+  AnalyticsDataSchema,
   AnalyticsResponseSchema,
   GenericMutationResponseSchema,
   type ShortUrlListData,
@@ -76,10 +77,25 @@ export async function deleteShortUrl(id: string): Promise<void> {
 export async function fetchShortUrlAnalytics(
   id: string,
 ): Promise<AnalyticsData> {
-  const res = await apiClient.get(
-    endpoints.urlShortener.analytics(id),
-    AnalyticsResponseSchema,
-  );
+  try {
+    const res = await apiClient.get(
+      endpoints.urlShortener.analytics(id),
+      AnalyticsResponseSchema,
+    );
 
-  return res.response;
+    return res.response;
+  } catch (error) {
+    // A URL with no clicks yet isn't an error — the backend returns 400/404
+    // with "No records found". Treat that as an empty (zero-value) dataset so
+    // the analytics page renders zeros instead of a failure screen.
+    if (error instanceof ApiError) {
+      const noRecords =
+        error.status === 404 ||
+        (error.status === 400 && /no records found/i.test(error.message ?? ""));
+      if (noRecords) {
+        return AnalyticsDataSchema.parse({});
+      }
+    }
+    throw error;
+  }
 }

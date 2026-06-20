@@ -84,51 +84,53 @@ export function TaskFormDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="flex flex-col gap-0 p-0 max-w-4xl">
+        <DialogHeader className="shrink-0 px-6 pt-6 pb-4">
           <DialogTitle>Edit Task</DialogTitle>
           <DialogDescription>
             Modify task configuration details below.
           </DialogDescription>
         </DialogHeader>
 
-        {isLoading ? (
-          <div className="flex h-48 items-center justify-center">
-            <Spinner className="size-8 text-primary" />
-          </div>
-        ) : task ? (
-          <TaskForm
-            initialValues={{
-              hashtag: task.hashtag,
-              title: task.title,
-              karma: task.karma,
-              usage_count: task.usage_count,
-              active: task.active,
-              variable_karma: task.variable_karma,
-              description: task.description || "",
-              channel_id: task.channel || "",
-              type_id: task.type || "",
-              level_id: task.level || null,
-              ig_id: task.ig || null,
-              organization_id: task.org || null,
-              discord_link: task.discord_link || "",
-              event: task.event || "",
-              bonus_time: formatDatetimeLocal(task.bonus_time),
-              bonus_karma: task.bonus_karma || 0,
-              skill_ids: task.skill_ids || [],
-            }}
-            onSubmit={handleSubmit}
-            isPending={updateMutation.isPending}
-            submitLabel="Save Changes"
-            onCancel={onClose}
-          />
-        ) : (
-          <div className="text-center py-6">
-            <p className="text-sm text-muted-foreground">
-              Failed to load task details.
-            </p>
-          </div>
-        )}
+        <div className="overflow-y-auto px-6 pb-6">
+          {isLoading ? (
+            <div className="flex h-48 items-center justify-center">
+              <Spinner className="size-8 text-primary" />
+            </div>
+          ) : task ? (
+            <TaskForm
+              initialValues={{
+                hashtag: task.hashtag,
+                title: task.title,
+                karma: task.karma,
+                usage_count: task.usage_count,
+                active: task.active,
+                variable_karma: task.variable_karma,
+                description: task.description || "",
+                channel_id: task.channel || "",
+                type_id: task.type || "",
+                level_id: task.level || null,
+                ig_id: task.ig || null,
+                organization_id: task.org || null,
+                discord_link: task.discord_link || "",
+                event: task.event || "",
+                bonus_time: formatDatetimeLocal(task.bonus_time),
+                bonus_karma: task.bonus_karma || 0,
+                skill_ids: task.skill_ids || [],
+              }}
+              onSubmit={handleSubmit}
+              isPending={updateMutation.isPending}
+              submitLabel="Save Changes"
+              onCancel={onClose}
+            />
+          ) : (
+            <div className="text-center py-6">
+              <p className="text-sm text-muted-foreground">
+                Failed to load task details.
+              </p>
+            </div>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );

@@ -97,6 +97,8 @@ export function JobDetailModal({
   const isAlreadyApplied = existingApp && !isRejected;
   const isPending = isApplying || isResubmitting;
   const isSuccess = applySuccess || resubmitSuccess;
+  // A job that is not Active (e.g. Closed) no longer accepts applications.
+  const isClosed = !!job && job.status != null && job.status !== "Active";
 
   useEffect(() => {
     if (open && job?.id) {
@@ -371,10 +373,15 @@ export function JobDetailModal({
 
         {/* Footer */}
         <div className="px-6 py-4 border-t border-border flex items-center justify-end gap-2 shrink-0">
+          {isClosed && !isSuccess && (
+            <p className="mr-auto text-sm text-muted-foreground">
+              This job is no longer accepting applications.
+            </p>
+          )}
           <Button variant="ghost" onClick={() => handleClose(false)}>
             {isSuccess ? "Close" : "Cancel"}
           </Button>
-          {!isSuccess && (
+          {!isSuccess && !isClosed && (
             <Button
               onClick={handleApply}
               disabled={isPending || !resumeLink.trim() || isAlreadyApplied}

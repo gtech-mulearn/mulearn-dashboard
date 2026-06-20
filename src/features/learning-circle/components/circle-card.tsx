@@ -266,9 +266,9 @@ export function CircleCard({ circle }: CircleCardProps) {
               onClick={handleJoin}
               disabled={joinCircle.isPending}
               className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full
-                bg-card/90 dark:bg-white/10 dark:hover:bg-white/20 dark:text-foreground
+                bg-card/90 dark:bg-muted/40 dark:hover:bg-muted/60 dark:text-foreground
                 backdrop-blur-sm text-muted-foreground shadow-sm
-                border border-black/[0.04] dark:border-white/[0.08]
+                border border-border/60
                 transition-all duration-200
                 hover:shadow-md hover:scale-110
                 active:scale-95 disabled:opacity-40"
@@ -297,19 +297,21 @@ export function CircleCard({ circle }: CircleCardProps) {
           />
 
           {/* Footer: Organization + member count + Stacked avatars */}
-          <div className="mt-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center rounded-lg bg-card/60 px-2 py-0.5 text-[11px] font-semibold text-muted-foreground shadow-sm backdrop-blur-sm">
+          <div className="mt-4 flex items-center justify-between gap-2">
+            <div className="flex min-w-0 items-center gap-2">
+              <span className="inline-flex min-w-0 items-center truncate rounded-lg bg-card/60 px-2 py-0.5 text-[11px] font-semibold text-muted-foreground shadow-sm backdrop-blur-sm">
                 {circle.org || "Open"}
               </span>
               <span
-                className="text-[12px] font-bold"
+                className="shrink-0 text-[12px] font-bold"
                 style={{ color: theme.accent }}
               >
                 {memberCount} {memberCount === 1 ? "member" : "members"}
               </span>
             </div>
-            <StackedAvatars count={memberCount} />
+            <div className="shrink-0">
+              <StackedAvatars count={memberCount} />
+            </div>
           </div>
         </div>
       </div>

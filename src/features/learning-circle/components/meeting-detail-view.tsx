@@ -29,7 +29,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -188,11 +189,32 @@ export function MeetingDetailView({
       meeting.is_member,
   );
 
+  // Handle an incoming `?join_meet=CODE` intent (from the shared QR/link) exactly
+  // once per code. If the user can join, open the prefilled modal; otherwise tell
+  // them why instead of silently dropping the intent.
+  const handledJoinCodeRef = useRef<string | null>(null);
   useEffect(() => {
-    if (joinMeetCode && canJoin) {
+    if (!joinMeetCode || !meeting) return;
+    if (handledJoinCodeRef.current === joinMeetCode) return;
+    handledJoinCodeRef.current = joinMeetCode;
+
+    if (canJoin) {
       setShowJoinModal(true);
+      return;
     }
-  }, [joinMeetCode, canJoin]);
+
+    if (hasJoined) {
+      toast.info("You've already joined this meeting.");
+    } else if (meeting.is_ended) {
+      toast.error("This meeting has ended — you can no longer join.");
+    } else if (!meeting.is_member) {
+      // Non-members get a persistent banner with a CTA instead of a toast.
+    } else if (!meeting.is_started) {
+      toast.info(
+        "This meeting hasn't started yet. You can join once it begins.",
+      );
+    }
+  }, [joinMeetCode, meeting, canJoin, hasJoined]);
 
   if (isLoading || !meeting) {
     return (
@@ -223,20 +245,43 @@ export function MeetingDetailView({
         Back to Circle
       </Link>
 
+      {/* Non-member notice — someone who opened a shared meeting link but is not a
+          circle member cannot RSVP/join. Point them to the circle to join first. */}
+      {!meeting.is_member && (
+        <div className="flex flex-col gap-3 rounded-2xl border border-primary/20 bg-primary/5 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+            <div>
+              <h3 className="text-[15px] font-bold text-foreground">
+                You're not a member of this circle
+              </h3>
+              <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
+                Join the learning circle first to RSVP and join its meetings.
+              </p>
+            </div>
+          </div>
+          <Button asChild variant="default" className="shrink-0">
+            <Link href={`/dashboard/learning-circle/${circleId}`}>
+              Go to Circle
+            </Link>
+          </Button>
+        </div>
+      )}
+
       {/* ─── Hero Header / Info Grid Card ─── */}
-      <div className="w-full rounded-2xl bg-card p-8 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-border flex flex-col">
-        <div className="flex items-center justify-between pb-4 border-b border-border mb-6">
-          <span className="text-[15px] font-bold text-foreground flex items-center gap-2">
-            Meeting — {meeting.ig}
+      <div className="w-full rounded-2xl bg-card p-4 sm:p-6 lg:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-border flex flex-col">
+        <div className="flex items-center justify-between gap-3 pb-4 border-b border-border mb-6">
+          <span className="min-w-0 text-[15px] font-bold text-foreground flex items-center gap-2">
+            <span className="truncate">Meeting — {meeting.ig}</span>
             {status.dot && (
-              <span className="relative flex h-2 w-2 ml-1">
+              <span className="relative flex h-2 w-2 ml-1 shrink-0">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
               </span>
             )}
           </span>
           <span
-            className={`inline-flex rounded-lg px-3 py-1 text-[12px] font-semibold ${
+            className={`shrink-0 inline-flex rounded-lg px-3 py-1 text-[12px] font-semibold ${
               status === STATUS_CONFIG.ended
                 ? "bg-muted text-muted-foreground"
                 : status === STATUS_CONFIG.live
@@ -250,9 +295,9 @@ export function MeetingDetailView({
           </span>
         </div>
 
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex-1 pr-6">
-            <h1 className="text-[28px] font-bold tracking-tight text-foreground">
+        <div className="flex flex-col gap-4 mb-8 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0 flex-1 sm:pr-6">
+            <h1 className="text-[22px] sm:text-[28px] font-bold tracking-tight text-foreground break-words">
               {meeting.title}
             </h1>
             {meeting.description && (
@@ -262,65 +307,66 @@ export function MeetingDetailView({
             )}
           </div>
 
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 sm:shrink-0">
             {permissions.canEditMeeting && !meeting.is_ended && (
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon"
                 onClick={() => setShowEditModal(true)}
-                className="flex items-center justify-center p-2 rounded-xl bg-muted border border-border text-muted-foreground hover:text-foreground transition-colors"
                 title="Edit Meeting"
               >
                 <Edit2 className="h-4 w-4" />
-              </button>
+              </Button>
             )}
             {canRsvp && (
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => rsvpMeeting.mutate(meetingId)}
                 disabled={rsvpMeeting.isPending}
-                className="flex items-center gap-2 rounded-xl border border-border px-4 py-2 text-[13px] font-semibold text-foreground transition hover:bg-muted disabled:opacity-50"
               >
                 RSVP
-              </button>
+              </Button>
             )}
             {canJoin && (
-              <button
+              <Button
                 type="button"
+                variant="default"
                 onClick={() => setShowJoinModal(true)}
-                className="flex items-center gap-2 rounded-xl bg-foreground px-4 py-2 text-[13px] font-semibold text-background transition hover:bg-foreground/90"
               >
                 Join
-              </button>
+              </Button>
             )}
             {isJoinWaitingForStart && (
-              <button
+              <Button
                 type="button"
+                variant="secondary"
                 disabled
-                className="flex items-center gap-2 rounded-xl bg-muted px-4 py-2 text-[13px] font-semibold text-muted-foreground"
                 title="You can join after the meeting starts"
               >
                 Join opens at start
-              </button>
+              </Button>
             )}
             {canCancelAttendance && (
-              <button
+              <Button
                 type="button"
+                variant="destructive"
                 onClick={() => setShowLeaveConfirm(true)}
-                className="flex items-center gap-2 rounded-xl border border-destructive/30 px-4 py-2 text-[13px] font-semibold text-destructive transition hover:bg-destructive/10"
               >
                 <LogOut className="h-3.5 w-3.5" />
                 Cancel RSVP
-              </button>
+              </Button>
             )}
             {canLeave && (
-              <button
+              <Button
                 type="button"
+                variant="destructive"
                 onClick={() => setShowLeaveConfirm(true)}
-                className="flex items-center gap-2 rounded-xl border border-destructive/30 px-4 py-2 text-[13px] font-semibold text-destructive transition hover:bg-destructive/10"
               >
                 <LogOut className="h-3.5 w-3.5" />
                 Leave
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -448,8 +494,8 @@ export function MeetingDetailView({
       </div>
 
       {/* ─── Attendees ─── */}
-      <div className="w-full rounded-2xl bg-card p-8 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-border flex flex-col">
-        <h3 className="text-[16px] font-bold text-foreground mb-6 flex items-center gap-2">
+      <div className="w-full rounded-2xl bg-card p-4 sm:p-6 lg:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-border flex flex-col">
+        <h3 className="text-[16px] font-bold text-foreground mb-6 flex items-center gap-2 flex-wrap">
           Attendees{" "}
           <span className="text-sm font-medium text-muted-foreground">
             ({joinedAttendees.length} joined
@@ -568,7 +614,7 @@ export function MeetingDetailView({
           description={`Scan this QR code or use code ${meeting.meet_code} to join the meeting.`}
           value={
             typeof window !== "undefined"
-              ? `${window.location.origin}/dashboard/learning-circle/${circleId}?join_meet=${meeting.meet_code}`
+              ? `${window.location.origin}/dashboard/learning-circle/${circleId}/meeting/${meetingId}?join_meet=${meeting.meet_code}`
               : ""
           }
         />

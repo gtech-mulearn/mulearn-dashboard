@@ -122,7 +122,7 @@ export function IGSelector({
       {/* Header */}
       <div className="mb-3 flex items-center justify-between">
         <span className="text-sm font-semibold text-foreground">
-          Your Interest Groups
+          {isOwnProfile ? "Your Interest Groups" : "Interest Groups"}
         </span>
         <div className="flex gap-2">
           {canEdit && !editMode && (
@@ -175,7 +175,7 @@ export function IGSelector({
           sortedIgs.map((ig) => (
             <div
               key={ig.id || ig.name}
-              className={`relative flex items-center gap-2 rounded-xl border-2 border-brand-blue px-3 py-2 text-sm font-medium transition-all ${
+              className={`relative flex w-full flex-col items-start gap-2 rounded-xl border-2 border-brand-blue px-3 py-2 text-sm font-medium transition-all sm:w-auto ${
                 editMode ? "scale-95" : ""
               }`}
             >
@@ -191,16 +191,20 @@ export function IGSelector({
                   <X className="h-3 w-3" />
                 </Button>
               )}
-              <span className="text-foreground">{ig.name}</span>
-              <Badge
-                variant="outline"
-                className="gap-1 border border-brand-blue px-3 text-xs sm:gap-1.5 sm:text-sm"
-              >
-                {formatLevel(ig.level)}
-              </Badge>
-              <Badge variant="default" className="rounded-lg px-2 py-0.5">
-                {formatKarma(ig.karma)}
-              </Badge>
+              {/* Row 1: IG name (wraps for long titles) */}
+              <span className="text-foreground wrap-break-word">{ig.name}</span>
+              {/* Row 2: Level + points chips */}
+              <div className="flex flex-row items-center gap-2">
+                <Badge
+                  variant="outline"
+                  className="gap-1 border border-brand-blue px-3 text-xs sm:gap-1.5 sm:text-sm"
+                >
+                  {formatLevel(ig.level)}
+                </Badge>
+                <Badge variant="default" className="rounded-lg px-2 py-0.5">
+                  {formatKarma(ig.karma)}
+                </Badge>
+              </div>
             </div>
           ))
         ) : (
