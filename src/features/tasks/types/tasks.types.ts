@@ -9,6 +9,11 @@ export interface TaskListParams {
 
 export interface PublicTaskListParams extends TaskListParams {
   ig_id?: string;
+  event_id?: string;
+  is_event_task?: boolean;
+  event_tasks_only?: boolean;
+  /** Filter by task creator type. From API: company | ig_mentor | campus_mentor | platform */
+  task_source?: "company" | "ig_mentor" | "campus_mentor" | "platform";
 }
 
 export interface TaskListData {
@@ -18,5 +23,6 @@ export interface TaskListData {
     totalPages: number;
     isNext: boolean;
     isPrev: boolean;
+    nextPage?: number | null;
   };
 }

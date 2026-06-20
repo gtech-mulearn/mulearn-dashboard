@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ThemeToggle } from "@/app/theme-toggle";
+import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -21,7 +22,12 @@ function getInitials(name: string) {
 }
 
 export function AppTopbar() {
+  const [mounted, setMounted] = useState(false);
   const { data, isLoading } = useUserInfo();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Company accounts: show the company profile (name + logo) in the topbar,
   // not the logged-in creator's personal details. Gated so the company
@@ -56,7 +62,7 @@ export function AppTopbar() {
 
       <div className="flex items-center gap-2">
         <ThemeToggle />
-        {isLoading ? (
+        {!mounted || isLoading ? (
           <div className="flex items-center gap-2 pr-1">
             <Skeleton className="w-8 h-8 rounded-full" />
             <div className="hidden sm:flex flex-col gap-1">

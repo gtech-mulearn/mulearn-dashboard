@@ -19,6 +19,7 @@ import {
   Calendar,
   CalendarDays,
   ClipboardCheck,
+  ClipboardList,
   FileText,
   Folder,
   Globe,
@@ -148,6 +149,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: Folder,
     section: "main",
   },
+
   {
     id: "learner-sessions",
     title: "Session",
