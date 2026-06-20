@@ -9,7 +9,6 @@
 
 import { ApiError, apiClient, publicApiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
-import { authStore } from "@/lib/auth";
 import {
   CollegesByDistrictResponseSchema,
   CommunitiesResponseSchema,
@@ -201,16 +200,14 @@ export async function updateProfileImage(
   profilePic: File,
   userId: string,
 ): Promise<void> {
-  const token = authStore.getAccessToken();
   const formData = new FormData();
   formData.append("profile", profilePic);
   formData.append("user_id", userId);
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_DJANGO_API_URL}${endpoints.user.updateProfileImage}`,
+    `/api/backend${endpoints.user.updateProfileImage}`,
     {
       method: "POST",
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
       body: formData,
     },
   );
@@ -263,18 +260,13 @@ export async function uploadCoverPic(cover: File): Promise<string | null> {
     throw new ApiError(400, "Cover image must be under 5 MB");
   }
 
-  const token = authStore.getAccessToken();
   const formData = new FormData();
   formData.append("cover", cover);
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_DJANGO_API_URL}${endpoints.user.coverPic}`,
-    {
-      method: "POST",
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-      body: formData,
-    },
-  );
+  const response = await fetch(`/api/backend${endpoints.user.coverPic}`, {
+    method: "POST",
+    body: formData,
+  });
 
   const rawData = await response.json().catch(() => null);
 

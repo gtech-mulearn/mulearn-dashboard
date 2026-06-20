@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { refreshAccessToken } from "@/features/auth/api/auth.api";
+import { refreshAccessTokenServer } from "@/api/refresh.server";
 
 export async function POST() {
   const cookieStore = await cookies();
@@ -11,8 +11,7 @@ export async function POST() {
   }
 
   try {
-    const result = await refreshAccessToken(refreshToken);
-    const newAccessToken = result.accessToken;
+    const newAccessToken = await refreshAccessTokenServer(refreshToken);
 
     if (!newAccessToken) {
       return NextResponse.json(
@@ -24,7 +23,14 @@ export async function POST() {
     const isProduction = process.env.NODE_ENV === "production";
 
     cookieStore.set("accessToken", newAccessToken, {
-      httpOnly: false,
+      httpOnly: true,
+      expires: new Date(Date.now() + 86_400_000),
+      secure: isProduction,
+      sameSite: "strict",
+      path: "/",
+    });
+
+    cookieStore.set("isAuthenticated", "true", {
       expires: new Date(Date.now() + 86_400_000),
       secure: isProduction,
       sameSite: "strict",
@@ -35,14 +41,14 @@ export async function POST() {
     // token so a still-valid refresh session isn't mistaken for "logged out"
     // by client guards once the original flag expires.
     cookieStore.set("isAuthenticated", "true", {
-      httpOnly: false,
+      httpOnly: true,
       expires: new Date(Date.now() + 86_400_000),
       secure: isProduction,
       sameSite: "strict",
       path: "/",
     });
 
-    return NextResponse.json({ accessToken: newAccessToken });
+    return NextResponse.json({ success: true });
   } catch {
     cookieStore.delete("refreshToken");
     cookieStore.delete("accessToken");
