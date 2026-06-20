@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { QuestLogHistory } from "@/features/intern";
 
 export const metadata: Metadata = {
-  title: "Quest Log",
-  description: "View your intern quest log history.",
+  title: "Activity Log",
+  description: "View your intern activity history.",
 };
 
 export default function QuestLogPage() {

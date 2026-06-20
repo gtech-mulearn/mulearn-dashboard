@@ -136,7 +136,7 @@ export function InternStatsCards() {
         <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-warning/10 rounded-full blur-3xl group-hover:bg-warning/20 transition-all" />
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-            Hot Streak
+            Daily Streak
           </CardTitle>
           <Flame className="h-4 w-4 text-warning fill-warning" />
         </CardHeader>
@@ -185,7 +185,7 @@ export function InternStatsCards() {
         <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-success/10 rounded-full blur-3xl group-hover:bg-success/20 transition-all" />
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-            Weekly Quests
+            Weekly Streak
           </CardTitle>
           <Target className="h-4 w-4 text-success" />
         </CardHeader>

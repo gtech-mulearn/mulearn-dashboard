@@ -109,7 +109,7 @@ export function EliteLeaders() {
           <div>
             <CardTitle className="text-lg font-black uppercase tracking-widest flex items-center gap-2">
               <Trophy className="w-5 h-5 text-warning" />
-              Elite Leaders
+              Top Interns
             </CardTitle>
             <CardDescription className="text-xs font-bold uppercase text-muted-foreground/60 tracking-tight">
               Monthly Hall of Fame
@@ -134,7 +134,7 @@ export function EliteLeaders() {
         <div>
           <CardTitle className="text-lg font-black uppercase tracking-widest flex items-center gap-2">
             <Trophy className="w-5 h-5 text-warning" />
-            Elite Leaders
+            Top Interns
           </CardTitle>
           <CardDescription className="text-xs font-bold uppercase text-muted-foreground/60 tracking-tight">
             Monthly Hall of Fame
@@ -218,7 +218,7 @@ export function EliteLeaders() {
                   colSpan={3}
                   className="text-center py-8 text-xs text-muted-foreground italic uppercase tracking-wider"
                 >
-                  No elite leaders this month
+                  No top interns this month
                 </TableCell>
               </TableRow>
             )}
