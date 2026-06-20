@@ -75,13 +75,13 @@ export function QuickActionRow({
       {actions.map(
         ({ id, label, sub, href, icon: Icon, iconBg, iconColor }) => (
           <Link key={id} href={href}>
-            <Card className="flex cursor-pointer items-center gap-3 rounded-xl border bg-card p-4 shadow-sm transition-shadow hover:shadow-md">
+            <Card className="flex flex-col items-center text-center gap-3 rounded-xl border bg-card p-4 shadow-sm transition-shadow hover:shadow-md">
               <div
                 className={`flex size-9 shrink-0 items-center justify-center rounded-xl ${iconBg}`}
               >
                 <Icon className={`size-4 ${iconColor}`} />
               </div>
-              <div className="min-w-0">
+              <div className="min-w-0 w-full text-center">
                 <p className="truncate text-sm font-semibold text-foreground">
                   {label}
                 </p>

@@ -31,11 +31,15 @@ export function MuLearnerHome() {
 
   return (
     <div className="space-y-5">
-      <QuickActionRow
-        circleCount={circleCount}
-        rank={rank}
-        jobCount={jobCount}
-      />
+      {/* Desktop: Quick Actions at the top */}
+      <div className="hidden lg:block">
+        <QuickActionRow
+          circleCount={circleCount}
+          rank={rank}
+          jobCount={jobCount}
+        />
+      </div>
+
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_296px]">
         <div className="space-y-5">
           <HeroCard
@@ -45,6 +49,16 @@ export function MuLearnerHome() {
             activeCircles={circleCount}
             streakDays={summary?.stats.streak_days ?? 0}
           />
+
+          {/* Mobile: Quick Actions directly below HeroCard */}
+          <div className="block lg:hidden">
+            <QuickActionRow
+              circleCount={circleCount}
+              rank={rank}
+              jobCount={jobCount}
+            />
+          </div>
+
           <div className="grid grid-cols-1 gap-5 md:grid-cols-[3fr_2fr]">
             <LearningCirclesCard
               userInterestGroups={userProfile?.interest_groups}
