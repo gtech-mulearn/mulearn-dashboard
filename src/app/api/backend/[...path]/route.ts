@@ -52,9 +52,12 @@ function isTokenExpiredResponse(status: number, data: unknown): boolean {
   return false;
 }
 
-function buildUpstreamUrl(pathSegments: string[], search: string): string {
-  const path = pathSegments.join("/");
-  return `${getBaseUrl()}/${path}${search}`;
+/** BFF proxy mount point — everything after this is the upstream Django path. */
+const PROXY_PREFIX = "/api/backend";
+
+export function buildUpstreamUrl(pathname: string, search: string): string {
+  const upstreamPath = pathname.slice(PROXY_PREFIX.length);
+  return `${getBaseUrl()}${upstreamPath}${search}`;
 }
 
 function buildForwardHeaders(
@@ -91,9 +94,11 @@ async function handler(
   request: NextRequest,
   { params }: { params: Promise<{ path: string[] }> },
 ): Promise<NextResponse> {
-  const { path: pathSegments } = await params;
+  // `params.path` is awaited to satisfy the route contract, but the upstream
+  // URL is built from the pathname so the trailing slash is preserved.
+  await params;
   const search = request.nextUrl.search;
-  const url = buildUpstreamUrl(pathSegments, search);
+  const url = buildUpstreamUrl(request.nextUrl.pathname, search);
   const method = request.method;
 
   const cookieStore = await cookies();

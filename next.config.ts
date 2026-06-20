@@ -7,6 +7,7 @@ const pkg = require("./package.json") as { version: string };
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
+  skipTrailingSlashRedirect: true,
   env: {
     NEXT_PUBLIC_APP_VERSION: pkg.version,
     NEXT_PUBLIC_BUILD_SHA: process.env.COMMIT_REF ?? "dev",
