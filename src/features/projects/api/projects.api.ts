@@ -1,4 +1,4 @@
-import { apiClient } from "@/api/client";
+import { apiClient, authedFetch } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
   type AddMemberRequest,
@@ -110,7 +110,7 @@ async function postMultipart(
   fd: FormData,
   method: "POST" | "PUT",
 ): Promise<Project> {
-  const res = await fetch(`/api/backend${url}`, {
+  const res = await authedFetch(url, {
     method,
     body: fd,
   });

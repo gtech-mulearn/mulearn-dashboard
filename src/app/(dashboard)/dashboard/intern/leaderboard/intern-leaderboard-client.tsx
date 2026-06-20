@@ -1,13 +1,13 @@
 "use client";
 
-import { Trophy } from "lucide-react";
+import { ArrowUpDown, Trophy } from "lucide-react";
 import { useState } from "react";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table, { type Data } from "@/components/dashboard/table/Table";
 import TableTop from "@/components/dashboard/table/TableTop";
-import THead from "@/components/dashboard/table/Thead";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useUserInfo, useUserProfile } from "@/features/auth";
 import { useLeaderboard, useLeaderboardMe } from "@/features/intern";
@@ -66,6 +66,9 @@ export function LeaderboardPageClient() {
             .map((n) => n[0])
             .join("")
         : "??",
+      profilePic: isCurrentUser
+        ? (profile?.profile_pic ?? userInfo?.profile_pic ?? item?.profile_pic)
+        : item?.profile_pic,
     };
   };
 
@@ -75,22 +78,28 @@ export function LeaderboardPageClient() {
 
   const listRows = (boardData?.data || [])
     .filter((item) => item.status !== "INACTIVE")
-    .map((item) => ({
-      id: item.user_id,
-      muid: item.muid,
-      rank: item.rank,
-      name: item.full_name,
-      actualName: item.full_name,
-      points: item.score,
-      streak: "-",
-      isCurrentUser: isCurrentLeaderboardUser(item, leaderboardIdentity),
-      avatar: item.full_name
-        ? item.full_name
-            .split(" ")
-            .map((n) => n[0])
-            .join("")
-        : "??",
-    }));
+    .map((item) => {
+      const isCurrentUser = isCurrentLeaderboardUser(item, leaderboardIdentity);
+      return {
+        id: item.user_id,
+        muid: item.muid,
+        rank: item.rank,
+        name: item.full_name,
+        actualName: item.full_name,
+        points: item.score,
+        streak: "-",
+        isCurrentUser,
+        avatar: item.full_name
+          ? item.full_name
+              .split(" ")
+              .map((n) => n[0])
+              .join("")
+          : "??",
+        avatarUrl: isCurrentUser
+          ? (profile?.profile_pic ?? userInfo?.profile_pic ?? item.profile_pic)
+          : item.profile_pic,
+      };
+    });
 
   const userDisplayName =
     profile?.full_name || userInfo?.full_name || "Alex Doe";
@@ -98,6 +107,17 @@ export function LeaderboardPageClient() {
   const userScore = meRank?.score ?? 0;
 
   const tableColumns = [
+    {
+      column: "rank",
+      Label: "Rank",
+      isSortable: false,
+      width: "w-16",
+      wrap: (
+        data: string | import("react").ReactElement,
+        _id: string,
+        row: Data,
+      ) => <span className="text-muted-foreground font-bold">{row.rank}</span>,
+    },
     {
       column: "name",
       Label: "Username",
@@ -166,6 +186,11 @@ export function LeaderboardPageClient() {
         <div className="flex flex-col items-center w-full md:w-64 z-10">
           <div className="relative mb-4">
             <Avatar className="w-24 h-24 border-4 border-slate-400 shadow-[0_0_20px_rgba(148,163,184,0.3)]">
+              <AvatarImage
+                src={top2.profilePic || undefined}
+                alt={top2.actualName}
+                className="object-cover"
+              />
               <AvatarFallback className="bg-slate-800 text-slate-200 text-xl font-bold">
                 {top2.avatar}
               </AvatarFallback>
@@ -199,6 +224,11 @@ export function LeaderboardPageClient() {
               👑
             </div>
             <Avatar className="w-32 h-32 border-4 border-warning shadow-[0_0_30px_rgba(255,141,12,0.4)] ring-4 ring-warning/20">
+              <AvatarImage
+                src={top1.profilePic || undefined}
+                alt={top1.actualName}
+                className="object-cover"
+              />
               <AvatarFallback className="bg-warning/20 text-warning text-2xl font-bold">
                 {top1.avatar}
               </AvatarFallback>
@@ -230,6 +260,11 @@ export function LeaderboardPageClient() {
         <div className="flex flex-col items-center w-full md:w-64 z-10">
           <div className="relative mb-4">
             <Avatar className="w-24 h-24 border-4 border-amber-700/50 shadow-[0_0_20px_rgba(180,83,9,0.2)]">
+              <AvatarImage
+                src={top3.profilePic || undefined}
+                alt={top3.actualName}
+                className="object-cover"
+              />
               <AvatarFallback className="bg-amber-900/20 text-amber-700 text-xl font-bold">
                 {top3.avatar}
               </AvatarFallback>
@@ -264,7 +299,12 @@ export function LeaderboardPageClient() {
       </div>
 
       {/* Rankings Table */}
-      <div className="space-y-4">
+      <div className="space-y-4 leaderboard-table">
+        <style>{`
+          .leaderboard-table [class*="md:hidden"] div.mb-3 > div > p:first-child {
+            display: none;
+          }
+        `}</style>
         <h3 className="text-xl font-bold">Rankings</h3>
 
         <TableTop
@@ -290,14 +330,32 @@ export function LeaderboardPageClient() {
           page={page}
           perPage={perPage}
           columnOrder={tableColumns}
-          slNoCellClassName="text-muted-foreground font-bold"
+          slNoCellClassName="text-muted-foreground font-bold hidden"
         >
-          <THead
-            columnOrder={tableColumns}
-            onIconClick={() => {}}
-            action={false}
-            thClassName="bg-muted/20 border-b border-border/20 h-12 font-black uppercase text-[9px] tracking-[0.3em]"
-          />
+          <thead>
+            <tr>
+              {tableColumns.map((column) => (
+                <th
+                  className={`border-b border-border px-3.5 py-3 text-left text-sm font-bold tracking-wider ${(column as any).width || ""} bg-muted/20 border-b border-border/20 h-12 font-black uppercase text-[9px] tracking-[0.3em]`}
+                  key={column.column}
+                >
+                  <div className="flex items-center gap-2">
+                    <span>{column.Label}</span>
+                    {column.isSortable && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={() => {}}
+                        className="text-muted-foreground hover:text-foreground"
+                      >
+                        <ArrowUpDown className="size-3" />
+                      </Button>
+                    )}
+                  </div>
+                </th>
+              ))}
+            </tr>
+          </thead>
           <div className="p-4 border-t border-border/20">
             <Pagination
               currentPage={page}

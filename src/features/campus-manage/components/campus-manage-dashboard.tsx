@@ -52,7 +52,6 @@ import {
   YAxis,
 } from "recharts";
 import { toast } from "sonner";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import Pagination from "@/components/dashboard/table/pagination";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -90,6 +89,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { chipColor } from "@/lib/chip-colors";
 import { cn } from "@/lib/utils";
 import {

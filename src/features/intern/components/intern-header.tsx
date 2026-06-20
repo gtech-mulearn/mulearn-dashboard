@@ -38,7 +38,7 @@ export function InternHeader() {
     profile?.full_name || userInfo?.full_name || "Alex Doe";
   const userStatus = overview?.status || "ACTIVE";
   const userLevel = profile?.level || "1";
-  const profilePic = profile?.profile_pic || null;
+  const profilePic = profile?.profile_pic || userInfo?.profile_pic || null;
   const isInternLead =
     overview?.role === "INTERN_LEAD" || overview?.role === "Intern Lead";
 

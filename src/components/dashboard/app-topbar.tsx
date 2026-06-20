@@ -20,6 +20,21 @@ function getInitials(name: string) {
 
 export function AppTopbar() {
   const { data, isLoading } = useUserInfo();
+
+  // Company accounts: show the company profile (name + logo) in the topbar,
+  // not the logged-in creator's personal details. Gated so the company
+  // profile is only fetched for users with the Company role.
+  const isCompany = data?.roles?.includes(ROLES.COMPANY) ?? false;
+  const { profile: companyProfile } = useCompanyProfile({ enabled: isCompany });
+
+  const displayName =
+    isCompany && companyProfile?.name ? companyProfile.name : data?.full_name;
+  const displayImage =
+    isCompany && companyProfile?.logo
+      ? companyProfile.logo
+      : (data?.profile_pic ?? undefined);
+  const displaySubtitle =
+    isCompany && companyProfile?.name ? "Company" : data?.muid;
   return (
     <header className="fixed top-0 left-0 right-0 z-[50] h-17 bg-background border-b border-border flex items-center px-4 justify-between gap-4">
       <div className="flex items-center gap-2">

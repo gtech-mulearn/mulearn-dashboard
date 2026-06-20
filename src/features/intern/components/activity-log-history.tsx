@@ -1,18 +1,20 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Activity, Calendar, Clock, Edit2, HelpCircle } from "lucide-react";
-import Link from "next/link";
+import {
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Edit2,
+  HelpCircle,
+  Search,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -30,7 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Table,
   TableBody,
@@ -40,26 +42,26 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import { internApi } from "@/features/intern/api/intern.api";
+import { getApiResponseError } from "@/hooks/use-get-error";
+import { internApi } from "../api/intern.api";
 import {
   useInternTasks,
   useTimesheetHistory,
   useUpdateTaskStatus,
   useWeeklyReviewHistory,
-} from "@/features/intern/hooks/use-intern";
+} from "../hooks/use-intern";
 import type {
   TInternTask,
   TTimesheet,
   TTimesheetUpdatePayload,
   TWeeklyReview,
   TWeeklyReviewUpdatePayload,
-} from "@/features/intern/types";
-import { getTaskKarma } from "@/features/intern/utils/intern-helpers";
-import { getApiResponseError } from "@/hooks/use-get-error";
+} from "../types";
+import { getTaskKarma } from "../utils/intern-helpers";
 
 type UnifiedActivity = {
   id: string;
-  type: "timesheet" | "weekly_review" | "completed_task";
+  type: "timesheet" | "weekly_timesheet" | "completed_task";
   title: string;
   description: string;
   dateStr: string;
@@ -69,12 +71,15 @@ type UnifiedActivity = {
   raw: TTimesheet | TWeeklyReview | TInternTask;
 };
 
-export function QuestLog() {
+export function QuestLogHistory() {
   const queryClient = useQueryClient();
+  const [page, setPage] = useState(1);
+  const perPage = 10;
+
   const { data: timesheetHistory, isLoading: isTimesheetLoading } =
-    useTimesheetHistory({ page: 1, perPage: 20 });
+    useTimesheetHistory({ page: 1, perPage: 100 });
   const { data: weeklyReviews, isLoading: isWeeklyLoading } =
-    useWeeklyReviewHistory({ page: 1, perPage: 20 });
+    useWeeklyReviewHistory({ page: 1, perPage: 100 });
   const { data: myTasks, isLoading: isTasksLoading } = useInternTasks({
     page: 1,
     perPage: 100,
@@ -85,6 +90,33 @@ export function QuestLog() {
     null,
   );
   const [isEditMode, setIsEditMode] = useState(false);
+
+  // Search & Filter state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterType, setFilterType] = useState<"all" | "timesheet" | "task">(
+    "all",
+  );
+  const [filterStatus, setFilterStatus] = useState<
+    "all" | "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED" | "COMPLETED"
+  >("all");
+
+  const handleTaskStatusChange = (
+    taskId: string,
+    status: "WAITING_FOR_REVIEW" | "IN_PROGRESS" | "COMPLETED" | "ON_HOLD",
+  ) => {
+    updateTaskStatusMutation.mutate(
+      { id: taskId, status },
+      {
+        onSuccess: () => {
+          setSelectedItem(null);
+        },
+      },
+    );
+  };
+
+  useEffect(() => {
+    setPage(1);
+  }, []);
 
   // Form states for Timesheet
   const [tsHours, setTsHours] = useState("");
@@ -179,59 +211,26 @@ export function QuestLog() {
       payload: TWeeklyReviewUpdatePayload;
     }) => internApi.updateWeeklyReview(id, payload),
     onSuccess: async () => {
-      toast.success("Weekly review updated successfully!");
+      toast.success("Weekly timesheet updated successfully!");
       await queryClient.invalidateQueries({ queryKey: ["intern", "reviews"] });
       setSelectedItem(null);
     },
     onError: (error) => {
       toast.error(
         getApiResponseError(error, {
-          fallback: "Failed to update weekly review",
+          fallback: "Failed to update weekly timesheet",
         }),
       );
     },
   });
 
-  const handleTaskStatusChange = (
-    taskId: string,
-    status: "WAITING_FOR_REVIEW" | "IN_PROGRESS" | "COMPLETED" | "ON_HOLD",
-  ) => {
-    updateTaskStatusMutation.mutate(
-      { id: taskId, status },
-      {
-        onSuccess: () => {
-          setSelectedItem(null);
-        },
-      },
-    );
-  };
-
   const isLoading = isTimesheetLoading || isWeeklyLoading || isTasksLoading;
 
   if (isLoading) {
     return (
-      <Card className="h-full border-border/40 bg-card/40 backdrop-blur-md flex flex-col py-4 px-5">
-        <CardHeader className="pt-0 px-0 pb-2 border-b border-border/20">
-          <CardTitle className="text-lg font-black uppercase tracking-widest flex items-center gap-2">
-            <Activity className="w-5 h-5 text-muted-foreground" />
-            Quest Log
-          </CardTitle>
-          <CardDescription className="text-xs font-bold uppercase text-muted-foreground/60">
-            Recent Points Gains
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pt-3 px-0 pb-0 flex-1 space-y-4">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="flex justify-between items-center">
-              <div className="space-y-1">
-                <Skeleton className="h-4 w-40" />
-                <Skeleton className="h-3 w-24" />
-              </div>
-              <Skeleton className="h-6 w-12 rounded-lg" />
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+      <div className="flex h-[80vh] items-center justify-center">
+        <Spinner className="w-8 h-8 text-primary" />
+      </div>
     );
   }
 
@@ -240,7 +239,7 @@ export function QuestLog() {
   const tasks = myTasks?.data || [];
   const completedTasks = tasks.filter((t) => t.status === "COMPLETED");
 
-  const recentActivities: UnifiedActivity[] = [
+  const allActivities: UnifiedActivity[] = [
     ...timesheets.map(
       (ts): UnifiedActivity => ({
         id: ts.id,
@@ -248,6 +247,8 @@ export function QuestLog() {
         title: "Daily Timesheet",
         description: ts.description || "",
         dateStr: new Date(ts.created_at).toLocaleDateString(undefined, {
+          weekday: "short",
+          year: "numeric",
           month: "short",
           day: "numeric",
           hour: "2-digit",
@@ -262,10 +263,12 @@ export function QuestLog() {
     ...reviews.map(
       (wr): UnifiedActivity => ({
         id: wr.id,
-        type: "weekly_review",
-        title: `Weekly Review - Week ${wr.iso_week}`,
+        type: "weekly_timesheet",
+        title: `Weekly Timesheet - Week ${wr.iso_week}`,
         description: wr.weekly_review || "",
         dateStr: new Date(wr.created_at).toLocaleDateString(undefined, {
+          weekday: "short",
+          year: "numeric",
           month: "short",
           day: "numeric",
           hour: "2-digit",
@@ -285,12 +288,16 @@ export function QuestLog() {
         description: task.description || "",
         dateStr: task.updated_at
           ? new Date(task.updated_at).toLocaleDateString(undefined, {
+              weekday: "short",
+              year: "numeric",
               month: "short",
               day: "numeric",
               hour: "2-digit",
               minute: "2-digit",
             })
           : new Date(task.created_at).toLocaleDateString(undefined, {
+              weekday: "short",
+              year: "numeric",
               month: "short",
               day: "numeric",
               hour: "2-digit",
@@ -304,9 +311,31 @@ export function QuestLog() {
         raw: task,
       }),
     ),
-  ]
-    .sort((a, b) => b.rawDate.getTime() - a.rawDate.getTime())
-    .slice(0, 6);
+  ].sort((a, b) => b.rawDate.getTime() - a.rawDate.getTime());
+
+  const filteredActivities = allActivities.filter((activity) => {
+    const matchesSearch =
+      activity.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      activity.description.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesType =
+      filterType === "all" ||
+      (filterType === "timesheet" &&
+        (activity.type === "timesheet" ||
+          activity.type === "weekly_timesheet")) ||
+      (filterType === "task" && activity.type === "completed_task");
+
+    const matchesStatus =
+      filterStatus === "all" || activity.status === filterStatus;
+
+    return matchesSearch && matchesType && matchesStatus;
+  });
+
+  const totalPages = Math.ceil(filteredActivities.length / perPage) || 1;
+  const paginatedActivities = filteredActivities.slice(
+    (page - 1) * perPage,
+    page * perPage,
+  );
 
   const getStatusBadge = (
     status: string,
@@ -389,97 +418,209 @@ export function QuestLog() {
   };
 
   return (
-    <Card className="@container h-full border-border/40 bg-card/40 backdrop-blur-md flex flex-col py-4 px-5">
-      <CardHeader className="pt-0 px-0 pb-2 border-b border-border/20">
-        <CardTitle className="text-lg font-black uppercase tracking-widest flex items-center gap-2">
-          <Activity className="w-5 h-5 text-muted-foreground" />
-          Quest Log
-        </CardTitle>
-        <CardDescription className="text-xs font-bold uppercase text-muted-foreground/60">
-          Recent Points Gains
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="pt-3 px-0 pb-0 flex-1 overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-muted/10 border-b border-border/20 hover:bg-transparent">
-              <TableHead className="font-black uppercase text-[9px] tracking-[0.2em] text-muted-foreground pl-4 py-2">
-                Quest / Activity
-              </TableHead>
-              <TableHead className="font-black uppercase text-[9px] tracking-[0.2em] text-muted-foreground py-2 hidden @md:table-cell w-[140px]">
-                Submitted
-              </TableHead>
-              <TableHead className="font-black uppercase text-[9px] tracking-[0.2em] text-muted-foreground pr-4 py-2 text-right w-[130px]">
-                Status
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {recentActivities.map((activity) => (
-              <TableRow
-                key={`${activity.type}-${activity.id}`}
-                role="button"
-                tabIndex={0}
-                onClick={() => setSelectedItem(activity)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    setSelectedItem(activity);
-                  }
-                }}
-                className="border-b border-border/10 transition-all cursor-pointer hover:bg-muted/20 focus:ring-2 focus:ring-ring focus:outline-none"
-              >
-                <TableCell className="pl-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-3.5 h-3.5 text-brand-blue shrink-0" />
-                    <div className="flex flex-col min-w-0">
-                      <span className="text-xs font-bold text-foreground break-words">
+    <div className="flex-1 space-y-6 p-4 md:p-8 pt-6 max-w-7xl mx-auto w-full bg-background/50">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <Badge
+              variant="default"
+              className="px-3 py-1 rounded-full font-black text-[10px] uppercase tracking-widest"
+            >
+              Activity Log
+            </Badge>
+          </div>
+          <h2 className="text-4xl font-black tracking-tighter text-foreground uppercase">
+            Activity Log
+          </h2>
+          <p className="text-muted-foreground mt-1 font-medium italic">
+            Review your submissions, check validation remarks, and edit rejected
+            ones.
+          </p>
+        </div>
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-card/20 backdrop-blur-md p-4 rounded-xl border border-border/20">
+        <div className="relative w-full sm:max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by quest or description..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 bg-background/40 border-border/40 focus-visible:ring-brand-blue"
+          />
+        </div>
+        <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+          <div className="w-full sm:w-44">
+            <Select
+              value={filterType}
+              onValueChange={(val) =>
+                setFilterType(val as "all" | "timesheet" | "task")
+              }
+            >
+              <SelectTrigger className="w-full bg-background/40 border-border/40 font-bold uppercase text-[10px] tracking-wider">
+                <SelectValue placeholder="All Types" />
+              </SelectTrigger>
+              <SelectContent className="bg-card font-bold border-border/60">
+                <SelectItem value="all" className="uppercase text-[9px]">
+                  All Types
+                </SelectItem>
+                <SelectItem value="timesheet" className="uppercase text-[9px]">
+                  Timesheets
+                </SelectItem>
+                <SelectItem value="task" className="uppercase text-[9px]">
+                  Tasks
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="w-full sm:w-44">
+            <Select
+              value={filterStatus}
+              onValueChange={(val) =>
+                setFilterStatus(
+                  val as
+                    | "all"
+                    | "PENDING"
+                    | "APPROVED"
+                    | "REJECTED"
+                    | "CANCELLED"
+                    | "COMPLETED",
+                )
+              }
+            >
+              <SelectTrigger className="w-full bg-background/40 border-border/40 font-bold uppercase text-[10px] tracking-wider">
+                <SelectValue placeholder="All Statuses" />
+              </SelectTrigger>
+              <SelectContent className="bg-card font-bold border-border/60">
+                <SelectItem value="all" className="uppercase text-[9px]">
+                  All Statuses
+                </SelectItem>
+                <SelectItem value="PENDING" className="uppercase text-[9px]">
+                  Pending
+                </SelectItem>
+                <SelectItem value="APPROVED" className="uppercase text-[9px]">
+                  Approved
+                </SelectItem>
+                <SelectItem value="COMPLETED" className="uppercase text-[9px]">
+                  Completed
+                </SelectItem>
+                <SelectItem value="REJECTED" className="uppercase text-[9px]">
+                  Rejected
+                </SelectItem>
+                <SelectItem value="CANCELLED" className="uppercase text-[9px]">
+                  Cancelled
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <Card className="border-border/40 bg-card/40 backdrop-blur-md overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/10 border-b border-border/20 hover:bg-transparent">
+                <TableHead className="font-black uppercase text-[9px] tracking-[0.2em] text-muted-foreground pl-6 py-3">
+                  Activity
+                </TableHead>
+                <TableHead className="font-black uppercase text-[9px] tracking-[0.2em] text-muted-foreground py-3">
+                  Submitted
+                </TableHead>
+                <TableHead className="font-black uppercase text-[9px] tracking-[0.2em] text-muted-foreground py-3 hidden md:table-cell">
+                  Description
+                </TableHead>
+                <TableHead className="font-black uppercase text-[9px] tracking-[0.2em] text-muted-foreground pr-6 py-3 text-right">
+                  Status
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {paginatedActivities.map((activity) => (
+                <TableRow
+                  key={`${activity.type}-${activity.id}`}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setSelectedItem(activity)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setSelectedItem(activity);
+                    }
+                  }}
+                  className="border-b border-border/10 transition-all cursor-pointer hover:bg-muted/20 focus:ring-2 focus:ring-ring focus:outline-none"
+                >
+                  <TableCell className="pl-6 py-4">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-brand-blue shrink-0" />
+                      <span className="text-sm font-bold text-foreground">
                         {activity.title}
                       </span>
-                      <span className="text-[9px] text-muted-foreground @md:hidden mt-0.5">
-                        {activity.dateStr}
-                      </span>
                     </div>
-                  </div>
-                </TableCell>
-                <TableCell className="py-3 text-[11px] font-medium text-muted-foreground whitespace-nowrap hidden @md:table-cell w-[140px]">
-                  {activity.dateStr}
-                </TableCell>
-                <TableCell className="pr-4 py-3 text-right w-[130px]">
-                  <div className="flex justify-end items-center">
-                    {getStatusBadge(
-                      activity.status,
-                      activity.karma,
-                      activity.type === "completed_task"
-                        ? (activity.raw as TInternTask).is_verified
-                        : undefined,
+                  </TableCell>
+                  <TableCell className="py-4 text-xs font-medium text-muted-foreground whitespace-nowrap">
+                    {activity.dateStr}
+                  </TableCell>
+                  <TableCell className="py-4 text-xs font-medium text-muted-foreground hidden md:table-cell max-w-xs truncate">
+                    {activity.description || (
+                      <span className="italic text-muted-foreground/40">
+                        No description provided.
+                      </span>
                     )}
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-            {recentActivities.length === 0 && (
-              <TableRow>
-                <TableCell
-                  colSpan={3}
-                  className="text-center py-8 text-xs font-bold text-muted-foreground uppercase tracking-wider italic"
-                >
-                  No recent activity
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </CardContent>
-      <div className="pt-4 px-0 pb-0 border-t border-border/20">
-        <Link href="/dashboard/intern/quest-log">
-          <Button
-            variant="outline"
-            className="w-full gap-2 text-[10px] tracking-widest h-10 shadow-lg"
-          >
-            View History
-          </Button>
-        </Link>
+                  </TableCell>
+                  <TableCell className="pr-6 py-4 text-right">
+                    <div className="flex justify-end items-center">
+                      {getStatusBadge(
+                        activity.status,
+                        activity.karma,
+                        activity.type === "completed_task"
+                          ? (activity.raw as TInternTask).is_verified
+                          : undefined,
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+              {filteredActivities.length === 0 && (
+                <TableRow>
+                  <TableCell
+                    colSpan={4}
+                    className="text-center py-12 text-sm font-bold text-muted-foreground uppercase tracking-wider italic"
+                  >
+                    {allActivities.length === 0
+                      ? "No quests logged yet."
+                      : "No matching quests found."}
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </Card>
+
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between pt-4">
+            <Button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              variant="outline"
+              className="rounded-full h-9 text-xs font-black uppercase tracking-wider border-border/40 hover:bg-muted/20"
+            >
+              <ChevronLeft className="w-4 h-4 mr-1" /> Prev
+            </Button>
+            <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">
+              Page {page} of {totalPages}
+            </span>
+            <Button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              variant="outline"
+              className="rounded-full h-9 text-xs font-black uppercase tracking-wider border-border/40 hover:bg-muted/20"
+            >
+              Next <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* View/Edit Submission Dialog */}
@@ -494,7 +635,7 @@ export function QuestLog() {
                 <DialogTitle className="text-xl font-black uppercase tracking-tight text-foreground break-all flex items-center gap-2">
                   {selectedItem.type === "timesheet"
                     ? "Daily Timesheet"
-                    : selectedItem.type === "weekly_review"
+                    : selectedItem.type === "weekly_timesheet"
                       ? "Weekly Review"
                       : "Completed Task"}
                 </DialogTitle>
@@ -553,21 +694,22 @@ export function QuestLog() {
                 </div>
 
                 {/* Reviewer Note / Remarks if rejected or remarked */}
-                {((selectedItem.raw as TTimesheet).review_note ||
-                  (selectedItem.raw as TTimesheet).remark ||
-                  (selectedItem.raw as TWeeklyReview).review_note) && (
-                  <div className="p-3.5 rounded-xl border border-destructive/20 bg-destructive/5 space-y-1">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-destructive flex items-center gap-1">
-                      <HelpCircle className="w-3.5 h-3.5" />
-                      Review Remarks
-                    </p>
-                    <p className="text-xs font-medium text-foreground leading-relaxed break-all">
-                      {(selectedItem.raw as TTimesheet).review_note ||
-                        (selectedItem.raw as TTimesheet).remark ||
-                        (selectedItem.raw as TWeeklyReview).review_note}
-                    </p>
-                  </div>
-                )}
+                {selectedItem.type !== "completed_task" &&
+                  ((selectedItem.raw as TTimesheet).review_note ||
+                    (selectedItem.raw as TTimesheet).remark ||
+                    (selectedItem.raw as TWeeklyReview).review_note) && (
+                    <div className="p-3.5 rounded-xl border border-destructive/20 bg-destructive/5 space-y-1">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-destructive flex items-center gap-1">
+                        <HelpCircle className="w-3.5 h-3.5" />
+                        Review Remarks
+                      </p>
+                      <p className="text-xs font-medium text-foreground leading-relaxed break-all">
+                        {(selectedItem.raw as TTimesheet).review_note ||
+                          (selectedItem.raw as TTimesheet).remark ||
+                          (selectedItem.raw as TWeeklyReview).review_note}
+                      </p>
+                    </div>
+                  )}
 
                 {/* Completed Task Fields */}
                 {selectedItem.type === "completed_task" && (
@@ -753,7 +895,7 @@ export function QuestLog() {
                 )}
 
                 {/* Weekly Review Form Fields */}
-                {selectedItem.type === "weekly_review" && (
+                {selectedItem.type === "weekly_timesheet" && (
                   <div className="space-y-4">
                     {/* Hours Committed */}
                     <div className="space-y-1.5">
@@ -803,10 +945,10 @@ export function QuestLog() {
                       />
                     </div>
 
-                    {/* Weekly Review Summary */}
+                    {/* Weekly Timesheet Summary */}
                     <div className="space-y-1.5">
                       <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                        Weekly Review Summary
+                        Weekly Timesheet Summary
                       </Label>
                       <Textarea
                         value={wrWeeklyReview}
@@ -948,6 +1090,6 @@ export function QuestLog() {
           )}
         </DialogContent>
       </Dialog>
-    </Card>
+    </div>
   );
 }
