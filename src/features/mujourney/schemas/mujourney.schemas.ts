@@ -166,56 +166,21 @@ export type PublicUserJourneyResponse = z.infer<
   typeof PublicUserJourneyResponseSchema
 >;
 
+export const UserLevelFeedSchema = z.object({
+  level_order: z.number(),
+  level_name: z.string(),
+  level_karma: z.number(),
+  user_karma: z.number(),
+});
+export type UserLevelFeed = z.infer<typeof UserLevelFeedSchema>;
+
 // GET /api/v1/dashboard/profile/user-level-feed/
 export const UserLevelFeedResponseSchema = z
   .object({
     hasError: z.boolean().optional().default(false),
     statusCode: z.number().optional().default(200),
     message: DjangoMessageSchema,
-    response: z
-      .union([
-        // Format 1: response is an object with feed array
-        z
-          .object({
-            feed: z
-              .array(
-                z
-                  .object({
-                    task_id: z
-                      .union([z.string(), z.number()])
-                      .transform((val) => String(val)),
-                    task_title: z.string(),
-                    karma_earned: z.number(),
-                    completed_at: z.string(),
-                    level: z.number(),
-                  })
-                  .passthrough(),
-              )
-              .default([]),
-          })
-          .passthrough(),
-        // Format 2: response is directly an array
-        z.array(
-          z
-            .object({
-              task_id: z
-                .union([z.string(), z.number()])
-                .transform((val) => String(val)),
-              task_title: z.string(),
-              karma_earned: z.number(),
-              completed_at: z.string(),
-              level: z.number(),
-            })
-            .passthrough(),
-        ),
-      ])
-      .transform((val) => {
-        // If response is an array, wrap it in expected object structure
-        if (Array.isArray(val)) {
-          return { feed: val };
-        }
-        return val;
-      }),
+    response: UserLevelFeedSchema,
   })
   .passthrough();
 
