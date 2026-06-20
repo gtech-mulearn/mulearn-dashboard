@@ -52,13 +52,12 @@ export function useVerifyCompany() {
       payload,
     }: {
       companyId: string;
-      payload: VerificationActionFormValues;
+      payload: { status: string; rejection_reason?: string };
     }) => verifyCompany(companyId, payload),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: manageCompaniesKeys.lists() });
-      const action = variables.payload.action;
       toast.success(
-        action === "approve"
+        variables.payload.status === "verified"
           ? "Company approved successfully."
           : "Company rejected successfully.",
       );

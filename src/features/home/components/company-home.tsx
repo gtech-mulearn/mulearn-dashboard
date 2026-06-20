@@ -14,7 +14,6 @@ import {
 import { ActiveJobListingsCard } from "./company/active-job-listings-card";
 import { CompanyHeroCard } from "./company/company-hero-card";
 import { CompanyStatCards } from "./company/company-stat-cards";
-import { CompanyVerifiedBanner } from "./company/company-verified-banner";
 import { TalentPoolCard } from "./company/talent-pool-card";
 import { EventCalendarCard } from "./event-calendar-card";
 
@@ -38,7 +37,6 @@ export function CompanyHome() {
 
   const jobsPosted =
     summary?.quick_stats?.jobs_posted ?? jobsData?.pagination?.count ?? 0;
-  const companyDisplayName = profile?.name ?? undefined;
 
   const quickStats = summary?.quick_stats ?? {
     jobs_posted: jobsPosted,
@@ -47,19 +45,28 @@ export function CompanyHome() {
     hired: 0,
   };
 
+  const status = companyStatus?.status?.toLowerCase();
+  const isVerified =
+    companyStatus?.verified === true ||
+    companyStatus?.is_verified === true ||
+    status === "approved" ||
+    status === "active" ||
+    status === "verified";
+
   return (
     <div className="space-y-5">
-      <CompanyVerifiedBanner
-        status={companyStatus}
-        companyName={companyDisplayName}
-      />
       <CompanyHeroCard
         jobsPosted={jobsPosted}
         isLoading={jobsLoading || profileLoading}
+        isVerified={isVerified}
       />
-      <CompanyStatCards quickStats={quickStats} isLoading={summaryLoading} />
+      <CompanyStatCards
+        quickStats={quickStats}
+        isLoading={summaryLoading}
+        isVerified={isVerified}
+      />
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_296px]">
-        <ActiveJobListingsCard />
+        <ActiveJobListingsCard isVerified={isVerified} />
         <div className="space-y-5">
           <EventCalendarCard
             events={mergedCalendarEvents}
@@ -68,6 +75,7 @@ export function CompanyHome() {
           <TalentPoolCard
             talentPool={summary?.talent_pool}
             isLoading={summaryLoading}
+            isVerified={isVerified}
           />
         </div>
       </div>
