@@ -7,7 +7,12 @@
  * Returns the inner response data (not the wrapper).
  */
 
-import { ApiError, apiClient, publicApiClient } from "@/api/client";
+import {
+  ApiError,
+  apiClient,
+  authedFetch,
+  publicApiClient,
+} from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
   CollegesByDistrictResponseSchema,
@@ -204,13 +209,10 @@ export async function updateProfileImage(
   formData.append("profile", profilePic);
   formData.append("user_id", userId);
 
-  const response = await fetch(
-    `/api/backend${endpoints.user.updateProfileImage}`,
-    {
-      method: "POST",
-      body: formData,
-    },
-  );
+  const response = await authedFetch(endpoints.user.updateProfileImage, {
+    method: "POST",
+    body: formData,
+  });
 
   const rawData = await response.json().catch(() => null);
 
@@ -263,7 +265,7 @@ export async function uploadCoverPic(cover: File): Promise<string | null> {
   const formData = new FormData();
   formData.append("cover", cover);
 
-  const response = await fetch(`/api/backend${endpoints.user.coverPic}`, {
+  const response = await authedFetch(endpoints.user.coverPic, {
     method: "POST",
     body: formData,
   });
