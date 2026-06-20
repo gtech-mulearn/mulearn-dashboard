@@ -32,7 +32,7 @@ import {
 import { COVER_PIC_MAX_BYTES } from "../api";
 import type { UserProfile } from "../schemas";
 
-const DEFAULT_COVER_SRC = "/images/profile-banner.png";
+const DEFAULT_COVER_SRC = "/images/profile-banner.webp";
 
 interface ProfileHeaderProps {
   profile: UserProfile;

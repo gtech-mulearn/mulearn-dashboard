@@ -5,6 +5,7 @@ import { ExternalLink, Link, Loader2, Pencil, Plus } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -77,8 +78,12 @@ export function UrlShortenerFormModal({
       }
       onOpenChange(false);
       reset({ title: "", long_url: "", short_url: "" });
-    } catch {
-      toast.error(isEdit ? "Failed to update URL" : "Failed to create URL");
+    } catch (error) {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: isEdit ? "Failed to update URL" : "Failed to create URL",
+        }),
+      );
     }
   };
 

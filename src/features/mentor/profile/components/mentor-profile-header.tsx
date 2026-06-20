@@ -32,7 +32,7 @@ import { Button } from "@/components/ui/button";
 import type { MentorApplication } from "@/features/mentor/onboarding/schemas";
 import type { UserProfile } from "@/features/profile/schemas";
 
-const DEFAULT_COVER = "/images/profile-banner.png";
+const DEFAULT_COVER = "/images/profile-banner.webp";
 
 export type MentorType = "ig" | "platform" | "company" | "campus";
 

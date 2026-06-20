@@ -1,4 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { getApiResponseError } from "@/hooks/use-get-error";
 
 import {
   addChannel,
@@ -31,6 +33,11 @@ export const useAddChannel = () => {
         exact: false,
       });
     },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to add channel" }),
+      );
+    },
   });
 };
 
@@ -46,6 +53,11 @@ export const useUpdateChannel = () => {
         exact: false,
       });
     },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to update channel" }),
+      );
+    },
   });
 };
 
@@ -60,6 +72,11 @@ export const useDeleteChannel = () => {
         queryKey: ["channel-delete"],
         exact: false,
       });
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to delete channel" }),
+      );
     },
   });
 };

@@ -6,6 +6,8 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   type CreateShortUrlPayload,
   createShortUrl,
@@ -47,6 +49,11 @@ export function useCreateShortUrl() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: SHORT_URL_KEYS.lists() });
     },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to create short URL" }),
+      );
+    },
   });
 }
 
@@ -64,6 +71,11 @@ export function useUpdateShortUrl() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: SHORT_URL_KEYS.lists() });
     },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to update short URL" }),
+      );
+    },
   });
 }
 
@@ -74,6 +86,11 @@ export function useDeleteShortUrl() {
     mutationFn: (id: string) => deleteShortUrl(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: SHORT_URL_KEYS.lists() });
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to delete short URL" }),
+      );
     },
   });
 }
