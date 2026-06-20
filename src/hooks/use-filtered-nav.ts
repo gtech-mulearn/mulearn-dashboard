@@ -15,7 +15,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useMentorStatus } from "@/features/mentor/hooks";
+import { useMentorApplicationStatus } from "@/features/mentor/onboarding/hooks/use-onboarding";
 import { usePermissions } from "@/hooks/use-permissions";
 import { ROLES } from "@/lib/auth/roles";
 import {
@@ -45,7 +45,7 @@ export function useFilteredNav(): UseFilteredNavReturn {
 
   const isMentor = hasRole([ROLES.MENTOR]);
   const { data: mentorStatus, isLoading: mentorStatusLoading } =
-    useMentorStatus(isMentor);
+    useMentorApplicationStatus(isMentor);
 
   const isMentorVerified = isMentor
     ? mentorStatus?.status === "APPROVED"

@@ -36,7 +36,7 @@ export function PublicJobCard({ job, onView }: PublicJobCardProps) {
         {job.company_name && (
           <div className="mb-1 text-xs font-medium text-muted-foreground flex items-center gap-1.5">
             {job.company_logo ? (
-              {/* biome-ignore lint/performance/noImgElement: external logo URL, next/image would require configuring all possible domains */}
+              // biome-ignore lint/performance/noImgElement: external logo URL, next/image would require configuring all possible domains
               <img
                 src={job.company_logo}
                 alt={job.company_name}

@@ -196,6 +196,7 @@ export function LearnerTasksPage() {
         />
         {searchInput && (
           <button
+            type="button"
             onClick={clearSearch}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
             aria-label="Clear search"
@@ -365,12 +366,8 @@ export function LearnerTasksPage() {
         </div>
       ) : (
         <div className="space-y-10">
-          {groupedLevels.map((level, index) => (
-            <LevelCard
-              key={`${level.name}-${index}`}
-              level={level}
-              isLocked={false}
-            />
+          {groupedLevels.map((level) => (
+            <LevelCard key={level.name} level={level} isLocked={false} />
           ))}
         </div>
       )}
