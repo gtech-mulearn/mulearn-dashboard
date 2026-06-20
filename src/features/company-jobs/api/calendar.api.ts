@@ -58,6 +58,35 @@ export type CalendarBuckets = {
   completed: CalendarSessionItem[];
 };
 
+/** Single event item in a calendar bucket */
+export const CalendarEventItemSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  slug: z.string(),
+  status: z.string(),
+  start: z.string(),
+  end: z.string(),
+  venue_type: z.string().optional(),
+  organiser_name: z.string().optional(),
+  category_name: z.string().nullable().optional(),
+  is_featured: z.boolean().optional(),
+});
+export type CalendarEventItem = z.infer<typeof CalendarEventItemSchema>;
+
+/** Event calendar response grouped into upcoming / ongoing / completed */
+export const CalendarEventBucketResponseSchema = DjangoResponse(
+  z.object({
+    upcoming: z.array(CalendarEventItemSchema).default([]),
+    ongoing: z.array(CalendarEventItemSchema).default([]),
+    completed: z.array(CalendarEventItemSchema).default([]),
+  }),
+);
+export type CalendarEventBuckets = {
+  upcoming: CalendarEventItem[];
+  ongoing: CalendarEventItem[];
+  completed: CalendarEventItem[];
+};
+
 // ─── Query Params ─────────────────────────────────────────────────────────────
 
 export interface CalendarParams {
@@ -67,9 +96,30 @@ export interface CalendarParams {
   status?: "SCHEDULED" | "COMPLETED" | "CANCELLED";
 }
 
+export interface CalendarEventParams {
+  /** Filter by month: YYYY-MM (e.g. "2026-06") */
+  month?: string;
+  /** Filter by scope (global endpoint only) */
+  scope?: "ig" | "campus" | "global" | "company";
+  /** Filter by status */
+  status?: "ongoing" | "upcoming" | "completed";
+}
+
 function buildCalendarUrl(base: string, params?: CalendarParams): string {
   const q = new URLSearchParams();
   if (params?.month) q.set("month", params.month);
+  if (params?.status) q.set("status", params.status);
+  const qs = q.toString();
+  return qs ? `${base}?${qs}` : base;
+}
+
+function buildEventCalendarUrl(
+  base: string,
+  params?: CalendarEventParams,
+): string {
+  const q = new URLSearchParams();
+  if (params?.month) q.set("month", params.month);
+  if (params?.scope) q.set("scope", params.scope);
   if (params?.status) q.set("status", params.status);
   const qs = q.toString();
   return qs ? `${base}?${qs}` : base;
@@ -126,5 +176,68 @@ export async function fetchCampusMentorSessionCalendar(
     params,
   );
   const res = await publicApiClient.get(url, CalendarBucketResponseSchema);
+  return res.response;
+}
+
+// ─── Event Calendar API Functions ────────────────────────────────────────────
+
+/**
+ * GET /api/v1/calendar/events/
+ *
+ * Global platform events calendar grouped into upcoming / ongoing / completed.
+ */
+export async function fetchGlobalEventCalendar(
+  params?: CalendarEventParams,
+): Promise<CalendarEventBuckets> {
+  const url = buildEventCalendarUrl(endpoints.calendar.events, params);
+  const res = await publicApiClient.get(url, CalendarEventBucketResponseSchema);
+  return res.response;
+}
+
+/**
+ * GET /api/v1/calendar/ig/<ig_id>/events/
+ *
+ * Events calendar scoped to a specific Interest Group.
+ */
+export async function fetchIgEventCalendar(
+  igId: string,
+  params?: CalendarEventParams,
+): Promise<CalendarEventBuckets> {
+  const url = buildEventCalendarUrl(endpoints.calendar.igEvents(igId), params);
+  const res = await publicApiClient.get(url, CalendarEventBucketResponseSchema);
+  return res.response;
+}
+
+/**
+ * GET /api/v1/calendar/campus/<campus_id>/events/
+ *
+ * Events calendar scoped to a specific Campus.
+ */
+export async function fetchCampusEventCalendar(
+  campusId: string,
+  params?: CalendarEventParams,
+): Promise<CalendarEventBuckets> {
+  const url = buildEventCalendarUrl(
+    endpoints.calendar.campusEvents(campusId),
+    params,
+  );
+  const res = await publicApiClient.get(url, CalendarEventBucketResponseSchema);
+  return res.response;
+}
+
+/**
+ * GET /api/v1/calendar/company/<company_id>/events/
+ *
+ * Events calendar scoped to a specific Company.
+ */
+export async function fetchCompanyEventCalendar(
+  companyId: string,
+  params?: CalendarEventParams,
+): Promise<CalendarEventBuckets> {
+  const url = buildEventCalendarUrl(
+    endpoints.calendar.companyEvents(companyId),
+    params,
+  );
+  const res = await publicApiClient.get(url, CalendarEventBucketResponseSchema);
   return res.response;
 }

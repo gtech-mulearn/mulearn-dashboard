@@ -2,7 +2,7 @@
 
 import { useUserInfo, useUserProfile } from "@/features/auth/hooks/use-session";
 import {
-  useCalendarEvents,
+  useGlobalCalendarEvents,
   useInterestGroupsList,
   useLearnerHomeSummary,
 } from "../hooks";
@@ -19,7 +19,7 @@ export function MuLearnerHome() {
   const { data: interestGroups, isLoading: loadingGroups } =
     useInterestGroupsList();
   const { data: calendarEvents, isLoading: loadingCalendar } =
-    useCalendarEvents();
+    useGlobalCalendarEvents();
   const { data: summary } = useLearnerHomeSummary();
 
   const displayName = userInfo?.full_name?.split(" ")[0] ?? "Learner";
