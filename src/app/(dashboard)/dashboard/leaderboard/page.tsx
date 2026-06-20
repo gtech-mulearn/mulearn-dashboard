@@ -8,19 +8,14 @@ import {
 
 export const metadata: Metadata = {
   title: "Leaderboard",
-  description: "View student, campus, and mentor leaderboard rankings.",
+  description: "View student and campus leaderboard rankings.",
 };
 
 interface LeaderboardPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-const validCategories: Category[] = [
-  "students",
-  "campus",
-  "wadhwani",
-  "mentors",
-];
+const validCategories: Category[] = ["students", "campus", "wadhwani"];
 const validTimeframes: TimeFrame[] = ["monthly", "overall"];
 const validWadhwaniTimeframes: WadhwaniTimeFrame[] = ["campus", "zonal"];
 

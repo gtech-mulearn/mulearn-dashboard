@@ -186,14 +186,15 @@ export function OnboardDialog({
                   </PopoverTrigger>
 
                   {onboardUser && (
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
                       className="absolute right-2 top-1/2 -translate-y-1/2 rounded-sm opacity-60 transition-opacity hover:opacity-100"
                       onClick={handleClearUser}
                       aria-label="Clear selection"
                     >
                       <X className="h-3.5 w-3.5" />
-                    </button>
+                    </Button>
                   )}
                 </div>
 

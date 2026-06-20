@@ -216,7 +216,7 @@ export function InternReportPageClient() {
             <DialogTrigger asChild>
               <Button
                 variant="default"
-                className="w-full sm:w-auto font-black uppercase text-[10px] tracking-widest h-12 px-6"
+                className="w-full sm:w-auto uppercase text-[10px] tracking-widest h-12 px-6"
               >
                 Individual Scroll
               </Button>
@@ -257,7 +257,7 @@ export function InternReportPageClient() {
                   onClick={handleGenerateIndividual}
                   disabled={!individualMuid}
                   variant="default"
-                  className="font-black uppercase text-[10px] tracking-widest"
+                  className="uppercase text-[10px] tracking-widest"
                 >
                   Summon Report
                 </Button>
@@ -269,7 +269,7 @@ export function InternReportPageClient() {
             <DialogTrigger asChild>
               <Button
                 variant="trusty"
-                className="w-full sm:w-auto font-black uppercase text-[10px] tracking-widest h-12 px-6"
+                className="w-full sm:w-auto uppercase text-[10px] tracking-widest h-12 px-6"
               >
                 Team Scroll
               </Button>
@@ -310,7 +310,7 @@ export function InternReportPageClient() {
                   onClick={handleGenerateTeam}
                   disabled={!teamName}
                   variant="trusty"
-                  className="font-black uppercase text-[10px] tracking-widest"
+                  className=" uppercase text-[10px] tracking-widest"
                 >
                   Summon Report
                 </Button>

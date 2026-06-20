@@ -455,7 +455,7 @@ export function TimesheetPageClient() {
                     <Button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full h-12 text-sm shadow-[0_8px_16px_rgba(46,133,254,0.25)] bg-brand-blue hover:bg-brand-blue/90 text-primary-foreground font-bold rounded-full transition-all duration-300"
+                      className="w-full h-12 text-sm shadow-[0_8px_16px_rgba(46,133,254,0.25)] font-bold rounded-full"
                     >
                       {isSubmitting ? (
                         <>
@@ -491,28 +491,30 @@ export function TimesheetPageClient() {
                   </p>
                 </div>
                 <div className="flex items-center gap-1">
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
                     onClick={() => navigateMonth(-1)}
                     disabled={
                       onboardingMonthStart !== null &&
                       new Date(year, month, 1).getTime() <=
                         onboardingMonthStart.getTime()
                     }
-                    className="p-1.5 rounded-lg hover:bg-muted/40 transition-colors text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="p-1.5 rounded-lg transition-colors text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed"
                     aria-label="Previous month"
                   >
                     <ChevronLeft className="w-3.5 h-3.5" />
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
+                    variant="ghost"
                     onClick={() => navigateMonth(1)}
                     disabled={new Date(year, month + 1, 1) > today}
-                    className="p-1.5 rounded-lg hover:bg-muted/40 transition-colors text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="p-1.5 rounded-lg transition-colors text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed"
                     aria-label="Next month"
                   >
                     <ChevronRight className="w-3.5 h-3.5" />
-                  </button>
+                  </Button>
                 </div>
               </div>
             </CardHeader>

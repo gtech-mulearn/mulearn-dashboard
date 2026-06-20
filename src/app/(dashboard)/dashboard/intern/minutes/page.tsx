@@ -302,7 +302,7 @@ export default function InternMinutesPage() {
                           !title.trim() ||
                           !minutesText.trim()
                         }
-                        className="flex-1 gap-2 text-[10px] tracking-widest h-10 bg-amber-500 hover:bg-amber-500/90 text-black font-black"
+                        className="flex-1 gap-2 text-[10px] tracking-widest h-10 "
                       >
                         {submitMutation.isPending ||
                         updateMutation.isPending ? (
@@ -360,13 +360,14 @@ export default function InternMinutesPage() {
                     className="h-9 pl-8 pr-7 text-xs border-border/40 bg-background/50 font-medium placeholder:text-muted-foreground/50 w-full"
                   />
                   {searchQuery && (
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
                       onClick={() => setSearchQuery("")}
                       className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-foreground text-xs font-bold"
                     >
                       ✕
-                    </button>
+                    </Button>
                   )}
                 </div>
                 <div className="text-[10px] font-bold uppercase text-muted-foreground/60 tracking-wider">
@@ -430,7 +431,7 @@ export default function InternMinutesPage() {
                             size="icon-sm"
                             variant="ghost"
                             onClick={() => setViewingMinute(item)}
-                            className="rounded-lg text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10 h-8 w-8"
+                            className="rounded-lg text-muted-foreground/60 hover:text-foreground h-8 w-8"
                             title="View Details"
                           >
                             <Eye className="w-3.5 h-3.5" />
@@ -446,7 +447,7 @@ export default function InternMinutesPage() {
                                 setMinutesText(item.minutes);
                                 setActiveTab("upload");
                               }}
-                              className="rounded-lg text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10 h-8 w-8"
+                              className="rounded-lg text-muted-foreground/60 hover:text-foreground h-8 w-8"
                               title="Edit Minutes"
                             >
                               <Pencil className="w-3.5 h-3.5" />

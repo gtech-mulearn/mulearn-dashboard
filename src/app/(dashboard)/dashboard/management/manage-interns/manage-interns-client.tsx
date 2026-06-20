@@ -322,7 +322,7 @@ export function ManageInternsPageClient() {
           <Link href="/dashboard/management/manage-interns/tasks">
             <Button
               variant="default"
-              className="gap-2 text-[10px] tracking-widest h-10 shadow-lg bg-brand-blue hover:bg-brand-blue/90"
+              className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
             >
               <ListTodo className="w-4 h-4" />
               Tasks
@@ -340,7 +340,7 @@ export function ManageInternsPageClient() {
           <Link href="/dashboard/management/manage-interns/minutes">
             <Button
               variant="default"
-              className="gap-2 text-[10px] tracking-widest h-10 shadow-lg bg-amber-500 hover:bg-amber-500/90 text-black"
+              className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
             >
               <Crown className="w-4 h-4" />
               Minutes

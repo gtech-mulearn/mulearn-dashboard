@@ -365,7 +365,7 @@ export function LeaveManagementPageClient() {
                       variant="outline"
                       disabled={!history.pagination.isPrev}
                       onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                      className="text-[10px] font-black uppercase tracking-widest border-border/50"
+                      className="text-[10px] font-black uppercase tracking-widest"
                     >
                       Prev
                     </Button>
@@ -374,7 +374,7 @@ export function LeaveManagementPageClient() {
                       variant="outline"
                       disabled={!history.pagination.isNext}
                       onClick={() => setCurrentPage((p) => p + 1)}
-                      className="text-[10px] font-black uppercase tracking-widest border-border/50"
+                      className="text-[10px] font-black uppercase tracking-widest "
                     >
                       Next
                     </Button>
@@ -490,7 +490,7 @@ export function LeaveManagementPageClient() {
                   <Button
                     type="submit"
                     disabled={submitLeaveMutation.isPending}
-                    className="h-11 px-8 text-sm shadow-[0_8px_16px_rgba(139,92,246,0.25)] bg-brand-purple border-brand-purple hover:bg-brand-purple/90 text-white font-bold rounded-full transition-all duration-300 gap-2"
+                    className="h-11 px-8 text-sm shadow-[0_8px_16px_rgba(139,92,246,0.25)]  font-bold rounded-full transition-all duration-300 gap-2"
                   >
                     {submitLeaveMutation.isPending ? (
                       <>

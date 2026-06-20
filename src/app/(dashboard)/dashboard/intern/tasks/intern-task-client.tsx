@@ -531,7 +531,7 @@ export function InternTasksPageClient() {
                 setCompletingTaskId(null);
                 setOutputLink("");
               }}
-              className="font-black text-[10px] uppercase tracking-widest h-9"
+              className="text-[10px] uppercase tracking-widest h-9"
             >
               Cancel
             </Button>
@@ -539,7 +539,7 @@ export function InternTasksPageClient() {
               type="button"
               onClick={handleConfirmComplete}
               disabled={updateStatusMutation.isPending}
-              className="font-black text-[10px] uppercase tracking-widest h-9 bg-brand-blue hover:bg-brand-blue/80 text-white"
+              className="text-[10px] uppercase tracking-widest h-9"
             >
               {updateStatusMutation.isPending
                 ? "Submitting..."

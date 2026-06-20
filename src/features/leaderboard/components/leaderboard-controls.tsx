@@ -53,9 +53,7 @@ export function LeaderboardControls({
       <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
         {/* Left: timeframe toggle */}
         <div>
-          {category === "mentors" ? (
-            <div />
-          ) : category === "wadhwani" ? (
+          {category === "wadhwani" ? (
             <WadhwaniTimeFrameToggle
               selected={wadhwaniTimeframe}
               onChange={(val) => updateParam("wadhwaniTimeframe", val)}

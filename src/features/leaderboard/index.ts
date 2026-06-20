@@ -10,9 +10,6 @@
 // API functions (for direct use if needed)
 export {
   fetchCampusLeaderboard,
-  fetchCampusMentorLeaderboard,
-  fetchIgMentorLeaderboard,
-  fetchMentorLeaderboard,
   fetchStudentLeaderboard,
   fetchWadhwaniLeaderboard,
 } from "./api";
@@ -31,27 +28,18 @@ export {
 // Hooks (primary way to use the feature)
 export { useLeaderboard } from "./hooks";
 export type {
-  CampusMentorLeaderboardEntry,
   CollegeLeaderboardEntry,
   CollegeLeaderboardResponse,
-  IgMentorLeaderboardEntry,
-  MentorLeaderboardEntry,
   StudentLeaderboardEntry,
   StudentLeaderboardResponse,
   WadhwaniLeaderboardEntry,
   WadhwaniLeaderboardResponse,
 } from "./schemas";
-// Schemas and types
+// Schemas
 export {
   ApiResponseSchema,
-  CampusMentorLeaderboardEntrySchema,
-  CampusMentorLeaderboardResponseSchema,
   CollegeLeaderboardEntrySchema,
   CollegeLeaderboardResponseSchema,
-  IgMentorLeaderboardEntrySchema,
-  IgMentorLeaderboardResponseSchema,
-  MentorLeaderboardEntrySchema,
-  MentorLeaderboardResponseSchema,
   StudentLeaderboardEntrySchema,
   StudentLeaderboardResponseSchema,
   WadhwaniLeaderboardEntrySchema,

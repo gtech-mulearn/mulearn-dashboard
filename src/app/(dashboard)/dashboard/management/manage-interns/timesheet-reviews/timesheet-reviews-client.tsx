@@ -331,35 +331,29 @@ export function TimesheetReviewsPageClient() {
 
       <div className="space-y-6">
         {/* Switcher button at the top of search */}
-        <div className="flex items-center gap-1 rounded-xl border border-border/40 bg-muted/40 p-1 w-fit h-12">
-          <button
+        <div className="flex items-center gap-1 p-1 w-fit h-12">
+          <Button
             type="button"
+            variant={typeFilter === "DAILY" ? "default" : "outline"}
             onClick={() => {
               setTypeFilter("DAILY");
               setPage(1);
             }}
-            className={`rounded-lg px-4 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors h-10 flex items-center ${
-              typeFilter === "DAILY"
-                ? "bg-background text-foreground shadow-sm font-bold"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
+            className="gap-1.5 text-[10px]  uppercase tracking-[0.2em] h-9 rounded-md"
           >
             Daily Logs
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant={typeFilter === "WEEKLY" ? "default" : "outline"}
             onClick={() => {
               setTypeFilter("WEEKLY");
               setPage(1);
             }}
-            className={`rounded-lg px-4 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors h-10 flex items-center ${
-              typeFilter === "WEEKLY"
-                ? "bg-background text-foreground shadow-sm font-bold"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
+            className="gap-1.5 text-[10px] uppercase tracking-[0.2em] h-9 rounded-md"
           >
             Weekly Reviews
-          </button>
+          </Button>
         </div>
 
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">

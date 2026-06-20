@@ -341,7 +341,7 @@ export function ManageMinutesPageClient() {
                 onClick={() =>
                   setSortOrder((prev) => (prev === "desc" ? "asc" : "desc"))
                 }
-                className="gap-2 h-8 font-black uppercase text-[10px] tracking-widest border-border/40"
+                className="gap-2 h-8 uppercase text-[10px] tracking-widest"
               >
                 <ArrowUpDown className="w-3 h-3" />
                 {sortOrder === "desc" ? "Newest" : "Oldest"}

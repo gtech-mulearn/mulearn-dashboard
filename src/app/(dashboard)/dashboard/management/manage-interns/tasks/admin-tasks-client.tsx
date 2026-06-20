@@ -498,7 +498,7 @@ export function AdminTasksPageClient() {
             clearAssigneeResults();
             setCreateOpen(true);
           }}
-          className="gap-2 text-[10px] tracking-widest h-10 shadow-lg bg-brand-blue hover:bg-brand-blue/90"
+          className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
         >
           <Plus className="w-4 h-4" />
           Assign New Task
@@ -795,8 +795,9 @@ export function AdminTasksPageClient() {
                   <span className="text-sm font-bold text-foreground flex-1">
                     {form.assigneeName}
                   </span>
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
                     onClick={() =>
                       setForm({
                         ...form,
@@ -808,7 +809,7 @@ export function AdminTasksPageClient() {
                     className="text-muted-foreground hover:text-destructive"
                   >
                     <X className="w-4 h-4" />
-                  </button>
+                  </Button>
                 </div>
               ) : (
                 <div className="relative">
@@ -911,7 +912,7 @@ export function AdminTasksPageClient() {
               <Button
                 type="submit"
                 disabled={createMutation.isPending}
-                className="bg-brand-blue hover:bg-brand-blue/90 text-white font-bold gap-2"
+                className="font-bold gap-2"
               >
                 {createMutation.isPending ? (
                   <>
@@ -1084,7 +1085,7 @@ export function AdminTasksPageClient() {
               <Button
                 type="submit"
                 disabled={updateMutation.isPending}
-                className="bg-brand-blue hover:bg-brand-blue/90 text-white font-bold gap-2"
+                className="font-bold gap-2"
               >
                 {updateMutation.isPending ? (
                   <>

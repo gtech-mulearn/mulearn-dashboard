@@ -919,7 +919,7 @@ export function QuestLog() {
                         type="button"
                         variant="outline"
                         onClick={() => setIsEditMode(false)}
-                        className="font-black text-[10px] uppercase tracking-widest h-9"
+                        className=" text-[10px] uppercase tracking-widest h-9"
                       >
                         Cancel
                       </Button>
@@ -929,7 +929,7 @@ export function QuestLog() {
                         disabled={
                           selectedItem.type === "timesheet" && !tsEditReason
                         }
-                        className="font-black text-[10px] uppercase tracking-widest h-9 bg-brand-blue hover:bg-brand-blue/80 text-white"
+                        className=" text-[10px] uppercase tracking-widest h-9 bg-brand-blue hover:bg-brand-blue/80 text-white"
                       >
                         Save Changes
                       </Button>
@@ -939,7 +939,7 @@ export function QuestLog() {
                   type="button"
                   variant="outline"
                   onClick={() => setSelectedItem(null)}
-                  className="font-black text-[10px] uppercase tracking-widest h-9"
+                  className="text-[10px] uppercase tracking-widest h-9"
                 >
                   Close
                 </Button>
