@@ -199,8 +199,8 @@ export function MentorEditProfileModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="flex flex-col gap-0 p-0 max-w-lg">
+        <DialogHeader className="shrink-0 px-4 pt-4 pb-3 sm:px-6 sm:pt-6 sm:pb-4">
           <DialogTitle>Edit Mentor Profile</DialogTitle>
           <DialogDescription>
             Update your public-facing mentor profile. Tier and verification
@@ -211,195 +211,205 @@ export function MentorEditProfileModal({
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit as any)}
-            className="space-y-5"
+            className="flex flex-col min-h-0"
           >
-            {/* Profile photo */}
-            <div className="flex items-center gap-4">
-              <div className="relative h-16 w-16 overflow-hidden rounded-2xl border bg-muted">
-                {previewUrl || userProfile.profile_pic ? (
-                  <Image
-                    src={
-                      previewUrl ?? `${userProfile.profile_pic}?${Date.now()}`
-                    }
-                    alt="Profile"
-                    fill
-                    className="object-cover"
+            <div className="overflow-y-auto px-4 py-4 sm:px-6 space-y-5">
+              {/* Profile photo */}
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl border bg-muted">
+                  {previewUrl || userProfile.profile_pic ? (
+                    <Image
+                      src={
+                        previewUrl ?? `${userProfile.profile_pic}?${Date.now()}`
+                      }
+                      alt="Profile"
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-2xl font-bold text-muted-foreground">
+                      {userProfile.full_name?.charAt(0) ?? "?"}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleFileChange}
                   />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center text-2xl font-bold text-muted-foreground">
-                    {userProfile.full_name?.charAt(0) ?? "?"}
-                  </div>
-                )}
-              </div>
-              <div>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleFileChange}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  Change Photo
-                </Button>
-                {previewUrl && (
                   <Button
                     type="button"
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
-                    className="ml-2 text-destructive hover:text-destructive"
-                    onClick={() => {
-                      setPreviewUrl(null);
-                      form.setValue("profile_pic", undefined);
-                      if (fileInputRef.current) fileInputRef.current.value = "";
-                    }}
+                    onClick={() => fileInputRef.current?.click()}
                   >
-                    <X className="mr-1 h-3.5 w-3.5" />
-                    Remove
+                    Change Photo
                   </Button>
+                  {previewUrl && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="ml-2 text-destructive hover:text-destructive"
+                      onClick={() => {
+                        setPreviewUrl(null);
+                        form.setValue("profile_pic", undefined);
+                        if (fileInputRef.current)
+                          fileInputRef.current.value = "";
+                      }}
+                    >
+                      <X className="mr-1 h-3.5 w-3.5" />
+                      Remove
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* Name */}
+              <FormField
+                control={form.control as any}
+                name="full_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Full Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Your full name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
-              </div>
-            </div>
-
-            {/* Name */}
-            <FormField
-              control={form.control as any}
-              name="full_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Full Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Your full name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Bio */}
-            <FormField
-              control={form.control as any}
-              name="about"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Bio</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Tell mentees about yourself, your experience, and what you can help with..."
-                      className="min-h-[100px] resize-y"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription className="text-xs">
-                    Minimum 50 characters recommended.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Expertise tags (without FormField, plain labels to avoid FormField generic errors with TagInput) */}
-            <div className="space-y-2">
-              <div className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Expertise
-              </div>
-              <TagInput
-                value={form.watch("expertise") ?? []}
-                onChange={(tags) =>
-                  form.setValue("expertise", tags, { shouldDirty: true })
-                }
-                placeholder="e.g. React, Python (press Enter)"
               />
-              <p className="text-[0.8rem] text-muted-foreground">
-                Enter comma-separated skills or topics you can mentor in.
-              </p>
-            </div>
 
-            {/* Preferred IGs */}
-            <div className="space-y-2">
-              <div className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Preferred Interest Groups
-              </div>
-              <MultiSelect
-                options={igOptions}
-                value={form.watch("preferred_ig_ids") ?? []}
-                onChange={(vals) =>
-                  form.setValue("preferred_ig_ids", vals, { shouldDirty: true })
-                }
-                placeholder="Select IGs you want to mentor in..."
-              />
-            </div>
-
-            {/* Affiliation */}
-            <div className="space-y-2">
-              <div className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Company / Campus Affiliation
-              </div>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div>
-                      <Input
-                        value={form.watch("org") ?? ""}
-                        placeholder="Affiliation"
-                        disabled
-                        className="cursor-not-allowed"
+              {/* Bio */}
+              <FormField
+                control={form.control as any}
+                name="about"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Bio</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Tell mentees about yourself, your experience, and what you can help with..."
+                        className="min-h-[100px] resize-y"
+                        {...field}
                       />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Affiliation editing coming soon.</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+                    </FormControl>
+                    <FormDescription className="text-xs">
+                      Minimum 50 characters recommended.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Expertise tags (without FormField, plain labels to avoid FormField generic errors with TagInput) */}
+              <div className="space-y-2">
+                <div className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Expertise
+                </div>
+                <TagInput
+                  value={form.watch("expertise") ?? []}
+                  onChange={(tags) =>
+                    form.setValue("expertise", tags, { shouldDirty: true })
+                  }
+                  placeholder="e.g. React, Python (press Enter)"
+                />
+                <p className="text-[0.8rem] text-muted-foreground">
+                  Enter comma-separated skills or topics you can mentor in.
+                </p>
+              </div>
+
+              {/* Preferred IGs */}
+              <div className="space-y-2">
+                <div className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Preferred Interest Groups
+                </div>
+                <MultiSelect
+                  options={igOptions}
+                  value={form.watch("preferred_ig_ids") ?? []}
+                  onChange={(vals) =>
+                    form.setValue("preferred_ig_ids", vals, {
+                      shouldDirty: true,
+                    })
+                  }
+                  placeholder="Select IGs you want to mentor in..."
+                />
+              </div>
+
+              {/* Affiliation */}
+              <div className="space-y-2">
+                <div className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Company / Campus Affiliation
+                </div>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div>
+                        <Input
+                          value={form.watch("org") ?? ""}
+                          placeholder="Affiliation"
+                          disabled
+                          className="cursor-not-allowed"
+                        />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Affiliation editing coming soon.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+
+              {/* Read-only: Tier */}
+              {mentorProfile.mentor_tier && (
+                <div className="space-y-1.5">
+                  <p className="text-sm font-medium text-foreground">
+                    Mentor Tier
+                  </p>
+                  <div className="rounded-lg border border-border/50 bg-muted/30 px-3 py-2.5">
+                    <span className="text-sm capitalize text-muted-foreground">
+                      {mentorProfile.mentor_tier}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Tier is set by an admin and cannot be self-edited.
+                  </p>
+                </div>
+              )}
+
+              {/* Read-only: Hours */}
+              {typeof mentorProfile.hours === "number" && (
+                <div className="space-y-1.5">
+                  <p className="text-sm font-medium text-foreground">
+                    Accumulated Hours
+                  </p>
+                  <div className="rounded-lg border border-border/50 bg-muted/30 px-3 py-2.5">
+                    <span className="text-sm text-muted-foreground">
+                      {mentorProfile.hours} hrs (system-calculated)
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Read-only: Tier */}
-            {mentorProfile.mentor_tier && (
-              <div className="space-y-1.5">
-                <p className="text-sm font-medium text-foreground">
-                  Mentor Tier
-                </p>
-                <div className="rounded-lg border border-border/50 bg-muted/30 px-3 py-2.5">
-                  <span className="text-sm capitalize text-muted-foreground">
-                    {mentorProfile.mentor_tier}
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Tier is set by an admin and cannot be self-edited.
-                </p>
-              </div>
-            )}
-
-            {/* Read-only: Hours */}
-            {typeof mentorProfile.hours === "number" && (
-              <div className="space-y-1.5">
-                <p className="text-sm font-medium text-foreground">
-                  Accumulated Hours
-                </p>
-                <div className="rounded-lg border border-border/50 bg-muted/30 px-3 py-2.5">
-                  <span className="text-sm text-muted-foreground">
-                    {mentorProfile.hours} hrs (system-calculated)
-                  </span>
-                </div>
-              </div>
-            )}
-
-            <DialogFooter>
+            <DialogFooter className="shrink-0 px-4 py-4 sm:px-6 border-t border-border">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => onOpenChange(false)}
                 disabled={isPending}
+                className="w-full sm:w-auto"
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isPending}>
+              <Button
+                type="submit"
+                disabled={isPending}
+                className="w-full sm:w-auto"
+              >
                 {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save Changes
               </Button>

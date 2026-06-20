@@ -12,6 +12,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { chipColor } from "@/lib/chip-colors";
 import type { Task } from "../schemas";
 import { MarkdownRenderer } from "../utils/markdown";
 
@@ -164,7 +165,7 @@ export function TaskDetailPanel({
                         {extendedTask.skills.map((skill: string) => (
                           <span
                             key={skill}
-                            className="px-3 py-1 bg-brand-blue/10 text-brand-blue rounded-full text-sm font-medium"
+                            className={`px-3 py-1 rounded-full text-sm font-medium ${chipColor(skill)}`}
                           >
                             <MarkdownRenderer
                               content={skill}

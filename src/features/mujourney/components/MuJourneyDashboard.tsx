@@ -52,7 +52,7 @@ export function MuJourneyDashboard({
         transition={{ duration: 0.5 }}
       >
         <JourneyHeader
-          title="MuJourney"
+          title="µJourney"
           subtitle="Your Learning Path - Complete tasks, earn karma, level up"
         />
       </motion.div>

@@ -287,9 +287,9 @@ export function EditProfileModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
-        <DialogHeader>
-          <DialogTitle className="text-center text-3xl font-bold">
+      <DialogContent className="flex flex-col gap-0 p-0 sm:max-w-3xl">
+        <DialogHeader className="shrink-0 px-4 pt-4 pb-3 sm:px-6 sm:pt-6 sm:pb-4">
+          <DialogTitle className="text-center text-2xl font-bold sm:text-3xl">
             Edit Profile
           </DialogTitle>
           <DialogDescription className="text-center">
@@ -299,402 +299,411 @@ export function EditProfileModal({
 
         <Form {...form}>
           <form
-            className="space-y-8 py-2"
+            className="flex flex-col min-h-0"
             onSubmit={form.handleSubmit(handleSubmit)}
           >
-            <div className="flex flex-col items-center gap-3">
-              <div className="relative">
-                <div className="h-24 w-24 overflow-hidden rounded-2xl bg-muted">
-                  {imagePreviewUrl ? (
-                    <Image
-                      src={imagePreviewUrl}
-                      alt={profile.full_name}
-                      width={96}
-                      height={96}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-primary/10 text-3xl font-bold text-primary">
-                      {profile.full_name?.charAt(0) || "?"}
-                    </div>
-                  )}
-                </div>
-                <label
-                  htmlFor="profilePic"
-                  className="absolute -bottom-1 -right-1 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm"
-                  title="Change photo"
-                >
-                  <Camera className="h-4 w-4" />
-                </label>
-              </div>
-              <input
-                id="profilePic"
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(event) => {
-                  const file = event.target.files?.[0];
-                  form.setValue("profile_pic", file, { shouldDirty: true });
-                }}
-              />
-              <p className="text-xs text-muted-foreground">
-                Upload a profile image
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              <h3 className="text-center text-2xl font-semibold uppercase tracking-wide text-primary">
-                Basic Info
-              </h3>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="full_name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Full Name</FormLabel>
-                      <FormControl>
-                        <Input {...field} className={fieldClassName} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          type="email"
-                          className={fieldClassName}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="mobile"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Mobile</FormLabel>
-                      <FormControl>
-                        <Input {...field} className={fieldClassName} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="gender"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Gender</FormLabel>
-                      <Select
-                        value={field.value || "__none__"}
-                        onValueChange={(value) =>
-                          field.onChange(value === "__none__" ? "" : value)
-                        }
-                      >
-                        <FormControl>
-                          <SelectTrigger className={selectTriggerClassName}>
-                            <SelectValue placeholder="Select gender" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="__none__">None</SelectItem>
-                          <SelectItem value="Male">Male</SelectItem>
-                          <SelectItem value="Female">Female</SelectItem>
-                          <SelectItem value="Other">Other</SelectItem>
-                          <SelectItem value="prefer-not-to-say">
-                            Prefer not to say
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="dob"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Date of Birth</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          type="date"
-                          className={fieldClassName}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="communities"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Community</FormLabel>
-                      <MultiSelectDropdown
-                        options={communities}
-                        selectedValues={field.value ?? []}
-                        onToggle={(value, checked) => {
-                          const current = field.value ?? [];
-                          if (checked) {
-                            if (!current.includes(value)) {
-                              field.onChange([...current, value]);
-                            }
-                            return;
-                          }
-                          field.onChange(
-                            current.filter(
-                              (selectedValue) => selectedValue !== value,
-                            ),
-                          );
-                        }}
+            <div className="overflow-y-auto px-4 py-2 sm:px-6 sm:py-4 space-y-6 sm:space-y-8">
+              <div className="flex flex-col items-center gap-3">
+                <div className="relative">
+                  <div className="h-24 w-24 overflow-hidden rounded-2xl bg-muted">
+                    {imagePreviewUrl ? (
+                      <Image
+                        src={imagePreviewUrl}
+                        alt={profile.full_name}
+                        width={96}
+                        height={96}
+                        className="h-full w-full object-cover"
                       />
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-primary/10 text-3xl font-bold text-primary">
+                        {profile.full_name?.charAt(0) || "?"}
+                      </div>
+                    )}
+                  </div>
+                  <label
+                    htmlFor="profilePic"
+                    className="absolute -bottom-1 -right-1 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm"
+                    title="Change photo"
+                  >
+                    <Camera className="h-4 w-4" />
+                  </label>
+                </div>
+                <input
+                  id="profilePic"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    form.setValue("profile_pic", file, { shouldDirty: true });
+                  }}
                 />
+                <p className="text-xs text-muted-foreground">
+                  Upload a profile image
+                </p>
               </div>
-            </div>
 
-            <div className="space-y-4">
-              <h3 className="text-center text-2xl font-semibold uppercase tracking-wide text-primary">
-                College / School
-              </h3>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="country_id"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Country</FormLabel>
-                      <Select
-                        value={field.value || "__none__"}
-                        onValueChange={(value) => {
-                          form.setValue("has_college_changes", true, {
-                            shouldDirty: false,
-                          });
-                          field.onChange(value === "__none__" ? "" : value);
-                          form.setValue("state_id", "", { shouldDirty: true });
-                          form.setValue("district_id", "", {
-                            shouldDirty: true,
-                          });
-                          form.setValue("org_id", "", { shouldDirty: true });
-                          form.setValue("department_id", "", {
-                            shouldDirty: true,
-                          });
-                        }}
-                      >
+              <div className="space-y-4">
+                <h3 className="text-center text-lg font-semibold uppercase tracking-wide text-primary sm:text-2xl">
+                  Basic Info
+                </h3>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="full_name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Full Name</FormLabel>
                         <FormControl>
-                          <SelectTrigger className={selectTriggerClassName}>
-                            <SelectValue placeholder="Select country" />
-                          </SelectTrigger>
+                          <Input {...field} className={fieldClassName} />
                         </FormControl>
-                        <SelectContent>
-                          <SelectItem value="__none__">None</SelectItem>
-                          {countries.map((country) => (
-                            <SelectItem
-                              key={country.value}
-                              value={country.value}
-                            >
-                              {country.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="state_id"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>State</FormLabel>
-                      <Select
-                        value={field.value || "__none__"}
-                        onValueChange={(value) => {
-                          form.setValue("has_college_changes", true, {
-                            shouldDirty: false,
-                          });
-                          field.onChange(value === "__none__" ? "" : value);
-                          form.setValue("district_id", "", {
-                            shouldDirty: true,
-                          });
-                          form.setValue("org_id", "", { shouldDirty: true });
-                          form.setValue("department_id", "", {
-                            shouldDirty: true,
-                          });
-                        }}
-                        disabled={!countryId}
-                      >
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
                         <FormControl>
-                          <SelectTrigger className={selectTriggerClassName}>
-                            <SelectValue placeholder="Select state" />
-                          </SelectTrigger>
+                          <Input
+                            {...field}
+                            type="email"
+                            className={fieldClassName}
+                          />
                         </FormControl>
-                        <SelectContent>
-                          <SelectItem value="__none__">None</SelectItem>
-                          {states.map((state) => (
-                            <SelectItem key={state.value} value={state.value}>
-                              {state.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="district_id"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>District</FormLabel>
-                      <Select
-                        value={field.value || "__none__"}
-                        onValueChange={(value) => {
-                          form.setValue("has_college_changes", true, {
-                            shouldDirty: false,
-                          });
-                          field.onChange(value === "__none__" ? "" : value);
-                          form.setValue("org_id", "", { shouldDirty: true });
-                          form.setValue("department_id", "", {
-                            shouldDirty: true,
-                          });
-                        }}
-                        disabled={!stateId}
-                      >
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="mobile"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Mobile</FormLabel>
                         <FormControl>
-                          <SelectTrigger className={selectTriggerClassName}>
-                            <SelectValue placeholder="Select district" />
-                          </SelectTrigger>
+                          <Input {...field} className={fieldClassName} />
                         </FormControl>
-                        <SelectContent>
-                          <SelectItem value="__none__">None</SelectItem>
-                          {districts.map((district) => (
-                            <SelectItem
-                              key={district.value}
-                              value={district.value}
-                            >
-                              {district.label}
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="gender"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Gender</FormLabel>
+                        <Select
+                          value={field.value || "__none__"}
+                          onValueChange={(value) =>
+                            field.onChange(value === "__none__" ? "" : value)
+                          }
+                        >
+                          <FormControl>
+                            <SelectTrigger className={selectTriggerClassName}>
+                              <SelectValue placeholder="Select gender" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="__none__">None</SelectItem>
+                            <SelectItem value="Male">Male</SelectItem>
+                            <SelectItem value="Female">Female</SelectItem>
+                            <SelectItem value="Other">Other</SelectItem>
+                            <SelectItem value="prefer-not-to-say">
+                              Prefer not to say
                             </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="org_id"
-                  render={({ field }) => (
-                    <FormItem className="min-w-0 sm:col-span-2">
-                      <FormLabel>College / School</FormLabel>
-                      <Select
-                        value={field.value || "__none__"}
-                        onValueChange={(value) => {
-                          form.setValue("has_college_changes", true, {
-                            shouldDirty: false,
-                          });
-                          field.onChange(value === "__none__" ? "" : value);
-                        }}
-                        disabled={!districtId && organizations.length === 0}
-                      >
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="dob"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Date of Birth</FormLabel>
                         <FormControl>
-                          <SelectTrigger className={selectTriggerClassName}>
-                            <SelectValue placeholder="Select college / school" />
-                          </SelectTrigger>
+                          <Input
+                            {...field}
+                            type="date"
+                            className={fieldClassName}
+                          />
                         </FormControl>
-                        <SelectContent>
-                          <SelectItem value="__none__">None</SelectItem>
-                          {organizations.map((organization) => (
-                            <SelectItem
-                              key={organization.value}
-                              value={organization.value}
-                            >
-                              {organization.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="department_id"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Department</FormLabel>
-                      <Select
-                        value={field.value || "__none__"}
-                        onValueChange={(value) => {
-                          form.setValue("has_college_changes", true, {
-                            shouldDirty: false,
-                          });
-                          field.onChange(value === "__none__" ? "" : value);
-                        }}
-                        disabled={!districtId && departments.length === 0}
-                      >
-                        <FormControl>
-                          <SelectTrigger className={selectTriggerClassName}>
-                            <SelectValue placeholder="Select department" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="__none__">None</SelectItem>
-                          {departments.map((department) => (
-                            <SelectItem
-                              key={department.value}
-                              value={department.value}
-                            >
-                              {department.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className="space-y-2">
-                  <div className="text-sm font-medium">MUID</div>
-                  <Input
-                    value={profile.muid}
-                    disabled
-                    className={fieldClassName}
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="communities"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Community</FormLabel>
+                        <MultiSelectDropdown
+                          options={communities}
+                          selectedValues={field.value ?? []}
+                          onToggle={(value, checked) => {
+                            const current = field.value ?? [];
+                            if (checked) {
+                              if (!current.includes(value)) {
+                                field.onChange([...current, value]);
+                              }
+                              return;
+                            }
+                            field.onChange(
+                              current.filter(
+                                (selectedValue) => selectedValue !== value,
+                              ),
+                            );
+                          }}
+                        />
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 </div>
               </div>
+
+              <div className="space-y-4">
+                <h3 className="text-center text-lg font-semibold uppercase tracking-wide text-primary sm:text-2xl">
+                  College / School
+                </h3>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="country_id"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Country</FormLabel>
+                        <Select
+                          value={field.value || "__none__"}
+                          onValueChange={(value) => {
+                            form.setValue("has_college_changes", true, {
+                              shouldDirty: false,
+                            });
+                            field.onChange(value === "__none__" ? "" : value);
+                            form.setValue("state_id", "", {
+                              shouldDirty: true,
+                            });
+                            form.setValue("district_id", "", {
+                              shouldDirty: true,
+                            });
+                            form.setValue("org_id", "", { shouldDirty: true });
+                            form.setValue("department_id", "", {
+                              shouldDirty: true,
+                            });
+                          }}
+                        >
+                          <FormControl>
+                            <SelectTrigger className={selectTriggerClassName}>
+                              <SelectValue placeholder="Select country" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="__none__">None</SelectItem>
+                            {countries.map((country) => (
+                              <SelectItem
+                                key={country.value}
+                                value={country.value}
+                              >
+                                {country.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="state_id"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>State</FormLabel>
+                        <Select
+                          value={field.value || "__none__"}
+                          onValueChange={(value) => {
+                            form.setValue("has_college_changes", true, {
+                              shouldDirty: false,
+                            });
+                            field.onChange(value === "__none__" ? "" : value);
+                            form.setValue("district_id", "", {
+                              shouldDirty: true,
+                            });
+                            form.setValue("org_id", "", { shouldDirty: true });
+                            form.setValue("department_id", "", {
+                              shouldDirty: true,
+                            });
+                          }}
+                          disabled={!countryId}
+                        >
+                          <FormControl>
+                            <SelectTrigger className={selectTriggerClassName}>
+                              <SelectValue placeholder="Select state" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="__none__">None</SelectItem>
+                            {states.map((state) => (
+                              <SelectItem key={state.value} value={state.value}>
+                                {state.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="district_id"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>District</FormLabel>
+                        <Select
+                          value={field.value || "__none__"}
+                          onValueChange={(value) => {
+                            form.setValue("has_college_changes", true, {
+                              shouldDirty: false,
+                            });
+                            field.onChange(value === "__none__" ? "" : value);
+                            form.setValue("org_id", "", { shouldDirty: true });
+                            form.setValue("department_id", "", {
+                              shouldDirty: true,
+                            });
+                          }}
+                          disabled={!stateId}
+                        >
+                          <FormControl>
+                            <SelectTrigger className={selectTriggerClassName}>
+                              <SelectValue placeholder="Select district" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="__none__">None</SelectItem>
+                            {districts.map((district) => (
+                              <SelectItem
+                                key={district.value}
+                                value={district.value}
+                              >
+                                {district.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="org_id"
+                    render={({ field }) => (
+                      <FormItem className="min-w-0 sm:col-span-2">
+                        <FormLabel>College / School</FormLabel>
+                        <Select
+                          value={field.value || "__none__"}
+                          onValueChange={(value) => {
+                            form.setValue("has_college_changes", true, {
+                              shouldDirty: false,
+                            });
+                            field.onChange(value === "__none__" ? "" : value);
+                          }}
+                          disabled={!districtId && organizations.length === 0}
+                        >
+                          <FormControl>
+                            <SelectTrigger className={selectTriggerClassName}>
+                              <SelectValue placeholder="Select college / school" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="__none__">None</SelectItem>
+                            {organizations.map((organization) => (
+                              <SelectItem
+                                key={organization.value}
+                                value={organization.value}
+                              >
+                                {organization.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="department_id"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Department</FormLabel>
+                        <Select
+                          value={field.value || "__none__"}
+                          onValueChange={(value) => {
+                            form.setValue("has_college_changes", true, {
+                              shouldDirty: false,
+                            });
+                            field.onChange(value === "__none__" ? "" : value);
+                          }}
+                          disabled={!districtId && departments.length === 0}
+                        >
+                          <FormControl>
+                            <SelectTrigger className={selectTriggerClassName}>
+                              <SelectValue placeholder="Select department" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="__none__">None</SelectItem>
+                            {departments.map((department) => (
+                              <SelectItem
+                                key={department.value}
+                                value={department.value}
+                              >
+                                {department.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="space-y-2">
+                    <div className="text-sm font-medium">MUID</div>
+                    <Input
+                      value={profile.muid}
+                      disabled
+                      className={fieldClassName}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div className="flex justify-end gap-2">
+            <div className="shrink-0 flex flex-col-reverse gap-2 px-4 py-4 sm:px-6 sm:flex-row sm:justify-end border-t border-border">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => onOpenChange(false)}
                 disabled={form.formState.isSubmitting}
+                className="w-full sm:w-auto"
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={form.formState.isSubmitting}>
+              <Button
+                type="submit"
+                disabled={form.formState.isSubmitting}
+                className="w-full sm:w-auto"
+              >
                 {form.formState.isSubmitting && (
                   <Spinner className="mr-2 h-4 w-4" />
                 )}

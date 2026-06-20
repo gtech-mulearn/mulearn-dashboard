@@ -66,16 +66,15 @@ export function InterestGroupDetailClient() {
       typeof error.status === "number" &&
       error.status >= 500;
     return (
-      <div className="mx-auto max-w-4xl space-y-6 px-4 py-8">
+      <div className="w-full space-y-6 py-6 sm:py-8">
         <Button
           variant="ghost"
-          size="sm"
           onClick={() => router.back()}
-          className="gap-2"
-          aria-label="Go back"
+          className="group gap-2 text-muted-foreground hover:text-foreground"
+          aria-label="Back to Interest Groups"
         >
-          <ArrowLeft className="h-4 w-4" />
-          Back
+          <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+          Back to Interest Groups
         </Button>
         <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-8 text-center">
           <h3 className="text-lg font-semibold text-destructive">
@@ -105,13 +104,12 @@ export function InterestGroupDetailClient() {
     group.resource;
 
   return (
-    <div className="w-full  mx-auto space-y-8 px-5 py-8 sm:px-6 md:px-8">
+    <div className="w-full space-y-8 py-6 sm:py-8">
       {/* Back */}
       <Button
         variant="ghost"
-        size="sm"
         onClick={() => router.back()}
-        className="group gap-2"
+        className="group gap-2 text-muted-foreground hover:text-foreground"
         aria-label="Back to Interest Groups"
       >
         <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
@@ -195,7 +193,7 @@ export function InterestGroupDetailClient() {
       {/* ── Content grid ── */}
       <div className="grid gap-6 md:gap-8 lg:grid-cols-12 min-w-0">
         {/* Main column */}
-        <div className="space-y-6 md:space-y-8 lg:col-span-8 px-2 sm:px-0 min-w-0">
+        <div className="space-y-6 md:space-y-8 lg:col-span-8 min-w-0">
           {/* About */}
           {group.about && (
             <div className="group rounded-3xl border border-border/50 bg-card p-5 sm:p-8 shadow-sm transition-all hover:shadow-md hover:border-primary/20">
@@ -390,7 +388,7 @@ export function InterestGroupDetailClient() {
         </div>
 
         {/* ── Sidebar ── */}
-        <div className="space-y-6 lg:col-span-4 px-2 sm:px-0 min-w-0">
+        <div className="space-y-6 lg:col-span-4 min-w-0">
           <div className="space-y-6 lg:sticky lg:top-8">
             {/* Quick Info / Meta */}
             <div className="overflow-hidden rounded-3xl border border-border/50 bg-card shadow-sm">

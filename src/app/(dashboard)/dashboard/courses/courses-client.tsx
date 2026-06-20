@@ -12,7 +12,7 @@ export default function CoursesClient() {
   // const openGrad = useOpenGradCourses();
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-10 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="mx-auto w-full max-w-7xl space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">Learning Hub</h1>
         <p className="text-muted-foreground text-lg">

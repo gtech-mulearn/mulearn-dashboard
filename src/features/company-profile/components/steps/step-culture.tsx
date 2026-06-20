@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { chipColor } from "@/lib/chip-colors";
 import type { ProfileEditFormValues } from "../../schemas";
 
 const REMOTE_POLICY_OPTIONS = ["Remote", "Hybrid", "In-office"] as const;
@@ -124,7 +125,7 @@ export function StepCulture() {
           </div>
           <div className="flex flex-wrap gap-2">
             {techStack.map((t: string) => (
-              <Badge key={t} variant="outline" className="gap-1 bg-background">
+              <Badge key={t} className={`gap-1 ${chipColor(t)}`}>
                 {t}
                 <button
                   type="button"
@@ -167,7 +168,7 @@ export function StepCulture() {
           </div>
           <div className="flex flex-wrap gap-2">
             {perks.map((p: string) => (
-              <Badge key={p} variant="outline" className="gap-1">
+              <Badge key={p} className={`gap-1 ${chipColor(p)}`}>
                 {p}
                 <button
                   type="button"

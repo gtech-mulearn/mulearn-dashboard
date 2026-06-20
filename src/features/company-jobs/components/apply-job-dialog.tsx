@@ -108,15 +108,15 @@ export function ApplyJobDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
+      <DialogContent className="flex flex-col gap-0 p-0 max-w-lg">
+        <DialogHeader className="shrink-0 px-6 pt-6 pb-4">
           <DialogTitle className="text-base font-bold">{job.title}</DialogTitle>
           <DialogDescription className="capitalize text-sm">
             {job.job_type?.replace(/_/g, " ")} · {job.location}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="overflow-y-auto px-6 py-4 space-y-4">
           {/* Resume Link */}
           <div className="space-y-1.5">
             <label
@@ -157,7 +157,7 @@ export function ApplyJobDialog({
           </div>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="shrink-0 px-6 py-4 border-t border-border">
           <Button variant="ghost" onClick={() => handleClose(false)}>
             Cancel
           </Button>

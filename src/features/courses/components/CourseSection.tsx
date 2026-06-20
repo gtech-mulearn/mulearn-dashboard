@@ -115,14 +115,16 @@ function CourseOverlay({
             <h3 className="text-lg font-bold text-foreground line-clamp-1 pr-4">
               {course.title}
             </h3>
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon"
               onClick={onClose}
-              className="p-1.5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors shrink-0"
+              className="shrink-0"
               aria-label="Close"
             >
               <X className="w-5 h-5" />
-            </button>
+            </Button>
           </div>
 
           {/* Scrollable body */}
@@ -161,7 +163,8 @@ function CourseOverlay({
           {/* Sticky footer with actions */}
           <div className="sticky bottom-0 z-20 px-6 py-4 bg-card/95 backdrop-blur-sm border-t border-border rounded-b-2xl shrink-0 grid grid-cols-2 gap-3">
             <Button
-              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md rounded-xl h-11 col-span-2"
+              variant="default"
+              className="shadow-md rounded-xl h-11 col-span-2"
               onClick={handleEnroll}
               disabled={isEnrolling}
             >
@@ -171,7 +174,7 @@ function CourseOverlay({
             {course.source === "wadhwani" && (
               <Button
                 variant="outline"
-                className="border-border hover:bg-muted text-muted-foreground rounded-xl h-11 col-span-2 mt-[-6px]"
+                className="rounded-xl h-11 col-span-2 mt-[-6px]"
                 onClick={() => window.open(DISCORD_SUBMIT_LINK, "_blank")}
               >
                 <ExternalLink className="w-4 h-4 mr-2" />
@@ -233,9 +236,9 @@ export function CourseSection({
             your connection or try again.
           </p>
           <Button
-            variant="outline"
+            variant="destructive"
             onClick={refetch}
-            className="border-destructive/20 hover:bg-destructive/10 text-destructive bg-background rounded-xl"
+            className="rounded-xl"
           >
             <RefreshCcw className="w-4 h-4 mr-2" />
             Retry

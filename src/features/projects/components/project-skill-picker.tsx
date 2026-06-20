@@ -6,6 +6,7 @@ import { apiClient } from "@/api/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { chipColor } from "@/lib/chip-colors";
 
 const SkillSchema = z.object({
   id: z.string(),
@@ -126,8 +127,7 @@ export function ProjectSkillPicker({ value, onChange }: Props) {
         {selectedSkills.map((skill) => (
           <Badge
             key={skill.id}
-            variant="secondary"
-            className="gap-1 pl-2.5 pr-1 py-0.5 text-xs"
+            className={`gap-1 pl-2.5 pr-1 py-0.5 text-xs ${chipColor(skill.name)}`}
           >
             {skill.name}
             <Button

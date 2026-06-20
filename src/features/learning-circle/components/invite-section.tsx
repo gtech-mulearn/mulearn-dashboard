@@ -77,7 +77,7 @@ export function SentInvitesCard({ circleId }: InviteProps) {
   const { data: sentInvites, isLoading } = useSentInvites(circleId);
 
   return (
-    <div className="w-full rounded-2xl bg-card p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-border flex flex-col">
+    <div className="w-full rounded-2xl bg-card p-4 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-border flex flex-col">
       <div className="flex flex-col gap-1 mb-5">
         <h3 className="text-[16px] font-bold text-foreground">
           Sent Invites{" "}

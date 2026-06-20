@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { Textarea } from "@/components/ui/textarea";
+import { chipColor } from "@/lib/chip-colors";
 import {
   useCommentOnProject,
   useDeleteComment,
@@ -97,7 +98,7 @@ export function ProjectDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex w-[min(92vw,1400px)] max-w-none sm:max-w-none flex-col gap-0 overflow-hidden rounded-2xl border p-0 max-h-[92vh] bg-background">
+      <DialogContent className="flex w-[min(92vw,1400px)] max-w-none sm:max-w-none flex-col gap-0 overflow-hidden rounded-2xl border p-0 bg-background">
         {/* ── Sticky Header ─────────────────────────────────────── */}
         <DialogHeader className="shrink-0 border-b bg-background px-6 py-4 md:px-8">
           <div className="flex items-center gap-4">
@@ -415,8 +416,7 @@ export function ProjectDetailModal({
                         {project.skills.map((s) => (
                           <Badge
                             key={s.id}
-                            variant="secondary"
-                            className="text-[12px] px-2.5 py-1 shadow-sm"
+                            className={`text-[12px] px-2.5 py-1 shadow-sm ${chipColor(s.name)}`}
                           >
                             {s.name}
                           </Badge>

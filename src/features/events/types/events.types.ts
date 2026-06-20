@@ -162,6 +162,7 @@ export interface OrganizerOptionsResponse {
   can_create_as_campus?: MinimalCampus[];
   can_create_as_company?: MinimalCompany[];
   can_create_as_admin?: boolean;
+  campus_context?: { id: string; title: string } | null;
 }
 
 // ─── COLLABORATION TARGET ───────────────────────────────────────────────────

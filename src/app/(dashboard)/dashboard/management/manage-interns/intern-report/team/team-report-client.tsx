@@ -122,7 +122,7 @@ export function TeamReportPageClient() {
   ];
 
   return (
-    <div className="flex-1 space-y-8 p-8 pt-6 max-w-5xl mx-auto w-full bg-background/50">
+    <div className="space-y-8 max-w-5xl mx-auto w-full">
       <div className="flex items-center gap-4">
         <Link href="/dashboard/management/manage-interns/intern-report">
           <Button variant="ghost" size="icon">

@@ -135,4 +135,16 @@ export const JOB_STATUS_CONFIG = {
     textColor: "text-amber-700",
     bgColor: "bg-amber-50",
   },
+  Closed: {
+    label: "Closed",
+    dotColor: "bg-rose-500",
+    textColor: "text-rose-700",
+    bgColor: "bg-rose-50",
+  },
+  Expired: {
+    label: "Expired",
+    dotColor: "bg-gray-400",
+    textColor: "text-gray-600",
+    bgColor: "bg-gray-50",
+  },
 } as const;

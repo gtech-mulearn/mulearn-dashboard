@@ -97,15 +97,15 @@ export function ShareProfileModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="flex flex-col gap-0 p-0 sm:max-w-md">
+        <DialogHeader className="shrink-0 px-6 pt-6 pb-4">
           <DialogTitle className="flex items-center gap-2">
             <Link2 className="h-5 w-5" />
             Share Profile
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="overflow-y-auto px-6 pb-6 space-y-4">
           {/* Privacy Warning */}
           {!isPublic && (
             <div className="rounded-lg bg-warning/10 p-3 text-sm text-warning">

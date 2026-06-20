@@ -24,6 +24,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
+import { chipColor } from "@/lib/chip-colors";
 import { useCompanyDetails } from "../hooks/use-manage-companies";
 import type { CompanyVerificationItem } from "../schemas";
 
@@ -61,21 +62,14 @@ const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
 
 function StatusBadge({ status }: { status: string }) {
   if (status === "active") {
-    return (
-      <Badge
-        variant="outline"
-        className="border-success/50 bg-success/10 text-success"
-      >
-        Active
-      </Badge>
-    );
+    return <Badge variant="success">Active</Badge>;
   }
 
   const STATUS_VARIANTS: Record<
     string,
-    "default" | "secondary" | "destructive" | "outline"
+    "default" | "secondary" | "destructive" | "outline" | "warning"
   > = {
-    pending_verification: "secondary",
+    pending_verification: "warning",
     rejected: "destructive",
     inactive: "outline",
   };
@@ -343,8 +337,7 @@ export function CompanyDetailSheet({
                             {details.tech_stack.map((t) => (
                               <Badge
                                 key={t}
-                                variant="secondary"
-                                className="text-xs font-normal"
+                                className={`text-xs font-normal ${chipColor(t)}`}
                               >
                                 {t}
                               </Badge>
@@ -361,8 +354,7 @@ export function CompanyDetailSheet({
                             {details.perks.map((p) => (
                               <Badge
                                 key={p}
-                                variant="outline"
-                                className="text-xs font-normal"
+                                className={`text-xs font-normal ${chipColor(p)}`}
                               >
                                 {p}
                               </Badge>
