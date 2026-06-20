@@ -1,45 +1,47 @@
-/**
- * Auth Token Store
- *
- * Manages access and refresh tokens using httpOnly cookies via server routes.
- * - Access token: httpOnly cookie (never JS-accessible)
- * - Refresh token: httpOnly cookie via server route handler
- * - isAuthenticated: client-readable flag for UI state
- *
- * Token writes go through /api/auth/set-tokens to set httpOnly cookies.
- * Token clears go through DELETE /api/auth/set-tokens.
- */
-
 import Cookies from "js-cookie";
 
+const ACCESS_TOKEN_KEY = "accessToken";
+const REFRESH_TOKEN_KEY = "refreshToken";
 const IS_AUTHENTICATED_KEY = "isAuthenticated";
+
+const baseCookieOptions = {
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "strict" as const,
+  path: "/",
+};
 
 export const authStore = {
   setTokens: async (accessToken: string, refreshToken: string) => {
-    await fetch("/api/auth/set-tokens", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ accessToken, refreshToken }),
-    });
-
-    Cookies.set(IS_AUTHENTICATED_KEY, "true", {
+    Cookies.set(ACCESS_TOKEN_KEY, accessToken, {
+      ...baseCookieOptions,
       expires: 1,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+    });
+    Cookies.set(REFRESH_TOKEN_KEY, refreshToken, {
+      ...baseCookieOptions,
+      expires: 7,
+    });
+    Cookies.set(IS_AUTHENTICATED_KEY, "true", {
+      ...baseCookieOptions,
+      expires: 1,
     });
   },
+
+  /** Access token for the Authorization header. undefined when logged out. */
+  getAccessToken: () => Cookies.get(ACCESS_TOKEN_KEY),
+
+  /** Refresh token used by the client-side refresh flow. */
+  getRefreshToken: () => Cookies.get(REFRESH_TOKEN_KEY),
+
   /**
    * Client-readable session flag. Stays set across short-lived access-token
-   * expiry (the refresh token is httpOnly and not visible to JS), so this is
-   * the signal for "the user has a session" even when the access-token cookie
-   * has already expired and needs a refresh.
+   * expiry so guards can tell "the user has a session" and let the client
+   * refresh flow run.
    */
-  isAuthenticated: () => {
-    return Cookies.get(IS_AUTHENTICATED_KEY) === "true";
-  },
+  isAuthenticated: () => Cookies.get(IS_AUTHENTICATED_KEY) === "true",
 
   clearTokens: async () => {
-    await fetch("/api/auth/set-tokens", { method: "DELETE" });
-    Cookies.remove(IS_AUTHENTICATED_KEY);
+    Cookies.remove(ACCESS_TOKEN_KEY, { path: "/" });
+    Cookies.remove(REFRESH_TOKEN_KEY, { path: "/" });
+    Cookies.remove(IS_AUTHENTICATED_KEY, { path: "/" });
   },
 };

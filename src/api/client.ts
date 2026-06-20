@@ -1,28 +1,60 @@
 // src/api/client.ts
-// Client-side API gateways — mirrors the old repo's publicGateway / privateGateway pattern.
+// Client-side API gateways. The browser calls the Django backend DIRECTLY and
+// attaches Authorization: Bearer <accessToken cookie>. Token expiry triggers a
+// client-side refresh + one retry. See
+// docs/superpowers/specs/2026-06-20-remove-bff-proxy-design.md.
 // ─────────────────────────────────────────────────────────────────────────────
-// publicApiClient  → no auth, for unauthenticated endpoints
-// apiClient        → attaches Bearer token, handles token expiry / redirect
+// publicApiClient  → no auth header
+// apiClient        → attaches Bearer token, refreshes on expiry, redirects on fail
+// authedFetch      → raw fetch with Bearer + refresh-retry (for multipart callers)
 // ─────────────────────────────────────────────────────────────────────────────
-//
-// All browser traffic is routed through the same-origin BFF proxy at
-// /api/backend. The proxy reads the HttpOnly accessToken cookie server-side
-// and injects the Authorization header — the browser never touches the token.
 
 import type { z } from "zod";
+import { env } from "../../config/env";
 import { authStore } from "../lib/auth";
 import { ApiError, extractDjangoMessage, logSchemaMismatch } from "./errors";
+import { refreshAccessToken } from "./refresh.client";
 
 // Re-export so existing `import { ApiError } from "@/api/client"` still works.
 export { ApiError } from "./errors";
 
-// ─── Headers ────────────────────────────────────────────────────────────────
+const API_BASE = env.NEXT_PUBLIC_DJANGO_API_URL;
 
 const BASE_HEADERS: Record<string, string> = {
   "Content-Type": "application/json",
 };
 
-// ─── Request options ────────────────────────────────────────────────────────
+/** Detect a token-expiry response (mirrors the old BFF proxy logic). */
+function isTokenExpired(status: number, data: unknown): boolean {
+  if (status === 401) return true;
+  if (
+    data &&
+    typeof data === "object" &&
+    "statusCode" in data &&
+    (data as { statusCode: number }).statusCode === 1000
+  ) {
+    return true;
+  }
+  if (data && typeof data === "object" && "message" in data) {
+    const msg = data as { message?: { general?: (string | unknown)[] } };
+    return (
+      msg.message?.general?.some(
+        (m) =>
+          typeof m === "string" &&
+          (m.toLowerCase().includes("token expired") ||
+            m.toLowerCase().includes("token invalid") ||
+            m.toLowerCase().includes("invalid token")),
+      ) === true
+    );
+  }
+  return false;
+}
+
+function redirectToLogin() {
+  if (typeof window !== "undefined") {
+    window.location.href = "/login";
+  }
+}
 
 interface RequestOptions<T> {
   method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -30,76 +62,110 @@ interface RequestOptions<T> {
   schema?: z.ZodSchema<T>;
   headers?: HeadersInit;
   responseType?: "json" | "blob";
-  /** When true, sends body as FormData (no JSON.stringify, no Content-Type header) */
+  /** When true, sends body as FormData (no JSON.stringify, no Content-Type). */
   isFormData?: boolean;
-  /**
-   * When true, a 403 response is thrown as ApiError instead of triggering the
-   * global token-refresh → logout flow. Use for endpoints where 403 means
-   * "resource not available to this user" (e.g. mentor persona not configured),
-   * not "invalid credentials".
-   */
+  /** When true, a 403 throws ApiError instead of the auth flow. */
   skipAuthRedirectOn403?: boolean;
-  /**
-   * When true, a Zod schema-parse failure throws an `ApiError` instead of
-   * returning the unvalidated raw payload. Default is lenient (returns raw,
-   * but the mismatch is always logged). Opt in for endpoints where a malformed
-   * response should fail loudly rather than flow through as an unchecked cast.
-   */
+  /** When true, a Zod parse failure throws instead of returning raw. */
   strictSchema?: boolean;
 }
 
 type ClientOptions = {
   headers?: HeadersInit;
   responseType?: "json" | "blob";
-  /** When true, sends body as FormData (no JSON.stringify, no Content-Type header) */
   isFormData?: boolean;
-  /** See RequestOptions.skipAuthRedirectOn403 */
   skipAuthRedirectOn403?: boolean;
-  /** See RequestOptions.strictSchema */
   strictSchema?: boolean;
 };
 
-// ─── Core request fn (shared by both gateways) ─────────────────────────────
+/**
+ * Raw authenticated fetch with Bearer + one refresh-retry on 401.
+ * Used by multipart callers that manage their own body/error parsing.
+ */
+export async function authedFetch(
+  endpoint: string,
+  init: RequestInit,
+): Promise<Response> {
+  const url = `${API_BASE}${endpoint}`;
+  const withAuth = (token: string | undefined): RequestInit => ({
+    ...init,
+    headers: {
+      ...(init.headers ?? {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    cache: "no-store",
+  });
+
+  let res = await fetch(url, withAuth(authStore.getAccessToken()));
+  if (!res.ok) {
+    // Peek the body via clone() so the caller can still read the original.
+    const peeked = await res
+      .clone()
+      .json()
+      .catch(() => null);
+    if (isTokenExpired(res.status, peeked)) {
+      const newToken = await refreshAccessToken();
+      if (newToken) {
+        res = await fetch(url, withAuth(newToken));
+      } else {
+        await authStore.clearTokens();
+        redirectToLogin();
+        throw new ApiError(401, "Session expired");
+      }
+    }
+  }
+  return res;
+}
 
 async function request<T>(
   endpoint: string,
   options: RequestOptions<T> & { authenticated: boolean },
 ): Promise<T> {
   const isFormData = options.isFormData === true;
-
   const requestHeaders: Record<string, string> = isFormData
     ? {}
     : { ...BASE_HEADERS };
 
-  const res = await fetch(`/api/backend${endpoint}`, {
-    method: options.method,
-    headers: {
-      ...requestHeaders,
-      ...options.headers,
-    },
-    body: isFormData
-      ? (options.body as FormData)
-      : options.body
-        ? JSON.stringify(options.body)
-        : undefined,
-  });
+  const send = (token: string | undefined) =>
+    fetch(`${API_BASE}${endpoint}`, {
+      method: options.method,
+      headers: {
+        ...requestHeaders,
+        ...(options.authenticated && token
+          ? { Authorization: `Bearer ${token}` }
+          : {}),
+        ...options.headers,
+      },
+      body: isFormData
+        ? (options.body as FormData)
+        : options.body
+          ? JSON.stringify(options.body)
+          : undefined,
+      cache: "no-store",
+    });
 
+  let res = await send(
+    options.authenticated ? authStore.getAccessToken() : undefined,
+  );
+
+  // ── Blob branch ───────────────────────────────────────────
   if (options.responseType === "blob") {
-    if (res.ok) {
-      return (await res.blob()) as T;
-    }
+    if (res.ok) return (await res.blob()) as T;
+    let errData = await res.json().catch(() => null);
 
-    const errData = await res.json().catch(() => null);
-
-    // 401 from proxy means refresh already failed — session is dead
-    if (options.authenticated && res.status === 401) {
-      await authStore.clearTokens();
-      if (typeof window !== "undefined") {
-        window.location.href = "/login";
+    if (options.authenticated && isTokenExpired(res.status, errData)) {
+      const newToken = await refreshAccessToken();
+      if (newToken) {
+        res = await send(newToken);
+        if (res.ok) return (await res.blob()) as T;
+        errData = await res.json().catch(() => null);
       }
-      throw new ApiError(401, "Session expired", errData);
+      if (!newToken || isTokenExpired(res.status, errData)) {
+        await authStore.clearTokens();
+        redirectToLogin();
+        throw new ApiError(401, "Session expired", errData);
+      }
     }
-
     throw new ApiError(
       res.status,
       extractDjangoMessage(errData) || `Request failed: ${endpoint}`,
@@ -107,24 +173,30 @@ async function request<T>(
     );
   }
 
-  const rawData = await res.json().catch(() => null);
+  // ── JSON branch ───────────────────────────────────────────
+  let rawData = await res.json().catch(() => null);
 
-  // 401 from proxy means refresh already failed — clear and redirect
-  if (options.authenticated && res.status === 401) {
-    await authStore.clearTokens();
-    if (typeof window !== "undefined") {
-      window.location.href = "/login";
+  // Token-expiry → refresh + retry once
+  if (options.authenticated && isTokenExpired(res.status, rawData)) {
+    const newToken = await refreshAccessToken();
+    if (newToken) {
+      res = await send(newToken);
+      rawData = await res.json().catch(() => null);
     }
-    throw new ApiError(401, "Session expired", rawData);
+    if (!newToken || isTokenExpired(res.status, rawData)) {
+      await authStore.clearTokens();
+      redirectToLogin();
+      throw new ApiError(401, "Session expired", rawData);
+    }
   }
 
-  // Permission 403 with skipAuthRedirectOn403 — throw as normal error
+  // Permission 403 (not token expiry) — throw as normal error
   if (res.status === 403 && options.skipAuthRedirectOn403) {
     const backendMsg = extractDjangoMessage(rawData);
     throw new ApiError(403, backendMsg || "Forbidden", rawData);
   }
 
-  // Check for hasError even if res.ok is true (business error)
+  // Business error (hasError true even on 200)
   if (
     rawData &&
     typeof rawData === "object" &&
@@ -187,8 +259,6 @@ async function request<T>(
   return data as T;
 }
 
-// ─── Gateway factory ────────────────────────────────────────────────────────
-
 function createGateway(authenticated: boolean) {
   return {
     get: <T>(
@@ -202,7 +272,6 @@ function createGateway(authenticated: boolean) {
         authenticated,
         ...options,
       }),
-
     post: <T>(
       endpoint: string,
       body: unknown,
@@ -216,7 +285,6 @@ function createGateway(authenticated: boolean) {
         authenticated,
         ...options,
       }),
-
     put: <T>(
       endpoint: string,
       body: unknown,
@@ -230,7 +298,6 @@ function createGateway(authenticated: boolean) {
         authenticated,
         ...options,
       }),
-
     patch: <T>(
       endpoint: string,
       body: unknown,
@@ -244,7 +311,6 @@ function createGateway(authenticated: boolean) {
         authenticated,
         ...options,
       }),
-
     delete: <T>(
       endpoint: string,
       body?: unknown,
@@ -261,10 +327,8 @@ function createGateway(authenticated: boolean) {
   };
 }
 
-// ─── Exports ────────────────────────────────────────────────────────────────
-
-/** Public gateway — no auth header, no token expiry handling */
+/** Public gateway — no auth header. */
 export const publicApiClient = createGateway(false);
 
-/** Private gateway — attaches Bearer token, handles token expiry + redirect */
+/** Private gateway — attaches Bearer token, refreshes on expiry. */
 export const apiClient = createGateway(true);
