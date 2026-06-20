@@ -7,7 +7,7 @@
  * These wrap the apiClient calls with proper typing and schema validation.
  */
 
-import { apiClient, publicApiClient } from "@/api/client";
+import { publicApiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import type {
   InterestGroup,
@@ -32,7 +32,7 @@ import {
 export async function getInterestGroupsList(
   orderBy?: string,
 ): Promise<InterestGroupsListResponse> {
-  return apiClient.get(
+  return publicApiClient.get(
     endpoints.interestGroups.list(orderBy),
     InterestGroupsListResponseSchema,
   );

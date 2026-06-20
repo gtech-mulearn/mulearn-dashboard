@@ -19,6 +19,8 @@ export {
   PERMISSIONS,
   type Permission,
 } from "./permissions";
+// Public dashboard routes (used by middleware + client guard)
+export { isPublicDashboardRoute } from "./public-routes";
 // Role-Based Routing
 export { getRoleHomePath } from "./role-routing";
 // Roles
