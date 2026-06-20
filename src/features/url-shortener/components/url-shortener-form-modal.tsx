@@ -23,6 +23,7 @@ import {
   type ShortUrlFormValues,
   type ShortUrlItem,
 } from "@/features/url-shortener/schemas/shortener.schema";
+import { getApiResponseError } from "@/hooks/use-get-error";
 
 interface UrlShortenerFormModalProps {
   open: boolean;
@@ -77,8 +78,12 @@ export function UrlShortenerFormModal({
       }
       onOpenChange(false);
       reset({ title: "", long_url: "", short_url: "" });
-    } catch {
-      toast.error(isEdit ? "Failed to update URL" : "Failed to create URL");
+    } catch (error) {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: isEdit ? "Failed to update URL" : "Failed to create URL",
+        }),
+      );
     }
   };
 

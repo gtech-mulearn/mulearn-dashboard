@@ -236,7 +236,7 @@ export function TimesheetPageClient() {
               variant="default"
               className="px-3 py-1 rounded-full font-black text-[10px] uppercase tracking-widest"
             >
-              Daily Quest
+              Daily Submissions
             </Badge>
           </div>
           <h2 className="text-4xl font-black tracking-tighter text-foreground uppercase">

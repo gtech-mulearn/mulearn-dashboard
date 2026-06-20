@@ -171,7 +171,7 @@ export function OnboardDialog({
                         ) : (
                           <input
                             type="text"
-                            placeholder="Search by MUID..."
+                            placeholder="Search by MUID"
                             value={query}
                             onChange={(e) => handleSearch(e.target.value)}
                             className="w-full bg-transparent outline-hidden border-hidden p-0 text-sm placeholder:text-muted-foreground focus:ring-0 focus-visible:outline-hidden"

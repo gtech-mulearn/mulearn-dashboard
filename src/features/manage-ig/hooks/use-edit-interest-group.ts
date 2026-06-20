@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { igKeys } from "@/features/interest-groups";
 import { partialUpdateInterestGroup } from "@/features/manage-ig/api/manage-ig.api";
 import type { InterestGroupUpdate } from "@/features/manage-ig/schemas";
+import { getApiResponseError } from "@/hooks/use-get-error";
 
 export function useEditInterestGroup() {
   const queryClient = useQueryClient();
@@ -28,6 +29,13 @@ export function useEditInterestGroup() {
       await queryClient.invalidateQueries({
         queryKey: igKeys.detail(variables.id),
       });
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to update interest group",
+        }),
+      );
     },
   });
 

@@ -1,6 +1,8 @@
 "use client";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
+import { toast } from "sonner";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { triggerCsvDownload, zonalApi } from "../api";
 import type { CollegeListParams, SortState, StudentListParams } from "../types";
 
@@ -86,42 +88,46 @@ export function useCollegeDetails(params: CollegeListParams = {}) {
 
 export function useStudentCsvDownload() {
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
 
   const download = useCallback(async () => {
     setIsLoading(true);
-    setError(null);
     try {
       const blob = await zonalApi.downloadStudentCsv();
       triggerCsvDownload(blob, "Zonal Student Details.csv");
     } catch (err) {
-      setError(err instanceof Error ? err : new Error("Download failed"));
+      toast.error(
+        getApiResponseError(err, {
+          fallback: "Failed to download student CSV",
+        }),
+      );
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  return { download, isLoading, error };
+  return { download, isLoading };
 }
 
 export function useCollegeCsvDownload() {
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
 
   const download = useCallback(async () => {
     setIsLoading(true);
-    setError(null);
     try {
       const blob = await zonalApi.downloadCollegeCsv();
       triggerCsvDownload(blob, "Zonal College Details.csv");
     } catch (err) {
-      setError(err instanceof Error ? err : new Error("Download failed"));
+      toast.error(
+        getApiResponseError(err, {
+          fallback: "Failed to download college CSV",
+        }),
+      );
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  return { download, isLoading, error };
+  return { download, isLoading };
 }
 
 export function useTableState<TSortField extends string>(

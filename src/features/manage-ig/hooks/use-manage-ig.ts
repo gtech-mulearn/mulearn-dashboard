@@ -110,8 +110,10 @@ export function useInterestGroupsAdmin() {
       a.click();
       a.remove();
       toast.success("CSV exported successfully");
-    } catch {
-      toast.error("Failed to export CSV");
+    } catch (error) {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to export CSV" }),
+      );
     }
   };
 

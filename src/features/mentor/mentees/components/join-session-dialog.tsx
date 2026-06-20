@@ -3,7 +3,6 @@
 import { Loader2, LogIn } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ApiError } from "@/api/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { useJoinSession } from "../hooks/use-mentees";
 import type { JoinSessionParticipant } from "../schemas";
 
@@ -68,11 +68,12 @@ export function JoinSessionDialog({
         toast.success("Successfully joined the session!");
       },
       onError: (err) => {
-        const msg =
-          err instanceof ApiError
-            ? err.message
-            : "Failed to join session. Please check the session ID and try again.";
-        toast.error(msg);
+        toast.error(
+          getApiResponseError(err, {
+            fallback:
+              "Failed to join session. Please check the session ID and try again.",
+          }),
+        );
       },
     });
   }

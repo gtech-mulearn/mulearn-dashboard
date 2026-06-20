@@ -40,7 +40,7 @@ const STATUS_FILTER_OPTIONS: { label: string; value: string }[] = [
 ];
 
 const STATUS_CONFIG: Record<
-  CompanyStatus,
+  CompanyStatus | "",
   { label: string; className: string }
 > = {
   "": {
@@ -48,6 +48,10 @@ const STATUS_CONFIG: Record<
     className: "border-warning/50 bg-warning/10 text-warning",
   },
   pending_verification: {
+    label: "Pending",
+    className: "border-warning/50 bg-warning/10 text-warning",
+  },
+  pending: {
     label: "Pending",
     className: "border-warning/50 bg-warning/10 text-warning",
   },

@@ -6,6 +6,6 @@
  * Barrel export for all intern-form components.
  */
 
+export { QuestLogHistory } from "./activity-log-history";
 export { LeaveFormDialog } from "./leave-form-dialog";
-export { QuestLogHistory } from "./quest-log-history";
 export { WeeklyReviewForm } from "./weekly-review-form";

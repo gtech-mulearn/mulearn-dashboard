@@ -89,6 +89,22 @@ export const internApi = {
     return apiClient.get<TTimesheet>(endpoints.intern.timesheetDetail(id));
   },
 
+  getTimesheetsPrefill: async (): Promise<{
+    tasks: Array<{
+      task_id: string;
+      title: string;
+      category: string;
+      deadline: string;
+      status: string;
+      complexity: string;
+      output_link: string | null;
+      is_overdue: boolean;
+    }>;
+    on_leave: boolean;
+  }> => {
+    return apiClient.get(endpoints.intern.timesheetsPrefill);
+  },
+
   submitTimesheet: async (payload: TTimesheetSubmitPayload): Promise<void> => {
     await apiClient.post(endpoints.intern.timesheets, payload);
   },
@@ -129,6 +145,24 @@ export const internApi = {
 
   getWeeklyReviewDetail: async (id: string): Promise<TWeeklyReview> => {
     return apiClient.get<TWeeklyReview>(endpoints.intern.reviewDetail(id));
+  },
+
+  getWeeklyReviewsPrefill: async (): Promise<{
+    iso_year: number;
+    iso_week: number;
+    week_start: string;
+    week_end: string;
+    tasks: Array<{
+      task_id: string;
+      title: string;
+      category: string;
+      complexity: string;
+      deadline: string;
+      status: string;
+      output_link: string | null;
+    }>;
+  }> => {
+    return apiClient.get(endpoints.intern.reviewsPrefill);
   },
 
   submitWeeklyReview: async (
@@ -172,10 +206,20 @@ export const internApi = {
     status: "WAITING_FOR_REVIEW" | "IN_PROGRESS" | "COMPLETED" | "ON_HOLD",
     output_link?: string,
   ): Promise<void> => {
-    await apiClient.patch(endpoints.intern.taskDetail(id), {
+    await apiClient.patch(endpoints.intern.taskSubmit(id), {
       status,
       output_link,
     });
+  },
+
+  getTaskCategories: async (): Promise<Record<string, string[]>> => {
+    return apiClient.get<Record<string, string[]>>(
+      endpoints.intern.tasksCategories,
+    );
+  },
+
+  getTaskDetail: async (id: string): Promise<TInternTask> => {
+    return apiClient.get<TInternTask>(endpoints.intern.taskDetail(id));
   },
 
   // ── Leave Management ───────────────────────────────────────

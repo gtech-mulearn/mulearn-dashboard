@@ -27,6 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { useUpdateParticipant } from "../hooks/use-mentees";
 import {
   UpdateParticipantSchema,
@@ -76,8 +77,12 @@ export function UpdateParticipantDialog({
           toast.success("Participant updated successfully!");
           onOpenChange(false);
         },
-        onError: () => {
-          toast.error("Failed to update participant. Please try again.");
+        onError: (error) => {
+          toast.error(
+            getApiResponseError(error, {
+              fallback: "Failed to update participant. Please try again.",
+            }),
+          );
         },
       },
     );

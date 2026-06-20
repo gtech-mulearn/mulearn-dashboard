@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { fetchStudentLeaderboard } from "@/features/leaderboard/api/leaderboard.api";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   getCalendarEvents,
   getCampusCircleHealth,
@@ -103,6 +105,13 @@ export function useSwitchMentorPersona() {
       queryClient.invalidateQueries({
         queryKey: [...homeKeys.all, "mentor"],
       });
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to switch mentor persona",
+        }),
+      );
     },
   });
 }

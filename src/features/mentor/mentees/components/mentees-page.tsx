@@ -42,7 +42,7 @@ const STATUS_VARIANTS: Record<
   INVITED: { label: "Invited", variant: "secondary" },
 };
 
-export function MenteesPage() {
+export function MenteesPage({ title = "Mentees" }: { title?: string } = {}) {
   const [search, setSearch] = useState("");
 
   // Participant-sheet state: tracks which session's participants to show
@@ -88,7 +88,7 @@ export function MenteesPage() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">Mentees</h1>
+            <h1 className="text-2xl font-bold">{title}</h1>
             {data && (
               <p className="text-sm text-muted-foreground">
                 {data.totalItems} mentee{data.totalItems !== 1 ? "s" : ""}
@@ -148,7 +148,6 @@ export function MenteesPage() {
               <TableHead>Mentee</TableHead>
               <TableHead>Last Status</TableHead>
               <TableHead className="text-right">Sessions</TableHead>
-              <TableHead className="text-right">Participants</TableHead>
               <TableHead className="text-right">Feedback</TableHead>
             </TableRow>
           </TableHeader>
@@ -185,17 +184,6 @@ export function MenteesPage() {
                   </TableCell>
                   <TableCell className="text-right font-medium">
                     {mentee.session_count}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="gap-1.5"
-                      onClick={() => openParticipants(mentee.last_session_id)}
-                    >
-                      <Users className="size-3.5" />
-                      View
-                    </Button>
                   </TableCell>
                   <TableCell className="text-right">
                     <Button

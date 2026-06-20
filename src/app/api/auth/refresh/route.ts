@@ -17,7 +17,7 @@
 
 import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
-import { refreshAccessToken } from "@/features/auth/api/auth.api";
+import { refreshAccessTokenServer } from "@/api/refresh.server";
 
 const ALLOWED_PATH_PREFIX = [
   "dashboard",
@@ -61,17 +61,25 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const result = await refreshAccessToken(refreshToken);
-    const newAccessToken = result.accessToken;
+    const newAccessToken = await refreshAccessTokenServer(refreshToken);
 
     if (!newAccessToken) {
       throw new Error("No access token in refresh response");
     }
 
+    const isProduction = process.env.NODE_ENV === "production";
+
     cookieStore.set("accessToken", newAccessToken, {
-      httpOnly: true,
-      expires: new Date(Date.now() + 86_400_000), // 1 day
-      secure: process.env.NODE_ENV === "production",
+      httpOnly: false,
+      expires: new Date(Date.now() + 86_400_000),
+      secure: isProduction,
+      sameSite: "strict",
+      path: "/",
+    });
+
+    cookieStore.set("isAuthenticated", "true", {
+      expires: new Date(Date.now() + 86_400_000),
+      secure: isProduction,
       sameSite: "strict",
       path: "/",
     });

@@ -1,7 +1,5 @@
-import { apiClient } from "@/api/client";
+import { apiClient, authedFetch } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
-import { authStore } from "@/lib/auth";
-import { env } from "../../../../config/env";
 import {
   type AddMemberRequest,
   CommentMutationResponseSchema,
@@ -112,10 +110,8 @@ async function postMultipart(
   fd: FormData,
   method: "POST" | "PUT",
 ): Promise<Project> {
-  const token = authStore.getAccessToken();
-  const res = await fetch(`${env.NEXT_PUBLIC_DJANGO_API_URL}${url}`, {
+  const res = await authedFetch(url, {
     method,
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
     body: fd,
   });
   const raw = await res.json();

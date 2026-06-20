@@ -23,20 +23,19 @@ import { authKeys } from "./query-keys";
  * Use this for checking auth state and basic user data
  */
 export function useUserInfo() {
+  const hasToken =
+    typeof window !== "undefined" ? authStore.isAuthenticated() : false;
   // Run whenever there's a session signal — a live access token OR the
   // session flag (which outlives the short-lived access token). This lets the
   // request fire even after the access token has expired, so the API client's
   // refresh → retry → logout flow can run, instead of the query staying
   // disabled and leaving guards stuck on a loader forever.
-  const hasSession =
-    typeof window !== "undefined" &&
-    (!!authStore.getAccessToken() || authStore.isAuthenticated());
   return useQuery({
     queryKey: authKeys.userInfo(),
     queryFn: fetchUserInfo,
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 1,
-    enabled: hasSession,
+    enabled: hasToken,
   });
 }
 

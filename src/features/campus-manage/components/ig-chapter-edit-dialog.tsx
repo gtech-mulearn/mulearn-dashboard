@@ -5,7 +5,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { ApiError } from "@/api";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
@@ -20,6 +19,7 @@ import {
 import { MuidSearchInput } from "@/components/ui/muid-search-input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import type { UserResult } from "@/hooks/use-search";
 import { useDeleteIgChapter, useUpdateIgChapter } from "../hooks";
 import type { IgChapter } from "../types";
@@ -104,9 +104,9 @@ export function IgChapterEditDialog({
         },
         onError: (error) => {
           toast.error(
-            error instanceof ApiError
-              ? error.message
-              : "Failed to update chapter",
+            getApiResponseError(error, {
+              fallback: "Failed to update chapter",
+            }),
           );
         },
       },
@@ -122,9 +122,9 @@ export function IgChapterEditDialog({
       },
       onError: (error) => {
         toast.error(
-          error instanceof ApiError
-            ? error.message
-            : "Failed to delete chapter",
+          getApiResponseError(error, {
+            fallback: "Failed to delete chapter",
+          }),
         );
         setDeleteConfirmOpen(false);
       },

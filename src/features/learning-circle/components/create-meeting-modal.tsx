@@ -31,6 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { useCreateMeeting } from "../hooks";
 
 const DAYS_OF_WEEK = [
@@ -174,7 +175,7 @@ export function CreateMeetingModal({
       onOpenChange(false);
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to create meeting",
+        getApiResponseError(error, { fallback: "Failed to create meeting" }),
       );
     }
   };

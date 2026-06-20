@@ -24,6 +24,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { useEditCircle } from "../hooks";
 import type { LearningCircleDetail } from "../schemas";
 
@@ -74,7 +75,7 @@ export function EditCircleModal({
       onOpenChange(false);
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to save circle",
+        getApiResponseError(error, { fallback: "Failed to save circle" }),
       );
     }
   };

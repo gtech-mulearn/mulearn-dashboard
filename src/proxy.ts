@@ -17,6 +17,7 @@
 
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { isPublicDashboardRoute } from "@/lib/auth/public-routes";
 import { findRouteConfig } from "@/lib/auth/route-access";
 
 // ─── Single Source of Truth ────────────────────────────────
@@ -52,14 +53,9 @@ function isOnboardingRoute(pathname: string): boolean {
 }
 
 function isProtectedRoute(pathname: string): boolean {
-  // Exclude public profile pages: /dashboard/profile/[slug]
-  // Note: /dashboard/profile/ (with optional trailing slash) is protected, but /dashboard/profile/some-slug is public
-  const parts = pathname.split("/").filter(Boolean);
-  if (
-    parts.length === 3 &&
-    parts[0] === "dashboard" &&
-    parts[1] === "profile"
-  ) {
+  // Public dashboard routes (mujourney, search, interest-groups, public
+  // profile) are viewable without auth — single source of truth in public-routes.ts.
+  if (isPublicDashboardRoute(pathname)) {
     return false;
   }
 
@@ -141,34 +137,41 @@ export function proxy(request: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
 
+    // ── Access-token recovery (ALL protected routes) ─────
+    // isLoggedIn is true when EITHER accessToken or refreshToken exists. When
+    // the short-lived accessToken (and the client-readable isAuthenticated
+    // flag) have expired but the longer-lived refreshToken survives, restore
+    // them via the server refresh endpoint BEFORE rendering. This MUST run for
+    // "any authenticated user" routes (roles: []) too — not only role-gated
+    // ones. Otherwise the page renders, the client guard sees no isAuthenticated
+    // flag and pushes to /login, and the proxy bounces /login back to /dashboard
+    // (refreshToken still present) — an infinite redirect loop that presents as
+    // a stuck loading screen.
+    const accessToken = request.cookies.get("accessToken")?.value;
+    if (!accessToken) {
+      const refreshUrl = new URL("/api/auth/refresh", request.url);
+      refreshUrl.searchParams.set("ruri", pathname.slice(1));
+      return NextResponse.redirect(refreshUrl);
+    }
+
     // ── Role-based route protection (Layer 1 RBAC) ────────
     const routeConfig = findRouteConfig(pathname);
 
     if (routeConfig && routeConfig.roles.length > 0) {
-      const accessToken = request.cookies.get("accessToken")?.value;
+      const userRoles = extractRolesFromToken(accessToken);
+      const hasStaticRole = routeConfig.roles.some((r) =>
+        userRoles.includes(r),
+      );
+      // Dynamic check: per-IG/campus roles like "{code} IGLead" /
+      // "{code} CampusLead" — defined alongside the route in route-access.ts.
+      const hasDynamicRole = routeConfig.dynamicCheck?.(userRoles) ?? false;
+      const hasAccess = hasStaticRole || hasDynamicRole;
 
-      if (accessToken) {
-        const userRoles = extractRolesFromToken(accessToken);
-        const hasStaticRole = routeConfig.roles.some((r) =>
-          userRoles.includes(r),
-        );
-        // Dynamic check: per-IG/campus roles like "{code} IGLead" /
-        // "{code} CampusLead" — defined alongside the route in route-access.ts.
-        const hasDynamicRole = routeConfig.dynamicCheck?.(userRoles) ?? false;
-        const hasAccess = hasStaticRole || hasDynamicRole;
-
-        if (!hasAccess) {
-          // Redirect to dashboard with unauthorized flag
-          const url = new URL("/dashboard", request.url);
-          url.searchParams.set("unauthorized", "true");
-          return NextResponse.redirect(url);
-        }
-      } else {
-        // No accessToken but refreshToken present — redirect through the
-        // server-side refresh endpoint so roles can be verified after refresh.
-        const refreshUrl = new URL("/api/auth/refresh", request.url);
-        refreshUrl.searchParams.set("ruri", pathname.slice(1));
-        return NextResponse.redirect(refreshUrl);
+      if (!hasAccess) {
+        // Redirect to dashboard with unauthorized flag
+        const url = new URL("/dashboard", request.url);
+        url.searchParams.set("unauthorized", "true");
+        return NextResponse.redirect(url);
       }
     }
   }

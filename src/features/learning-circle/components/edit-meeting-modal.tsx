@@ -31,6 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { useEditMeeting } from "../hooks";
 import type { MeetingDetail } from "../schemas";
 
@@ -136,7 +137,7 @@ export function EditMeetingModal({
       onOpenChange(false);
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to save meeting",
+        getApiResponseError(error, { fallback: "Failed to save meeting" }),
       );
     }
   };

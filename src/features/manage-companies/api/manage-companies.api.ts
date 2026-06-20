@@ -6,7 +6,7 @@ import {
   type CompanyVerificationListData,
   CompanyVerificationListResponseSchema,
   type VerificationActionFormValues,
-  VerificationActionResponseSchema,
+  GenericMutationResponseSchema,
 } from "../schemas";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -60,7 +60,7 @@ export async function verifyCompany(
   await apiClient.patch(
     endpoints.company.verify(companyId),
     payload,
-    VerificationActionResponseSchema,
+    GenericMutationResponseSchema,
   );
 }
 

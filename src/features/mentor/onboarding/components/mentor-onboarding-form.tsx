@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ import {
 import { MultiSelect } from "@/components/ui/multi-select";
 import { Textarea } from "@/components/ui/textarea";
 import { useInterestGroupsList } from "@/features/home/hooks";
+import { useOnboardingDraftStore } from "../hooks/use-draft-store";
 import {
   useSubmitMentorApplication,
   useUpdateMentorApplication,
@@ -32,11 +34,13 @@ import { OnboardingFormSchema, type OnboardingFormValues } from "../schemas";
 interface MentorOnboardingFormProps {
   existing?: MentorApplication;
   isEdit?: boolean;
+  isReapply?: boolean;
 }
 
 export function MentorOnboardingForm({
   existing,
   isEdit = false,
+  isReapply = false,
 }: MentorOnboardingFormProps) {
   const { data: igList = [] } = useInterestGroupsList();
   const { mutate: submit, isPending: isSubmitting } =
@@ -46,37 +50,56 @@ export function MentorOnboardingForm({
 
   const isPending = isSubmitting || isUpdating;
 
+  const defaultValues = {
+    about: existing?.about ?? "",
+    expertise:
+      typeof existing?.expertise === "string"
+        ? existing.expertise
+        : Array.isArray(existing?.expertise)
+          ? (existing.expertise as string[]).join(", ")
+          : "",
+    reason: existing?.reason ?? "",
+    preferred_ig_ids: existing?.preferred_ig_ids ?? [],
+  };
+
+  const { draft, setDraft, clearDraft } = useOnboardingDraftStore();
+
   const form = useForm<OnboardingFormValues>({
     resolver: zodResolver(OnboardingFormSchema),
-    defaultValues: {
-      about: existing?.about ?? "",
-      expertise:
-        typeof existing?.expertise === "string"
-          ? existing.expertise
-          : Array.isArray(existing?.expertise)
-            ? (existing.expertise as string[]).join(", ")
-            : "",
-      reason: existing?.reason ?? "",
-      preferred_ig_ids: existing?.preferred_ig_ids ?? [],
-    },
+    defaultValues: draft ? { ...defaultValues, ...draft } : defaultValues,
   });
+
+  useEffect(() => {
+    const subscription = form.watch((value) => {
+      setDraft(value as Partial<OnboardingFormValues>);
+    });
+    return () => subscription.unsubscribe();
+  }, [form, setDraft]);
 
   const igOptions = igList.map((ig) => ({ value: ig.id, label: ig.name }));
 
   function onSubmit(values: OnboardingFormValues) {
     if (isEdit) {
-      update(values);
+      update(values, { onSuccess: clearDraft });
     } else {
-      submit(values);
+      submit(values, { onSuccess: clearDraft });
     }
   }
 
   return (
     <Card className="max-w-2xl mx-auto">
       <CardHeader>
-        <CardTitle>Apply to Become a Mentor</CardTitle>
+        <CardTitle>
+          {isReapply
+            ? "Reapply as Mentor"
+            : isEdit
+              ? "Update Your Application"
+              : "Apply to Become a Mentor"}
+        </CardTitle>
         <CardDescription>
-          Tell us about your expertise and why you want to mentor learners.
+          {isReapply
+            ? "Update your application details and resubmit for admin review."
+            : "Tell us about your expertise and why you want to mentor learners."}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -108,12 +131,12 @@ export function MentorOnboardingForm({
                   <FormLabel>
                     Expertise{" "}
                     <span className="text-muted-foreground font-normal">
-                      (e.g. React, Python, Machine Learning)
+                      (at least 3, e.g. React, Python, Machine Learning)
                     </span>
                   </FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Describe your areas of expertise…"
+                      placeholder="Describe your areas of expertise, separated by commas…"
                       rows={2}
                       {...field}
                     />
@@ -146,12 +169,7 @@ export function MentorOnboardingForm({
               name="preferred_ig_ids"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>
-                    Preferred Interest Groups{" "}
-                    <span className="text-muted-foreground font-normal">
-                      (optional)
-                    </span>
-                  </FormLabel>
+                  <FormLabel>Preferred Interest Groups</FormLabel>
                   <FormControl>
                     <MultiSelect
                       options={igOptions}
@@ -183,9 +201,11 @@ export function MentorOnboardingForm({
             <Button type="submit" disabled={isPending} className="w-full">
               {isPending
                 ? "Submitting..."
-                : isEdit
-                  ? "Update Application"
-                  : "Submit Application"}
+                : isReapply
+                  ? "Resubmit Application"
+                  : isEdit
+                    ? "Update Application"
+                    : "Submit Application"}
             </Button>
           </form>
         </Form>

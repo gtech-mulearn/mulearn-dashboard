@@ -8,6 +8,8 @@
  */
 
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { authStore } from "@/lib/auth";
 import {
   editCollege,
@@ -47,7 +49,7 @@ const PROFILE_STALE_TIME = 5 * 60 * 1000;
  */
 export function useUserProfile() {
   const hasToken =
-    typeof window !== "undefined" ? !!authStore.getAccessToken() : false;
+    typeof window !== "undefined" ? authStore.isAuthenticated() : false;
   return useQuery({
     queryKey: profileKeys.profile(),
     queryFn: getUserProfile,
@@ -233,6 +235,11 @@ export function useEditCollege() {
       organization: string;
       department: string;
     }) => editCollege(organization, department),
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to update college" }),
+      );
+    },
   });
 }
 

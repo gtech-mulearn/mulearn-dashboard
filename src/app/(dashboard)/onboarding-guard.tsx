@@ -12,7 +12,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { type ReactNode, useEffect } from "react";
 import { useUserInfo } from "@/features/auth";
-import { authStore, ROLES } from "@/lib/auth";
+import { authStore, isPublicDashboardRoute, ROLES } from "@/lib/auth";
 import Loader from "../loading";
 
 interface OnboardingGuardProps {
@@ -26,15 +26,12 @@ export function OnboardingGuard({ children }: OnboardingGuardProps) {
 
   // Session signal: a live access token OR the session flag that outlives it.
   // When absent, there's nothing to refresh against → the user must log in.
-  const hasSession =
-    authStore.isAuthenticated() || !!authStore.getAccessToken();
+  const hasSession = authStore.isAuthenticated();
 
-  const parts = pathname.split("/").filter(Boolean);
-  const isPublicProfile =
-    parts.length === 3 && parts[0] === "dashboard" && parts[1] === "profile";
+  const isPublicRoute = isPublicDashboardRoute(pathname);
 
   useEffect(() => {
-    if (isPublicProfile) return;
+    if (isPublicRoute) return;
     // Still resolving — the query is fetching (which also drives the API
     // client's token refresh + retry). Wait rather than redirecting.
     if (isLoading || isFetching) return;
@@ -57,19 +54,11 @@ export function OnboardingGuard({ children }: OnboardingGuardProps) {
     if (!user.user_domains || user.user_domains.length === 0) {
       router.replace("/onboarding/interests");
     }
-  }, [
-    user,
-    isLoading,
-    isFetching,
-    isError,
-    hasSession,
-    router,
-    isPublicProfile,
-  ]);
+  }, [user, isLoading, isFetching, isError, hasSession, router, isPublicRoute]);
 
   // Show loading while checking auth state
   if (isLoading) {
-    if (isPublicProfile) {
+    if (isPublicRoute) {
       return <>{children}</>;
     }
     return <Loader />;
@@ -77,7 +66,7 @@ export function OnboardingGuard({ children }: OnboardingGuardProps) {
 
   // Show loading while redirecting to login on error
   if (isError || !user) {
-    if (isPublicProfile) {
+    if (isPublicRoute) {
       return <>{children}</>;
     }
     return <Loader />;
@@ -91,7 +80,7 @@ export function OnboardingGuard({ children }: OnboardingGuardProps) {
 
   // Non-company: block render until domains are selected
   if (!user.user_domains || user.user_domains.length === 0) {
-    if (isPublicProfile) {
+    if (isPublicRoute) {
       return <>{children}</>;
     }
     return <Loader />;

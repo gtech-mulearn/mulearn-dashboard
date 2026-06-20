@@ -181,16 +181,8 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
         <CardHeader className="border-b border-border/20 bg-muted/20 px-4 md:px-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <div className="flex items-center gap-2 mb-1">
-                <Badge
-                  variant="secondary"
-                  className="px-2 py-0.5 font-black text-[10px] uppercase tracking-widest"
-                >
-                  Weekly Review
-                </Badge>
-              </div>
               <CardTitle className="text-2xl md:text-3xl font-black uppercase tracking-tighter">
-                Weekly Review
+                Weekly Timesheet
               </CardTitle>
               <CardDescription className="font-bold text-muted-foreground/60 uppercase text-[10px] tracking-widest mt-1">
                 Reflect on your weekly achievements and future plans
