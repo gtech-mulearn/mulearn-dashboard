@@ -62,6 +62,7 @@ export function SessionCreateDialog({
       starts_at: "",
       ends_at: "",
       meeting_link: "",
+      venue: "",
       is_recurring: false,
       recurrence_type: "WEEKLY",
       recurrence_interval: 1,
@@ -70,6 +71,7 @@ export function SessionCreateDialog({
   });
 
   const isRecurring = form.watch("is_recurring");
+  const mode = form.watch("mode");
 
   useEffect(() => {
     if (open) {
@@ -216,21 +218,62 @@ export function SessionCreateDialog({
 
               <FormField
                 control={form.control as any}
-                name="meeting_link"
+                name="mode"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Meeting Link</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="url"
-                        placeholder="https://meet.google.com/..."
-                        {...field}
-                      />
-                    </FormControl>
+                    <FormLabel>Mode</FormLabel>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select mode" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="ONLINE">Online</SelectItem>
+                        <SelectItem value="OFFLINE">Offline</SelectItem>
+                        <SelectItem value="HYBRID">Hybrid</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
+              {(mode === "ONLINE" || mode === "HYBRID") && (
+                <FormField
+                  control={form.control as any}
+                  name="meeting_link"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Meeting Link</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="url"
+                          placeholder="https://meet.google.com/..."
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              {(mode === "OFFLINE" || mode === "HYBRID") && (
+                <FormField
+                  control={form.control as any}
+                  name="venue"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Venue</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Location, e.g., Lab 3" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
               <FormField
                 control={form.control as any}

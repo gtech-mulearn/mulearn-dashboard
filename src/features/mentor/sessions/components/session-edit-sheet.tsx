@@ -15,6 +15,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
@@ -32,11 +39,13 @@ const EditSchema = z
     description: z.string().optional(),
     starts_at: z.string().min(1, "Start time is required"),
     ends_at: z.string().min(1, "End time is required"),
+    mode: z.enum(["ONLINE", "OFFLINE", "HYBRID"]),
     meeting_link: z
       .string()
       .url("Must be a valid URL")
       .optional()
       .or(z.literal("")),
+    venue: z.string().optional(),
   })
   .refine((v) => new Date(v.ends_at) > new Date(v.starts_at), {
     message: "End time must be after start time",
@@ -69,9 +78,13 @@ export function SessionEditSheet({
       description: "",
       starts_at: "",
       ends_at: "",
+      mode: "ONLINE",
       meeting_link: "",
+      venue: "",
     },
   });
+
+  const mode = form.watch("mode");
 
   useEffect(() => {
     if (currentSession && open) {
@@ -80,7 +93,9 @@ export function SessionEditSheet({
         description: currentSession.description ?? "",
         starts_at: currentSession.starts_at?.slice(0, 16) ?? "",
         ends_at: currentSession.ends_at?.slice(0, 16) ?? "",
+        mode: (currentSession.mode as any) || "ONLINE",
         meeting_link: currentSession.meeting_link ?? "",
+        venue: currentSession.venue ?? "",
       });
     }
   }, [currentSession, open, form]);
@@ -168,17 +183,62 @@ export function SessionEditSheet({
 
               <FormField
                 control={form.control}
-                name="meeting_link"
+                name="mode"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Meeting Link</FormLabel>
-                    <FormControl>
-                      <Input type="url" placeholder="https://..." {...field} />
-                    </FormControl>
+                    <FormLabel>Mode</FormLabel>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select mode" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="ONLINE">Online</SelectItem>
+                        <SelectItem value="OFFLINE">Offline</SelectItem>
+                        <SelectItem value="HYBRID">Hybrid</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
+              {(mode === "ONLINE" || mode === "HYBRID") && (
+                <FormField
+                  control={form.control}
+                  name="meeting_link"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Meeting Link</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="url"
+                          placeholder="https://..."
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              {(mode === "OFFLINE" || mode === "HYBRID") && (
+                <FormField
+                  control={form.control}
+                  name="venue"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Venue</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Location, e.g., Lab 3" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
               <Separator />
               <div className="flex justify-end gap-3 pt-2 pb-2">
