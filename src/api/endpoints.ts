@@ -1218,17 +1218,21 @@ export const endpoints = {
     overviewActivity: "/api/v1/dashboard/intern/overview/activity/",
     topLeaderboard: "/api/v1/dashboard/intern/overview/leaderboard/top/",
     timesheets: "/api/v1/dashboard/intern/timesheets/",
+    timesheetsPrefill: "/api/v1/dashboard/intern/timesheets/prefill/",
     timesheetDetail: (id: string) =>
       `/api/v1/dashboard/intern/timesheets/${id}/`,
     timesheetToday: "/api/v1/dashboard/intern/timesheets/today/",
     timesheetHistory: "/api/v1/dashboard/intern/timesheets/history/",
     timesheetSummary: "/api/v1/dashboard/intern/timesheets/summary/",
     reviews: "/api/v1/dashboard/intern/reviews/",
+    reviewsPrefill: "/api/v1/dashboard/intern/reviews/prefill/",
     reviewDetail: (id: string) => `/api/v1/dashboard/intern/reviews/${id}/`,
     reviewCurrent: "/api/v1/dashboard/intern/reviews/current/",
     reviewHistory: "/api/v1/dashboard/intern/reviews/history/",
+    tasksCategories: "/api/v1/dashboard/intern/tasks/categories/",
     tasksMine: "/api/v1/dashboard/intern/tasks/mine/",
-    taskDetail: (id: string) => `/api/v1/dashboard/intern/tasks/${id}/`,
+    taskDetail: (id: string) => `/api/v1/dashboard/intern/tasks/${id}/detail/`,
+    taskSubmit: (id: string) => `/api/v1/dashboard/intern/tasks/${id}/`,
     leave: "/api/v1/dashboard/intern/leave/",
     leaveDetail: (id: string) => `/api/v1/dashboard/intern/leave/${id}/`,
     leaveHistory: "/api/v1/dashboard/intern/leave/history/",
@@ -1247,9 +1251,13 @@ export const endpoints = {
     export: "/api/v1/dashboard/manage-interns/interns/export/",
     tasks: "/api/v1/dashboard/manage-interns/tasks/",
     taskDetail: (id: string) => `/api/v1/dashboard/manage-interns/tasks/${id}/`,
+    tasksByIntern: (muid: string) =>
+      `/api/v1/dashboard/manage-interns/tasks/by-intern/${muid}/`,
     taskVerify: (id: string) =>
       `/api/v1/dashboard/manage-interns/tasks/${id}/verify/`,
     leave: "/api/v1/dashboard/manage-interns/leave/",
+    leaveDetail: (id: string) =>
+      `/api/v1/dashboard/manage-interns/leave/${id}/`,
     leaveReview: (id: string) =>
       `/api/v1/dashboard/manage-interns/leave/${id}/review/`,
     timesheetsReview: "/api/v1/dashboard/manage-interns/reviews/timesheets/",

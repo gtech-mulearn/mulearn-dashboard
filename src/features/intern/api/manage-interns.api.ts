@@ -115,6 +115,16 @@ export const manageInternsApi = {
     await apiClient.post(endpoints.manageInterns.taskVerify(id), payload);
   },
 
+  getTasksByIntern: async (
+    muid: string,
+    params?: TInternQueryParams,
+  ): Promise<TPaginatedData<TInternTask>> => {
+    const qs = buildQueryString(params);
+    return apiClient.get<TPaginatedData<TInternTask>>(
+      `${endpoints.manageInterns.tasksByIntern(muid)}${qs}`,
+    );
+  },
+
   // ── Leave Review ───────────────────────────────────────────
   getLeaveRequests: async (
     params?: TInternQueryParams,
@@ -122,6 +132,12 @@ export const manageInternsApi = {
     const qs = buildQueryString(params);
     return apiClient.get<TPaginatedData<TLeaveRequest>>(
       `${endpoints.manageInterns.leave}${qs}`,
+    );
+  },
+
+  getLeaveDetail: async (id: string): Promise<TLeaveRequest> => {
+    return apiClient.get<TLeaveRequest>(
+      endpoints.manageInterns.leaveDetail(id),
     );
   },
 

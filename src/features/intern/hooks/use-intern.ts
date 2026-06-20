@@ -49,6 +49,13 @@ export function useTimesheets(params?: TInternQueryParams) {
   });
 }
 
+export function useTimesheetsPrefill() {
+  return useQuery({
+    queryKey: [...internKeys.timesheets(), "prefill"],
+    queryFn: () => internApi.getTimesheetsPrefill(),
+  });
+}
+
 export function useTimesheetToday() {
   return useQuery({
     queryKey: internKeys.timesheetToday(),
@@ -102,6 +109,13 @@ export function useWeeklyReviews(params?: TInternQueryParams) {
   return useQuery({
     queryKey: internKeys.reviewHistory(params ?? {}),
     queryFn: () => internApi.getWeeklyReviews(params),
+  });
+}
+
+export function useWeeklyReviewsPrefill() {
+  return useQuery({
+    queryKey: [...internKeys.reviews(), "prefill"],
+    queryFn: () => internApi.getWeeklyReviewsPrefill(),
   });
 }
 
@@ -165,6 +179,21 @@ export function useInternTasks(params?: TInternQueryParams) {
   return useQuery({
     queryKey: internKeys.tasksMine(params ?? {}),
     queryFn: () => internApi.getMyTasks(params),
+  });
+}
+
+export function useTaskCategories() {
+  return useQuery({
+    queryKey: [...internKeys.tasks(), "categories"],
+    queryFn: () => internApi.getTaskCategories(),
+  });
+}
+
+export function useTaskDetail(id: string) {
+  return useQuery({
+    queryKey: [...internKeys.tasks(), "detail", id],
+    queryFn: () => internApi.getTaskDetail(id),
+    enabled: !!id,
   });
 }
 
