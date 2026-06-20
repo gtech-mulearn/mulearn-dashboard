@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
     const isProduction = process.env.NODE_ENV === "production";
 
     cookieStore.set("accessToken", newAccessToken, {
-      httpOnly: true,
+      httpOnly: false,
       expires: new Date(Date.now() + 86_400_000),
       secure: isProduction,
       sameSite: "strict",
