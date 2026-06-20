@@ -3,7 +3,6 @@
 import { format } from "date-fns";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
-import { Blank } from "@/components/dashboard/table/Blank";
 import Modal from "@/components/dashboard/table/Modal";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table from "@/components/dashboard/table/Table";
@@ -69,7 +68,7 @@ export function IGRequestsPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
             Interest Group Requests
@@ -78,10 +77,12 @@ export function IGRequestsPage() {
             Propose and track new interest groups for your organization.
           </p>
         </div>
-        <IGRequestFormDialog />
+        <div className="shrink-0">
+          <IGRequestFormDialog />
+        </div>
       </div>
 
-      <div className="flex gap-2 mb-2">
+      <div className="scrollbar-none -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
         {STATUS_TABS.map((tab) => (
           <Button
             key={tab.label}
@@ -91,6 +92,7 @@ export function IGRequestsPage() {
               setPage(1);
             }}
             size="sm"
+            className="shrink-0"
           >
             {tab.label}
           </Button>

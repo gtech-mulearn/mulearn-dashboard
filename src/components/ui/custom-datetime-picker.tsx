@@ -287,9 +287,16 @@ export function CustomDateTimePicker({
         >
           <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
           {date ? (
-            <div className="flex flex-1 items-center justify-between text-foreground">
-              <span>{format(date, "PPP")}</span>
-              {!hideTime && <span>{format(date, "p")}</span>}
+            <div className="flex min-w-0 flex-1 items-center gap-2 text-foreground">
+              <span className="truncate">{format(date, "PPP")}</span>
+              {!hideTime && (
+                <>
+                  <span className="text-muted-foreground" aria-hidden>
+                    ·
+                  </span>
+                  <span className="shrink-0">{format(date, "p")}</span>
+                </>
+              )}
             </div>
           ) : (
             <span className="text-muted-foreground">

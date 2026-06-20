@@ -11,7 +11,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useAdminApprove, useAdminReject, usePublishEvent } from "../hooks";
+import { useEventApproval, usePublishEvent } from "../hooks";
+import { resolveApprovalTier } from "../lib/events.policy";
 import type { EventDetail, EventDetailManage } from "../types";
 import { EventStatusBadge } from "./event-status-badge";
 
@@ -44,8 +45,8 @@ export function PublishFlowPanel({
   const [rejectOpen, setRejectOpen] = useState(false);
 
   const publish = usePublishEvent(event.id);
-  const approve = useAdminApprove(event.id);
-  const reject = useAdminReject(event.id);
+  const { approve, reject } = useEventApproval(event.id);
+  const tier = resolveApprovalTier(event.status);
 
   const isPendingStatus =
     event.status === "pending_campus_approval" ||
@@ -70,7 +71,7 @@ export function PublishFlowPanel({
           {canApprove && !canSelfPublish ? (
             <Button
               variant="outline"
-              onClick={() => approve.mutate(undefined)}
+              onClick={() => approve.mutate({ tier: "admin", note: undefined })}
               disabled={approve.isPending}
             >
               Admin publish
@@ -90,14 +91,18 @@ export function PublishFlowPanel({
                 className="w-full sm:max-w-sm"
               />
               <Button
-                onClick={() =>
-                  approve.mutate(approveNote || undefined, {
-                    onSuccess: () => {
-                      setApproveNote("");
-                      setShowApproveInput(false);
+                onClick={() => {
+                  if (!tier) return;
+                  approve.mutate(
+                    { tier, note: approveNote || undefined },
+                    {
+                      onSuccess: () => {
+                        setApproveNote("");
+                        setShowApproveInput(false);
+                      },
                     },
-                  })
-                }
+                  );
+                }}
                 disabled={approve.isPending}
               >
                 Confirm Approve
@@ -135,14 +140,18 @@ export function PublishFlowPanel({
               Cancel
             </Button>
             <Button
-              onClick={() =>
-                reject.mutate(rejectReason.trim(), {
-                  onSuccess: () => {
-                    setRejectReason("");
-                    setRejectOpen(false);
+              onClick={() => {
+                if (!tier) return;
+                reject.mutate(
+                  { tier, reason: rejectReason.trim() },
+                  {
+                    onSuccess: () => {
+                      setRejectReason("");
+                      setRejectOpen(false);
+                    },
                   },
-                })
-              }
+                );
+              }}
               disabled={reject.isPending || rejectReason.trim().length === 0}
             >
               Confirm Reject

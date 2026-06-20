@@ -47,6 +47,38 @@ export default function ManageEventsDashboard() {
       Array.isArray(userInfo?.roles) && userInfo.roles.includes(ROLES.ADMIN),
     );
 
+  const viewerRoles = Array.isArray(userInfo?.roles)
+    ? (userInfo.roles as string[])
+    : [];
+  const isMentor = viewerRoles.includes(ROLES.MENTOR);
+  const isCampusLead = [
+    ROLES.CAMPUS_LEAD,
+    ROLES.ZONAL_CAMPUS_LEAD,
+    ROLES.DISTRICT_CAMPUS_LEAD,
+  ].some((role) => viewerRoles.includes(role));
+
+  // Base status pills + role-gated approval-queue pills (EV-B). Mentors get
+  // their mentor-approval queue; campus leads get the campus-approval queue.
+  const statusPills: Array<{ label: string; value: EventStatus | "all" }> = [
+    ...MANAGE_EVENT_STATUS_PILLS,
+    ...(isMentor
+      ? [
+          {
+            label: "Pending my approval",
+            value: "pending_mentor_approval" as const,
+          },
+        ]
+      : []),
+    ...(isCampusLead
+      ? [
+          {
+            label: "Pending campus approval",
+            value: "pending_campus_approval" as const,
+          },
+        ]
+      : []),
+  ];
+
   const {
     pendingInvites,
     pendingCount: pendingInviteCount,
@@ -203,7 +235,7 @@ export default function ManageEventsDashboard() {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {MANAGE_EVENT_STATUS_PILLS.map((pill) => {
+        {statusPills.map((pill) => {
           const active = statusFilter === pill.value;
           return (
             <Button

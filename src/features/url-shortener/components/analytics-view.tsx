@@ -178,7 +178,7 @@ export const AnalyticsView = ({ params }: AnalyticsViewProps) => {
           <div>
             <h1 className="text-3xl font-bold text-foreground">Analytics</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              {title || short_url}
+              {title ? title : "Performance insights for your short link"}
             </p>
           </div>
         </div>
@@ -187,7 +187,7 @@ export const AnalyticsView = ({ params }: AnalyticsViewProps) => {
       <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
         <div className="space-y-3">
           <div className="flex flex-col md:flex-row md:items-center gap-3 bg-secondary p-4 rounded-lg border border-border/50">
-            <span className="font-semibold bg-brand-blue/10 text-brand-blue px-3 py-1 rounded text-sm flex-shrink-0">
+            <span className="font-semibold bg-muted text-muted-foreground px-3 py-1 rounded text-sm shrink-0">
               Short
             </span>
             <div className="flex-1 bg-card p-3 rounded border border-border flex items-center justify-between group overflow-x-auto">
@@ -198,7 +198,7 @@ export const AnalyticsView = ({ params }: AnalyticsViewProps) => {
           </div>
 
           <div className="flex flex-col md:flex-row md:items-center gap-3 bg-secondary p-4 rounded-lg border border-border/50">
-            <span className="font-semibold bg-brand-purple/10 text-brand-purple px-3 py-1 rounded text-sm flex-shrink-0">
+            <span className="font-semibold bg-muted text-muted-foreground px-3 py-1 rounded text-sm shrink-0">
               Long
             </span>
             <div className="flex-1 bg-card p-3 rounded border border-border flex items-center justify-between group overflow-x-auto">
@@ -208,6 +208,12 @@ export const AnalyticsView = ({ params }: AnalyticsViewProps) => {
             </div>
           </div>
         </div>
+
+        {total_clicks === 0 && (
+          <div className="rounded-lg border border-border bg-secondary/50 p-4 text-sm text-muted-foreground">
+            No clicks yet. Share your link to start tracking engagement!
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="p-6">

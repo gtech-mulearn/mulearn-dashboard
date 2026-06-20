@@ -1214,7 +1214,7 @@ export function CampusManageDashboard() {
               {/* Main Column */}
               <div className="min-w-0 flex-1">
                 <Tabs defaultValue="analytics" className="w-full">
-                  <TabsList className="mb-6 flex h-auto w-full gap-1 overflow-x-auto rounded-xl bg-muted p-1">
+                  <TabsList className="scrollbar-none mb-6 flex h-auto w-full justify-start gap-1 overflow-x-auto rounded-xl bg-muted p-1">
                     {[
                       { value: "analytics", label: "Analytics" },
                       { value: "events", label: "Events" },
@@ -1224,7 +1224,7 @@ export function CampusManageDashboard() {
                       <TabsTrigger
                         key={tab.value}
                         value={tab.value}
-                        className="relative whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-all data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-card/50 data-[state=inactive]:hover:text-foreground"
+                        className="relative shrink-0 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-all data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-card/50 data-[state=inactive]:hover:text-foreground"
                       >
                         {tab.label}
                       </TabsTrigger>

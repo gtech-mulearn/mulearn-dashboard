@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { TaskDetailDialog } from "@/components/task-detail-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -115,7 +116,12 @@ function TaskFormDialog({
   task?: MentorTask | null;
 }) {
   const isEdit = !!task;
-  const { data: myIgs = EMPTY_ARRAY } = useTaskIgDropdown();
+  const { data: myIgs = EMPTY_ARRAY, isLoading: igsLoading } =
+    useTaskIgDropdown();
+  // A task must be attached to an IG the mentor is assigned to. When the mentor
+  // has no assigned IGs the form can never be submitted, so we gate it with a
+  // clear message instead of presenting an empty, un-submittable dropdown.
+  const noIgs = !igsLoading && myIgs.length === 0;
   const { data: taskTypes = EMPTY_ARRAY, isLoading: taskTypesLoading } =
     useTaskTypes();
   const { data: levels = EMPTY_ARRAY, isLoading: levelsLoading } =
@@ -235,6 +241,17 @@ function TaskFormDialog({
             onSubmit={form.handleSubmit(onSubmit as any)}
             className="space-y-4"
           >
+            {/* No assigned IGs — gate the form rather than show an empty dropdown */}
+            {noIgs && (
+              <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                <p>
+                  You must be assigned to an Interest Group before submitting
+                  tasks. Contact your admin to get assigned.
+                </p>
+              </div>
+            )}
+
             {/* Title */}
             <FormField
               control={form.control as any}
@@ -447,7 +464,7 @@ function TaskFormDialog({
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isPending}>
+              <Button type="submit" disabled={isPending || noIgs}>
                 {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isPending
                   ? isEdit
@@ -540,11 +557,13 @@ function TasksTable({
   isLoading,
   onEdit,
   onDelete,
+  onView,
 }: {
   tasks: MentorTask[] | undefined;
   isLoading: boolean;
   onEdit: (t: MentorTask) => void;
   onDelete: (t: MentorTask) => void;
+  onView: (t: MentorTask) => void;
 }) {
   if (isLoading) {
     return (
@@ -579,7 +598,11 @@ function TasksTable({
       </TableHeader>
       <TableBody>
         {tasks.map((task) => (
-          <TableRow key={task.id}>
+          <TableRow
+            key={task.id}
+            className="cursor-pointer"
+            onClick={() => onView(task)}
+          >
             {/* Title + hashtag */}
             <TableCell className="font-medium">
               <div className="flex flex-col gap-0.5">
@@ -647,7 +670,10 @@ function TasksTable({
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                        onClick={() => onEdit(task)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEdit(task);
+                        }}
                       >
                         <Edit2 className="h-4 w-4" />
                       </Button>
@@ -664,7 +690,10 @@ function TasksTable({
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                        onClick={() => onDelete(task)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDelete(task);
+                        }}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -686,6 +715,7 @@ export function TaskRequestsPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [editTask, setEditTask] = useState<MentorTask | null>(null);
   const [deleteTask, setDeleteTask] = useState<MentorTask | null>(null);
+  const [viewTask, setViewTask] = useState<MentorTask | null>(null);
 
   const { data: allResult, isLoading: allLoading } = useMentorTasks({});
   const { data: pendingResult, isLoading: pendingLoading } = useMentorTasks({
@@ -739,6 +769,7 @@ export function TaskRequestsPage() {
               isLoading={allLoading}
               onEdit={setEditTask}
               onDelete={setDeleteTask}
+              onView={setViewTask}
             />
           </TabsContent>
 
@@ -748,6 +779,7 @@ export function TaskRequestsPage() {
               isLoading={pendingLoading}
               onEdit={setEditTask}
               onDelete={setDeleteTask}
+              onView={setViewTask}
             />
           </TabsContent>
 
@@ -757,6 +789,7 @@ export function TaskRequestsPage() {
               isLoading={approvedLoading}
               onEdit={setEditTask}
               onDelete={setDeleteTask}
+              onView={setViewTask}
             />
           </TabsContent>
 
@@ -766,9 +799,17 @@ export function TaskRequestsPage() {
               isLoading={rejectedLoading}
               onEdit={setEditTask}
               onDelete={setDeleteTask}
+              onView={setViewTask}
             />
           </TabsContent>
         </Tabs>
+
+        {/* Detail Dialog (parity with company task section) */}
+        <TaskDetailDialog
+          open={!!viewTask}
+          onClose={() => setViewTask(null)}
+          task={viewTask ?? undefined}
+        />
 
         {/* Create Dialog */}
         <TaskFormDialog open={createOpen} onOpenChange={setCreateOpen} />

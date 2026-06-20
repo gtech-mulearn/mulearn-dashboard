@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { StepperHeader, type StepperStep } from "@/components/stepper-header";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -22,7 +23,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -30,7 +30,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateIGRequest } from "../hooks";
 import {
@@ -39,8 +38,18 @@ import {
   IG_CATEGORY_OPTIONS,
 } from "../schemas";
 
+const STEPS: StepperStep[] = [
+  { id: "basic", label: "Basic Info", description: "Name, code & category" },
+  { id: "details", label: "Details", description: "Optional information" },
+  { id: "review", label: "Review", description: "Confirm & submit" },
+];
+
+// Fields validated before leaving Step 1.
+const STEP1_FIELDS = ["name", "code", "category", "icon"] as const;
+
 export function IGRequestFormDialog() {
   const [open, setOpen] = useState(false);
+  const [step, setStep] = useState(0);
   const { mutate: createRequest, isPending } = useCreateIGRequest();
 
   const form = useForm<CreateIGRequestForm>({
@@ -62,17 +71,36 @@ export function IGRequestFormDialog() {
     },
   });
 
+  const handleOpenChange = (next: boolean) => {
+    setOpen(next);
+    if (!next) {
+      setStep(0);
+      form.reset();
+    }
+  };
+
+  const goNext = async () => {
+    if (step === 0) {
+      const ok = await form.trigger([...STEP1_FIELDS]);
+      if (!ok) return;
+    }
+    setStep((s) => Math.min(STEPS.length - 1, s + 1));
+  };
+
+  const goBack = () => setStep((s) => Math.max(0, s - 1));
+
   const onSubmit = (data: CreateIGRequestForm) => {
     createRequest(data, {
       onSuccess: () => {
-        setOpen(false);
-        form.reset();
+        handleOpenChange(false);
       },
     });
   };
 
+  const values = form.watch();
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button>
           <Plus className="w-4 h-4 mr-2" />
@@ -83,14 +111,29 @@ export function IGRequestFormDialog() {
         <DialogHeader>
           <DialogTitle>Request New Interest Group</DialogTitle>
         </DialogHeader>
+
+        <div className="border-b border-border px-1 pb-4">
+          <StepperHeader
+            steps={STEPS}
+            currentStepIndex={step}
+            onStepClick={(index) => {
+              // Allow going back via the header; going forward must use Next
+              // so step-1 validation isn't skipped.
+              if (index < step) setStep(index);
+            }}
+            ariaLabel="IG request progress"
+          />
+        </div>
+
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
             className="flex flex-col flex-1 overflow-hidden"
           >
-            <ScrollArea className="flex-1 overflow-y-auto px-1 pr-4">
-              <div className="space-y-4 pb-4">
-                <div className="grid grid-cols-2 gap-4">
+            <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-1 py-4">
+              {/* Step 1 — Basic Info */}
+              {step === 0 && (
+                <div className="space-y-4 pb-2">
                   <FormField
                     control={form.control}
                     name="name"
@@ -171,13 +214,11 @@ export function IGRequestFormDialog() {
                     )}
                   />
                 </div>
+              )}
 
-                <Separator className="my-6" />
-                <h4 className="text-sm font-medium leading-none mb-4">
-                  Optional Details
-                </h4>
-
-                <div className="grid gap-4">
+              {/* Step 2 — Optional Details */}
+              {step === 1 && (
+                <div className="grid gap-4 pb-4">
                   <FormField
                     control={form.control}
                     name="about"
@@ -309,12 +350,69 @@ export function IGRequestFormDialog() {
                     )}
                   />
                 </div>
-              </div>
-            </ScrollArea>
-            <div className="pt-4 flex justify-end">
-              <Button type="submit" disabled={isPending}>
-                {isPending ? "Submitting..." : "Submit Request"}
+              )}
+
+              {/* Step 3 — Review */}
+              {step === 2 && (
+                <div className="space-y-3 pb-4 text-sm">
+                  <p className="text-muted-foreground">
+                    Review the details below, then submit your request.
+                  </p>
+                  <dl className="divide-y divide-border rounded-lg border border-border">
+                    {(
+                      [
+                        ["Name", values.name],
+                        ["Code", values.code],
+                        ["Category", values.category],
+                        ["Icon", values.icon],
+                        ["About", values.about],
+                        ["Prerequisites", values.prerequisites],
+                        ["Career Opportunities", values.career_opportunities],
+                        ["Resource Link", values.resource],
+                        ["Top Blogs", values.top_blogs],
+                        ["People to Follow", values.people_to_follow],
+                        ["Leads", values.leads],
+                        ["Mentors", values.mentors],
+                        ["Thinktank Link", values.thinktank],
+                        ["Office Hours", values.office_hours],
+                      ] as const
+                    )
+                      .filter(([, value]) => value && String(value).trim())
+                      .map(([label, value]) => (
+                        <div
+                          key={label}
+                          className="grid grid-cols-3 gap-2 px-3 py-2"
+                        >
+                          <dt className="text-muted-foreground">{label}</dt>
+                          <dd className="col-span-2 wrap-break-word">
+                            {String(value)}
+                          </dd>
+                        </div>
+                      ))}
+                  </dl>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-between gap-2 border-t border-border px-1 pt-4">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={goBack}
+                disabled={step === 0}
+              >
+                Back
               </Button>
+              {step < STEPS.length - 1 ? (
+                <Button type="button" onClick={goNext}>
+                  Next
+                </Button>
+              ) : (
+                <Button type="submit" disabled={isPending}>
+                  {isPending ? "Submitting..." : "Submit Request"}
+                </Button>
+              )}
             </div>
           </form>
         </Form>

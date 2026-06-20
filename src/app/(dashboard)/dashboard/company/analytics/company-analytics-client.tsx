@@ -64,28 +64,28 @@ export function CompanyAnalyticsPageClient() {
         onValueChange={setActiveTab}
         className="space-y-6"
       >
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto p-1 bg-muted rounded-xl">
+        <TabsList className="scrollbar-none flex w-full justify-start gap-1 overflow-x-auto h-auto p-1 bg-muted rounded-xl">
           <TabsTrigger
             value="dashboard-summary"
-            className="py-2.5 rounded-lg text-xs md:text-sm font-medium"
+            className="shrink-0 whitespace-nowrap py-2.5 px-4 rounded-lg text-xs md:text-sm font-medium"
           >
             Dashboard Summary
           </TabsTrigger>
           <TabsTrigger
             value="gig-analytics"
-            className="py-2.5 rounded-lg text-xs md:text-sm font-medium"
+            className="shrink-0 whitespace-nowrap py-2.5 px-4 rounded-lg text-xs md:text-sm font-medium"
           >
             Gig Performance
           </TabsTrigger>
           <TabsTrigger
             value="job-engagement"
-            className="py-2.5 rounded-lg text-xs md:text-sm font-medium"
+            className="shrink-0 whitespace-nowrap py-2.5 px-4 rounded-lg text-xs md:text-sm font-medium"
           >
             Job Engagement
           </TabsTrigger>
           <TabsTrigger
             value="talent-pool-stats"
-            className="py-2.5 rounded-lg text-xs md:text-sm font-medium"
+            className="shrink-0 whitespace-nowrap py-2.5 px-4 rounded-lg text-xs md:text-sm font-medium"
           >
             Talent Pool Insights
           </TabsTrigger>
@@ -286,9 +286,6 @@ function DashboardSummaryView() {
                     >
                       {summary.company.status}
                     </Badge>
-                    <span className="text-xs text-muted-foreground">
-                      ID: {summary.company.id}
-                    </span>
                   </div>
                 </div>
               </CardContent>

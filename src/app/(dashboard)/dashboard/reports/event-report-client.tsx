@@ -150,11 +150,11 @@ export function EventReportPageClient() {
           {pages.map((pageContent, index) => (
             <div
               key={pageContent.id}
-              className="relative bg-background shadow-xl print:shadow-none shrink-0 print:break-inside-avoid print:break-after-page"
+              className="relative bg-background shadow-xl print:shadow-none shrink-0 print:break-inside-avoid print:break-after-page p-6 sm:p-[20mm] print:p-[20mm]"
               style={{
                 width: "210mm",
+                maxWidth: "100%",
                 minHeight: "297mm",
-                padding: "20mm",
               }}
             >
               {/* Header on all pages */}

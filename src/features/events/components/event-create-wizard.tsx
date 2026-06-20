@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, Loader2, Plus, X } from "lucide-react";
+import { AlertCircle, Check, Loader2, Plus, X } from "lucide-react";
 import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { Controller, type Resolver, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -31,8 +31,13 @@ import {
   useCreateEvent,
   useOrganizerOptions,
 } from "../hooks";
+import { getAllowedScopes } from "../lib/events.policy";
 import { type CreateEventSchema, updateEventSchema } from "../schemas";
-import type { EventCreateWizardProps, SelectedOrganiser } from "../types";
+import type {
+  EventCreateWizardProps,
+  EventScope,
+  SelectedOrganiser,
+} from "../types";
 import { EventSearch } from "./event-search";
 import { VenueSection } from "./venue-section";
 
@@ -174,6 +179,9 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
   const createEvent = useCreateEvent();
   const organizerOptionsQuery = useOrganizerOptions();
 
+  const creatorCampusName =
+    organizerOptionsQuery.data?.campus_context?.title ?? null;
+
   const [currentStep, setCurrentStep] = useState(1);
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
   const [bannerImageFile, setBannerImageFile] = useState<File | null>(null);
@@ -240,6 +248,11 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
     (item) => `${item.type}:${item.id}` === selectedOrganiserId,
   );
 
+  const allowedScopes = useMemo(
+    () => (selectedOrganiser ? getAllowedScopes(selectedOrganiser.type) : []),
+    [selectedOrganiser],
+  );
+
   const updateSelectedOrganiserId = useCallback((nextId: string) => {
     setSelectedOrganiserId(nextId);
     setOrganiserError("");
@@ -266,6 +279,16 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
       setSelectedCampusName(selectedOrganiser.label);
     }
   }, [selectedOrganiser, scope, setValue]);
+
+  // Keep the selected scope valid when the organiser (and thus allowed scopes) changes.
+  useEffect(() => {
+    if (allowedScopes.length === 0) return;
+    if (!allowedScopes.includes(scope as EventScope)) {
+      setValue("scope", allowedScopes[0] as CreateEventSchema["scope"], {
+        shouldValidate: false,
+      });
+    }
+  }, [allowedScopes, scope, setValue]);
 
   const resetWizard = () => {
     reset(EVENT_FORM_DEFAULT_VALUES);
@@ -713,6 +736,17 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
 
               {currentStep === 2 ? (
                 <section className="space-y-6">
+                  {!organizerOptionsQuery.isLoading &&
+                  organizerOptions.length === 0 ? (
+                    <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
+                      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                      <p>
+                        You don&apos;t have permission to create events yet.
+                        Contact your admin to get an organiser role (IG Lead,
+                        Campus Lead, Company, or Mentor).
+                      </p>
+                    </div>
+                  ) : null}
                   <div className="space-y-2">
                     <p className="text-sm font-medium text-foreground">
                       Organiser <span className="text-destructive">*</span>
@@ -764,7 +798,9 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                       name="scope"
                       render={({ field }) => (
                         <div className="flex flex-wrap gap-2">
-                          {EVENT_SCOPE_OPTIONS.map((item) => {
+                          {EVENT_SCOPE_OPTIONS.filter((item) =>
+                            allowedScopes.includes(item.value),
+                          ).map((item) => {
                             const active = field.value === item.value;
                             return (
                               <Button
@@ -833,6 +869,7 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                       value={watch("target_campus_ig_id") ?? null}
                       selectedName={selectedCampusIgName}
                       placeholder="Search campus IG"
+                      campusContextLabel={creatorCampusName}
                       onChange={(id, name) => {
                         setValue("target_campus_ig_id", id || null, {
                           shouldValidate: true,
@@ -1047,12 +1084,12 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
           </div>
 
           <div className="flex items-center justify-between border-t border-border bg-card/80 p-4 backdrop-blur-sm">
-            <div className="mx-auto flex w-full max-w-5xl items-center justify-between">
+            <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-2">
               <Button variant="ghost" onClick={requestClose}>
                 Cancel
               </Button>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center justify-end gap-2">
                 {currentStep > 1 ? (
                   <Button
                     variant="outline"
