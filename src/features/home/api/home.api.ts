@@ -316,7 +316,7 @@ function mapEventItemToCalendarEvent(item: CalendarEventItem): CalendarEvent {
     date: item.start,
     type: CATEGORY_TO_TYPE[rawCategory] ?? "other",
     location: item.venue_type ?? "",
-    link: item.slug ? `/dashboard/events/${item.slug}` : "",
+    link: `/dashboard/events/${item.id}`,
   };
 }
 
