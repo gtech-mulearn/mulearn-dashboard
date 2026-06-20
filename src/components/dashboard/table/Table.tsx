@@ -167,13 +167,13 @@ const Table: FC<TableProps> = (props) => {
                   className="odd:bg-muted/70 even:bg-transparent"
                 >
                   <td
-                    className={`border-b border-border px-3.5 py-3 w-16 ${props.slNoCellClassName ?? ""}`}
+                    className={`border-b border-border px-3.5 py-3 w-16 text-sm ${props.slNoCellClassName ?? ""}`}
                   >
                     {startIndex + index + 1}
                   </td>
                   {props.columnOrder.map((column) => (
                     <td
-                      className={`border-b border-border px-3.5 py-3 break-words ${column.width || ""}`}
+                      className={`border-b border-border px-3.5 py-3 break-words text-sm ${column.width || ""}`}
                       key={column.column}
                     >
                       {(() => {
@@ -194,7 +194,7 @@ const Table: FC<TableProps> = (props) => {
                   ))}
                   {props.id?.map((column) => (
                     <td
-                      className="border-b border-border px-3.5 py-3 w-32"
+                      className="border-b border-border px-3.5 py-3 w-32 text-sm"
                       key={column}
                     >
                       <div className="flex items-center justify-end gap-1">

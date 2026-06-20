@@ -100,7 +100,7 @@ export default function ManageUsers() {
               <ShieldCheck className="size-3.5" />
               User Management
             </div>
-            <CardTitle className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            <CardTitle className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
               Manage Users
             </CardTitle>
           </div>
@@ -194,7 +194,7 @@ export default function ManageUsers() {
               type="button"
               variant="outline"
               onClick={() => setIsModalOpen(false)}
-              className="h-12 text-2xl sm:text-base font-medium"
+              className="h-12 text-sm font-medium"
               aria-label="Cancel editing user"
             >
               Cancel
@@ -202,7 +202,7 @@ export default function ManageUsers() {
             <Button
               type="submit"
               form="manage-users-edit-form"
-              className="h-12 text-2xl sm:text-base font-medium"
+              className="h-12 text-sm font-medium"
               aria-label="Save user details"
             >
               Done
