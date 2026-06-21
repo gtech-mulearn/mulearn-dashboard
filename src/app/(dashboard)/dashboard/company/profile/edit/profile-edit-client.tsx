@@ -3,7 +3,6 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { CompanyStatusGuard } from "@/features/company-jobs/components";
 import { useCompanyProfile } from "@/features/company-jobs/hooks/use-company-profile";
 import { ProfileStepper } from "@/features/company-profile";
 

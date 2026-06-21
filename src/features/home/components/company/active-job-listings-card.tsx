@@ -9,6 +9,7 @@ import {
   Plus,
 } from "lucide-react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useJobs } from "@/features/company-jobs/hooks/use-jobs";
@@ -81,8 +82,8 @@ export function ActiveJobListingsCard({
     >
       <CardHeader className="flex-row items-center justify-between px-5 py-4">
         <div className="flex items-center gap-2.5">
-          <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10">
-            <Building2 className="size-4 text-primary" />
+          <div className="flex size-9 items-center justify-center rounded-xl bg-brand-blue/10">
+            <Building2 className="size-4 text-brand-blue" />
           </div>
           <CardTitle className="flex items-center gap-1.5 text-base font-bold text-foreground">
             {!isVerified && <Lock className="size-4" />}
@@ -94,13 +95,12 @@ export function ActiveJobListingsCard({
             Locked
           </span>
         ) : (
-          <Link
-            href="/dashboard/company/jobs/create"
-            className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            <Plus className="size-3.5" />
-            Post New
-          </Link>
+          <Button asChild size="sm" variant="outline">
+            <Link href="/dashboard/company/jobs/create">
+              <Plus className="size-3.5" />
+              Post New
+            </Link>
+          </Button>
         )}
       </CardHeader>
       <CardContent className="px-5 pb-5 pt-0">

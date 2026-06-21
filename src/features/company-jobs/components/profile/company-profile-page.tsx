@@ -28,8 +28,8 @@ function StatCard({
   icon,
   value,
   label,
-  color = "text-primary",
-  bg = "bg-primary/10",
+  color = "text-brand-blue",
+  bg = "bg-brand-blue/10",
 }: {
   icon: React.ReactNode;
   value: string | number;
@@ -74,8 +74,8 @@ function CompanyProfileSidebar({
             className="flex w-full items-center justify-between rounded-xl p-3 text-left transition-colors hover:bg-muted"
           >
             <div className="flex items-center gap-3">
-              <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10">
-                <Pencil className="size-4 text-primary" />
+              <div className="flex size-9 items-center justify-center rounded-lg bg-brand-blue/10">
+                <Pencil className="size-4 text-brand-blue" />
               </div>
               <span className="text-sm font-medium text-foreground">
                 {profile.status === "pending" || profile.status === "rejected"

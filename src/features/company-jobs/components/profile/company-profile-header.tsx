@@ -3,7 +3,6 @@
 import {
   Building2,
   CalendarDays,
-  CheckCircle,
   CheckCircle2,
   Globe,
   Linkedin,
@@ -64,23 +63,21 @@ export function CompanyProfileHeader({
       : null;
 
   return (
-    <div className="relative w-full overflow-hidden rounded-2xl shadow-sm">
+    <div className="relative w-full overflow-hidden rounded-2xl border shadow-sm">
       {/* ── Banner ── */}
       <div className="relative h-48 w-full sm:h-56">
-        {/* Geometric dark banner matching student profile aesthetic */}
-        <div className="absolute inset-0 bg-foreground">
-          <div
-            className="absolute inset-0 opacity-[0.07]"
-            style={{
-              backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`,
-              backgroundSize: "28px 28px",
-            }}
-          />
-          <div className="absolute inset-0 bg-linear-to-br from-primary/20 via-transparent to-brand-purple/20" />
-        </div>
+        {/* Cover image — same banner used by the learner & mentor profile pages */}
+        <Image
+          src="/images/profile-banner.webp"
+          alt={`${profile.name} cover`}
+          fill
+          className="object-cover"
+          priority
+          sizes="100vw"
+        />
 
-        {/* Gradient overlay for text readability — same as student profile */}
-        <div className="absolute inset-0 bg-linear-to-r from-foreground/60 to-foreground/40" />
+        {/* Gradient overlay for text readability — same as other profile pages */}
+        <div className="pointer-events-none absolute inset-0 bg-linear-to-r from-black/80 via-black/55 to-black/40" />
 
         {/* Content overlaid on banner */}
         <div className="absolute inset-0 flex items-end p-4 sm:items-center sm:px-6">
@@ -195,7 +192,7 @@ export function CompanyProfileHeader({
                     size="sm"
                     asChild
                     aria-label="Edit Profile"
-                    className="gap-1 rounded-full sm:gap-1.5 sm:text-sm"
+                    className="gap-1 rounded-full border-white/50 bg-transparent text-white hover:bg-white/10 hover:text-white sm:gap-1.5 sm:text-sm"
                   >
                     <Link href="/dashboard/company/profile/edit">
                       <Pencil className="size-3.5" />
@@ -234,7 +231,7 @@ export function CompanyProfileHeader({
                     aria-label="Share"
                     variant="outline"
                     size="sm"
-                    className="gap-1 rounded-full  text-xs sm:gap-1.5 sm:text-sm"
+                    className="gap-1 rounded-full border-white/50 bg-transparent text-white text-xs hover:bg-white/10 hover:text-white sm:gap-1.5 sm:text-sm"
                   >
                     <Share2 className="size-3.5" />
                     <span className="hidden sm:inline">Share</span>

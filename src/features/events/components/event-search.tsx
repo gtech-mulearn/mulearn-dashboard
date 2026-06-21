@@ -67,19 +67,15 @@ function normalizeScopeTargets(
     interestGroup?: unknown[];
     colleges?: unknown[];
   } | null;
-  const items = paginated
-    ? Array.isArray(paginated.data)
-      ? paginated.data
-      : Array.isArray(paginated.interestGroup)
-        ? paginated.interestGroup
-        : Array.isArray(paginated.colleges)
-          ? paginated.colleges
-          : Array.isArray(data)
-            ? data
-            : []
-    : Array.isArray(data)
-      ? data
-      : [];
+  const items = Array.isArray(paginated?.data)
+    ? (paginated?.data as unknown[])
+    : Array.isArray(paginated?.interestGroup)
+      ? (paginated?.interestGroup as unknown[])
+      : Array.isArray(paginated?.colleges)
+        ? (paginated?.colleges as unknown[])
+        : Array.isArray(data)
+          ? data
+          : [];
 
   const uniqueTargets = new Map<string, CollaborationTarget>();
 
