@@ -566,11 +566,6 @@ export const endpoints = {
     wadhwaniCollege: "/api/v1/leaderboard/wadhwani-college/",
     /** GET - Wadhwani zonal leaderboard */
     wadhwaniZonal: "/api/v1/leaderboard/wadhwani-zonal/",
-    /** GET - IG Mentor leaderboard ranked by completed sessions in that IG (public) */
-    igMentor: (igId: string) => `/api/v1/leaderboard/ig-mentor/${igId}/`,
-    /** GET - Campus Mentor leaderboard ranked by completed campus sessions (public) */
-    campusMentor: (campusId: string) =>
-      `/api/v1/leaderboard/campus-mentor/${campusId}/`,
   },
 
   // ============================================
