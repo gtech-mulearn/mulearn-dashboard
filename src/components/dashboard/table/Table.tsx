@@ -305,7 +305,22 @@ const Table: FC<TableProps> = (props) => {
                     #{startIndex + index + 1}
                   </p>
                   <p className="text-base font-semibold text-foreground">
-                    {convertToTableData(rowData.full_name)}
+                    {(() => {
+                      const titleKey =
+                        props.columnOrder[0]?.column ?? "full_name";
+                      const customRendered = props.customCellRender?.(
+                        titleKey,
+                        rowData,
+                      );
+                      if (customRendered) return customRendered;
+                      return props.columnOrder[0]?.wrap
+                        ? props.columnOrder[0].wrap(
+                            convertToTableData(rowData[titleKey]),
+                            String(rowData.id ?? ""),
+                            rowData,
+                          )
+                        : convertToTableData(rowData[titleKey]);
+                    })()}
                   </p>
                 </div>
                 {actionIdColumn && (
@@ -389,7 +404,11 @@ const Table: FC<TableProps> = (props) => {
 
               <div className="grid grid-cols-2 gap-x-3 gap-y-2">
                 {props.columnOrder
-                  .filter((column) => column.column !== "full_name")
+                  .filter(
+                    (column) =>
+                      column.column !==
+                      (props.columnOrder[0]?.column ?? "full_name"),
+                  )
                   .map((column) => (
                     <div key={`mobile-${rowData.id ?? index}-${column.column}`}>
                       <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
