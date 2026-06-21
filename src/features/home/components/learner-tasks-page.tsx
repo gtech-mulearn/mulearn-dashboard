@@ -31,29 +31,20 @@ const SORT_OPTIONS = [
   { label: "Level", value: "level" },
 ];
 
-const TASK_SOURCE_OPTIONS: {
-  label: string;
-  value: PublicTaskListParams["task_source"] | "";
-}[] = [
-  { label: "All Sources", value: "" },
-  { label: "Company Tasks", value: "company" },
-  { label: "IG Mentor Tasks", value: "ig_mentor" },
-  { label: "Campus Mentor Tasks", value: "campus_mentor" },
-  { label: "Platform Tasks", value: "platform" },
-];
-
 const PER_PAGE_OPTIONS = [10, 20, 50];
 
 // ─── Component ─────────────────────────────────────────────────────────
 
-export function LearnerTasksPage() {
+interface LearnerTasksPageProps {
+  /** Externally controlled task source filter — set by the parent dropdown */
+  taskSource?: PublicTaskListParams["task_source"] | "";
+}
+
+export function LearnerTasksPage({ taskSource = "" }: LearnerTasksPageProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(20);
   const [searchInput, setSearchInput] = useState("");
   const [sortBy, setSortBy] = useState("");
-  const [taskSource, setTaskSource] = useState<
-    PublicTaskListParams["task_source"] | ""
-  >("");
   const debouncedSearch = useDebounce(searchInput, 400);
 
   // Build params from all filter state
@@ -84,13 +75,6 @@ export function LearnerTasksPage() {
     setCurrentPage(1);
   }, []);
 
-  const handleTaskSource = useCallback((val: string) => {
-    setTaskSource(
-      val === "__all__" ? "" : (val as PublicTaskListParams["task_source"]),
-    );
-    setCurrentPage(1);
-  }, []);
-
   const handlePerPage = useCallback((val: string) => {
     setPerPage(Number(val));
     setCurrentPage(1);
@@ -104,11 +88,10 @@ export function LearnerTasksPage() {
   const clearAllFilters = () => {
     setSearchInput("");
     setSortBy("");
-    setTaskSource("");
     setCurrentPage(1);
   };
 
-  const hasActiveFilters = !!searchInput || !!sortBy || !!taskSource;
+  const hasActiveFilters = !!searchInput || !!sortBy;
 
   // ─── Group tasks by level ───────────────────────────────────────────
 
@@ -184,29 +167,6 @@ export function LearnerTasksPage() {
 
       {/* ── Row 2: Filters ────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-2">
-        {/* Task Source */}
-        <Select
-          value={taskSource || "__all__"}
-          onValueChange={handleTaskSource}
-        >
-          <SelectTrigger
-            id="task-source"
-            className="h-9 text-sm w-[190px] shrink-0"
-          >
-            <SelectValue placeholder="All Sources" />
-          </SelectTrigger>
-          <SelectContent>
-            {TASK_SOURCE_OPTIONS.map((opt) => (
-              <SelectItem
-                key={opt.value || "__all__"}
-                value={opt.value || "__all__"}
-              >
-                {opt.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
         {/* Sort */}
         <Select value={sortBy || "__none__"} onValueChange={handleSort}>
           <SelectTrigger
