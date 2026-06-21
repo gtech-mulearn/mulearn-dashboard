@@ -67,7 +67,13 @@ export function RuleItem({
           {label}
         </span>
         <span className="break-words text-sm font-medium text-foreground">
-          {rule.rule_value}
+          {["min_karma", "max_karma", "min_level", "max_level"].includes(
+            rule.rule_type,
+          )
+            ? isNaN(Number(rule.rule_value))
+              ? "0"
+              : parseInt(rule.rule_value, 10)
+            : rule.rule_value}
         </span>
       </div>
 
