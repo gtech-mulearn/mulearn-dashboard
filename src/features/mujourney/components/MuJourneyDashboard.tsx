@@ -63,11 +63,6 @@ export function MuJourneyDashboard({
     { id: "others", label: "Others" },
   ];
 
-  // Label to show on the Others dropdown button
-  const othersLabel =
-    OTHERS_SOURCE_OPTIONS.find((o) => o.value === othersSource)?.label ??
-    "All Tasks";
-
   return (
     <div className="space-y-8">
       {/* Header */}
