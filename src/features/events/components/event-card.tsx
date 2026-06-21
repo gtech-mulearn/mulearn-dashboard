@@ -1,13 +1,54 @@
 "use client";
 
-import { Lock, MapPin } from "lucide-react";
+import {
+  BookOpen,
+  Code,
+  Compass,
+  Gamepad2,
+  Globe,
+  Lock,
+  type LucideIcon,
+  MapPin,
+  Trophy,
+  Users,
+} from "lucide-react";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
+import {
+  extractInterestGroups,
+  useInterestGroupsList,
+} from "@/features/interest-groups";
 import { resolveEventTypeValue } from "../hooks";
 import type { EventListItem, OrganizerInfo } from "../types";
 import { EventStatusBadge } from "./event-status-badge";
 import { EventTypeBadge } from "./event-type-badge";
 import { InterestButton } from "./interest-button";
+
+const BADGE_CONFIG: Record<
+  string,
+  { label: string; icon: LucideIcon; className: string }
+> = {
+  // Clusters
+  coder: { label: "Coder", icon: Code, className: "ig-cat-coder" },
+  maker: { label: "Maker", icon: Users, className: "ig-cat-maker" },
+  creative: { label: "Creative", icon: Compass, className: "ig-cat-creative" },
+  manager: { label: "Manager", icon: Trophy, className: "ig-cat-manager" },
+  // Event Types
+  workshop: { label: "Workshop", icon: BookOpen, className: "ig-cat-manager" },
+  webinar: { label: "Webinar", icon: Globe, className: "ig-cat-coder" },
+  hackathon: { label: "Hackathon", icon: Code, className: "ig-cat-creative" },
+  meetup: { label: "Meetup", icon: Users, className: "ig-cat-maker" },
+  competition: {
+    label: "Competition",
+    icon: Trophy,
+    className: "ig-cat-manager",
+  },
+  social_gathering: {
+    label: "Social",
+    icon: Gamepad2,
+    className: "ig-cat-maker",
+  },
+};
 
 interface EventCardProps {
   event: EventListItem;
@@ -69,6 +110,36 @@ export function EventCard({ event, isManageView, onView }: EventCardProps) {
 
   const isEnded = new Date(event.end_datetime).getTime() < Date.now();
 
+  // Fetch interest groups list to map organizer IG IDs to clusters
+  const { data: igData } = useInterestGroupsList();
+  const interestGroups = igData ? extractInterestGroups(igData) : [];
+  const igIdToClusterMap = new Map<string, string>();
+  interestGroups.forEach((ig) => {
+    if (ig.id && ig.category) {
+      igIdToClusterMap.set(ig.id, ig.category.toLowerCase());
+    }
+  });
+
+  const directCluster =
+    event.organizer?.ig?.cluster ||
+    event.organizer?.organiser_ig?.cluster ||
+    event.organizer?.ig?.category ||
+    event.organizer?.organiser_ig?.category;
+
+  const igId =
+    event.organizer?.ig?.id ||
+    event.organizer?.organiser_ig?.id ||
+    event.organizer?.campus_ig?.id;
+
+  const cluster =
+    directCluster?.toLowerCase() || (igId ? igIdToClusterMap.get(igId) : null);
+  const eventType = resolveEventTypeValue(
+    event.event_type,
+    event.category_name,
+  );
+  const displayKey = cluster || (eventType !== "others" ? eventType : null);
+  const badge = displayKey ? BADGE_CONFIG[displayKey.toLowerCase()] : null;
+
   return (
     <article className="group relative h-full overflow-hidden rounded-2xl border border-border bg-card lc-card-shadow transition-all duration-300 hover:-translate-y-1 lc-card-shadow-hover cursor-pointer lc-slide-up">
       {onView ? (
@@ -93,12 +164,12 @@ export function EventCard({ event, isManageView, onView }: EventCardProps) {
         <div className="absolute inset-0 bg-foreground/35 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
         <div className="absolute left-3 top-3 z-30">
-          <EventTypeBadge
-            eventType={resolveEventTypeValue(
-              event.event_type,
-              event.category_name,
-            )}
-          />
+          {badge ? (
+            <Badge className={`${badge.className} font-medium gap-1`}>
+              <badge.icon className="h-3 w-3" />
+              {badge.label}
+            </Badge>
+          ) : null}
         </div>
 
         {isManageView ? (

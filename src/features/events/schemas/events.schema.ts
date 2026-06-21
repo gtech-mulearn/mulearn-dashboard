@@ -11,7 +11,9 @@ export const venueTypeSchema = z.enum(["physical", "online", "hybrid"]);
 const createEventBaseSchema = z.object({
   title: z.string().min(1, "Title is required").max(200, "Title too long"),
   description: z.string().min(1, "Description is required"),
-  event_scope: z.enum(["coder", "maker", "manager", "creative"]),
+  event_scope: z.string().min(1, "Please select a cluster"),
+  category: z.string().uuid("Please select an event type"),
+  event_type: z.string().optional(),
   scope: z.enum(["global", "campus", "ig", "campus_ig"]),
   start_datetime: z
     .string()
@@ -122,33 +124,81 @@ function applyEventRefinements<T extends typeof createEventBaseSchema>(
     }
 
     // Validate venue_type → required fields
-    if (data.venue_type === "physical" && !data.address) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["address"],
-        message: "Address is required for physical venues",
-      });
+    if (data.venue_type === "physical") {
+      if (!data.address) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["address"],
+          message: "Address is required for physical venues",
+        });
+      }
+      if (!data.city) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["city"],
+          message: "City is required for physical venues",
+        });
+      }
+      if (!data.maps_url) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["maps_url"],
+          message: "Maps URL is required for physical venues",
+        });
+      }
     }
-    if (data.venue_type === "physical" && !data.city) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["city"],
-        message: "City is required for physical venues",
-      });
+    if (data.venue_type === "online") {
+      if (!data.online_link) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["online_link"],
+          message: "Online link is required for online venues",
+        });
+      }
+      if (!data.platform) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["platform"],
+          message: "Platform is required for online venues",
+        });
+      }
     }
-    if (data.venue_type === "online" && !data.online_link) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["online_link"],
-        message: "Online link is required for online venues",
-      });
-    }
-    if (data.venue_type === "online" && !data.platform) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["platform"],
-        message: "Platform is required for online venues",
-      });
+    if (data.venue_type === "hybrid") {
+      if (!data.address) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["address"],
+          message: "Address is required for hybrid venues",
+        });
+      }
+      if (!data.city) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["city"],
+          message: "City is required for hybrid venues",
+        });
+      }
+      if (!data.maps_url) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["maps_url"],
+          message: "Maps URL is required for hybrid venues",
+        });
+      }
+      if (!data.online_link) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["online_link"],
+          message: "Online link is required for hybrid venues",
+        });
+      }
+      if (!data.platform) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["platform"],
+          message: "Platform is required for hybrid venues",
+        });
+      }
     }
 
     // Validate end_datetime > start_datetime
@@ -179,13 +229,22 @@ export const eventListParamsSchema = z.object({
   search: z.string().optional(),
   event_type: z
     .enum([
+      "hackathon",
       "workshop",
       "webinar",
-      "hackathon",
+      "seminar",
+      "bootcamp",
       "meetup",
+      "conference",
       "competition",
-      "social_gathering",
-      "other",
+      "ideathon",
+      "cultural_event",
+      "sports_event",
+      "community_event",
+      "expo",
+      "networking_event",
+      "tech_talk",
+      "others",
     ])
     .optional(),
   scope: z.enum(["global", "campus", "ig", "campus_ig"]).optional(),
@@ -205,7 +264,7 @@ export const eventListParamsSchema = z.object({
   campus_id: z.string().uuid().optional(),
   company_id: z.string().uuid().optional(),
   campus_ig_id: z.string().uuid().optional(),
-  cluster: z.enum(["coder", "maker", "manager", "creative"]).optional(),
+  cluster: z.string().optional(),
   is_featured: z.boolean().optional(),
   tags: z.string().optional(),
   eligible_only: z.boolean().optional(),

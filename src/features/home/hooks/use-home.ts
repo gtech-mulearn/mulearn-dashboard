@@ -48,10 +48,10 @@ export function useKarmaFeed() {
   });
 }
 
-export function useCalendarEvents() {
+export function useCalendarEvents(startDate: string, endDate: string) {
   return useQuery({
-    queryKey: homeKeys.calendarEvents(),
-    queryFn: getCalendarEvents,
+    queryKey: homeKeys.calendarEvents(startDate, endDate),
+    queryFn: () => getCalendarEvents(startDate, endDate),
     staleTime: HOME_STALE_TIME,
   });
 }

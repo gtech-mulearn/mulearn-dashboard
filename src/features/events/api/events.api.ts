@@ -1,4 +1,8 @@
 import { apiClient, endpoints } from "@/api";
+import {
+  extractInterestGroups,
+  getInterestGroupsList,
+} from "@/features/interest-groups/api/interest-groups.api";
 import type { ApprovalTier } from "../lib/events.policy";
 import type {
   CollaboratorInviteBody,
@@ -304,6 +308,41 @@ async function fetchListWithStatusFallback(
 export const eventsApi = {
   // ─── PUBLIC LIST ENDPOINTS ───────────────────────────────────────────────
   list: async (params?: EventListQueryParams): Promise<EventListData> => {
+    const cluster = params?.cluster;
+
+    if (cluster && cluster !== "all") {
+      try {
+        const qs = buildQueryString(params);
+        const response = await apiClient.get<EventListData>(
+          `${endpoints.events.base}${qs}`,
+        );
+
+        // Check if the response contains events from other clusters, indicating
+        // the backend ignored the `cluster` query parameter.
+        // Use case-insensitive comparison for cluster names
+        const hasOtherCluster = response.data.some(
+          (event) =>
+            event.organizer?.ig?.cluster &&
+            event.organizer.ig.cluster.toLowerCase() !== cluster.toLowerCase(),
+        );
+
+        if (hasOtherCluster) {
+          throw new Error("Base endpoint ignored the cluster filter parameter");
+        }
+
+        return mirrorEventTypeToCategoryList(response);
+      } catch (error) {
+        console.warn(
+          `Base events list with cluster='${cluster}' failed or was ignored. Falling back to cluster endpoint. Error:`,
+          error,
+        );
+        // Fallback: Fetch from the cluster-specific endpoint:
+        // /api/v1/dashboard/events/ig/cluster/${cluster}/
+        const { cluster: _, ...otherParams } = params;
+        return await eventsApi.clusterEvents(cluster as IGCluster, otherParams);
+      }
+    }
+
     const qs = buildQueryString(params);
     const response = await apiClient.get<EventListData>(
       `${endpoints.events.base}${qs}`,
@@ -624,5 +663,77 @@ export const eventsApi = {
     return apiClient.get<OrganizerOptionsResponse>(
       endpoints.events.meta.organizerOptions,
     );
+  },
+
+  getCategories: async (): Promise<
+    Array<{ id: string; name: string; description: string }>
+  > => {
+    return apiClient.get(endpoints.events.meta.categories);
+  },
+
+  /**
+   * Fetch the distinct IG cluster slugs from the events cluster endpoint.
+   * Tries `/api/v1/dashboard/events/ig/cluster/all/` first and derives cluster
+   * names from the returned events. Falls back to `getInterestGroupsList()`
+   * if the endpoint fails or returns no cluster names.
+   */
+  getIGClusters: async (): Promise<Array<{ label: string; value: string }>> => {
+    const clusterCandidates: string[] = [];
+    const seen = new Set<string>();
+
+    try {
+      const response = await eventsApi.clusterEvents("all");
+
+      for (const event of response.data) {
+        const raw =
+          event.organizer?.ig?.cluster ||
+          event.organizer?.organiser_ig?.cluster ||
+          event.organizer?.ig?.category ||
+          event.organizer?.organiser_ig?.category;
+
+        if (!raw || typeof raw !== "string") continue;
+
+        const cluster = raw.toLowerCase().trim();
+        if (!cluster || cluster === "other" || cluster === "others") continue;
+        if (!seen.has(cluster)) {
+          seen.add(cluster);
+          clusterCandidates.push(cluster);
+        }
+      }
+    } catch {
+      // Ignore and fall back to IG list endpoint.
+    }
+
+    if (clusterCandidates.length > 0) {
+      return [
+        { label: "All", value: "all" },
+        ...clusterCandidates.map((c) => ({
+          label: c.charAt(0).toUpperCase() + c.slice(1),
+          value: c,
+        })),
+      ];
+    }
+
+    const response = await getInterestGroupsList();
+    const igs = extractInterestGroups(response);
+
+    for (const ig of igs) {
+      const raw = ig.category;
+      if (!raw) continue;
+      const cluster = raw.toLowerCase().trim();
+      if (cluster === "other" || cluster === "others") continue;
+      if (!seen.has(cluster)) {
+        seen.add(cluster);
+        clusterCandidates.push(cluster);
+      }
+    }
+
+    return [
+      { label: "All", value: "all" },
+      ...clusterCandidates.map((c) => ({
+        label: c.charAt(0).toUpperCase() + c.slice(1),
+        value: c,
+      })),
+    ];
   },
 };

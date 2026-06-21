@@ -89,6 +89,29 @@ export function extractDjangoMessage(data: unknown): string | null {
   if (typeof msg === "string") return msg;
 
   if (typeof d.detail === "string") return d.detail;
+  if (typeof d.error === "string") return d.error;
+  if (typeof d.errors === "string") return d.errors;
+
+  // Fallback: if d itself has key-value pairs where value is array/string (DRF root validation errors)
+  const parts: string[] = [];
+  for (const [field, errors] of Object.entries(d)) {
+    if (
+      field === "message" ||
+      field === "statusCode" ||
+      field === "hasError" ||
+      field === "status"
+    )
+      continue;
+    if (Array.isArray(errors)) {
+      const joined = errors
+        .filter((e): e is string => typeof e === "string")
+        .join(", ");
+      if (joined) parts.push(`${field}: ${joined}`);
+    } else if (typeof errors === "string" && errors) {
+      parts.push(`${field}: ${errors}`);
+    }
+  }
+  if (parts.length > 0) return parts.join(" | ");
 
   return null;
 }

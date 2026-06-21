@@ -455,6 +455,7 @@ export const endpoints = {
       organizerOptions: "/api/v1/dashboard/events/meta/organizer-options/",
       collaborationTargets:
         "/api/v1/dashboard/events/meta/collaboration-targets/",
+      categories: "/api/v1/dashboard/events/meta/categories/",
     },
   },
 

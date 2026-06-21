@@ -130,6 +130,22 @@ export function useOrganizerOptions() {
   });
 }
 
+export function useEventCategories() {
+  return useQuery<Array<{ id: string; name: string; description: string }>>({
+    queryKey: [...eventKeys.meta(), "categories"],
+    queryFn: () => eventsApi.getCategories(),
+    staleTime: 10 * 60 * 1000, // 10 min — categories rarely change
+  });
+}
+
+export function useIGClusters() {
+  return useQuery<Array<{ label: string; value: string }>>({
+    queryKey: [...eventKeys.meta(), "ig-clusters"],
+    queryFn: () => eventsApi.getIGClusters(),
+    staleTime: 10 * 60 * 1000, // 10 min — clusters rarely change
+  });
+}
+
 export function useCollaborationTargets(
   search: string,
   type?: CollaboratorType,

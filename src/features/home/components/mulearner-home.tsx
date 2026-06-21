@@ -2,7 +2,6 @@
 
 import { useUserInfo, useUserProfile } from "@/features/auth/hooks/use-session";
 import {
-  useGlobalCalendarEvents,
   useInterestGroupsList,
   useLearnerHomeSummary,
 } from "../hooks";
@@ -18,8 +17,6 @@ export function MuLearnerHome() {
   const { data: userProfile } = useUserProfile();
   const { data: interestGroups, isLoading: loadingGroups } =
     useInterestGroupsList();
-  const { data: calendarEvents, isLoading: loadingCalendar } =
-    useGlobalCalendarEvents();
   const { data: summary } = useLearnerHomeSummary();
 
   const displayName = userInfo?.full_name?.split(" ")[0] ?? "Learner";
@@ -61,10 +58,7 @@ export function MuLearnerHome() {
         {/* Right column: Calendar + Top Performers */}
         <div className="self-start lg:sticky lg:top-5 space-y-5">
           <div className="hidden lg:block">
-            <EventCalendarCard
-              events={calendarEvents}
-              isLoading={loadingCalendar}
-            />
+            <EventCalendarCard />
           </div>
           <KarmaEarnersCard />
         </div>

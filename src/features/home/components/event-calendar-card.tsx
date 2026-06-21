@@ -16,6 +16,7 @@ import { ChevronLeft, ChevronRight, ExternalLink, MapPin } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useCalendarEvents } from "../hooks";
 import type { CalendarEvent } from "../schemas";
 
 // ─── Day abbreviations ─────────────────────────────────────────────────────
@@ -109,11 +110,33 @@ type EventCalendarCardProps = {
 };
 
 export function EventCalendarCard({
-  events = [],
-  isLoading,
+  events: propEvents,
+  isLoading: propIsLoading,
 }: EventCalendarCardProps) {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+
+  // Generate calendar grid days (6 weeks) and calculate range
+  const { calendarDays, startDate, endDate } = useMemo(() => {
+    const monthStart = startOfMonth(currentMonth);
+    const monthEnd = endOfMonth(currentMonth);
+    const calStart = startOfWeek(monthStart, { weekStartsOn: 0 });
+    const calEnd = endOfWeek(monthEnd, { weekStartsOn: 0 });
+    const days = eachDayOfInterval({ start: calStart, end: calEnd });
+    return {
+      calendarDays: days,
+      startDate: format(calStart, "yyyy-MM-dd"),
+      endDate: format(calEnd, "yyyy-MM-dd"),
+    };
+  }, [currentMonth]);
+
+  const { data: fetchedEvents, isLoading: isFetching } = useCalendarEvents(
+    startDate,
+    endDate,
+  );
+
+  const events = propEvents ?? fetchedEvents ?? [];
+  const isLoading = propIsLoading ?? isFetching;
 
   // Build a map of dates → events for quick lookup
   const eventsByDate = useMemo(() => {
@@ -132,15 +155,6 @@ export function EventCalendarCard({
     const key = format(selectedDate, "yyyy-MM-dd");
     return eventsByDate.get(key) ?? [];
   }, [selectedDate, eventsByDate]);
-
-  // Generate calendar grid days (6 weeks)
-  const calendarDays = useMemo(() => {
-    const monthStart = startOfMonth(currentMonth);
-    const monthEnd = endOfMonth(currentMonth);
-    const calStart = startOfWeek(monthStart, { weekStartsOn: 0 });
-    const calEnd = endOfWeek(monthEnd, { weekStartsOn: 0 });
-    return eachDayOfInterval({ start: calStart, end: calEnd });
-  }, [currentMonth]);
 
   const goToPrevMonth = useCallback(
     () => setCurrentMonth((m) => subMonths(m, 1)),

@@ -10,7 +10,12 @@ export type ISODate = string;
 
 // ─── ENUMS ──────────────────────────────────────────────────────────────────
 
-export type IGCluster = "coder" | "maker" | "manager" | "creative";
+/**
+ * IG Cluster identifier — fetched dynamically from `/api/v1/dashboard/ig/list/`.
+ * Kept as `string` to avoid tight coupling to hardcoded values.
+ * Use `useIGClusters()` hook to get the current list of available clusters.
+ */
+export type IGCluster = string;
 
 export type EventScope = "global" | "campus" | "ig" | "campus_ig" | "company";
 
@@ -30,13 +35,22 @@ export type ViewerInterestStatus = "interested" | "none";
 
 /** Event type - kept for component backward compatibility */
 export type EventType =
+  | "hackathon"
   | "workshop"
   | "webinar"
-  | "hackathon"
+  | "seminar"
+  | "bootcamp"
   | "meetup"
+  | "conference"
   | "competition"
-  | "social_gathering"
-  | "other";
+  | "ideathon"
+  | "cultural_event"
+  | "sports_event"
+  | "community_event"
+  | "expo"
+  | "networking_event"
+  | "tech_talk"
+  | "others"; // API default — note: "others" (not "other")
 
 /** Internal/component type without API prefix */
 export type CollaboratorType = "ig" | "campus" | "campus_ig" | "company";
@@ -112,6 +126,7 @@ export interface MinimalIG {
   code?: string;
   logo?: string; // Backward compatibility
   cluster?: IGCluster;
+  category?: string;
 }
 
 export interface MinimalCampus {
@@ -390,6 +405,7 @@ export interface EventWriteBody {
   cover_image: string | null;
   banner_image: string | null;
   category: UUID | null;
+  event_type?: string | null;
   start_datetime: ISODateTime;
   end_datetime: ISODateTime;
   registration_url: string | null;

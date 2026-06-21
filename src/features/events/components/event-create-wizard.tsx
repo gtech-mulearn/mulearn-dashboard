@@ -14,22 +14,30 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { eventsApi } from "../api";
 import {
-  EVENT_CLUSTER_OPTIONS,
   EVENT_CREATE_WIZARD_STEPS,
   EVENT_FORM_DEFAULT_VALUES,
   EVENT_SCOPE_OPTIONS,
+  EVENT_TYPE_SELECT_OPTIONS,
 } from "../constants/events.constants";
 import {
   toEventFormData,
   toISOWithOffset,
   useCreateEvent,
+  useIGClusters,
   useOrganizerOptions,
+  useEventCategories,
 } from "../hooks";
 import { getAllowedScopes } from "../lib/events.policy";
 import { type CreateEventSchema, updateEventSchema } from "../schemas";
@@ -178,6 +186,8 @@ async function compressImageForUpload(
 export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
   const createEvent = useCreateEvent();
   const organizerOptionsQuery = useOrganizerOptions();
+  const { data: clusterOptions, isLoading: clustersLoading } = useIGClusters();
+  const { data: categoryOptions, isLoading: categoriesLoading } = useEventCategories();
 
   const creatorCampusName =
     organizerOptionsQuery.data?.campus_context?.title ?? null;
@@ -206,6 +216,29 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
     resolver: zodResolver(updateEventSchema) as Resolver<CreateEventSchema>,
     defaultValues: EVENT_FORM_DEFAULT_VALUES,
   });
+
+  // Auto-select the first available cluster when options load (replaces hardcoded "coder" default)
+  useEffect(() => {
+    if (!watch("event_scope") && clusterOptions && clusterOptions.length > 1) {
+      setValue("event_scope", clusterOptions[1].value, { shouldDirty: false });
+    }
+  }, [clusterOptions, watch, setValue]);
+
+  // Auto-select the "others" event type when categories load
+  useEffect(() => {
+    if (!watch("category") && categoryOptions && categoryOptions.length > 0) {
+      const othersCat = categoryOptions.find(
+        (c) => {
+          const catSlug = c.name.trim().toLowerCase().replace(/\s+/g, "_");
+          return catSlug === "others" || catSlug === "other";
+        }
+      ) || categoryOptions[0];
+      if (othersCat) {
+        setValue("category", othersCat.id, { shouldDirty: false });
+        setValue("event_type", "others", { shouldDirty: false });
+      }
+    }
+  }, [categoryOptions, watch, setValue]);
 
   const organizerOptions = useMemo<SelectedOrganiser[]>(() => {
     const data = organizerOptionsQuery.data;
@@ -280,6 +313,13 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
     }
   }, [selectedOrganiser, scope, setValue]);
 
+  const venueType = watch("venue_type");
+  useEffect(() => {
+    if (venueType === "online") {
+      setValue("maps_url", "");
+    }
+  }, [venueType, setValue]);
+
   // Keep the selected scope valid when the organiser (and thus allowed scopes) changes.
   useEffect(() => {
     if (allowedScopes.length === 0) return;
@@ -314,7 +354,7 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
 
   const validateCurrentStep = async (): Promise<boolean> => {
     if (currentStep === 1) {
-      return trigger(["title", "description", "event_scope"]);
+      return trigger(["title", "description", "event_scope", "category"]);
     }
 
     if (currentStep === 2) {
@@ -377,7 +417,14 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
           });
           hasStepError = true;
         }
-        fields.push("address", "city");
+        if (!watch("maps_url")) {
+          setError("maps_url", {
+            type: "manual",
+            message: "Maps URL is required for physical venues",
+          });
+          hasStepError = true;
+        }
+        fields.push("address", "city", "maps_url");
       }
       if (venueType === "online") {
         if (!watch("online_link")) {
@@ -411,6 +458,13 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
           });
           hasStepError = true;
         }
+        if (!watch("maps_url")) {
+          setError("maps_url", {
+            type: "manual",
+            message: "Maps URL is required for hybrid venues",
+          });
+          hasStepError = true;
+        }
         if (!watch("online_link")) {
           setError("online_link", {
             type: "manual",
@@ -425,7 +479,7 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
           });
           hasStepError = true;
         }
-        fields.push("address", "city", "online_link", "platform");
+        fields.push("address", "city", "maps_url", "online_link", "platform");
       }
 
       if (hasStepError) return false;
@@ -503,6 +557,8 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
       is_collaboration: values.is_collaboration,
       is_featured: values.is_featured,
       tags: values.tags && values.tags.length > 0 ? values.tags : null,
+      category: values.category || null,
+      event_type: values.event_type || null,
     };
 
     const compressedCoverImage = coverImageFile
@@ -667,30 +723,140 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                     <Controller
                       control={control}
                       name="event_scope"
-                      render={({ field }) => (
-                        <div className="flex flex-wrap gap-2">
-                          {EVENT_CLUSTER_OPTIONS.filter(
-                            (o) => o.value !== "all",
-                          ).map((item) => {
-                            const active = field.value === item.value;
-                            return (
-                              <Button
-                                key={item.value}
-                                type="button"
-                                variant={active ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => field.onChange(item.value)}
-                              >
-                                {item.label}
-                              </Button>
-                            );
-                          })}
-                        </div>
-                      )}
+                      render={({ field }) => {
+                        const currentCluster = (clusterOptions ?? []).find(
+                          (item) => item.value === field.value,
+                        );
+
+                        return (
+                          <div className="w-full">
+                            {clustersLoading ? (
+                              <div className="h-12 w-full animate-pulse rounded-xl bg-muted" />
+                            ) : (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="w-full justify-between rounded-xl"
+                                  >
+                                    <span>
+                                      {currentCluster?.label ??
+                                        "Select cluster"}
+                                    </span>
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="w-full max-w-sm p-1">
+                                  {(clusterOptions ?? [])
+                                    .filter((item) => item.value !== "all")
+                                    .map((item) => {
+                                      const isSelected =
+                                        field.value === item.value;
+                                      return (
+                                        <DropdownMenuItem
+                                          key={item.value}
+                                          onSelect={() =>
+                                            field.onChange(item.value)
+                                          }
+                                          className="flex items-center justify-between rounded-md px-3 py-2"
+                                        >
+                                          <span>{item.label}</span>
+                                          {isSelected ? (
+                                            <Check className="h-4 w-4 text-primary" />
+                                          ) : null}
+                                        </DropdownMenuItem>
+                                      );
+                                    })}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
+                          </div>
+                        );
+                      }}
                     />
                     {errors.event_scope?.message ? (
                       <p className="text-xs text-destructive">
                         {errors.event_scope.message}
+                      </p>
+                    ) : null}
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-foreground">
+                      Event Type <span className="text-destructive">*</span>
+                    </p>
+                    <Controller
+                      control={control}
+                      name="category"
+                      render={({ field }) => {
+                        const eventTypeValue = watch("event_type");
+                        const selectedType = EVENT_TYPE_SELECT_OPTIONS.find(
+                          (item) => item.value === eventTypeValue,
+                        ) ?? EVENT_TYPE_SELECT_OPTIONS.find((item) => item.value === "others");
+
+                        return (
+                          <div className="w-full">
+                            {categoriesLoading ? (
+                              <div className="h-12 w-full animate-pulse rounded-xl bg-muted" />
+                            ) : (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="w-full justify-between rounded-xl"
+                                  >
+                                    <span>
+                                      {selectedType?.label ?? "Select event type"}
+                                    </span>
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="w-full max-w-sm p-1">
+                                  {EVENT_TYPE_SELECT_OPTIONS.map((item) => {
+                                    const isSelected = selectedType?.value === item.value;
+                                    return (
+                                      <DropdownMenuItem
+                                        key={item.value}
+                                        onSelect={() => {
+                                          const matchingCat = (categoryOptions ?? []).find(
+                                            (c) => {
+                                              const catSlug = c.name.trim().toLowerCase().replace(/\s+/g, "_");
+                                              return catSlug === item.value || catSlug.includes(item.value) || item.value.includes(catSlug);
+                                            },
+                                          ) || (categoryOptions ?? []).find(
+                                            (c) => {
+                                              const catSlug = c.name.trim().toLowerCase().replace(/\s+/g, "_");
+                                              return catSlug === "others" || catSlug === "other";
+                                            },
+                                          ) || categoryOptions?.[0];
+
+                                          if (matchingCat) {
+                                            field.onChange(matchingCat.id);
+                                          }
+                                          setValue("event_type", item.value, {
+                                            shouldDirty: true,
+                                            shouldValidate: true,
+                                          });
+                                        }}
+                                        className="flex items-center justify-between rounded-md px-3 py-2"
+                                      >
+                                        <span>{item.label}</span>
+                                        {isSelected ? (
+                                          <Check className="h-4 w-4 text-primary" />
+                                        ) : null}
+                                      </DropdownMenuItem>
+                                    );
+                                  })}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
+                          </div>
+                        );
+                      }}
+                    />
+                    {errors.category?.message ? (
+                      <p className="text-xs text-destructive">
+                        {errors.category.message}
                       </p>
                     ) : null}
                   </div>
@@ -796,26 +962,50 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                     <Controller
                       control={control}
                       name="scope"
-                      render={({ field }) => (
-                        <div className="flex flex-wrap gap-2">
-                          {EVENT_SCOPE_OPTIONS.filter((item) =>
-                            allowedScopes.includes(item.value),
-                          ).map((item) => {
-                            const active = field.value === item.value;
-                            return (
-                              <Button
-                                key={item.value}
-                                type="button"
-                                variant={active ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => field.onChange(item.value)}
-                              >
-                                {item.label}
-                              </Button>
-                            );
-                          })}
-                        </div>
-                      )}
+                      render={({ field }) => {
+                        const availableScopes = EVENT_SCOPE_OPTIONS.filter((item) =>
+                          allowedScopes.includes(item.value),
+                        );
+                        const currentScope = availableScopes.find(
+                          (item) => item.value === field.value,
+                        );
+
+                        return (
+                          <div className="w-full">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  className="w-full justify-between rounded-xl"
+                                  disabled={availableScopes.length <= 1}
+                                >
+                                  <span>
+                                    {currentScope?.label ?? "Select scope"}
+                                  </span>
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent className="w-full max-w-sm p-1">
+                                {availableScopes.map((item) => {
+                                  const isSelected = field.value === item.value;
+                                  return (
+                                    <DropdownMenuItem
+                                      key={item.value}
+                                      onSelect={() => field.onChange(item.value)}
+                                      className="flex items-center justify-between rounded-md px-3 py-2"
+                                    >
+                                      <span>{item.label}</span>
+                                      {isSelected ? (
+                                        <Check className="h-4 w-4 text-primary" />
+                                      ) : null}
+                                    </DropdownMenuItem>
+                                  );
+                                })}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        );
+                      }}
                     />
                   </div>
 
