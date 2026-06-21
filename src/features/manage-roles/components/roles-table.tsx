@@ -210,9 +210,9 @@ export default function ManageRoles() {
             searchInputClassName="h-10 text-sm"
           />
 
-          {/* Responsive table wrapper with horizontal scroll on mobile */}
-          <div className="w-full overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
-            <div className="min-w-200">
+          {/* Desktop: outer wrapper enables horizontal scroll without compressing table-fixed columns */}
+          <div className="w-full md:overflow-x-auto md:rounded-xl md:border md:border-border md:bg-card md:shadow-sm">
+            <div className="w-full md:min-w-[800px]">
               <Table
                 rows={rows}
                 isLoading={isLoading}

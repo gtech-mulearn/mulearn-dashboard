@@ -59,7 +59,7 @@ const THead = ({
           </th>
         )}
         {action && (
-          <th className="border-b border-border px-3.5 py-3 text-left text-sm font-bold tracking-wider w-32">
+          <th className="border-b border-border px-3.5 py-3 text-center text-sm font-bold tracking-wider w-32">
             Action
           </th>
         )}

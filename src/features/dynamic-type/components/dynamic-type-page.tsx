@@ -12,6 +12,13 @@
 import { Layers, Plus, UserCircle } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { DynamicTypeTab } from "../types";
 import { DynamicRoleTable } from "./dynamic-role-table";
 import { DynamicTypeFormDialog } from "./dynamic-type-form-dialog";
@@ -37,7 +44,7 @@ export function DynamicTypePage() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
             Manage Dynamic Types
@@ -50,7 +57,7 @@ export function DynamicTypePage() {
         <Button
           id="dynamic-type-create-btn"
           onClick={() => setCreateOpen(true)}
-          className="shrink-0"
+          className="shrink-0 w-full sm:w-auto"
           aria-label="Create new mapping"
         >
           <Plus className="mr-2 h-4 w-4" />
@@ -60,7 +67,30 @@ export function DynamicTypePage() {
 
       {/* Tab navigation */}
       <div className="border-b">
-        <nav className="-mb-px flex gap-1" aria-label="Dynamic type tabs">
+        {/* Mobile dropdown */}
+        <div className="md:hidden pb-3">
+          <Select
+            value={activeTab}
+            onValueChange={(val) => setActiveTab(val as DynamicTypeTab)}
+          >
+            <SelectTrigger id="dynamic-type-mobile-select" className="w-full">
+              <SelectValue placeholder="Select Tab" />
+            </SelectTrigger>
+            <SelectContent>
+              {TABS.map((tab) => (
+                <SelectItem key={tab.id} value={tab.id}>
+                  {tab.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Desktop navigation */}
+        <nav
+          className="hidden md:flex -mb-px gap-1"
+          aria-label="Dynamic type tabs"
+        >
           {TABS.map((tab) => (
             <Button
               key={tab.id}

@@ -44,17 +44,15 @@ export function AppTopbar() {
     isCompany && companyProfile?.logo
       ? companyProfile.logo
       : (data?.profile_pic ?? undefined);
-  const displaySubtitle = isCompany ? "Company" : (data?.roles?.[0] ?? "");
+  const displaySubtitle = isCompany ? "Company" : (data?.muid ?? "");
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-[50] h-17 bg-background border-b border-border flex items-center px-4 justify-between gap-4">
+    <header className="fixed top-0 left-0 right-0 z-[50] h-17 bg-background border-b border-border flex items-center pl-4 pr-2 md:pr-3 justify-between gap-4">
       <div className="flex items-center gap-2">
         <SidebarTrigger className="rounded-full w-9 h-9 text-muted-foreground" />
         <Link href="/dashboard" className="flex items-center">
           <Image
-            src={
-              resolvedTheme === "dark" ? "/layout/logo-dark.webp" : "/logo.webp"
-            }
+            src={resolvedTheme === "dark" ? "/logo-dark.webp" : "/logo.webp"}
             alt="μLearn"
             width={100}
             height={32}
@@ -66,7 +64,9 @@ export function AppTopbar() {
       </div>
 
       <div className="flex items-center gap-2">
-        <GameProgressBar />
+        <div className="hidden md:flex">
+          <GameProgressBar />
+        </div>
         <ThemeToggle />
         {!mounted || isLoading ? (
           <div className="flex items-center gap-2 pr-1">
