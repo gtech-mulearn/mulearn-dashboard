@@ -74,31 +74,66 @@ function isAuthenticated(request: NextRequest): boolean {
 }
 
 /**
- * Decode JWT payload without verification.
+ * Decode a JWT payload without verification.
  * Safe for edge runtime — no crypto needed.
- * Returns roles array from the JWT, or empty array on failure.
+ * Returns the parsed payload object, or null on failure.
  */
-function extractRolesFromToken(token: string): string[] {
+function decodeTokenPayload(token: string): Record<string, unknown> | null {
   try {
     const parts = token.split(".");
-    if (parts.length !== 3) return [];
+    if (parts.length !== 3) return null;
 
     // Base64url decode the payload (middle part)
     const payload = parts[1];
     const padded = payload.replace(/-/g, "+").replace(/_/g, "/");
     const decoded = atob(padded);
-    const parsed = JSON.parse(decoded);
-
-    // Check expiry
-    if (parsed.expiry) {
-      const expiry = new Date(parsed.expiry);
-      if (expiry < new Date()) return [];
-    }
-
-    return Array.isArray(parsed.roles) ? parsed.roles : [];
+    return JSON.parse(decoded);
   } catch {
-    return [];
+    return null;
   }
+}
+
+/**
+ * True when the access token is unusable: malformed, or its `expiry` claim is
+ * in the past. Treated the same as a missing cookie so the recovery flow can
+ * mint a fresh token via the refresh route BEFORE the page renders. Without
+ * this, a present-but-expired cookie slips past recovery and the client guard
+ * gets stuck bouncing /dashboard ⇄ /login (a stuck loading screen).
+ */
+function isAccessTokenExpired(token: string): boolean {
+  const parsed = decodeTokenPayload(token);
+  if (!parsed) return true;
+  const expiry = parsed.expiry;
+  if (typeof expiry === "string" || typeof expiry === "number") {
+    const expiryDate = new Date(expiry);
+    // Invalid/unparseable date → fail open (treat as not-expired) and let the
+    // backend reject it, rather than risk a refresh→render→refresh loop.
+    if (!Number.isNaN(expiryDate.getTime())) {
+      return expiryDate < new Date();
+    }
+  }
+  // No expiry claim → can't prove it's valid; let the backend be the judge.
+  return false;
+}
+
+/**
+ * Decode JWT payload without verification and return roles.
+ * Returns an empty array for malformed or expired tokens.
+ */
+function extractRolesFromToken(token: string): string[] {
+  const parsed = decodeTokenPayload(token);
+  if (!parsed) return [];
+
+  // Expired tokens grant no roles.
+  const expiry = parsed.expiry;
+  if (typeof expiry === "string" || typeof expiry === "number") {
+    const expiryDate = new Date(expiry);
+    if (!Number.isNaN(expiryDate.getTime()) && expiryDate < new Date()) {
+      return [];
+    }
+  }
+
+  return Array.isArray(parsed.roles) ? (parsed.roles as string[]) : [];
 }
 
 // ─── Middleware ─────────────────────────────────────────────
@@ -147,8 +182,13 @@ export function proxy(request: NextRequest) {
     // flag and pushes to /login, and the proxy bounces /login back to /dashboard
     // (refreshToken still present) — an infinite redirect loop that presents as
     // a stuck loading screen.
+    //
+    // Recover when the accessToken cookie is missing OR holds an expired/
+    // malformed JWT. The cookie's own lifetime (1 day) outlives the JWT's
+    // expiry, so a present-but-expired cookie is the common reload case — it
+    // must trigger recovery too, not slip through to a render that loops.
     const accessToken = request.cookies.get("accessToken")?.value;
-    if (!accessToken) {
+    if (!accessToken || isAccessTokenExpired(accessToken)) {
       const refreshUrl = new URL("/api/auth/refresh", request.url);
       refreshUrl.searchParams.set("ruri", pathname.slice(1));
       return NextResponse.redirect(refreshUrl);
