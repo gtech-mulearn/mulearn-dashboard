@@ -81,11 +81,13 @@ export function JobDetailModal({
     mutate: apply,
     isPending: isApplying,
     isSuccess: applySuccess,
+    reset: resetApply,
   } = useApplyJob();
   const {
     mutate: resubmit,
     isPending: isResubmitting,
     isSuccess: resubmitSuccess,
+    reset: resetResubmit,
   } = useResubmitApplication();
   const { mutate: trackView } = useTrackJobView();
 
@@ -101,10 +103,14 @@ export function JobDetailModal({
   const isClosed = !!job && job.status != null && job.status !== "Active";
 
   useEffect(() => {
-    if (open && job?.id) {
-      trackView(job.id);
+    if (open) {
+      resetApply();
+      resetResubmit();
+      if (job?.id) {
+        trackView(job.id);
+      }
     }
-  }, [open, job?.id, trackView]);
+  }, [open, job?.id, trackView, resetApply, resetResubmit]);
 
   const handleApply = () => {
     if (!job || !resumeLink.trim() || isAlreadyApplied) return;
@@ -112,9 +118,7 @@ export function JobDetailModal({
     const onSuccessOptions = {
       onSuccess: () => {
         setTimeout(() => {
-          onOpenChange(false);
-          setCoverNote("");
-          setResumeLink("");
+          handleClose(false);
         }, 1200);
       },
     };
@@ -312,19 +316,19 @@ export function JobDetailModal({
           <Separator />
 
           {/* Cover note or success state */}
-          {isSuccess ? (
+          {isSuccess || isAlreadyApplied ? (
             <div className="flex items-start gap-3 rounded-xl bg-success/10 border border-success/20 px-4 py-3">
               <CheckCircle className="h-5 w-5 text-success shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-semibold text-success">
-                  Application submitted!
+                  {isSuccess ? "Application submitted!" : "Already applied"}
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Track your application in the My Applications tab.
                 </p>
               </div>
             </div>
-          ) : (
+          ) : isClosed ? null : (
             <div className="space-y-4">
               {/* Resume Link */}
               <div className="space-y-1.5">
