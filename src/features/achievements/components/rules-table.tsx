@@ -1,31 +1,13 @@
 "use client";
 
-import type { ColumnDef } from "@tanstack/react-table";
-import {
-  type Cell,
-  type ColumnFiltersState,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  type Header,
-  type HeaderGroup,
-  type Row,
-  useReactTable,
-} from "@tanstack/react-table";
 import { PowerOff } from "lucide-react";
 import * as React from "react";
+import ReusableTable from "@/components/dashboard/table/Table";
+import THead from "@/components/dashboard/table/Thead";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Tooltip,
   TooltipContent,
@@ -36,13 +18,18 @@ import { useDeactivateRule } from "../hooks/use-achievement-mutations";
 import { useRules } from "../hooks/use-achievement-rules";
 import type { AchievementRule } from "../schemas";
 
+const COLUMN_ORDER = [
+  { column: "achievement_name", Label: "Achievement", isSortable: true },
+  { column: "rule_type", Label: "Rule Type", isSortable: false },
+  { column: "version", Label: "Version", isSortable: false },
+  { column: "is_active", Label: "Status", isSortable: false },
+];
+
 export function RulesTable() {
   const { data: rules = [], isLoading } = useRules();
   const deactivateMutation = useDeactivateRule();
   const [target, setTarget] = React.useState<AchievementRule | null>(null);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    [],
-  );
+  const [search, setSearch] = React.useState("");
 
   const handleDeactivate = () => {
     if (!target) return;
@@ -51,81 +38,68 @@ export function RulesTable() {
     });
   };
 
-  const columns: ColumnDef<AchievementRule>[] = [
-    {
-      accessorKey: "achievement_name",
-      header: "Achievement",
-      cell: ({ row }) => (
-        <span className="font-medium">
-          {row.original.achievement_name ?? row.original.achievement_id}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "rule_type",
-      header: "Rule Type",
-      cell: ({ row }) => (
-        <Badge variant="secondary">{row.original.rule_type}</Badge>
-      ),
-    },
-    {
-      accessorKey: "version",
-      header: "Version",
-      cell: ({ row }) => (
-        <span className="text-sm text-muted-foreground">
-          v{row.original.version}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "is_active",
-      header: "Status",
-      cell: ({ row }) =>
-        row.original.is_active ? (
-          <Badge variant="success">Active</Badge>
-        ) : (
-          <Badge variant="outline" className="text-muted-foreground">
-            Inactive
-          </Badge>
-        ),
-    },
-    {
-      id: "actions",
-      header: "",
-      cell: ({ row }) =>
-        row.original.is_active ? (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0 text-warning hover:text-warning/80"
-                  onClick={() => setTarget(row.original)}
-                  data-testid={`deactivate-rule-${row.original.id}`}
-                >
-                  <PowerOff className="h-4 w-4" />
-                  <span className="sr-only">Deactivate</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Deactivate rule</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        ) : null,
-      enableSorting: false,
-    },
-  ];
+  const filtered = React.useMemo(() => {
+    return rules.filter((row) => {
+      const matchText = row.achievement_name ?? row.achievement_id ?? "";
+      return (
+        matchText.toLowerCase().includes(search.toLowerCase()) ||
+        row.rule_type.toLowerCase().includes(search.toLowerCase())
+      );
+    });
+  }, [rules, search]);
 
-  const table = useReactTable({
-    data: rules,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    onColumnFiltersChange: setColumnFilters,
-    state: {
-      columnFilters,
-    },
-  });
+  const customCellRender = (column: string, row: any) => {
+    if (column === "achievement_name") {
+      return (
+        <span className="font-medium text-foreground">
+          {row.achievement_name ?? row.achievement_id}
+        </span>
+      );
+    }
+    if (column === "rule_type") {
+      return <Badge variant="secondary">{row.rule_type}</Badge>;
+    }
+    if (column === "version") {
+      return (
+        <span className="text-sm text-muted-foreground">v{row.version}</span>
+      );
+    }
+    if (column === "is_active") {
+      return row.is_active ? (
+        <Badge variant="success">Active</Badge>
+      ) : (
+        <Badge variant="outline" className="text-muted-foreground">
+          Inactive
+        </Badge>
+      );
+    }
+    return null;
+  };
+
+  const customActionRender = (row: any) => {
+    if (!row.is_active) return null;
+    return (
+      <TooltipProvider>
+        <div className="flex items-center justify-end gap-1">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 text-warning hover:text-warning/80"
+                onClick={() => setTarget(row as AchievementRule)}
+                data-testid={`deactivate-rule-${row.id}`}
+              >
+                <PowerOff className="h-4 w-4" />
+                <span className="sr-only">Deactivate</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Deactivate rule</TooltipContent>
+          </Tooltip>
+        </div>
+      </TooltipProvider>
+    );
+  };
 
   return (
     <div className="space-y-4" data-testid="rules-table">
@@ -138,81 +112,30 @@ export function RulesTable() {
 
       <div className="flex items-center py-4">
         <Input
-          placeholder="Search rules..."
-          value={
-            (table.getColumn("rule_type")?.getFilterValue() as string) ?? ""
-          }
-          onChange={(event) =>
-            table.getColumn("rule_type")?.setFilterValue(event.target.value)
-          }
+          placeholder="Search rules by achievement or type..."
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
           className="max-w-sm"
         />
       </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table
-              .getHeaderGroups()
-              .map((headerGroup: HeaderGroup<AchievementRule>) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map(
-                    (header: Header<AchievementRule, unknown>) => {
-                      return (
-                        <TableHead key={header.id}>
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext(),
-                              )}
-                        </TableHead>
-                      );
-                    },
-                  )}
-                </TableRow>
-              ))}
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  Loading rules...
-                </TableCell>
-              </TableRow>
-            ) : table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row: Row<AchievementRule>) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row
-                    .getVisibleCells()
-                    .map((cell: Cell<AchievementRule, unknown>) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </TableCell>
-                    ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+      <div className="w-full md:overflow-x-auto md:rounded-xl md:border md:border-border md:bg-card md:shadow-sm">
+        <div className="w-full md:min-w-[800px]">
+          <ReusableTable
+            rows={filtered as any}
+            isLoading={isLoading}
+            page={1}
+            perPage={filtered.length || 1}
+            columnOrder={COLUMN_ORDER}
+            id={["id"]}
+            customCellRender={customCellRender}
+            customActionRender={customActionRender}
+          >
+            <THead columnOrder={COLUMN_ORDER} onIconClick={() => {}} action />
+            <div />
+            <div />
+          </ReusableTable>
+        </div>
       </div>
 
       <ConfirmDialog

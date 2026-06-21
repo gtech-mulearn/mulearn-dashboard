@@ -5,26 +5,14 @@ import {
   Legend,
   Pie,
   PieChart,
-  type PieLabelRenderProps,
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
+import { ChartTooltip, seriesColor } from "@/components/charts/chart-theme";
 
 interface CountryBreakdownProps {
   data: Record<string, number>;
 }
-
-// TODO: no semantic token — needs design decision
-const COLORS = [
-  "#f59e0b",
-  "#f97316",
-  "#ef4444",
-  "#ec4899",
-  "#d946ef",
-  "#a855f7",
-  "#7c3aed",
-  "#6366f1",
-];
 
 export function CountryBreakdown({ data }: CountryBreakdownProps) {
   const chartData = Object.entries(data).map(([name, value]) => ({
@@ -34,7 +22,7 @@ export function CountryBreakdown({ data }: CountryBreakdownProps) {
 
   if (chartData.length === 0) {
     return (
-      <div className="h-64 flex items-center justify-center">
+      <div className="flex h-64 items-center justify-center">
         <p className="text-muted-foreground">No data available</p>
       </div>
     );
@@ -49,19 +37,25 @@ export function CountryBreakdown({ data }: CountryBreakdownProps) {
             cx="50%"
             cy="50%"
             labelLine={false}
-            label={({ name, value }: PieLabelRenderProps) =>
-              `${name ?? ""}: ${value ?? 0}`
-            }
+            innerRadius={50}
             outerRadius={80}
-            fill="#8884d8"
+            paddingAngle={3}
             dataKey="value"
           >
-            {chartData.map(({ name }, index) => (
-              <Cell key={name} fill={COLORS[index % COLORS.length]} />
+            {chartData.map((entry, index) => (
+              <Cell
+                key={`cell-${entry.name}`}
+                fill={seriesColor(index)}
+                stroke="var(--card)"
+                strokeWidth={2}
+              />
             ))}
           </Pie>
-          <Tooltip />
-          <Legend />
+          <Tooltip content={<ChartTooltip />} />
+          <Legend
+            iconType="circle"
+            wrapperStyle={{ fontSize: 12, color: "var(--chart-axis)" }}
+          />
         </PieChart>
       </ResponsiveContainer>
     </div>

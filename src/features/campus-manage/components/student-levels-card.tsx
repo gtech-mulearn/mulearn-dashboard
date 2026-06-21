@@ -10,6 +10,15 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import {
+  AXIS_PROPS,
+  BAR_RADIUS,
+  ChartGradients,
+  ChartTooltip,
+  GRID_PROPS,
+  MAX_BAR_SIZE,
+  seriesGradient,
+} from "@/components/charts/chart-theme";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useStudentLevels } from "../hooks";
@@ -72,51 +81,25 @@ export function StudentLevelsCard() {
               data={sortedLevels}
               margin={{ top: 4, right: 4, bottom: 0, left: -20 }}
             >
-              <CartesianGrid
-                strokeDasharray="3 3"
-                vertical={false}
-                strokeOpacity={0.12}
-              />
-              <XAxis
-                dataKey="level"
-                tick={{ fontSize: 11, fill: "currentColor" }}
-                className="text-muted-foreground"
-                tickLine={false}
-                axisLine={false}
-              />
+              <ChartGradients />
+              <CartesianGrid {...GRID_PROPS} />
+              <XAxis dataKey="level" {...AXIS_PROPS} />
               <YAxis
-                tick={{ fontSize: 11, fill: "currentColor" }}
-                className="text-muted-foreground"
+                {...AXIS_PROPS}
                 ticks={yAxisTicks}
                 domain={[0, yAxisTicks[yAxisTicks.length - 1] || "auto"]}
-                tickLine={false}
-                axisLine={false}
                 allowDecimals={false}
               />
               <Tooltip
-                cursor={{ fill: "hsl(var(--muted))", opacity: 0.15 }}
-                content={({ active, payload }) => {
-                  if (active && payload?.length) {
-                    const data = payload[0].payload;
-                    return (
-                      <div className="rounded-xl border border-border/60 bg-white/95 dark:bg-zinc-800/95 p-2.5 shadow-xl backdrop-blur-sm text-xs font-semibold">
-                        <p className="mb-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
-                          {data.level}
-                        </p>
-                        <p className="text-sm font-black text-primary">
-                          {data.count}{" "}
-                          {data.count === 1 ? "Student" : "Students"}
-                        </p>
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
+                cursor={{ fill: "var(--color-muted)", opacity: 0.15 }}
+                content={<ChartTooltip />}
               />
               <Bar
                 dataKey="count"
-                fill="hsl(var(--primary))"
-                radius={[4, 4, 0, 0]}
+                name="Students"
+                fill={seriesGradient(0)}
+                radius={BAR_RADIUS}
+                maxBarSize={MAX_BAR_SIZE}
               />
             </BarChart>
           </ResponsiveContainer>

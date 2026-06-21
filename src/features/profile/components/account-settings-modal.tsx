@@ -35,6 +35,10 @@ export function AccountSettingsModal({
   const queryClient = useQueryClient();
 
   const handleLogout = async () => {
+    // Clear cookies server-side first: the HttpOnly refreshToken can't be removed
+    // by client js-cookie, and if it lingers the proxy refreshes a new accessToken
+    // and bounces /login back to /dashboard.
+    await fetch("/api/auth/logout", { method: "POST" });
     await authStore.clearTokens();
 
     // Reset UI state
@@ -45,7 +49,8 @@ export function AccountSettingsModal({
 
     toast.success("Logged out successfully");
     onOpenChange(false);
-    router.push("/login");
+    // Hard redirect so the proxy re-evaluates with the cookies actually gone.
+    window.location.href = "/login";
   };
 
   const handleChangePassword = () => {

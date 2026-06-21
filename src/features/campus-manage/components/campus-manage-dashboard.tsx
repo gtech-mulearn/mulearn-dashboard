@@ -52,6 +52,15 @@ import {
   YAxis,
 } from "recharts";
 import { toast } from "sonner";
+import {
+  AXIS_PROPS,
+  ChartGradients,
+  ChartTooltip,
+  GRID_PROPS,
+  MAX_BAR_SIZE,
+  seriesColor,
+  seriesGradient,
+} from "@/components/charts/chart-theme";
 import Pagination from "@/components/dashboard/table/pagination";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -80,6 +89,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StatCard } from "@/components/ui/stat-card";
 import {
   Table,
   TableBody,
@@ -111,7 +121,6 @@ import type {
   CampusEventFilters,
   CampusLeaderboardFilters,
   CampusLeaderboardItem,
-  ClusterKarmaPoint,
   IgChapter,
   SocialLink,
   SocialLinks,
@@ -122,7 +131,6 @@ import { StudentLevelsCard } from "./student-levels-card";
 import { TransferEnablerDialog } from "./transfer-enabler-dialog";
 import { TransferLeadDialog } from "./transfer-lead-dialog";
 
-const PIE_COLORS = ["#16a34a", "#0ea5e9", "#f59e0b", "#ef4444", "#8b5cf6"];
 const PAGE_SIZE = 10;
 const CORE_CAMPUS_ROLES = [
   { label: "Campus Lead", value: "Campus Lead" },
@@ -415,77 +423,25 @@ function CampusDatePicker({
   );
 }
 
-function StatCard({
+function CompactStatCard({
   title,
   value,
   icon,
-  featured = false,
-  accent,
-  accentText,
-  valueClassName,
+  accentVar,
 }: {
   title: string;
   value: string | number;
   icon: ReactNode;
-  featured?: boolean;
-  accent?: string;
-  accentText?: string;
-  valueClassName?: string;
+  accentVar: string;
 }) {
-  if (featured) {
-    return (
-      <Card
-        className="h-full border-border/60 relative overflow-hidden transition-all duration-200 hover:scale-[1.02] hover:shadow-lg cursor-default"
-        style={{
-          background: accent
-            ? `linear-gradient(135deg, ${accent}15 0%, ${accent}04 100%)`
-            : undefined,
-        }}
-      >
-        <div
-          className="absolute inset-0 opacity-[0.08]"
-          style={{
-            background: accent
-              ? `radial-gradient(circle at top right, ${accent}, transparent 65%)`
-              : undefined,
-          }}
-        />
-        <CardContent className="relative flex h-full flex-col justify-between p-5">
-          <div className="flex items-start justify-between">
-            <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              {title}
-            </span>
-            <span
-              className="flex h-8 w-8 items-center justify-center rounded-xl"
-              style={{
-                background: accent ? `${accent}18` : undefined,
-                color: accent,
-              }}
-            >
-              {icon}
-            </span>
-          </div>
-          <p
-            className={cn(
-              "text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight",
-              valueClassName,
-            )}
-            style={valueClassName ? undefined : { color: accentText ?? accent }}
-          >
-            {value}
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
   return (
     <Card className="h-full border-border/60 transition-all duration-200 hover:scale-[1.02] hover:shadow-md cursor-default">
       <CardContent className="flex h-full flex-col justify-between p-4">
-        <div className="flex items-center justify-between text-muted-foreground">
-          <span className="text-[10px] font-semibold uppercase tracking-widest">
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
             {title}
           </span>
-          <span className="opacity-50">{icon}</span>
+          <span style={{ color: accentVar, opacity: 0.7 }}>{icon}</span>
         </div>
         <p className="text-2xl font-bold">{value}</p>
       </CardContent>
@@ -832,9 +788,9 @@ export function CampusManageDashboard() {
                       title="Total Karma"
                       value={(overview?.totalKarma ?? 0).toLocaleString()}
                       icon={<Zap className="h-4 w-4" />}
-                      featured
-                      accent="#0d9488"
-                      valueClassName="text-teal-600 dark:text-teal-400"
+                      accent="chart-3"
+                      gradient
+                      className="h-full"
                     />
                   </div>
                   <div className="sm:col-span-1 md:col-span-2">
@@ -842,38 +798,43 @@ export function CampusManageDashboard() {
                       title="Global Rank"
                       value={overview?.rank ? `#${overview.rank}` : "-"}
                       icon={<Trophy className="h-4 w-4" />}
-                      featured
-                      accent="#f59e0b"
-                      valueClassName="text-amber-700 dark:text-amber-400"
+                      accent="chart-4"
+                      gradient
+                      className="h-full"
                     />
                   </div>
                 </div>
 
                 <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-                  <StatCard
+                  <CompactStatCard
                     title="7-Day Karma"
                     value={(overview?.karma7Day ?? 0).toLocaleString()}
                     icon={<Zap className="h-4 w-4" />}
+                    accentVar="var(--chart-1)"
                   />
-                  <StatCard
+                  <CompactStatCard
                     title="30-Day Karma"
                     value={(overview?.karma30Day ?? 0).toLocaleString()}
                     icon={<Zap className="h-4 w-4" />}
+                    accentVar="var(--chart-2)"
                   />
-                  <StatCard
+                  <CompactStatCard
                     title="Total Members"
                     value={(overview?.totalMembers ?? 0).toLocaleString()}
                     icon={<Users className="h-4 w-4" />}
+                    accentVar="var(--chart-3)"
                   />
-                  <StatCard
+                  <CompactStatCard
                     title="Active Members"
                     value={(overview?.activeMembers ?? 0).toLocaleString()}
                     icon={<Users className="h-4 w-4" />}
+                    accentVar="var(--chart-4)"
                   />
-                  <StatCard
+                  <CompactStatCard
                     title="Active IG Chapters"
                     value={overview?.igChaptersCount ?? 0}
                     icon={<BookOpen className="h-4 w-4" />}
+                    accentVar="var(--chart-5)"
                   />
                 </div>
 
@@ -895,71 +856,33 @@ export function CampusManageDashboard() {
                           data={karmaTrend}
                           margin={{ top: 4, right: 8, left: 0, bottom: 0 }}
                         >
-                          <defs>
-                            <linearGradient
-                              id="karmaGradient"
-                              x1="0"
-                              y1="0"
-                              x2="0"
-                              y2="1"
-                            >
-                              <stop
-                                offset="5%"
-                                stopColor="#0d9488"
-                                stopOpacity={0.3}
-                              />
-                              <stop
-                                offset="95%"
-                                stopColor="#0d9488"
-                                stopOpacity={0}
-                              />
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid
-                            horizontal
-                            vertical={false}
-                            stroke="currentColor"
-                            strokeOpacity={0.07}
-                          />
-                          <XAxis
-                            dataKey="label"
-                            tick={{ fontSize: 10, fill: "currentColor" }}
-                            className="text-muted-foreground"
-                            tickLine={false}
-                            axisLine={false}
-                          />
+                          <ChartGradients />
+                          <CartesianGrid {...GRID_PROPS} />
+                          <XAxis dataKey="label" {...AXIS_PROPS} />
                           <YAxis
+                            {...AXIS_PROPS}
                             allowDecimals={false}
-                            tick={{ fontSize: 10, fill: "currentColor" }}
-                            className="text-muted-foreground"
-                            tickLine={false}
-                            axisLine={false}
                             width={36}
                           />
                           <Tooltip
                             cursor={{
-                              stroke: "#0d9488",
+                              stroke: seriesColor(0),
                               strokeWidth: 1,
                               strokeDasharray: "4 4",
                             }}
-                            contentStyle={{
-                              borderRadius: "10px",
-                              border: "1px solid hsl(var(--border))",
-                              background: "hsl(var(--card))",
-                              boxShadow: "0 8px 30px rgba(0,0,0,.14)",
-                              fontSize: "12px",
-                            }}
+                            content={<ChartTooltip />}
                           />
                           <Area
                             type="monotone"
                             dataKey="value"
-                            stroke="#0d9488"
+                            name="Karma"
+                            stroke={seriesColor(0)}
                             strokeWidth={2}
-                            fill="url(#karmaGradient)"
+                            fill={seriesGradient(0)}
                             dot={false}
                             activeDot={{
                               r: 4,
-                              fill: "#0d9488",
+                              fill: seriesColor(0),
                               strokeWidth: 2,
                               stroke: "#fff",
                             }}
@@ -1265,85 +1188,43 @@ export function CampusManageDashboard() {
                                       bottom: 4,
                                     }}
                                   >
+                                    <ChartGradients />
                                     <CartesianGrid
-                                      strokeDasharray="4 4"
-                                      horizontal={false}
+                                      {...GRID_PROPS}
                                       vertical
-                                      strokeOpacity={0.12}
+                                      horizontal={false}
                                     />
                                     {/* FIX: explicit uniform ticks — no more skipped axis values */}
                                     <XAxis
+                                      {...AXIS_PROPS}
                                       type="number"
                                       domain={[0, clusterAxisMax]}
                                       ticks={clusterAxisTicks}
-                                      tick={{
-                                        fontSize: 10,
-                                        fill: "currentColor",
-                                      }}
-                                      className="text-muted-foreground"
-                                      axisLine={{
-                                        stroke: "hsl(var(--border))",
-                                        strokeOpacity: 0.8,
-                                      }}
-                                      tickLine={{
-                                        stroke: "hsl(var(--border))",
-                                        strokeOpacity: 0.5,
-                                      }}
                                     />
                                     <YAxis
+                                      {...AXIS_PROPS}
                                       dataKey="cluster"
                                       type="category"
                                       tick={{
-                                        fontSize: 10,
+                                        ...AXIS_PROPS.tick,
                                         fontWeight: 700,
                                         textAnchor: "start",
-                                        fill: "currentColor",
                                       }}
-                                      className="text-muted-foreground"
                                       width={120}
                                       dx={-116}
                                       tickFormatter={formatClusterTick}
-                                      axisLine={false}
-                                      tickLine={false}
                                     />
                                     <Tooltip
                                       cursor={{ fill: "transparent" }}
-                                      content={({ active, payload }) => {
-                                        if (active && payload?.length) {
-                                          const point = payload[0]
-                                            .payload as ClusterKarmaPoint;
-                                          return (
-                                            <div className="rounded-xl border border-border/60 bg-background/95 p-2.5 shadow-xl backdrop-blur-sm">
-                                              <p className="mb-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
-                                                {normalizeClusterLabel(
-                                                  point.cluster,
-                                                )}
-                                              </p>
-                                              <div className="flex flex-col gap-0.5">
-                                                <p className="text-sm font-black text-primary">
-                                                  {point.karma?.toLocaleString()}{" "}
-                                                  Karma
-                                                </p>
-                                                <p className="text-[11px] font-bold text-muted-foreground">
-                                                  {point.memberCount?.toLocaleString()}{" "}
-                                                  Members
-                                                </p>
-                                              </div>
-                                            </div>
-                                          );
-                                        }
-                                        return null;
-                                      }}
+                                      content={<ChartTooltip />}
                                     />
                                     <Bar
                                       dataKey="karma"
-                                      fill="#059669"
-                                      radius={[0, 6, 6, 0]}
+                                      name="Karma"
+                                      fill={seriesGradient(0)}
+                                      radius={[0, 8, 8, 0]}
                                       barSize={18}
-                                      background={{
-                                        fill: "rgba(5, 150, 105, 0.06)",
-                                        radius: 6,
-                                      }}
+                                      maxBarSize={MAX_BAR_SIZE}
                                     >
                                       <LabelList
                                         dataKey="karma"
@@ -1452,38 +1333,19 @@ export function CampusManageDashboard() {
                                       innerRadius={55}
                                       outerRadius={75}
                                       paddingAngle={4}
-                                      stroke="transparent"
                                       className="outline-none"
                                     >
                                       {distribution.map((entry, index) => (
                                         <Cell
                                           key={`cell-${entry.tag}`}
-                                          fill={
-                                            PIE_COLORS[
-                                              index % PIE_COLORS.length
-                                            ]
-                                          }
+                                          fill={seriesColor(index)}
+                                          stroke="var(--card)"
+                                          strokeWidth={2}
                                           className="transition-opacity hover:opacity-80"
                                         />
                                       ))}
                                     </Pie>
-                                    <Tooltip
-                                      content={({ active, payload }) => {
-                                        if (active && payload?.length) {
-                                          return (
-                                            <div className="rounded-xl border border-border/60 bg-background/95 p-2.5 shadow-xl backdrop-blur-sm">
-                                              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                                                {payload[0].name}
-                                              </p>
-                                              <p className="text-sm font-black text-primary">
-                                                {payload[0].value} Events
-                                              </p>
-                                            </div>
-                                          );
-                                        }
-                                        return null;
-                                      }}
-                                    />
+                                    <Tooltip content={<ChartTooltip />} />
                                   </PieChart>
                                 </ResponsiveContainer>
                                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
@@ -1518,10 +1380,7 @@ export function CampusManageDashboard() {
                                         <div
                                           className="h-2.5 w-2.5 shrink-0 rounded-full transition-transform group-hover/item:scale-125"
                                           style={{
-                                            backgroundColor:
-                                              PIE_COLORS[
-                                                index % PIE_COLORS.length
-                                              ],
+                                            backgroundColor: seriesColor(index),
                                           }}
                                         />
                                         <span className="max-w-[100px] truncate text-xs font-bold tracking-tight text-foreground/80">

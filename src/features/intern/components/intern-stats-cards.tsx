@@ -114,12 +114,12 @@ export function InternStatsCards() {
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       {/* Score Card */}
       <Card className="relative overflow-hidden group border-border/40 bg-card/50 backdrop-blur-sm transition-all hover:bg-card hover:shadow-xl hover:-translate-y-1">
-        <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-brand-blue/10 rounded-full blur-3xl group-hover:bg-brand-blue/20 transition-all" />
+        <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 rounded-full blur-3xl transition-all bg-chart-1/10 group-hover:bg-chart-1/20" />
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
             Score
           </CardTitle>
-          <Star className="h-4 w-4 text-brand-blue animate-pulse" />
+          <Star className="h-4 w-4 text-chart-1 animate-pulse" />
         </CardHeader>
         <CardContent>
           <div className="text-3xl font-black font-mono tracking-tighter text-foreground">
@@ -133,12 +133,12 @@ export function InternStatsCards() {
 
       {/* Streak Card */}
       <Card className="relative overflow-hidden group border-border/40 bg-card/50 backdrop-blur-sm transition-all hover:bg-card hover:shadow-xl hover:-translate-y-1">
-        <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-warning/10 rounded-full blur-3xl group-hover:bg-warning/20 transition-all" />
+        <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 rounded-full blur-3xl transition-all bg-chart-3/10 group-hover:bg-chart-3/20" />
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
             Daily Streak
           </CardTitle>
-          <Flame className="h-4 w-4 text-warning fill-warning" />
+          <Flame className="h-4 w-4 text-chart-3 fill-chart-3" />
         </CardHeader>
         <CardContent>
           <div className="text-3xl font-black font-mono tracking-tighter text-foreground flex items-baseline gap-1 flex-wrap">
@@ -163,18 +163,18 @@ export function InternStatsCards() {
 
       {/* Leaderboard Rank Card */}
       <Card className="relative overflow-hidden group border-border/40 bg-card/50 backdrop-blur-sm transition-all hover:bg-card hover:shadow-xl hover:-translate-y-1">
-        <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-brand-purple/10 rounded-full blur-3xl group-hover:bg-brand-purple/20 transition-all" />
+        <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 rounded-full blur-3xl transition-all bg-chart-2/10 group-hover:bg-chart-2/20" />
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
             Global Rank
           </CardTitle>
-          <Trophy className="h-4 w-4 text-brand-purple" />
+          <Trophy className="h-4 w-4 text-chart-2" />
         </CardHeader>
         <CardContent>
           <div className="text-3xl font-black font-mono tracking-tighter text-foreground">
             #{userRank}
           </div>
-          <p className="text-[10px] text-brand-purple mt-2 font-bold uppercase tracking-widest">
+          <p className="text-[10px] text-chart-2 mt-2 font-bold uppercase tracking-widest">
             {getRankMilestone(userRank)}
           </p>
         </CardContent>
@@ -182,12 +182,12 @@ export function InternStatsCards() {
 
       {/* Weekly Completion Card */}
       <Card className="relative overflow-hidden group border-border/40 bg-card/50 backdrop-blur-sm transition-all hover:bg-card hover:shadow-xl hover:-translate-y-1">
-        <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-success/10 rounded-full blur-3xl group-hover:bg-success/20 transition-all" />
+        <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 rounded-full blur-3xl transition-all bg-chart-4/10 group-hover:bg-chart-4/20" />
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
             Weekly Streak
           </CardTitle>
-          <Target className="h-4 w-4 text-success" />
+          <Target className="h-4 w-4 text-chart-4" />
         </CardHeader>
         <CardContent>
           <div className="text-3xl font-black font-mono tracking-tighter text-foreground flex items-baseline gap-1 flex-wrap">

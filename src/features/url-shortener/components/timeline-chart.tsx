@@ -1,20 +1,25 @@
 "use client";
 
 import {
+  Area,
+  AreaChart,
   CartesianGrid,
-  Line,
-  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
+import {
+  AXIS_PROPS,
+  ChartGradients,
+  ChartTooltip,
+  GRID_PROPS,
+  seriesColor,
+  seriesGradient,
+} from "@/components/charts/chart-theme";
 
 interface TimelineChartProps {
-  data: Array<{
-    time: string;
-    clicks: number;
-  }>;
+  data: Array<{ time: string; clicks: number }>;
 }
 
 export function TimelineChart({ data }: TimelineChartProps) {
@@ -29,21 +34,26 @@ export function TimelineChart({ data }: TimelineChartProps) {
   return (
     <div className="h-64 w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={chartData}>
-          {/* TODO: no semantic token — needs design decision */}
-          <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-          <XAxis stroke="#999999" style={{ fontSize: "12px" }} />
-          <YAxis stroke="#999999" style={{ fontSize: "12px" }} />
-          <Tooltip />
-          <Line
+        <AreaChart data={chartData}>
+          <ChartGradients />
+          <CartesianGrid {...GRID_PROPS} />
+          <XAxis dataKey="time" {...AXIS_PROPS} />
+          <YAxis {...AXIS_PROPS} />
+          <Tooltip
+            cursor={{ stroke: "var(--chart-grid)" }}
+            content={<ChartTooltip />}
+          />
+          <Area
             type="monotone"
             dataKey="clicks"
-            stroke="#0961f5"
+            name="Clicks"
+            stroke={seriesColor(0)}
             strokeWidth={2}
-            dot={{ fill: "#0961f5", r: 4 }}
-            activeDot={{ r: 6 }}
+            fill={seriesGradient(0)}
+            dot={{ fill: seriesColor(0), r: 3 }}
+            activeDot={{ r: 5 }}
           />
-        </LineChart>
+        </AreaChart>
       </ResponsiveContainer>
     </div>
   );

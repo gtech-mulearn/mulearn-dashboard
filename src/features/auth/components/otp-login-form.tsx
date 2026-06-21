@@ -92,7 +92,7 @@ export function OTPLoginForm({
 
   if (step === "verify") {
     return (
-      <Card className="w-full max-w-md">
+      <Card key="verify" className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <Button
             variant="ghost"
@@ -143,7 +143,7 @@ export function OTPLoginForm({
   }
 
   return (
-    <Card className="w-full max-w-md">
+    <Card key="request" className="w-full max-w-md">
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl font-bold">Login with OTP</CardTitle>
         <CardDescription>
