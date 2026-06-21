@@ -334,23 +334,25 @@ export function TimesheetReviewsPageClient() {
         <div className="flex items-center gap-1 p-1 w-fit h-12">
           <Button
             type="button"
+            size="default"
             variant={typeFilter === "DAILY" ? "default" : "outline"}
             onClick={() => {
               setTypeFilter("DAILY");
               setPage(1);
             }}
-            className="gap-1.5 text-[10px]  uppercase tracking-[0.2em] h-9 rounded-md"
+            className="gap-1.5 text-xs uppercase tracking-[0.2em]"
           >
             Daily Logs
           </Button>
           <Button
             type="button"
+            size="default"
             variant={typeFilter === "WEEKLY" ? "default" : "outline"}
             onClick={() => {
               setTypeFilter("WEEKLY");
               setPage(1);
             }}
-            className="gap-1.5 text-[10px] uppercase tracking-[0.2em] h-9 rounded-md"
+            className="gap-1.5 text-xs uppercase tracking-[0.2em]"
           >
             Weekly Reviews
           </Button>
@@ -440,7 +442,7 @@ export function TimesheetReviewsPageClient() {
               }
               setIsReviewOpen(true);
             }}
-            className="rounded-md text-muted-foreground hover:bg-muted hover:text-foreground font-black uppercase text-[9px] tracking-widest px-3 h-7.5"
+            className="rounded-md text-muted-foreground hover:bg-muted hover:text-foreground font-black uppercase text-xs tracking-widest"
           >
             {row.status === "PENDING" ? "Evaluate" : "View"}
           </Button>

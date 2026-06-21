@@ -512,7 +512,8 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
               <div className="flex flex-col items-center gap-4 md:gap-6 pt-4">
                 <Button
                   type="submit"
-                  className="w-full h-12 text-sm shadow-[0_8px_16px_rgba(46,133,254,0.25)] font-bold rounded-full"
+                  size="lg"
+                  className="w-full text-sm shadow-[0_8px_16px_rgba(46,133,254,0.25)] font-bold rounded-full"
                   disabled={form.formState.isSubmitting}
                 >
                   {form.formState.isSubmitting ? (

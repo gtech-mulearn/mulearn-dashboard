@@ -295,13 +295,14 @@ export default function InternMinutesPage() {
                       <Button
                         type="submit"
                         variant="default"
+                        size="lg"
                         disabled={
                           submitMutation.isPending ||
                           updateMutation.isPending ||
                           !title.trim() ||
                           !minutesText.trim()
                         }
-                        className="flex-1 gap-2 text-[10px] tracking-widest h-10 "
+                        className="flex-1 gap-2 text-xs tracking-widest"
                       >
                         {submitMutation.isPending ||
                         updateMutation.isPending ? (
@@ -325,13 +326,14 @@ export default function InternMinutesPage() {
                         <Button
                           type="button"
                           variant="outline"
+                          size="lg"
                           onClick={() => {
                             setEditingMinute(null);
                             setTitle("");
                             setMinutesText("");
                             setDate(getTodayDateString());
                           }}
-                          className="gap-2 text-[10px] tracking-widest h-10"
+                          className="gap-2 text-xs tracking-widest"
                         >
                           Cancel
                         </Button>

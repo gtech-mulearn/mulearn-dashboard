@@ -474,8 +474,9 @@ export function QuestLog() {
       <div className="pt-4 px-0 pb-0 border-t border-border/20">
         <Link href="/dashboard/intern/quest-log">
           <Button
+            size="lg"
             variant="outline"
-            className="w-full gap-2 text-[10px] tracking-widest h-10 shadow-lg"
+            className="w-full gap-2 text-xs tracking-widest shadow-lg"
           >
             View History
           </Button>

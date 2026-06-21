@@ -342,18 +342,20 @@ export function OnboardDialog({
           <DialogFooter className="pt-4 gap-2">
             <Button
               type="button"
+              size="lg"
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={onboardMutation.isPending}
-              className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
+              className="gap-2 text-xs tracking-widest shadow-lg"
             >
               Cancel
             </Button>
             <Button
               type="submit"
+              size="lg"
               variant="default"
               disabled={onboardMutation.isPending}
-              className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
+              className="gap-2 text-xs tracking-widest shadow-lg"
             >
               {onboardMutation.isPending ? "Onboarding..." : "Onboard"}
             </Button>

@@ -149,8 +149,8 @@ export function LearnerJobsPageClient() {
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="outline"
-                    size="sm"
-                    className="gap-2 h-9 text-sm"
+                    size="default"
+                    className="gap-2 text-sm"
                   >
                     <Filter className="h-3.5 w-3.5" />
                     Sort

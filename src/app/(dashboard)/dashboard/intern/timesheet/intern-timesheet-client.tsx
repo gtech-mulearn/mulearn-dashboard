@@ -454,8 +454,9 @@ export function TimesheetPageClient() {
                   <div className="pt-4">
                     <Button
                       type="submit"
+                      size="lg"
                       disabled={isSubmitting}
-                      className="w-full h-12 text-sm shadow-[0_8px_16px_rgba(46,133,254,0.25)] font-bold rounded-full"
+                      className="w-full text-sm shadow-[0_8px_16px_rgba(46,133,254,0.25)] font-bold rounded-full"
                     >
                       {isSubmitting ? (
                         <>
