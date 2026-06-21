@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, Calendar, Search, SlidersHorizontal, X } from "lucide-react";
+import { BookOpen, Search, SlidersHorizontal, X } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,6 @@ import type { UserLevelData } from "@/features/mujourney/schemas";
 import { usePublicTasks } from "@/features/tasks/hooks";
 import type { PublicTaskListParams } from "@/features/tasks/types/tasks.types";
 import { useDebounce } from "@/hooks/use-debounce";
-import { cn } from "@/lib/utils";
 
 // ─── Constants ─────────────────────────────────────────────────────────
 
@@ -45,19 +44,6 @@ const TASK_SOURCE_OPTIONS: {
 
 const PER_PAGE_OPTIONS = [10, 20, 50];
 
-// ─── Event Filter toggle values ─────────────────────────────────────────
-
-type EventFilter = "all" | "event_only";
-
-const EVENT_FILTER_OPTIONS: {
-  label: string;
-  value: EventFilter;
-  icon?: boolean;
-}[] = [
-  { label: "All Tasks", value: "all" },
-  { label: "Event Tasks", value: "event_only", icon: true },
-];
-
 // ─── Component ─────────────────────────────────────────────────────────
 
 export function LearnerTasksPage() {
@@ -68,8 +54,6 @@ export function LearnerTasksPage() {
   const [taskSource, setTaskSource] = useState<
     PublicTaskListParams["task_source"] | ""
   >("");
-  const [eventFilter, setEventFilter] = useState<EventFilter>("all");
-
   const debouncedSearch = useDebounce(searchInput, 400);
 
   // Build params from all filter state
@@ -79,7 +63,6 @@ export function LearnerTasksPage() {
     search: debouncedSearch,
     sortBy,
     ...(taskSource ? { task_source: taskSource } : {}),
-    ...(eventFilter === "event_only" ? { is_event_task: true } : {}),
   };
 
   const { data, isLoading, isFetching } = usePublicTasks(queryParams);
@@ -108,11 +91,6 @@ export function LearnerTasksPage() {
     setCurrentPage(1);
   }, []);
 
-  const handleEventFilter = useCallback((val: EventFilter) => {
-    setEventFilter(val);
-    setCurrentPage(1);
-  }, []);
-
   const handlePerPage = useCallback((val: string) => {
     setPerPage(Number(val));
     setCurrentPage(1);
@@ -127,12 +105,10 @@ export function LearnerTasksPage() {
     setSearchInput("");
     setSortBy("");
     setTaskSource("");
-    setEventFilter("all");
     setCurrentPage(1);
   };
 
-  const hasActiveFilters =
-    !!searchInput || !!sortBy || !!taskSource || eventFilter !== "all";
+  const hasActiveFilters = !!searchInput || !!sortBy || !!taskSource;
 
   // ─── Group tasks by level ───────────────────────────────────────────
 
@@ -208,26 +184,6 @@ export function LearnerTasksPage() {
 
       {/* ── Row 2: Filters ────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-2">
-        {/* Event filter toggle */}
-        <div className="flex rounded-md border border-border overflow-hidden shrink-0">
-          {EVENT_FILTER_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => handleEventFilter(opt.value)}
-              className={cn(
-                "flex items-center gap-1.5 px-3 h-9 text-sm font-medium transition-colors",
-                eventFilter === opt.value
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-card text-muted-foreground hover:bg-muted hover:text-foreground",
-              )}
-            >
-              {opt.icon && <Calendar className="size-3.5" />}
-              {opt.label}
-            </button>
-          ))}
-        </div>
-
         {/* Task Source */}
         <Select
           value={taskSource || "__all__"}
