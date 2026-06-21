@@ -1,5 +1,6 @@
 import { Briefcase, CheckCircle2, Lock, Users } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StatCard } from "@/components/ui/stat-card";
 import type { CompanyQuickStats } from "../../schemas/home.schema";
 
 type Props = {
@@ -12,30 +13,27 @@ export function CompanyStatCards({ quickStats, isLoading, isVerified }: Props) {
   const cards = [
     {
       key: "jobsPosted",
-      label: "JOBS POSTED",
+      label: "Jobs Posted",
       icon: Briefcase,
-      iconColor: "text-brand-blue",
-      iconBg: "bg-brand-blue/10",
+      accent: "chart-1" as const,
       value: quickStats?.jobs_posted.toString() ?? "—",
-      subLabel: "active listings",
+      description: "active listings",
     },
     {
       key: "applications",
-      label: "APPLICATIONS",
+      label: "Applications",
       icon: CheckCircle2,
-      iconColor: "text-success",
-      iconBg: "bg-success/10",
+      accent: "chart-2" as const,
       value: quickStats?.applications.toString() ?? "—",
-      subLabel: "total received",
+      description: "total received",
     },
     {
       key: "hired",
-      label: "HIRED",
+      label: "Hired",
       icon: Users,
-      iconColor: "text-brand-purple",
-      iconBg: "bg-brand-purple/10",
+      accent: "chart-3" as const,
       value: quickStats?.hired.toString() ?? "—",
-      subLabel: "via muLearn",
+      description: "via muLearn",
     },
   ];
 
@@ -43,45 +41,41 @@ export function CompanyStatCards({ quickStats, isLoading, isVerified }: Props) {
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
       {cards.map((card) => {
         const Icon = card.icon;
+
+        if (isLoading) {
+          return (
+            <div
+              key={card.key}
+              className="rounded-2xl border bg-card p-5 shadow-sm"
+            >
+              <Skeleton className="mb-1.5 h-8 w-16 rounded-md" />
+              <Skeleton className="h-3.5 w-24 rounded-md" />
+            </div>
+          );
+        }
+
         return (
           <div
             key={card.key}
-            className={`relative rounded-2xl border bg-card p-5 shadow-sm ${!isVerified ? "opacity-70 pointer-events-none" : ""}`}
+            className={`relative ${!isVerified ? "pointer-events-none opacity-70" : ""}`}
           >
-            <div className="flex items-start justify-between">
-              <div
-                className={`mb-3 flex size-10 items-center justify-center rounded-xl ${card.iconBg}`}
-              >
-                <Icon className={`size-5 ${card.iconColor}`} />
-              </div>
-              {!isVerified && (
-                <span className="inline-flex items-center rounded-md bg-muted px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                  Locked
-                </span>
-              )}
-            </div>
-
-            {isLoading ? (
-              <>
-                <Skeleton className="mb-1.5 h-8 w-16 rounded-md" />
-                <Skeleton className="h-3.5 w-24 rounded-md" />
-              </>
-            ) : (
-              <>
-                <p className="text-3xl font-bold tracking-tight text-foreground">
-                  {!isVerified ? "—" : card.value}
-                </p>
-                <p className="mt-0.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                  {!isVerified && <Lock className="size-3" />}
-                  {card.label}
-                </p>
-                <p className="mt-2.5 text-xs text-muted-foreground">
-                  {!isVerified
-                    ? "Available after company verification."
-                    : card.subLabel}
-                </p>
-              </>
+            {!isVerified && (
+              <span className="absolute right-3 top-3 z-10 inline-flex items-center rounded-md bg-muted px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                <Lock className="mr-1 size-3" />
+                Locked
+              </span>
             )}
+            <StatCard
+              title={card.label}
+              value={!isVerified ? "—" : card.value}
+              icon={<Icon className="size-5" />}
+              accent={card.accent}
+              description={
+                !isVerified
+                  ? "Available after company verification."
+                  : card.description
+              }
+            />
           </div>
         );
       })}

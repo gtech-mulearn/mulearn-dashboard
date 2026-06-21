@@ -3,11 +3,11 @@
  *
  * 📍 src/features/interest-groups/components/interest-group-card.tsx
  *
- * Beautiful card component for displaying interest groups with gradient backgrounds.
+ * Gradient hero with glassmorphic overlays, matching the user/campus search cards.
  */
-
 "use client";
 
+import { ArrowUpRight, Hash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { InterestGroup } from "../schemas/interest-groups.schema";
 
@@ -18,39 +18,61 @@ type InterestGroupCardProps = {
 
 export function InterestGroupCard({ group, gradient }: InterestGroupCardProps) {
   const router = useRouter();
+  const firstLetter = group.name.charAt(0).toUpperCase();
 
   return (
     <button
       type="button"
       onClick={() => router.push(`/dashboard/interest-groups/${group.id}`)}
-      className="group relative h-[250px] sm:h-[280px] md:h-[300px] w-full cursor-pointer overflow-hidden rounded-[2rem] border border-card/10 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/20 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+      className="group relative aspect-[8/5] w-full cursor-pointer overflow-hidden rounded-[2rem] text-left shadow-sm ring-1 ring-black/5 transition-all duration-500 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-black/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 motion-reduce:transform-none motion-reduce:transition-none"
     >
+      {/* Hero: passed-in gradient with a large monogram watermark */}
       <div
-        className={`absolute inset-0 ${gradient} opacity-100 transition-transform duration-700 group-hover:scale-105`}
-      />
+        className={`absolute inset-0 ${gradient} transition-transform duration-700 group-hover:scale-105`}
+      >
+        <span className="absolute -bottom-8 -right-2 select-none text-[8rem] font-black leading-none text-white/15 drop-shadow-sm">
+          {firstLetter}
+        </span>
+      </div>
 
-      <div className="absolute inset-0 bg-foreground/10 mix-blend-overlay transition-opacity duration-500 group-hover:opacity-0" />
+      {/* Soft light blob for depth */}
+      <div className="pointer-events-none absolute -left-10 -top-10 h-40 w-40 rounded-full bg-white/25 blur-3xl transition-all duration-700 group-hover:scale-150" />
 
-      <div className="absolute left-4 right-4 top-4 sm:left-5 sm:right-5 sm:top-5 flex items-start justify-between gap-2 z-10 transition-transform duration-500 group-hover:-translate-y-1">
-        <div className="min-w-0 rounded-full bg-muted/80 px-3 py-1 sm:px-4 sm:py-1.5 shadow-md">
-          <p className="truncate text-[9px] sm:text-[10px] font-extrabold uppercase tracking-widest">
-            {group.category}
-          </p>
-        </div>
+      {/* Legibility scrims */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-linear-to-b from-black/45 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-3/5 bg-linear-to-t from-black/70 via-black/25 to-transparent" />
+
+      {/* Top: name + code badge */}
+      <div className="absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-3 p-3.5">
+        <h3 className="font-display line-clamp-2 text-xl font-bold leading-tight text-white drop-shadow-md [text-wrap:balance]">
+          {group.name}
+        </h3>
         {group.code && (
-          <div className="shrink-0 rounded-full bg-muted/80 px-2 py-1 sm:px-3 sm:py-1.5 shadow-md">
-            <p className="text-[9px] sm:text-xs font-bold tracking-widest">
+          <div className="flex shrink-0 items-center gap-1 rounded-full border border-white/25 bg-white/15 px-2.5 py-1 backdrop-blur-md transition-colors group-hover:border-white/40">
+            {/* <Hash className="h-3 w-3 text-white/90" /> */}
+            <span className="font-display text-xs font-bold tracking-wide text-white">
               {group.code}
-            </p>
+            </span>
           </div>
         )}
       </div>
 
-      <div className="absolute bottom-3 left-4 right-4 sm:bottom-4 sm:p-5 p-4 transition-all duration-500 group-hover:-translate-y-2">
-        <div className="flex flex-col gap-2 sm:gap-3 text-left">
-          <h3 className="text-lg sm:text-xl lg:text-2xl font-black text-primary-foreground line-clamp-2">
-            {group.name}
-          </h3>
+      {/* Bottom: glassmorphic detail bar */}
+      <div className="absolute inset-x-0 bottom-0 z-10 p-3">
+        <div className="flex items-center justify-between gap-3 rounded-[1.25rem] border border-white/25 bg-white/15 p-2 shadow-lg ring-1 ring-black/5 backdrop-blur-xl">
+          <div className="flex min-w-0 items-center gap-2 pl-1">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/20 text-xs font-black text-white ring-1 ring-white/40">
+              {firstLetter}
+            </div>
+            <span className="truncate text-[11px] font-semibold uppercase tracking-wider text-white">
+              {group.category}
+            </span>
+          </div>
+
+          <div className="flex shrink-0 items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-slate-900 shadow-sm transition-colors group-hover:bg-white/90">
+            View Group
+            <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 motion-reduce:transform-none" />
+          </div>
         </div>
       </div>
     </button>
