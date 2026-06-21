@@ -17,8 +17,6 @@ import {
   CollegeLeaderboardResponseSchema,
   type StudentLeaderboardEntry,
   StudentLeaderboardResponseSchema,
-  type WadhwaniLeaderboardEntry,
-  WadhwaniLeaderboardResponseSchema,
 } from "@/features/leaderboard";
 
 /**
@@ -51,23 +49,6 @@ export async function fetchCampusLeaderboard(
   const response = await apiClient.get(
     endpoint,
     CollegeLeaderboardResponseSchema,
-  );
-  return response.response;
-}
-
-/**
- * Fetch Wadhwani leaderboard (campus or zonal)
- */
-export async function fetchWadhwaniLeaderboard(
-  campus: boolean = false,
-): Promise<WadhwaniLeaderboardEntry[]> {
-  const endpoint = campus
-    ? endpoints.leaderboard.wadhwaniCollege
-    : endpoints.leaderboard.wadhwaniZonal;
-
-  const response = await apiClient.get(
-    endpoint,
-    WadhwaniLeaderboardResponseSchema,
   );
   return response.response;
 }

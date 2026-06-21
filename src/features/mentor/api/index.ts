@@ -6,5 +6,4 @@ export {
   fetchAvailabilityCalendar,
   getAvailabilitySlots,
   getMentorOverview,
-  getMentorStatus,
 } from "./mentor.api";

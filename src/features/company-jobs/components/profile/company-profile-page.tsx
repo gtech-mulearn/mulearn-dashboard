@@ -8,6 +8,7 @@ import {
   FileText,
   Globe,
   Linkedin,
+  Lock,
   Mail,
   Pencil,
   Users,
@@ -27,8 +28,8 @@ function StatCard({
   icon,
   value,
   label,
-  color = "text-primary",
-  bg = "bg-primary/10",
+  color = "text-brand-blue",
+  bg = "bg-brand-blue/10",
 }: {
   icon: React.ReactNode;
   value: string | number;
@@ -73,29 +74,47 @@ function CompanyProfileSidebar({
             className="flex w-full items-center justify-between rounded-xl p-3 text-left transition-colors hover:bg-muted"
           >
             <div className="flex items-center gap-3">
-              <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10">
-                <Pencil className="size-4 text-primary" />
+              <div className="flex size-9 items-center justify-center rounded-lg bg-brand-blue/10">
+                <Pencil className="size-4 text-brand-blue" />
               </div>
               <span className="text-sm font-medium text-foreground">
-                Edit Profile
+                {profile.status === "pending" || profile.status === "rejected"
+                  ? "Update Registration"
+                  : "Edit Profile"}
               </span>
             </div>
             <ChevronRight className="size-4 text-muted-foreground" />
           </Link>
-          <Link
-            href="/dashboard/company/jobs/create"
-            className="flex w-full items-center justify-between rounded-xl p-3 text-left transition-colors hover:bg-muted"
-          >
-            <div className="flex items-center gap-3">
-              <div className="flex size-9 items-center justify-center rounded-lg bg-success/10">
-                <FileText className="size-4 text-success" />
+          {profile.status === "verified" ? (
+            <Link
+              href="/dashboard/company/jobs/create"
+              className="flex w-full items-center justify-between rounded-xl p-3 text-left transition-colors hover:bg-muted"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex size-9 items-center justify-center rounded-lg bg-success/10">
+                  <FileText className="size-4 text-success" />
+                </div>
+                <span className="text-sm font-medium text-foreground">
+                  Post a Job
+                </span>
               </div>
-              <span className="text-sm font-medium text-foreground">
-                Post a Job
-              </span>
+              <ChevronRight className="size-4 text-muted-foreground" />
+            </Link>
+          ) : (
+            <div
+              className="flex w-full items-center justify-between rounded-xl p-3 text-left opacity-60 cursor-not-allowed"
+              title="Available after company verification"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex size-9 items-center justify-center rounded-lg bg-muted">
+                  <Lock className="size-4 text-muted-foreground" />
+                </div>
+                <span className="text-sm font-medium text-muted-foreground">
+                  Post a Job
+                </span>
+              </div>
             </div>
-            <ChevronRight className="size-4 text-muted-foreground" />
-          </Link>
+          )}
         </div>
       </div>
 
@@ -287,7 +306,11 @@ export function CompanyProfilePage() {
 
       {/* Full-width sections below the two-column layout */}
       {/* Jobs */}
-      <CompanyJobsSection isOwnProfile ownJobs={isLoadingJobs ? [] : allJobs} />
+      <CompanyJobsSection
+        isOwnProfile
+        ownJobs={isLoadingJobs ? [] : allJobs}
+        isVerified={profile.status === "verified"}
+      />
 
       {/* Testimonials */}
       <CompanyTestimonialsSection testimonials={profile.testimonials ?? []} />

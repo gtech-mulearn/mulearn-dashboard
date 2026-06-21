@@ -1,17 +1,9 @@
 "use client";
 
-import {
-  Building2,
-  CalendarDays,
-  Clock,
-  GraduationCap,
-  MapPin,
-  Shield,
-  Star,
-} from "lucide-react";
+import { Building2, CalendarDays, Clock, Shield } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { chipColor } from "@/lib/chip-colors";
 import {

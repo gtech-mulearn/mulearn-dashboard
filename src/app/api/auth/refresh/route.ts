@@ -54,7 +54,17 @@ export async function GET(request: NextRequest) {
   const cookieStore = await cookies();
   const refreshToken = cookieStore.get("refreshToken")?.value;
 
+  // Clear every auth cookie before redirecting to /login. The proxy treats a
+  // lingering (even expired) accessToken as "logged in" and bounces /login back
+  // to /dashboard, so leaving it behind would create a redirect loop.
+  const clearAuthCookies = () => {
+    cookieStore.delete("accessToken");
+    cookieStore.delete("refreshToken");
+    cookieStore.delete("isAuthenticated");
+  };
+
   if (!refreshToken) {
+    clearAuthCookies();
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("ruri", returnPath);
     return NextResponse.redirect(loginUrl);
@@ -86,7 +96,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.redirect(new URL(`/${returnPath}`, request.url));
   } catch {
-    cookieStore.delete("refreshToken");
+    clearAuthCookies();
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("ruri", returnPath);
     return NextResponse.redirect(loginUrl);

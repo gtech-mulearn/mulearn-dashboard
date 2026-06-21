@@ -52,8 +52,3 @@ export type MentorScope = {
 export type MentorOverview = {
   scopes: MentorScope[];
 };
-
-export type MentorStatus = {
-  status: "APPROVED" | "PENDING" | "REJECTED" | string;
-  organization?: string | null;
-};

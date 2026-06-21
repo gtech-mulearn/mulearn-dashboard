@@ -55,11 +55,18 @@ function normaliseMentorStatus(raw: unknown): MentorStatusData {
           ? obj.verification_note
           : null,
       mentor_id: typeof obj.mentor_id === "string" ? obj.mentor_id : null,
+      organization:
+        typeof obj.organization === "string" ? obj.organization : null,
     };
   }
 
   // Fallback: no application / unexpected shape
-  return { status: "PENDING", verification_note: null, mentor_id: null };
+  return {
+    status: "PENDING",
+    verification_note: null,
+    mentor_id: null,
+    organization: null,
+  };
 }
 
 export const MentorStatusResponseSchema = ApiResponseSchema(
@@ -69,6 +76,10 @@ export type MentorStatusData = {
   status: "PENDING" | "APPROVED" | "REJECTED";
   verification_note?: string | null;
   mentor_id?: string | null;
+  // Mentor's affiliated organization, shown in the mentor profile sidebar. Same
+  // `GET /mentor/status/` response previously read via a separate `useMentorStatus`
+  // hook; consolidated onto this canonical hook/key.
+  organization?: string | null;
 };
 
 // ─── GET/PATCH /profile/ and POST/PATCH /register/ response wrapper ───────────

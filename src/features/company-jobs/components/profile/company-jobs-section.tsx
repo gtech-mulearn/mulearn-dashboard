@@ -10,7 +10,7 @@
  * - Public view: accepts pre-fetched jobs or MOCK_PUBLIC_JOBS, Apply CTA
  */
 
-import { BriefcaseBusiness, MapPin, Plus, Wallet } from "lucide-react";
+import { BriefcaseBusiness, Lock, MapPin, Plus, Wallet } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -157,12 +157,15 @@ interface CompanyJobsSectionProps {
   ownJobs?: Job[];
   /** Public view: pass mock/public jobs and isOwnProfile=false */
   publicJobs?: PublicJobBySlug[];
+  /** Whether the company is verified and allowed to post jobs */
+  isVerified?: boolean;
 }
 
 export function CompanyJobsSection({
   isOwnProfile,
   ownJobs = [],
   publicJobs = [],
+  isVerified = false,
 }: CompanyJobsSectionProps) {
   const activeOwnJobs = ownJobs.filter((j) => j.status === "Active");
   const hasJobs = isOwnProfile
@@ -181,7 +184,7 @@ export function CompanyJobsSection({
               Open Roles
             </CardTitle>
           </div>
-          {isOwnProfile && (
+          {isOwnProfile && isVerified && (
             <Link
               href="/dashboard/company/jobs/create"
               aria-label="Post new job"
@@ -190,6 +193,18 @@ export function CompanyJobsSection({
               <Plus className="size-3.5" />
               Post New
             </Link>
+          )}
+          {isOwnProfile && !isVerified && (
+            <button
+              type="button"
+              disabled
+              aria-label="Post new job (Locked)"
+              title="Available after company verification"
+              className="inline-flex items-center gap-1.5 rounded-full bg-primary/50 px-4 py-1.5 text-xs font-semibold text-primary-foreground cursor-not-allowed"
+            >
+              <Lock className="size-3.5" />
+              Post New
+            </button>
           )}
         </CardHeader>
 
@@ -202,7 +217,7 @@ export function CompanyJobsSection({
                   ? "No active listings. Post your first job!"
                   : "No open roles right now. Check back soon."}
               </p>
-              {isOwnProfile && (
+              {isOwnProfile && isVerified && (
                 <Button
                   asChild
                   aria-label="Post a Job"
@@ -211,6 +226,19 @@ export function CompanyJobsSection({
                   className="mt-4 rounded-full"
                 >
                   <Link href="/dashboard/company/jobs/create">Post a Job</Link>
+                </Button>
+              )}
+              {isOwnProfile && !isVerified && (
+                <Button
+                  disabled
+                  aria-label="Post a Job (Locked)"
+                  title="Available after company verification"
+                  size="sm"
+                  variant="default"
+                  className="mt-4 rounded-full cursor-not-allowed"
+                >
+                  <Lock className="size-3.5 mr-1.5" />
+                  Post a Job
                 </Button>
               )}
             </div>

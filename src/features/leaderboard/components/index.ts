@@ -4,4 +4,3 @@ export { LeaderboardControls } from "./leaderboard-controls";
 export { LeaderboardView } from "./leaderboard-view";
 export { Podium } from "./podium";
 export { TimeFrameToggle } from "./timeframe-toggle";
-export { WadhwaniTimeFrameToggle } from "./wadhwaniframe-toggle";

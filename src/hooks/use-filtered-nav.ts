@@ -15,8 +15,14 @@
 "use client";
 
 import { useMemo } from "react";
+import { useMentorApplicationStatus } from "@/features/mentor/onboarding/hooks/use-onboarding";
 import { usePermissions } from "@/hooks/use-permissions";
-import { NAV_ITEMS, type NavItem } from "@/lib/nav-config";
+import { ROLES } from "@/lib/auth/roles";
+import {
+  type DynamicNavContext,
+  NAV_ITEMS,
+  type NavItem,
+} from "@/lib/nav-config";
 
 interface UseFilteredNavReturn {
   /** Main navigation items visible to the current user */
@@ -30,7 +36,25 @@ interface UseFilteredNavReturn {
 }
 
 export function useFilteredNav(): UseFilteredNavReturn {
-  const { can, hasRole, roles, isLoading } = usePermissions();
+  const {
+    can,
+    hasRole,
+    roles,
+    isLoading: permissionsLoading,
+  } = usePermissions();
+
+  const isMentor = hasRole([ROLES.MENTOR]);
+  const { data: mentorStatus, isLoading: mentorStatusLoading } =
+    useMentorApplicationStatus(isMentor);
+
+  const isMentorVerified = isMentor
+    ? mentorStatus?.status === "APPROVED"
+    : false;
+
+  const dynamicContext: DynamicNavContext = useMemo(
+    () => ({ isMentorVerified }),
+    [isMentorVerified],
+  );
 
   const filtered = useMemo(() => {
     const visible = NAV_ITEMS.filter((item) => {
@@ -50,13 +74,17 @@ export function useFilteredNav(): UseFilteredNavReturn {
 
       // Role-based check (static + dynamic)
       if (item.roles && item.roles.length > 0) {
-        if (hasRole(item.roles)) return true;
-        if (item.dynamicCheck) return item.dynamicCheck(roles);
+        if (hasRole(item.roles)) {
+          if (item.dynamicCheck)
+            return item.dynamicCheck(roles, dynamicContext);
+          return true;
+        }
+        if (item.dynamicCheck) return item.dynamicCheck(roles, dynamicContext);
         return false;
       }
 
       // Dynamic-only check (no static roles)
-      if (item.dynamicCheck) return item.dynamicCheck(roles);
+      if (item.dynamicCheck) return item.dynamicCheck(roles, dynamicContext);
 
       return false;
     });
@@ -66,7 +94,9 @@ export function useFilteredNav(): UseFilteredNavReturn {
       managementItems: visible.filter((item) => item.section === "management"),
       bottomItems: visible.filter((item) => item.section === "bottom"),
     };
-  }, [can, hasRole, roles]);
+  }, [can, hasRole, roles, dynamicContext]);
+
+  const isLoading = permissionsLoading || (isMentor && mentorStatusLoading);
 
   return {
     ...filtered,

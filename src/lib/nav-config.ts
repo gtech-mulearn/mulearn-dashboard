@@ -51,6 +51,10 @@ import {
 
 export type NavSection = "main" | "management" | "bottom";
 
+export interface DynamicNavContext {
+  isMentorVerified?: boolean;
+}
+
 export interface NavItem {
   /** Unique identifier for the item */
   id: string;
@@ -74,9 +78,13 @@ export interface NavItem {
   roles?: readonly string[];
   /**
    * Dynamic check for roles that can't be expressed as static strings
-   * (e.g. "{igCode} IGLead"). Evaluated after `roles` check fails.
+   * (e.g. "{igCode} IGLead"), or for checking additional state.
+   * Evaluated after or alongside `roles` check.
    */
-  dynamicCheck?: (userRoles: readonly string[]) => boolean;
+  dynamicCheck?: (
+    userRoles: readonly string[],
+    context: DynamicNavContext,
+  ) => boolean;
   /**
    * Optional override for the actual link destination.
    * Use when the link needs query params but active-state matching
@@ -140,6 +148,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: Folder,
     section: "main",
   },
+
   {
     id: "learner-sessions",
     title: "Session",
@@ -208,6 +217,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: CalendarDays,
     section: "management",
     roles: [ROLES.MENTOR],
+    dynamicCheck: (_, context) => !!context.isMentorVerified,
   },
 
   {
@@ -217,6 +227,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: FileText,
     section: "management",
     roles: [ROLES.MENTOR],
+    dynamicCheck: (_, context) => !!context.isMentorVerified,
   },
   {
     id: "mentor-mentees",

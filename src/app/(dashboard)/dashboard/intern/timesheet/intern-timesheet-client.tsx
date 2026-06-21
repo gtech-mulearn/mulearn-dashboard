@@ -55,7 +55,7 @@ export function TimesheetPageClient() {
     useTimesheetToday();
   const { data: timesheetHistory, isLoading: isHistoryLoading } =
     useTimesheetHistory({ page: 1, perPage: 50 });
-  const { data: timesheetsData, isLoading: isTimesheetsLoading } =
+  const { data: _timesheetsData, isLoading: isTimesheetsLoading } =
     useTimesheets({ page: 1, perPage: 100 });
   const { data: overview } = useInternOverview();
   const { data: tasksData } = useInternTasks({ page: 1, perPage: 100 });

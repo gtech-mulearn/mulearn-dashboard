@@ -1,6 +1,5 @@
 export type TimeFrame = "monthly" | "overall";
-export type WadhwaniTimeFrame = "campus" | "zonal";
-export type Category = "students" | "campus" | "wadhwani";
+export type Category = "students" | "campus";
 
 export interface LeaderboardEntry {
   id: string;
@@ -31,6 +30,3 @@ export interface GeneralToggleProps<TimeFrame> {
   selected: TimeFrame;
   onChange: (timeframe: TimeFrame) => void;
 }
-
-export interface WadhwaniToggleProps
-  extends GeneralToggleProps<WadhwaniTimeFrame> {}

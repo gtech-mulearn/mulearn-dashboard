@@ -17,7 +17,7 @@ export function UserSearchCard({ user }: UserSearchCardProps) {
 
   return (
     <Link
-      href={`/dashboard/profile/${user.muid}`}
+      href={`/profile/${user.muid}`}
       className="group relative flex h-full flex-col overflow-hidden rounded-[2rem] border border-border/50 bg-card shadow-sm transition-all duration-500 hover:-translate-y-2 hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/20 focus:outline-none focus:ring-2 focus:ring-primary"
     >
       {/* Soft gradient splash top right for depth */}

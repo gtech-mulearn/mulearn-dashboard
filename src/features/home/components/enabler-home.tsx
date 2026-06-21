@@ -5,7 +5,11 @@ import {
   useCampusLeaderboard,
   useCampusOverview,
 } from "@/features/campus-manage/hooks";
-import { useCalendarEvents, useCampusHomeSummary } from "../hooks";
+import {
+  useCampusCalendarEvents,
+  useCampusHomeSummary,
+  useCampusMentorSessionCalendar,
+} from "../hooks";
 import { CampusStatCards } from "./campus/campus-stat-cards";
 import { CircleHealthCard } from "./campus/circle-health-card";
 import { MemberFunnelCard } from "./campus/member-funnel-card";
@@ -25,8 +29,15 @@ export function EnablerHome() {
       cluster: "",
       alumni: "all",
     });
+  const campusId = summary?.campus?.org_id;
   const { data: calendarEvents, isLoading: loadingCalendar } =
-    useCalendarEvents();
+    useCampusCalendarEvents(campusId);
+  const { data: sessionEvents, isLoading: loadingSessionCal } =
+    useCampusMentorSessionCalendar(campusId);
+  const mergedCalendarEvents = [
+    ...(calendarEvents ?? []),
+    ...(sessionEvents ?? []),
+  ];
 
   const campusLabel = summary?.campus
     ? `${summary.campus.college_name} · ${new Date().toLocaleString("default", { month: "long", year: "numeric" })}`
@@ -51,8 +62,8 @@ export function EnablerHome() {
           isLoading={summaryLoading}
         />
         <EventCalendarCard
-          events={calendarEvents}
-          isLoading={loadingCalendar}
+          events={mergedCalendarEvents}
+          isLoading={loadingCalendar || loadingSessionCal}
         />
         <CircleHealthCard
           items={summary?.circle_health}

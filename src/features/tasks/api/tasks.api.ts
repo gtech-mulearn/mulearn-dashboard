@@ -65,6 +65,18 @@ export async function fetchPublicTasks(
   if (params.ig_id?.trim()) {
     query.set("ig_id", params.ig_id.trim());
   }
+  if (params.event_id?.trim()) {
+    query.set("event_id", params.event_id.trim());
+  }
+  if (params.is_event_task) {
+    query.set("is_event_task", "true");
+  }
+  if (params.event_tasks_only) {
+    query.set("event_tasks_only", "true");
+  }
+  if (params.task_source) {
+    query.set("task_source", params.task_source);
+  }
 
   const response = await apiClient.get(
     `${endpoints.admin.tasks.publicList}?${query.toString()}`,

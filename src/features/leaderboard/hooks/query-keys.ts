@@ -10,6 +10,4 @@ export const leaderboardKeys = {
     [...leaderboardKeys.all, "students", { monthly }] as const,
   college: (monthly: boolean) =>
     [...leaderboardKeys.all, "college", { monthly }] as const,
-  wadhwani: (campus: boolean) =>
-    [...leaderboardKeys.all, "wadhwani", { campus }] as const,
 };

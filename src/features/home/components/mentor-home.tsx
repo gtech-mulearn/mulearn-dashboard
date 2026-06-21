@@ -21,7 +21,13 @@ import {
 import { useTaskIgDropdown } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
 import type { WeeklySchedule } from "@/features/mentor/types";
 import { getApiResponseError } from "@/hooks/use-get-error";
-import { useMentorOverview, useMentorSessions } from "../hooks";
+import {
+  useIgCalendarEvents,
+  useIgMentorSessionCalendar,
+  useMentorOverview,
+  useMentorSessions,
+} from "../hooks";
+import { EventCalendarCard } from "./event-calendar-card";
 import { MentorHeroCard } from "./mentor/mentor-hero-card";
 import { MentorSetupPrompt } from "./mentor/mentor-setup-prompt";
 import { MentorStatCards } from "./mentor/mentor-stat-cards";
@@ -67,6 +73,18 @@ export function MentorHome() {
   const { mutate: saveSchedule, isPending: isSaving } =
     useCreateAvailabilitySlots();
   const { data: igRoles } = useTaskIgDropdown();
+  const primaryIgId =
+    overview?.scopes?.[0]?.scope_type === "ig"
+      ? overview.scopes[0].scope_id
+      : undefined;
+  const { data: calendarEvents, isLoading: loadingCalendar } =
+    useIgCalendarEvents(primaryIgId);
+  const { data: sessionEvents, isLoading: loadingSessionCal } =
+    useIgMentorSessionCalendar(primaryIgId);
+  const mergedCalendarEvents = [
+    ...(calendarEvents ?? []),
+    ...(sessionEvents ?? []),
+  ];
 
   const [localSchedule, setLocalSchedule] = useState<WeeklySchedule>([]);
   const [savedSchedule, setSavedSchedule] = useState<WeeklySchedule>([]);
@@ -253,31 +271,37 @@ export function MentorHome() {
         />
       </div>
 
-      {/* Task Requests */}
-      <Card className="rounded-2xl border bg-card shadow-sm">
-        <CardHeader className="flex-row items-center gap-2.5 px-5 py-4">
-          <div className="flex size-9 items-center justify-center rounded-xl bg-warning/10">
-            <BookOpen className="size-4 text-warning" />
-          </div>
-          <CardTitle className="text-base font-bold text-foreground">
-            Task Requests
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="px-5 pb-5 pt-0">
-          {overviewLoading ? (
-            <Skeleton className="h-12 w-full rounded-lg" />
-          ) : (
-            <div className="flex gap-4 text-sm">
-              <div className="text-center">
-                <p className="text-2xl font-bold text-warning">—</p>
-                <p className="text-[11px] text-muted-foreground uppercase tracking-wide">
-                  Pending
-                </p>
-              </div>
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+        {/* Task Requests */}
+        <Card className="rounded-2xl border bg-card shadow-sm">
+          <CardHeader className="flex-row items-center gap-2.5 px-5 py-4">
+            <div className="flex size-9 items-center justify-center rounded-xl bg-warning/10">
+              <BookOpen className="size-4 text-warning" />
             </div>
-          )}
-        </CardContent>
-      </Card>
+            <CardTitle className="text-base font-bold text-foreground">
+              Task Requests
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-5 pb-5 pt-0">
+            {overviewLoading ? (
+              <Skeleton className="h-12 w-full rounded-lg" />
+            ) : (
+              <div className="flex gap-4 text-sm">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-warning">—</p>
+                  <p className="text-[11px] text-muted-foreground uppercase tracking-wide">
+                    Pending
+                  </p>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+        <EventCalendarCard
+          events={mergedCalendarEvents}
+          isLoading={loadingCalendar || loadingSessionCal}
+        />
+      </div>
 
       {/* Weekly Availability */}
       <Card

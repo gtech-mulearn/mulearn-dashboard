@@ -18,8 +18,11 @@
 import { useState } from "react";
 import Loader from "@/app/loading";
 import { useMentorSessions } from "@/features/home/hooks";
-import { useMentorOverview, useMentorStatus } from "@/features/mentor/hooks";
-import { useMentorProfile } from "@/features/mentor/onboarding/hooks/use-onboarding";
+import { useMentorOverview } from "@/features/mentor/hooks";
+import {
+  useMentorApplicationStatus,
+  useMentorProfile,
+} from "@/features/mentor/onboarding/hooks/use-onboarding";
 import { useUserProfile } from "@/features/profile";
 import { ShareProfileModal } from "@/features/profile/components/share-profile-modal";
 import { MentorEditProfileModal } from "./mentor-edit-profile-modal";
@@ -67,7 +70,8 @@ export function MentorProfilePage({
 
   const { data: overviewData, isLoading: loadingOverview } =
     useMentorOverview();
-  const { data: statusData, isLoading: loadingStatus } = useMentorStatus();
+  const { data: statusData, isLoading: loadingStatus } =
+    useMentorApplicationStatus();
 
   const isLoading =
     loadingUser || loadingMentor || loadingOverview || loadingStatus;

@@ -14,9 +14,17 @@ import {
   fetchCompanyOnboardingStatus,
   fetchPublicUserProfile,
   fetchUserInfo,
-  fetchUserProfile,
 } from "../api";
 import { authKeys } from "./query-keys";
+
+/**
+ * Re-exported from the profile feature so the current user's profile is fetched
+ * under a single canonical query key (`profileKeys.profile()`). Previously this
+ * feature defined its own `useUserProfile` with a separate query key, which
+ * caused a duplicate `user-profile` network request and meant profile mutations
+ * never invalidated this copy. See `@/features/profile/hooks/use-profile`.
+ */
+export { useUserProfile } from "@/features/profile/hooks/use-profile";
 
 /**
  * Hook for fetching current user info (lightweight)
@@ -36,23 +44,6 @@ export function useUserInfo() {
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 1,
     enabled: hasToken,
-  });
-}
-
-/**
- * Hook for fetching full user profile
- * Use this when you need detailed profile data
- *
- * @param options.enabled - When false, the query is skipped entirely (no network request).
- *   Defaults to true. Pass `{ enabled: false }` to conditionally disable for users
- *   where profile data is not needed (e.g. non-Enabler users on the home dashboard).
- */
-export function useUserProfile(options?: { enabled?: boolean }) {
-  return useQuery({
-    queryKey: authKeys.userProfile(),
-    queryFn: fetchUserProfile,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    enabled: options?.enabled ?? true,
   });
 }
 

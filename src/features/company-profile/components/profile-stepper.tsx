@@ -160,7 +160,9 @@ export function ProfileStepper({ profile }: ProfileStepperProps) {
                 {isPending ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : null}
-                Save Profile
+                {profile.status === "rejected"
+                  ? "Resubmit Company Registration"
+                  : "Save Profile"}
               </Button>
             )}
           </div>

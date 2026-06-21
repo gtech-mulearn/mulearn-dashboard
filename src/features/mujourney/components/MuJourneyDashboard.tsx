@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
+import { LearnerTasksPage } from "@/features/home/components/learner-tasks-page";
 import {
   BecomeExpertTab,
   EventsTab,
@@ -41,6 +42,7 @@ export function MuJourneyDashboard({
     { id: "start-learning", label: "Start Journey" },
     { id: "become-expert", label: "Become Expert" },
     { id: "events", label: "Events" },
+    { id: "tasks", label: "Tasks" },
   ];
 
   return (
@@ -65,26 +67,28 @@ export function MuJourneyDashboard({
           onTabChange={setActiveTab}
         />
 
-        <div className="flex items-center gap-3">
-          <span className="text-base font-medium text-foreground">
-            Filter by:
-          </span>
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="px-5 py-2.5 border border-border rounded-lg bg-card text-base font-medium text-card-foreground cursor-pointer hover:border-ring transition-colors [&>option]:cursor-pointer outline-none focus:ring-2 focus:ring-ring"
-          >
-            <option value="all" className="cursor-pointer">
-              All
-            </option>
-            <option value="completed" className="cursor-pointer">
-              Completed
-            </option>
-            <option value="incomplete" className="cursor-pointer">
-              Incomplete
-            </option>
-          </select>
-        </div>
+        {(activeTab === "start-learning" || activeTab === "become-expert") && (
+          <div className="flex items-center gap-3">
+            <span className="text-base font-medium text-foreground">
+              Filter by:
+            </span>
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="px-5 py-2.5 border border-border rounded-lg bg-card text-base font-medium text-card-foreground cursor-pointer hover:border-ring transition-colors [&>option]:cursor-pointer outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="all" className="cursor-pointer">
+                All
+              </option>
+              <option value="completed" className="cursor-pointer">
+                Completed
+              </option>
+              <option value="incomplete" className="cursor-pointer">
+                Incomplete
+              </option>
+            </select>
+          </div>
+        )}
       </div>
 
       {/* Tab Content with Animations */}
@@ -135,6 +139,18 @@ export function MuJourneyDashboard({
               transition={{ duration: 0.3 }}
             >
               <EventsTab />
+            </motion.div>
+          )}
+
+          {activeTab === "tasks" && (
+            <motion.div
+              key="tasks"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <LearnerTasksPage />
             </motion.div>
           )}
         </AnimatePresence>

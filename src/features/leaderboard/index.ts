@@ -11,7 +11,6 @@
 export {
   fetchCampusLeaderboard,
   fetchStudentLeaderboard,
-  fetchWadhwaniLeaderboard,
 } from "./api";
 
 // Components
@@ -22,7 +21,6 @@ export {
   LeaderboardView,
   Podium,
   TimeFrameToggle,
-  WadhwaniTimeFrameToggle,
 } from "./components";
 
 // Hooks (primary way to use the feature)
@@ -32,8 +30,6 @@ export type {
   CollegeLeaderboardResponse,
   StudentLeaderboardEntry,
   StudentLeaderboardResponse,
-  WadhwaniLeaderboardEntry,
-  WadhwaniLeaderboardResponse,
 } from "./schemas";
 // Schemas
 export {
@@ -42,8 +38,6 @@ export {
   CollegeLeaderboardResponseSchema,
   StudentLeaderboardEntrySchema,
   StudentLeaderboardResponseSchema,
-  WadhwaniLeaderboardEntrySchema,
-  WadhwaniLeaderboardResponseSchema,
 } from "./schemas";
 
 // Types
@@ -56,6 +50,4 @@ export type {
   LeaderboardEntry,
   PodiumProps,
   TimeFrame,
-  WadhwaniTimeFrame,
-  WadhwaniToggleProps,
 } from "./types";

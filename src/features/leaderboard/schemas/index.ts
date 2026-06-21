@@ -3,8 +3,6 @@ export type {
   CollegeLeaderboardResponse,
   StudentLeaderboardEntry,
   StudentLeaderboardResponse,
-  WadhwaniLeaderboardEntry,
-  WadhwaniLeaderboardResponse,
 } from "./leaderboard.schema";
 export {
   ApiResponseSchema,
@@ -12,6 +10,4 @@ export {
   CollegeLeaderboardResponseSchema,
   StudentLeaderboardEntrySchema,
   StudentLeaderboardResponseSchema,
-  WadhwaniLeaderboardEntrySchema,
-  WadhwaniLeaderboardResponseSchema,
 } from "./leaderboard.schema";

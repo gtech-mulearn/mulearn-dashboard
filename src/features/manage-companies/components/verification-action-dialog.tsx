@@ -71,7 +71,7 @@ export function VerificationActionDialog({
       payload: {
         status: values.action === "approve" ? "verified" : "rejected",
         rejection_reason: values.reason || undefined,
-      } as any,
+      },
     });
     onOpenChange(false);
   };
