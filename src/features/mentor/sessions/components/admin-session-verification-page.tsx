@@ -9,18 +9,19 @@ import {
   XCircle,
 } from "lucide-react";
 import { useState } from "react";
+import ReusableTable from "@/components/dashboard/table/Table";
+import THead from "@/components/dashboard/table/Thead";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Tooltip,
@@ -93,8 +94,17 @@ function StatCard({
 
 // ─── Session table ─────────────────────────────────────────────────────────────
 
+const COLUMN_ORDER = [
+  { column: "title", Label: "Title", isSortable: false },
+  { column: "created_by_name", Label: "Mentor", isSortable: false },
+  { column: "ig_name", Label: "Interest Group", isSortable: false },
+  { column: "mode", Label: "Mode", isSortable: false },
+  { column: "starts_at", Label: "Starts At", isSortable: false },
+  { column: "status", Label: "Status", isSortable: false },
+];
+
 function SessionVerificationTable({
-  sessions,
+  sessions = [],
   isLoading,
   onApprove,
 }: {
@@ -102,6 +112,108 @@ function SessionVerificationTable({
   isLoading: boolean;
   onApprove: (s: Session, action: "approve" | "reject") => void;
 }) {
+  const customCellRender = (column: string, row: any) => {
+    if (column === "title") {
+      return (
+        <div className="flex flex-col gap-1">
+          <span className="truncate font-medium">{row.title}</span>
+          {row.is_recurring && (
+            <Badge
+              variant="outline"
+              className="w-fit text-[10px] h-4 px-1 py-0 bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400"
+            >
+              🔄 Recurring
+            </Badge>
+          )}
+        </div>
+      );
+    }
+    if (column === "created_by_name") {
+      return (
+        <span className="text-foreground font-medium">
+          {row.created_by_name ?? row.created_by ?? "—"}
+        </span>
+      );
+    }
+    if (column === "ig_name") {
+      return (
+        <Badge variant="outline">
+          {row.ig_name ?? row.entity_name ?? "Global"}
+        </Badge>
+      );
+    }
+    if (column === "mode") {
+      return row.mode ? (
+        <span className="text-sm capitalize">{row.mode.toLowerCase()}</span>
+      ) : (
+        <span className="text-muted-foreground text-sm">—</span>
+      );
+    }
+    if (column === "starts_at") {
+      return (
+        <span className="text-sm text-muted-foreground whitespace-nowrap">
+          {row.starts_at
+            ? new Date(row.starts_at).toLocaleString(undefined, {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : "Not scheduled"}
+        </span>
+      );
+    }
+    if (column === "status") {
+      return <StatusBadge status={row.status ?? "PENDING_APPROVAL"} />;
+    }
+    return null;
+  };
+
+  const customActionRender = (row: any) => {
+    const status = row.status ?? "PENDING_APPROVAL";
+    const isPending = status === "PENDING_APPROVAL";
+    const isTerminal = ["COMPLETED", "CANCELLED", "REJECTED"].includes(status);
+
+    return (
+      <div className="flex items-center justify-end gap-1">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950/40 disabled:opacity-40"
+              onClick={() => onApprove(row as Session, "approve")}
+              disabled={!isPending || isTerminal}
+            >
+              <CheckCircle className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {isPending ? "Approve Session" : "Already processed"}
+          </TooltipContent>
+        </Tooltip>
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-destructive hover:bg-destructive/10 disabled:opacity-40"
+              onClick={() => onApprove(row as Session, "reject")}
+              disabled={!isPending || isTerminal}
+            >
+              <XCircle className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {isPending ? "Reject Session" : "Already processed"}
+          </TooltipContent>
+        </Tooltip>
+      </div>
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-2">
@@ -122,137 +234,23 @@ function SessionVerificationTable({
   }
 
   return (
-    <div className="rounded-xl border overflow-hidden">
-      <Table>
-        <TableHeader>
-          <TableRow className="bg-muted/40 hover:bg-muted/40">
-            <TableHead className="font-semibold">Title</TableHead>
-            <TableHead className="font-semibold">Mentor</TableHead>
-            <TableHead className="font-semibold">Interest Group</TableHead>
-            <TableHead className="font-semibold">Mode</TableHead>
-            <TableHead className="font-semibold">Starts At</TableHead>
-            <TableHead className="font-semibold">Status</TableHead>
-            <TableHead className="text-right font-semibold">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {sessions.map((session) => {
-            const status = session.status ?? "PENDING_APPROVAL";
-            const isPending = status === "PENDING_APPROVAL";
-            const isTerminal = ["COMPLETED", "CANCELLED", "REJECTED"].includes(
-              status,
-            );
-
-            return (
-              <TableRow
-                key={session.id}
-                className="hover:bg-muted/30 transition-colors"
-              >
-                {/* Title */}
-                <TableCell className="font-medium max-w-[200px]">
-                  <div className="flex flex-col gap-1">
-                    <span className="truncate">{session.title}</span>
-                    {session.is_recurring && (
-                      <Badge
-                        variant="outline"
-                        className="w-fit text-[10px] h-4 px-1 py-0 bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400"
-                      >
-                        🔄 Recurring
-                      </Badge>
-                    )}
-                  </div>
-                </TableCell>
-
-                {/* Mentor */}
-                <TableCell className="text-sm">
-                  <span className="text-foreground font-medium">
-                    {session.created_by_name ?? session.created_by ?? "—"}
-                  </span>
-                </TableCell>
-
-                {/* Interest Group */}
-                <TableCell>
-                  {(session.ig_name ?? session.entity_name) ? (
-                    <Badge variant="outline">
-                      {session.ig_name ?? session.entity_name}
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline">Global</Badge>
-                  )}
-                </TableCell>
-
-                {/* Mode */}
-                <TableCell>
-                  {session.mode ? (
-                    <span className="text-sm capitalize">
-                      {session.mode.toLowerCase()}
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground text-sm">—</span>
-                  )}
-                </TableCell>
-
-                {/* Starts At */}
-                <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
-                  {session.starts_at
-                    ? new Date(session.starts_at).toLocaleString(undefined, {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
-                    : "Not scheduled"}
-                </TableCell>
-
-                {/* Status */}
-                <TableCell>
-                  <StatusBadge status={status} />
-                </TableCell>
-
-                {/* Actions */}
-                <TableCell className="text-right">
-                  <div className="flex items-center justify-end gap-1">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950/40 disabled:opacity-40"
-                          onClick={() => onApprove(session, "approve")}
-                          disabled={!isPending || isTerminal}
-                        >
-                          <CheckCircle className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        {isPending ? "Approve Session" : "Already processed"}
-                      </TooltipContent>
-                    </Tooltip>
-
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive hover:bg-destructive/10 disabled:opacity-40"
-                          onClick={() => onApprove(session, "reject")}
-                          disabled={!isPending || isTerminal}
-                        >
-                          <XCircle className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        {isPending ? "Reject Session" : "Already processed"}
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
+    <div className="w-full md:overflow-x-auto md:rounded-xl md:border md:border-border md:bg-card md:shadow-sm">
+      <div className="w-full md:min-w-[800px]">
+        <ReusableTable
+          rows={sessions as any}
+          isLoading={isLoading}
+          page={1}
+          perPage={1000}
+          columnOrder={COLUMN_ORDER}
+          id={["id"]}
+          customCellRender={customCellRender}
+          customActionRender={customActionRender}
+        >
+          <THead columnOrder={COLUMN_ORDER} onIconClick={() => {}} action />
+          <div />
+          <div />
+        </ReusableTable>
+      </div>
     </div>
   );
 }
@@ -261,6 +259,7 @@ function SessionVerificationTable({
 
 export function AdminSessionVerificationPage() {
   const [search, setSearch] = useState("");
+  const [activeTab, setActiveTab] = useState("pending");
   const [approveState, setApproveState] = useState<{
     session: Session;
     action: "approve" | "reject";
@@ -345,8 +344,28 @@ export function AdminSessionVerificationPage() {
         </div>
 
         {/* ── Tabs ───────────────────────────────────────────────────────── */}
-        <Tabs defaultValue="pending">
-          <div className="flex items-center gap-2">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          {/* Mobile Tab Select Dropdown */}
+          <div className="md:hidden pb-4">
+            <Select value={activeTab} onValueChange={setActiveTab}>
+              <SelectTrigger
+                id="session-verification-tab-select"
+                className="w-full"
+              >
+                <SelectValue placeholder="Select Tab" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pending">
+                  Pending ({pendingSessions.length})
+                </SelectItem>
+                <SelectItem value="scheduled">Scheduled</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
+                <SelectItem value="all">All Sessions</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="hidden md:flex items-center gap-2">
             <Filter className="h-4 w-4 text-muted-foreground" />
             <TabsList>
               <TabsTrigger value="pending" id="tab-pending">

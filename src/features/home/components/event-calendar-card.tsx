@@ -255,39 +255,21 @@ export function EventCalendarCard({
               variant="secondary"
               onClick={() => setSelectedDate(day)}
               className={cn(
-                "group/cell relative mx-auto flex size-9 items-center justify-center rounded-full text-sm transition-all duration-200 bg-transparent",
-                // Default state
-                isCurrentMonth ? "text-foreground" : "text-muted-foreground",
-                // Hover
-                !isSelected && !hasEvents && "hover:bg-muted/60",
-                // Today ring indicator
-                isToday &&
-                  !isSelected &&
-                  !hasEvents &&
-                  "font-bold ring-2 ring-primary/40",
-                // Selected (no event) — primary circle
-                isSelected &&
-                  !hasEvents &&
-                  "bg-primary text-primary-foreground font-semibold shadow-md hover:bg-primary/80",
-                // Has events — colored circle
-                hasEvents &&
-                  !isSelected &&
-                  cn(eventColor, "font-semibold shadow-sm"),
-                // Has events + selected — outlined
-                hasEvents &&
-                  isSelected &&
-                  cn(
-                    eventColor,
-                    "font-semibold shadow-md ring-2 ring-primary ring-offset-2 ring-offset-background",
-                  ),
+                "group/cell relative mx-auto flex size-9 items-center justify-center rounded-full text-sm transition-all duration-200 bg-transparent border-0 shadow-none",
+                // Text colour — outside-month days dimmed
+                isCurrentMonth
+                  ? "text-foreground"
+                  : "text-muted-foreground opacity-40",
+                // Today: solid blue filled circle, no ring
+                isToday && "bg-blue-500 text-white font-bold hover:bg-blue-600",
+                // All other days (selected, has events, plain): transparent + hover only
+                !isToday && "hover:bg-muted/60",
               )}
             >
               {day.getDate()}
-              {/* Multiple event indicator dot */}
-              {hasEvents && dayEvents.length > 1 && (
-                <span className="absolute -right-0.5 -top-0.5 flex size-3.5 items-center justify-center rounded-full bg-destructive text-[8px] font-bold text-destructive-foreground shadow-sm hover:bg-destructive/80">
-                  {dayEvents.length}
-                </span>
+              {/* Event dot indicator for days with events (non-today) */}
+              {hasEvents && !isToday && (
+                <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 size-1 rounded-full bg-primary" />
               )}
             </Button>
           );
@@ -305,7 +287,7 @@ export function EventCalendarCard({
               {selectedDateEvents.map((event) => (
                 <div
                   key={event.id}
-                  className="flex items-center gap-2.5 rounded-xl bg-card p-2.5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+                  className="flex items-center gap-2.5 rounded-xl bg-card p-2.5 transition-all hover:-translate-y-0.5"
                 >
                   <div
                     className={cn(

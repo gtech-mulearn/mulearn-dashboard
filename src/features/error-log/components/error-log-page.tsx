@@ -114,23 +114,26 @@ export function ErrorLogPage() {
         {LOG_TYPES.map(({ type, label }) => (
           <div
             key={type}
-            className="flex items-center gap-2 rounded-lg border border-border/60 bg-muted/30 px-3 py-2"
+            className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border/60 bg-muted/30 px-3 py-2 w-full sm:w-auto"
           >
-            <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
-            <span className="min-w-[52px] text-sm font-semibold text-foreground">
-              {label}
-            </span>
-            <div className="flex gap-1.5">
+            <div className="flex items-center gap-2">
+              <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <span className="min-w-[52px] text-sm font-semibold text-foreground">
+                {label}
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-1.5 w-full xs:w-auto justify-end sm:justify-start">
               {/* Download button */}
               <Button
                 id={`error-log-download-${type}`}
                 variant="default"
                 size="sm"
+                className="flex-1 xs:flex-none"
                 disabled={isDownloading}
                 onClick={() => downloadLog(type)}
                 aria-label={`Download ${label} log`}
               >
-                <Download />
+                <Download className="h-3.5 w-3.5 mr-1" />
                 Download
               </Button>
               {/* Clear button */}
@@ -138,12 +141,13 @@ export function ErrorLogPage() {
                 id={`error-log-clear-${type}`}
                 variant="destructive"
                 size="sm"
+                className="flex-1 xs:flex-none"
                 disabled={isClearing}
                 onClick={() => clearLog(type)}
                 aria-label={`Clear ${label} log`}
               >
-                <Trash2 />
-                Clear {label}
+                <Trash2 className="h-3.5 w-3.5 mr-1" />
+                Clear
               </Button>
             </div>
           </div>
