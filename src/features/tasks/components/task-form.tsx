@@ -457,18 +457,19 @@ export default function TaskForm({
       </div>
 
       {/* Actions */}
-      <div className="flex justify-end gap-3 mt-6">
+      <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 mt-6">
         {onCancel && (
           <Button
             type="button"
             variant="outline"
             onClick={onCancel}
             disabled={isPending}
+            className="w-full sm:w-auto"
           >
             {cancelLabel}
           </Button>
         )}
-        <Button type="submit" disabled={isPending}>
+        <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
           {isPending ? "Submitting..." : submitLabel}
         </Button>
       </div>

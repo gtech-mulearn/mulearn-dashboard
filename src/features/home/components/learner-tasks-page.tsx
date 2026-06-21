@@ -154,14 +154,14 @@ export function LearnerTasksPage({ taskSource = "" }: LearnerTasksPageProps) {
           className="pl-9 pr-8 h-9 text-sm"
         />
         {searchInput && (
-          <button
+          <Button
             type="button"
             onClick={clearSearch}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
             aria-label="Clear search"
           >
             <X className="size-3.5" />
-          </button>
+          </Button>
         )}
       </div>
 

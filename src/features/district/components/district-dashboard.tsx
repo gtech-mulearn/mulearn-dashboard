@@ -8,15 +8,25 @@ import {
   UserCheck,
   Users,
 } from "lucide-react";
-import { type ReactNode, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Bar,
   BarChart,
+  CartesianGrid,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
+import {
+  AXIS_PROPS,
+  BAR_RADIUS,
+  ChartGradients,
+  ChartTooltip,
+  GRID_PROPS,
+  MAX_BAR_SIZE,
+  seriesGradient,
+} from "@/components/charts/chart-theme";
 import { Blank } from "@/components/dashboard/table/Blank";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table, { type Data } from "@/components/dashboard/table/Table";
@@ -25,8 +35,8 @@ import THead from "@/components/dashboard/table/Thead";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StatCard } from "@/components/ui/stat-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
 import {
   useDistrictCollegeDetails,
   useDistrictDetails,
@@ -38,36 +48,6 @@ import {
 } from "../hooks";
 
 const numberFormatter = new Intl.NumberFormat("en-IN");
-
-function StatCard({
-  title,
-  value,
-  icon,
-  gradientClass,
-}: {
-  title: string;
-  value: string | number;
-  icon: ReactNode;
-  gradientClass: string;
-}) {
-  return (
-    <Card className={cn("overflow-hidden border-border/60", gradientClass)}>
-      <CardContent className="flex items-center justify-between gap-4 p-5">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            {title}
-          </p>
-          <p className="mt-2 text-2xl font-bold tracking-tight text-foreground">
-            {value}
-          </p>
-        </div>
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-background/70 text-muted-foreground shadow-sm">
-          {icon}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
 
 function SectionHeader({
   title,
@@ -221,26 +201,30 @@ export function DistrictDashboard() {
             <StatCard
               title="District"
               value={details?.district ?? "-"}
-              icon={<MapPin className="h-5 w-5" />}
-              gradientClass="gradient-1"
+              icon={<MapPin className="size-5" />}
+              accent="chart-1"
+              gradient
             />
             <StatCard
               title="Rank"
               value={details?.rank ?? "-"}
-              icon={<Trophy className="h-5 w-5" />}
-              gradientClass="gradient-2"
+              icon={<Trophy className="size-5" />}
+              accent="chart-2"
+              gradient
             />
             <StatCard
               title="Total Members"
               value={numberFormatter.format(details?.total_members ?? 0)}
-              icon={<Users className="h-5 w-5" />}
-              gradientClass="gradient-3"
+              icon={<Users className="size-5" />}
+              accent="chart-3"
+              gradient
             />
             <StatCard
               title="Active This Month"
               value={numberFormatter.format(details?.active_members ?? 0)}
-              icon={<UserCheck className="h-5 w-5" />}
-              gradientClass="gradient-4"
+              icon={<UserCheck className="size-5" />}
+              accent="chart-4"
+              gradient
             />
           </div>
         )}
@@ -257,7 +241,14 @@ export function DistrictDashboard() {
                     {details?.zone ?? "-"}
                   </p>
                 </div>
-                <div className="rounded-xl bg-muted/50 p-2.5 text-muted-foreground">
+                <div
+                  className="rounded-xl p-2.5"
+                  style={{
+                    backgroundColor:
+                      "color-mix(in srgb, var(--chart-1) 12%, var(--background))",
+                    color: "var(--chart-1)",
+                  }}
+                >
                   <BarChart3 className="h-5 w-5" />
                 </div>
               </CardContent>
@@ -272,7 +263,14 @@ export function DistrictDashboard() {
                     {details?.district_lead ?? "Not Assigned"}
                   </p>
                 </div>
-                <div className="rounded-xl bg-muted/50 p-2.5 text-muted-foreground">
+                <div
+                  className="rounded-xl p-2.5"
+                  style={{
+                    backgroundColor:
+                      "color-mix(in srgb, var(--chart-2) 12%, var(--background))",
+                    color: "var(--chart-2)",
+                  }}
+                >
                   <GraduationCap className="h-5 w-5" />
                 </div>
               </CardContent>
@@ -287,7 +285,14 @@ export function DistrictDashboard() {
                     {numberFormatter.format(details?.karma ?? 0)}
                   </p>
                 </div>
-                <div className="rounded-xl bg-muted/50 p-2.5 text-muted-foreground">
+                <div
+                  className="rounded-xl p-2.5"
+                  style={{
+                    backgroundColor:
+                      "color-mix(in srgb, var(--chart-3) 12%, var(--background))",
+                    color: "var(--chart-3)",
+                  }}
+                >
                   <Trophy className="h-5 w-5" />
                 </div>
               </CardContent>
@@ -320,41 +325,25 @@ export function DistrictDashboard() {
                     data={topCampus}
                     margin={{ top: 20, right: 0, left: 8, bottom: 0 }}
                   >
-                    <XAxis
-                      dataKey="campus_code"
-                      axisLine={false}
-                      tickLine={false}
-                      fontSize={12}
-                      tick={{ fill: "var(--color-muted-foreground)" }}
-                    />
+                    <ChartGradients />
+                    <CartesianGrid {...GRID_PROPS} />
+                    <XAxis dataKey="campus_code" {...AXIS_PROPS} />
                     <YAxis
-                      axisLine={false}
-                      tickLine={false}
+                      {...AXIS_PROPS}
                       width={76}
                       tickMargin={8}
-                      fontSize={12}
-                      tick={{ fill: "var(--color-muted-foreground)" }}
                       tickFormatter={(value) => numberFormatter.format(value)}
                     />
                     <Tooltip
                       cursor={{ fill: "var(--color-muted)", opacity: 0.2 }}
-                      contentStyle={{
-                        borderRadius: "8px",
-                        border: "1px solid var(--color-border)",
-                        backgroundColor: "var(--color-card)",
-                        color: "var(--color-foreground)",
-                      }}
-                      formatter={(value) => [
-                        numberFormatter.format(Number(value) || 0),
-                        "Karma",
-                      ]}
+                      content={<ChartTooltip />}
                     />
                     <Bar
                       dataKey="karma"
                       name="Karma"
-                      fill="var(--color-primary)"
-                      radius={[4, 4, 0, 0]}
-                      maxBarSize={48}
+                      fill={seriesGradient(0)}
+                      radius={BAR_RADIUS}
+                      maxBarSize={MAX_BAR_SIZE}
                     />
                   </BarChart>
                 </ResponsiveContainer>
@@ -390,43 +379,29 @@ export function DistrictDashboard() {
                     data={sortedStudentLevels}
                     margin={{ top: 20, right: 0, left: 8, bottom: 0 }}
                   >
+                    <ChartGradients />
+                    <CartesianGrid {...GRID_PROPS} />
                     <XAxis
                       dataKey="level_order"
-                      axisLine={false}
-                      tickLine={false}
-                      fontSize={12}
+                      {...AXIS_PROPS}
                       tickFormatter={(val) => `Level ${val}`}
-                      tick={{ fill: "var(--color-muted-foreground)" }}
                     />
                     <YAxis
-                      axisLine={false}
-                      tickLine={false}
+                      {...AXIS_PROPS}
                       width={76}
                       tickMargin={8}
-                      fontSize={12}
-                      tick={{ fill: "var(--color-muted-foreground)" }}
                       tickFormatter={(value) => numberFormatter.format(value)}
                     />
                     <Tooltip
                       cursor={{ fill: "var(--color-muted)", opacity: 0.2 }}
-                      contentStyle={{
-                        borderRadius: "8px",
-                        border: "1px solid var(--color-border)",
-                        backgroundColor: "var(--color-card)",
-                        color: "var(--color-foreground)",
-                      }}
-                      formatter={(value) => [
-                        numberFormatter.format(Number(value) || 0),
-                        "Students",
-                      ]}
-                      labelFormatter={(label) => `Level ${label}`}
+                      content={<ChartTooltip />}
                     />
                     <Bar
                       dataKey="students_count"
                       name="Students"
-                      fill="var(--color-chart-4)"
-                      radius={[4, 4, 0, 0]}
-                      maxBarSize={48}
+                      fill={seriesGradient(1)}
+                      radius={BAR_RADIUS}
+                      maxBarSize={MAX_BAR_SIZE}
                     />
                   </BarChart>
                 </ResponsiveContainer>
