@@ -33,6 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import {
   useManageTimesheets,
   useManageWeeklyReviews,
@@ -394,7 +395,10 @@ export function TimesheetReviewsPageClient() {
               >
                 <SelectValue placeholder="Pending" />
               </SelectTrigger>
-              <SelectContent className="bg-card font-bold border-border/60">
+              <SelectContent
+                position="popper"
+                className="bg-card font-bold border-border/60"
+              >
                 <SelectItem value="ALL" className="uppercase text-[10px]">
                   All Logs
                 </SelectItem>
@@ -637,11 +641,11 @@ export function TimesheetReviewsPageClient() {
                       <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
                         Review Notes / Feedback
                       </Label>
-                      <textarea
+                      <Textarea
                         value={reviewNote}
                         onChange={(e) => setReviewNote(e.target.value)}
                         placeholder="Feedback visible to the intern..."
-                        className="w-full min-h-[80px] bg-background/50 border border-border/40 rounded-lg p-3 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-primary/40 resize-none"
+                        className="min-h-[80px] text-xs font-semibold resize-none"
                       />
                     </div>
                   ) : (
@@ -899,11 +903,11 @@ export function TimesheetReviewsPageClient() {
                       <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
                         Review Notes / Feedback
                       </Label>
-                      <textarea
+                      <Textarea
                         value={reviewNote}
                         onChange={(e) => setReviewNote(e.target.value)}
                         placeholder="Feedback visible to the intern..."
-                        className="w-full min-h-[80px] bg-background/50 border border-border/40 rounded-lg p-3 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-primary/40 resize-none"
+                        className="min-h-[80px] text-xs font-semibold resize-none"
                       />
                     </div>
                   ) : (

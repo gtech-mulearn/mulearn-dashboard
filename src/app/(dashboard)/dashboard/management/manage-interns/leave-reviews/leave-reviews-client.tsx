@@ -32,6 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import {
   useManageLeaves,
   useReviewLeave,
@@ -257,7 +258,10 @@ export function LeaveReviewsPageClient() {
                 >
                   <SelectValue placeholder="Pending" />
                 </SelectTrigger>
-                <SelectContent className="bg-card font-bold border-border/60">
+                <SelectContent
+                  position="popper"
+                  className="bg-card font-bold border-border/60"
+                >
                   <SelectItem value="ALL" className="uppercase text-[10px]">
                     All Leaves
                   </SelectItem>
@@ -360,7 +364,7 @@ export function LeaveReviewsPageClient() {
                   selectedLeave.end_date,
                 );
               return (
-                <div className="space-y-4 py-2 my-2 text-sm w-full min-w-0">
+                <div className="space-y-4 py-2 my-2 text-sm flex-1 min-h-0 overflow-y-auto pr-1 w-full min-w-0">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1">
                       <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
@@ -504,11 +508,11 @@ export function LeaveReviewsPageClient() {
                       <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
                         Review Notes / Feedback
                       </Label>
-                      <textarea
+                      <Textarea
                         value={reviewNote}
                         onChange={(e) => setReviewNote(e.target.value)}
                         placeholder="Feedback visible to the intern..."
-                        className="w-full min-h-[80px] bg-background/50 border border-border/40 rounded-lg p-3 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-primary/40 resize-none"
+                        className="min-h-[80px] text-xs font-semibold resize-none"
                       />
                     </div>
                   ) : (

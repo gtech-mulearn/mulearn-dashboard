@@ -377,7 +377,10 @@ export function ManageInternsPageClient() {
                 <SelectTrigger className="w-[180px] h-10 font-black uppercase text-[10px] tracking-widest border-border/40 bg-card/40">
                   <SelectValue placeholder="Filter by Status" />
                 </SelectTrigger>
-                <SelectContent className="bg-card/95 backdrop-blur-xl border-border/60">
+                <SelectContent
+                  position="popper"
+                  className="bg-card/95 backdrop-blur-xl border-border/60"
+                >
                   <SelectItem
                     value="all"
                     className="font-bold uppercase text-[10px]"
@@ -420,7 +423,10 @@ export function ManageInternsPageClient() {
                 <SelectTrigger className="w-[180px] h-10 font-black uppercase text-[10px] tracking-widest border-border/40 bg-card/40">
                   <SelectValue placeholder="Filter by Role" />
                 </SelectTrigger>
-                <SelectContent className="bg-card/95 backdrop-blur-xl border-border/60">
+                <SelectContent
+                  position="popper"
+                  className="bg-card/95 backdrop-blur-xl border-border/60"
+                >
                   <SelectItem
                     value="all"
                     className="font-bold uppercase text-[10px]"

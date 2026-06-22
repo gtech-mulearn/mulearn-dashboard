@@ -376,7 +376,10 @@ export function WeeklyReviewForm({ onSuccess }: WeeklyReviewFormProps) {
                                 <SelectValue placeholder="How was your week?" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent className="bg-card font-bold border-border/60">
+                            <SelectContent
+                              position="popper"
+                              className="bg-card font-bold border-border/60"
+                            >
                               {[
                                 { val: 5, label: "Excellent" },
                                 { val: 4, label: "Good" },

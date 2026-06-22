@@ -154,7 +154,10 @@ export function InternTasksPageClient() {
             <SelectTrigger className="w-full h-10 font-bold uppercase text-[10px] tracking-widest border-border/50 bg-background/50">
               <SelectValue placeholder="Filter by Status" />
             </SelectTrigger>
-            <SelectContent className="bg-card font-bold border-border/60">
+            <SelectContent
+              position="popper"
+              className="bg-card font-bold border-border/60"
+            >
               <SelectItem value="ALL" className="uppercase text-[10px]">
                 All Statuses
               </SelectItem>
@@ -254,7 +257,10 @@ export function InternTasksPageClient() {
                       <SelectTrigger className="h-8 font-black uppercase text-[9px] tracking-widest w-[110px] border-border/50 bg-background/50 rounded-lg">
                         <SelectValue placeholder="TODO" />
                       </SelectTrigger>
-                      <SelectContent className="bg-card font-bold border-border/60">
+                      <SelectContent
+                        position="popper"
+                        className="bg-card font-bold border-border/60"
+                      >
                         <SelectItem
                           value="WAITING_FOR_REVIEW"
                           className="uppercase text-[9px]"
@@ -455,7 +461,10 @@ export function InternTasksPageClient() {
                       <SelectTrigger className="h-9 font-black uppercase text-[10px] tracking-widest w-[130px] border-border/50 bg-background/50 rounded-lg">
                         <SelectValue placeholder="TODO" />
                       </SelectTrigger>
-                      <SelectContent className="bg-card font-bold border-border/60">
+                      <SelectContent
+                        position="popper"
+                        className="bg-card font-bold border-border/60"
+                      >
                         <SelectItem
                           value="WAITING_FOR_REVIEW"
                           className="uppercase text-[9px]"

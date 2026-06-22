@@ -6,7 +6,6 @@ import {
   ExternalLink,
   Eye,
   FileText,
-  Loader2,
   Pencil,
   ScrollText,
   Search,
@@ -33,6 +32,7 @@ import {
 import { SectionErrorFallback } from "@/components/ui/errors/SectionErrorFallback";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -306,7 +306,7 @@ export default function InternMinutesPage() {
                         {submitMutation.isPending ||
                         updateMutation.isPending ? (
                           <>
-                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <Spinner className="w-4 h-4" />
                             Saving...
                           </>
                         ) : editingMinute ? (
@@ -375,7 +375,7 @@ export default function InternMinutesPage() {
 
               {isMinutesLoading ? (
                 <div className="flex items-center justify-center py-16">
-                  <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                  <Spinner className="w-8 h-8 text-muted-foreground" />
                 </div>
               ) : !filteredMinutes.length ? (
                 <Card className="bg-card/40 border-border/40">

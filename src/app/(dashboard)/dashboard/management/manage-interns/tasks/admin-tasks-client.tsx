@@ -530,7 +530,10 @@ export function AdminTasksPageClient() {
             <SelectTrigger className="w-full h-10 bg-background/50 border-border/50 font-bold text-xs uppercase">
               <SelectValue placeholder="Filter by Guild" />
             </SelectTrigger>
-            <SelectContent className="bg-card font-bold border-border/60">
+            <SelectContent
+              position="popper"
+              className="bg-card font-bold border-border/60"
+            >
               <SelectItem value="ALL" className="font-bold text-xs uppercase">
                 All Guilds
               </SelectItem>
@@ -555,7 +558,10 @@ export function AdminTasksPageClient() {
             <SelectTrigger className="w-full h-10 bg-background/50 border-border/50 font-bold text-xs uppercase">
               <SelectValue placeholder="Filter by Complexity" />
             </SelectTrigger>
-            <SelectContent className="bg-card font-bold border-border/60">
+            <SelectContent
+              position="popper"
+              className="bg-card font-bold border-border/60"
+            >
               <SelectItem value="ALL" className="font-bold text-xs uppercase">
                 All Complexities
               </SelectItem>
@@ -580,7 +586,10 @@ export function AdminTasksPageClient() {
             <SelectTrigger className="w-full h-10 bg-background/50 border-border/50 font-bold text-xs uppercase">
               <SelectValue placeholder="Filter by Status" />
             </SelectTrigger>
-            <SelectContent className="bg-card font-bold border-border/60">
+            <SelectContent
+              position="popper"
+              className="bg-card font-bold border-border/60"
+            >
               <SelectItem value="ALL" className="font-bold text-xs uppercase">
                 All Statuses
               </SelectItem>
@@ -605,7 +614,10 @@ export function AdminTasksPageClient() {
             <SelectTrigger className="w-full h-10 bg-background/50 border-border/50 font-bold text-xs uppercase">
               <SelectValue placeholder="Filter by Category" />
             </SelectTrigger>
-            <SelectContent className="bg-card font-bold border-border/60">
+            <SelectContent
+              position="popper"
+              className="bg-card font-bold border-border/60"
+            >
               <SelectItem value="ALL" className="font-bold text-xs uppercase">
                 All Categories
               </SelectItem>
@@ -726,7 +738,10 @@ export function AdminTasksPageClient() {
                   <SelectTrigger className="h-10 bg-background/50 border-border/50 font-bold text-xs uppercase">
                     <SelectValue placeholder="Select Category" />
                   </SelectTrigger>
-                  <SelectContent className="bg-card font-bold border-border/60">
+                  <SelectContent
+                    position="popper"
+                    className="bg-card font-bold border-border/60"
+                  >
                     {categories.map((cat) => (
                       <SelectItem
                         key={cat}
@@ -755,7 +770,7 @@ export function AdminTasksPageClient() {
                   <SelectTrigger className="h-10 bg-background/50 border-border/50 font-bold text-xs">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent position="popper">
                     {COMPLEXITY_OPTIONS.map((c) => (
                       <SelectItem
                         key={c}
@@ -871,7 +886,10 @@ export function AdminTasksPageClient() {
                   <SelectTrigger className="h-10 bg-background/50 border-border/50 font-bold text-xs uppercase">
                     <SelectValue placeholder="Select Team" />
                   </SelectTrigger>
-                  <SelectContent className="bg-card font-bold border-border/60">
+                  <SelectContent
+                    position="popper"
+                    className="bg-card font-bold border-border/60"
+                  >
                     {teams.map((t) => (
                       <SelectItem
                         key={t}
@@ -888,13 +906,13 @@ export function AdminTasksPageClient() {
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
                   <CalendarDays className="w-3.5 h-3.5" /> Deadline
                 </Label>
-                <input
+                <Input
                   type="date"
                   value={form.deadline}
                   onChange={(e) =>
                     setForm({ ...form, deadline: e.target.value })
                   }
-                  className="w-full h-10 rounded-md border border-border/50 bg-background/50 px-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
+                  className="font-bold"
                 />
               </div>
             </div>
@@ -977,7 +995,10 @@ export function AdminTasksPageClient() {
                   <SelectTrigger className="h-10 bg-background/50 border-border/50 font-bold text-xs uppercase">
                     <SelectValue placeholder="Select Category" />
                   </SelectTrigger>
-                  <SelectContent className="bg-card font-bold border-border/60">
+                  <SelectContent
+                    position="popper"
+                    className="bg-card font-bold border-border/60"
+                  >
                     {categories.map((cat) => (
                       <SelectItem
                         key={cat}
@@ -1006,7 +1027,7 @@ export function AdminTasksPageClient() {
                   <SelectTrigger className="h-10 bg-background/50 border-border/50 font-bold text-xs">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent position="popper">
                     {COMPLEXITY_OPTIONS.map((c) => (
                       <SelectItem
                         key={c}
@@ -1045,7 +1066,10 @@ export function AdminTasksPageClient() {
                   <SelectTrigger className="h-10 bg-background/50 border-border/50 font-bold text-xs uppercase">
                     <SelectValue placeholder="Select Team" />
                   </SelectTrigger>
-                  <SelectContent className="bg-card font-bold border-border/60">
+                  <SelectContent
+                    position="popper"
+                    className="bg-card font-bold border-border/60"
+                  >
                     {teams.map((t) => (
                       <SelectItem
                         key={t}
@@ -1062,13 +1086,13 @@ export function AdminTasksPageClient() {
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
                   <CalendarDays className="w-3.5 h-3.5" /> Deadline
                 </Label>
-                <input
+                <Input
                   type="date"
                   value={form.deadline}
                   onChange={(e) =>
                     setForm({ ...form, deadline: e.target.value })
                   }
-                  className="w-full h-10 rounded-md border border-border/50 bg-background/50 px-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
+                  className="font-bold"
                 />
               </div>
             </div>

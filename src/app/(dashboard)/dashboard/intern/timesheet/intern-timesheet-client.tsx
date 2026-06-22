@@ -357,7 +357,7 @@ export function TimesheetPageClient() {
                             }
                           />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent position="popper">
                           <SelectItem
                             value="none"
                             className="font-bold uppercase text-xs text-muted-foreground"
@@ -391,7 +391,7 @@ export function TimesheetPageClient() {
                           <SelectTrigger className="w-full bg-background/50 border-border/50 !h-10 font-bold focus:ring-brand-blue/30">
                             <SelectValue placeholder="Update status..." />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent position="popper">
                             <SelectItem
                               value="WAITING_FOR_REVIEW"
                               className="font-bold uppercase text-xs"

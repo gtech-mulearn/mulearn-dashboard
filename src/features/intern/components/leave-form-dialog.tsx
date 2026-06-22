@@ -140,7 +140,10 @@ export function LeaveFormDialog({ open, onOpenChange }: LeaveFormDialogProps) {
               <SelectTrigger className="w-full h-10 font-bold uppercase text-xs border-border/40 bg-background/50">
                 <SelectValue placeholder="Select Type" />
               </SelectTrigger>
-              <SelectContent className="bg-card border-border/60 font-bold">
+              <SelectContent
+                position="popper"
+                className="bg-card border-border/60 font-bold"
+              >
                 <SelectItem value="CASUAL" className="uppercase text-xs">
                   Casual Leave
                 </SelectItem>

@@ -634,7 +634,10 @@ export function QuestLog() {
                         <SelectTrigger className="w-full bg-background/50 border-border/50 font-bold uppercase text-[10px] tracking-wider mt-1">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="bg-card font-bold border-border/60">
+                        <SelectContent
+                          position="popper"
+                          className="bg-card font-bold border-border/60"
+                        >
                           <SelectItem
                             value="WAITING_FOR_REVIEW"
                             className="uppercase text-[9px]"

@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Loader2, Plus, X } from "lucide-react";
+import { Check, Plus, X } from "lucide-react";
 import type * as React from "react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -34,6 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
 import { useManageInternsList, useOnboardIntern } from "@/features/intern";
 import { type UserResult, useSearch } from "@/hooks/use-search";
 
@@ -215,8 +216,7 @@ export function OnboardDialog({
                     )}
                     {isLoading && query.length >= 2 && (
                       <div className="flex items-center gap-2 p-3 text-xs text-muted-foreground">
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading
-                        users...
+                        <Spinner className="h-3.5 w-3.5" /> Loading users...
                       </div>
                     )}
                     {!isLoading &&
@@ -291,7 +291,10 @@ export function OnboardDialog({
               <SelectTrigger className="w-full h-10 font-bold uppercase text-xs border-border/40 bg-background/50">
                 <SelectValue placeholder="Select Guild" />
               </SelectTrigger>
-              <SelectContent className="bg-card/95 backdrop-blur-xl border-border/60">
+              <SelectContent
+                position="popper"
+                className="bg-card/95 backdrop-blur-xl border-border/60"
+              >
                 {guildOptions.map((g) => (
                   <SelectItem
                     key={g}
@@ -315,7 +318,10 @@ export function OnboardDialog({
               >
                 <SelectValue placeholder="Select Status" />
               </SelectTrigger>
-              <SelectContent className="bg-card/95 backdrop-blur-xl border-border/60">
+              <SelectContent
+                position="popper"
+                className="bg-card/95 backdrop-blur-xl border-border/60"
+              >
                 <SelectItem
                   value="ACTIVE"
                   className="font-bold uppercase text-xs text-success"

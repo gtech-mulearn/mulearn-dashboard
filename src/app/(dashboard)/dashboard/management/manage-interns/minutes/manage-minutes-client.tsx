@@ -5,7 +5,6 @@ import {
   Crown,
   ExternalLink,
   Eye,
-  Loader2,
   ScrollText,
 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
@@ -31,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
 import {
   type TMinuteItem,
   useGuilds,
@@ -316,7 +316,10 @@ export function ManageMinutesPageClient() {
                   <SelectTrigger className="w-[160px] h-8 font-black uppercase text-[10px] tracking-widest border-border/40 bg-card/40">
                     <SelectValue placeholder="Filter by Guild" />
                   </SelectTrigger>
-                  <SelectContent className="bg-card/95 backdrop-blur-xl border-border/60">
+                  <SelectContent
+                    position="popper"
+                    className="bg-card/95 backdrop-blur-xl border-border/60"
+                  >
                     <SelectItem
                       value="all"
                       className="font-bold uppercase text-[10px]"
@@ -351,7 +354,7 @@ export function ManageMinutesPageClient() {
 
           {isLoading ? (
             <div className="flex items-center justify-center py-24">
-              <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+              <Spinner className="w-8 h-8 text-muted-foreground" />
             </div>
           ) : !minutes.length ? (
             <Card className="bg-card/40 border-border/40">

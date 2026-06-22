@@ -460,7 +460,10 @@ export function QuestLogHistory() {
               <SelectTrigger className="w-full bg-background/40 border-border/40 font-bold uppercase text-[10px] tracking-wider">
                 <SelectValue placeholder="All Types" />
               </SelectTrigger>
-              <SelectContent className="bg-card font-bold border-border/60">
+              <SelectContent
+                position="popper"
+                className="bg-card font-bold border-border/60"
+              >
                 <SelectItem value="all" className="uppercase text-[9px]">
                   All Types
                 </SelectItem>
@@ -492,7 +495,10 @@ export function QuestLogHistory() {
               <SelectTrigger className="w-full bg-background/40 border-border/40 font-bold uppercase text-[10px] tracking-wider">
                 <SelectValue placeholder="All Statuses" />
               </SelectTrigger>
-              <SelectContent className="bg-card font-bold border-border/60">
+              <SelectContent
+                position="popper"
+                className="bg-card font-bold border-border/60"
+              >
                 <SelectItem value="all" className="uppercase text-[9px]">
                   All Statuses
                 </SelectItem>
@@ -776,7 +782,10 @@ export function QuestLogHistory() {
                         <SelectTrigger className="w-full bg-background/50 border-border/50 font-bold uppercase text-[10px] tracking-wider mt-1">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="bg-card font-bold border-border/60">
+                        <SelectContent
+                          position="popper"
+                          className="bg-card font-bold border-border/60"
+                        >
                           <SelectItem
                             value="WAITING_FOR_REVIEW"
                             className="uppercase text-[9px]"

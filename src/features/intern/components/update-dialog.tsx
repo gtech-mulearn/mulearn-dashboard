@@ -115,7 +115,10 @@ export function UpdateDialog({
               <SelectTrigger className="w-full h-10 font-bold uppercase text-xs border-border/40 bg-background/50">
                 <SelectValue placeholder="Select Guild" />
               </SelectTrigger>
-              <SelectContent className="bg-card/95 backdrop-blur-xl border-border/60">
+              <SelectContent
+                position="popper"
+                className="bg-card/95 backdrop-blur-xl border-border/60"
+              >
                 {guildOptions.map((g) => (
                   <SelectItem
                     key={g}
@@ -139,7 +142,10 @@ export function UpdateDialog({
               >
                 <SelectValue placeholder="Select Status" />
               </SelectTrigger>
-              <SelectContent className="bg-card/95 backdrop-blur-xl border-border/60">
+              <SelectContent
+                position="popper"
+                className="bg-card/95 backdrop-blur-xl border-border/60"
+              >
                 <SelectItem
                   value="ACTIVE"
                   className="font-bold uppercase text-xs text-success"
@@ -176,7 +182,10 @@ export function UpdateDialog({
               <SelectTrigger className="w-full h-10 font-bold uppercase text-xs border-border/40 bg-background/50">
                 <SelectValue placeholder="Select Role" />
               </SelectTrigger>
-              <SelectContent className="bg-card/95 backdrop-blur-xl border-border/60">
+              <SelectContent
+                position="popper"
+                className="bg-card/95 backdrop-blur-xl border-border/60"
+              >
                 <SelectItem
                   value="INTERN"
                   className="font-bold uppercase text-xs"
