@@ -294,17 +294,19 @@ export function ManageInternsPageClient() {
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <Button
+            size="lg"
             onClick={() => setIsOnboardOpen(true)}
             variant="default"
-            className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
+            className="gap-2 text-xs tracking-widest shadow-lg"
           >
             <Plus className="w-4 h-4" />
             Onboard Intern
           </Button>
           <Link href="/dashboard/management/manage-interns/timesheet-reviews">
             <Button
+              size="lg"
               variant="default"
-              className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
+              className="gap-2 text-xs tracking-widest shadow-lg"
             >
               <CheckCircle2 className="w-4 h-4" />
               Timesheets
@@ -312,8 +314,9 @@ export function ManageInternsPageClient() {
           </Link>
           <Link href="/dashboard/management/manage-interns/leave-reviews">
             <Button
+              size="lg"
               variant="default"
-              className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
+              className="gap-2 text-xs tracking-widest shadow-lg"
             >
               <Calendar className="w-4 h-4" />
               Leaves
@@ -321,8 +324,9 @@ export function ManageInternsPageClient() {
           </Link>
           <Link href="/dashboard/management/manage-interns/tasks">
             <Button
+              size="lg"
               variant="default"
-              className="gap-2 text-[10px] tracking-widest h-10 shadow-lg bg-brand-blue hover:bg-brand-blue/90"
+              className="gap-2 text-xs tracking-widest shadow-lg"
             >
               <ListTodo className="w-4 h-4" />
               Tasks
@@ -330,8 +334,9 @@ export function ManageInternsPageClient() {
           </Link>
           <Link href="/dashboard/management/manage-interns/intern-report">
             <Button
+              size="lg"
               variant="default"
-              className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
+              className="gap-2 text-xs tracking-widest shadow-lg"
             >
               <Sparkles className="w-4 h-4" />
               Reports
@@ -339,8 +344,9 @@ export function ManageInternsPageClient() {
           </Link>
           <Link href="/dashboard/management/manage-interns/minutes">
             <Button
+              size="lg"
               variant="default"
-              className="gap-2 text-[10px] tracking-widest h-10 shadow-lg bg-amber-500 hover:bg-amber-500/90 text-black"
+              className="gap-2 text-xs tracking-widest shadow-lg"
             >
               <Crown className="w-4 h-4" />
               Minutes
