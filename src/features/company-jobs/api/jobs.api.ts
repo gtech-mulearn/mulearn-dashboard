@@ -108,7 +108,7 @@ export async function fetchJobs(
     query.set("per_page", String(params.per_page ?? params.perPage));
   if (params?.search?.trim()) query.set("search", params.search.trim());
   if (params?.sortBy || params?.sort_by)
-    query.set("sort_by", params.sort_by ?? params.sortBy ?? "");
+    query.set("sort_by", (params.sort_by ?? params.sortBy) as string);
   if (params?.sort_order) query.set("sort_order", params.sort_order);
 
   const queryString = query.toString();

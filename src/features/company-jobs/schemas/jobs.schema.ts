@@ -520,21 +520,10 @@ export const LearnerDiscoveryResponseSchema = DjangoResponse(
 export const CreateJobResponseSchema = DjangoResponse(JobSchema);
 
 export const UpdateJobDataSchema = z
-  .union([
-    z.object({ job: JobSchema }),
-    JobSchema,
-    z.object({
-      job_id: z.string(),
-      updated_fields: z.array(z.string()),
-    }),
-    z.record(z.string(), z.unknown()),
-  ])
+  .union([z.object({ job: JobSchema }), JobSchema])
   .transform((val) => {
     if ("job" in val && typeof val.job === "object") {
       return val.job;
-    }
-    if ("id" in val && "title" in val) {
-      return val;
     }
     return val;
   });

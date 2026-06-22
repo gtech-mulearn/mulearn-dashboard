@@ -35,6 +35,19 @@ export const RULE_TYPE_OPTIONS = [
 export const KARMA_RULE_TYPES = ["min_karma", "max_karma"] as const;
 export const LEVEL_RULE_TYPES = ["min_level", "max_level"] as const;
 
+export function formatNumericRuleValue(
+  rule_type: string,
+  rule_value: string,
+): string | number {
+  if (
+    KARMA_RULE_TYPES.includes(rule_type as any) ||
+    LEVEL_RULE_TYPES.includes(rule_type as any)
+  ) {
+    return isNaN(Number(rule_value)) ? "0" : parseInt(rule_value, 10);
+  }
+  return rule_value;
+}
+
 // ─── Min Level Options ──────────────────────────────────────
 
 export const MIN_LEVEL_OPTIONS = [
