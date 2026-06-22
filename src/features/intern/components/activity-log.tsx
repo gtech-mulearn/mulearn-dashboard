@@ -54,7 +54,10 @@ import type {
   TWeeklyReview,
   TWeeklyReviewUpdatePayload,
 } from "@/features/intern/types";
-import { getTaskKarma } from "@/features/intern/utils/intern-helpers";
+import {
+  getTaskBaseKarma,
+  getTaskKarma,
+} from "@/features/intern/utils/intern-helpers";
 import { getApiResponseError } from "@/hooks/use-get-error";
 
 type UnifiedActivity = {
@@ -525,18 +528,16 @@ export function QuestLog() {
                     </div>
                   </div>
 
-                  {selectedItem.type === "completed_task" &&
-                    (selectedItem.raw as TInternTask).karma_awarded !==
-                      undefined && (
-                      <div className="text-center sm:text-right">
-                        <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
-                          Base Karma
-                        </p>
-                        <p className="text-sm font-bold text-foreground mt-0.5">
-                          {(selectedItem.raw as TInternTask).karma_awarded} pts
-                        </p>
-                      </div>
-                    )}
+                  {selectedItem.type === "completed_task" && (
+                    <div className="text-center sm:text-right">
+                      <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
+                        Base Karma
+                      </p>
+                      <p className="text-sm font-bold text-foreground mt-0.5">
+                        {getTaskBaseKarma(selectedItem.raw as TInternTask)} pts
+                      </p>
+                    </div>
+                  )}
 
                   {(selectedItem.status === "APPROVED" ||
                     (selectedItem.status === "COMPLETED" &&

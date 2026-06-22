@@ -174,6 +174,7 @@ export interface TInternTask {
   status: "WAITING_FOR_REVIEW" | "IN_PROGRESS" | "COMPLETED" | "ON_HOLD";
   output_link?: string | null;
   is_verified?: boolean;
+  remark?: string | null;
   created_by?: string;
   created_by_name?: string;
   created_at: string;
@@ -282,6 +283,7 @@ export interface TUpdateTaskPayload {
   deadline?: string;
   iso_week?: number;
   status?: string;
+  remark?: string;
 }
 
 export interface TLeaveReviewPayload {

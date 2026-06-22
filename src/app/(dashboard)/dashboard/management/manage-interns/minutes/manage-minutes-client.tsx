@@ -456,7 +456,7 @@ export function ManageMinutesPageClient() {
             <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-2">
               Minutes Details
             </h4>
-            <div className="max-h-[350px] overflow-y-auto whitespace-pre-wrap font-medium text-sm leading-relaxed text-muted-foreground bg-muted/20 p-4 rounded-xl border border-border/40">
+            <div className="max-h-[60vh] overflow-y-auto whitespace-pre-wrap font-medium text-sm leading-relaxed text-muted-foreground bg-muted/20 p-4 rounded-xl border border-border/40">
               {viewingMinute && renderContentWithLinks(viewingMinute.minutes)}
             </div>
           </div>

@@ -4,9 +4,12 @@ import {
   CalendarDays,
   CheckCircle2,
   Edit,
+  ExternalLink,
+  MessageSquareDot,
   Plus,
   Search,
   Trash2,
+  UserCheck,
   X,
 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
@@ -40,14 +43,15 @@ import {
   useCreateTask,
   useDeleteTask,
   useGuilds,
+  useManageInternsList,
   useManageTasks,
+  useTaskCategories,
   useUpdateTask,
   useVerifyTask,
 } from "@/features/intern";
-import type { TInternTask } from "@/features/intern/types";
+import type { TInternTask, TUpdateTaskPayload } from "@/features/intern/types";
 import { getTaskGuild } from "@/features/intern/utils/intern-helpers";
 import { useDebounce } from "@/hooks/use-debounce";
-import { useSearch } from "@/hooks/use-search";
 
 // ── Helpers ───────────────────────────────────────────────────
 
@@ -102,21 +106,42 @@ export function AdminTasksPageClient() {
   const [createOpen, setCreateOpen] = useState(false);
   const [editTask, setEditTask] = useState<TInternTask | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
-  const [verifyTarget, setVerifyTarget] = useState<TInternTask | null>(null);
-  const [verifyKarma, setVerifyKarma] = useState("");
+  const [reviewTarget, setReviewTarget] = useState<TInternTask | null>(null);
   const [isFetchingDetail, setIsFetchingDetail] = useState(false);
+  const [reviewForm, setReviewForm] = useState<{
+    status: string;
+    karma: string;
+    remark: string;
+  }>({
+    status: "",
+    karma: "",
+    remark: "",
+  });
 
   // Form state
   const [form, setForm] = useState({ ...blankForm });
 
-  // Inline assignee search for create form
-  const {
-    query: assigneeQuery,
-    results: assigneeResults,
-    isLoading: isAssigneeLoading,
-    handleSearch: handleAssigneeSearch,
-    clearResults: clearAssigneeResults,
-  } = useSearch();
+  // Fetch onboarded interns for local search
+  const { data: internsData, isLoading: isInternsLoading } =
+    useManageInternsList({ page: 1, perPage: 1000 });
+  const [assigneeQuery, setAssigneeQuery] = useState("");
+  const [isAssigneeFocused, setIsAssigneeFocused] = useState(false);
+
+  const internsList = useMemo(() => {
+    return (internsData?.data ?? []).filter(
+      (item) => item.role?.toLowerCase() === "intern",
+    );
+  }, [internsData]);
+
+  const filteredAssignees = useMemo(() => {
+    const q = assigneeQuery.trim().toLowerCase();
+    if (!q) return internsList;
+    return internsList.filter(
+      (item) =>
+        item.full_name.toLowerCase().includes(q) ||
+        item.muid.toLowerCase().includes(q),
+    );
+  }, [internsList, assigneeQuery]);
 
   const debouncedSearch = useDebounce(searchText, 300);
 
@@ -142,17 +167,62 @@ export function AdminTasksPageClient() {
   ];
   const teams = guilds.length > 0 ? guilds : DEFAULT_TEAMS;
 
-  const apiCategories = Array.from(
-    new Set((tasksData?.data ?? []).map((t) => t.category).filter(Boolean)),
+  const { data: taskCategories = {} } = useTaskCategories();
+  const [selectedUserGuild, setSelectedUserGuild] = useState<string | null>(
+    null,
   );
-  const categories =
-    apiCategories.length > 0
-      ? apiCategories
-      : ["DEVELOPMENT", "DESIGN", "TESTING"];
+
+  // Categories list for the table filter dropdown based on selected guild
+  const tableFilterCategories = useMemo(() => {
+    if (!guildFilter || guildFilter === "ALL") {
+      const set = new Set<string>();
+      Object.values(taskCategories || {}).forEach((cats) => {
+        if (Array.isArray(cats)) {
+          cats.forEach((cat) => {
+            set.add(cat);
+          });
+        }
+      });
+      return Array.from(set).sort();
+    }
+    // Search case-insensitively for the selected guild's categories
+    const key = Object.keys(taskCategories || {}).find(
+      (k) => k.toUpperCase() === guildFilter.toUpperCase(),
+    );
+    return key ? (taskCategories[key] || []).slice().sort() : [];
+  }, [taskCategories, guildFilter]);
+
+  // Categories for the Create Task form based on the selected user's guild
+  const createFormCategories = useMemo(() => {
+    if (selectedUserGuild) {
+      const key = Object.keys(taskCategories || {}).find(
+        (k) => k.toUpperCase() === selectedUserGuild.toUpperCase(),
+      );
+      if (key && taskCategories[key]) {
+        return taskCategories[key].slice().sort();
+      }
+    }
+    return [];
+  }, [taskCategories, selectedUserGuild]);
+
+  // Categories for the Edit Task form based on the task's guild
+  const editFormCategories = useMemo(() => {
+    if (editTask) {
+      const taskGuild = getTaskGuild(editTask);
+      const key = Object.keys(taskCategories || {}).find(
+        (k) => k.toUpperCase() === taskGuild.toUpperCase(),
+      );
+      if (key && taskCategories[key]) {
+        return taskCategories[key].slice().sort();
+      }
+    }
+    return [];
+  }, [taskCategories, editTask]);
 
   const createMutation = useCreateTask();
   const updateMutation = useUpdateTask(editTask?.id ?? "");
   const deleteMutation = useDeleteTask();
+  const reviewMutation = useUpdateTask(reviewTarget?.id ?? "");
   const verifyMutation = useVerifyTask();
 
   const tasks = useMemo(() => {
@@ -289,14 +359,19 @@ export function AdminTasksPageClient() {
         case "status":
           return (
             <div className="flex items-center gap-1.5">
-              <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 gap-1.5 text-foreground border-border">
+              <div
+                className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 gap-1.5 ${
+                  task.status === "COMPLETED" && task.is_verified
+                    ? "bg-success/10 border-success/30 text-success"
+                    : task.status === "WAITING_FOR_REVIEW"
+                      ? "bg-warning/10 border-warning/30 text-warning"
+                      : task.status === "IN_PROGRESS"
+                        ? "bg-brand-blue/10 border-brand-blue/30 text-brand-blue"
+                        : "text-foreground border-border"
+                }`}
+              >
                 {task.status.replace(/_/g, " ")}
               </div>
-              {task.is_verified && (
-                <div className="inline-flex items-center rounded-full border py-0.5 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 bg-success/10 border-success/30 text-success text-[8px] font-black uppercase tracking-wide h-4 px-1">
-                  Verified
-                </div>
-              )}
             </div>
           );
         case "deadline":
@@ -321,6 +396,8 @@ export function AdminTasksPageClient() {
   // ── Open edit dialog with pre-filled values ───────────────
   const openEdit = useCallback((task: TInternTask) => {
     setEditTask(task);
+    const taskGuild = getTaskGuild(task);
+    setSelectedUserGuild(task.team || taskGuild || null);
     setForm({
       title: task.title,
       description: task.description,
@@ -343,31 +420,39 @@ export function AdminTasksPageClient() {
       const task = row as unknown as TInternTask;
       return (
         <div className="flex items-center justify-center gap-1">
-          {task.status === "COMPLETED" && !task.is_verified && (
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={async () => {
-                setVerifyTarget(task);
-                setVerifyKarma(
-                  task.karma_awarded ? String(task.karma_awarded) : "",
-                );
-                setIsFetchingDetail(true);
-                try {
-                  const detail = await manageInternsApi.getTaskDetail(task.id);
-                  setVerifyTarget(detail);
-                } catch (error) {
-                  console.error("Failed to fetch task detail", error);
-                } finally {
-                  setIsFetchingDetail(false);
-                }
-              }}
-              className="rounded-md text-muted-foreground hover:bg-muted hover:text-success size-8"
-              title="Verify Task"
-            >
-              <CheckCircle2 className="w-3.5 h-3.5" />
-            </Button>
-          )}
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={async () => {
+              setReviewForm({
+                status: task.status,
+                karma: task.karma_awarded ? String(task.karma_awarded) : "",
+                remark: "",
+              });
+              setIsFetchingDetail(true);
+              setReviewTarget(task);
+              try {
+                const detail = await manageInternsApi.getTaskDetail(task.id);
+                setReviewTarget(detail);
+                setReviewForm((prev) => ({
+                  ...prev,
+                  status: detail.status,
+                  karma: detail.karma_awarded
+                    ? String(detail.karma_awarded)
+                    : prev.karma,
+                  remark: detail.remark ?? "",
+                }));
+              } catch (error) {
+                console.error("Failed to fetch task detail", error);
+              } finally {
+                setIsFetchingDetail(false);
+              }
+            }}
+            className="rounded-md text-muted-foreground hover:bg-muted hover:text-brand-blue size-8"
+            title="Review Task"
+          >
+            <MessageSquareDot className="w-3.5 h-3.5" />
+          </Button>
           <Button
             size="icon"
             variant="ghost"
@@ -419,7 +504,7 @@ export function AdminTasksPageClient() {
         onSuccess: () => {
           setCreateOpen(false);
           setForm({ ...blankForm });
-          clearAssigneeResults();
+          setAssigneeQuery("");
         },
       },
     );
@@ -457,19 +542,17 @@ export function AdminTasksPageClient() {
   };
 
   const handleVerifySubmit = () => {
-    if (!verifyTarget) return;
-    const karmaVal = verifyKarma ? Number(verifyKarma) : 0;
-    verifyMutation.mutate(
-      {
-        id: verifyTarget.id,
-        karma_awarded: karmaVal,
+    if (!reviewTarget) return;
+    const payload: TUpdateTaskPayload = {
+      status: reviewForm.status || undefined,
+      karma_awarded: reviewForm.karma ? Number(reviewForm.karma) : undefined,
+      remark: reviewForm.remark || undefined,
+    };
+    reviewMutation.mutate(payload, {
+      onSuccess: () => {
+        setReviewTarget(null);
       },
-      {
-        onSuccess: () => {
-          setVerifyTarget(null);
-        },
-      },
-    );
+    });
   };
 
   return (
@@ -477,14 +560,6 @@ export function AdminTasksPageClient() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <div className="flex items-center gap-2 mb-2">
-            <Badge
-              variant="default"
-              className="px-3 py-1 rounded-full font-black text-[10px] uppercase tracking-widest"
-            >
-              Admin Console
-            </Badge>
-          </div>
           <h2 className="text-4xl font-black tracking-tighter text-foreground uppercase">
             Task Management
           </h2>
@@ -495,7 +570,8 @@ export function AdminTasksPageClient() {
         <Button
           onClick={() => {
             setForm({ ...blankForm });
-            clearAssigneeResults();
+            setAssigneeQuery("");
+            setSelectedUserGuild(null);
             setCreateOpen(true);
           }}
           className="gap-2 text-[10px] tracking-widest h-10 shadow-lg bg-brand-blue hover:bg-brand-blue/90"
@@ -524,6 +600,7 @@ export function AdminTasksPageClient() {
             value={guildFilter}
             onValueChange={(value) => {
               setGuildFilter(value);
+              setCategoryFilter("ALL"); // Reset category filter when guild changes
               setPage(1);
             }}
           >
@@ -621,7 +698,7 @@ export function AdminTasksPageClient() {
               <SelectItem value="ALL" className="font-bold text-xs uppercase">
                 All Categories
               </SelectItem>
-              {categories.map((category) => (
+              {tableFilterCategories.map((category) => (
                 <SelectItem
                   key={category}
                   value={category}
@@ -682,7 +759,10 @@ export function AdminTasksPageClient() {
 
       {/* ── Create Task Dialog ──────────────────────────────────── */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="w-full max-w-[calc(100%-2rem)] sm:max-w-2xl border-border/40 bg-card backdrop-blur-xl">
+        <DialogContent
+          className="w-full max-w-[calc(100%-2rem)] sm:max-w-2xl border-border/40 bg-card backdrop-blur-xl"
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
           <DialogHeader className="pr-8">
             <DialogTitle className="text-xl font-black uppercase tracking-widest">
               Assign New Task
@@ -693,231 +773,255 @@ export function AdminTasksPageClient() {
           </DialogHeader>
           <form
             onSubmit={handleCreate}
-            className="space-y-5 pt-2 w-full min-w-0"
+            className="flex flex-col min-h-0 w-full"
           >
-            {/* Title */}
-            <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                Title <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                required
-                placeholder="e.g. Build authentication module"
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-                className="h-10 bg-background/50 border-border/50 font-bold"
-              />
-            </div>
-
-            {/* Description */}
-            <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                Description <span className="text-destructive">*</span>
-              </Label>
-              <Textarea
-                required
-                placeholder="Detailed description of what needs to be done..."
-                value={form.description}
-                onChange={(e) =>
-                  setForm({ ...form, description: e.target.value })
-                }
-                className="min-h-[90px] max-h-[160px] overflow-y-auto bg-background/50 border-border/50 font-medium resize-none"
-              />
-            </div>
-
-            {/* Category + Complexity + Karma */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="space-y-5 pt-2 my-2 pr-1 max-h-[60vh] overflow-y-auto w-full min-w-0">
+              {/* Assign To (MUID or Name) */}
               <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  Category <span className="text-destructive">*</span>
+                  Assign To (MUID or Name){" "}
+                  <span className="text-destructive">*</span>
                 </Label>
-                <Select
-                  value={form.category}
-                  onValueChange={(v) => setForm({ ...form, category: v })}
-                >
-                  <SelectTrigger className="h-10 bg-background/50 border-border/50 font-bold text-xs uppercase">
-                    <SelectValue placeholder="Select Category" />
-                  </SelectTrigger>
-                  <SelectContent
-                    position="popper"
-                    className="bg-card font-bold border-border/60"
-                  >
-                    {categories.map((cat) => (
-                      <SelectItem
-                        key={cat}
-                        value={cat}
-                        className="font-bold text-xs uppercase"
-                      >
-                        {cat.replace(/_/g, " ")}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {form.assigned_to ? (
+                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-brand-blue/10 to-brand-blue/5 border border-brand-blue/20 rounded-2xl shadow-sm transition-all duration-300">
+                    <div className="flex items-center gap-3.5 min-w-0">
+                      <div className="w-12 h-12 rounded-full bg-brand-blue/20 flex items-center justify-center text-base font-black text-brand-blue shrink-0 shadow-inner">
+                        {form.assigneeName[0]}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-base font-bold text-foreground truncate">
+                          {form.assigneeName}
+                        </p>
+                        <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider truncate flex items-center gap-1.5 mt-0.5">
+                          <span className="inline-block w-1.5 h-1.5 rounded-full bg-brand-blue/60" />
+                          @{form.assigneeMuid}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setForm({
+                          ...form,
+                          assigned_to: "",
+                          assigneeName: "",
+                          assigneeMuid: "",
+                          category: "",
+                        });
+                        setSelectedUserGuild(null);
+                      }}
+                      className="text-xs font-bold text-muted-foreground hover:text-destructive hover:border-destructive/30 shrink-0 px-3.5 h-9 rounded-xl transition-all duration-200"
+                    >
+                      Change Intern
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
+                    <Input
+                      placeholder="Search intern by name or MUID..."
+                      value={assigneeQuery}
+                      onChange={(e) => setAssigneeQuery(e.target.value)}
+                      onFocus={() => setIsAssigneeFocused(true)}
+                      onBlur={() => {
+                        setTimeout(() => setIsAssigneeFocused(false), 200);
+                      }}
+                      className="pl-11 h-11 bg-background/50 border-border/50 font-medium rounded-xl focus-visible:ring-brand-blue transition-all duration-200"
+                    />
+                    {isInternsLoading && (
+                      <Spinner className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-blue" />
+                    )}
+                    {isAssigneeFocused && filteredAssignees.length > 0 && (
+                      <div className="absolute z-50 top-full left-0 right-0 mt-1.5 bg-card/95 backdrop-blur-md border border-border/40 rounded-xl shadow-2xl overflow-hidden max-h-48 overflow-y-auto animate-in fade-in-50 slide-in-from-top-2 duration-200">
+                        {filteredAssignees.map((user) => (
+                          <button
+                            key={user.id}
+                            type="button"
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              setForm({
+                                ...form,
+                                assigned_to: user.id,
+                                assigneeName: user.full_name,
+                                assigneeMuid: user.muid,
+                                category: "",
+                                team: user.guild || "",
+                              });
+                              setAssigneeQuery("");
+                              setIsAssigneeFocused(false);
+                              setSelectedUserGuild(user.guild || null);
+                            }}
+                            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-brand-blue/5 text-left transition-colors border-b border-border/10 last:border-0"
+                          >
+                            <div className="w-8 h-8 rounded-full bg-brand-blue/10 flex items-center justify-center text-xs font-black text-brand-blue">
+                              {user.full_name[0]}
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-foreground">
+                                {user.full_name}
+                              </p>
+                              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                                @{user.muid}
+                              </p>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
+
+              {/* Title */}
               <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  Complexity
-                </Label>
-                <Select
-                  value={form.complexity}
-                  onValueChange={(v) =>
-                    setForm({
-                      ...form,
-                      complexity: v as (typeof COMPLEXITY_OPTIONS)[number],
-                    })
-                  }
-                >
-                  <SelectTrigger className="h-10 bg-background/50 border-border/50 font-bold text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent position="popper">
-                    {COMPLEXITY_OPTIONS.map((c) => (
-                      <SelectItem
-                        key={c}
-                        value={c}
-                        className="font-bold text-xs uppercase"
-                      >
-                        {c}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  Karma
+                  Title <span className="text-destructive">*</span>
                 </Label>
                 <Input
-                  type="number"
-                  min="0"
-                  placeholder="e.g. 100"
-                  value={form.karma}
-                  onChange={(e) => setForm({ ...form, karma: e.target.value })}
-                  className="h-10 bg-background/50 border-border/50 font-bold"
+                  required
+                  placeholder="e.g. Build authentication module"
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  className="h-10 bg-background/50 border-border/50 font-bold rounded-xl focus-visible:ring-brand-blue"
                 />
               </div>
-            </div>
 
-            {/* Assignee search */}
-            <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                Assign To (MUID or Name){" "}
-                <span className="text-destructive">*</span>
-              </Label>
-              {form.assigned_to ? (
-                <div className="flex items-center gap-2 p-2 bg-brand-blue/5 border border-brand-blue/20 rounded-lg">
-                  <CheckCircle2 className="w-4 h-4 text-brand-blue" />
-                  <span className="text-sm font-bold text-foreground flex-1">
-                    {form.assigneeName}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() =>
+              {/* Description */}
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                  Description <span className="text-destructive">*</span>
+                </Label>
+                <Textarea
+                  required
+                  placeholder="Detailed description of what needs to be done"
+                  value={form.description}
+                  onChange={(e) =>
+                    setForm({ ...form, description: e.target.value })
+                  }
+                  className="min-h-[140px] max-h-[220px] overflow-y-auto bg-background/50 border-border/50 font-medium resize-none rounded-xl focus-visible:ring-brand-blue"
+                />
+              </div>
+
+              {/* Guild & Category Row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Guild (Unchangeable) */}
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                    Guild
+                  </Label>
+                  <Input
+                    value={form.team ? form.team.replace(/_/g, " ") : ""}
+                    placeholder="Select intern to populate Guild"
+                    readOnly
+                    disabled
+                    className="h-10 bg-muted/40 border-border/40 font-bold text-xs uppercase cursor-not-allowed select-none rounded-xl"
+                  />
+                </div>
+
+                {/* Category */}
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                    Category <span className="text-destructive">*</span>
+                  </Label>
+                  <Select
+                    value={form.category}
+                    onValueChange={(v) => setForm({ ...form, category: v })}
+                    disabled={!form.team}
+                  >
+                    <SelectTrigger className="w-full h-10 bg-background/50 border-border/50 font-bold text-xs uppercase rounded-xl">
+                      <SelectValue
+                        placeholder={
+                          form.team ? "Select Category" : "Select Intern First"
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent
+                      position="popper"
+                      className="bg-card font-bold border-border/60 rounded-xl"
+                    >
+                      {createFormCategories.map((cat) => (
+                        <SelectItem
+                          key={cat}
+                          value={cat}
+                          className="font-bold text-xs uppercase"
+                        >
+                          {cat.replace(/_/g, " ")}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Complexity, Karma & Deadline Row */}
+              <div className="grid grid-cols-3 gap-4">
+                {/* Complexity */}
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                    Complexity
+                  </Label>
+                  <Select
+                    value={form.complexity}
+                    onValueChange={(v) =>
                       setForm({
                         ...form,
-                        assigned_to: "",
-                        assigneeName: "",
-                        assigneeMuid: "",
+                        complexity: v as (typeof COMPLEXITY_OPTIONS)[number],
                       })
                     }
-                    className="text-muted-foreground hover:text-destructive"
                   >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              ) : (
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
-                  <Input
-                    placeholder="Search intern by name or MUID..."
-                    value={assigneeQuery}
-                    onChange={(e) => handleAssigneeSearch(e.target.value)}
-                    className="pl-10 h-10 bg-background/50 border-border/50 font-medium"
-                  />
-                  {isAssigneeLoading && (
-                    <Spinner className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4" />
-                  )}
-                  {assigneeResults.length > 0 && (
-                    <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-card border border-border/40 rounded-xl shadow-2xl overflow-hidden max-h-48 overflow-y-auto">
-                      {assigneeResults.map((user) => (
-                        <button
-                          key={user.id}
-                          type="button"
-                          onClick={() => {
-                            setForm({
-                              ...form,
-                              assigned_to: user.id,
-                              assigneeName: user.full_name,
-                              assigneeMuid: user.muid,
-                            });
-                            clearAssigneeResults();
-                          }}
-                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/20 text-left transition-colors border-b border-border/10 last:border-0"
+                    <SelectTrigger className="w-full h-10 bg-background/50 border-border/50 font-bold text-xs rounded-xl">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent position="popper" className="rounded-xl">
+                      {COMPLEXITY_OPTIONS.map((c) => (
+                        <SelectItem
+                          key={c}
+                          value={c}
+                          className="font-bold text-xs uppercase"
                         >
-                          <div className="w-7 h-7 rounded-full bg-brand-blue/10 flex items-center justify-center text-[10px] font-black text-brand-blue">
-                            {user.full_name[0]}
-                          </div>
-                          <div>
-                            <p className="text-sm font-bold text-foreground">
-                              {user.full_name}
-                            </p>
-                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                              @{user.muid}
-                            </p>
-                          </div>
-                        </button>
+                          {c}
+                        </SelectItem>
                       ))}
-                    </div>
-                  )}
+                    </SelectContent>
+                  </Select>
                 </div>
-              )}
-            </div>
 
-            {/* Team + Deadline */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  Team
-                </Label>
-                <Select
-                  value={form.team}
-                  onValueChange={(v) => setForm({ ...form, team: v })}
-                >
-                  <SelectTrigger className="h-10 bg-background/50 border-border/50 font-bold text-xs uppercase">
-                    <SelectValue placeholder="Select Team" />
-                  </SelectTrigger>
-                  <SelectContent
-                    position="popper"
-                    className="bg-card font-bold border-border/60"
-                  >
-                    {teams.map((t) => (
-                      <SelectItem
-                        key={t}
-                        value={t}
-                        className="font-bold text-xs uppercase"
-                      >
-                        {t.replace(/_/g, " ")}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
-                  <CalendarDays className="w-3.5 h-3.5" /> Deadline
-                </Label>
-                <Input
-                  type="date"
-                  value={form.deadline}
-                  onChange={(e) =>
-                    setForm({ ...form, deadline: e.target.value })
-                  }
-                  className="font-bold"
-                />
+                {/* Karma */}
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                    Karma
+                  </Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    placeholder="e.g. 100"
+                    value={form.karma}
+                    onChange={(e) =>
+                      setForm({ ...form, karma: e.target.value })
+                    }
+                    className="h-10 bg-background/50 border-border/50 font-bold rounded-xl"
+                  />
+                </div>
+
+                {/* Deadline */}
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                    Deadline
+                  </Label>
+                  <Input
+                    type="date"
+                    value={form.deadline}
+                    onChange={(e) =>
+                      setForm({ ...form, deadline: e.target.value })
+                    }
+                    className="h-10 bg-background/50 border-border/50 font-bold rounded-xl"
+                  />
+                </div>
               </div>
             </div>
 
-            <DialogFooter className="pt-2">
+            <DialogFooter className="pt-4 border-t border-border/20">
               <Button
                 type="button"
                 variant="outline"
@@ -948,7 +1052,10 @@ export function AdminTasksPageClient() {
 
       {/* ── Edit Task Dialog ────────────────────────────────────── */}
       <Dialog open={!!editTask} onOpenChange={(o) => !o && setEditTask(null)}>
-        <DialogContent className="w-full max-w-[calc(100%-2rem)] sm:max-w-2xl border-border/40 bg-card backdrop-blur-xl">
+        <DialogContent
+          className="w-full max-w-[calc(100%-2rem)] sm:max-w-2xl border-border/40 bg-card backdrop-blur-xl"
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
           <DialogHeader className="pr-8">
             <DialogTitle className="text-xl font-black uppercase tracking-widest">
               Edit Task
@@ -959,144 +1066,150 @@ export function AdminTasksPageClient() {
           </DialogHeader>
           <form
             onSubmit={handleUpdate}
-            className="space-y-5 pt-2 w-full min-w-0"
+            className="flex flex-col min-h-0 w-full"
           >
-            <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                Title
-              </Label>
-              <Input
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-                className="h-10 bg-background/50 border-border/50 font-bold"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                Description
-              </Label>
-              <Textarea
-                value={form.description}
-                onChange={(e) =>
-                  setForm({ ...form, description: e.target.value })
-                }
-                className="min-h-[80px] max-h-[160px] overflow-y-auto bg-background/50 border-border/50 font-medium resize-none"
-              />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-5 pt-2 my-2 pr-1 max-h-[60vh] overflow-y-auto w-full min-w-0">
+              {/* Title */}
               <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  Category
-                </Label>
-                <Select
-                  value={form.category}
-                  onValueChange={(v) => setForm({ ...form, category: v })}
-                >
-                  <SelectTrigger className="h-10 bg-background/50 border-border/50 font-bold text-xs uppercase">
-                    <SelectValue placeholder="Select Category" />
-                  </SelectTrigger>
-                  <SelectContent
-                    position="popper"
-                    className="bg-card font-bold border-border/60"
-                  >
-                    {categories.map((cat) => (
-                      <SelectItem
-                        key={cat}
-                        value={cat}
-                        className="font-bold text-xs uppercase"
-                      >
-                        {cat.replace(/_/g, " ")}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  Complexity
-                </Label>
-                <Select
-                  value={form.complexity}
-                  onValueChange={(v) =>
-                    setForm({
-                      ...form,
-                      complexity: v as (typeof COMPLEXITY_OPTIONS)[number],
-                    })
-                  }
-                >
-                  <SelectTrigger className="h-10 bg-background/50 border-border/50 font-bold text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent position="popper">
-                    {COMPLEXITY_OPTIONS.map((c) => (
-                      <SelectItem
-                        key={c}
-                        value={c}
-                        className="font-bold text-xs uppercase"
-                      >
-                        {c}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  Karma
+                  Title
                 </Label>
                 <Input
-                  type="number"
-                  min="0"
-                  placeholder="e.g. 100"
-                  value={form.karma}
-                  onChange={(e) => setForm({ ...form, karma: e.target.value })}
-                  className="h-10 bg-background/50 border-border/50 font-bold"
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  className="h-10 bg-background/50 border-border/50 font-bold rounded-xl focus-visible:ring-brand-blue"
                 />
               </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+              {/* Description */}
               <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  Team
+                  Description
                 </Label>
-                <Select
-                  value={form.team}
-                  onValueChange={(v) => setForm({ ...form, team: v })}
-                >
-                  <SelectTrigger className="h-10 bg-background/50 border-border/50 font-bold text-xs uppercase">
-                    <SelectValue placeholder="Select Team" />
-                  </SelectTrigger>
-                  <SelectContent
-                    position="popper"
-                    className="bg-card font-bold border-border/60"
-                  >
-                    {teams.map((t) => (
-                      <SelectItem
-                        key={t}
-                        value={t}
-                        className="font-bold text-xs uppercase"
-                      >
-                        {t.replace(/_/g, " ")}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
-                  <CalendarDays className="w-3.5 h-3.5" /> Deadline
-                </Label>
-                <Input
-                  type="date"
-                  value={form.deadline}
+                <Textarea
+                  value={form.description}
                   onChange={(e) =>
-                    setForm({ ...form, deadline: e.target.value })
+                    setForm({ ...form, description: e.target.value })
                   }
-                  className="font-bold"
+                  className="min-h-[140px] max-h-[220px] overflow-y-auto bg-background/50 border-border/50 font-medium resize-none rounded-xl focus-visible:ring-brand-blue"
                 />
               </div>
+
+              {/* Guild & Category Row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Guild (Unchangeable) */}
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                    Guild
+                  </Label>
+                  <Input
+                    value={form.team ? form.team.replace(/_/g, " ") : ""}
+                    readOnly
+                    disabled
+                    className="h-10 bg-muted/40 border-border/40 font-bold text-xs uppercase cursor-not-allowed select-none rounded-xl"
+                  />
+                </div>
+
+                {/* Category */}
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                    Category
+                  </Label>
+                  <Select
+                    value={form.category}
+                    onValueChange={(v) => setForm({ ...form, category: v })}
+                  >
+                    <SelectTrigger className="w-full h-10 bg-background/50 border-border/50 font-bold text-xs uppercase rounded-xl">
+                      <SelectValue placeholder="Select Category" />
+                    </SelectTrigger>
+                    <SelectContent
+                      position="popper"
+                      className="bg-card font-bold border-border/60 rounded-xl"
+                    >
+                      {(selectedUserGuild
+                        ? createFormCategories
+                        : editFormCategories
+                      ).map((cat) => (
+                        <SelectItem
+                          key={cat}
+                          value={cat}
+                          className="font-bold text-xs uppercase"
+                        >
+                          {cat.replace(/_/g, " ")}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Complexity, Karma & Deadline Row */}
+              <div className="grid grid-cols-3 gap-4">
+                {/* Complexity */}
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                    Complexity
+                  </Label>
+                  <Select
+                    value={form.complexity}
+                    onValueChange={(v) =>
+                      setForm({
+                        ...form,
+                        complexity: v as (typeof COMPLEXITY_OPTIONS)[number],
+                      })
+                    }
+                  >
+                    <SelectTrigger className="w-full h-10 bg-background/50 border-border/50 font-bold text-xs rounded-xl">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent position="popper" className="rounded-xl">
+                      {COMPLEXITY_OPTIONS.map((c) => (
+                        <SelectItem
+                          key={c}
+                          value={c}
+                          className="font-bold text-xs uppercase"
+                        >
+                          {c}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Karma */}
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                    Karma
+                  </Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    placeholder="e.g. 100"
+                    value={form.karma}
+                    onChange={(e) =>
+                      setForm({ ...form, karma: e.target.value })
+                    }
+                    className="h-10 bg-background/50 border-border/50 font-bold rounded-xl"
+                  />
+                </div>
+
+                {/* Deadline */}
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                    Deadline
+                  </Label>
+                  <Input
+                    type="date"
+                    value={form.deadline}
+                    onChange={(e) =>
+                      setForm({ ...form, deadline: e.target.value })
+                    }
+                    className="h-10 bg-background/50 border-border/50 font-bold rounded-xl"
+                  />
+                </div>
+              </div>
             </div>
-            <DialogFooter className="pt-2">
+            <DialogFooter className="pt-4 border-t border-border/20">
               <Button
                 type="button"
                 variant="outline"
@@ -1128,7 +1241,10 @@ export function AdminTasksPageClient() {
         open={!!deleteTarget}
         onOpenChange={(o) => !o && setDeleteTarget(null)}
       >
-        <DialogContent className="max-w-md border-border/40 bg-card backdrop-blur-xl">
+        <DialogContent
+          className="max-w-md border-border/40 bg-card backdrop-blur-xl"
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
           <DialogHeader>
             <DialogTitle className="text-lg font-black uppercase tracking-widest text-destructive">
               Delete Task
@@ -1166,55 +1282,65 @@ export function AdminTasksPageClient() {
         </DialogContent>
       </Dialog>
 
-      {/* ── Verify Task Dialog ──────────────────────────────────── */}
+      {/* ── Review & Status Update Dialog ──────────────────────────────────── */}
       <Dialog
-        open={!!verifyTarget}
-        onOpenChange={(o) => !o && setVerifyTarget(null)}
+        open={!!reviewTarget}
+        onOpenChange={(o) => !o && setReviewTarget(null)}
       >
-        <DialogContent className="max-w-md border-border/40 bg-card backdrop-blur-xl">
+        <DialogContent
+          className="max-w-md border-border/40 bg-card backdrop-blur-xl"
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
           <DialogHeader>
-            <DialogTitle className="text-lg font-black uppercase tracking-widest text-success flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5" /> Verify Completed Task
+            <DialogTitle className="text-lg font-black uppercase tracking-widest text-brand-blue flex items-center gap-2">
+              <MessageSquareDot className="w-5 h-5" /> Review & Update Status
             </DialogTitle>
             <DialogDescription className="text-sm font-medium text-muted-foreground mt-2">
-              Approve and verify achievements for this task. You can override
-              the awarded karma value below.
+              Update the task status and provide review feedback to the intern.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-3">
-            <div className="space-y-1">
-              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
-                Task
-              </span>
-              <span className="font-bold text-foreground text-sm">
-                {verifyTarget?.title}
-              </span>
+          <div className="space-y-4 py-3 my-2 pr-1 max-h-[60vh] overflow-y-auto w-full min-w-0">
+            {/* Read-only metadata */}
+            <div className="grid grid-cols-2 gap-3 p-3 rounded-xl border border-border/40 bg-background/40">
+              <div className="space-y-0.5">
+                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-wider block">
+                  Task
+                </span>
+                <span
+                  className="font-bold text-foreground text-xs truncate block"
+                  title={reviewTarget?.title}
+                >
+                  {reviewTarget?.title}
+                </span>
+              </div>
+              <div className="space-y-0.5">
+                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-wider block">
+                  Assigned To
+                </span>
+                <span className="font-semibold text-foreground text-xs truncate block">
+                  {reviewTarget?.assigned_to_name || reviewTarget?.assigned_to}
+                </span>
+              </div>
             </div>
-            <div className="space-y-1">
-              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
-                Assigned To
-              </span>
-              <span className="font-semibold text-foreground text-xs">
-                {verifyTarget?.assigned_to_name || verifyTarget?.assigned_to}
-              </span>
-            </div>
+
+            {/* Submission link */}
             <div className="space-y-1">
               <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
                 Submission Link
               </span>
-              {verifyTarget?.output_link ? (
+              {reviewTarget?.output_link ? (
                 <a
-                  href={verifyTarget.output_link}
+                  href={reviewTarget.output_link}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-xs font-bold text-brand-blue hover:underline break-all"
+                  className="text-xs font-bold text-brand-blue hover:underline break-all flex items-center gap-1"
                 >
-                  {verifyTarget.output_link}
+                  <ExternalLink className="w-3 h-3 shrink-0" />
+                  {reviewTarget.output_link}
                 </a>
               ) : isFetchingDetail ? (
-                <span className="text-xs text-muted-foreground italic flex items-center gap-1.5">
-                  <Spinner className="w-3 h-3 text-muted-foreground" /> Loading
-                  submission link...
+                <span className="text-xs text-muted-foreground italic">
+                  Loading submission link...
                 </span>
               ) : (
                 <span className="text-xs text-muted-foreground italic">
@@ -1222,39 +1348,144 @@ export function AdminTasksPageClient() {
                 </span>
               )}
             </div>
+
+            {/* Status selector */}
             <div className="space-y-2">
               <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                Karma Points Awarded
+                Status <span className="text-destructive">*</span>
               </Label>
-              <Input
-                type="number"
-                min="0"
-                value={verifyKarma}
-                onChange={(e) => setVerifyKarma(e.target.value)}
-                className="h-10 bg-background/50 border-border/50 font-bold"
+              <Select
+                value={reviewForm.status}
+                onValueChange={(v) =>
+                  setReviewForm((prev) => ({ ...prev, status: v }))
+                }
+              >
+                <SelectTrigger className="h-10 bg-background/50 border-border/50 font-bold text-xs uppercase">
+                  <SelectValue placeholder="Select Status" />
+                </SelectTrigger>
+                <SelectContent
+                  position="popper"
+                  className="bg-card font-bold border-border/60"
+                >
+                  {_STATUS_OPTIONS.map((s) => (
+                    <SelectItem
+                      key={s}
+                      value={s}
+                      className="font-bold text-xs uppercase"
+                    >
+                      {s.replace(/_/g, " ")}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Karma — visible only when status is COMPLETED */}
+            {reviewForm.status === "COMPLETED" && (
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                  Karma Points Awarded
+                </Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={reviewForm.karma}
+                  onChange={(e) =>
+                    setReviewForm((prev) => ({
+                      ...prev,
+                      karma: e.target.value,
+                    }))
+                  }
+                  className="h-10 bg-background/50 border-border/50 font-bold"
+                  placeholder="e.g. 200"
+                />
+              </div>
+            )}
+
+            {/* Review Remark */}
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                Review Remark
+                {(reviewForm.status === "IN_PROGRESS" ||
+                  reviewForm.status === "ON_HOLD") && (
+                  <span className="text-destructive ml-1">*</span>
+                )}
+              </Label>
+              <Textarea
+                placeholder={
+                  reviewForm.status === "COMPLETED"
+                    ? "Optional — e.g. Great work, well done!"
+                    : reviewForm.status === "IN_PROGRESS" ||
+                        reviewForm.status === "ON_HOLD"
+                      ? "Required — e.g. Failing test cases, please fix..."
+                      : "Optional remark..."
+                }
+                value={reviewForm.remark}
+                onChange={(e) =>
+                  setReviewForm((prev) => ({ ...prev, remark: e.target.value }))
+                }
+                className="min-h-[80px] max-h-[150px] overflow-y-auto bg-background/50 border-border/50 font-medium resize-none"
               />
             </div>
           </div>
-          <DialogFooter className="pt-2">
+          <DialogFooter className="pt-4 border-t border-border/20 flex-wrap gap-2">
             <Button
               variant="outline"
-              onClick={() => setVerifyTarget(null)}
+              onClick={() => setReviewTarget(null)}
               className="font-bold"
             >
               Cancel
             </Button>
+            {reviewForm.status === "COMPLETED" && (
+              <Button
+                disabled={verifyMutation.isPending || reviewMutation.isPending}
+                onClick={() => {
+                  if (!reviewTarget) return;
+                  verifyMutation.mutate(
+                    {
+                      id: reviewTarget.id,
+                      karma_awarded: reviewForm.karma
+                        ? Number(reviewForm.karma)
+                        : 0,
+                    },
+                    {
+                      onSuccess: () => setReviewTarget(null),
+                    },
+                  );
+                }}
+                className="bg-success hover:bg-success/90 text-white font-bold gap-2"
+              >
+                {verifyMutation.isPending ? (
+                  <>
+                    <Spinner className="w-4 h-4" /> Verifying...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-4 h-4" /> Verify &amp; Award
+                    Karma
+                  </>
+                )}
+              </Button>
+            )}
             <Button
-              disabled={verifyMutation.isPending}
+              disabled={
+                reviewMutation.isPending ||
+                verifyMutation.isPending ||
+                !reviewForm.status ||
+                ((reviewForm.status === "IN_PROGRESS" ||
+                  reviewForm.status === "ON_HOLD") &&
+                  !reviewForm.remark.trim())
+              }
               onClick={handleVerifySubmit}
-              className="bg-success hover:bg-success/90 text-white font-bold gap-2"
+              className="bg-brand-blue hover:bg-brand-blue/90 text-white font-bold gap-2"
             >
-              {verifyMutation.isPending ? (
+              {reviewMutation.isPending ? (
                 <>
-                  <Spinner className="w-4 h-4" /> Verifying...
+                  <Spinner className="w-4 h-4" /> Saving...
                 </>
               ) : (
                 <>
-                  <CheckCircle2 className="w-4 h-4" /> Verify & Award
+                  <MessageSquareDot className="w-4 h-4" /> Save Review
                 </>
               )}
             </Button>

@@ -437,7 +437,7 @@ export function InternReportPageClient() {
             (() => {
               const muid = selectedReview.muid || "";
               return (
-                <div className="space-y-4 py-2 my-2 text-sm flex-1 min-h-0 overflow-y-auto pr-1 w-full min-w-0">
+                <div className="space-y-4 py-2 my-2 text-sm max-h-[60vh] overflow-y-auto pr-1 w-full min-w-0">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1">
                       <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">

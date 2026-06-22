@@ -34,7 +34,10 @@ import {
   useInternTasks,
   useUpdateTaskStatus,
 } from "@/features/intern";
-import { getTaskKarma } from "@/features/intern/utils/intern-helpers";
+import {
+  getTaskBaseKarma,
+  getTaskKarma,
+} from "@/features/intern/utils/intern-helpers";
 import { useDebounce } from "@/hooks/use-debounce";
 
 const getComplexityColor = (complexity: string) => {
@@ -92,7 +95,17 @@ export function InternTasksPageClient() {
   const handleConfirmComplete = () => {
     if (!completingTaskId) return;
     if (!outputLink.trim()) {
-      toast.error("Please enter a valid submission URL");
+      toast.error("Please enter a submission URL");
+      return;
+    }
+    try {
+      const url = new URL(outputLink.trim());
+      if (url.protocol !== "http:" && url.protocol !== "https:") {
+        toast.error("Submission link must start with http:// or https://");
+        return;
+      }
+    } catch {
+      toast.error("Please enter a valid URL (e.g. https://github.com/...)");
       return;
     }
     updateStatusMutation.mutate(
@@ -196,7 +209,7 @@ export function InternTasksPageClient() {
             >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between gap-2 mb-2">
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <Badge
                       variant="outline"
                       className={`text-[9px] uppercase font-black tracking-widest ${getComplexityColor(task.complexity)}`}
@@ -207,7 +220,13 @@ export function InternTasksPageClient() {
                       variant="outline"
                       className="text-[9px] uppercase font-black tracking-widest bg-success/10 text-success border-success/20"
                     >
-                      {getTaskKarma(task)} Karma
+                      {getTaskBaseKarma(task)} Karma
+                    </Badge>
+                    <Badge
+                      variant="outline"
+                      className="text-[9px] uppercase font-black tracking-widest bg-brand-purple/10 text-brand-purple border-brand-purple/20"
+                    >
+                      {getTaskKarma(task)} Pts
                     </Badge>
                   </div>
                   {task.deadline && (
@@ -254,7 +273,7 @@ export function InternTasksPageClient() {
                       }
                       disabled={updateStatusMutation.isPending}
                     >
-                      <SelectTrigger className="h-8 font-black uppercase text-[9px] tracking-widest w-[110px] border-border/50 bg-background/50 rounded-lg">
+                      <SelectTrigger className="h-8 font-black uppercase text-[9px] tracking-widest w-fit min-w-[110px] px-3 border-border/50 bg-background/50 rounded-lg">
                         <SelectValue placeholder="TODO" />
                       </SelectTrigger>
                       <SelectContent
@@ -333,7 +352,13 @@ export function InternTasksPageClient() {
                       variant="outline"
                       className="bg-success/10 text-success border-success/20 text-[9px] font-black rounded-md uppercase tracking-wider px-2 py-0.5"
                     >
-                      {getTaskKarma(selectedTask)} Karma
+                      {getTaskBaseKarma(selectedTask)} Karma
+                    </Badge>
+                    <Badge
+                      variant="outline"
+                      className="bg-brand-purple/10 text-brand-purple border-brand-purple/20 text-[9px] font-black rounded-md uppercase tracking-wider px-2 py-0.5"
+                    >
+                      {getTaskKarma(selectedTask)} Pts
                     </Badge>
                     <Badge
                       variant="default"
@@ -348,7 +373,7 @@ export function InternTasksPageClient() {
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="space-y-6 pt-4">
+              <div className="overflow-y-auto max-h-[calc(80vh-10rem)] space-y-6 pt-4 pr-1">
                 {/* Description */}
                 <div className="space-y-2">
                   <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
@@ -394,6 +419,14 @@ export function InternTasksPageClient() {
                   <div className="space-y-1 bg-background/25 border border-border/20 p-3 rounded-xl">
                     <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">
                       Karma
+                    </p>
+                    <p className="text-sm font-bold text-foreground">
+                      {getTaskBaseKarma(selectedTask)}
+                    </p>
+                  </div>
+                  <div className="space-y-1 bg-background/25 border border-border/20 p-3 rounded-xl">
+                    <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">
+                      Points
                     </p>
                     <p className="text-sm font-bold text-foreground">
                       {getTaskKarma(selectedTask)}
@@ -458,7 +491,7 @@ export function InternTasksPageClient() {
                       }}
                       disabled={updateStatusMutation.isPending}
                     >
-                      <SelectTrigger className="h-9 font-black uppercase text-[10px] tracking-widest w-[130px] border-border/50 bg-background/50 rounded-lg">
+                      <SelectTrigger className="h-9 font-black uppercase text-[10px] tracking-widest w-fit min-w-[130px] px-3 border-border/50 bg-background/50 rounded-lg">
                         <SelectValue placeholder="TODO" />
                       </SelectTrigger>
                       <SelectContent
@@ -523,11 +556,17 @@ export function InternTasksPageClient() {
               <Input
                 id="output-link-input"
                 type="url"
+                required
+                pattern="https?://.+"
                 placeholder="https://github.com/... or similar"
                 value={outputLink}
                 onChange={(e) => setOutputLink(e.target.value)}
                 className="bg-background/50 border-border/50 font-medium focus-visible:ring-brand-blue"
               />
+              <p className="text-[10px] text-muted-foreground font-medium">
+                Must be a valid URL starting with{" "}
+                <span className="font-black">https://</span>
+              </p>
             </div>
           </div>
 

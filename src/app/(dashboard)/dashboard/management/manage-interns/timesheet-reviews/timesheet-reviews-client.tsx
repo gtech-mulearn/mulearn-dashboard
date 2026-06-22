@@ -511,7 +511,7 @@ export function TimesheetReviewsPageClient() {
                 ((selectedTimesheet as unknown as Record<string, unknown>)
                   .muid as string) || "";
               return (
-                <div className="space-y-4 py-2 my-2 text-sm w-full min-w-0">
+                <div className="space-y-4 py-2 my-2 text-sm max-h-[60vh] overflow-y-auto pr-1 w-full min-w-0">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1">
                       <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
