@@ -158,7 +158,7 @@ export function TaskVerificationTable({
             if (!item) return null;
             const isPending = item.approval_status === "pending";
             return (
-              <div className="flex items-center gap-1 justify-end">
+              <div className="flex items-center gap-1 justify-center">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button

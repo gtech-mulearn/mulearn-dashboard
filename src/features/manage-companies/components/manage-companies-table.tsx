@@ -365,42 +365,37 @@ export default function ManageCompaniesTable() {
             </DropdownMenu>
           </div>
 
-          {/* Responsive table wrapper */}
-          <div className="w-full overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
-            <div className="min-w-200">
-              <Table
-                rows={rows as any}
-                isLoading={isLoading}
-                page={currentPage}
-                perPage={perPage}
-                columnOrder={columnOrder}
-                id={["id"]}
-              >
-                <THead
-                  columnOrder={columnOrder}
-                  onIconClick={handleSortChange}
-                  action={false}
+          <Table
+            rows={rows as any}
+            isLoading={isLoading}
+            page={currentPage}
+            perPage={perPage}
+            columnOrder={columnOrder}
+            id={["id"]}
+          >
+            <THead
+              columnOrder={columnOrder}
+              onIconClick={handleSortChange}
+              action={false}
+            />
+            <div>
+              {!isLoading && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  handleNextClick={() =>
+                    setCurrentPage((p) => Math.min(p + 1, totalPages || 1))
+                  }
+                  handlePreviousClick={() =>
+                    setCurrentPage((p) => Math.max(p - 1, 1))
+                  }
+                  perPage={perPage}
+                  totalCount={totalCount}
                 />
-                <div>
-                  {!isLoading && (
-                    <Pagination
-                      currentPage={currentPage}
-                      totalPages={totalPages}
-                      handleNextClick={() =>
-                        setCurrentPage((p) => Math.min(p + 1, totalPages || 1))
-                      }
-                      handlePreviousClick={() =>
-                        setCurrentPage((p) => Math.max(p - 1, 1))
-                      }
-                      perPage={perPage}
-                      totalCount={totalCount}
-                    />
-                  )}
-                </div>
-                <div />
-              </Table>
+              )}
             </div>
-          </div>
+            <div />
+          </Table>
         </CardContent>
       </Card>
 

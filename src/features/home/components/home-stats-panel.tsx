@@ -11,7 +11,7 @@ function DeltaBadge({
   const label = value > 0 ? `+${value}` : `${value}`;
   return (
     <span
-      className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[11px] font-semibold ${isGood ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive"}`}
+      className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[11px] font-semibold ${isGood ? "bg-success/12 text-success" : "bg-destructive/12 text-destructive"}`}
     >
       {label}
     </span>

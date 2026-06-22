@@ -136,297 +136,174 @@ const Table: FC<TableProps> = (props) => {
   return (
     <>
       {props.isLoading && (
-        <div className="rounded-xl border border-border bg-card px-3 py-10 text-center md:hidden">
+        <div className="rounded-xl border border-border bg-card px-3 py-10 text-center">
           <Loader />
         </div>
       )}
 
-      <div
-        ref={tableContainerRef}
-        onScroll={updateScrollIndicator}
-        className="hidden overflow-x-auto overflow-y-hidden rounded-xl border border-border bg-card md:block"
-      >
-        <table className="w-full border-collapse table-fixed">
-          {props.children?.[0]}
-          {props.isLoading ? (
-            <tbody>
-              <tr>
-                <td
-                  colSpan={props.columnOrder.length + 2}
-                  className="px-3 py-10 text-center"
-                >
-                  <Loader />
-                </td>
-              </tr>
-            </tbody>
-          ) : (
-            <tbody>
-              {props.rows.map((rowData, index) => (
-                <tr
-                  key={`${rowData.id ?? index}`}
-                  className="odd:bg-muted/70 even:bg-transparent"
-                >
-                  <td
-                    className={`border-b border-border px-3.5 py-3 w-16 ${props.slNoCellClassName ?? ""}`}
-                  >
-                    {startIndex + index + 1}
-                  </td>
-                  {props.columnOrder.map((column) => (
+      {!props.isLoading && (
+        <>
+          <div
+            ref={tableContainerRef}
+            onScroll={updateScrollIndicator}
+            className="block overflow-x-auto overflow-y-hidden rounded-xl border border-border bg-card"
+          >
+            <table className="min-w-full border-collapse">
+              {props.children?.[0]}
+              {props.isLoading ? (
+                <tbody>
+                  <tr>
                     <td
-                      className={`border-b border-border px-3.5 py-3 break-words ${column.width || ""}`}
-                      key={column.column}
+                      colSpan={props.columnOrder.length + 2}
+                      className="px-3 py-10 text-center"
                     >
-                      {(() => {
-                        const customRendered = props.customCellRender?.(
-                          column.column,
-                          rowData,
-                        );
-                        if (customRendered) return customRendered;
-                        return column.wrap
-                          ? column.wrap(
-                              convertToTableData(rowData[column.column]),
-                              String(rowData.id ?? ""),
+                      <Loader />
+                    </td>
+                  </tr>
+                </tbody>
+              ) : (
+                <tbody>
+                  {props.rows.map((rowData, index) => (
+                    <tr
+                      key={`${rowData.id ?? index}`}
+                      className="odd:bg-muted/70 even:bg-transparent"
+                    >
+                      <td
+                        className={`border-b border-border px-3.5 py-3 w-16 ${props.slNoCellClassName ?? ""}`}
+                      >
+                        {startIndex + index + 1}
+                      </td>
+                      {props.columnOrder.map((column) => (
+                        <td
+                          className={`border-b border-border px-3.5 py-3 break-words ${column.width || ""}`}
+                          key={column.column}
+                        >
+                          {(() => {
+                            const customRendered = props.customCellRender?.(
+                              column.column,
                               rowData,
-                            )
-                          : convertToTableData(rowData[column.column]);
-                      })()}
-                    </td>
+                            );
+                            if (customRendered) return customRendered;
+                            return column.wrap
+                              ? column.wrap(
+                                  convertToTableData(rowData[column.column]),
+                                  String(rowData.id ?? ""),
+                                  rowData,
+                                )
+                              : convertToTableData(rowData[column.column]);
+                          })()}
+                        </td>
+                      ))}
+                      {props.id?.map((column) => (
+                        <td
+                          className="border-b border-border px-3.5 py-3 w-32"
+                          key={column}
+                        >
+                          <div className="flex items-center justify-center gap-1">
+                            {props.customActionRender ? (
+                              props.customActionRender(rowData)
+                            ) : (
+                              <>
+                                {props.analytics && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="text-muted-foreground hover:bg-muted hover:text-foreground"
+                                    onClick={() =>
+                                      props.analytics?.(rowData[column] ?? "")
+                                    }
+                                    aria-label="View analytics"
+                                  >
+                                    <TrendingUp className="size-4" />
+                                  </Button>
+                                )}
+                                {props.onCopyClick && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="text-muted-foreground hover:bg-muted hover:text-foreground"
+                                    onClick={() =>
+                                      props.onCopyClick?.(rowData[column] ?? "")
+                                    }
+                                    aria-label="Copy"
+                                  >
+                                    <Copy className="size-4" />
+                                  </Button>
+                                )}
+                                {props.onEditClick && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="text-muted-foreground hover:bg-muted hover:text-foreground"
+                                    onClick={() =>
+                                      props.onEditClick?.(rowData[column] ?? "")
+                                    }
+                                    aria-label="Edit"
+                                  >
+                                    <Pencil className="size-4" />
+                                  </Button>
+                                )}
+                                {props.onVerifyClick && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8 px-2 py-1"
+                                    onClick={() =>
+                                      openVerify(rowData[column] ?? "", rowData)
+                                    }
+                                    aria-label="Verify"
+                                  >
+                                    Verify
+                                  </Button>
+                                )}
+                                {props.onDeleteClick && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="text-muted-foreground hover:bg-muted hover:text-foreground"
+                                    onClick={() =>
+                                      setDeleteRowId(
+                                        String(rowData[column] ?? ""),
+                                      )
+                                    }
+                                    aria-label="Delete"
+                                  >
+                                    <Trash2 className="size-4" />
+                                  </Button>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      ))}
+                    </tr>
                   ))}
-                  {props.id?.map((column) => (
-                    <td
-                      className="border-b border-border px-3.5 py-3 w-32"
-                      key={column}
-                    >
-                      <div className="flex items-center justify-end gap-1">
-                        {props.customActionRender ? (
-                          props.customActionRender(rowData)
-                        ) : (
-                          <>
-                            {props.analytics && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="text-muted-foreground hover:bg-muted hover:text-foreground"
-                                onClick={() =>
-                                  props.analytics?.(rowData[column] ?? "")
-                                }
-                                aria-label="View analytics"
-                              >
-                                <TrendingUp className="size-4" />
-                              </Button>
-                            )}
-                            {props.onCopyClick && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="text-muted-foreground hover:bg-muted hover:text-foreground"
-                                onClick={() =>
-                                  props.onCopyClick?.(rowData[column] ?? "")
-                                }
-                                aria-label="Copy"
-                              >
-                                <Copy className="size-4" />
-                              </Button>
-                            )}
-                            {props.onEditClick && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="text-muted-foreground hover:bg-muted hover:text-foreground"
-                                onClick={() =>
-                                  props.onEditClick?.(rowData[column] ?? "")
-                                }
-                                aria-label="Edit"
-                              >
-                                <Pencil className="size-4" />
-                              </Button>
-                            )}
-                            {props.onVerifyClick && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-8 px-2 py-1"
-                                onClick={() =>
-                                  openVerify(rowData[column] ?? "", rowData)
-                                }
-                                aria-label="Verify"
-                              >
-                                Verify
-                              </Button>
-                            )}
-                            {props.onDeleteClick && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="text-muted-foreground hover:bg-muted hover:text-foreground"
-                                onClick={() =>
-                                  setDeleteRowId(String(rowData[column] ?? ""))
-                                }
-                                aria-label="Delete"
-                              >
-                                <Trash2 className="size-4" />
-                              </Button>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          )}
-        </table>
-      </div>
-      {hasOverflow && (
-        <div className="mt-3 hidden md:block">
-          <div className="relative h-2 rounded-full bg-border">
-            <div
-              className="absolute top-0 h-2 rounded-full bg-muted-foreground/40"
-              style={{
-                width: `${thumbWidth}px`,
-                transform: `translateX(${thumbLeft}px)`,
-              }}
-            />
+                </tbody>
+              )}
+            </table>
           </div>
-        </div>
-      )}
-
-      {!props.isLoading && hasData && (
-        <div className="space-y-3 md:hidden">
-          {props.rows.map((rowData, index) => (
-            <div
-              key={`${rowData.id ?? index}`}
-              className="rounded-xl border border-border/60 bg-card p-4 shadow-sm"
-            >
-              <div className="mb-3 flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-sm text-muted-foreground">
-                    #{startIndex + index + 1}
-                  </p>
-                  <p className="text-base font-semibold text-foreground">
-                    {convertToTableData(rowData.full_name)}
-                  </p>
-                </div>
-                {actionIdColumn && (
-                  <div className="flex items-center gap-1">
-                    {props.customActionRender ? (
-                      props.customActionRender(rowData)
-                    ) : (
-                      <>
-                        {props.analytics && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-muted-foreground hover:bg-muted hover:text-foreground"
-                            onClick={() =>
-                              props.analytics?.(rowData[actionIdColumn] ?? "")
-                            }
-                            aria-label="View analytics"
-                          >
-                            <TrendingUp className="size-4" />
-                          </Button>
-                        )}
-                        {props.onCopyClick && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-muted-foreground hover:bg-muted hover:text-foreground"
-                            onClick={() =>
-                              props.onCopyClick?.(rowData[actionIdColumn] ?? "")
-                            }
-                            aria-label="Copy"
-                          >
-                            <Copy className="size-4" />
-                          </Button>
-                        )}
-                        {props.onEditClick && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-muted-foreground hover:bg-muted hover:text-foreground"
-                            onClick={() =>
-                              props.onEditClick?.(rowData[actionIdColumn] ?? "")
-                            }
-                            aria-label="Edit"
-                          >
-                            <Pencil className="size-4" />
-                          </Button>
-                        )}
-                        {props.onVerifyClick && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-8 px-2 py-1 "
-                            onClick={() =>
-                              openVerify(rowData[actionIdColumn] ?? "", rowData)
-                            }
-                            aria-label="Verify"
-                          >
-                            Verify
-                          </Button>
-                        )}
-                        {props.onDeleteClick && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className=" text-muted-foreground hover:bg-muted hover:text-foreground"
-                            onClick={() =>
-                              setDeleteRowId(
-                                String(rowData[actionIdColumn] ?? ""),
-                              )
-                            }
-                            aria-label="Delete"
-                          >
-                            <Trash2 className="size-4" />
-                          </Button>
-                        )}
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-x-3 gap-y-2">
-                {props.columnOrder
-                  .filter((column) => column.column !== "full_name")
-                  .map((column) => (
-                    <div key={`mobile-${rowData.id ?? index}-${column.column}`}>
-                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                        {column.Label}
-                      </p>
-                      <div className="break-words text-sm text-foreground">
-                        {(() => {
-                          const customRendered = props.customCellRender?.(
-                            column.column,
-                            rowData,
-                          );
-                          if (customRendered) return customRendered;
-                          return column.wrap
-                            ? column.wrap(
-                                convertToTableData(rowData[column.column]),
-                                String(rowData.id ?? ""),
-                                rowData,
-                              )
-                            : convertToTableData(rowData[column.column]);
-                        })()}
-                      </div>
-                    </div>
-                  ))}
+          {hasOverflow && (
+            <div className="mt-3 block">
+              <div className="relative h-2 rounded-full bg-border">
+                <div
+                  className="absolute top-0 h-2 rounded-full bg-muted-foreground/40"
+                  style={{
+                    width: `${thumbWidth}px`,
+                    transform: `translateX(${thumbLeft}px)`,
+                  }}
+                />
               </div>
             </div>
-          ))}
-        </div>
-      )}
+          )}
 
-      {!props.isLoading && !hasData && (
-        <div className="rounded-xl border border-border bg-card p-8 text-center text-muted-foreground">
-          No data to display
-        </div>
-      )}
+          {!hasData && (
+            <div className="rounded-xl border border-border bg-card p-8 text-center text-muted-foreground">
+              No data to display
+            </div>
+          )}
 
-      {!props.isLoading && hasData && (
-        <div className="mt-4">{props.children?.[1]}</div>
+          {hasData && <div className="mt-4">{props.children?.[1]}</div>}
+        </>
       )}
 
       <Modal

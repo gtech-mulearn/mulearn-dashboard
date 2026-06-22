@@ -243,49 +243,47 @@ export default function TasksView() {
           searchInputClassName="h-10 text-sm"
         />
 
-        <div className="w-full overflow-x-auto">
-          <Table
-            rows={rows}
-            isLoading={isLoading}
-            customCellRender={(column, row) => {
-              if (column !== "active") return null;
+        <Table
+          rows={rows}
+          isLoading={isLoading}
+          customCellRender={(column, row) => {
+            if (column !== "active") return null;
 
-              return row.active === true ? (
-                <span className="text-green-600 font-semibold">Active</span>
-              ) : (
-                <span className="text-muted-foreground">Inactive</span>
-              );
-            }}
-            page={currentPage}
-            perPage={perPage}
+            return row.active === true ? (
+              <span className="text-green-600 font-semibold">Active</span>
+            ) : (
+              <span className="text-muted-foreground">Inactive</span>
+            );
+          }}
+          page={currentPage}
+          perPage={perPage}
+          columnOrder={columns}
+          id={["id"]}
+          customActionRender={renderActions}
+        >
+          <THead
             columnOrder={columns}
-            id={["id"]}
-            customActionRender={renderActions}
-          >
-            <THead
-              columnOrder={columns}
-              onIconClick={handleSortChange}
-              action={true}
+            onIconClick={handleSortChange}
+            action={true}
+          />
+
+          {!isLoading && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              handleNextClick={() =>
+                setCurrentPage((p) => Math.min(p + 1, totalPages || 1))
+              }
+              handlePreviousClick={() =>
+                setCurrentPage((p) => Math.max(p - 1, 1))
+              }
+              perPage={perPage}
+              totalCount={totalCount}
             />
+          )}
 
-            {!isLoading && (
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                handleNextClick={() =>
-                  setCurrentPage((p) => Math.min(p + 1, totalPages || 1))
-                }
-                handlePreviousClick={() =>
-                  setCurrentPage((p) => Math.max(p - 1, 1))
-                }
-                perPage={perPage}
-                totalCount={totalCount}
-              />
-            )}
-
-            <Blank />
-          </Table>
-        </div>
+          <Blank />
+        </Table>
       </CardContent>
 
       {/* Delete Confirmation Modal */}
