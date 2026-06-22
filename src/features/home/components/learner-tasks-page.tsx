@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, Calendar, Search, SlidersHorizontal, X } from "lucide-react";
+import { BookOpen, Search, SlidersHorizontal, X } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,6 @@ import type { UserLevelData } from "@/features/mujourney/schemas";
 import { usePublicTasks } from "@/features/tasks/hooks";
 import type { PublicTaskListParams } from "@/features/tasks/types/tasks.types";
 import { useDebounce } from "@/hooks/use-debounce";
-import { cn } from "@/lib/utils";
 
 // ─── Constants ─────────────────────────────────────────────────────────
 
@@ -32,44 +31,20 @@ const SORT_OPTIONS = [
   { label: "Level", value: "level" },
 ];
 
-const TASK_SOURCE_OPTIONS: {
-  label: string;
-  value: PublicTaskListParams["task_source"] | "";
-}[] = [
-  { label: "All Sources", value: "" },
-  { label: "Company Tasks", value: "company" },
-  { label: "IG Mentor Tasks", value: "ig_mentor" },
-  { label: "Campus Mentor Tasks", value: "campus_mentor" },
-  { label: "Platform Tasks", value: "platform" },
-];
-
 const PER_PAGE_OPTIONS = [10, 20, 50];
-
-// ─── Event Filter toggle values ─────────────────────────────────────────
-
-type EventFilter = "all" | "event_only";
-
-const EVENT_FILTER_OPTIONS: {
-  label: string;
-  value: EventFilter;
-  icon?: boolean;
-}[] = [
-  { label: "All Tasks", value: "all" },
-  { label: "Event Tasks", value: "event_only", icon: true },
-];
 
 // ─── Component ─────────────────────────────────────────────────────────
 
-export function LearnerTasksPage() {
+interface LearnerTasksPageProps {
+  /** Externally controlled task source filter — set by the parent dropdown */
+  taskSource?: PublicTaskListParams["task_source"] | "";
+}
+
+export function LearnerTasksPage({ taskSource = "" }: LearnerTasksPageProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(20);
   const [searchInput, setSearchInput] = useState("");
   const [sortBy, setSortBy] = useState("");
-  const [taskSource, setTaskSource] = useState<
-    PublicTaskListParams["task_source"] | ""
-  >("");
-  const [eventFilter, setEventFilter] = useState<EventFilter>("all");
-
   const debouncedSearch = useDebounce(searchInput, 400);
 
   // Build params from all filter state
@@ -79,7 +54,6 @@ export function LearnerTasksPage() {
     search: debouncedSearch,
     sortBy,
     ...(taskSource ? { task_source: taskSource } : {}),
-    ...(eventFilter === "event_only" ? { is_event_task: true } : {}),
   };
 
   const { data, isLoading, isFetching } = usePublicTasks(queryParams);
@@ -101,18 +75,6 @@ export function LearnerTasksPage() {
     setCurrentPage(1);
   }, []);
 
-  const handleTaskSource = useCallback((val: string) => {
-    setTaskSource(
-      val === "__all__" ? "" : (val as PublicTaskListParams["task_source"]),
-    );
-    setCurrentPage(1);
-  }, []);
-
-  const handleEventFilter = useCallback((val: EventFilter) => {
-    setEventFilter(val);
-    setCurrentPage(1);
-  }, []);
-
   const handlePerPage = useCallback((val: string) => {
     setPerPage(Number(val));
     setCurrentPage(1);
@@ -126,13 +88,10 @@ export function LearnerTasksPage() {
   const clearAllFilters = () => {
     setSearchInput("");
     setSortBy("");
-    setTaskSource("");
-    setEventFilter("all");
     setCurrentPage(1);
   };
 
-  const hasActiveFilters =
-    !!searchInput || !!sortBy || !!taskSource || eventFilter !== "all";
+  const hasActiveFilters = !!searchInput || !!sortBy;
 
   // ─── Group tasks by level ───────────────────────────────────────────
 
@@ -208,49 +167,6 @@ export function LearnerTasksPage() {
 
       {/* ── Row 2: Filters ────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-2">
-        {/* Event filter toggle */}
-        <div className="flex rounded-md border border-border overflow-hidden shrink-0">
-          {EVENT_FILTER_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => handleEventFilter(opt.value)}
-              className={cn(
-                "flex items-center gap-1.5 px-3 h-9 text-sm font-medium transition-colors",
-                eventFilter === opt.value
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-card text-muted-foreground hover:bg-muted hover:text-foreground",
-              )}
-            >
-              {opt.icon && <Calendar className="size-3.5" />}
-              {opt.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Task Source */}
-        <Select
-          value={taskSource || "__all__"}
-          onValueChange={handleTaskSource}
-        >
-          <SelectTrigger
-            id="task-source"
-            className="h-9 text-sm w-[190px] shrink-0"
-          >
-            <SelectValue placeholder="All Sources" />
-          </SelectTrigger>
-          <SelectContent>
-            {TASK_SOURCE_OPTIONS.map((opt) => (
-              <SelectItem
-                key={opt.value || "__all__"}
-                value={opt.value || "__all__"}
-              >
-                {opt.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
         {/* Sort */}
         <Select value={sortBy || "__none__"} onValueChange={handleSort}>
           <SelectTrigger
