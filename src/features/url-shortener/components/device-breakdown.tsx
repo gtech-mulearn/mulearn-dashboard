@@ -4,12 +4,20 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  Legend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
+import {
+  AXIS_PROPS,
+  BAR_RADIUS,
+  ChartGradients,
+  ChartTooltip,
+  GRID_PROPS,
+  MAX_BAR_SIZE,
+  seriesGradient,
+} from "@/components/charts/chart-theme";
 
 interface DeviceBreakdownProps {
   data: Record<string, number>;
@@ -23,7 +31,7 @@ export function DeviceBreakdown({ data }: DeviceBreakdownProps) {
 
   if (chartData.length === 0) {
     return (
-      <div className="h-64 flex items-center justify-center">
+      <div className="flex h-64 items-center justify-center">
         <p className="text-muted-foreground">No data available</p>
       </div>
     );
@@ -33,13 +41,21 @@ export function DeviceBreakdown({ data }: DeviceBreakdownProps) {
     <div className="h-64 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={chartData}>
-          {/* TODO: no semantic token — needs design decision */}
-          <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-          <XAxis stroke="#999999" style={{ fontSize: "12px" }} />
-          <YAxis stroke="#999999" style={{ fontSize: "12px" }} />
-          <Tooltip />
-          <Legend />
-          <Bar dataKey="value" fill="#0961f5" radius={6} />
+          <ChartGradients />
+          <CartesianGrid {...GRID_PROPS} />
+          <XAxis dataKey="name" {...AXIS_PROPS} />
+          <YAxis {...AXIS_PROPS} />
+          <Tooltip
+            cursor={{ fill: "var(--color-muted)", opacity: 0.2 }}
+            content={<ChartTooltip />}
+          />
+          <Bar
+            dataKey="value"
+            name="Visits"
+            fill={seriesGradient(0)}
+            radius={BAR_RADIUS}
+            maxBarSize={MAX_BAR_SIZE}
+          />
         </BarChart>
       </ResponsiveContainer>
     </div>
