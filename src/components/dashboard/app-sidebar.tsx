@@ -2,7 +2,7 @@
 
 import { Lock, LogOut } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -31,7 +31,6 @@ import { useUIStore } from "@/stores/ui-store";
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const router = useRouter();
   const { state } = useSidebar();
   const { mainItems, managementItems, bottomItems } = useFilteredNav();
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
@@ -46,11 +45,16 @@ export function AppSidebar() {
   const isCompanyVerified = companyProfile?.status === "verified";
 
   const handleLogout = useCallback(async () => {
+    // Clear cookies server-side first: the HttpOnly refreshToken can't be removed
+    // by client js-cookie, and if it lingers the proxy refreshes a new accessToken
+    // and bounces /login back to /dashboard.
+    await fetch("/api/auth/logout", { method: "POST" });
     await authStore.clearTokens();
     useUIStore.getState().resetUI();
     toast.success("Logged out successfully");
-    router.replace("/login");
-  }, [router]);
+    // Hard redirect so the proxy re-evaluates with the cookies actually gone.
+    window.location.href = "/login";
+  }, []);
 
   const isActive = useCallback(
     (href: string) => {

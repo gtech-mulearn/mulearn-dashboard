@@ -15,44 +15,13 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Loader from "@/app/loading";
+import { StatCard } from "@/components/ui/stat-card";
 import { useCompanyProfile } from "../../hooks/use-company-profile";
 import { useJobs } from "../../hooks/use-jobs";
 import { CompanyCultureSection } from "./company-culture-section";
 import { CompanyJobsSection } from "./company-jobs-section";
 import { CompanyProfileHeader } from "./company-profile-header";
 import { CompanyTestimonialsSection } from "./company-testimonials-section";
-
-// ─── Stat card ───────────────────────────────────────────────
-
-function StatCard({
-  icon,
-  value,
-  label,
-  color = "text-brand-blue",
-  bg = "bg-brand-blue/10",
-}: {
-  icon: React.ReactNode;
-  value: string | number;
-  label: string;
-  color?: string;
-  bg?: string;
-}) {
-  return (
-    <div className="rounded-2xl bg-card p-5 shadow-sm transition-shadow hover:shadow-md">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">{label}</p>
-          <p className="mt-1 text-3xl font-bold text-foreground">{value}</p>
-        </div>
-        <div
-          className={`flex size-11 items-center justify-center rounded-xl ${bg}`}
-        >
-          <span className={color}>{icon}</span>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // ─── Sidebar ─────────────────────────────────────────────────
 
@@ -270,16 +239,14 @@ export function CompanyProfilePage() {
             <StatCard
               icon={<FileText className="size-5" />}
               value={activeJobs.length}
-              label="Open Roles"
-              color="text-success"
-              bg="bg-success/10"
+              title="Open Roles"
+              accent="chart-1"
             />
             <StatCard
               icon={<Award className="size-5" />}
               value={(profile.avg_karma_of_hires ?? 0).toLocaleString()}
-              label="Avg. Hire Karma"
-              color="text-brand-purple"
-              bg="bg-brand-purple/10"
+              title="Avg. Hire Karma"
+              accent="chart-2"
             />
           </div>
 

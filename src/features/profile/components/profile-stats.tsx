@@ -7,7 +7,8 @@
  * Shows karma, rank, and level only.
  */
 
-import { Award, Flame, TrendingUp, Zap } from "lucide-react";
+import { Award, Flame, Zap } from "lucide-react";
+import { StatCard } from "@/components/ui/stat-card";
 import type { UserProfile } from "../schemas";
 
 interface ProfileStatsProps {
@@ -36,63 +37,27 @@ export function ProfileStats({ profile, monthDifference }: ProfileStatsProps) {
 
   return (
     <div className="grid gap-4 sm:grid-cols-3">
-      {/* Total Karma */}
-      <div className="rounded-2xl bg-card p-5 shadow-sm transition-shadow hover:shadow-md">
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">
-              Total Karma
-            </p>
-            <p className="mt-1 text-3xl font-bold text-foreground">
-              {formatNumber(karma)}
-            </p>
-            <p className="mt-1 flex items-center gap-1 text-xs text-success">
-              <TrendingUp className="h-3 w-3" />+{formatNumber(avgKarma)}/month
-            </p>
-          </div>
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-warning/10">
-            <Flame className="h-5 w-5 text-warning" />
-          </div>
-        </div>
-      </div>
-
-      {/* Rank */}
-      <div className="rounded-2xl bg-card p-5 shadow-sm transition-shadow hover:shadow-md">
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">
-              Global Rank
-            </p>
-            <p className="mt-1 text-3xl font-bold text-foreground">
-              #{rank || "-"}
-            </p>
-            <p className="mt-1 text-xs text-brand-blue">Top {percentile}%</p>
-          </div>
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-blue/10">
-            <Award className="h-5 w-5 text-brand-blue" />
-          </div>
-        </div>
-      </div>
-
-      {/* Level */}
-      <div className="rounded-2xl bg-card p-5 shadow-sm transition-shadow hover:shadow-md">
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">
-              Current Level
-            </p>
-            <p className="mt-1 text-3xl font-bold text-foreground">
-              Level {level}
-            </p>
-            <p className="mt-1 text-xs text-brand-purple">
-              {profile.level || "Beginner"}
-            </p>
-          </div>
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-purple/10">
-            <Zap className="h-5 w-5 text-brand-purple" />
-          </div>
-        </div>
-      </div>
+      <StatCard
+        title="Total Karma"
+        value={formatNumber(karma)}
+        accent="chart-4"
+        icon={<Flame className="size-5" />}
+        trend={{ value: `+${formatNumber(avgKarma)}/month`, direction: "up" }}
+      />
+      <StatCard
+        title="Global Rank"
+        value={`#${rank || "-"}`}
+        accent="chart-1"
+        icon={<Award className="size-5" />}
+        description={`Top ${percentile}%`}
+      />
+      <StatCard
+        title="Current Level"
+        value={`Level ${level}`}
+        accent="chart-2"
+        icon={<Zap className="size-5" />}
+        description={profile.level || "Beginner"}
+      />
     </div>
   );
 }
