@@ -102,10 +102,14 @@ export async function fetchJobs(
 ): Promise<JobsListResponse> {
   const query = new URLSearchParams();
 
-  if (params?.pageIndex) query.set("pageIndex", String(params.pageIndex));
-  if (params?.perPage) query.set("perPage", String(params.perPage));
+  if (params?.pageIndex || params?.page)
+    query.set("page", String(params.page ?? params.pageIndex));
+  if (params?.perPage || params?.per_page)
+    query.set("per_page", String(params.per_page ?? params.perPage));
   if (params?.search?.trim()) query.set("search", params.search.trim());
-  if (params?.sortBy) query.set("sortBy", params.sortBy);
+  if (params?.sortBy || params?.sort_by)
+    query.set("sort_by", params.sort_by ?? params.sortBy ?? "");
+  if (params?.sort_order) query.set("sort_order", params.sort_order);
 
   const queryString = query.toString();
   const url = queryString

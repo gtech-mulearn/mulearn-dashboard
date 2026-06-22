@@ -67,20 +67,21 @@ export function JobDetailView({
   const { mutate: updateJob, isPending: isUpdatingStatus } = useUpdateJob();
 
   const isClosed = job.status === "Closed";
-  // Only offer the close/reopen toggle for live listings (Active) or already
-  // closed jobs — not for Draft/Expired where it has no meaning.
-  const canToggleStatus = job.status === "Active" || isClosed;
+  const isDraft = job.status === "Draft";
+  const canToggleStatus = job.status === "Active" || isClosed || isDraft;
 
   const handleToggleStatus = () => {
-    const nextStatus = isClosed ? "Active" : "Closed";
+    const nextStatus = isClosed || isDraft ? "Active" : "Closed";
     updateJob(
       { jobId: job.id, payload: { status: nextStatus } },
       {
         onSuccess: () =>
-          toast.success(isClosed ? "Job reopened" : "Job closed"),
+          toast.success(isClosed || isDraft ? "Job activated" : "Job closed"),
         onError: () =>
           toast.error(
-            isClosed ? "Failed to reopen job" : "Failed to close job",
+            isClosed || isDraft
+              ? "Failed to activate job"
+              : "Failed to close job",
           ),
       },
     );
@@ -160,12 +161,16 @@ export function JobDetailView({
                 disabled={isUpdatingStatus}
                 className="gap-1.5"
               >
-                {isClosed ? (
+                {isClosed || isDraft ? (
                   <RefreshCw className="h-3.5 w-3.5" />
                 ) : (
                   <Ban className="h-3.5 w-3.5" />
                 )}
-                {isClosed ? "Reopen Job" : "Close Job"}
+                {isDraft
+                  ? "Publish Job"
+                  : isClosed
+                    ? "Reopen Job"
+                    : "Close Job"}
               </Button>
             )}
             <Button

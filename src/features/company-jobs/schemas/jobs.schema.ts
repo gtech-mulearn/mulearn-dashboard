@@ -519,19 +519,27 @@ export const LearnerDiscoveryResponseSchema = DjangoResponse(
 
 export const CreateJobResponseSchema = DjangoResponse(JobSchema);
 
-export const UpdateJobResponseSchema = DjangoResponse(
-  z.union([
+export const UpdateJobDataSchema = z
+  .union([
+    z.object({ job: JobSchema }),
+    JobSchema,
     z.object({
       job_id: z.string(),
       updated_fields: z.array(z.string()),
     }),
-    JobSchema,
-    z.object({
-      job: JobSchema,
-    }),
     z.record(z.string(), z.unknown()),
-  ]),
-);
+  ])
+  .transform((val) => {
+    if ("job" in val && typeof val.job === "object") {
+      return val.job;
+    }
+    if ("id" in val && "title" in val) {
+      return val;
+    }
+    return val;
+  });
+
+export const UpdateJobResponseSchema = DjangoResponse(UpdateJobDataSchema);
 
 export const DeleteJobResponseSchema = DjangoResponse(
   z.union([
