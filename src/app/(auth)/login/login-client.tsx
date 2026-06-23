@@ -54,7 +54,9 @@ export function LoginClient({ redirectUri }: LoginClientProps) {
     try {
       await requestOTP.mutateAsync(emailOrMuid);
       toast.success("OTP sent to your email!");
-    } catch {}
+    } catch (error) {
+      throw error; // prevent OTPLoginForm from advancing to verify step
+    }
   };
 
   const handleVerifyOTP = async (emailOrMuid: string, otp: string) => {
