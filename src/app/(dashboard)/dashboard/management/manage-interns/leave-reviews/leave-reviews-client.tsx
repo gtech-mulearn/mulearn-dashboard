@@ -91,10 +91,14 @@ export function LeaveReviewsPageClient() {
       wrap: (data: string, _id: string, row: Data) => (
         <div className="flex flex-col">
           <span className="font-bold text-foreground uppercase tracking-tight text-sm">
-            {String(data || (row as any).full_name || "Unknown")}
+            {String(
+              data ||
+                (row as unknown as { full_name?: string }).full_name ||
+                "Unknown",
+            )}
           </span>
           <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest leading-none mt-1">
-            {(row as any).user_muid || (row as any).muid || ""}
+            {String(row.user_muid || row.muid || "")}
           </span>
         </div>
       ),
@@ -352,8 +356,11 @@ export function LeaveReviewsPageClient() {
 
           {selectedLeave &&
             (() => {
-              const muid =
-                selectedLeave.user_muid || (selectedLeave as any).muid || "";
+              const muid = String(
+                selectedLeave.user_muid ||
+                  (selectedLeave as unknown as { muid?: string }).muid ||
+                  "",
+              );
               const days =
                 selectedLeave.duration_days ||
                 calculateDurationDays(
@@ -376,7 +383,7 @@ export function LeaveReviewsPageClient() {
                         MUID
                       </span>
                       <span className="font-bold text-foreground text-sm">
-                        {muid || "-"}
+                        {String(muid || "-")}
                       </span>
                     </div>
                   </div>

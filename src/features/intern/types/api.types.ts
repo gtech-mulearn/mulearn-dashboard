@@ -41,6 +41,9 @@ export interface TLeaderboardRow {
   rank: number;
   status?: string;
   profile_pic?: string | null;
+  streak?: number;
+  daily_streak?: number;
+  weekly_streak?: number;
 }
 
 export interface TTimesheet {

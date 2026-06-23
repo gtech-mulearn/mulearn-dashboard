@@ -594,14 +594,13 @@ export function ManageInternsPageClient() {
                       size="icon-sm"
                       variant="ghost"
                       onClick={() => {
+                        const intern = row as unknown as TManageInternItem;
                         setUpdateIntern({
-                          id: String(row.id),
-                          name: String(row.full_name),
-                          guild: String(row.guild ?? ""),
-                          status: getEditableStatus(
-                            row as unknown as TManageInternItem,
-                          ),
-                          role: (row.role as any) ?? "INTERN",
+                          id: String(intern.id),
+                          name: String(intern.full_name),
+                          guild: String(intern.guild ?? ""),
+                          status: getEditableStatus(intern),
+                          role: intern.role ?? "INTERN",
                         });
                       }}
                       className="rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"

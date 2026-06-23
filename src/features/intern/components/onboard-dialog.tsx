@@ -95,7 +95,7 @@ export function OnboardDialog({
   // Serialize and stabilize excludedMuids to prevent reference changes from triggering useEffect
   const serializedExcluded = excludedMuids.join(",");
   const stableExcluded = useMemo(() => {
-    return [...excludedMuids];
+    return serializedExcluded.split(",").filter(Boolean);
   }, [serializedExcluded]);
 
   // Reset states on dialog close
@@ -549,6 +549,7 @@ export function OnboardDialog({
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                   Upload Excel File (.xlsx)
                 </Label>
+                {/* biome-ignore lint/a11y/noStaticElementInteractions: drag-and-drop zone wrapping native file input */}
                 <div
                   onDragEnter={handleDrag}
                   onDragOver={handleDrag}
@@ -623,9 +624,9 @@ export function OnboardDialog({
                   {importResponse.failed_rows &&
                   importResponse.failed_rows.length > 0 ? (
                     <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
-                      {importResponse.failed_rows.map((rowErr, index) => (
+                      {importResponse.failed_rows.map((rowErr) => (
                         <div
-                          key={index}
+                          key={`${rowErr.row}-${rowErr.muid}`}
                           className="flex items-start gap-2 p-2 bg-destructive/5 border border-destructive/10 rounded-xl text-[10px]"
                         >
                           <AlertCircle className="size-3.5 text-destructive shrink-0 mt-0.5" />

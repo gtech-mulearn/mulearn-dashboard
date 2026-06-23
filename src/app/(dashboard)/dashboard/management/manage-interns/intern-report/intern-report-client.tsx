@@ -144,9 +144,11 @@ export function InternReportPageClient() {
       column: "tasks_completed",
       Label: "Achievements",
       isSortable: false,
-      wrap: (data: any) => (
+      wrap: (data: unknown) => (
         <MarkdownRenderer
-          content={formatTasksCompleted(data)}
+          content={formatTasksCompleted(
+            data as Parameters<typeof formatTasksCompleted>[0],
+          )}
           className="text-[11px] leading-relaxed"
         />
       ),
@@ -444,9 +446,15 @@ export function InternReportPageClient() {
                         Intern
                       </span>
                       <span className="font-bold text-foreground text-sm">
-                        {selectedReview.user_name ||
-                          (selectedReview as any).full_name ||
-                          "Unknown"}
+                        {String(
+                          selectedReview.user_name ||
+                            (
+                              selectedReview as unknown as {
+                                full_name?: string;
+                              }
+                            ).full_name ||
+                            "Unknown",
+                        )}
                       </span>
                     </div>
                     <div className="flex flex-col gap-1">

@@ -46,10 +46,14 @@ export function TeamReportPageClient() {
       wrap: (data: string, _id: string, row: Data) => (
         <div className="flex flex-col">
           <span className="font-bold uppercase text-[11px] tracking-tight">
-            {String(data || (row as any).full_name || "Unknown")}
+            {String(
+              data ||
+                (row as unknown as { full_name?: string }).full_name ||
+                "Unknown",
+            )}
           </span>
           <span className="text-[9px] text-muted-foreground font-bold leading-none mt-1">
-            {(row as any).muid || ""}
+            {String(row.muid || "")}
           </span>
         </div>
       ),
@@ -76,9 +80,11 @@ export function TeamReportPageClient() {
       column: "tasks_completed",
       Label: "Conquests",
       isSortable: false,
-      wrap: (data: any) => (
+      wrap: (data: unknown) => (
         <MarkdownRenderer
-          content={formatTasksCompleted(data)}
+          content={formatTasksCompleted(
+            data as Parameters<typeof formatTasksCompleted>[0],
+          )}
           className="text-[11px] leading-relaxed"
         />
       ),

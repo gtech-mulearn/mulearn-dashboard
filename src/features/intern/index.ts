@@ -35,6 +35,7 @@ export {
   useTaskCategories,
   useTaskDetail,
   useTimesheetHistory,
+  useTimesheetSummary,
   useTimesheets,
   useTimesheetsPrefill,
   useTimesheetToday,
