@@ -17,7 +17,8 @@ interface EventTypeBadgeProps {
 
 export function EventTypeBadge({ eventType, className }: EventTypeBadgeProps) {
   const type = eventType ?? "others";
-  const config = EVENT_TYPE_BADGE_CONFIG[type] ?? EVENT_TYPE_BADGE_CONFIG.others;
+  const config =
+    EVENT_TYPE_BADGE_CONFIG[type] ?? EVENT_TYPE_BADGE_CONFIG.others;
   const Icon = config.icon;
 
   return (

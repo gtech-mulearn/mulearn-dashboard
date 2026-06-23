@@ -24,20 +24,21 @@ import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { eventsApi } from "../api";
 import {
   EVENT_CREATE_WIZARD_STEPS,
   EVENT_FORM_DEFAULT_VALUES,
   EVENT_SCOPE_OPTIONS,
-  EVENT_TYPE_SELECT_OPTIONS,
 } from "../constants/events.constants";
 import {
   toEventFormData,
   toISOWithOffset,
   useCreateEvent,
+  useEventCategories,
+  useEventTypeScope,
   useIGClusters,
   useOrganizerOptions,
-  useEventCategories,
 } from "../hooks";
 import { getAllowedScopes } from "../lib/events.policy";
 import { type CreateEventSchema, updateEventSchema } from "../schemas";
@@ -187,7 +188,18 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
   const createEvent = useCreateEvent();
   const organizerOptionsQuery = useOrganizerOptions();
   const { data: clusterOptions, isLoading: clustersLoading } = useIGClusters();
-  const { data: categoryOptions, isLoading: categoriesLoading } = useEventCategories();
+  const { data: categoryOptions, isLoading: categoriesLoading } =
+    useEventCategories();
+  const { data: typeScopeData, isLoading: typeScopeLoading } =
+    useEventTypeScope();
+
+  const eventTypeSelectOptions = useMemo(() => {
+    if (!typeScopeData?.event_type) return [];
+    return typeScopeData.event_type.map((type) => {
+      const val = type.trim().toLowerCase().replace(/\s+/g, "_");
+      return { label: type, value: val };
+    });
+  }, [typeScopeData]);
 
   const creatorCampusName =
     organizerOptionsQuery.data?.campus_context?.title ?? null;
@@ -211,11 +223,26 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
     trigger,
     reset,
     setError,
+    clearErrors,
     formState: { errors, isDirty },
   } = useForm<CreateEventSchema>({
     resolver: zodResolver(updateEventSchema) as Resolver<CreateEventSchema>,
     defaultValues: EVENT_FORM_DEFAULT_VALUES,
   });
+
+  const minStartDatetime = useMemo(() => {
+    const date = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+    const tzOffset = date.getTimezoneOffset() * 60000;
+    return new Date(date.getTime() - tzOffset).toISOString().slice(0, 16);
+  }, [currentStep]);
+
+  const startDatetimeValue = watch("start_datetime");
+  const minEndDatetime = useMemo(() => {
+    if (!startDatetimeValue) {
+      return minStartDatetime;
+    }
+    return startDatetimeValue;
+  }, [startDatetimeValue, minStartDatetime]);
 
   // Auto-select the first available cluster when options load (replaces hardcoded "coder" default)
   useEffect(() => {
@@ -227,12 +254,11 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
   // Auto-select the "others" event type when categories load
   useEffect(() => {
     if (!watch("category") && categoryOptions && categoryOptions.length > 0) {
-      const othersCat = categoryOptions.find(
-        (c) => {
+      const othersCat =
+        categoryOptions.find((c) => {
           const catSlug = c.name.trim().toLowerCase().replace(/\s+/g, "_");
           return catSlug === "others" || catSlug === "other";
-        }
-      ) || categoryOptions[0];
+        }) || categoryOptions[0];
       if (othersCat) {
         setValue("category", othersCat.id, { shouldDirty: false });
         setValue("event_type", "others", { shouldDirty: false });
@@ -382,6 +408,16 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
         "venue_type",
       ];
 
+      clearErrors([
+        "start_datetime",
+        "end_datetime",
+        "address",
+        "city",
+        "maps_url",
+        "online_link",
+        "platform",
+      ]);
+
       let hasStepError = false;
       const startDatetime = watch("start_datetime");
       const endDatetime = watch("end_datetime");
@@ -393,13 +429,37 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
           message: "Start datetime is required",
         });
         hasStepError = true;
+      } else {
+        const start = new Date(startDatetime).getTime();
+        const now = Date.now();
+        const oneHourInMs = 60 * 60 * 1000;
+        if (start < now + oneHourInMs) {
+          setError("start_datetime", {
+            type: "manual",
+            message: "Start time must be at least 1 hour in the future",
+          });
+          hasStepError = true;
+        }
       }
+
       if (!endDatetime) {
         setError("end_datetime", {
           type: "manual",
           message: "End datetime is required",
         });
         hasStepError = true;
+      }
+
+      if (startDatetime && endDatetime) {
+        const start = new Date(startDatetime).getTime();
+        const end = new Date(endDatetime).getTime();
+        if (end <= start) {
+          setError("end_datetime", {
+            type: "manual",
+            message: "End datetime must be after start datetime",
+          });
+          hasStepError = true;
+        }
       }
 
       if (venueType === "physical") {
@@ -579,6 +639,7 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
       return;
     }
 
+    let createdEventId: string | null = null;
     try {
       const requestBody =
         compressedCoverImage || compressedBannerImage
@@ -590,6 +651,7 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
           : payload;
 
       const created = await createEvent.mutateAsync(requestBody as never);
+      createdEventId = created.id;
 
       if (action === "publish") {
         await eventsApi.publish(created.id);
@@ -600,8 +662,15 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
       );
       resetWizard();
       onClose();
-    } catch {
-      // Error toast is handled by mutation onError; avoid surfacing runtime overlay.
+    } catch (err) {
+      if (createdEventId) {
+        const errMsg = getApiResponseError(err, {
+          fallback: "Failed to publish event",
+        });
+        toast.error(`Event saved as draft, but failed to publish: ${errMsg}`);
+        resetWizard();
+        onClose();
+      }
     }
   };
 
@@ -790,13 +859,20 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                       name="category"
                       render={({ field }) => {
                         const eventTypeValue = watch("event_type");
-                        const selectedType = EVENT_TYPE_SELECT_OPTIONS.find(
-                          (item) => item.value === eventTypeValue,
-                        ) ?? EVENT_TYPE_SELECT_OPTIONS.find((item) => item.value === "others");
+                        const selectedType =
+                          eventTypeSelectOptions.find(
+                            (item) => item.value === eventTypeValue,
+                          ) ??
+                          eventTypeSelectOptions.find(
+                            (item) => item.value === "others",
+                          );
+
+                        const isLoadingOptions =
+                          categoriesLoading || typeScopeLoading;
 
                         return (
                           <div className="w-full">
-                            {categoriesLoading ? (
+                            {isLoadingOptions ? (
                               <div className="h-12 w-full animate-pulse rounded-xl bg-muted" />
                             ) : (
                               <DropdownMenu>
@@ -807,28 +883,48 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                                     className="w-full justify-between rounded-xl"
                                   >
                                     <span>
-                                      {selectedType?.label ?? "Select event type"}
+                                      {selectedType?.label ??
+                                        "Select event type"}
                                     </span>
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent className="w-full max-w-sm p-1">
-                                  {EVENT_TYPE_SELECT_OPTIONS.map((item) => {
-                                    const isSelected = selectedType?.value === item.value;
+                                  {eventTypeSelectOptions.map((item) => {
+                                    const isSelected =
+                                      selectedType?.value === item.value;
                                     return (
                                       <DropdownMenuItem
                                         key={item.value}
                                         onSelect={() => {
-                                          const matchingCat = (categoryOptions ?? []).find(
-                                            (c) => {
-                                              const catSlug = c.name.trim().toLowerCase().replace(/\s+/g, "_");
-                                              return catSlug === item.value || catSlug.includes(item.value) || item.value.includes(catSlug);
-                                            },
-                                          ) || (categoryOptions ?? []).find(
-                                            (c) => {
-                                              const catSlug = c.name.trim().toLowerCase().replace(/\s+/g, "_");
-                                              return catSlug === "others" || catSlug === "other";
-                                            },
-                                          ) || categoryOptions?.[0];
+                                          const matchingCat =
+                                            (categoryOptions ?? []).find(
+                                              (c) => {
+                                                const catSlug = c.name
+                                                  .trim()
+                                                  .toLowerCase()
+                                                  .replace(/\s+/g, "_");
+                                                return (
+                                                  catSlug === item.value ||
+                                                  catSlug.includes(
+                                                    item.value,
+                                                  ) ||
+                                                  item.value.includes(catSlug)
+                                                );
+                                              },
+                                            ) ||
+                                            (categoryOptions ?? []).find(
+                                              (c) => {
+                                                const catSlug = c.name
+                                                  .trim()
+                                                  .toLowerCase()
+                                                  .replace(/\s+/g, "_");
+                                                return (
+                                                  catSlug === "others" ||
+                                                  catSlug === "other"
+                                                );
+                                              },
+                                            ) ||
+                                            categoryOptions?.[0];
 
                                           if (matchingCat) {
                                             field.onChange(matchingCat.id);
@@ -963,8 +1059,8 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                       control={control}
                       name="scope"
                       render={({ field }) => {
-                        const availableScopes = EVENT_SCOPE_OPTIONS.filter((item) =>
-                          allowedScopes.includes(item.value),
+                        const availableScopes = EVENT_SCOPE_OPTIONS.filter(
+                          (item) => allowedScopes.includes(item.value),
                         );
                         const currentScope = availableScopes.find(
                           (item) => item.value === field.value,
@@ -991,7 +1087,9 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                                   return (
                                     <DropdownMenuItem
                                       key={item.value}
-                                      onSelect={() => field.onChange(item.value)}
+                                      onSelect={() =>
+                                        field.onChange(item.value)
+                                      }
                                       className="flex items-center justify-between rounded-md px-3 py-2"
                                     >
                                       <span>{item.label}</span>
@@ -1081,8 +1179,14 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                       </p>
                       <Input
                         type="datetime-local"
+                        min={minStartDatetime}
                         {...register("start_datetime")}
                       />
+                      {errors.start_datetime?.message ? (
+                        <p className="text-xs text-destructive">
+                          {errors.start_datetime.message}
+                        </p>
+                      ) : null}
                     </div>
                     <div className="space-y-1">
                       <p className="text-sm font-medium text-foreground">
@@ -1090,8 +1194,14 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                       </p>
                       <Input
                         type="datetime-local"
+                        min={minEndDatetime}
                         {...register("end_datetime")}
                       />
+                      {errors.end_datetime?.message ? (
+                        <p className="text-xs text-destructive">
+                          {errors.end_datetime.message}
+                        </p>
+                      ) : null}
                     </div>
                   </div>
 

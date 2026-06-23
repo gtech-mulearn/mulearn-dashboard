@@ -115,6 +115,24 @@ export function EventInlineEditForm({
 
   const scope = watch("scope");
 
+  const minStartDatetime = useMemo(() => {
+    const oneHourFromNow = new Date(Date.now() + 60 * 60 * 1000);
+    const originalStart = event.start_datetime ? new Date(event.start_datetime) : null;
+    const limitDate =
+      originalStart && originalStart.getTime() < oneHourFromNow.getTime()
+        ? originalStart
+        : oneHourFromNow;
+    return toDatetimeLocal(limitDate.toISOString());
+  }, [event.start_datetime]);
+
+  const startDatetimeValue = watch("start_datetime");
+  const minEndDatetime = useMemo(() => {
+    if (!startDatetimeValue) {
+      return minStartDatetime;
+    }
+    return startDatetimeValue;
+  }, [startDatetimeValue, minStartDatetime]);
+
   const organizerName = useMemo(() => {
     if (event.organizer.type === "global_ig")
       return event.organizer.ig?.name ?? "Global IG";
@@ -169,6 +187,34 @@ export function EventInlineEditForm({
         message: "Venue type is required",
       });
       hasRequiredError = true;
+    }
+
+    if (values.start_datetime) {
+      const originalStartLocal = toDatetimeLocal(event.start_datetime);
+      if (values.start_datetime !== originalStartLocal) {
+        const start = new Date(values.start_datetime).getTime();
+        const now = Date.now();
+        const oneHourInMs = 60 * 60 * 1000;
+        if (start < now + oneHourInMs) {
+          setError("start_datetime", {
+            type: "manual",
+            message: "Start time must be at least 1 hour in the future",
+          });
+          hasRequiredError = true;
+        }
+      }
+    }
+
+    if (values.start_datetime && values.end_datetime) {
+      const start = new Date(values.start_datetime).getTime();
+      const end = new Date(values.end_datetime).getTime();
+      if (end <= start) {
+        setError("end_datetime", {
+          type: "manual",
+          message: "End datetime must be after start datetime",
+        });
+        hasRequiredError = true;
+      }
     }
 
     if (hasRequiredError) return;
@@ -352,6 +398,7 @@ export function EventInlineEditForm({
             <Input
               className="rounded-xl border-border bg-background text-foreground"
               type="datetime-local"
+              min={minStartDatetime}
               {...register("start_datetime")}
             />
             {errors.start_datetime?.message ? (
@@ -367,6 +414,7 @@ export function EventInlineEditForm({
             <Input
               className="rounded-xl border-border bg-background text-foreground"
               type="datetime-local"
+              min={minEndDatetime}
               {...register("end_datetime")}
             />
             {errors.end_datetime?.message ? (

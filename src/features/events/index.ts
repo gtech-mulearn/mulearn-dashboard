@@ -80,6 +80,7 @@ export {
   useEventCoOwners,
   useEventDetail,
   useEventsList,
+  useEventTypeScope,
   useFeaturedEvents,
   useIGClusters,
   useIGEvents,

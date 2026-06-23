@@ -671,6 +671,52 @@ export const eventsApi = {
     return apiClient.get(endpoints.events.meta.categories);
   },
 
+  getEventTypeScope: async (): Promise<{
+    event_type: string[];
+    event_scope: string[];
+  }> => {
+    try {
+      const data = await apiClient.get<{
+        event_type: string[];
+        event_scope: string[];
+      }>(endpoints.events.eventTypeScope);
+      if (
+        data &&
+        Array.isArray(data.event_type) &&
+        Array.isArray(data.event_scope)
+      ) {
+        return data;
+      }
+      throw new Error("Invalid API response format");
+    } catch (err) {
+      console.warn(
+        "Failed to fetch event types and scopes from API, using fallback:",
+        err,
+      );
+      return {
+        event_type: [
+          "Hackathon",
+          "Workshop",
+          "Webinar",
+          "Seminar",
+          "Bootcamp",
+          "Meetup",
+          "Conference",
+          "Competition",
+          "Ideathon",
+          "Cultural event",
+          "Sports event",
+          "Community event",
+          "Expo",
+          "Networking event",
+          "Tech talk",
+          "Others",
+        ],
+        event_scope: ["Maker", "Coder", "Manager", "Creative"],
+      };
+    }
+  },
+
   /**
    * Fetch the distinct IG cluster slugs from the events cluster endpoint.
    * Tries `/api/v1/dashboard/events/ig/cluster/all/` first and derives cluster
@@ -678,62 +724,27 @@ export const eventsApi = {
    * if the endpoint fails or returns no cluster names.
    */
   getIGClusters: async (): Promise<Array<{ label: string; value: string }>> => {
-    const clusterCandidates: string[] = [];
-    const seen = new Set<string>();
-
     try {
-      const response = await eventsApi.clusterEvents("all");
-
-      for (const event of response.data) {
-        const raw =
-          event.organizer?.ig?.cluster ||
-          event.organizer?.organiser_ig?.cluster ||
-          event.organizer?.ig?.category ||
-          event.organizer?.organiser_ig?.category;
-
-        if (!raw || typeof raw !== "string") continue;
-
-        const cluster = raw.toLowerCase().trim();
-        if (!cluster || cluster === "other" || cluster === "others") continue;
-        if (!seen.has(cluster)) {
-          seen.add(cluster);
-          clusterCandidates.push(cluster);
-        }
+      const data = await eventsApi.getEventTypeScope();
+      if (data && Array.isArray(data.event_scope)) {
+        return [
+          { label: "All", value: "all" },
+          ...data.event_scope.map((scope) => ({
+            label: scope,
+            value: scope.toLowerCase(),
+          })),
+        ];
       }
-    } catch {
-      // Ignore and fall back to IG list endpoint.
-    }
-
-    if (clusterCandidates.length > 0) {
-      return [
-        { label: "All", value: "all" },
-        ...clusterCandidates.map((c) => ({
-          label: c.charAt(0).toUpperCase() + c.slice(1),
-          value: c,
-        })),
-      ];
-    }
-
-    const response = await getInterestGroupsList();
-    const igs = extractInterestGroups(response);
-
-    for (const ig of igs) {
-      const raw = ig.category;
-      if (!raw) continue;
-      const cluster = raw.toLowerCase().trim();
-      if (cluster === "other" || cluster === "others") continue;
-      if (!seen.has(cluster)) {
-        seen.add(cluster);
-        clusterCandidates.push(cluster);
-      }
+    } catch (err) {
+      console.warn("Failed to fetch clusters from eventTypeScope API:", err);
     }
 
     return [
       { label: "All", value: "all" },
-      ...clusterCandidates.map((c) => ({
-        label: c.charAt(0).toUpperCase() + c.slice(1),
-        value: c,
-      })),
+      { label: "Maker", value: "maker" },
+      { label: "Coder", value: "coder" },
+      { label: "Manager", value: "manager" },
+      { label: "Creative", value: "creative" },
     ];
   },
 };

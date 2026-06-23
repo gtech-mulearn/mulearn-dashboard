@@ -1,18 +1,18 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { EventType } from "@/features/events";
 import {
   EventsFilters,
   EventsGrid,
   EventsPagination,
   FeaturedEventsCarousel,
   useEventsList,
+  useEventTypeScope,
   useIGClusters,
-  EVENT_TYPE_OPTIONS,
 } from "@/features/events";
-import type { EventType } from "@/features/events";
 import { useDebounce } from "@/hooks/use-debounce";
 
 export function EventsPageClient() {
@@ -24,10 +24,24 @@ export function EventsPageClient() {
   const debouncedSearch = useDebounce(search, 300);
 
   // Fetch cluster options dynamically from the IG list API
-  const { data: clusterOptions, isLoading: isLoadingClusters } = useIGClusters();
+  const { data: clusterOptions, isLoading: isLoadingClusters } =
+    useIGClusters();
   const clusterList = clusterOptions ?? [{ label: "All", value: "all" }];
 
-  const eventTypeOptions = EVENT_TYPE_OPTIONS;
+  const { data: typeScopeData, isLoading: isLoadingTypeScope } =
+    useEventTypeScope();
+  const eventTypeOptions = useMemo(() => {
+    if (!typeScopeData?.event_type) {
+      return [{ label: "All Types", value: "all" }];
+    }
+    return [
+      { label: "All Types", value: "all" },
+      ...typeScopeData.event_type.map((type) => {
+        const val = type.trim().toLowerCase().replace(/\s+/g, "_");
+        return { label: type, value: val };
+      }),
+    ];
+  }, [typeScopeData]);
 
   // Build a label→value map for client-side cluster sorting
   const categoryOrder = clusterList
@@ -38,14 +52,17 @@ export function EventsPageClient() {
     pageIndex: currentPage,
     search: debouncedSearch || undefined,
     cluster: selectedCluster === "all" ? undefined : selectedCluster,
-    event_type: selectedEventType === "all" ? undefined : (selectedEventType as EventType),
+    event_type:
+      selectedEventType === "all"
+        ? undefined
+        : (selectedEventType as EventType),
+    status: "published",
     sortBy: "-start_datetime",
     perPage: 12,
   });
 
   const events = data?.data ?? [];
   const pagination = data?.pagination;
-
 
   // Client-side sorting: Sort by cluster when "All" is selected
   const sortedEvents = [...events];
@@ -123,7 +140,7 @@ export function EventsPageClient() {
             clusters={clusterList}
             isLoadingClusters={isLoadingClusters}
             eventTypes={eventTypeOptions}
-            isLoadingEventTypes={false}
+            isLoadingEventTypes={isLoadingTypeScope}
           />
         </div>
 

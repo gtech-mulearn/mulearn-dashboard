@@ -702,3 +702,11 @@ export function useAdminFeature(eventId: string) {
     },
   });
 }
+
+export function useEventTypeScope() {
+  return useQuery({
+    queryKey: eventKeys.eventTypeScope(),
+    queryFn: () => eventsApi.getEventTypeScope(),
+    staleTime: 10 * 60 * 1000, // 10 minutes
+  });
+}

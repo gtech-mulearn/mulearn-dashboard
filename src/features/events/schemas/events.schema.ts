@@ -213,6 +213,20 @@ function applyEventRefinements<T extends typeof createEventBaseSchema>(
         });
       }
     }
+
+    // Validate start_datetime is at least 1 hour in the future
+    if (data.start_datetime) {
+      const start = new Date(data.start_datetime).getTime();
+      const now = Date.now();
+      const oneHourInMs = 60 * 60 * 1000;
+      if (start < now + oneHourInMs) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["start_datetime"],
+          message: "Start time must be at least 1 hour in the future",
+        });
+      }
+    }
   });
 }
 

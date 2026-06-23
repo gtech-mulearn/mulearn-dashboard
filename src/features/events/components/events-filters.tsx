@@ -182,7 +182,11 @@ export function EventsFilters({
             className="w-full md:w-48 rounded-full"
             id="event-type-filter"
           >
-            <SelectValue placeholder={isLoadingEventTypes ? "Loading..." : "Select event type"} />
+            <SelectValue
+              placeholder={
+                isLoadingEventTypes ? "Loading..." : "Select event type"
+              }
+            />
           </SelectTrigger>
           <SelectContent>
             {isLoadingEventTypes ? (
@@ -191,13 +195,11 @@ export function EventsFilters({
                 Loading types...
               </div>
             ) : (
-              eventTypes.map(
-                (item) => (
-                  <SelectItem key={item.value} value={item.value}>
-                    {item.label}
-                  </SelectItem>
-                ),
-              )
+              eventTypes.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))
             )}
           </SelectContent>
         </Select>

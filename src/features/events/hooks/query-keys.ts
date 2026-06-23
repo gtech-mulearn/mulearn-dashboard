@@ -51,6 +51,7 @@ export const eventKeys = {
   // ── Meta ───────────────────────────────────────────────────
   meta: () => [...eventKeys.all, "meta"] as const,
   organizerOptions: () => [...eventKeys.meta(), "organizer-options"] as const,
+  eventTypeScope: () => [...eventKeys.meta(), "event-type-scope"] as const,
   collaborationTargets: (params: { search: string; type?: string }) =>
     [...eventKeys.meta(), "collaboration-targets", params] as const,
   userSearch: (query: string) =>

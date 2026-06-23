@@ -1,6 +1,6 @@
 "use client";
 
-import { useQueries, useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Search } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -32,6 +32,7 @@ function makeEventQuery(isAdmin: boolean, params: EventListQueryParams) {
 
 export default function ManageEventsDashboard() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -109,6 +110,7 @@ export default function ManageEventsDashboard() {
     pageIndex: page,
     search: search || undefined,
     status: statusFilter === "all" ? undefined : statusFilter,
+    sortBy: "-created_at",
     perPage: 12,
   };
 
@@ -144,7 +146,7 @@ export default function ManageEventsDashboard() {
   const pendingApprovalCount = statsQueries[2].data?.pagination.count ?? 0;
   const draftCount = statsQueries[3].data?.pagination.count ?? 0;
 
-  const { data, isLoading, isError, error, refetch } = useQuery(
+  const { data, isLoading, isError, error } = useQuery(
     makeEventQuery(canAdminView, listParams),
   );
 
@@ -152,7 +154,9 @@ export default function ManageEventsDashboard() {
 
   const is403 = error instanceof ApiError && error.status === 403;
 
-  const handleEventDeleted = useCallback(() => refetch(), [refetch]);
+  const handleEventDeleted = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: eventKeys.all });
+  }, [queryClient]);
   const handleCreateEvent = useCallback(() => setShowWizard(true), []);
   const handleEventView = useCallback(
     (event: { id: string }) =>
@@ -317,7 +321,7 @@ export default function ManageEventsDashboard() {
         open={showWizard}
         onClose={() => {
           setShowWizard(false);
-          refetch();
+          queryClient.invalidateQueries({ queryKey: eventKeys.all });
         }}
       />
 
