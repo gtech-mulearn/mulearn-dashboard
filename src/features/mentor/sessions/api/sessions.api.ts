@@ -226,9 +226,15 @@ export async function fetchAvailableSessions(
 }
 
 // ─── #16 GET /session/admin/list/ ────────────────────────────────────────────
-export async function fetchAdminSessions(
-  params: ListParams = {},
-): Promise<{ data: Session[]; totalPages: number }> {
+export async function fetchAdminSessions(params: ListParams = {}): Promise<{
+  data: Session[];
+  pagination: {
+    count: number;
+    totalPages: number;
+    isNext: boolean;
+    isPrev: boolean;
+  };
+}> {
   const q = new URLSearchParams();
   if (params.status) q.set("status", params.status);
   if (params.ig_id) q.set("ig_id", params.ig_id);
@@ -243,9 +249,15 @@ export async function fetchAdminSessions(
     SessionsListResponseSchema,
     OPT,
   );
+  const p = res.response.pagination;
   return {
     data: res.response.data,
-    totalPages: res.response.pagination.totalPages,
+    pagination: {
+      count: p.count ?? 0,
+      totalPages: p.totalPages,
+      isNext: p.isNext ?? false,
+      isPrev: p.isPrev ?? false,
+    },
   };
 }
 

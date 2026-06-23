@@ -9,6 +9,8 @@ import {
   XCircle,
 } from "lucide-react";
 import { useState } from "react";
+import { Blank } from "@/components/dashboard/table/Blank";
+import Pagination from "@/components/dashboard/table/pagination";
 import ReusableTable from "@/components/dashboard/table/Table";
 import THead from "@/components/dashboard/table/Thead";
 import { Badge } from "@/components/ui/badge";
@@ -103,14 +105,24 @@ const COLUMN_ORDER = [
   { column: "status", Label: "Status", isSortable: false },
 ];
 
+const PER_PAGE = 10;
+
 function SessionVerificationTable({
   sessions = [],
   isLoading,
   onApprove,
+  page,
+  totalPages,
+  totalCount,
+  onPageChange,
 }: {
   sessions: Session[] | undefined;
   isLoading: boolean;
   onApprove: (s: Session, action: "approve" | "reject") => void;
+  page: number;
+  totalPages: number;
+  totalCount: number;
+  onPageChange: (page: number) => void;
 }) {
   const customCellRender = (column: string, row: any) => {
     if (column === "title") {
@@ -234,21 +246,28 @@ function SessionVerificationTable({
   }
 
   return (
-    <div className="w-full md:overflow-x-auto md:rounded-xl md:border md:border-border md:bg-card md:shadow-sm">
+    <div className="w-full">
       <div className="w-full md:min-w-[800px]">
         <ReusableTable
           rows={sessions as any}
           isLoading={isLoading}
-          page={1}
-          perPage={1000}
+          page={page}
+          perPage={PER_PAGE}
           columnOrder={COLUMN_ORDER}
           id={["id"]}
           customCellRender={customCellRender}
           customActionRender={customActionRender}
         >
           <THead columnOrder={COLUMN_ORDER} onIconClick={() => {}} action />
-          <div />
-          <div />
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            perPage={PER_PAGE}
+            totalCount={totalCount}
+            handlePreviousClick={() => onPageChange(Math.max(1, page - 1))}
+            handleNextClick={() => onPageChange(page + 1)}
+          />
+          <Blank />
         </ReusableTable>
       </div>
     </div>
@@ -265,33 +284,70 @@ export function AdminSessionVerificationPage() {
     action: "approve" | "reject";
   } | null>(null);
 
-  // Fetch all sessions for this admin view
-  const { data: allResult, isLoading: allLoading } = useAdminSessions({
-    search: search || undefined,
-  });
+  const [pendingPage, setPendingPage] = useState(1);
+  const [scheduledPage, setScheduledPage] = useState(1);
+  const [rejectedPage, setRejectedPage] = useState(1);
+  const [allPage, setAllPage] = useState(1);
 
   const { data: pendingResult, isLoading: pendingLoading } = useAdminSessions({
     status: "PENDING_APPROVAL",
     search: search || undefined,
+    page: pendingPage,
+    perPage: PER_PAGE,
   });
 
   const { data: scheduledResult, isLoading: scheduledLoading } =
     useAdminSessions({
       status: "SCHEDULED",
       search: search || undefined,
+      page: scheduledPage,
+      perPage: PER_PAGE,
     });
 
   const { data: rejectedResult, isLoading: rejectedLoading } = useAdminSessions(
     {
       status: "REJECTED",
       search: search || undefined,
+      page: rejectedPage,
+      perPage: PER_PAGE,
     },
   );
 
-  const allSessions = allResult?.data ?? [];
+  const { data: allResult, isLoading: allLoading } = useAdminSessions({
+    search: search || undefined,
+    page: allPage,
+    perPage: PER_PAGE,
+  });
+
   const pendingSessions = pendingResult?.data ?? [];
   const scheduledSessions = scheduledResult?.data ?? [];
   const rejectedSessions = rejectedResult?.data ?? [];
+  const allSessions = allResult?.data ?? [];
+
+  const pendingPagination = pendingResult?.pagination ?? {
+    count: 0,
+    totalPages: 1,
+    isNext: false,
+    isPrev: false,
+  };
+  const scheduledPagination = scheduledResult?.pagination ?? {
+    count: 0,
+    totalPages: 1,
+    isNext: false,
+    isPrev: false,
+  };
+  const rejectedPagination = rejectedResult?.pagination ?? {
+    count: 0,
+    totalPages: 1,
+    isNext: false,
+    isPrev: false,
+  };
+  const allPagination = allResult?.pagination ?? {
+    count: 0,
+    totalPages: 1,
+    isNext: false,
+    isPrev: false,
+  };
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -316,7 +372,13 @@ export function AdminSessionVerificationPage() {
               placeholder="Search by title or mentor…"
               className="pl-8"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPendingPage(1);
+                setScheduledPage(1);
+                setRejectedPage(1);
+                setAllPage(1);
+              }}
             />
           </div>
         </div>
@@ -325,19 +387,19 @@ export function AdminSessionVerificationPage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <StatCard
             label="Pending Approval"
-            count={pendingSessions.length}
+            count={pendingPagination.count}
             icon={Clock}
             colorClass="bg-amber-100 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400"
           />
           <StatCard
             label="Scheduled (Approved)"
-            count={scheduledSessions.length}
+            count={scheduledPagination.count}
             icon={CheckCircle}
             colorClass="bg-emerald-100 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400"
           />
           <StatCard
             label="Rejected"
-            count={rejectedSessions.length}
+            count={rejectedPagination.count}
             icon={XCircle}
             colorClass="bg-rose-100 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400"
           />
@@ -356,7 +418,7 @@ export function AdminSessionVerificationPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="pending">
-                  Pending ({pendingSessions.length})
+                  Pending ({pendingPagination.count})
                 </SelectItem>
                 <SelectItem value="scheduled">Scheduled</SelectItem>
                 <SelectItem value="rejected">Rejected</SelectItem>
@@ -370,12 +432,12 @@ export function AdminSessionVerificationPage() {
             <TabsList>
               <TabsTrigger value="pending" id="tab-pending">
                 Pending
-                {pendingSessions.length > 0 && (
+                {pendingPagination.count > 0 && (
                   <Badge
                     variant="outline"
                     className="ml-2 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/50 dark:text-blue-400 dark:border-blue-800"
                   >
-                    {pendingSessions.length}
+                    {pendingPagination.count}
                   </Badge>
                 )}
               </TabsTrigger>
@@ -397,6 +459,10 @@ export function AdminSessionVerificationPage() {
               sessions={pendingSessions}
               isLoading={pendingLoading}
               onApprove={(s, action) => setApproveState({ session: s, action })}
+              page={pendingPage}
+              totalPages={pendingPagination.totalPages}
+              totalCount={pendingPagination.count}
+              onPageChange={setPendingPage}
             />
           </TabsContent>
 
@@ -406,6 +472,10 @@ export function AdminSessionVerificationPage() {
               sessions={scheduledSessions}
               isLoading={scheduledLoading}
               onApprove={(s, action) => setApproveState({ session: s, action })}
+              page={scheduledPage}
+              totalPages={scheduledPagination.totalPages}
+              totalCount={scheduledPagination.count}
+              onPageChange={setScheduledPage}
             />
           </TabsContent>
 
@@ -415,6 +485,10 @@ export function AdminSessionVerificationPage() {
               sessions={rejectedSessions}
               isLoading={rejectedLoading}
               onApprove={(s, action) => setApproveState({ session: s, action })}
+              page={rejectedPage}
+              totalPages={rejectedPagination.totalPages}
+              totalCount={rejectedPagination.count}
+              onPageChange={setRejectedPage}
             />
           </TabsContent>
 
@@ -424,6 +498,10 @@ export function AdminSessionVerificationPage() {
               sessions={allSessions}
               isLoading={allLoading}
               onApprove={(s, action) => setApproveState({ session: s, action })}
+              page={allPage}
+              totalPages={allPagination.totalPages}
+              totalCount={allPagination.count}
+              onPageChange={setAllPage}
             />
           </TabsContent>
         </Tabs>

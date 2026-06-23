@@ -60,7 +60,8 @@ export function ModeratorLeaderboard({ option }: ModeratorLeaderboardProps) {
 
   const rows = data?.data ?? ([] as ModeratorLeaderboardItem[]);
   const totalPages = data?.pagination?.totalPages ?? 1;
-  const totalCount = data?.pagination?.total ?? 0;
+  const paginationTotal = data?.pagination?.total ?? data?.pagination?.count;
+  const totalCount = paginationTotal ?? rows.length;
 
   // Reset to page 1 whenever option changes (handled by parent re-rendering with new prop)
 

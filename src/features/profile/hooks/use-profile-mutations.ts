@@ -162,10 +162,16 @@ export function useUploadCoverPic() {
       toast.success("Cover photo updated");
     },
     onError: (error) => {
+      const msg = getApiResponseError(error, {
+        fallback: "Failed to update cover photo. Maximum file size is 5 MB.",
+      });
+      const isNetworkError =
+        msg === "Failed to fetch" ||
+        msg === "NetworkError when attempting to fetch resource.";
       toast.error(
-        getApiResponseError(error, {
-          fallback: "Failed to update cover photo",
-        }),
+        isNetworkError
+          ? "Upload failed. Please check your connection and ensure the image is under 5 MB."
+          : msg,
       );
     },
   });

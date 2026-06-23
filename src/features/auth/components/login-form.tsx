@@ -153,7 +153,12 @@ export function LoginForm({
               Forgot password?
             </Link>
             {onSwitchToOTP && (
-              <Button type="button" variant="link" onClick={onSwitchToOTP}>
+              <Button
+                type="button"
+                variant="link"
+                onClick={onSwitchToOTP}
+                className="text-sm p-0 h-auto"
+              >
                 Login with OTP
               </Button>
             )}

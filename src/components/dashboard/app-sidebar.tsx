@@ -1,14 +1,14 @@
 "use client";
 
 import { Lock, LogOut } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTheme } from "next-themes";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import Image from "next/image";
-import { useTheme } from "next-themes";
 import {
   Sidebar,
   SidebarContent,

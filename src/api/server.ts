@@ -158,12 +158,10 @@ async function request<T>(
       }
     }
 
-    const backendMsg = extractDjangoMessage(rawData);
-    throw new ApiError(
-      res.status,
-      backendMsg || `Request failed: ${endpoint}`,
-      rawData,
-    );
+    const backendMsg =
+      extractDjangoMessage(rawData) ??
+      "Something went wrong. Please try again.";
+    throw new ApiError(res.status, backendMsg, rawData);
   }
 
   if (options.schema) {

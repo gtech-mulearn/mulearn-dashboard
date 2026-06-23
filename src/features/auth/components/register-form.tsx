@@ -32,8 +32,10 @@ const registerFormSchema = z
   .object({
     fullName: z
       .string()
+      .trim()
       .min(3, "Full name must be at least 3 characters")
-      .max(100, "Full name must be at most 100 characters"),
+      .max(100, "Full name must be at most 100 characters")
+      .regex(/\S/, "Full name cannot be only spaces"),
     email: z.string().email("Please enter a valid email"),
     password: z
       .string()

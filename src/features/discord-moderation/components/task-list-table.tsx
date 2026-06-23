@@ -126,7 +126,7 @@ function TaskListTableContent() {
     : allRows;
 
   const totalPages = data?.pagination?.totalPages ?? 1;
-  const totalCount = data?.pagination?.total ?? 0;
+  const totalCount = data?.pagination?.total ?? data?.pagination?.count ?? 0;
 
   function handleSearch(value: string) {
     setSearch(value);

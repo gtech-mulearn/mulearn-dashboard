@@ -3,6 +3,10 @@
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { DataTableErrorBoundary } from "@/components/dashboard/DataTableErrorBoundary";
+import { Blank } from "@/components/dashboard/table/Blank";
+import Pagination from "@/components/dashboard/table/pagination";
+import ReusableTable, { type Data } from "@/components/dashboard/table/Table";
+import TableTop from "@/components/dashboard/table/TableTop";
 import THead from "@/components/dashboard/table/Thead";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +18,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   useAddChannel,
@@ -40,7 +43,7 @@ const COLUMN_ORDER = [
 
 function ChannelContent() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [perPage] = useState(10);
+  const [perPage, setPerPage] = useState(10);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("");
 
@@ -67,16 +70,12 @@ function ChannelContent() {
   const deleteMutation = useDeleteChannel();
 
   const isSubmitting = addMutation.isPending || updateMutation.isPending;
-  const rows: ChannelData[] = data?.data ?? [];
+  const rows = (data?.data ?? []) as unknown as Data[];
   const totalPages = data?.pagination?.totalPages ?? 1;
+  const totalCount = data?.pagination?.count ?? 0;
 
   const handleSortChange = useCallback((column: string) => {
     setSortBy((prev) => (prev === column ? `-${column}` : column));
-    setCurrentPage(1);
-  }, []);
-
-  const handleSearch = useCallback((value: string) => {
-    setSearch(value);
     setCurrentPage(1);
   }, []);
 
@@ -168,6 +167,47 @@ function ChannelContent() {
     [updateMutation, editForm, editId, toggleEditModal],
   );
 
+  const customCellRender = useCallback((column: string, row: Data) => {
+    if (column === "name") {
+      return <span className="font-medium">{String(row.name ?? "")}</span>;
+    }
+    if (column === "discord_id") {
+      return (
+        <span className="font-mono text-sm">
+          {String(row.discord_id ?? "")}
+        </span>
+      );
+    }
+    return null;
+  }, []);
+
+  const customActionRender = useCallback(
+    (row: Data) => {
+      const channelRow = row as unknown as ChannelData;
+      return (
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleEditClick(channelRow)}
+          >
+            Edit
+          </Button>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() =>
+              handleDeleteClick(String(channelRow.id), channelRow.name)
+            }
+          >
+            Delete
+          </Button>
+        </div>
+      );
+    },
+    [handleEditClick, handleDeleteClick],
+  );
+
   return (
     <>
       <Card>
@@ -184,165 +224,52 @@ function ChannelContent() {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          <Input
-            placeholder="Search by name or Discord ID..."
-            onChange={(e) => handleSearch(e.target.value)}
+          <TableTop
+            onSearchText={(val) => {
+              setSearch(val);
+              setCurrentPage(1);
+            }}
+            onPerPageNumber={(val) => {
+              setPerPage(val);
+              setCurrentPage(1);
+            }}
+            CSV=""
+            perPage={perPage}
+            perPageOptions={[10, 25, 50]}
+            searchPlaceholder="Search by name or Discord ID..."
+            searchSize="md"
+            searchPosition="left"
           />
 
-          <div className="hidden md:block overflow-x-auto rounded-md border">
-            <Table>
-              <THead
-                columnOrder={COLUMN_ORDER}
-                onIconClick={handleSortChange}
-                action={true}
-              />
-              <TableBody>
-                {isLoading ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={6}
-                      className="text-center py-8 text-muted-foreground"
-                    >
-                      Loading...
-                    </TableCell>
-                  </TableRow>
-                ) : rows.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={6}
-                      className="text-center py-8 text-muted-foreground"
-                    >
-                      No channels found.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  rows.map((row, index) => (
-                    <TableRow key={String(row.id)}>
-                      <TableCell className="w-12">
-                        {(currentPage - 1) * perPage + index + 1}
-                      </TableCell>
-                      <TableCell className="font-medium">{row.name}</TableCell>
-                      <TableCell className="font-mono text-sm">
-                        {row.discord_id}
-                      </TableCell>
-                      <TableCell>{row.created_by}</TableCell>
-                      <TableCell>
-                        {new Date(row.created_at).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEditClick(row)}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() =>
-                              handleDeleteClick(String(row.id), row.name)
-                            }
-                          >
-                            Delete
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-
-          <div className="flex flex-col gap-3 md:hidden">
-            {isLoading ? (
-              <p className="text-center py-8 text-muted-foreground text-sm">
-                Loading...
-              </p>
-            ) : rows.length === 0 ? (
-              <p className="text-center py-8 text-muted-foreground text-sm">
-                No channels found.
-              </p>
-            ) : (
-              rows.map((row, index) => (
-                <div
-                  key={String(row.id)}
-                  className="rounded-lg border bg-card p-4 space-y-3 shadow-sm"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">
-                      #{(currentPage - 1) * perPage + index + 1}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(row.created_at).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">{row.name}</p>
-                    <p className="font-mono text-xs text-muted-foreground mt-0.5">
-                      {row.discord_id}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">
-                      Created by{" "}
-                      <span className="text-foreground font-medium">
-                        {row.created_by}
-                      </span>
-                    </span>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEditClick(row)}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() =>
-                          handleDeleteClick(String(row.id), row.name)
-                        }
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between text-sm text-muted-foreground">
-            <span>
-              Page {currentPage} of {totalPages}
-            </span>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1 sm:flex-none"
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-              >
-                Previous
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1 sm:flex-none"
-                disabled={currentPage >= totalPages}
-                onClick={() =>
-                  setCurrentPage((p) => Math.min(p + 1, totalPages))
-                }
-              >
-                Next
-              </Button>
-            </div>
-          </div>
+          <ReusableTable
+            rows={rows}
+            isLoading={isLoading}
+            page={currentPage}
+            perPage={perPage}
+            columnOrder={COLUMN_ORDER}
+            id={["id"]}
+            customCellRender={customCellRender}
+            customActionRender={customActionRender}
+          >
+            <THead
+              columnOrder={COLUMN_ORDER}
+              onIconClick={handleSortChange}
+              action
+            />
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              perPage={perPage}
+              totalCount={totalCount}
+              handlePreviousClick={() =>
+                setCurrentPage((p) => Math.max(p - 1, 1))
+              }
+              handleNextClick={() =>
+                setCurrentPage((p) => Math.min(p + 1, totalPages))
+              }
+            />
+            <Blank />
+          </ReusableTable>
         </CardContent>
       </Card>
 
