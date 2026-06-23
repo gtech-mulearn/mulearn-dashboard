@@ -66,10 +66,10 @@ function CustomDayButton({
         "flex aspect-square size-auto w-full min-w-8 items-center justify-center font-normal text-[0.8rem]",
         "rounded-full transition-all duration-200 text-foreground cursor-pointer hover:bg-muted",
         !hasSelection &&
-          "data-[today=true]:bg-blue-500 data-[today=true]:text-white data-[today=true]:font-bold",
+          "data-[today=true]:bg-brand-blue data-[today=true]:text-primary-foreground data-[today=true]:font-bold",
         hasSelection &&
           "data-[today=true]:bg-accent data-[today=true]:text-accent-foreground",
-        "data-[selected-single=true]:!bg-blue-500 data-[selected-single=true]:!text-white data-[selected-single=true]:font-bold",
+        "data-[selected-single=true]:!bg-brand-blue data-[selected-single=true]:!text-primary-foreground data-[selected-single=true]:font-bold",
         className,
       )}
       {...props}
