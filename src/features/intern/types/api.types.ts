@@ -322,3 +322,15 @@ export interface TSubmitMinutePayload {
   title: string;
   minutes: string;
 }
+
+export interface TBulkImportRowError {
+  row: number;
+  muid: string;
+  reason: string;
+}
+
+export interface TBulkImportResponse {
+  success_count: number;
+  failed_count: number;
+  failed_rows: TBulkImportRowError[];
+}
