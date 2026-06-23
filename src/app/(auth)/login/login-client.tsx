@@ -19,7 +19,6 @@ import {
   useLoginWithPassword,
   useRequestOTP,
 } from "@/features/auth";
-import { getApiResponseError } from "@/hooks/use-get-error";
 
 interface LoginClientProps {
   redirectUri?: string;
@@ -48,13 +47,7 @@ export function LoginClient({ redirectUri }: LoginClientProps) {
       await loginWithPassword.mutateAsync(values);
       toast.success("Welcome back!");
       router.push(getRedirectPath());
-    } catch (error) {
-      toast.error(
-        getApiResponseError(error, {
-          fallback: "Login failed. Please check your credentials.",
-        }),
-      );
-    }
+    } catch {}
   };
 
   const handleRequestOTP = async (emailOrMuid: string) => {
@@ -62,12 +55,7 @@ export function LoginClient({ redirectUri }: LoginClientProps) {
       await requestOTP.mutateAsync(emailOrMuid);
       toast.success("OTP sent to your email!");
     } catch (error) {
-      toast.error(
-        getApiResponseError(error, {
-          fallback: "Failed to send OTP. Please try again.",
-        }),
-      );
-      throw error; // Re-throw to prevent form from advancing
+      throw error; // prevent OTPLoginForm from advancing to verify step
     }
   };
 
@@ -76,13 +64,7 @@ export function LoginClient({ redirectUri }: LoginClientProps) {
       await loginWithOTP.mutateAsync({ emailOrMuid, otp });
       toast.success("Welcome back!");
       router.push(getRedirectPath());
-    } catch (error) {
-      toast.error(
-        getApiResponseError(error, {
-          fallback: "Invalid OTP. Please try again.",
-        }),
-      );
-    }
+    } catch {}
   };
 
   if (loginMode === "otp") {

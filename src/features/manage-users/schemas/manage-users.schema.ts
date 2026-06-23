@@ -39,6 +39,7 @@ export const PaginationSchema = z.object({
   page: z.number().optional(),
   perPage: z.number().optional(),
   total: z.number().optional(),
+  count: z.number().optional(),
   totalPages: z.number().optional(),
 });
 

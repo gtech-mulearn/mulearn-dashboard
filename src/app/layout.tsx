@@ -13,7 +13,7 @@ const bricolage = Bricolage_Grotesque({
   display: "swap",
 });
 
-const geist = Plus_Jakarta_Sans({
+const plusjakarta = Plus_Jakarta_Sans({
   variable: "--font-sans",
   subsets: ["latin"],
   display: "swap",
@@ -67,7 +67,7 @@ export default function RootLayout({
   return (
     <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <body
-        className={`${bricolage.variable} ${geist.variable} antialiased font-sans`}
+        className={`${bricolage.variable} ${plusjakarta.variable} antialiased font-sans`}
       >
         <ThemeProvider
           attribute="class"
@@ -76,7 +76,12 @@ export default function RootLayout({
         >
           <Providers>
             <Suspense fallback={<Loader />}>{children}</Suspense>
-            <Toaster richColors position="top-right" theme="system" />
+            <Toaster
+              richColors
+              position="top-right"
+              theme="system"
+              closeButton
+            />
           </Providers>
         </ThemeProvider>
       </body>
