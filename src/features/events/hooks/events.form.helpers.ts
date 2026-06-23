@@ -118,6 +118,11 @@ export function buildComparableInitialPayload(
             | string
             | null)
         : null,
+    category:
+      (currentEvent as unknown as Record<string, unknown>).category ?? null,
+    event_type: currentEvent.event_type ?? null,
+    event_scope:
+      (currentEvent as unknown as Record<string, unknown>).event_scope ?? null,
   } as ComparablePatchPayload;
 }
 
@@ -167,6 +172,9 @@ export function buildEventPatchPayload(values: CreateEventSchema) {
     is_collaboration: values.is_collaboration,
     is_featured: values.is_featured,
     tags: values.tags && values.tags.length > 0 ? values.tags : null,
+    category: values.category || null,
+    event_type: values.event_type || null,
+    event_scope: values.event_scope || undefined,
   };
 
   return { start, end, deadline, patchPayload };
