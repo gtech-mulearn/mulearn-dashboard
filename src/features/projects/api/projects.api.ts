@@ -1,6 +1,6 @@
 import { ApiError, apiClient, authedFetch } from "@/api/client";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import { endpoints } from "@/api/endpoints";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   type AddMemberRequest,
   CommentMutationResponseSchema,

@@ -10,10 +10,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { z } from "zod";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { env } from "../../config/env";
 import { authStore } from "../lib/auth";
 import { ApiError, logSchemaMismatch } from "./errors";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import { refreshAccessToken } from "./refresh.client";
 
 // Re-export so existing `import { ApiError } from "@/api/client"` still works.
