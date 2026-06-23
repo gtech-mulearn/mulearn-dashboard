@@ -90,10 +90,21 @@ export function LeaveReviewsPageClient() {
       wrap: (data: string, _id: string, row: Data) => (
         <div className="flex flex-col">
           <span className="font-bold text-foreground uppercase tracking-tight text-sm">
-            {String(data || (row as any).full_name || "Unknown")}
+            {String(
+              data ||
+                // biome-ignore lint/suspicious/noExplicitAny: API type
+                (row as any).full_name ||
+                "Unknown",
+            )}
           </span>
           <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest leading-none mt-1">
-            {(row as any).user_muid || (row as any).muid || ""}
+            {String(
+              // biome-ignore lint/suspicious/noExplicitAny: API type
+              (row as any).user_muid ||
+                // biome-ignore lint/suspicious/noExplicitAny: API type
+                (row as any).muid ||
+                "",
+            )}
           </span>
         </div>
       ),
@@ -352,7 +363,10 @@ export function LeaveReviewsPageClient() {
           {selectedLeave &&
             (() => {
               const muid =
-                selectedLeave.user_muid || (selectedLeave as any).muid || "";
+                selectedLeave.user_muid ||
+                // biome-ignore lint/suspicious/noExplicitAny: API type
+                (selectedLeave as any).muid ||
+                "";
               const days =
                 selectedLeave.duration_days ||
                 calculateDurationDays(

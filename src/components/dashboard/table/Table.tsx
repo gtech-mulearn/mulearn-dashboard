@@ -72,7 +72,7 @@ const Table: FC<TableProps> = (props) => {
   const [thumbWidth, setThumbWidth] = useState(0);
   const [thumbLeft, setThumbLeft] = useState(0);
   const startIndex = (props.page - 1) * props.perPage;
-  const actionIdColumn = props.id?.[0];
+  const _actionIdColumn = props.id?.[0];
   const rowIdsKey = props.rows.map((row) => String(row.id ?? "")).join("|");
   const scrollResetKey = `${props.page}-${props.perPage}-${rowIdsKey}`;
 

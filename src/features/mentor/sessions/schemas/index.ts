@@ -239,3 +239,111 @@ export const KarmaAwardListResponseSchema = ApiResponseSchema(
 export const KarmaAwardSingleResponseSchema = ApiResponseSchema(
   z.object({ award: KarmaAwardSchema }),
 );
+
+// ─── Student Session Requests ────────────────────────────────────────────────
+
+export const StudentSessionRequestSchema = z.object({
+  id: z.string(),
+  session_type: z.string(),
+  entity_id: z.string().optional(),
+  entity_name: z.string().optional(),
+  title: z.string(),
+  description: z.string().optional().nullable(),
+  mode: z.enum(["ONLINE", "OFFLINE", "HYBRID"]),
+  starts_at: z.string(),
+  ends_at: z.string(),
+  status: z.string().optional().nullable(),
+  meeting_link: z.string().optional().nullable(),
+  venue: z.string().optional().nullable(),
+  max_participants: z.number().optional().nullable(),
+  requested_by_id: z.string().optional(),
+  requested_by_name: z.string().optional(),
+  requested_by_muid: z.string().optional(),
+  created_at: z.string().optional(),
+});
+export type StudentSessionRequest = z.infer<typeof StudentSessionRequestSchema>;
+
+export const StudentSessionRequestListResponseSchema = ApiResponseSchema(
+  z.object({
+    data: z.array(StudentSessionRequestSchema),
+    pagination: PaginationSchema,
+  }),
+);
+
+export const StudentSessionRequestSingleResponseSchema = ApiResponseSchema(
+  StudentSessionRequestSchema,
+);
+
+export const StudentSessionRequestFormSchema = z
+  .object({
+    session_type: z.string().min(1, "Session type is required"),
+    entity_id: z.string().min(1, "Entity is required"),
+    title: z.string().min(1, "Title is required").max(150),
+    description: z.string().min(1, "Description is required"),
+    mode: z.enum(["ONLINE", "OFFLINE", "HYBRID"]),
+    starts_at: z.string().min(1, "Start time is required"),
+    ends_at: z.string().min(1, "End time is required"),
+    meeting_link: z
+      .string()
+      .url("Must be a valid URL")
+      .optional()
+      .or(z.literal("")),
+    venue: z.string().optional(),
+    max_participants: z.coerce.number().min(1).optional(),
+  })
+  .superRefine((v, ctx) => {
+    if (new Date(v.ends_at) <= new Date(v.starts_at)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "End time must be after start time",
+        path: ["ends_at"],
+      });
+    }
+
+    if (["ONLINE", "HYBRID"].includes(v.mode) && !v.meeting_link) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Meeting link is required for ONLINE or HYBRID mode",
+        path: ["meeting_link"],
+      });
+    }
+
+    if (["OFFLINE", "HYBRID"].includes(v.mode) && !v.venue) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Venue is required for OFFLINE or HYBRID mode",
+        path: ["venue"],
+      });
+    }
+  });
+export type StudentSessionRequestFormValues = z.infer<
+  typeof StudentSessionRequestFormSchema
+>;
+
+export const MentorVerifyRequestSchema = z
+  .object({
+    status: z.enum(["APPROVED", "REJECTED"]),
+    starts_at: z.string().optional(),
+    ends_at: z.string().optional(),
+    mode: z.enum(["ONLINE", "OFFLINE", "HYBRID"]).optional(),
+    meeting_link: z
+      .string()
+      .url("Must be a valid URL")
+      .optional()
+      .or(z.literal("")),
+    venue: z.string().optional(),
+  })
+  .superRefine((v, ctx) => {
+    if (v.status === "APPROVED" && v.starts_at && v.ends_at) {
+      if (new Date(v.ends_at) <= new Date(v.starts_at)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "End time must be after start time",
+          path: ["ends_at"],
+        });
+      }
+    }
+  });
+export type MentorVerifyRequestValues = z.infer<
+  typeof MentorVerifyRequestSchema
+>;

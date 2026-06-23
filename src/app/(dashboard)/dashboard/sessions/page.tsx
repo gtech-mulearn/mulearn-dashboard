@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { MenteesPage } from "@/features/mentor/mentees/components/mentees-page";
+import { StudentSessionsPage } from "@/features/mentor/sessions/components/student-sessions-page";
 
 export const metadata: Metadata = {
   title: "Sessions",
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function LearnerSessionsRoute() {
-  return <MenteesPage title="Sessions" />;
+  return <StudentSessionsPage />;
 }

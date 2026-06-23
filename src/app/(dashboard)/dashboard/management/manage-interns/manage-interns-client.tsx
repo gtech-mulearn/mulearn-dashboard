@@ -493,7 +493,11 @@ export function ManageInternsPageClient() {
                       status: getEditableStatus(
                         row as unknown as TManageInternItem,
                       ),
-                      role: (row.role as any) ?? "INTERN",
+                      role: ((row.role as string) ?? "INTERN") as
+                        | "INTERN"
+                        | "INTERN_LEAD"
+                        | "Intern"
+                        | "Intern Lead",
                     });
                   }}
                   className="rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
