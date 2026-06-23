@@ -16,7 +16,7 @@ import type { TalentPoolAnalyticsParams } from "../types";
 export const COMPANY_ANALYTICS_KEYS = {
   all: ["company-analytics"] as const,
   gigs: () => [...COMPANY_ANALYTICS_KEYS.all, "gigs"] as const,
-  summary: (params?: Record<string, any>) =>
+  summary: (params?: Record<string, unknown>) =>
     [...COMPANY_ANALYTICS_KEYS.all, "summary", params ?? {}] as const,
   jobEngagement: (jobId: string) =>
     [...COMPANY_ANALYTICS_KEYS.all, "job-engagement", jobId] as const,

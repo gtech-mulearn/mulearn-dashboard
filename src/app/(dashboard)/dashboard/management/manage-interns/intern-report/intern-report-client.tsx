@@ -143,9 +143,11 @@ export function InternReportPageClient() {
       column: "tasks_completed",
       Label: "Achievements",
       isSortable: false,
-      wrap: (data: any) => (
+      wrap: (data: unknown) => (
         <MarkdownRenderer
-          content={formatTasksCompleted(data)}
+          content={formatTasksCompleted(
+            data as Parameters<typeof formatTasksCompleted>[0],
+          )}
           className="text-[11px] leading-relaxed"
         />
       ),
@@ -445,6 +447,7 @@ export function InternReportPageClient() {
                       </span>
                       <span className="font-bold text-foreground text-sm">
                         {selectedReview.user_name ||
+                          // biome-ignore lint/suspicious/noExplicitAny: API type
                           (selectedReview as any).full_name ||
                           "Unknown"}
                       </span>
