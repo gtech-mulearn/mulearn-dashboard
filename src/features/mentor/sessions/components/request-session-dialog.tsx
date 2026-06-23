@@ -32,7 +32,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useUserProfile } from "@/features/profile/hooks/use-profile";
+import { useUserProfile } from "@/features/profile";
 import { useCreateStudentRequest } from "../hooks/use-student-requests";
 import {
   StudentSessionRequestFormSchema,

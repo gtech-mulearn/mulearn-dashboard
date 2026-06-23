@@ -41,8 +41,8 @@ function CustomDayButton({
   hasSelection,
   ...props
 }: {
-  day: { date: Date };
-  modifiers: Record<string, boolean>;
+  day: any;
+  modifiers: any;
   hasSelection?: boolean;
 } & React.ComponentProps<"button">) {
   const ref = React.useRef<HTMLButtonElement>(null);
@@ -271,13 +271,14 @@ export function CustomDateTimePicker({
   };
 
   const handleHourChange = (hour: string) => {
-    const newDate = new Date(date || new Date());
+    if (!date) return;
+    const newDate = new Date(date);
     newDate.setHours(parseInt(hour, 10));
     onChange(formatLocalISO(newDate));
   };
-
   const handleMinuteChange = (minute: string) => {
-    const newDate = new Date(date || new Date());
+    if (!date) return;
+    const newDate = new Date(date);
     newDate.setMinutes(parseInt(minute, 10));
     onChange(formatLocalISO(newDate));
   };
@@ -337,11 +338,9 @@ export function CustomDateTimePicker({
               showOutsideDays={false}
               className="text-foreground"
               components={{
-                // biome-ignore lint/suspicious/noExplicitAny: third-party types
                 DayButton: (props: any) => (
                   <CustomDayButton {...props} hasSelection={!!date} />
                 ),
-                // biome-ignore lint/suspicious/noExplicitAny: third-party types
                 MonthCaption: (props: any) => {
                   const date =
                     props.calendarMonth?.date ||

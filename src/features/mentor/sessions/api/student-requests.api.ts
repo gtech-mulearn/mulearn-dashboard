@@ -15,7 +15,6 @@ const OPT = { skipAuthRedirectOn403: true } as const;
 
 interface ListParams {
   status?: string;
-  page?: number;
   pageIndex?: number;
   perPage?: number;
   search?: string;
@@ -68,7 +67,6 @@ export async function fetchMyRequests(params: ListParams = {}): Promise<{
   const q = new URLSearchParams();
   if (params.status) q.set("status", params.status);
   if (params.pageIndex) q.set("pageIndex", String(params.pageIndex));
-  if (params.page) q.set("pageIndex", String(params.page));
   if (params.perPage) q.set("perPage", String(params.perPage));
   if (params.search) q.set("search", params.search);
   if (params.sortBy) q.set("sortBy", params.sortBy);
@@ -91,7 +89,6 @@ export async function fetchIncomingRequests(params: ListParams = {}): Promise<{
 }> {
   const q = new URLSearchParams();
   if (params.pageIndex) q.set("pageIndex", String(params.pageIndex));
-  if (params.page) q.set("pageIndex", String(params.page));
   if (params.perPage) q.set("perPage", String(params.perPage));
   if (params.search) q.set("search", params.search);
   if (params.sortBy) q.set("sortBy", params.sortBy);

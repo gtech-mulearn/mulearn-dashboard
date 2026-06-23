@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   createStudentRequest,
   fetchIncomingRequests,
@@ -10,12 +11,7 @@ import type {
   MentorVerifyRequestValues,
   StudentSessionRequestFormValues,
 } from "../schemas";
-
-export const STUDENT_REQUESTS_KEYS = {
-  all: ["student-requests"] as const,
-  my: () => [...STUDENT_REQUESTS_KEYS.all, "my"] as const,
-  incoming: () => [...STUDENT_REQUESTS_KEYS.all, "incoming"] as const,
-};
+import { STUDENT_REQUESTS_KEYS } from "./query-keys";
 
 export function useMyRequests(params: {
   status?: string;
@@ -51,7 +47,11 @@ export function useCreateStudentRequest() {
       queryClient.invalidateQueries({ queryKey: STUDENT_REQUESTS_KEYS.my() });
     },
     onError: (error: any) => {
-      toast.error(error?.message || "Failed to submit session request");
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to submit session request",
+        }),
+      );
     },
   });
 }
@@ -78,7 +78,9 @@ export function useVerifyStudentRequest() {
       });
     },
     onError: (error: any) => {
-      toast.error(error?.message || "Failed to process request");
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to process request" }),
+      );
     },
   });
 }

@@ -4,7 +4,7 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MenteesPage } from "@/features/mentor/mentees/components/mentees-page";
+import { MenteesPage } from "@/features/mentor/mentees";
 import { MyRequestsList } from "./my-requests-list";
 import { RequestSessionDialog } from "./request-session-dialog";
 
