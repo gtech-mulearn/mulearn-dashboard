@@ -34,6 +34,7 @@ import {
   useResubmitApplication,
   useTrackJobView,
 } from "../hooks";
+import { formatNumericRuleValue } from "../constants";
 import type { PublicJob } from "../types";
 
 interface JobDetailModalProps {
@@ -300,7 +301,7 @@ export function JobDetailModal({
                   <li key={rule.id} className="flex items-start gap-2 text-sm">
                     <span className="mt-2 h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
                     <span>
-                      {rule.rule_value}
+                      {formatNumericRuleValue(rule.rule_type, rule.rule_value)}
                       {rule.rule_type && (
                         <span className="ml-1.5 text-xs text-muted-foreground capitalize">
                           ({rule.rule_type.replace(/_/g, " ")})

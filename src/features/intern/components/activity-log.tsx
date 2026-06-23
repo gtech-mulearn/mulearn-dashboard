@@ -477,8 +477,9 @@ export function QuestLog() {
       <div className="pt-4 px-0 pb-0 border-t border-border/20">
         <Link href="/dashboard/intern/quest-log">
           <Button
+            size="lg"
             variant="outline"
-            className="w-full gap-2 text-[10px] tracking-widest h-10 shadow-lg"
+            className="w-full gap-2 text-xs tracking-widest shadow-lg"
           >
             View History
           </Button>
@@ -923,7 +924,7 @@ export function QuestLog() {
                         type="button"
                         variant="outline"
                         onClick={() => setIsEditMode(false)}
-                        className="font-black text-[10px] uppercase tracking-widest h-9"
+                        className=" text-[10px] uppercase tracking-widest h-9"
                       >
                         Cancel
                       </Button>
@@ -933,7 +934,7 @@ export function QuestLog() {
                         disabled={
                           selectedItem.type === "timesheet" && !tsEditReason
                         }
-                        className="font-black text-[10px] uppercase tracking-widest h-9 bg-brand-blue hover:bg-brand-blue/80 text-white"
+                        className=" text-[10px] uppercase tracking-widest h-9 bg-brand-blue hover:bg-brand-blue/80 text-white"
                       >
                         Save Changes
                       </Button>
@@ -943,7 +944,7 @@ export function QuestLog() {
                   type="button"
                   variant="outline"
                   onClick={() => setSelectedItem(null)}
-                  className="font-black text-[10px] uppercase tracking-widest h-9"
+                  className="text-[10px] uppercase tracking-widest h-9"
                 >
                   Close
                 </Button>

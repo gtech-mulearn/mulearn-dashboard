@@ -219,7 +219,8 @@ export function InternReportPageClient() {
             <DialogTrigger asChild>
               <Button
                 variant="default"
-                className="w-full sm:w-auto font-black uppercase text-[10px] tracking-widest h-12 px-6"
+                size="lg"
+                className="w-full sm:w-auto uppercase text-xs tracking-widest"
               >
                 Individual Scroll
               </Button>
@@ -260,7 +261,8 @@ export function InternReportPageClient() {
                   onClick={handleGenerateIndividual}
                   disabled={!individualMuid}
                   variant="default"
-                  className="font-black uppercase text-[10px] tracking-widest"
+                  size="sm"
+                  className="uppercase text-xs tracking-widest"
                 >
                   Summon Report
                 </Button>
@@ -272,7 +274,8 @@ export function InternReportPageClient() {
             <DialogTrigger asChild>
               <Button
                 variant="trusty"
-                className="w-full sm:w-auto font-black uppercase text-[10px] tracking-widest h-12 px-6"
+                size="lg"
+                className="w-full sm:w-auto uppercase text-xs tracking-widest"
               >
                 Team Scroll
               </Button>
@@ -313,7 +316,8 @@ export function InternReportPageClient() {
                   onClick={handleGenerateTeam}
                   disabled={!teamName}
                   variant="trusty"
-                  className="font-black uppercase text-[10px] tracking-widest"
+                  size="sm"
+                  className=" uppercase text-xs tracking-widest"
                 >
                   Summon Report
                 </Button>
@@ -391,7 +395,7 @@ export function InternReportPageClient() {
                 setReviewNote((row.review_note as string) ?? "");
                 setIsReviewOpen(true);
               }}
-              className="uppercase tracking-widest text-[9px] font-black text-primary hover:bg-muted/50 border border-border/20 px-2.5 h-7.5"
+              className="uppercase tracking-widest text-xs font-black text-primary hover:bg-muted/50 border border-border/20"
             >
               Evaluate
             </Button>
@@ -593,14 +597,16 @@ export function InternReportPageClient() {
             <Button
               type="button"
               variant="outline"
+              size="lg"
               onClick={() => setIsReviewOpen(false)}
-              className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
+              className="gap-2 text-xs tracking-widest shadow-lg"
             >
               Cancel
             </Button>
             <div className="flex gap-2">
               <Button
                 type="button"
+                size="lg"
                 onClick={() => {
                   if (!selectedReview) return;
                   reviewMutation.mutate(
@@ -616,12 +622,13 @@ export function InternReportPageClient() {
                 }}
                 disabled={reviewMutation.isPending}
                 variant="outline"
-                className="border-destructive text-destructive hover:bg-destructive hover:text-white hover:border-destructive hover:bg-none gap-2 text-[10px] tracking-widest h-10 shadow-lg font-bold"
+                className="border-destructive text-destructive hover:bg-destructive hover:text-white hover:border-destructive hover:bg-none gap-2 text-xs tracking-widest shadow-lg font-bold"
               >
                 Reject
               </Button>
               <Button
                 type="button"
+                size="lg"
                 onClick={() => {
                   if (!selectedReview) return;
                   reviewMutation.mutate(
@@ -637,7 +644,7 @@ export function InternReportPageClient() {
                 }}
                 disabled={reviewMutation.isPending}
                 variant="outline"
-                className="border-success text-success hover:bg-success hover:text-white hover:border-success hover:bg-none gap-2 text-[10px] tracking-widest h-10 shadow-lg font-bold"
+                className="border-success text-success hover:bg-success hover:text-white hover:border-success hover:bg-none gap-2 text-xs tracking-widest shadow-lg font-bold"
               >
                 Approve
               </Button>

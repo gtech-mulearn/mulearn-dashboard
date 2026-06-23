@@ -610,7 +610,8 @@ export function QuestLogHistory() {
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
               variant="outline"
-              className="rounded-full h-9 text-xs font-black uppercase tracking-wider border-border/40 hover:bg-muted/20"
+              size="default"
+              className="rounded-full text-xs font-black uppercase tracking-wider"
             >
               <ChevronLeft className="w-4 h-4 mr-1" /> Prev
             </Button>
@@ -621,7 +622,8 @@ export function QuestLogHistory() {
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
               variant="outline"
-              className="rounded-full h-9 text-xs font-black uppercase tracking-wider border-border/40 hover:bg-muted/20"
+              size="default"
+              className="rounded-full text-xs font-black uppercase tracking-wider"
             >
               Next <ChevronRight className="w-4 h-4 ml-1" />
             </Button>

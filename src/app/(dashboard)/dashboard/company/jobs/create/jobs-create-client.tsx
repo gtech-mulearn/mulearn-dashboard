@@ -46,7 +46,6 @@ export function CreateJobPageClient() {
           job_description: values.job_description,
           location: values.location,
           job_type: values.job_type,
-          status: "Active",
           certificate_provided: values.certificate_provided ? "Yes" : "No",
           rules: rules.map((r) => ({
             rule_type: r.rule_type,

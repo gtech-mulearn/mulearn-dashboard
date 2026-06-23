@@ -31,7 +31,7 @@ export type {
   StudentLeaderboardEntry,
   StudentLeaderboardResponse,
 } from "./schemas";
-// Schemas and types
+// Schemas
 export {
   ApiResponseSchema,
   CollegeLeaderboardEntrySchema,

@@ -161,7 +161,6 @@ export interface CreateJobPayload {
   location: string;
   salary_range?: string;
   job_type: string;
-  status?: string;
   // Advanced options
 
   duration_value?: number;
@@ -189,6 +188,7 @@ export interface UpdateJobPayload {
   deliverables?: string[] | string | null;
   stipend?: string | number | null;
   certificate_provided?: boolean | string | null;
+  rules?: { rule_type: string; rule_value: string | number }[];
 }
 
 export interface CreateRulePayload {
@@ -205,10 +205,7 @@ export interface UpdateRulePayload {
 
 export type CreateJobResponse = Job;
 
-export interface UpdateJobResponse {
-  job_id: string;
-  updated_fields: string[];
-}
+export type UpdateJobResponse = Job;
 
 export interface DeleteJobResponse {
   job_id: string;
@@ -322,6 +319,10 @@ export interface JobsListParams {
   perPage?: number;
   search?: string;
   sortBy?: string;
+  page?: number;
+  per_page?: number;
+  sort_by?: string;
+  sort_order?: "asc" | "desc";
 }
 
 export interface LearnerDiscoveryParams {

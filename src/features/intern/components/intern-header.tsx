@@ -85,8 +85,9 @@ export function InternHeader() {
       <div className="flex flex-wrap items-center gap-3">
         <Link href="/dashboard/intern/leave">
           <Button
-            variant="outline"
-            className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
+            size="lg"
+            variant="default"
+            className="gap-2 text-xs tracking-widest shadow-lg"
           >
             <Calendar className="w-4 h-4" />
             Leave Desk
@@ -94,8 +95,9 @@ export function InternHeader() {
         </Link>
         <Link href="/dashboard/intern/minutes">
           <Button
+            size="lg"
             variant="outline"
-            className="gap-2 text-[10px] tracking-widest h-10 shadow-lg border-amber-500/40 text-amber-500 hover:bg-amber-500/10 hover:text-amber-500"
+            className="gap-2 text-xs tracking-widest shadow-lg"
           >
             <ScrollText className="w-4 h-4" />
             Minutes

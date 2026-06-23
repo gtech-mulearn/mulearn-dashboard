@@ -2,14 +2,22 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useUserLevelFeed } from "../hooks/useUserLevelFeed";
 
 export function GameProgressBar() {
+  const [mounted, setMounted] = useState(false);
   const { data: levelData, isLoading, error } = useUserLevelFeed();
 
-  if (isLoading) {
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Return skeleton during SSR and initial client render to prevent hydration mismatch,
+  // or when actively fetching data
+  if (!mounted || isLoading) {
     return (
       <div className="flex items-center select-none gap-2 pr-1">
         <Skeleton className="w-10 h-10 rounded-full shrink-0" />
