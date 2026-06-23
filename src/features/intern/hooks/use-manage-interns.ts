@@ -168,11 +168,26 @@ export function useBulkImportInterns() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (file: File) => manageInternsApi.bulkImportInterns(file),
-    onSuccess: async () => {
+    onSuccess: async (data) => {
+      if (data.success_count > 0) {
+        toast.success(
+          `Successfully onboarded ${data.success_count} intern(s)!`,
+        );
+      }
+      if (data.failed_count > 0) {
+        toast.warning(
+          `${data.failed_count} row(s) failed — check results for details.`,
+        );
+      }
       await queryClient.invalidateQueries({ queryKey: internKeys.manage() });
       await queryClient.invalidateQueries({
         queryKey: internKeys.overviewStatus(),
       });
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Bulk import failed" }),
+      );
     },
   });
 }

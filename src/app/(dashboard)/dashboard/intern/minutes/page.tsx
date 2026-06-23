@@ -77,7 +77,7 @@ export default function InternMinutesPage() {
   const isInternLead =
     overview?.role === "INTERN_LEAD" ||
     overview?.role === "Intern Lead" ||
-    hasRole([ROLES.INTERN_LEAD, ROLES.ADMIN]);
+    hasRole([ROLES.INTERN_LEAD]);
 
   const [date, setDate] = useState(getTodayDateString());
   const [title, setTitle] = useState("");
@@ -188,7 +188,9 @@ export default function InternMinutesPage() {
             Guild Minutes
           </h2>
           <p className="text-muted-foreground mt-1 font-medium italic text-sm">
-            Upload and track your guild&apos;s daily meeting minutes.
+            {isInternLead
+              ? "Upload and track your guild's daily meeting minutes."
+              : "Track your guild's daily meeting minutes."}
           </p>
         </div>
         {overview?.guild && (
@@ -207,22 +209,22 @@ export default function InternMinutesPage() {
         onValueChange={setActiveTab}
         className="w-full space-y-6"
       >
-        <TabsList className="bg-muted/30 border border-border/40 p-1 rounded-xl w-fit">
-          {isInternLead && (
+        {isInternLead && (
+          <TabsList className="bg-muted/30 border border-border/40 p-1 rounded-xl w-fit">
             <TabsTrigger
               value="upload"
               className="font-black uppercase text-xs tracking-wider px-6 py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm"
             >
               {editingMinute ? "Edit Minutes" : "Upload Minutes"}
             </TabsTrigger>
-          )}
-          <TabsTrigger
-            value="history"
-            className="font-black uppercase text-xs tracking-wider px-6 py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm"
-          >
-            Minutes History
-          </TabsTrigger>
-        </TabsList>
+            <TabsTrigger
+              value="history"
+              className="font-black uppercase text-xs tracking-wider px-6 py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm"
+            >
+              Minutes History
+            </TabsTrigger>
+          </TabsList>
+        )}
 
         {isInternLead && (
           <TabsContent value="upload">
@@ -388,7 +390,9 @@ export default function InternMinutesPage() {
                       No minutes found
                     </p>
                     <p className="text-xs text-muted-foreground/60">
-                      Try adjusting your search query or upload some minutes.
+                      {isInternLead
+                        ? "Try adjusting your search query or upload some minutes."
+                        : "Try adjusting your search query."}
                     </p>
                   </CardContent>
                 </Card>

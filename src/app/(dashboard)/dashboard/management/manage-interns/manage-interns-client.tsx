@@ -642,10 +642,10 @@ export function ManageInternsPageClient() {
                           name: String(row.full_name),
                         });
                       }}
-                      className="rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+                      className="rounded-md text-destructive hover:bg-destructive/10 hover:text-destructive"
                       title="Deactivate Intern"
                     >
-                      <Shield className="size-4" />
+                      <Shield className="size-4 text-destructive" />
                     </Button>
                   )}
                 </div>
