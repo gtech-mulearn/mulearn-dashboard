@@ -10,10 +10,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { z } from "zod";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import { env } from "../../config/env";
 import { authStore } from "../lib/auth";
-import { ApiError, logSchemaMismatch } from "./errors";
+import { ApiError, extractDjangoMessage, logSchemaMismatch } from "./errors";
 import { refreshAccessToken } from "./refresh.client";
 
 // Re-export so existing `import { ApiError } from "@/api/client"` still works.
@@ -167,9 +166,9 @@ async function request<T>(
         throw new ApiError(401, "Session expired", errData);
       }
     }
-    const backendMsg = getApiResponseError(errData, {
-      fallback: "Something went wrong. Please try again.",
-    });
+    const backendMsg =
+      extractDjangoMessage(errData) ??
+      "Something went wrong. Please try again.";
     throw new ApiError(res.status, backendMsg, errData);
   }
 
@@ -192,9 +191,9 @@ async function request<T>(
 
   // Permission 403 (not token expiry) — throw as normal error
   if (res.status === 403 && options.skipAuthRedirectOn403) {
-    const backendMsg = getApiResponseError(rawData, {
-      fallback: "Something went wrong. Please try again.",
-    });
+    const backendMsg =
+      extractDjangoMessage(rawData) ??
+      "Something went wrong. Please try again.";
     throw new ApiError(403, backendMsg, rawData);
   }
 
@@ -205,9 +204,9 @@ async function request<T>(
     "hasError" in rawData &&
     rawData.hasError === true
   ) {
-    const backendMsg = getApiResponseError(rawData, {
-      fallback: "Something went wrong. Please try again.",
-    });
+    const backendMsg =
+      extractDjangoMessage(rawData) ??
+      "Something went wrong. Please try again.";
     const error = new ApiError(res.status, backendMsg, rawData);
     if (process.env.NODE_ENV === "development") {
       console.error(
@@ -219,9 +218,9 @@ async function request<T>(
   }
 
   if (!res.ok) {
-    const backendMsg = getApiResponseError(rawData, {
-      fallback: "Something went wrong. Please try again.",
-    });
+    const backendMsg =
+      extractDjangoMessage(rawData) ??
+      "Something went wrong. Please try again.";
     const error = new ApiError(res.status, backendMsg, rawData);
     if (process.env.NODE_ENV === "development") {
       console.error(

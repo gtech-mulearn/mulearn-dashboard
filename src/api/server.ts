@@ -8,9 +8,8 @@
 
 import { cookies } from "next/headers";
 import type { z } from "zod";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import { getBaseUrl } from "./base-url.server";
-import { ApiError, logSchemaMismatch } from "./errors";
+import { ApiError, extractDjangoMessage, logSchemaMismatch } from "./errors";
 import { refreshAccessTokenServer } from "./refresh.server";
 
 // ─── URL + Headers ──────────────────────────────────────────────────────────
@@ -159,9 +158,9 @@ async function request<T>(
       }
     }
 
-    const backendMsg = getApiResponseError(rawData, {
-      fallback: "Something went wrong. Please try again.",
-    });
+    const backendMsg =
+      extractDjangoMessage(rawData) ??
+      "Something went wrong. Please try again.";
     throw new ApiError(res.status, backendMsg, rawData);
   }
 
