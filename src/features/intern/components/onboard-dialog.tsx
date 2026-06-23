@@ -186,14 +186,15 @@ export function OnboardDialog({
                   </PopoverTrigger>
 
                   {onboardUser && (
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
                       className="absolute right-2 top-1/2 -translate-y-1/2 rounded-sm opacity-60 transition-opacity hover:opacity-100"
                       onClick={handleClearUser}
                       aria-label="Clear selection"
                     >
                       <X className="h-3.5 w-3.5" />
-                    </button>
+                    </Button>
                   )}
                 </div>
 
@@ -341,18 +342,20 @@ export function OnboardDialog({
           <DialogFooter className="pt-4 gap-2">
             <Button
               type="button"
+              size="lg"
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={onboardMutation.isPending}
-              className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
+              className="gap-2 text-xs tracking-widest shadow-lg"
             >
               Cancel
             </Button>
             <Button
               type="submit"
+              size="lg"
               variant="default"
               disabled={onboardMutation.isPending}
-              className="gap-2 text-[10px] tracking-widest h-10 shadow-lg"
+              className="gap-2 text-xs tracking-widest shadow-lg"
             >
               {onboardMutation.isPending ? "Onboarding..." : "Onboard"}
             </Button>

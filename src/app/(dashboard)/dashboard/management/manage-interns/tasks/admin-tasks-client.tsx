@@ -345,7 +345,7 @@ export function AdminTasksPageClient() {
         <div className="flex items-center justify-center gap-1">
           {task.status === "COMPLETED" && !task.is_verified && (
             <Button
-              size="icon"
+              size="icon-sm"
               variant="ghost"
               onClick={async () => {
                 setVerifyTarget(task);
@@ -362,26 +362,26 @@ export function AdminTasksPageClient() {
                   setIsFetchingDetail(false);
                 }
               }}
-              className="rounded-md text-muted-foreground hover:bg-muted hover:text-success size-8"
+              className="rounded-md text-muted-foreground hover:bg-muted hover:text-success"
               title="Verify Task"
             >
               <CheckCircle2 className="w-3.5 h-3.5" />
             </Button>
           )}
           <Button
-            size="icon"
+            size="icon-sm"
             variant="ghost"
             onClick={() => openEdit(task)}
-            className="rounded-md text-muted-foreground hover:bg-muted hover:text-foreground size-8"
+            className="rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
             title="Edit Task"
           >
             <Edit className="w-3.5 h-3.5" />
           </Button>
           <Button
-            size="icon"
+            size="icon-sm"
             variant="ghost"
             onClick={() => setDeleteTarget(task.id)}
-            className="rounded-md text-muted-foreground hover:bg-muted hover:text-destructive size-8"
+            className="rounded-md text-muted-foreground hover:bg-muted hover:text-destructive"
             title="Delete Task"
           >
             <Trash2 className="w-3.5 h-3.5" />
@@ -493,12 +493,13 @@ export function AdminTasksPageClient() {
           </p>
         </div>
         <Button
+          size="lg"
           onClick={() => {
             setForm({ ...blankForm });
             clearAssigneeResults();
             setCreateOpen(true);
           }}
-          className="gap-2 text-[10px] tracking-widest h-10 shadow-lg bg-brand-blue hover:bg-brand-blue/90"
+          className="gap-2 text-xs tracking-widest shadow-lg"
         >
           <Plus className="w-4 h-4" />
           Assign New Task
@@ -795,8 +796,9 @@ export function AdminTasksPageClient() {
                   <span className="text-sm font-bold text-foreground flex-1">
                     {form.assigneeName}
                   </span>
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
                     onClick={() =>
                       setForm({
                         ...form,
@@ -808,7 +810,7 @@ export function AdminTasksPageClient() {
                     className="text-muted-foreground hover:text-destructive"
                   >
                     <X className="w-4 h-4" />
-                  </button>
+                  </Button>
                 </div>
               ) : (
                 <div className="relative">
@@ -911,7 +913,7 @@ export function AdminTasksPageClient() {
               <Button
                 type="submit"
                 disabled={createMutation.isPending}
-                className="bg-brand-blue hover:bg-brand-blue/90 text-white font-bold gap-2"
+                className="font-bold gap-2"
               >
                 {createMutation.isPending ? (
                   <>
@@ -1084,7 +1086,7 @@ export function AdminTasksPageClient() {
               <Button
                 type="submit"
                 disabled={updateMutation.isPending}
-                className="bg-brand-blue hover:bg-brand-blue/90 text-white font-bold gap-2"
+                className="font-bold gap-2"
               >
                 {updateMutation.isPending ? (
                   <>

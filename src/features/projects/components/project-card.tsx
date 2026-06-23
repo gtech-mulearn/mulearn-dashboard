@@ -37,7 +37,8 @@ interface ProjectCardProps {
   onDelete: () => void;
 }
 
-function stripMarkdown(md: string): string {
+function stripMarkdown(md: string | null | undefined): string {
+  if (!md) return "";
   return md
     .replace(/<[^>]*>/g, "")
     .replace(/^#{1,6}\s+/gm, "")
@@ -57,18 +58,56 @@ function stripMarkdown(md: string): string {
     .trim();
 }
 
-function generateGradient(seed: string): string {
+function generateGradient(seed: string | null | undefined): string {
+  const source = seed || "project";
   let hash = 0;
-  for (let i = 0; i < seed.length; i++) {
-    hash = seed.charCodeAt(i) + ((hash << 5) - hash);
+  for (let i = 0; i < source.length; i++) {
+    hash = source.charCodeAt(i) + ((hash << 5) - hash);
   }
   const hue1 = Math.abs(hash) % 360;
   const hue2 = (hue1 + 40) % 360;
   return `linear-gradient(135deg, hsl(${hue1}, 70%, 60%), hsl(${hue2}, 80%, 50%))`;
 }
 
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
+function pad2(n: number): string {
+  return String(n).padStart(2, "0");
+}
+
+// ── Folder silhouette ──────────────────────────────────────────────
+// Drawn as a single SVG path so the concave tab→body fillet stays crisp at
+// any size. The viewBox is stretched to the card box (preserveAspectRatio
+// "none"); HTML content is layered on top, so only the fill stretches.
+const FOLDER = {
+  w: 320,
+  h: 280,
+  r: 26, // outer corner radius
+  tabTopY: 76, // raised left "tab" top edge
+  bodyTopY: 6, // lower right body top edge (orange shows above it)
+  tabRightX: 118, // where the tab top ends and the S-curve begins
+  curveEndX: 190, // where the S-curve settles onto the body top
+} as const;
+
+const FOLDER_PATH = [
+  `M ${FOLDER.r},${FOLDER.tabTopY}`,
+  `H ${FOLDER.tabRightX}`,
+  // smooth S-curve from the tall tab down to the lower body
+  `C ${FOLDER.tabRightX + 30},${FOLDER.tabTopY} ${FOLDER.curveEndX - 30},${FOLDER.bodyTopY} ${FOLDER.curveEndX},${FOLDER.bodyTopY}`,
+  `H ${FOLDER.w - FOLDER.r}`,
+  `Q ${FOLDER.w},${FOLDER.bodyTopY} ${FOLDER.w},${FOLDER.bodyTopY + FOLDER.r}`,
+  `V ${FOLDER.h - FOLDER.r}`,
+  `Q ${FOLDER.w},${FOLDER.h} ${FOLDER.w - FOLDER.r},${FOLDER.h}`,
+  `H ${FOLDER.r}`,
+  `Q 0,${FOLDER.h} 0,${FOLDER.h - FOLDER.r}`,
+  `V ${FOLDER.tabTopY + FOLDER.r}`,
+  `Q 0,${FOLDER.tabTopY} ${FOLDER.r},${FOLDER.tabTopY}`,
+  "Z",
+].join(" ");
+
+function timeAgo(dateStr: string | null | undefined): string {
+  if (!dateStr) return "";
+  const time = new Date(dateStr).getTime();
+  if (Number.isNaN(time)) return "";
+  const diff = Date.now() - time;
   const mins = Math.floor(diff / 60000);
   if (mins < 1) return "just now";
   if (mins < 60) return `${mins}m ago`;
@@ -87,14 +126,19 @@ export function ProjectCard({
   onEdit,
   onDelete,
 }: ProjectCardProps) {
-  const upvotes = project.votes.filter((v) => v.vote === "upvote").length;
-  const commentCount = project.comments.length;
+  // Defensive against partial payloads: the API client validates leniently
+  // (returns the raw response on a schema mismatch), so Zod array/string
+  // defaults aren't guaranteed at runtime.
+  const votes = project.votes ?? [];
+  const comments = project.comments ?? [];
+  const title = project.title?.trim() || "Untitled project";
+
+  const upvotes = votes.filter((v) => v.vote === "upvote").length;
+  const commentCount = comments.length;
   const plainDescription = stripMarkdown(project.description);
 
   const userVote = currentUserId
-    ? project.votes.find(
-        (v) => v.user_id === currentUserId && v.vote === "upvote",
-      )
+    ? votes.find((v) => v.user_id === currentUserId && v.vote === "upvote")
     : undefined;
   const hasUpvoted = !!userVote;
 
@@ -133,136 +177,165 @@ export function ProjectCard({
           onOpen();
         }
       }}
-      className="group flex flex-col gap-4 rounded-2xl border border-border/50 bg-card p-5 shadow-sm transition-all duration-200 hover:border-border hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer h-full"
+      className="group relative aspect-[8/7] w-full select-none overflow-hidden rounded-[26px] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff7a4d] focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      style={{
+        // Warm coral→orange backdrop, brightest upper-left (shows through the
+        // folder's top band). Fixed dark-only treatment, theme-independent.
+        background:
+          "radial-gradient(115% 130% at 18% -12%, #ffb36b 0%, #ff7a4d 28%, #f0502e 52%, #7a2418 76%, #171717 100%)",
+      }}
     >
-      {/* Logo + actions */}
-      <div className="flex items-start justify-between gap-3">
-        {resolveMediaUrl(project.logo) ? (
-          <Image
-            src={resolveMediaUrl(project.logo) as string}
-            alt=""
-            width={48}
-            height={48}
-            className="h-12 w-12 rounded-full object-cover border border-border/40 shrink-0"
-          />
-        ) : (
-          <div
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-lg font-bold text-white"
-            style={{ background: generateGradient(project.title) }}
-          >
-            {project.title.charAt(0).toUpperCase()}
-          </div>
-        )}
+      {/* Dark folder body */}
+      <svg
+        aria-hidden="true"
+        viewBox={`0 0 ${FOLDER.w} ${FOLDER.h}`}
+        preserveAspectRatio="none"
+        className="absolute inset-0 h-full w-full"
+      >
+        <path d={FOLDER_PATH} fill="#171717" />
+      </svg>
 
-        {/* biome-ignore lint/a11y/noStaticElementInteractions: stops click propagation to parent role=button */}
-        <div
-          className="flex items-center gap-1.5 ml-auto"
-          onClick={(e) => e.stopPropagation()}
-          onKeyDown={(e) => e.stopPropagation()}
-        >
-          <Button
-            variant={hasUpvoted ? "default" : "secondary"}
-            size="sm"
-            className="rounded-full h-7 px-2.5"
-            onClick={handleUpvote}
-            disabled={!currentUserId || isPendingVote}
-          >
-            <ArrowUp className="h-3 w-3" />
-            {upvotes}
-          </Button>
-
-          {canEdit && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-7 w-7 rounded-full"
-                >
-                  <MoreHorizontal className="h-3.5 w-3.5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-32 rounded-xl">
-                <DropdownMenuItem
-                  onClick={onEdit}
-                  className="rounded-lg cursor-pointer"
-                >
-                  <Pencil className="h-3.5 w-3.5 mr-2" />
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={onDelete}
-                  className="rounded-lg cursor-pointer text-destructive focus:text-destructive"
-                >
-                  <Trash2 className="h-3.5 w-3.5 mr-2" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-        </div>
-      </div>
-
-      {/* Creator + time */}
-      <p className="text-[12px] font-medium text-muted-foreground -mt-1">
-        {project.created_by ?? "Unknown"} · {timeAgo(project.created_at)}
-      </p>
-
-      {/* Title + status + description */}
-      <div className="flex-1">
-        <div className="flex flex-wrap items-center gap-2 mb-1.5">
-          <h3 className="text-[16px] font-bold tracking-tight text-foreground leading-snug line-clamp-1">
-            {project.title}
-          </h3>
-          {project.status !== "published" && (
-            <Badge
-              variant="secondary"
-              className="text-[10px] px-1.5 py-0 h-4 uppercase tracking-wider font-semibold shrink-0"
+      {/* Content layer */}
+      <div className="absolute inset-0 flex flex-col p-5">
+        {/* Top band (over the orange): label + actions */}
+        <div className="flex items-start justify-between gap-3">
+          {resolveMediaUrl(project.logo) ? (
+            <Image
+              src={resolveMediaUrl(project.logo) as string}
+              alt=""
+              width={40}
+              height={40}
+              className="h-10 w-10 shrink-0 rounded-xl border border-white/15 object-cover"
+            />
+          ) : (
+            <div
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-base font-bold text-white shadow-sm"
+              style={{ background: generateGradient(title) }}
             >
-              {project.status}
-            </Badge>
+              {title.charAt(0).toUpperCase()}
+            </div>
           )}
-        </div>
-        <p className="text-[13px] leading-relaxed text-muted-foreground line-clamp-2">
-          {plainDescription || "No description provided."}
-        </p>
-      </div>
 
-      {/* Skill pills */}
-      <div className="flex flex-wrap gap-1.5">
-        {project.skills.length > 0 ? (
-          <>
-            {project.skills.slice(0, 3).map((s) => (
-              <span
-                key={s.id}
-                className="rounded-full bg-secondary/60 px-2.5 py-0.5 text-[11px] font-medium text-secondary-foreground"
+          <div className="flex flex-col items-end gap-2">
+            {/* biome-ignore lint/a11y/noStaticElementInteractions: stops click propagation to parent role=button */}
+            <div
+              className="flex items-center gap-1.5"
+              onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
+            >
+              <Button
+                variant="secondary"
+                size="sm"
+                className={`h-7 rounded-full border-0 px-2.5 text-[12px] backdrop-blur-sm ${
+                  hasUpvoted
+                    ? "bg-white text-[#171717] hover:bg-white/90"
+                    : "bg-black/25 text-white hover:bg-black/35"
+                }`}
+                onClick={handleUpvote}
+                disabled={!currentUserId || isPendingVote}
+                aria-pressed={hasUpvoted}
+                aria-label={hasUpvoted ? "Remove upvote" : "Upvote project"}
               >
-                {s.name}
-              </span>
-            ))}
-            {project.skills.length > 3 && (
-              <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
-                +{project.skills.length - 3}
-              </span>
-            )}
-          </>
-        ) : (
-          <span className="text-[12px] italic text-muted-foreground/40">
-            No skills listed
-          </span>
-        )}
-      </div>
+                <ArrowUp className="h-3 w-3" />
+                {upvotes}
+              </Button>
 
-      {/* Bottom: comments + View CTA */}
-      <div className="flex items-center justify-between border-t border-border/40 pt-3 mt-auto">
-        <span className="flex items-center gap-1.5 text-[12px] font-medium text-muted-foreground">
-          <MessageCircle className="h-3.5 w-3.5" />
-          {commentCount} {commentCount === 1 ? "comment" : "comments"}
-        </span>
-        <span className="flex items-center gap-0.5 text-[12px] font-semibold text-primary group-hover:underline underline-offset-2 transition-colors">
-          View
-          <ArrowUpRight className="h-3.5 w-3.5" />
-        </span>
+              {canEdit && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-7 w-7 rounded-full bg-black/25 text-white backdrop-blur-sm hover:bg-black/35 hover:text-white"
+                      aria-label="Project options"
+                    >
+                      <MoreHorizontal className="h-3.5 w-3.5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-32 rounded-xl">
+                    <DropdownMenuItem
+                      onClick={onEdit}
+                      className="rounded-lg cursor-pointer"
+                    >
+                      <Pencil className="h-3.5 w-3.5 mr-2" />
+                      Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={onDelete}
+                      className="rounded-lg cursor-pointer text-destructive focus:text-destructive"
+                    >
+                      <Trash2 className="h-3.5 w-3.5 mr-2" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </div>
+
+            {/* Creator + time label (maps to the reference's top-right caption) */}
+            <p className="max-w-[9rem] text-right text-[11px] font-medium leading-tight text-white/85">
+              {project.created_by?.trim() || "Unknown"}
+              {timeAgo(project.created_at) && (
+                <>
+                  <br />
+                  <span className="text-white/60">
+                    {timeAgo(project.created_at)}
+                  </span>
+                </>
+              )}
+            </p>
+          </div>
+        </div>
+
+        {/* Title + description — bottom-aligned within the dark body */}
+        <div className="mt-auto">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="text-[18px] font-semibold leading-snug tracking-tight text-white line-clamp-1">
+              {title}
+            </h3>
+            {project.status && project.status !== "published" && (
+              <Badge className="h-4 shrink-0 border-0 bg-white/15 px-1.5 py-0 text-[9px] font-semibold uppercase tracking-wider text-white/90">
+                {project.status}
+              </Badge>
+            )}
+          </div>
+          <p className="mt-1 text-[12.5px] leading-relaxed text-white/45 line-clamp-3">
+            {plainDescription || "No description provided."}
+          </p>
+        </div>
+
+        {/* Bottom stats */}
+        <div className="mt-4 flex items-end justify-between">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleUpvote();
+            }}
+            disabled={!currentUserId || isPendingVote}
+            aria-pressed={hasUpvoted}
+            aria-label={hasUpvoted ? "Remove upvote" : "Upvote project"}
+            className="flex items-baseline gap-1.5 rounded-lg text-left transition-opacity hover:opacity-80 disabled:cursor-default disabled:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+          >
+            <span
+              className={`text-[22px] font-semibold leading-none ${
+                hasUpvoted ? "text-[#ff8a5c]" : "text-white"
+              }`}
+            >
+              {pad2(upvotes)}
+            </span>
+            <span className="text-[12px] font-medium text-white/50">
+              {upvotes === 1 ? "Vote" : "Votes"}
+            </span>
+          </button>
+
+          <span className="flex items-center gap-1.5 text-[13px] font-medium text-white/55">
+            <MessageCircle className="h-3.5 w-3.5" />
+            <span className="font-semibold text-white/90">{commentCount}</span>
+            {commentCount === 1 ? "Comment" : "Comments"}
+            <ArrowUpRight className="h-3.5 w-3.5 text-white/40 opacity-0 transition-opacity group-hover:opacity-100" />
+          </span>
+        </div>
       </div>
     </div>
   );

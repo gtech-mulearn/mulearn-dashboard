@@ -248,10 +248,10 @@ export function ManageMinutesPageClient() {
       return (
         <div className="flex items-center justify-center gap-1">
           <Button
-            size="icon"
+            size="icon-sm"
             variant="ghost"
             onClick={() => setViewingMinute(item)}
-            className="size-8 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+            className="rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
             title="View Details"
           >
             <Eye className="w-4 h-4" />
@@ -341,7 +341,7 @@ export function ManageMinutesPageClient() {
                 onClick={() =>
                   setSortOrder((prev) => (prev === "desc" ? "asc" : "desc"))
                 }
-                className="gap-2 h-8 font-black uppercase text-[10px] tracking-widest border-border/40"
+                className="gap-2 uppercase text-xs tracking-widest"
               >
                 <ArrowUpDown className="w-3 h-3" />
                 {sortOrder === "desc" ? "Newest" : "Oldest"}

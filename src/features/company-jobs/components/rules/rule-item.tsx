@@ -6,6 +6,7 @@
 
 import { Award, BookOpen, Sparkles, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { formatNumericRuleValue } from "../../constants";
 import type { JobRule } from "../../types";
 
 interface RuleItemProps {
@@ -67,7 +68,7 @@ export function RuleItem({
           {label}
         </span>
         <span className="break-words text-sm font-medium text-foreground">
-          {rule.rule_value}
+          {formatNumericRuleValue(rule.rule_type, rule.rule_value)}
         </span>
       </div>
 
