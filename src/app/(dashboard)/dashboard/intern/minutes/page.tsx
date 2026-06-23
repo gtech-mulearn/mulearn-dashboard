@@ -469,7 +469,7 @@ export default function InternMinutesPage() {
           if (!open) setViewingMinute(null);
         }}
       >
-        <DialogContent className="bg-card/95 backdrop-blur-xl border-border/60 w-full max-w-[calc(100%-2rem)] sm:max-w-xl p-4 sm:p-6">
+        <DialogContent className="bg-card/95 backdrop-blur-xl border-border/60 w-full max-w-[calc(100%-2rem)] sm:max-w-xl max-h-[calc(100vh-2rem)] flex flex-col p-4 sm:p-6 rounded-2xl">
           <DialogHeader>
             <div className="flex flex-wrap gap-2 items-center text-xs text-muted-foreground mb-1.5 font-bold uppercase tracking-wider">
               <span>
@@ -504,11 +504,11 @@ export default function InternMinutesPage() {
                 new Date(viewingMinute.created_at).toLocaleDateString()}
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
-            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-2">
+          <div className="py-4 flex-1 flex flex-col min-h-0">
+            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-2 shrink-0">
               Minutes Details
             </h4>
-            <div className="max-h-[60vh] overflow-y-auto whitespace-pre-wrap font-medium text-sm leading-relaxed text-muted-foreground bg-muted/20 p-4 rounded-xl border border-border/40">
+            <div className="flex-1 overflow-y-auto min-h-0 whitespace-pre-wrap font-medium text-sm leading-relaxed text-muted-foreground bg-muted/20 p-4 rounded-xl border border-border/40">
               {viewingMinute && renderContentWithLinks(viewingMinute.minutes)}
             </div>
           </div>

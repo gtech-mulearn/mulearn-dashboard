@@ -24,7 +24,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import {
   Select,
@@ -380,9 +379,6 @@ export function TimesheetReviewsPageClient() {
           </div>
 
           <div className="w-full sm:w-48">
-            <Label className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
-              Status Filter
-            </Label>
             <Select
               value={statusFilter}
               onValueChange={(v) => {
@@ -638,9 +634,9 @@ export function TimesheetReviewsPageClient() {
 
                   {selectedTimesheet.status === "PENDING" ? (
                     <div className="space-y-2 pt-2 border-t border-border/20 flex flex-col gap-1">
-                      <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
                         Review Notes / Feedback
-                      </Label>
+                      </span>
                       <Textarea
                         value={reviewNote}
                         onChange={(e) => setReviewNote(e.target.value)}
@@ -900,9 +896,9 @@ export function TimesheetReviewsPageClient() {
 
                   {selectedWeeklyReview.status === "PENDING" ? (
                     <div className="space-y-2 pt-3 border-t border-border/20 flex flex-col gap-1">
-                      <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
                         Review Notes / Feedback
-                      </Label>
+                      </span>
                       <Textarea
                         value={reviewNote}
                         onChange={(e) => setReviewNote(e.target.value)}

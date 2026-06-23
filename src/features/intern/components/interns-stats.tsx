@@ -60,14 +60,14 @@ export function InternsStats() {
       <StatCard
         title="Total Interns"
         value={totalInterns}
-        description="Registered Cohort Members"
+        description="Registered Cohorts"
         accent="chart-1"
         icon={<Users className="size-5" />}
       />
       <StatCard
         title="Active"
         value={activeCount}
-        description="Actively submitting quests"
+        description="Actively submitting"
         accent="chart-2"
         icon={<CheckCircle2 className="size-5" />}
       />

@@ -10,8 +10,6 @@ import {
 import { useCallback, useMemo, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import Pagination from "@/components/dashboard/table/pagination";
-import Table from "@/components/dashboard/table/Table";
-import THead from "@/components/dashboard/table/Thead";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -31,6 +29,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
+import {
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Table as UiTable,
+} from "@/components/ui/table";
 import {
   type TMinuteItem,
   useGuilds,
@@ -134,12 +140,17 @@ export function ManageMinutesPageClient() {
 
   const columnOrder = useMemo(() => {
     const cols = [
-      { column: "date", Label: "Date", isSortable: false, width: "w-44" },
+      {
+        column: "date",
+        Label: "Date",
+        isSortable: false,
+        width: "w-[160px] shrink-0",
+      },
       {
         column: "title",
         Label: "Title",
         isSortable: false,
-        width: "min-w-[50px] max-w-[80px]",
+        width: "min-w-[120px] max-w-[180px] truncate",
       },
     ];
     if (isAdmin) {
@@ -147,7 +158,7 @@ export function ManageMinutesPageClient() {
         column: "guild",
         Label: "Guild",
         isSortable: false,
-        width: "w-50",
+        width: "w-[140px] shrink-0",
       });
     }
     cols.push(
@@ -155,112 +166,94 @@ export function ManageMinutesPageClient() {
         column: "uploaded_by_name",
         Label: "Uploaded By",
         isSortable: false,
-        width: "min-w-[150px]",
+        width: "w-[160px] shrink-0",
       },
       {
         column: "minutes",
         Label: "Minutes Details",
         isSortable: false,
-        width: "min-w-[250px]",
+        width: "min-w-[220px] flex-1",
       },
     );
     return cols;
   }, [isAdmin]);
 
-  const tableRows = useMemo(() => {
-    return minutes.map((item) => ({
-      ...item,
-      full_name: item.title, // Map to full_name for mobile card header
-    })) as unknown as import("@/components/dashboard/table/Table").Data[];
-  }, [minutes]);
-
-  const customCellRender = useCallback(
-    (
-      column: string,
-      row: import("@/components/dashboard/table/Table").Data,
-    ) => {
-      const item = row as unknown as TMinuteItem;
-      switch (column) {
-        case "date":
-          return (
-            <div className="flex items-center justify-start gap-2">
-              <div className="p-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 shrink-0">
-                <ScrollText className="w-3.5 h-3.5 text-amber-500" />
-              </div>
-              <div className="text-left">
-                <span className="text-sm font-bold text-foreground uppercase tracking-tight">
-                  {new Date(item.date).toLocaleDateString(undefined, {
-                    weekday: "short",
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </span>
-                <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest leading-none mt-1 block">
-                  Year {new Date(item.date).getFullYear()}
-                </span>
-              </div>
+  const customCellRender = useCallback((column: string, item: TMinuteItem) => {
+    switch (column) {
+      case "date":
+        return (
+          <div className="flex items-center justify-start gap-2">
+            <div className="p-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 shrink-0">
+              <ScrollText className="w-3.5 h-3.5 text-amber-500" />
             </div>
-          );
-        case "title":
-          return (
-            <span
-              className="font-bold text-foreground uppercase tracking-tight text-sm truncate max-w-[120px]"
-              title={item.title}
-            >
-              {item.title}
-            </span>
-          );
-        case "guild":
-          return (
-            <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground font-bold uppercase tracking-wider">
-              {item.guild}
-            </div>
-          );
-        case "uploaded_by_name":
-          return (
-            <div className="flex flex-col">
-              <span className="font-bold text-foreground uppercase tracking-tight text-sm truncate max-w-[150px]">
-                {item.uploaded_by_name || item.created_by_name || "Unknown"}
+            <div className="text-left">
+              <span className="text-sm font-bold text-foreground uppercase tracking-tight">
+                {new Date(item.date).toLocaleDateString(undefined, {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                })}
               </span>
-              {item.uploaded_by_muid && (
-                <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest leading-none mt-1">
-                  {item.uploaded_by_muid}
-                </span>
-              )}
+              <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest leading-none mt-1 block">
+                Year {new Date(item.date).getFullYear()}
+              </span>
             </div>
-          );
-        case "minutes":
-          return (
-            <span className="text-xs text-muted-foreground font-medium line-clamp-2">
-              {trimMinutesText(item.minutes)}
-            </span>
-          );
-        default:
-          return null;
-      }
-    },
-    [],
-  );
-
-  const customActionRender = useCallback(
-    (row: import("@/components/dashboard/table/Table").Data) => {
-      const item = row as unknown as TMinuteItem;
-      return (
-        <div className="flex items-center justify-center gap-1">
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={() => setViewingMinute(item)}
-            className="size-8 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
-            title="View Details"
+          </div>
+        );
+      case "title":
+        return (
+          <span
+            className="font-bold text-foreground uppercase tracking-tight text-sm truncate max-w-[120px]"
+            title={item.title}
           >
-            <Eye className="w-4 h-4" />
-          </Button>
-        </div>
-      );
-    },
-    [],
-  );
+            {item.title}
+          </span>
+        );
+      case "guild":
+        return (
+          <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground font-bold uppercase tracking-wider">
+            {item.guild}
+          </div>
+        );
+      case "uploaded_by_name":
+        return (
+          <div className="flex flex-col">
+            <span className="font-bold text-foreground uppercase tracking-tight text-sm truncate max-w-[150px]">
+              {item.uploaded_by_name || item.created_by_name || "Unknown"}
+            </span>
+            {item.uploaded_by_muid && (
+              <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest leading-none mt-1">
+                {item.uploaded_by_muid}
+              </span>
+            )}
+          </div>
+        );
+      case "minutes":
+        return (
+          <span className="text-xs text-muted-foreground font-medium line-clamp-2">
+            {trimMinutesText(item.minutes)}
+          </span>
+        );
+      default:
+        return null;
+    }
+  }, []);
+
+  const customActionRender = useCallback((item: TMinuteItem) => {
+    return (
+      <div className="flex items-center justify-center gap-1">
+        <Button
+          size="icon"
+          variant="ghost"
+          onClick={() => setViewingMinute(item)}
+          className="size-8 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+          title="View Details"
+        >
+          <Eye className="w-4 h-4" />
+        </Button>
+      </div>
+    );
+  }, []);
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto w-full">
@@ -369,43 +362,67 @@ export function ManageMinutesPageClient() {
               </CardContent>
             </Card>
           ) : (
-            <Table
-              rows={tableRows}
-              isLoading={isLoading}
-              page={page}
-              perPage={perPage}
-              columnOrder={columnOrder}
-              id={["id"]}
-              slNoCellClassName="font-black text-muted-foreground/40"
-              customCellRender={customCellRender}
-              customActionRender={customActionRender}
-            >
-              <THead
-                columnOrder={columnOrder}
-                onIconClick={() => {}}
-                action
-                thClassName="bg-muted/20 border-b border-border/20 h-12 font-black uppercase text-[9px] tracking-[0.3em]"
-              />
-              <div>
-                {totalPages > 1 && (
-                  <div className="p-4 border-t border-border/20">
-                    <Pagination
-                      currentPage={page}
-                      totalPages={totalPages}
-                      perPage={perPage}
-                      totalCount={totalCount}
-                      handlePreviousClick={() =>
-                        setPage((p) => Math.max(1, p - 1))
-                      }
-                      handleNextClick={() =>
-                        setPage((p) => Math.min(totalPages, p + 1))
-                      }
-                    />
-                  </div>
-                )}
-              </div>
-              <div />
-            </Table>
+            <div className="rounded-xl border border-border bg-card overflow-hidden">
+              <UiTable className="min-w-full border-collapse">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="bg-muted/20 border-b border-border/20 h-12 font-black uppercase text-[9px] tracking-[0.3em] pl-4 w-16">
+                      Sl.no
+                    </TableHead>
+                    {columnOrder.map((col) => (
+                      <TableHead
+                        key={col.column}
+                        className={`bg-muted/20 border-b border-border/20 h-12 font-black uppercase text-[9px] tracking-[0.3em] ${col.width || ""}`}
+                      >
+                        {col.Label}
+                      </TableHead>
+                    ))}
+                    <TableHead className="bg-muted/20 border-b border-border/20 h-12 font-black uppercase text-[9px] tracking-[0.3em] text-center w-32">
+                      Action
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {minutes.map((item, index) => (
+                    <TableRow
+                      key={item.id}
+                      className="odd:bg-muted/70 even:bg-transparent"
+                    >
+                      <TableCell className="border-b border-border px-3.5 py-3 w-16 font-black text-muted-foreground/40 pl-4">
+                        {(page - 1) * perPage + index + 1}
+                      </TableCell>
+                      {columnOrder.map((col) => (
+                        <TableCell
+                          key={col.column}
+                          className={`border-b border-border px-3.5 py-3 ${col.width || ""}`}
+                        >
+                          {customCellRender(col.column, item)}
+                        </TableCell>
+                      ))}
+                      <TableCell className="border-b border-border px-3.5 py-3 text-center w-32">
+                        {customActionRender(item)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </UiTable>
+              {totalPages > 1 && (
+                <div className="p-4 border-t border-border/20">
+                  <Pagination
+                    currentPage={page}
+                    totalPages={totalPages}
+                    perPage={perPage}
+                    totalCount={totalCount}
+                    handlePreviousClick={() =>
+                      setPage((p) => Math.max(1, p - 1))
+                    }
+                    handleNextClick={() =>
+                      setPage((p) => Math.min(totalPages, p + 1))
+                    }
+                  />
+                </div>
+              )}
+            </div>
           )}
         </div>
       </ErrorBoundary>
@@ -417,7 +434,7 @@ export function ManageMinutesPageClient() {
           if (!open) setViewingMinute(null);
         }}
       >
-        <DialogContent className="bg-card/95 backdrop-blur-xl border-border/60 w-full max-w-[calc(100%-2rem)] sm:max-w-xl p-4 sm:p-6">
+        <DialogContent className="bg-card/95 backdrop-blur-xl border-border/60 w-full max-w-[calc(100%-2rem)] sm:max-w-xl max-h-[calc(100vh-2rem)] flex flex-col p-4 sm:p-6 rounded-2xl">
           <DialogHeader>
             <div className="flex flex-wrap gap-2 items-center text-xs text-muted-foreground mb-1.5 font-bold uppercase tracking-wider">
               <span>
@@ -452,11 +469,11 @@ export function ManageMinutesPageClient() {
                 new Date(viewingMinute.created_at).toLocaleDateString()}
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
-            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-2">
+          <div className="py-4 flex-1 flex flex-col min-h-0">
+            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-2 shrink-0">
               Minutes Details
             </h4>
-            <div className="max-h-[60vh] overflow-y-auto whitespace-pre-wrap font-medium text-sm leading-relaxed text-muted-foreground bg-muted/20 p-4 rounded-xl border border-border/40">
+            <div className="flex-1 overflow-y-auto min-h-0 whitespace-pre-wrap font-medium text-sm leading-relaxed text-muted-foreground bg-muted/20 p-4 rounded-xl border border-border/40">
               {viewingMinute && renderContentWithLinks(viewingMinute.minutes)}
             </div>
           </div>

@@ -5,25 +5,36 @@ import {
   Calendar,
   CheckCircle2,
   Crown,
+  Download,
   ListTodo,
   PauseCircle,
   Pencil,
   Plus,
+  Search,
   Shield,
   Sparkles,
   Users,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table, { type Data } from "@/components/dashboard/table/Table";
-import TableTop from "@/components/dashboard/table/TableTop";
 import THead from "@/components/dashboard/table/Thead";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { SectionErrorFallback } from "@/components/ui/errors/SectionErrorFallback";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -36,6 +47,7 @@ import {
   useExportInterns,
   useGuilds,
   useManageInternsList,
+  useUpdateIntern,
 } from "@/features/intern";
 import type { TManageInternItem } from "@/features/intern/types";
 import { resolveInternStatus } from "@/features/intern/utils/intern-helpers";
@@ -87,6 +99,14 @@ const getStatusBadge = (status: string) => {
   }
 };
 
+const statusColorClass: Record<string, string> = {
+  ACTIVE: "text-success",
+  AT_RISK: "text-warning",
+  ON_LEAVE: "text-brand-blue",
+  INACTIVE: "text-muted-foreground",
+  all: "",
+};
+
 const DEFAULT_GUILDS = [
   "DESIGN",
   "FRONTEND",
@@ -123,6 +143,10 @@ export function ManageInternsPageClient() {
     id: string;
     name: string;
   } | null>(null);
+  const [activateIntern, setActivateIntern] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
   // Queries & Mutations
   const { data: listData, isLoading: isListLoading } = useManageInternsList({
@@ -155,6 +179,7 @@ export function ManageInternsPageClient() {
   }, [guilds]);
 
   const deactivateMutation = useDeactivateIntern();
+  const activateMutation = useUpdateIntern(activateIntern?.id || "");
   const { mutateAsync: exportCsv, isPending: isExporting } = useExportInterns();
 
   const getEditableStatus = (item: TManageInternItem) => {
@@ -357,120 +382,200 @@ export function ManageInternsPageClient() {
       {/* Interns Data Table Section */}
       <ErrorBoundary FallbackComponent={SectionErrorFallback}>
         <div className="space-y-4">
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h3 className="text-xl font-black uppercase tracking-widest">
                 Intern Directory
               </h3>
-              <p className="text-[10px] font-bold uppercase text-muted-foreground/60 tracking-wider">
+              <p className="text-[10px] font-bold uppercase text-muted-foreground/60 tracking-wider mt-0.5">
                 Manage profiles and track progress
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              <Select
-                value={statusFilter}
-                onValueChange={(val) => {
-                  setStatusFilter(val);
-                  setPage(1);
-                }}
-              >
-                <SelectTrigger className="w-[180px] h-10 font-black uppercase text-[10px] tracking-widest border-border/40 bg-card/40">
-                  <SelectValue placeholder="Filter by Status" />
-                </SelectTrigger>
-                <SelectContent
-                  position="popper"
-                  className="bg-card/95 backdrop-blur-xl border-border/60"
-                >
-                  <SelectItem
-                    value="all"
-                    className="font-bold uppercase text-[10px]"
-                  >
-                    All Statuses
-                  </SelectItem>
-                  <SelectItem
-                    value="ACTIVE"
-                    className="font-bold uppercase text-[10px]"
-                  >
-                    Active
-                  </SelectItem>
-                  <SelectItem
-                    value="AT_RISK"
-                    className="font-bold uppercase text-[10px]"
-                  >
-                    At Risk
-                  </SelectItem>
-                  <SelectItem
-                    value="ON_LEAVE"
-                    className="font-bold uppercase text-[10px]"
-                  >
-                    On Leave
-                  </SelectItem>
-                  <SelectItem
-                    value="INACTIVE"
-                    className="font-bold uppercase text-[10px]"
-                  >
-                    Inactive
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <Select
-                value={roleFilter}
-                onValueChange={(val) => {
-                  setRoleFilter(val);
-                  setPage(1);
-                }}
-              >
-                <SelectTrigger className="w-[180px] h-10 font-black uppercase text-[10px] tracking-widest border-border/40 bg-card/40">
-                  <SelectValue placeholder="Filter by Role" />
-                </SelectTrigger>
-                <SelectContent
-                  position="popper"
-                  className="bg-card/95 backdrop-blur-xl border-border/60"
-                >
-                  <SelectItem
-                    value="all"
-                    className="font-bold uppercase text-[10px]"
-                  >
-                    All Roles
-                  </SelectItem>
-                  <SelectItem
-                    value="INTERN"
-                    className="font-bold uppercase text-[10px]"
-                  >
-                    Intern
-                  </SelectItem>
-                  <SelectItem
-                    value="INTERN_LEAD"
-                    className="font-bold uppercase text-[10px] text-amber-500"
-                  >
-                    ⭐ Intern Lead
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
 
-          <TableTop
-            onSearchText={(val) => {
-              setSearchText(val);
-              setPage(1);
-            }}
-            onPerPageNumber={(val) => {
-              setPerPage(val);
-              setPage(1);
-            }}
-            CSV="interns.csv"
-            perPage={perPage}
-            perPageOptions={[10, 20, 50]}
-            searchPlaceholder="Search heroes..."
-            searchSize="md"
-            searchPosition="left"
-            searchWrapperClassName="bg-card/40 border-border/40"
-            onCsvDownload={async () => {
-              await exportCsv();
-            }}
-            isCsvDownloading={isExporting}
-          />
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-card/40 backdrop-blur-md border border-border/40 p-4 rounded-2xl shadow-md">
+            {/* Left side: Search & Rows per page */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 flex-1">
+              <div className="relative flex-1 sm:max-w-xs shrink-0">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
+                <Input
+                  placeholder="Search heroes..."
+                  value={searchText}
+                  onChange={(e) => {
+                    setSearchText(e.target.value.replace(/[<>/]/g, ""));
+                    setPage(1);
+                  }}
+                  className="w-full pl-10 h-10 bg-background/50 border-border/50 font-medium rounded-xl"
+                />
+                {searchText && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchText("");
+                      setPage(1);
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="size-4" />
+                  </button>
+                )}
+              </div>
+
+              {/* Rows per page: hidden on mobile, flex on tablet/desktop */}
+              <div className="hidden sm:flex items-center gap-2 shrink-0">
+                <span className="whitespace-nowrap text-xs font-medium text-muted-foreground">
+                  Rows per page
+                </span>
+                <Select
+                  value={String(perPage)}
+                  onValueChange={(value) => {
+                    setPerPage(Number(value));
+                    setPage(1);
+                  }}
+                >
+                  <SelectTrigger className="h-10 w-[88px] rounded-xl border-border bg-background/50 font-bold text-xs">
+                    <SelectValue placeholder="Rows" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[10, 20, 50].map((option) => (
+                      <SelectItem key={option} value={String(option)}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Right side: Filters & Export CSV (and Mobile Rows per page) */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+              <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-3 w-full sm:w-auto">
+                <Select
+                  value={statusFilter}
+                  onValueChange={(val) => {
+                    setStatusFilter(val);
+                    setPage(1);
+                  }}
+                >
+                  <SelectTrigger
+                    className={`w-full sm:w-[160px] h-10 font-black uppercase text-[10px] tracking-widest border-border/40 bg-card/40 ${statusColorClass[statusFilter] ?? ""}`}
+                  >
+                    <SelectValue placeholder="Filter by Status" />
+                  </SelectTrigger>
+                  <SelectContent
+                    position="popper"
+                    className="bg-card/95 backdrop-blur-xl border-border/60"
+                  >
+                    <SelectItem
+                      value="all"
+                      className="font-bold uppercase text-[10px]"
+                    >
+                      All Statuses
+                    </SelectItem>
+                    <SelectItem
+                      value="ACTIVE"
+                      className="font-bold uppercase text-[10px]"
+                    >
+                      Active
+                    </SelectItem>
+                    <SelectItem
+                      value="AT_RISK"
+                      className="font-bold uppercase text-[10px]"
+                    >
+                      At Risk
+                    </SelectItem>
+                    <SelectItem
+                      value="ON_LEAVE"
+                      className="font-bold uppercase text-[10px]"
+                    >
+                      On Leave
+                    </SelectItem>
+                    <SelectItem
+                      value="INACTIVE"
+                      className="font-bold uppercase text-[10px]"
+                    >
+                      Inactive
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select
+                  value={roleFilter}
+                  onValueChange={(val) => {
+                    setRoleFilter(val);
+                    setPage(1);
+                  }}
+                >
+                  <SelectTrigger className="w-full sm:w-[160px] h-10 font-black uppercase text-[10px] tracking-widest border-border/40 bg-card/40">
+                    <SelectValue placeholder="Filter by Role" />
+                  </SelectTrigger>
+                  <SelectContent
+                    position="popper"
+                    className="bg-card/95 backdrop-blur-xl border-border/60"
+                  >
+                    <SelectItem
+                      value="all"
+                      className="font-bold uppercase text-[10px]"
+                    >
+                      All Roles
+                    </SelectItem>
+                    <SelectItem
+                      value="INTERN"
+                      className="font-bold uppercase text-[10px]"
+                    >
+                      Intern
+                    </SelectItem>
+                    <SelectItem
+                      value="INTERN_LEAD"
+                      className="font-bold uppercase text-[10px] text-amber-500"
+                    >
+                      ⭐ Intern Lead
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Bottom/Right-most Row: Mobile Rows per Page & Export Button */}
+              <div className="flex items-center justify-between sm:justify-start gap-4 sm:gap-3 w-full sm:w-auto mt-1 sm:mt-0">
+                {/* Rows per page: visible only on mobile */}
+                <div className="flex sm:hidden items-center gap-2">
+                  <span className="whitespace-nowrap text-xs font-medium text-muted-foreground">
+                    Rows per page
+                  </span>
+                  <Select
+                    value={String(perPage)}
+                    onValueChange={(value) => {
+                      setPerPage(Number(value));
+                      setPage(1);
+                    }}
+                  >
+                    <SelectTrigger className="h-10 w-[88px] rounded-xl border-border bg-background/50 font-bold text-xs">
+                      <SelectValue placeholder="Rows" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[10, 20, 50].map((option) => (
+                        <SelectItem key={option} value={String(option)}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <Button
+                  variant="outline"
+                  onClick={async () => {
+                    await exportCsv();
+                  }}
+                  disabled={isExporting}
+                  className="h-10 px-4 rounded-xl border-2 border-brand-blue text-brand-blue hover:bg-linear-to-r hover:bg-brand-blue hover:text-primary-foreground font-bold cursor-pointer transition-all duration-300 w-auto shrink-0"
+                >
+                  <Download className="mr-2 size-4" />
+                  Export CSV
+                </Button>
+              </div>
+            </div>
+          </div>
 
           <Table
             rows={rows}
@@ -480,43 +585,65 @@ export function ManageInternsPageClient() {
             columnOrder={tableColumns}
             id={["id"]}
             slNoCellClassName="font-black text-muted-foreground/40 w-16"
-            customActionRender={(row) => (
-              <div className="flex items-center gap-1.5 justify-center">
-                <Button
-                  size="icon-sm"
-                  variant="ghost"
-                  onClick={() => {
-                    setUpdateIntern({
-                      id: String(row.id),
-                      name: String(row.full_name),
-                      guild: String(row.guild ?? ""),
-                      status: getEditableStatus(
-                        row as unknown as TManageInternItem,
-                      ),
-                      role: (row.role as any) ?? "INTERN",
-                    });
-                  }}
-                  className="rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
-                  title="Edit Intern"
-                >
-                  <Pencil className="size-4" />
-                </Button>
-                <Button
-                  size="icon-sm"
-                  variant="ghost"
-                  onClick={() => {
-                    setDeactivateIntern({
-                      id: String(row.id),
-                      name: String(row.full_name),
-                    });
-                  }}
-                  className="rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
-                  title="Deactivate Intern"
-                >
-                  <Shield className="size-4" />
-                </Button>
-              </div>
-            )}
+            customActionRender={(row) => {
+              const isInactive = row.resolved_status === "INACTIVE";
+              return (
+                <div className="flex items-center gap-1.5 justify-center">
+                  {!isInactive && (
+                    <Button
+                      size="icon-sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setUpdateIntern({
+                          id: String(row.id),
+                          name: String(row.full_name),
+                          guild: String(row.guild ?? ""),
+                          status: getEditableStatus(
+                            row as unknown as TManageInternItem,
+                          ),
+                          role: (row.role as any) ?? "INTERN",
+                        });
+                      }}
+                      className="rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+                      title="Edit Intern"
+                    >
+                      <Pencil className="size-4" />
+                    </Button>
+                  )}
+                  {isInactive ? (
+                    <Button
+                      size="icon-sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setActivateIntern({
+                          id: String(row.id),
+                          name: String(row.full_name),
+                        });
+                      }}
+                      className="rounded-md text-success hover:bg-success/10 hover:text-success"
+                      title="Activate Intern"
+                    >
+                      <CheckCircle2 className="size-4 text-success" />
+                    </Button>
+                  ) : (
+                    <Button
+                      size="icon-sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setDeactivateIntern({
+                          id: String(row.id),
+                          name: String(row.full_name),
+                        });
+                      }}
+                      className="rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+                      title="Deactivate Intern"
+                    >
+                      <Shield className="size-4" />
+                    </Button>
+                  )}
+                </div>
+              );
+            }}
           >
             <THead
               columnOrder={tableColumns}
@@ -577,6 +704,62 @@ export function ManageInternsPageClient() {
           });
         }}
       />
+
+      {/* Activate Intern Dialog */}
+      <Dialog
+        open={activateIntern !== null}
+        onOpenChange={(open) => {
+          if (!open) setActivateIntern(null);
+        }}
+      >
+        <DialogContent
+          className="w-full max-w-[calc(100%-2rem)] sm:max-w-md border-border/40 bg-card backdrop-blur-xl max-h-[calc(100vh-2rem)] flex flex-col p-4 sm:p-6 rounded-2xl"
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
+          <DialogHeader>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-warning/10 text-warning">
+                <AlertTriangle className="h-5 w-5" />
+              </div>
+              <DialogTitle className="text-lg font-black uppercase tracking-widest text-warning">
+                Activate Intern
+              </DialogTitle>
+            </div>
+            <DialogDescription className="text-sm font-medium text-muted-foreground mt-2">
+              Are you sure you want to activate {activateIntern?.name}? This
+              will set their record to ACTIVE.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="pt-4 gap-2 flex flex-col-reverse sm:flex-row sm:justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setActivateIntern(null)}
+              disabled={activateMutation.isPending}
+              className="font-bold"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="default"
+              onClick={() => {
+                if (!activateIntern?.id) return;
+                activateMutation.mutate(
+                  { status: "ACTIVE" },
+                  {
+                    onSuccess: () => {
+                      setActivateIntern(null);
+                    },
+                  },
+                );
+              }}
+              disabled={activateMutation.isPending}
+              className="font-bold"
+            >
+              {activateMutation.isPending ? "Processing..." : "Activate"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

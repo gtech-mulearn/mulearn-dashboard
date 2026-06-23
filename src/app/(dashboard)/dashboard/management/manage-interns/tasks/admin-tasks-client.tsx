@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  CalendarDays,
   CheckCircle2,
   Edit,
   ExternalLink,
@@ -9,15 +8,12 @@ import {
   Plus,
   Search,
   Trash2,
-  UserCheck,
-  X,
 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table from "@/components/dashboard/table/Table";
 import THead from "@/components/dashboard/table/Thead";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -1242,7 +1238,7 @@ export function AdminTasksPageClient() {
         onOpenChange={(o) => !o && setDeleteTarget(null)}
       >
         <DialogContent
-          className="max-w-md border-border/40 bg-card backdrop-blur-xl"
+          className="w-full max-w-[calc(100%-2rem)] sm:max-w-md border-border/40 bg-card backdrop-blur-xl max-h-[calc(100vh-2rem)] flex flex-col p-4 sm:p-6 rounded-2xl"
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
           <DialogHeader>

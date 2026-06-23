@@ -243,9 +243,6 @@ export function LeaveReviewsPageClient() {
 
           <div className="w-full lg:w-48 flex gap-4">
             <div className="flex-1">
-              <Label className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-right">
-                Status Filter
-              </Label>
               <Select
                 value={statusFilter}
                 onValueChange={(v) => {
