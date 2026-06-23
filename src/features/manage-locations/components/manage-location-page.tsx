@@ -6,6 +6,10 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
 import { DataTableErrorBoundary } from "@/components/dashboard/DataTableErrorBoundary";
+import { Blank } from "@/components/dashboard/table/Blank";
+import Pagination from "@/components/dashboard/table/pagination";
+import ReusableTable, { type Data } from "@/components/dashboard/table/Table";
+import TableTop from "@/components/dashboard/table/TableTop";
 import THead from "@/components/dashboard/table/Thead";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,7 +27,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   useAddCountry,
@@ -94,7 +97,7 @@ export default function LocationManagementPage() {
 function LocationContent() {
   const [activeTab, setActiveTab] = useState<TabType>("countries");
   const [page, setPage] = useState(1);
-  const [perPage] = useState(10);
+  const [perPage, setPerPage] = useState(10);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("");
   const [open, setOpen] = useState(false);
@@ -135,7 +138,7 @@ function LocationContent() {
   const currentQuery = queryMap[activeTab];
   const currentDelete = deleteMap[activeTab];
 
-  const rows = currentQuery.data?.data ?? [];
+  const rows = (currentQuery.data?.data ?? []) as unknown as Data[];
   const totalPages = currentQuery.data?.pagination?.totalPages ?? 1;
   const totalCount = currentQuery.data?.pagination?.count ?? 0;
 
@@ -306,7 +309,7 @@ function LocationContent() {
   }, [activeTab]);
 
   const handleDeleteClick = (id: string) => {
-    const row = rows.find(
+    const row = (currentQuery.data?.data ?? []).find(
       (r: LocationRow) => (r as LocationRow & { value: string }).value === id,
     );
     const label = (row as LocationRow & { label?: string })?.label ?? id;
@@ -326,6 +329,43 @@ function LocationContent() {
         setDeleteTarget(null);
       },
     });
+  };
+
+  const customCellRender = (column: string, row: Data) => {
+    if (column === "label") {
+      return <span className="font-medium">{String(row.label ?? "")}</span>;
+    }
+    return null;
+  };
+
+  const customActionRender = (row: Data) => {
+    const rawRow = row as unknown as LocationRow & {
+      value: string;
+      label?: string;
+    };
+    return (
+      <div className="flex gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            setEditingItem(rawRow as LocationRow);
+            setOpen(true);
+          }}
+          aria-label={`Edit ${rawRow.label}`}
+        >
+          Edit
+        </Button>
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={() => handleDeleteClick(rawRow.value)}
+          aria-label={`Delete ${rawRow.label}`}
+        >
+          Delete
+        </Button>
+      </div>
+    );
   };
 
   // ─── Render ────────────────────────────────────────────────────────────────
@@ -373,233 +413,51 @@ function LocationContent() {
           ))}
         </div>
 
-        {/* Search */}
-        <Input
-          placeholder={`Search ${activeTab}...`}
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
+        <TableTop
+          onSearchText={(val) => {
+            setSearch(val);
             setPage(1);
           }}
-          className="max-w-sm"
+          onPerPageNumber={(val) => {
+            setPerPage(val);
+            setPage(1);
+          }}
+          CSV=""
+          perPage={perPage}
+          perPageOptions={[10, 25, 50]}
+          searchPlaceholder={`Search ${activeTab}...`}
+          searchSize="md"
+          searchPosition="left"
         />
 
-        {/* Desktop table */}
-        <div className="hidden md:block overflow-x-auto rounded-md border">
-          <Table>
-            <THead
-              columnOrder={columnConfig}
-              onIconClick={(column) => {
-                setSortBy(column);
-                setPage(1);
-              }}
-              action={true}
-            />
-            <TableBody>
-              {currentQuery.isLoading ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={columnConfig.length + 2}
-                    className="text-center py-8 text-muted-foreground"
-                  >
-                    Loading...
-                  </TableCell>
-                </TableRow>
-              ) : rows.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={columnConfig.length + 2}
-                    className="text-center py-8 text-muted-foreground"
-                  >
-                    No {activeTab} found.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                rows.map((row: LocationRow, index: number) => {
-                  const r = row as LocationRow & {
-                    value: string;
-                    label?: string;
-                    country?: string;
-                    state?: string;
-                    zone?: string;
-                    created_at?: string;
-                    created_by?: string;
-                    updated_at?: string;
-                    updated_by?: string;
-                  };
-                  return (
-                    <TableRow key={r.value}>
-                      <TableCell className="w-12">
-                        {(page - 1) * perPage + index + 1}
-                      </TableCell>
-                      {activeTab !== "countries" && (
-                        <TableCell>{r.country}</TableCell>
-                      )}
-                      {(activeTab === "zones" || activeTab === "districts") && (
-                        <TableCell>{r.state}</TableCell>
-                      )}
-                      {activeTab === "districts" && (
-                        <TableCell>{r.zone}</TableCell>
-                      )}
-                      <TableCell className="font-medium">{r.label}</TableCell>
-                      <TableCell>
-                        {r.created_at
-                          ? new Date(r.created_at).toLocaleDateString()
-                          : "—"}
-                      </TableCell>
-                      <TableCell>{r.created_by ?? "—"}</TableCell>
-                      <TableCell>{r.updated_by ?? "—"}</TableCell>
-                      <TableCell>
-                        {r.updated_at
-                          ? new Date(r.updated_at).toLocaleDateString()
-                          : "—"}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setEditingItem(row);
-                              setOpen(true);
-                            }}
-                            aria-label={`Edit ${r.label}`}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => handleDeleteClick(r.value)}
-                            aria-label={`Delete ${r.label}`}
-                          >
-                            Delete
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
-        </div>
-
-        {/* Mobile cards */}
-        <div className="flex flex-col gap-3 md:hidden">
-          {currentQuery.isLoading ? (
-            <p className="text-center py-8 text-muted-foreground text-sm">
-              Loading...
-            </p>
-          ) : rows.length === 0 ? (
-            <p className="text-center py-8 text-muted-foreground text-sm">
-              No {activeTab} found.
-            </p>
-          ) : (
-            rows.map((row: LocationRow, index: number) => {
-              const r = row as LocationRow & {
-                value: string;
-                label?: string;
-                country?: string;
-                state?: string;
-                zone?: string;
-                created_at?: string;
-                created_by?: string;
-              };
-              return (
-                <div
-                  key={r.value}
-                  className="rounded-lg border bg-card p-4 space-y-3 shadow-sm"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">
-                      #{(page - 1) * perPage + index + 1}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {r.created_at
-                        ? new Date(r.created_at).toLocaleDateString()
-                        : "—"}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">{r.label}</p>
-                    {r.country && (
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {r.country}
-                      </p>
-                    )}
-                    {r.state && (
-                      <p className="text-xs text-muted-foreground">{r.state}</p>
-                    )}
-                    {r.zone && (
-                      <p className="text-xs text-muted-foreground">{r.zone}</p>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">
-                      By{" "}
-                      <span className="text-foreground font-medium">
-                        {r.created_by ?? "—"}
-                      </span>
-                    </span>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setEditingItem(row);
-                          setOpen(true);
-                        }}
-                        aria-label={`Edit ${r.label}`}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDeleteClick(r.value)}
-                        aria-label={`Delete ${r.label}`}
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-
-        {/* Pagination */}
-        {!currentQuery.isLoading && rows.length > 0 && (
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between text-sm text-muted-foreground">
-            <span>
-              Page {page} of {totalPages} · {totalCount} total
-            </span>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1 sm:flex-none"
-                disabled={page === 1}
-                onClick={() => setPage((p) => Math.max(p - 1, 1))}
-                aria-label="Previous page"
-              >
-                Previous
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1 sm:flex-none"
-                disabled={page >= totalPages}
-                onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
-                aria-label="Next page"
-              >
-                Next
-              </Button>
-            </div>
-          </div>
-        )}
+        <ReusableTable
+          rows={rows}
+          isLoading={currentQuery.isLoading}
+          page={page}
+          perPage={perPage}
+          columnOrder={columnConfig}
+          id={["value"]}
+          customCellRender={customCellRender}
+          customActionRender={customActionRender}
+        >
+          <THead
+            columnOrder={columnConfig}
+            onIconClick={(column) => {
+              setSortBy(column);
+              setPage(1);
+            }}
+            action
+          />
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            perPage={perPage}
+            totalCount={totalCount}
+            handlePreviousClick={() => setPage((p) => Math.max(p - 1, 1))}
+            handleNextClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+          />
+          <Blank />
+        </ReusableTable>
       </CardContent>
 
       {/* Add / Edit Dialog */}
@@ -790,7 +648,6 @@ function LocationContent() {
               >
                 Cancel
               </Button>
-              {/* Fix 1: disable submit while dropdowns are still loading */}
               <Button
                 type="submit"
                 disabled={isDropdownLoading}
