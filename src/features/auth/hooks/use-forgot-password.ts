@@ -25,7 +25,8 @@ export function useForgotPassword() {
     onError: (error) => {
       toast.error(
         getApiResponseError(error, {
-          fallback: "Failed to send password reset email",
+          fallback:
+            "Failed to send password reset email. Please check your email or MuID",
         }),
       );
     },

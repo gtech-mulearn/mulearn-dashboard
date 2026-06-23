@@ -262,9 +262,7 @@ export function RegisterForm({
           <span className="w-full border-t border-border" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-secondary px-4 text-secondary-foreground">
-            OR
-          </span>
+          <span className="px-4 text-secondary-foreground">OR</span>
         </div>
       </div>
 
