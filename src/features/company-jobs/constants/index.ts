@@ -6,6 +6,7 @@ export {
 export {
   COMPANY_STATUS_CONFIG,
   DURATION_UNIT_OPTIONS,
+  formatNumericRuleValue,
   JOB_STATUS_CONFIG,
   JOB_STEPPER_STEPS,
   JOB_TYPE_OPTIONS,
@@ -15,5 +16,4 @@ export {
   LEVEL_RULE_TYPES,
   MIN_LEVEL_OPTIONS,
   RULE_TYPE_OPTIONS,
-  formatNumericRuleValue,
 } from "./jobs.constants";

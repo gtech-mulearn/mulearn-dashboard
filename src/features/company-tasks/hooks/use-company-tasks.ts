@@ -125,7 +125,7 @@ export function useCreateTaskType() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: any) => createTaskType(payload),
+    mutationFn: (payload: unknown) => createTaskType(payload),
     onSuccess: () => {
       toast.success("Task type created.");
       queryClient.invalidateQueries({ queryKey: COMPANY_TASKS_KEYS.types() });
@@ -142,7 +142,7 @@ export function useUpdateTaskType() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: any) => updateTaskType(payload),
+    mutationFn: (payload: unknown) => updateTaskType(payload),
     onSuccess: () => {
       toast.success("Task type updated.");
       queryClient.invalidateQueries({ queryKey: COMPANY_TASKS_KEYS.types() });
@@ -159,7 +159,7 @@ export function useDeleteTaskType() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: any) => deleteTaskType(payload),
+    mutationFn: (payload: unknown) => deleteTaskType(payload),
     onSuccess: () => {
       toast.success("Task type deleted.");
       queryClient.invalidateQueries({ queryKey: COMPANY_TASKS_KEYS.types() });

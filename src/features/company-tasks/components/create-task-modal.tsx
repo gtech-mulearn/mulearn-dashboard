@@ -38,7 +38,8 @@ export function CreateTaskModal({
   taskToEdit,
 }: CreateTaskModalProps) {
   const { data: taskTypesResponse } = useTaskTypes();
-  const taskTypes = taskTypesResponse?.data || [];
+  // biome-ignore lint/suspicious/noExplicitAny: API type
+  const taskTypes = (taskTypesResponse as any)?.data || [];
   const { mutate: createTask, isPending: isCreating } = useCreateCompanyTask();
   const { mutate: updateTask, isPending: isUpdating } = useUpdateCompanyTask();
 
@@ -61,7 +62,8 @@ export function CreateTaskModal({
         // So we find the matching type from the taskTypes list.
         if (taskTypes.length > 0) {
           const matchingType = taskTypes.find(
-            (t: any) => t.title === taskToEdit.type || t.id === taskToEdit.type,
+            (t: { id: string; title: string }) =>
+              t.title === taskToEdit.type || t.id === taskToEdit.type,
           );
           setType(matchingType ? matchingType.id : "");
         }
@@ -184,7 +186,7 @@ export function CreateTaskModal({
                     <SelectValue placeholder="Select task type" />
                   </SelectTrigger>
                   <SelectContent>
-                    {taskTypes.map((t: any) => (
+                    {taskTypes.map((t: { id: string; title: string }) => (
                       <SelectItem key={t.id} value={t.id}>
                         {t.title}
                       </SelectItem>

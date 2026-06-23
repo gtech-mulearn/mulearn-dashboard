@@ -313,6 +313,20 @@ export const endpoints = {
     sessionParticipantFeedback: (sessionId: string) =>
       `/api/v1/dashboard/mentor/session/participant/feedback/${sessionId}/`,
 
+    // ── Student Session Requests ─────────────────────────────────────────────
+    /** POST - Submit a session request */
+    studentSessionRequestCreate:
+      "/api/v1/dashboard/mentor/session/student/request/",
+    /** GET - Student's own session requests */
+    studentSessionMyRequests:
+      "/api/v1/dashboard/mentor/session/student/my-requests/",
+    /** GET - Incoming session requests for Mentors */
+    studentSessionIncomingRequests:
+      "/api/v1/dashboard/mentor/session/student-requests/",
+    /** PATCH - Verify/Approve a student request */
+    studentSessionVerify: (sessionId: string) =>
+      `/api/v1/dashboard/mentor/session/student-requests/${sessionId}/verify/`,
+
     // ── Tasks: IG dropdown ───────────────────────────────────────────────
     /** GET - IGs where the mentor has an active assignment (for task creation) */
     tasksIgDropdown: "/api/v1/dashboard/mentor/tasks/ig-dropdown/",

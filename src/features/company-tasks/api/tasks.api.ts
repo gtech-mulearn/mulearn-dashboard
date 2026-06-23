@@ -85,7 +85,7 @@ export async function deleteCompanyTask(taskId: string): Promise<void> {
 // Public Tasks & Task Types APIs
 // ==========================================
 
-export async function fetchPublicTaskList(): Promise<any> {
+export async function fetchPublicTaskList(): Promise<unknown> {
   const res = await apiClient.get(
     endpoints.admin.tasks.publicList,
     GenericResponseSchema,
@@ -93,7 +93,7 @@ export async function fetchPublicTaskList(): Promise<any> {
   return res.response;
 }
 
-export async function fetchTaskTypes(): Promise<any> {
+export async function fetchTaskTypes(): Promise<unknown> {
   const res = await apiClient.get(
     endpoints.admin.tasks.taskTypes,
     GenericResponseSchema,
@@ -101,7 +101,7 @@ export async function fetchTaskTypes(): Promise<any> {
   return res.response;
 }
 
-export async function createTaskType(payload: any): Promise<void> {
+export async function createTaskType(payload: unknown): Promise<void> {
   await apiClient.post(
     endpoints.admin.tasks.taskTypes,
     payload,
@@ -109,7 +109,7 @@ export async function createTaskType(payload: any): Promise<void> {
   );
 }
 
-export async function updateTaskType(payload: any): Promise<void> {
+export async function updateTaskType(payload: unknown): Promise<void> {
   await apiClient.put(
     endpoints.admin.tasks.taskTypes,
     payload,
@@ -117,7 +117,7 @@ export async function updateTaskType(payload: any): Promise<void> {
   );
 }
 
-export async function deleteTaskType(payload: any): Promise<void> {
+export async function deleteTaskType(payload: unknown): Promise<void> {
   await apiClient.delete(
     endpoints.admin.tasks.taskTypes,
     payload,
