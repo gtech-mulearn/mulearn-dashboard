@@ -12,7 +12,8 @@
 import type { z } from "zod";
 import { env } from "../../config/env";
 import { authStore } from "../lib/auth";
-import { ApiError, extractDjangoMessage, logSchemaMismatch } from "./errors";
+import { ApiError, logSchemaMismatch } from "./errors";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { refreshAccessToken } from "./refresh.client";
 
 // Re-export so existing `import { ApiError } from "@/api/client"` still works.
@@ -166,11 +167,10 @@ async function request<T>(
         throw new ApiError(401, "Session expired", errData);
       }
     }
-    throw new ApiError(
-      res.status,
-      extractDjangoMessage(errData) || `Request failed: ${endpoint}`,
-      errData,
-    );
+    const backendMsg = getApiResponseError(errData, {
+      fallback: "Something went wrong. Please try again.",
+    });
+    throw new ApiError(res.status, backendMsg, errData);
   }
 
   // ── JSON branch ───────────────────────────────────────────
@@ -192,8 +192,10 @@ async function request<T>(
 
   // Permission 403 (not token expiry) — throw as normal error
   if (res.status === 403 && options.skipAuthRedirectOn403) {
-    const backendMsg = extractDjangoMessage(rawData);
-    throw new ApiError(403, backendMsg || "Forbidden", rawData);
+    const backendMsg = getApiResponseError(rawData, {
+      fallback: "Something went wrong. Please try again.",
+    });
+    throw new ApiError(403, backendMsg, rawData);
   }
 
   // Business error (hasError true even on 200)
@@ -203,12 +205,10 @@ async function request<T>(
     "hasError" in rawData &&
     rawData.hasError === true
   ) {
-    const backendMsg = extractDjangoMessage(rawData);
-    const error = new ApiError(
-      res.status,
-      backendMsg || `Request failed: ${endpoint}`,
-      rawData,
-    );
+    const backendMsg = getApiResponseError(rawData, {
+      fallback: "Something went wrong. Please try again.",
+    });
+    const error = new ApiError(res.status, backendMsg, rawData);
     if (process.env.NODE_ENV === "development") {
       console.error(
         `[API Client] Business error: [Status ${res.status}] ${endpoint}\nMessage: ${backendMsg}`,
@@ -219,12 +219,10 @@ async function request<T>(
   }
 
   if (!res.ok) {
-    const backendMsg = extractDjangoMessage(rawData);
-    const error = new ApiError(
-      res.status,
-      backendMsg || `Request failed: ${endpoint}`,
-      rawData,
-    );
+    const backendMsg = getApiResponseError(rawData, {
+      fallback: "Something went wrong. Please try again.",
+    });
+    const error = new ApiError(res.status, backendMsg, rawData);
     if (process.env.NODE_ENV === "development") {
       console.error(
         `[API Client] HTTP error: [Status ${res.status}] ${endpoint}\nMessage: ${backendMsg}`,

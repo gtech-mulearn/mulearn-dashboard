@@ -192,7 +192,7 @@ export function ProfileHeader({
                   data-testid="cover-pic-change"
                 >
                   <PencilLine className="mr-2 h-4 w-4" />
-                  Change cover
+                  Change cover (max 5 MB)
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onSelect={handleDeleteCover}
