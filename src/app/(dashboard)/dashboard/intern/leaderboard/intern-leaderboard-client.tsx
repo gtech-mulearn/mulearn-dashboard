@@ -88,13 +88,7 @@ export function LeaderboardPageClient() {
         actualName: item.full_name,
         points: item.score,
         streak:
-          item.streak !== undefined
-            ? String(item.streak)
-            : item.daily_streak !== undefined
-              ? String(item.daily_streak)
-              : item.weekly_streak !== undefined
-                ? String(item.weekly_streak)
-                : "-",
+          item.daily_streak !== undefined ? String(item.daily_streak) : "-",
         isCurrentUser,
         avatar: item.full_name
           ? item.full_name

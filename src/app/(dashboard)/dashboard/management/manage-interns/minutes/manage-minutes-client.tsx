@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  ArrowDown,
+  ArrowUp,
   ArrowUpDown,
   Crown,
   ExternalLink,
@@ -89,8 +91,26 @@ export function ManageMinutesPageClient() {
   const [page, setPage] = useState(1);
   const [perPage] = useState(20);
   const [guildFilter, setGuildFilter] = useState("all");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [sortBy, setSortBy] = useState<string | undefined>("date");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc" | undefined>(
+    "desc",
+  );
   const [viewingMinute, setViewingMinute] = useState<TMinuteItem | null>(null);
+
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      if (sortOrder === "asc") {
+        setSortOrder("desc");
+      } else {
+        setSortBy(undefined);
+        setSortOrder(undefined);
+      }
+    } else {
+      setSortBy(column);
+      setSortOrder("asc");
+    }
+    setPage(1);
+  };
 
   const renderContentWithLinks = (text: string) => {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -131,25 +151,65 @@ export function ManageMinutesPageClient() {
     page,
     perPage,
     guild: effectiveGuildFilter === "all" ? undefined : effectiveGuildFilter,
+    sortBy,
     sortOrder,
   });
 
-  const minutes = minutesData?.data ?? [];
   const totalPages = minutesData?.pagination?.totalPages ?? 1;
   const totalCount = minutesData?.pagination?.count ?? 0;
+
+  const minutes = useMemo(() => {
+    const data = minutesData?.data ?? [];
+    const resolved = [...data];
+    if (sortBy) {
+      resolved.sort((a, b) => {
+        let valA = a[sortBy as keyof TMinuteItem];
+        let valB = b[sortBy as keyof TMinuteItem];
+
+        if (valA === undefined || valA === null) valA = "";
+        if (valB === undefined || valB === null) valB = "";
+
+        if (sortBy === "date" || sortBy === "created_at") {
+          const timeA = valA ? new Date(valA as string).getTime() : 0;
+          const timeB = valB ? new Date(valB as string).getTime() : 0;
+          const isInvalidA = Number.isNaN(timeA);
+          const isInvalidB = Number.isNaN(timeB);
+          if (isInvalidA && isInvalidB) return 0;
+          if (isInvalidA) return sortOrder === "asc" ? 1 : -1;
+          if (isInvalidB) return sortOrder === "asc" ? -1 : 1;
+          return sortOrder === "asc" ? timeA - timeB : timeB - timeA;
+        }
+
+        const isNumA = typeof valA === "number";
+        const isNumB = typeof valB === "number";
+        if (isNumA && isNumB) {
+          return sortOrder === "asc"
+            ? (valA as unknown as number) - (valB as unknown as number)
+            : (valB as unknown as number) - (valA as unknown as number);
+        }
+
+        const strA = String(valA).toLowerCase();
+        const strB = String(valB).toLowerCase();
+        if (strA < strB) return sortOrder === "asc" ? -1 : 1;
+        if (strA > strB) return sortOrder === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+    return resolved;
+  }, [minutesData, sortBy, sortOrder]);
 
   const columnOrder = useMemo(() => {
     const cols = [
       {
         column: "date",
         Label: "Date",
-        isSortable: false,
+        isSortable: true,
         width: "w-[160px] shrink-0",
       },
       {
         column: "title",
         Label: "Title",
-        isSortable: false,
+        isSortable: true,
         width: "min-w-[120px] max-w-[180px] truncate",
       },
     ];
@@ -157,7 +217,7 @@ export function ManageMinutesPageClient() {
       cols.push({
         column: "guild",
         Label: "Guild",
-        isSortable: false,
+        isSortable: true,
         width: "w-[140px] shrink-0",
       });
     }
@@ -165,7 +225,7 @@ export function ManageMinutesPageClient() {
       {
         column: "uploaded_by_name",
         Label: "Uploaded By",
-        isSortable: false,
+        isSortable: true,
         width: "w-[160px] shrink-0",
       },
       {
@@ -331,17 +391,6 @@ export function ManageMinutesPageClient() {
                   </SelectContent>
                 </Select>
               )}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  setSortOrder((prev) => (prev === "desc" ? "asc" : "desc"))
-                }
-                className="gap-2 h-8 font-black uppercase text-[10px] tracking-widest border-border/40"
-              >
-                <ArrowUpDown className="w-3 h-3" />
-                {sortOrder === "desc" ? "Newest" : "Oldest"}
-              </Button>
             </div>
           </div>
 
@@ -372,9 +421,29 @@ export function ManageMinutesPageClient() {
                     {columnOrder.map((col) => (
                       <TableHead
                         key={col.column}
-                        className={`bg-muted/20 border-b border-border/20 h-12 font-black uppercase text-[9px] tracking-[0.3em] ${col.width || ""}`}
+                        className={`bg-muted/20 border-b border-border/20 h-12 font-black uppercase text-[9px] tracking-[0.3em] ${col.width || ""} ${
+                          col.isSortable
+                            ? "cursor-pointer select-none hover:bg-muted/10 transition-colors"
+                            : ""
+                        }`}
+                        onClick={() => col.isSortable && handleSort(col.column)}
                       >
-                        {col.Label}
+                        <div className="flex items-center gap-2">
+                          <span>{col.Label}</span>
+                          {col.isSortable && (
+                            <span className="inline-flex shrink-0">
+                              {sortBy === col.column ? (
+                                sortOrder === "asc" ? (
+                                  <ArrowUp className="size-3 text-brand-blue font-bold" />
+                                ) : (
+                                  <ArrowDown className="size-3 text-brand-blue font-bold" />
+                                )
+                              ) : (
+                                <ArrowUpDown className="size-3 text-muted-foreground/40" />
+                              )}
+                            </span>
+                          )}
+                        </div>
                       </TableHead>
                     ))}
                     <TableHead className="bg-muted/20 border-b border-border/20 h-12 font-black uppercase text-[9px] tracking-[0.3em] text-center w-32">

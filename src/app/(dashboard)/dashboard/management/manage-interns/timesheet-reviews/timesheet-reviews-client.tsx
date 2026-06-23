@@ -2,6 +2,9 @@
 
 import {
   AlertTriangle,
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
   CheckCircle2,
   Search,
   Sparkles,
@@ -9,10 +12,9 @@ import {
   Trophy,
   XCircle,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table, { type Data } from "@/components/dashboard/table/Table";
-import THead from "@/components/dashboard/table/Thead";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -68,6 +70,26 @@ export function TimesheetReviewsPageClient() {
     REJECTED: "text-destructive",
   };
 
+  const [sortBy, setSortBy] = useState<string | undefined>(undefined);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc" | undefined>(
+    undefined,
+  );
+
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      if (sortOrder === "asc") {
+        setSortOrder("desc");
+      } else {
+        setSortBy(undefined);
+        setSortOrder(undefined);
+      }
+    } else {
+      setSortBy(column);
+      setSortOrder("asc");
+    }
+    setPage(1);
+  };
+
   const { data: timesheetsData, isLoading: isTimesheetsLoading } =
     useManageTimesheets(
       {
@@ -75,6 +97,8 @@ export function TimesheetReviewsPageClient() {
         perPage,
         search: searchText || undefined,
         status: statusFilter === "ALL" ? undefined : statusFilter,
+        sortBy,
+        sortOrder,
       },
       typeFilter === "DAILY",
     );
@@ -86,6 +110,8 @@ export function TimesheetReviewsPageClient() {
         perPage,
         search: searchText || undefined,
         status: statusFilter === "ALL" ? undefined : statusFilter,
+        sortBy,
+        sortOrder,
       },
       typeFilter === "WEEKLY",
     );
@@ -103,7 +129,50 @@ export function TimesheetReviewsPageClient() {
 
   const totalPages = listData?.pagination?.totalPages ?? 1;
   const totalCount = listData?.pagination?.count ?? 0;
-  const rows = (listData?.data ?? []) as unknown as Data[];
+
+  const rows = useMemo(() => {
+    const data = (listData?.data ?? []) as unknown as Data[];
+    const resolved = [...data];
+    if (sortBy) {
+      resolved.sort((a, b) => {
+        let valA = a[sortBy as keyof Data];
+        let valB = b[sortBy as keyof Data];
+
+        if (valA === undefined || valA === null) valA = "";
+        if (valB === undefined || valB === null) valB = "";
+
+        if (
+          sortBy === "entry_date" ||
+          sortBy === "created_at" ||
+          sortBy === "week_start_date"
+        ) {
+          const timeA = valA ? new Date(valA as string).getTime() : 0;
+          const timeB = valB ? new Date(valB as string).getTime() : 0;
+          const isInvalidA = Number.isNaN(timeA);
+          const isInvalidB = Number.isNaN(timeB);
+          if (isInvalidA && isInvalidB) return 0;
+          if (isInvalidA) return sortOrder === "asc" ? 1 : -1;
+          if (isInvalidB) return sortOrder === "asc" ? -1 : 1;
+          return sortOrder === "asc" ? timeA - timeB : timeB - timeA;
+        }
+
+        const isNumA = typeof valA === "number";
+        const isNumB = typeof valB === "number";
+        if (isNumA && isNumB) {
+          return sortOrder === "asc"
+            ? (valA as number) - (valB as number)
+            : (valB as number) - (valA as number);
+        }
+
+        const strA = String(valA).toLowerCase();
+        const strB = String(valB).toLowerCase();
+        if (strA < strB) return sortOrder === "asc" ? -1 : 1;
+        if (strA > strB) return sortOrder === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+    return resolved;
+  }, [listData, sortBy, sortOrder]);
 
   const isDaily = typeFilter === "DAILY";
   const activeItem = isDaily ? selectedTimesheet : selectedWeeklyReview;
@@ -337,6 +406,8 @@ export function TimesheetReviewsPageClient() {
             onClick={() => {
               setTypeFilter("DAILY");
               setPage(1);
+              setSortBy(undefined);
+              setSortOrder(undefined);
             }}
             className={`rounded-lg px-4 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors h-10 flex items-center ${
               typeFilter === "DAILY"
@@ -351,6 +422,8 @@ export function TimesheetReviewsPageClient() {
             onClick={() => {
               setTypeFilter("WEEKLY");
               setPage(1);
+              setSortBy(undefined);
+              setSortOrder(undefined);
             }}
             className={`rounded-lg px-4 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors h-10 flex items-center ${
               typeFilter === "WEEKLY"
@@ -452,12 +525,44 @@ export function TimesheetReviewsPageClient() {
           </Button>
         )}
       >
-        <THead
-          columnOrder={columnOrder}
-          onIconClick={() => {}}
-          action={true}
-          thClassName="bg-muted/20 border-b border-border/20 h-12 font-black uppercase text-[9px] tracking-[0.3em]"
-        />
+        <thead>
+          <tr>
+            <th className="border-b border-border px-3.5 py-3 text-left text-sm font-bold uppercase tracking-wider w-16 bg-muted/20 h-12 font-black text-[9px] tracking-[0.3em]">
+              Sl.no
+            </th>
+            {columnOrder.map((col) => (
+              <th
+                key={col.column}
+                className={`border-b border-border px-3.5 py-3 text-left text-sm font-bold tracking-wider bg-muted/20 h-12 font-black uppercase text-[9px] tracking-[0.3em] ${
+                  col.isSortable
+                    ? "cursor-pointer select-none hover:bg-muted/10 transition-colors"
+                    : ""
+                }`}
+                onClick={() => col.isSortable && handleSort(col.column)}
+              >
+                <div className="flex items-center gap-2">
+                  <span>{col.Label}</span>
+                  {col.isSortable && (
+                    <span className="inline-flex shrink-0">
+                      {sortBy === col.column ? (
+                        sortOrder === "asc" ? (
+                          <ArrowUp className="size-3 text-brand-blue font-bold" />
+                        ) : (
+                          <ArrowDown className="size-3 text-brand-blue font-bold" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="size-3 text-muted-foreground/40" />
+                      )}
+                    </span>
+                  )}
+                </div>
+              </th>
+            ))}
+            <th className="border-b border-border px-3.5 py-3 text-center text-sm font-bold tracking-wider w-32 bg-muted/20 h-12 font-black uppercase text-[9px] tracking-[0.3em]">
+              Action
+            </th>
+          </tr>
+        </thead>
         <div className="p-4 border-t border-border/20">
           <Pagination
             currentPage={page}

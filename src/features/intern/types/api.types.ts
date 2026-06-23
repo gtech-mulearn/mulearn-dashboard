@@ -41,9 +41,7 @@ export interface TLeaderboardRow {
   rank: number;
   status?: string;
   profile_pic?: string | null;
-  streak?: number;
   daily_streak?: number;
-  weekly_streak?: number;
 }
 
 export interface TTimesheet {
@@ -330,10 +328,22 @@ export interface TBulkImportRowError {
   row: number;
   muid: string;
   reason: string;
+  full_name?: string;
+  name?: string;
+}
+
+export interface TBulkImportRowSuccess {
+  row: number;
+  muid: string;
+  full_name?: string;
+  name?: string;
+  profile_pic?: string | null;
+  guild?: string;
 }
 
 export interface TBulkImportResponse {
   success_count: number;
   failed_count: number;
   failed_rows: TBulkImportRowError[];
+  success_rows?: TBulkImportRowSuccess[];
 }

@@ -1,6 +1,9 @@
 "use client";
 
 import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
   CheckCircle2,
   Edit,
   ExternalLink,
@@ -13,7 +16,6 @@ import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table from "@/components/dashboard/table/Table";
-import THead from "@/components/dashboard/table/Thead";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -97,6 +99,25 @@ export function AdminTasksPageClient() {
   const [complexityFilter, setComplexityFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [categoryFilter, setCategoryFilter] = useState("ALL");
+  const [sortBy, setSortBy] = useState<string | undefined>(undefined);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc" | undefined>(
+    undefined,
+  );
+
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      if (sortOrder === "asc") {
+        setSortOrder("desc");
+      } else {
+        setSortBy(undefined);
+        setSortOrder(undefined);
+      }
+    } else {
+      setSortBy(column);
+      setSortOrder("asc");
+    }
+    setPage(1);
+  };
 
   // Dialogs
   const [createOpen, setCreateOpen] = useState(false);
@@ -149,6 +170,8 @@ export function AdminTasksPageClient() {
     complexity: complexityFilter === "ALL" ? undefined : complexityFilter,
     status: statusFilter === "ALL" ? undefined : statusFilter,
     category: categoryFilter === "ALL" ? undefined : categoryFilter,
+    sortBy,
+    sortOrder,
   });
 
   const { data: guilds = [] } = useGuilds();
@@ -241,6 +264,47 @@ export function AdminTasksPageClient() {
     if (categoryFilter !== "ALL") {
       list = list.filter((task) => task.category === categoryFilter);
     }
+
+    if (sortBy) {
+      list = [...list].sort((a, b) => {
+        let valA = a[sortBy as keyof TInternTask];
+        let valB = b[sortBy as keyof TInternTask];
+
+        if (sortBy === "guild") {
+          valA = getTaskGuild(a);
+          valB = getTaskGuild(b);
+        }
+
+        if (valA === undefined || valA === null) valA = "";
+        if (valB === undefined || valB === null) valB = "";
+
+        if (sortBy === "deadline" || sortBy === "created_at") {
+          const timeA = valA ? new Date(valA as string).getTime() : 0;
+          const timeB = valB ? new Date(valB as string).getTime() : 0;
+          const isInvalidA = Number.isNaN(timeA);
+          const isInvalidB = Number.isNaN(timeB);
+          if (isInvalidA && isInvalidB) return 0;
+          if (isInvalidA) return sortOrder === "asc" ? 1 : -1;
+          if (isInvalidB) return sortOrder === "asc" ? -1 : 1;
+          return sortOrder === "asc" ? timeA - timeB : timeB - timeA;
+        }
+
+        const isNumA = typeof valA === "number";
+        const isNumB = typeof valB === "number";
+        if (isNumA && isNumB) {
+          return sortOrder === "asc"
+            ? (valA as unknown as number) - (valB as unknown as number)
+            : (valB as unknown as number) - (valA as unknown as number);
+        }
+
+        const strA = String(valA).toLowerCase();
+        const strB = String(valB).toLowerCase();
+        if (strA < strB) return sortOrder === "asc" ? -1 : 1;
+        if (strA > strB) return sortOrder === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+
     return list;
   }, [
     tasksData?.data,
@@ -248,6 +312,8 @@ export function AdminTasksPageClient() {
     guildFilter,
     complexityFilter,
     categoryFilter,
+    sortBy,
+    sortOrder,
   ]);
 
   const columnOrder = useMemo(
@@ -255,33 +321,33 @@ export function AdminTasksPageClient() {
       {
         column: "title",
         Label: "Title",
-        isSortable: false,
+        isSortable: true,
         width: "min-w-[150px]",
       },
       {
         column: "assigned_to_name",
         Label: "Assigned To",
-        isSortable: false,
+        isSortable: true,
         width: "min-w-[200px]",
       },
-      { column: "guild", Label: "Guild", isSortable: false, width: "w-36" },
+      { column: "guild", Label: "Guild", isSortable: true, width: "w-36" },
       {
         column: "complexity",
         Label: "Complexity",
-        isSortable: false,
+        isSortable: true,
         width: "w-28",
       },
       {
         column: "karma_awarded",
         Label: "Karma",
-        isSortable: false,
+        isSortable: true,
         width: "w-20",
       },
-      { column: "status", Label: "Status", isSortable: false, width: "w-40" },
+      { column: "status", Label: "Status", isSortable: true, width: "w-40" },
       {
         column: "deadline",
         Label: "Deadline",
-        isSortable: false,
+        isSortable: true,
         width: "w-32",
       },
     ],
@@ -725,12 +791,44 @@ export function AdminTasksPageClient() {
           customCellRender={customCellRender}
           customActionRender={customActionRender}
         >
-          <THead
-            columnOrder={columnOrder}
-            onIconClick={() => {}}
-            action
-            thClassName="bg-muted/20 border-b border-border/20 h-12 font-black uppercase text-[9px] tracking-[0.3em]"
-          />
+          <thead>
+            <tr>
+              <th className="border-b border-border px-3.5 py-3 text-left text-sm font-bold uppercase tracking-wider w-16 bg-muted/20 h-12 font-black text-[9px] tracking-[0.3em]">
+                Sl.no
+              </th>
+              {columnOrder.map((col) => (
+                <th
+                  key={col.column}
+                  className={`border-b border-border px-3.5 py-3 text-left text-sm font-bold tracking-wider bg-muted/20 h-12 font-black uppercase text-[9px] tracking-[0.3em] ${
+                    col.isSortable
+                      ? "cursor-pointer select-none hover:bg-muted/10 transition-colors"
+                      : ""
+                  } ${col.width || ""}`}
+                  onClick={() => col.isSortable && handleSort(col.column)}
+                >
+                  <div className="flex items-center gap-2">
+                    <span>{col.Label}</span>
+                    {col.isSortable && (
+                      <span className="inline-flex shrink-0">
+                        {sortBy === col.column ? (
+                          sortOrder === "asc" ? (
+                            <ArrowUp className="size-3 text-brand-blue font-bold" />
+                          ) : (
+                            <ArrowDown className="size-3 text-brand-blue font-bold" />
+                          )
+                        ) : (
+                          <ArrowUpDown className="size-3 text-muted-foreground/40" />
+                        )}
+                      </span>
+                    )}
+                  </div>
+                </th>
+              ))}
+              <th className="border-b border-border px-3.5 py-3 text-center text-sm font-bold tracking-wider w-32 bg-muted/20 h-12 font-black uppercase text-[9px] tracking-[0.3em]">
+                Action
+              </th>
+            </tr>
+          </thead>
           <div>
             {tasksData?.pagination && tasksData.pagination.totalPages > 1 && (
               <div className="p-4 border-t border-border/20">

@@ -2,6 +2,9 @@
 
 import {
   AlertTriangle,
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
   Calendar,
   CheckCircle2,
   Crown,
@@ -21,7 +24,6 @@ import { useMemo, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table, { type Data } from "@/components/dashboard/table/Table";
-import THead from "@/components/dashboard/table/Thead";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -644,12 +646,44 @@ export function ManageInternsPageClient() {
               );
             }}
           >
-            <THead
-              columnOrder={tableColumns}
-              onIconClick={handleSort}
-              action={true}
-              thClassName="bg-muted/20 border-b border-border/20 h-12 font-black uppercase text-[9px] tracking-[0.3em]"
-            />
+            <thead>
+              <tr>
+                <th className="border-b border-border px-3.5 py-3 text-left text-sm font-bold uppercase tracking-wider w-16 bg-muted/20 h-12 font-black text-[9px] tracking-[0.3em]">
+                  Sl.no
+                </th>
+                {tableColumns.map((col) => (
+                  <th
+                    key={col.column}
+                    className={`border-b border-border px-3.5 py-3 text-left text-sm font-bold tracking-wider bg-muted/20 h-12 font-black uppercase text-[9px] tracking-[0.3em] ${
+                      col.isSortable
+                        ? "cursor-pointer select-none hover:bg-muted/10 transition-colors"
+                        : ""
+                    }`}
+                    onClick={() => col.isSortable && handleSort(col.column)}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span>{col.Label}</span>
+                      {col.isSortable && (
+                        <span className="inline-flex shrink-0">
+                          {sortBy === col.column ? (
+                            sortOrder === "asc" ? (
+                              <ArrowUp className="size-3 text-brand-blue font-bold" />
+                            ) : (
+                              <ArrowDown className="size-3 text-brand-blue font-bold" />
+                            )
+                          ) : (
+                            <ArrowUpDown className="size-3 text-muted-foreground/40" />
+                          )}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                ))}
+                <th className="border-b border-border px-3.5 py-3 text-center text-sm font-bold tracking-wider w-32 bg-muted/20 h-12 font-black uppercase text-[9px] tracking-[0.3em]">
+                  Action
+                </th>
+              </tr>
+            </thead>
             <div className="p-4 border-t border-border/20">
               <Pagination
                 currentPage={page}
