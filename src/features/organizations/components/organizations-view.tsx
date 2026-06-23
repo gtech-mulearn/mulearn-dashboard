@@ -326,7 +326,7 @@ function OrganizationsContent() {
           />
 
           {/* Table */}
-          <div className="w-full overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
+          <div className="w-full">
             <div className="min-w-[600px]">
               <Table
                 rows={rows}
