@@ -289,8 +289,8 @@ export function CustomDateTimePicker({
           variant={"outline"}
           disabled={disabled}
           className={cn(
-            "w-full justify-start text-left font-normal shadow-sm rounded-xl py-6 hover:text-white",
-            !date && "text-muted-foreground hover:text-white",
+            "w-full justify-start text-left font-normal shadow-sm rounded-xl py-6",
+            !date && "text-muted-foreground",
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
