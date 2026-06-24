@@ -8,6 +8,13 @@ import { ApiError } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useUserInfo } from "@/features/auth/hooks";
 import { ROLES } from "@/lib/auth/roles";
 import { eventsApi } from "../api";
@@ -238,29 +245,24 @@ export default function ManageEventsDashboard() {
         )}
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {statusPills.map((pill) => {
-          const active = statusFilter === pill.value;
-          return (
-            <Button
-              key={pill.value}
-              size="sm"
-              variant={active ? "default" : "outline"}
-              aria-pressed={active}
-              className="rounded-full"
-              onClick={() => {
-                setStatusFilter(pill.value);
-                setPage(1);
-              }}
-            >
-              {pill.label}
-            </Button>
-          );
-        })}
-      </div>
-
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="relative w-full md:max-w-md">
+        <Select value={statusFilter} onValueChange={(value) => {
+          setStatusFilter(value as EventStatus | "all");
+          setPage(1);
+        }}>
+          <SelectTrigger className="w-full md:w-56 rounded-full">
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent>
+            {statusPills.map((pill) => (
+              <SelectItem key={pill.value} value={pill.value}>
+                {pill.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <div className="relative w-full md:max-w-md md:ml-auto">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             className="rounded-xl border-border bg-background pl-9"
