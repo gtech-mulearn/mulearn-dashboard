@@ -86,11 +86,16 @@ export function useSubmitTimesheet() {
   });
 }
 
-export function useEditTimesheet(id: string) {
+export function useEditTimesheet() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (payload: TTimesheetUpdatePayload) =>
-      internApi.updateTimesheet(id, payload),
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: TTimesheetUpdatePayload;
+    }) => internApi.updateTimesheet(id, payload),
     onSuccess: async () => {
       toast.success("Timesheet updated successfully!");
       await queryClient.invalidateQueries({
@@ -156,11 +161,16 @@ export function useSubmitWeeklyReview() {
   });
 }
 
-export function useEditWeeklyReview(id: string) {
+export function useEditWeeklyReview() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (payload: TWeeklyReviewUpdatePayload) =>
-      internApi.updateWeeklyReview(id, payload),
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: TWeeklyReviewUpdatePayload;
+    }) => internApi.updateWeeklyReview(id, payload),
     onSuccess: async () => {
       toast.success("Weekly review updated successfully!");
       await queryClient.invalidateQueries({ queryKey: internKeys.reviews() });
