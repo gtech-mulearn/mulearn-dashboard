@@ -20,7 +20,6 @@ import {
   getTaskBaseKarma,
   getTaskKarma,
   type TInternTask,
-  useUpdateTaskStatus,
 } from "@/features/intern";
 
 const getComplexityColor = (complexity: string) => {
@@ -43,6 +42,7 @@ interface TaskDetailDialogProps {
   onClose: () => void;
   onStatusChange: (taskId: string, status: TInternTask["status"]) => void;
   onTaskUpdate: (updatedTask: TInternTask) => void;
+  isStatusUpdating?: boolean;
 }
 
 export function TaskDetailDialog({
@@ -50,9 +50,8 @@ export function TaskDetailDialog({
   onClose,
   onStatusChange,
   onTaskUpdate,
+  isStatusUpdating = false,
 }: TaskDetailDialogProps) {
-  const updateStatusMutation = useUpdateTaskStatus();
-
   if (!task) return null;
 
   return (
@@ -207,7 +206,7 @@ export function TaskDetailDialog({
                       });
                     }
                   }}
-                  disabled={updateStatusMutation.isPending}
+                  disabled={isStatusUpdating}
                 >
                   <SelectTrigger className="h-9 font-black uppercase text-[10px] tracking-widest w-fit min-w-[130px] px-3 border-border/50 bg-background/50 rounded-lg">
                     <SelectValue placeholder="TODO" />

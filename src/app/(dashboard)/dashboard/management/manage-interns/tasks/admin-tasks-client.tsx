@@ -48,16 +48,10 @@ import { EditTaskDialog } from "./components/edit-task-dialog";
 import {
   type ReviewForm,
   ReviewTaskDialog,
+  STATUS_OPTIONS,
 } from "./components/review-task-dialog";
 
 // ── Helpers ───────────────────────────────────────────────────
-
-const STATUS_OPTIONS = [
-  "WAITING_FOR_REVIEW",
-  "IN_PROGRESS",
-  "COMPLETED",
-  "ON_HOLD",
-] as const;
 
 const complexityColor = (c: string) => {
   switch (c) {

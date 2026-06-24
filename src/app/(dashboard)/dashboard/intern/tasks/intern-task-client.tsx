@@ -307,6 +307,7 @@ export function InternTasksPageClient() {
         onClose={() => setSelectedTask(null)}
         onStatusChange={handleStatusChange}
         onTaskUpdate={(updated) => setSelectedTask(updated)}
+        isStatusUpdating={updateStatusMutation.isPending}
       />
 
       <SubmitDeliverableDialog
