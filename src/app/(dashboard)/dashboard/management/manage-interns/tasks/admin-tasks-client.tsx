@@ -26,6 +26,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import type { TInternTask, TUpdateTaskPayload } from "@/features/intern";
 import {
+  getTaskGuild,
   manageInternsApi,
   useCreateTask,
   useDeleteTask,
@@ -36,7 +37,6 @@ import {
   useUpdateTask,
   useVerifyTask,
 } from "@/features/intern";
-import { getTaskGuild } from "@/features/intern/utils/intern-helpers";
 import { useDebounce } from "@/hooks/use-debounce";
 import {
   AssignTaskDialog,

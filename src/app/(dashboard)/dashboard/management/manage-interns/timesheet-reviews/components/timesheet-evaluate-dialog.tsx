@@ -20,15 +20,13 @@ import {
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  formatTasksAssigned,
+  formatTasksCompleted,
   type TTimesheet,
   type TWeeklyReview,
   useReviewTimesheet,
   useReviewWeeklyReview,
 } from "@/features/intern";
-import {
-  formatTasksAssigned,
-  formatTasksCompleted,
-} from "@/features/intern/utils/intern-helpers";
 
 interface TimesheetEvaluateDialogProps {
   isOpen: boolean;
