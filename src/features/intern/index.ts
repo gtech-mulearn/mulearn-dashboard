@@ -119,5 +119,6 @@ export {
   getTaskBaseKarma,
   getTaskGuild,
   getTaskKarma,
+  isCurrentLeaderboardUser,
   resolveInternStatus,
 } from "./utils/intern-helpers";

@@ -37,11 +37,11 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  formatTasksCompleted,
+  type TWeeklyReview,
   useManageWeeklyReviews,
   useReviewWeeklyReview,
 } from "@/features/intern";
-import type { TWeeklyReview } from "@/features/intern/types";
-import { formatTasksCompleted } from "@/features/intern/utils/intern-helpers";
 
 export function InternReportPageClient() {
   const router = useRouter();
