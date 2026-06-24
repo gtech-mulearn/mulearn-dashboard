@@ -2,6 +2,7 @@
 
 import {
   AlertTriangle,
+  ArrowDownUp,
   Briefcase,
   FileText,
   Filter,
@@ -76,11 +77,27 @@ const APP_SKELETONS = ["app-s1", "app-s2", "app-s3", "app-s4", "app-s5"];
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
+// ─── Sort option definitions ──────────────────────────────────────────────────
+
+const JOB_SORT_OPTIONS = [
+  { value: "-created_at", label: "Newest First" },
+  { value: "created_at", label: "Oldest First" },
+  { value: "title", label: "Title (A → Z)" },
+  { value: "-title", label: "Title (Z → A)" },
+] as const;
+
+const APP_SORT_OPTIONS = [
+  { value: "-appliedAt", label: "Newest First" },
+  { value: "appliedAt", label: "Oldest First" },
+] as const;
+
 export function LearnerJobsPageClient() {
   const [tab, setTab] = useState<"browse" | "applications">("browse");
   const [search, setSearch] = useState("");
+  const [jobPageIndex, setJobPageIndex] = useState(1);
   const [pageIndex, setPageIndex] = useState(1);
-  const [sortBy, setSortBy] = useState<string>("-appliedAt");
+  const [jobSortBy, setJobSortBy] = useState<string>("-created_at");
+  const [appSortBy, setAppSortBy] = useState<string>("-appliedAt");
   const [selectedJob, setSelectedJob] = useState<PublicJob | null>(null);
   const debouncedSearch = useDebounce(search, 300);
 
@@ -88,7 +105,12 @@ export function LearnerJobsPageClient() {
     data: publicJobsData,
     isLoading: loadingJobs,
     isError: jobsError,
-  } = usePublicJobs({ search: debouncedSearch || undefined, perPage: 20 });
+  } = usePublicJobs({
+    search: debouncedSearch || undefined,
+    perPage: 21,
+    pageIndex: jobPageIndex,
+    sortBy: jobSortBy,
+  });
 
   const {
     data: applicationsData,
@@ -97,7 +119,7 @@ export function LearnerJobsPageClient() {
   } = useLearnerApplications({
     search: debouncedSearch || undefined,
     perPage: 30,
-    sortBy: sortBy,
+    sortBy: appSortBy,
     pageIndex: pageIndex,
   });
 
@@ -143,39 +165,77 @@ export function LearnerJobsPageClient() {
           </TabsList>
 
           <div className="flex items-center gap-2">
-            {/* Sort Dropdown (only visible on applications tab) */}
+            {/* Sort Dropdown — Browse Jobs */}
+            {tab === "browse" && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="default"
+                    id="browse-jobs-sort-trigger"
+                    className="gap-2 text-sm"
+                  >
+                    <ArrowDownUp className="h-3.5 w-3.5" />
+                    Sort
+                    <span className="ml-1 hidden rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary sm:inline">
+                      {JOB_SORT_OPTIONS.find((o) => o.value === jobSortBy)
+                        ?.label ?? ""}
+                    </span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="min-w-[160px]">
+                  <DropdownMenuRadioGroup
+                    value={jobSortBy}
+                    onValueChange={(v) => {
+                      setJobSortBy(v);
+                      setJobPageIndex(1);
+                    }}
+                  >
+                    {JOB_SORT_OPTIONS.map((opt) => (
+                      <DropdownMenuRadioItem
+                        key={opt.value}
+                        value={opt.value}
+                        className="text-xs"
+                      >
+                        {opt.label}
+                      </DropdownMenuRadioItem>
+                    ))}
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+
+            {/* Sort Dropdown — My Applications */}
             {tab === "applications" && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="outline"
                     size="default"
+                    id="applications-sort-trigger"
                     className="gap-2 text-sm"
                   >
-                    <Filter className="h-3.5 w-3.5" />
+                    <ArrowDownUp className="h-3.5 w-3.5" />
                     Sort
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="min-w-[140px]">
                   <DropdownMenuRadioGroup
-                    value={sortBy}
+                    value={appSortBy}
                     onValueChange={(v) => {
-                      setSortBy(v);
+                      setAppSortBy(v);
                       setPageIndex(1);
                     }}
                   >
-                    <DropdownMenuRadioItem
-                      value="-appliedAt"
-                      className="text-xs"
-                    >
-                      Newest First
-                    </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem
-                      value="appliedAt"
-                      className="text-xs"
-                    >
-                      Oldest First
-                    </DropdownMenuRadioItem>
+                    {APP_SORT_OPTIONS.map((opt) => (
+                      <DropdownMenuRadioItem
+                        key={opt.value}
+                        value={opt.value}
+                        className="text-xs"
+                      >
+                        {opt.label}
+                      </DropdownMenuRadioItem>
+                    ))}
                   </DropdownMenuRadioGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -189,6 +249,7 @@ export function LearnerJobsPageClient() {
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
+                  setJobPageIndex(1);
                   setPageIndex(1);
                 }}
                 placeholder={
@@ -235,11 +296,46 @@ export function LearnerJobsPageClient() {
               }
             />
           ) : (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {jobs.map((job) => (
-                <PublicJobCard key={job.id} job={job} onView={setSelectedJob} />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {jobs.map((job) => (
+                  <PublicJobCard
+                    key={job.id}
+                    job={job}
+                    onView={setSelectedJob}
+                  />
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {publicJobsData?.pagination.totalPages &&
+                publicJobsData.pagination.totalPages > 1 && (
+                  <div className="flex justify-between items-center mt-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setJobPageIndex((p) => Math.max(1, p - 1))}
+                      disabled={jobPageIndex === 1}
+                      className="h-8 text-xs"
+                    >
+                      Previous
+                    </Button>
+                    <span className="text-xs text-muted-foreground">
+                      Page {jobPageIndex} of{" "}
+                      {publicJobsData.pagination.totalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setJobPageIndex((p) => p + 1)}
+                      disabled={!publicJobsData.pagination.isNext}
+                      className="h-8 text-xs"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                )}
+            </>
           )}
         </TabsContent>
 
