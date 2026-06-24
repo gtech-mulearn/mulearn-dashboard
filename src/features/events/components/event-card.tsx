@@ -11,13 +11,18 @@ import {
   MapPin,
   Trophy,
   Users,
+  Presentation,
+  Sparkles,
+  Award,
+  Lightbulb,
+  Dribbble,
+  Megaphone,
+  Briefcase,
+  MessagesSquare,
+  Mic,
 } from "lucide-react";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
-import {
-  extractInterestGroups,
-  useInterestGroupsList,
-} from "@/features/interest-groups";
 import { resolveEventTypeValue } from "../hooks";
 import type { EventListItem, OrganizerInfo } from "../types";
 import { EventStatusBadge } from "./event-status-badge";
@@ -33,21 +38,25 @@ const BADGE_CONFIG: Record<
   maker: { label: "Maker", icon: Users, className: "ig-cat-maker" },
   creative: { label: "Creative", icon: Compass, className: "ig-cat-creative" },
   manager: { label: "Manager", icon: Trophy, className: "ig-cat-manager" },
-  // Event Types
-  workshop: { label: "Workshop", icon: BookOpen, className: "ig-cat-manager" },
-  webinar: { label: "Webinar", icon: Globe, className: "ig-cat-coder" },
-  hackathon: { label: "Hackathon", icon: Code, className: "ig-cat-creative" },
-  meetup: { label: "Meetup", icon: Users, className: "ig-cat-maker" },
-  competition: {
-    label: "Competition",
-    icon: Trophy,
-    className: "ig-cat-manager",
-  },
-  social_gathering: {
-    label: "Social",
-    icon: Gamepad2,
-    className: "ig-cat-maker",
-  },
+};
+
+const EVENT_TYPE_ICONS: Record<string, LucideIcon> = {
+  workshop: BookOpen,
+  webinar: Globe,
+  hackathon: Code,
+  meetup: Users,
+  competition: Trophy,
+  seminar: Presentation,
+  bootcamp: Sparkles,
+  conference: Award,
+  ideathon: Lightbulb,
+  cultural_event: Gamepad2,
+  sports_event: Dribbble,
+  community_event: Megaphone,
+  expo: Briefcase,
+  networking_event: MessagesSquare,
+  tech_talk: Mic,
+  others: Compass,
 };
 
 interface EventCardProps {
@@ -110,35 +119,29 @@ export function EventCard({ event, isManageView, onView }: EventCardProps) {
 
   const isEnded = new Date(event.end_datetime).getTime() < Date.now();
 
-  // Fetch interest groups list to map organizer IG IDs to clusters
-  const { data: igData } = useInterestGroupsList();
-  const interestGroups = igData ? extractInterestGroups(igData) : [];
-  const igIdToClusterMap = new Map<string, string>();
-  interestGroups.forEach((ig) => {
-    if (ig.id && ig.category) {
-      igIdToClusterMap.set(ig.id, ig.category.toLowerCase());
-    }
-  });
-
-  const directCluster =
+  // ── Cluster / event_scope ────────────────────────────────────────────────
+  // Priority: event.event_scope (direct API field) → organiser_ig cluster →
+  // organiser_ig category (older fallback).
+  const rawCluster =
+    event.event_scope ||
     event.organizer?.ig?.cluster ||
     event.organizer?.organiser_ig?.cluster ||
     event.organizer?.ig?.category ||
     event.organizer?.organiser_ig?.category;
 
-  const igId =
-    event.organizer?.ig?.id ||
-    event.organizer?.organiser_ig?.id ||
-    event.organizer?.campus_ig?.id;
+  const cluster = rawCluster?.toLowerCase() ?? null;
+  const clusterBadge = cluster ? BADGE_CONFIG[cluster] : null;
 
-  const cluster =
-    directCluster?.toLowerCase() || (igId ? igIdToClusterMap.get(igId) : null);
-  const eventType = resolveEventTypeValue(
-    event.event_type,
-    event.category_name,
-  );
-  const displayKey = cluster || (eventType !== "others" ? eventType : null);
-  const badge = displayKey ? BADGE_CONFIG[displayKey.toLowerCase()] : null;
+  // ── Event type ────────────────────────────────────────────────────────────
+  // category_name is the human-readable label (e.g. "Sprint", "Workshop").
+  // event_type is the slug (e.g. "others", "hackathon").
+  // resolveEventTypeValue normalises both into a canonical slug for icon lookup.
+  const eventTypeSlug = resolveEventTypeValue(event.event_type, event.category_name);
+  const eventTypeLabel = event.category_name || event.event_type || null;
+  const EventTypeIcon =
+    eventTypeSlug && eventTypeSlug !== "others"
+      ? (EVENT_TYPE_ICONS[eventTypeSlug] ?? Compass)
+      : null;
 
   return (
     <article className="group relative h-full overflow-hidden rounded-2xl border border-border bg-card lc-card-shadow transition-all duration-300 hover:-translate-y-1 lc-card-shadow-hover cursor-pointer lc-slide-up">
@@ -160,16 +163,24 @@ export function EventCard({ event, isManageView, onView }: EventCardProps) {
         />
 
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/90 via-foreground/45 to-transparent" />
-
         <div className="absolute inset-0 bg-foreground/35 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
-        <div className="absolute left-3 top-3 z-30">
-          {badge ? (
-            <Badge className={`${badge.className} font-medium gap-1`}>
-              <badge.icon className="h-3 w-3" />
-              {badge.label}
+        {/* Top-left stickers: event type + cluster */}
+        <div className="absolute left-3 top-3 z-30 flex flex-col gap-1.5">
+          {EventTypeIcon && eventTypeLabel && (
+            <Badge className="bg-blue-50/95 dark:bg-blue-950/90 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/50 hover:bg-blue-100/90 font-semibold gap-1 text-[11px] px-2.5 py-0.5 rounded-full shadow-sm w-fit">
+              <EventTypeIcon className="h-3 w-3 shrink-0" />
+              {eventTypeLabel}
             </Badge>
-          ) : null}
+          )}
+          {clusterBadge && (
+            <Badge
+              className={`${clusterBadge.className} font-medium gap-1 text-[11px] px-2.5 py-0.5 rounded-full shadow-sm w-fit`}
+            >
+              <clusterBadge.icon className="h-3 w-3 shrink-0" />
+              {clusterBadge.label}
+            </Badge>
+          )}
         </div>
 
         {isManageView ? (

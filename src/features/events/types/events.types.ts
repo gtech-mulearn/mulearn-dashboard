@@ -314,8 +314,11 @@ export interface EventListItem {
   cover_image: string | null;
   status: EventStatus;
   scope: EventScope;
+  /** Direct cluster bucket returned by the cluster endpoint (e.g. "maker", "coder", "creative", "manager") */
+  event_scope?: string | null;
   start_datetime: ISODateTime;
   end_datetime: ISODateTime;
+  created_at?: ISODateTime;
   venue: EventVenue;
   organizer: OrganizerInfo;
   is_featured: boolean;
@@ -324,7 +327,10 @@ export interface EventListItem {
   min_karma: number;
   tags: Record<string, unknown> | null;
   user_limit: number;
+  /** Human-readable category name from the categories API (e.g. "Workshop", "Sprint") */
   category_name: string | null;
+  /** UUID of the category from the categories API */
+  category_id?: string | null;
   viewer_interest_status: ViewerInterestStatus | null;
   // Backward compatibility properties
   event_type?: EventType;
@@ -444,6 +450,7 @@ export interface EventListQueryParams {
   ig_id?: UUID;
   campus_id?: UUID;
   cluster?: string;
+  event_scope?: string;
   is_featured?: string;
   start_date?: ISODate;
   end_date?: ISODate;

@@ -203,6 +203,7 @@ export function EventsFilters({
             )}
           </SelectContent>
         </Select>
+
       </div>
     </div>
   );

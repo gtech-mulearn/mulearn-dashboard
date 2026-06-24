@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { EventType } from "@/features/events";
+import type { EventListItem, EventType } from "@/features/events";
 import {
   EventsFilters,
   EventsGrid,
@@ -11,9 +11,17 @@ import {
   FeaturedEventsCarousel,
   useEventsList,
   useEventTypeScope,
-  useIGClusters,
 } from "@/features/events";
+import {
+  extractInterestGroups,
+  useInterestGroupsList,
+} from "@/features/interest-groups";
 import { useDebounce } from "@/hooks/use-debounce";
+
+// Normalise a string to a slug for comparison (e.g. "Cultural Event" → "cultural_event")
+function toSlug(s?: string | null) {
+  return s?.trim().toLowerCase().replace(/[\s-]+/g, "_") ?? "";
+}
 
 export function EventsPageClient() {
   const router = useRouter();
@@ -23,113 +31,164 @@ export function EventsPageClient() {
   const [selectedEventType, setSelectedEventType] = useState<string>("all");
   const debouncedSearch = useDebounce(search, 300);
 
-  // Fetch cluster options dynamically from the IG list API
-  const { data: clusterOptions, isLoading: isLoadingClusters } =
-    useIGClusters();
-  const clusterList = clusterOptions ?? [{ label: "All", value: "all" }];
+  // ── Types and Scopes API ──────────────────────────────────────────────────
+  const { data: typeScopeData, isLoading: isLoadingTypeScope } = useEventTypeScope();
 
-  const { data: typeScopeData, isLoading: isLoadingTypeScope } =
-    useEventTypeScope();
-  const eventTypeOptions = useMemo(() => {
-    if (!typeScopeData?.event_type) {
-      return [{ label: "All Types", value: "all" }];
+  // ── Cluster options ───────────────────────────────────────────────────────
+  const clusterList = useMemo(() => {
+    if (typeScopeData && Array.isArray(typeScopeData.event_scope)) {
+      return [
+        { label: "All", value: "all" },
+        ...typeScopeData.event_scope.map((scope) => ({
+          label: scope,
+          value: scope.toLowerCase(),
+        })),
+      ];
     }
     return [
-      { label: "All Types", value: "all" },
-      ...typeScopeData.event_type.map((type) => {
-        const val = type.trim().toLowerCase().replace(/\s+/g, "_");
-        return { label: type, value: val };
-      }),
+      { label: "All", value: "all" },
+      { label: "Maker", value: "maker" },
+      { label: "Coder", value: "coder" },
+      { label: "Manager", value: "manager" },
+      { label: "Creative", value: "creative" },
     ];
   }, [typeScopeData]);
 
-  // Build a label→value map for client-side cluster sorting
-  const categoryOrder = clusterList
-    .filter((c) => c.value !== "all")
-    .map((c) => c.value);
+  // ── Event-type / category options (from event-type-scope API) ─────────────
+  const eventTypeOptions = useMemo(() => {
+    const list =
+      typeScopeData && Array.isArray(typeScopeData.event_type)
+        ? typeScopeData.event_type
+        : [
+            "Hackathon", "Workshop", "Webinar", "Seminar", "Bootcamp", "Meetup",
+            "Conference", "Competition", "Ideathon", "Cultural event",
+            "Sports event", "Community event", "Expo", "Networking event",
+            "Tech talk", "Others"
+          ];
+    return [
+      { label: "All Types", value: "all" },
+      ...list.map((type) => ({
+        label: type,
+        value: toSlug(type),
+      })),
+    ];
+  }, [typeScopeData]);
+
+  // ── IG id → cluster map (fallback for events without event_scope) ─────────
+  const { data: igData } = useInterestGroupsList();
+  const igIdToClusterMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const ig of igData ? extractInterestGroups(igData) : []) {
+      if (ig.id && ig.category) map.set(ig.id, ig.category.toLowerCase());
+    }
+    return map;
+  }, [igData]);
+
+  // Resolve the cluster slug for any event
+  const getEventCluster = useMemo(
+    () =>
+      (event: EventListItem): string | null => {
+        const org = event.organizer;
+        const raw =
+          event.event_scope ||
+          org?.ig?.cluster ||
+          org?.organiser_ig?.cluster ||
+          org?.ig?.category ||
+          org?.organiser_ig?.category;
+
+        if (raw) return raw.trim().toLowerCase();
+
+        const igId =
+          org?.ig?.id || org?.organiser_ig?.id || org?.campus_ig?.id;
+        return igId ? (igIdToClusterMap.get(igId) ?? null) : null;
+      },
+    [igIdToClusterMap],
+  );
+
+  // ── Sort-order arrays ─────────────────────────────────────────────────────
+  const categoryOrder = useMemo(
+    () => clusterList.filter((c) => c.value !== "all").map((c) => c.value),
+    [clusterList],
+  );
+  const eventTypeOrder = useMemo(
+    () => eventTypeOptions.filter((t) => t.value !== "all").map((t) => t.value),
+    [eventTypeOptions],
+  );
+
+  // ── Data fetch ────────────────────────────────────────────────────────────
+  // When filtering is active we fetch a bigger page so the client-side filter
+  // has enough events to work with (the base endpoint may not honour cluster).
+  const isFiltering = selectedCluster !== "all" || selectedEventType !== "all";
 
   const { data, isLoading } = useEventsList({
-    pageIndex: currentPage,
+    pageIndex: isFiltering ? 1 : currentPage,
     search: debouncedSearch || undefined,
-    cluster: selectedCluster === "all" ? undefined : selectedCluster,
-    event_type:
-      selectedEventType === "all"
-        ? undefined
-        : (selectedEventType as EventType),
     status: "published",
-    sortBy: "-start_datetime",
-    perPage: 12,
+    sortBy: "-created_at",
+    perPage: isFiltering ? 100 : 12,
   });
 
   const events = data?.data ?? [];
   const pagination = data?.pagination;
 
-  // Client-side sorting: Sort by cluster when "All" is selected
-  const sortedEvents = [...events];
+  // ── Client-side filter ────────────────────────────────────────────────────
+  const filteredEvents = useMemo(() => {
+    let result = [...events];
 
-  if (selectedCluster === "all") {
-    sortedEvents.sort((a, b) => {
-      const getClusterIndex = (event: (typeof events)[0]) => {
-        const directCluster =
-          event.organizer?.ig?.cluster ||
-          event.organizer?.organiser_ig?.cluster ||
-          event.organizer?.ig?.category ||
-          event.organizer?.organiser_ig?.category;
+    // Cluster filter: use event_scope → organiser IG fields → IG map lookup
+    if (selectedCluster !== "all") {
+      const target = selectedCluster.toLowerCase();
+      result = result.filter((ev) => getEventCluster(ev) === target);
+    }
 
-        if (directCluster) {
-          const idx = categoryOrder.indexOf(directCluster.toLowerCase());
-          if (idx !== -1) return idx;
-        }
+    // Event-type filter: match category_name slug OR event_type slug
+    if (selectedEventType !== "all") {
+      const target = selectedEventType.toLowerCase();
+      result = result.filter((ev) => {
+        const fromCategory = toSlug(ev.category_name);
+        const fromType = toSlug(ev.event_type);
+        return fromCategory === target || fromType === target;
+      });
+    }
 
-        return 999;
-      };
+    return result;
+  }, [events, selectedCluster, selectedEventType, getEventCluster]);
 
-      const idxA = getClusterIndex(a);
-      const idxB = getClusterIndex(b);
+  // ── Client-side sort: most recent first (by creation time if available, fallback to start_datetime) ──
+  const sortedEvents = useMemo(() => {
+    const result = [...filteredEvents];
 
-      if (idxA !== idxB) return idxA - idxB;
-
-      return (
-        new Date(b.start_datetime).getTime() -
-        new Date(a.start_datetime).getTime()
-      );
+    result.sort((a, b) => {
+      const dateA = a.created_at ? new Date(a.created_at) : new Date(a.start_datetime);
+      const dateB = b.created_at ? new Date(b.created_at) : new Date(b.start_datetime);
+      return dateB.getTime() - dateA.getTime();
     });
-  }
 
+    return result;
+  }, [filteredEvents]);
+
+  // ── Handlers ──────────────────────────────────────────────────────────────
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+  const handleSearch = (value: string) => { setSearch(value); currentPage !== 1 && setCurrentPage(1); };
+  const handleClusterChange = (value: string) => { setSelectedCluster(value); setCurrentPage(1); };
+  const handleEventTypeChange = (value: string) => { setSelectedEventType(value); setCurrentPage(1); };
 
-  const handleSearch = (value: string) => {
-    setSearch(value);
-    setCurrentPage(1);
-  };
-
-  const handleClusterChange = (value: string) => {
-    setSelectedCluster(value);
-    setCurrentPage(1);
-  };
-
-  const handleEventTypeChange = (value: string) => {
-    setSelectedEventType(value);
-    setCurrentPage(1);
-  };
-
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <main className="flex-1 lc-fade-in">
-      {/* Sticky header: title only */}
+      {/* Sticky header */}
       <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border pt-6 pb-4 md:pt-8">
         <h1 className="mb-4 text-2xl font-bold text-foreground md:text-3xl">
           Events
         </h1>
       </div>
 
-      {/* Scrollable content */}
       <div className="space-y-6 py-6">
         <FeaturedEventsCarousel />
 
-        {/* Filters below carousel */}
         <div className="px-4 md:px-0">
           <EventsFilters
             onSearch={handleSearch}
@@ -138,7 +197,7 @@ export function EventsPageClient() {
             selectedEventType={selectedEventType}
             onEventTypeChange={handleEventTypeChange}
             clusters={clusterList}
-            isLoadingClusters={isLoadingClusters}
+            isLoadingClusters={isLoadingTypeScope}
             eventTypes={eventTypeOptions}
             isLoadingEventTypes={isLoadingTypeScope}
           />
@@ -154,9 +213,7 @@ export function EventsPageClient() {
         ) : (
           <EventsGrid
             events={sortedEvents}
-            onEventView={(event) =>
-              router.push(`/dashboard/events/${event.id}`)
-            }
+            onEventView={(event) => router.push(`/dashboard/events/${event.id}`)}
           />
         )}
 

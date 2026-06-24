@@ -126,6 +126,7 @@ function buildQueryString(params?: EventListQueryParams): string {
   if (params.ig_id) searchParams.set("ig_id", params.ig_id);
   if (params.campus_id) searchParams.set("campus_id", params.campus_id);
   if (params.cluster) searchParams.set("cluster", params.cluster);
+  if (params.event_scope) searchParams.set("event_scope", params.event_scope);
   if (params.is_featured !== undefined)
     searchParams.set("is_featured", String(params.is_featured));
   if (params.tags) searchParams.set("tags", params.tags);
@@ -160,6 +161,7 @@ function buildQueryStringWithStatusOverride(
   if (params.ig_id) searchParams.set("ig_id", params.ig_id);
   if (params.campus_id) searchParams.set("campus_id", params.campus_id);
   if (params.cluster) searchParams.set("cluster", params.cluster);
+  if (params.event_scope) searchParams.set("event_scope", params.event_scope);
   if (params.is_featured !== undefined)
     searchParams.set("is_featured", String(params.is_featured));
   if (params.tags) searchParams.set("tags", params.tags);
@@ -308,41 +310,6 @@ async function fetchListWithStatusFallback(
 export const eventsApi = {
   // ─── PUBLIC LIST ENDPOINTS ───────────────────────────────────────────────
   list: async (params?: EventListQueryParams): Promise<EventListData> => {
-    const cluster = params?.cluster;
-
-    if (cluster && cluster !== "all") {
-      try {
-        const qs = buildQueryString(params);
-        const response = await apiClient.get<EventListData>(
-          `${endpoints.events.base}${qs}`,
-        );
-
-        // Check if the response contains events from other clusters, indicating
-        // the backend ignored the `cluster` query parameter.
-        // Use case-insensitive comparison for cluster names
-        const hasOtherCluster = response.data.some(
-          (event) =>
-            event.organizer?.ig?.cluster &&
-            event.organizer.ig.cluster.toLowerCase() !== cluster.toLowerCase(),
-        );
-
-        if (hasOtherCluster) {
-          throw new Error("Base endpoint ignored the cluster filter parameter");
-        }
-
-        return mirrorEventTypeToCategoryList(response);
-      } catch (error) {
-        console.warn(
-          `Base events list with cluster='${cluster}' failed or was ignored. Falling back to cluster endpoint. Error:`,
-          error,
-        );
-        // Fallback: Fetch from the cluster-specific endpoint:
-        // /api/v1/dashboard/events/ig/cluster/${cluster}/
-        const { cluster: _, ...otherParams } = params;
-        return await eventsApi.clusterEvents(cluster as IGCluster, otherParams);
-      }
-    }
-
     const qs = buildQueryString(params);
     const response = await apiClient.get<EventListData>(
       `${endpoints.events.base}${qs}`,
