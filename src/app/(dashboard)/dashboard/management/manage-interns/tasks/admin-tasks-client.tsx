@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
+import type { TInternTask, TUpdateTaskPayload } from "@/features/intern";
 import {
   manageInternsApi,
   useCreateTask,
@@ -35,7 +36,6 @@ import {
   useUpdateTask,
   useVerifyTask,
 } from "@/features/intern";
-import type { TInternTask, TUpdateTaskPayload } from "@/features/intern/types";
 import { getTaskGuild } from "@/features/intern/utils/intern-helpers";
 import { useDebounce } from "@/hooks/use-debounce";
 import {

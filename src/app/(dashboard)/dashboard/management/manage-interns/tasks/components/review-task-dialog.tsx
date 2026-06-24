@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
-import type { TInternTask, TUpdateTaskPayload } from "@/features/intern/types";
+import type { TInternTask } from "@/features/intern";
 
 export const STATUS_OPTIONS = [
   "WAITING_FOR_REVIEW",
