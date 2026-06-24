@@ -62,9 +62,9 @@ export async function getKarmaFeed() {
 // Calendar Events
 // ============================================
 
-export async function getCalendarEvents(startDate: string, endDate: string) {
+export async function getCalendarEvents() {
   const response = await apiClient.get(
-    `${endpoints.dashboard.calendarEvents}?start_date=${startDate}&end_date=${endDate}`,
+    endpoints.dashboard.calendarEvents,
     CalendarEventsResponseSchema,
   );
   return response.response.events;

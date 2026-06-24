@@ -1,13 +1,12 @@
 "use client";
 
 import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Search } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { ApiError } from "@/api/client";
+import { SearchBar } from "@/components/dashboard/table/SearchBar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -15,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useUserInfo } from "@/features/auth/hooks";
 import { ROLES } from "@/lib/auth/roles";
 import { eventsApi } from "../api";
@@ -246,10 +246,13 @@ export default function ManageEventsDashboard() {
       </div>
 
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <Select value={statusFilter} onValueChange={(value) => {
-          setStatusFilter(value as EventStatus | "all");
-          setPage(1);
-        }}>
+        <Select
+          value={statusFilter}
+          onValueChange={(value) => {
+            setStatusFilter(value as EventStatus | "all");
+            setPage(1);
+          }}
+        >
           <SelectTrigger className="w-full md:w-56 rounded-full">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
@@ -262,18 +265,16 @@ export default function ManageEventsDashboard() {
           </SelectContent>
         </Select>
 
-        <div className="relative w-full md:max-w-md md:ml-auto">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            className="rounded-xl border-border bg-background pl-9"
-            placeholder="Search events"
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-          />
-        </div>
+        <SearchBar
+          onSearch={(val) => {
+            setSearch(val);
+            setPage(1);
+          }}
+          placeholder="Search events"
+          size="md"
+          showButton={false}
+          className="w-full md:max-w-md md:ml-auto"
+        />
       </div>
 
       {isLoading ? (

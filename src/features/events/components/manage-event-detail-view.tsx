@@ -145,8 +145,7 @@ export function ManageEventDetailView({
   const [peopleTab, setPeopleTab] = useState<"co-owners" | "collaborators">(
     "co-owners",
   );
-  const [activeTab, setActiveTab] =
-    useState<ManagePanelSectionValue>("review");
+  const [activeTab, setActiveTab] = useState<ManagePanelSectionValue>("review");
   const [isEditing, setIsEditing] = useState(false);
   const [isEditSaveArmed, setIsEditSaveArmed] = useState(false);
   const [formIsDirty, setFormIsDirty] = useState(false);

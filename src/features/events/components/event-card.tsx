@@ -1,25 +1,25 @@
 "use client";
 
 import {
+  Award,
   BookOpen,
+  Briefcase,
   Code,
   Compass,
+  Dribbble,
   Gamepad2,
   Globe,
+  Lightbulb,
   Lock,
   type LucideIcon,
   MapPin,
-  Trophy,
-  Users,
-  Presentation,
-  Sparkles,
-  Award,
-  Lightbulb,
-  Dribbble,
   Megaphone,
-  Briefcase,
   MessagesSquare,
   Mic,
+  Presentation,
+  Sparkles,
+  Trophy,
+  Users,
 } from "lucide-react";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
@@ -136,7 +136,10 @@ export function EventCard({ event, isManageView, onView }: EventCardProps) {
   // category_name is the human-readable label (e.g. "Sprint", "Workshop").
   // event_type is the slug (e.g. "others", "hackathon").
   // resolveEventTypeValue normalises both into a canonical slug for icon lookup.
-  const eventTypeSlug = resolveEventTypeValue(event.event_type, event.category_name);
+  const eventTypeSlug = resolveEventTypeValue(
+    event.event_type,
+    event.category_name,
+  );
   const eventTypeLabel = event.category_name || event.event_type || null;
   const EventTypeIcon =
     eventTypeSlug && eventTypeSlug !== "others"
@@ -168,7 +171,7 @@ export function EventCard({ event, isManageView, onView }: EventCardProps) {
         {/* Top-left stickers: event type + cluster */}
         <div className="absolute left-3 top-3 z-30 flex flex-col gap-1.5">
           {EventTypeIcon && eventTypeLabel && (
-            <Badge className="bg-blue-50/95 dark:bg-blue-950/90 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/50 hover:bg-blue-100/90 font-semibold gap-1 text-[11px] px-2.5 py-0.5 rounded-full shadow-sm w-fit">
+            <Badge className="bg-brand-blue/10 dark:bg-brand-blue/20 text-brand-blue border border-brand-blue/20 dark:border-brand-blue/30 hover:bg-brand-blue/20 font-semibold gap-1 text-[11px] px-2.5 py-0.5 rounded-full shadow-sm w-fit">
               <EventTypeIcon className="h-3 w-3 shrink-0" />
               {eventTypeLabel}
             </Badge>

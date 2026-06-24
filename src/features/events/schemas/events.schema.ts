@@ -296,8 +296,44 @@ export const eventListParamsSchema = z.object({
     .optional(),
 });
 
+// ─── CATEGORY API RESPONSE SCHEMA ────────────────────────────────────────────
+
+/**
+ * Shape of a single item returned by the categories endpoint.
+ * Matches the object inside `response[]` of the Django envelope.
+ */
+export const categorySchema = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+  description: z.string(),
+});
+
+/**
+ * Full Django-envelope shape returned by the categories endpoint.
+ * The apiClient passes rawData (the envelope) directly to safeParse when a
+ * schema is supplied, so this schema must cover the wrapper object.
+ */
+export const categoryListResponseSchema = z.object({
+  hasError: z.boolean(),
+  response: z.array(categorySchema),
+});
+
+// ─── EVENT TYPE / SCOPE API RESPONSE SCHEMA ──────────────────────────────────
+
+/**
+ * Validates the payload returned by the eventTypeScope endpoint.
+ * This endpoint is NOT wrapped in a Django envelope, so the schema
+ * matches the top-level response object directly.
+ */
+export const eventTypeScopeSchema = z.object({
+  event_type: z.array(z.string()),
+  event_scope: z.array(z.string()),
+});
+
 // ─── TYPE EXPORTS ──────────────────────────────────────────────────────────
 
 export type CreateEventSchema = z.infer<typeof createEventSchema>;
 export type UpdateEventSchema = z.infer<typeof updateEventSchema>;
 export type EventListParamsSchema = z.infer<typeof eventListParamsSchema>;
+export type CategoryItem = z.infer<typeof categorySchema>;
+export type EventTypeScopeData = z.infer<typeof eventTypeScopeSchema>;

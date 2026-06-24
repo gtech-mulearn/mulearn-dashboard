@@ -1,6 +1,7 @@
 "use client";
 
-import { Check, ChevronDown, Loader2, Search } from "lucide-react";
+import { Check, ChevronDown, Loader2 } from "lucide-react";
+import { SearchBar } from "@/components/dashboard/table/SearchBar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -8,7 +9,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -33,21 +33,18 @@ interface EventTypeOption {
 // Color configuration for each cluster badge
 const CLUSTER_BADGE_STYLES: Record<string, string> = {
   all: "bg-primary/10 text-primary border-primary/20",
-  coder: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
-  creative:
-    "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20",
-  maker:
-    "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
-  manager:
-    "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20",
+  coder: "bg-chart-2/10 text-chart-2 border-chart-2/20",
+  creative: "bg-chart-1/10 text-chart-1 border-chart-1/20",
+  maker: "bg-chart-3/10 text-chart-3 border-chart-3/20",
+  manager: "bg-chart-4/10 text-chart-4 border-chart-4/20",
 };
 
 const CLUSTER_DOT_STYLES: Record<string, string> = {
   all: "bg-primary",
-  coder: "bg-blue-500",
-  creative: "bg-purple-500",
-  maker: "bg-emerald-500",
-  manager: "bg-orange-500",
+  coder: "bg-chart-2",
+  creative: "bg-chart-1",
+  maker: "bg-chart-3",
+  manager: "bg-chart-4",
 };
 
 function getClusterBadgeStyle(value: string): string {
@@ -94,14 +91,13 @@ export function EventsFilters({
   return (
     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
       {/* Search input — Left side */}
-      <div className="relative w-full md:max-w-xs md:flex-shrink-0 group">
-        <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-primary transition-colors group-focus-within:text-primary" />
-        <Input
-          placeholder="Search events..."
-          onChange={(e) => onSearch(e.target.value)}
-          className="h-12 rounded-lg border-2 border-primary/30 bg-gradient-to-r from-primary/5 to-primary/10 pl-12 pr-4 text-foreground font-medium placeholder:text-primary/60 shadow-lg shadow-primary/20 transition-all duration-300 focus:border-primary focus:shadow-xl focus:shadow-primary/40 hover:border-primary/50 hover:bg-gradient-to-r hover:from-primary/10 hover:to-primary/15"
-        />
-      </div>
+      <SearchBar
+        onSearch={onSearch}
+        placeholder="Search events..."
+        size="md"
+        showButton={false}
+        className="w-full md:max-w-xs md:flex-shrink-0"
+      />
 
       {/* Dropdowns section — Right side */}
       <div className="flex flex-col gap-3 md:gap-4 md:flex-row md:items-center">
@@ -203,7 +199,6 @@ export function EventsFilters({
             )}
           </SelectContent>
         </Select>
-
       </div>
     </div>
   );

@@ -234,7 +234,7 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
     const date = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
     const tzOffset = date.getTimezoneOffset() * 60000;
     return new Date(date.getTime() - tzOffset).toISOString().slice(0, 16);
-  }, [currentStep]);
+  }, []);
 
   const startDatetimeValue = watch("start_datetime");
   const minEndDatetime = useMemo(() => {
@@ -1459,4 +1459,3 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
     </>
   );
 }
-

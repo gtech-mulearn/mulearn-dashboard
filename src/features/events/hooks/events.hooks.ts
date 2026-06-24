@@ -132,7 +132,7 @@ export function useOrganizerOptions() {
 
 export function useEventCategories() {
   return useQuery<Array<{ id: string; name: string; description: string }>>({
-    queryKey: [...eventKeys.meta(), "categories"],
+    queryKey: eventKeys.categories(),
     queryFn: () => eventsApi.getCategories(),
     staleTime: 10 * 60 * 1000, // 10 min — categories rarely change
   });
@@ -140,7 +140,7 @@ export function useEventCategories() {
 
 export function useIGClusters() {
   return useQuery<Array<{ label: string; value: string }>>({
-    queryKey: [...eventKeys.meta(), "ig-clusters"],
+    queryKey: eventKeys.igClusters(),
     queryFn: () => eventsApi.getIGClusters(),
     staleTime: 10 * 60 * 1000, // 10 min — clusters rarely change
   });

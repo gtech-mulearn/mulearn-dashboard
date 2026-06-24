@@ -1,9 +1,6 @@
 import { apiClient, endpoints } from "@/api";
-import {
-  extractInterestGroups,
-  getInterestGroupsList,
-} from "@/features/interest-groups/api/interest-groups.api";
 import type { ApprovalTier } from "../lib/events.policy";
+import { categoryListResponseSchema, eventTypeScopeSchema } from "../schemas";
 import type {
   CollaboratorInviteBody,
   CollaboratorsListData,
@@ -635,75 +632,43 @@ export const eventsApi = {
   getCategories: async (): Promise<
     Array<{ id: string; name: string; description: string }>
   > => {
-    return apiClient.get(endpoints.events.meta.categories);
+    const envelope = await apiClient.get(
+      endpoints.events.meta.categories,
+      categoryListResponseSchema,
+    );
+    return envelope.response;
   },
 
   getEventTypeScope: async (): Promise<{
     event_type: string[];
     event_scope: string[];
   }> => {
-    try {
-      const data = await apiClient.get<{
-        event_type: string[];
-        event_scope: string[];
-      }>(endpoints.events.eventTypeScope);
-      if (
-        data &&
-        Array.isArray(data.event_type) &&
-        Array.isArray(data.event_scope)
-      ) {
-        return data;
-      }
-      throw new Error("Invalid API response format");
-    } catch (err) {
-      console.warn(
-        "Failed to fetch event types and scopes from API, using fallback:",
-        err,
-      );
-      return {
-        event_type: [
-          "Hackathon",
-          "Workshop",
-          "Webinar",
-          "Seminar",
-          "Bootcamp",
-          "Meetup",
-          "Conference",
-          "Competition",
-          "Ideathon",
-          "Cultural event",
-          "Sports event",
-          "Community event",
-          "Expo",
-          "Networking event",
-          "Tech talk",
-          "Others",
-        ],
-        event_scope: ["Maker", "Coder", "Manager", "Creative"],
-      };
-    }
+    return apiClient.get(endpoints.events.eventTypeScope, eventTypeScopeSchema);
   },
 
   /**
-   * Fetch the distinct IG cluster slugs from the events cluster endpoint.
-   * Tries `/api/v1/dashboard/events/ig/cluster/all/` first and derives cluster
-   * names from the returned events. Falls back to `getInterestGroupsList()`
-   * if the endpoint fails or returns no cluster names.
+   * Fetch the distinct IG cluster slugs via the event-type/scope endpoint.
+   * Falls back to a hardcoded list of the four canonical clusters
+   * (Maker, Coder, Manager, Creative) if the endpoint fails or returns an
+   * unexpected shape.
    */
   getIGClusters: async (): Promise<Array<{ label: string; value: string }>> => {
     try {
       const data = await eventsApi.getEventTypeScope();
-      if (data && Array.isArray(data.event_scope)) {
-        return [
-          { label: "All", value: "all" },
-          ...data.event_scope.map((scope) => ({
-            label: scope,
-            value: scope.toLowerCase(),
-          })),
-        ];
-      }
+      return [
+        { label: "All", value: "all" },
+        ...data.event_scope.map((scope) => ({
+          label: scope,
+          value: scope.toLowerCase(),
+        })),
+      ];
     } catch (err) {
-      console.warn("Failed to fetch clusters from eventTypeScope API:", err);
+      if (process.env.NODE_ENV === "development") {
+        console.warn(
+          "[events] getIGClusters: fetch failed, using fallback:",
+          err,
+        );
+      }
     }
 
     return [

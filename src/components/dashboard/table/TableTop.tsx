@@ -1,4 +1,4 @@
-import { Download, Search } from "lucide-react";
+import { Download } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -92,7 +92,6 @@ const TableTop = ({
               !CSV && "lg:flex-none",
             )}
           >
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground/60" />
             <SearchBar
               onSearch={handleData}
               placeholder={searchPlaceholder}
@@ -100,7 +99,7 @@ const TableTop = ({
               showButton={false}
               className={cn(CSV ? "w-full" : "w-fit", searchBarClassName)}
               inputClassName={cn(
-                "border-border bg-background pl-9 pr-3",
+                "border-border bg-background pr-3",
                 searchInputClassName,
               )}
             />

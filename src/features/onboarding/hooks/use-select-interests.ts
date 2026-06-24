@@ -8,7 +8,6 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { authKeys } from "@/features/auth/hooks/query-keys";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import { selectDomains, selectEndgoals } from "../api";
 
