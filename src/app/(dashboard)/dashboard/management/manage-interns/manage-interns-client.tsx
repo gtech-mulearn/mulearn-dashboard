@@ -44,6 +44,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import type { TManageInternItem } from "@/features/intern";
 import {
   useDeactivateIntern,
   useExportInterns,
@@ -51,7 +52,6 @@ import {
   useManageInternsList,
   useUpdateIntern,
 } from "@/features/intern";
-import type { TManageInternItem } from "@/features/intern/types";
 import { resolveInternStatus } from "@/features/intern/utils/intern-helpers";
 import { useDebounce } from "@/hooks/use-debounce";
 import { InternsStats } from "../../../../../features/intern/components/interns-stats";
