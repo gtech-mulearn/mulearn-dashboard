@@ -132,6 +132,9 @@ export function MarkdownEditor({
 
       if (e.key !== "Enter" || e.shiftKey) return;
 
+      // Only handle Enter when the cursor is collapsed (no active selection).
+      if (textarea.selectionStart !== textarea.selectionEnd) return;
+
       const pos = textarea.selectionStart;
       const text = value;
 
