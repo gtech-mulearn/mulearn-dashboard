@@ -1287,6 +1287,8 @@ export const endpoints = {
     weeklyReviewDetail: (id: string) =>
       `/api/v1/dashboard/manage-interns/reviews/reviews/${id}/review/`,
     minutes: "/api/v1/dashboard/intern/minutes/",
+    importTemplate: "/api/v1/dashboard/manage-interns/interns/import/template/",
+    bulkImport: "/api/v1/dashboard/manage-interns/interns/import/",
   },
 
   // ============================================

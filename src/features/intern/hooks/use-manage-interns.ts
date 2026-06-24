@@ -140,6 +140,58 @@ export function useExportInterns() {
   });
 }
 
+export function useDownloadImportTemplate() {
+  return useMutation({
+    mutationFn: () => manageInternsApi.downloadImportTemplate(),
+    onSuccess: (blob) => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "intern_bulk_import_template.xlsx";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success("Template downloaded successfully!");
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to download template",
+        }),
+      );
+    },
+  });
+}
+
+export function useBulkImportInterns() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (file: File) => manageInternsApi.bulkImportInterns(file),
+    onSuccess: async (data) => {
+      if (data.success_count > 0) {
+        toast.success(
+          `Successfully onboarded ${data.success_count} intern(s)!`,
+        );
+      }
+      if (data.failed_count > 0) {
+        toast.warning(
+          `${data.failed_count} row(s) failed — check results for details.`,
+        );
+      }
+      await queryClient.invalidateQueries({ queryKey: internKeys.manage() });
+      await queryClient.invalidateQueries({
+        queryKey: internKeys.overviewStatus(),
+      });
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Bulk import failed" }),
+      );
+    },
+  });
+}
+
 // ── Tasks ──────────────────────────────────────────────────
 export function useManageTasks(params?: TInternQueryParams) {
   return useQuery({

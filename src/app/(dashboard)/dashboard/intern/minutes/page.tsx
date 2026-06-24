@@ -6,7 +6,6 @@ import {
   ExternalLink,
   Eye,
   FileText,
-  Loader2,
   Pencil,
   ScrollText,
   Search,
@@ -33,6 +32,7 @@ import {
 import { SectionErrorFallback } from "@/components/ui/errors/SectionErrorFallback";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -77,7 +77,7 @@ export default function InternMinutesPage() {
   const isInternLead =
     overview?.role === "INTERN_LEAD" ||
     overview?.role === "Intern Lead" ||
-    hasRole([ROLES.INTERN_LEAD, ROLES.ADMIN]);
+    hasRole([ROLES.INTERN_LEAD]);
 
   const [date, setDate] = useState(getTodayDateString());
   const [title, setTitle] = useState("");
@@ -188,7 +188,9 @@ export default function InternMinutesPage() {
             Guild Minutes
           </h2>
           <p className="text-muted-foreground mt-1 font-medium italic text-sm">
-            Upload and track your guild&apos;s daily meeting minutes.
+            {isInternLead
+              ? "Upload and track your guild's daily meeting minutes."
+              : "Track your guild's daily meeting minutes."}
           </p>
         </div>
         {overview?.guild && (
@@ -207,22 +209,22 @@ export default function InternMinutesPage() {
         onValueChange={setActiveTab}
         className="w-full space-y-6"
       >
-        <TabsList className="bg-muted/30 border border-border/40 p-1 rounded-xl w-fit">
-          {isInternLead && (
+        {isInternLead && (
+          <TabsList className="bg-muted/30 border border-border/40 p-1 rounded-xl w-fit">
             <TabsTrigger
               value="upload"
               className="font-black uppercase text-xs tracking-wider px-6 py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm"
             >
               {editingMinute ? "Edit Minutes" : "Upload Minutes"}
             </TabsTrigger>
-          )}
-          <TabsTrigger
-            value="history"
-            className="font-black uppercase text-xs tracking-wider px-6 py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm"
-          >
-            Minutes History
-          </TabsTrigger>
-        </TabsList>
+            <TabsTrigger
+              value="history"
+              className="font-black uppercase text-xs tracking-wider px-6 py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm"
+            >
+              Minutes History
+            </TabsTrigger>
+          </TabsList>
+        )}
 
         {isInternLead && (
           <TabsContent value="upload">
@@ -307,7 +309,7 @@ export default function InternMinutesPage() {
                         {submitMutation.isPending ||
                         updateMutation.isPending ? (
                           <>
-                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <Spinner className="w-4 h-4" />
                             Saving...
                           </>
                         ) : editingMinute ? (
@@ -378,7 +380,7 @@ export default function InternMinutesPage() {
 
               {isMinutesLoading ? (
                 <div className="flex items-center justify-center py-16">
-                  <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                  <Spinner className="w-8 h-8 text-muted-foreground" />
                 </div>
               ) : !filteredMinutes.length ? (
                 <Card className="bg-card/40 border-border/40">
@@ -388,7 +390,9 @@ export default function InternMinutesPage() {
                       No minutes found
                     </p>
                     <p className="text-xs text-muted-foreground/60">
-                      Try adjusting your search query or upload some minutes.
+                      {isInternLead
+                        ? "Try adjusting your search query or upload some minutes."
+                        : "Try adjusting your search query."}
                     </p>
                   </CardContent>
                 </Card>
@@ -472,7 +476,7 @@ export default function InternMinutesPage() {
           if (!open) setViewingMinute(null);
         }}
       >
-        <DialogContent className="bg-card/95 backdrop-blur-xl border-border/60 w-full max-w-[calc(100%-2rem)] sm:max-w-xl p-4 sm:p-6">
+        <DialogContent className="bg-card/95 backdrop-blur-xl border-border/60 w-full max-w-[calc(100%-2rem)] sm:max-w-xl max-h-[calc(100vh-2rem)] flex flex-col p-4 sm:p-6 rounded-2xl">
           <DialogHeader>
             <div className="flex flex-wrap gap-2 items-center text-xs text-muted-foreground mb-1.5 font-bold uppercase tracking-wider">
               <span>
@@ -507,11 +511,11 @@ export default function InternMinutesPage() {
                 new Date(viewingMinute.created_at).toLocaleDateString()}
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
-            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-2">
+          <div className="py-4 flex-1 flex flex-col min-h-0">
+            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-2 shrink-0">
               Minutes Details
             </h4>
-            <div className="max-h-[350px] overflow-y-auto whitespace-pre-wrap font-medium text-sm leading-relaxed text-muted-foreground bg-muted/20 p-4 rounded-xl border border-border/40">
+            <div className="flex-1 overflow-y-auto min-h-0 whitespace-pre-wrap font-medium text-sm leading-relaxed text-muted-foreground bg-muted/20 p-4 rounded-xl border border-border/40">
               {viewingMinute && renderContentWithLinks(viewingMinute.minutes)}
             </div>
           </div>

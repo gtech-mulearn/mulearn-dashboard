@@ -1,5 +1,6 @@
 import { apiClient, endpoints } from "@/api";
 import type {
+  TBulkImportResponse,
   TCreateTaskPayload,
   TInternTask,
   TLeaveRequest,
@@ -207,6 +208,25 @@ export const manageInternsApi = {
     const qs = buildQueryString(params);
     return apiClient.get<TPaginatedData<TMinuteItem>>(
       `${endpoints.manageInterns.minutes}${qs}`,
+    );
+  },
+
+  downloadImportTemplate: async (): Promise<Blob> => {
+    return apiClient.get<Blob>(
+      endpoints.manageInterns.importTemplate,
+      undefined,
+      { responseType: "blob" },
+    );
+  },
+
+  bulkImportInterns: async (file: File): Promise<TBulkImportResponse> => {
+    const formData = new FormData();
+    formData.append("excel_file", file);
+    return apiClient.post<TBulkImportResponse>(
+      endpoints.manageInterns.bulkImport,
+      formData,
+      undefined,
+      { isFormData: true },
     );
   },
 };

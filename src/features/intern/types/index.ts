@@ -1,4 +1,6 @@
 export type {
+  TBulkImportResponse,
+  TBulkImportRowError,
   TCreateTaskPayload,
   TInternActivityLog,
   TInternOverviewStatus,

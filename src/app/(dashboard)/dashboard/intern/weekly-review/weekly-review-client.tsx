@@ -31,14 +31,6 @@ export function WeeklyReviewPageClient() {
     <div className="space-y-8 max-w-7xl mx-auto w-full">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <div className="flex items-center gap-2 mb-2">
-            <Badge
-              variant="default"
-              className="px-3 py-1 rounded-full font-black text-[10px] uppercase tracking-widest"
-            >
-              Weekly Timesheet
-            </Badge>
-          </div>
           <h2 className="text-4xl font-black tracking-tighter text-foreground uppercase flex items-center gap-3">
             Weekly Timesheet
           </h2>

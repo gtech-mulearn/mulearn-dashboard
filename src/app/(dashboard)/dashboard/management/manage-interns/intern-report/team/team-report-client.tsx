@@ -47,11 +47,13 @@ export function TeamReportPageClient() {
         <div className="flex flex-col">
           <span className="font-bold uppercase text-[11px] tracking-tight">
             {String(
-              data || (row as Record<string, unknown>).full_name || "Unknown",
+              data ||
+                (row as unknown as { full_name?: string }).full_name ||
+                "Unknown",
             )}
           </span>
           <span className="text-[9px] text-muted-foreground font-bold leading-none mt-1">
-            {String((row as Record<string, unknown>).muid || "")}
+            {String(row.muid || "")}
           </span>
         </div>
       ),
