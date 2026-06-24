@@ -17,6 +17,7 @@ import type { Project, ProjectFormValues } from "../schemas";
 import { ProjectCard } from "./project-card";
 import { ProjectDetailModal } from "./project-detail-modal";
 import { ProjectWizard } from "./project-wizard";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface ProjectsTabProps {
   muid: string;
@@ -45,6 +46,7 @@ export function ProjectsTab({
   const [editing, setEditing] = useState<Project | undefined>();
   const [detailId, setDetailId] = useState<string | undefined>();
   const [detailCanEdit, setDetailCanEdit] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<Project | undefined>();
 
   const { data: editingMembers = [] } = useProjectMembers(editing?.id ?? "");
   const addMember = useAddMember(editing?.id ?? "");
@@ -73,13 +75,19 @@ export function ProjectsTab({
     return result;
   };
 
-  const handleDelete = async (p: Project) => {
-    if (!confirm(`Delete "${p.title}"?`)) return;
+  const handleDelete = (p: Project) => {
+    setPendingDelete(p);
+  };
+
+  const confirmDelete = async () => {
+    if (!pendingDelete) return;
     try {
-      await del.mutateAsync(p.id);
+      await del.mutateAsync(pendingDelete.id);
       toast.success("Deleted");
     } catch (e) {
       toast.error(getApiResponseError(e, { fallback: "Delete failed" }));
+    } finally {
+      setPendingDelete(undefined);
     }
   };
 
@@ -218,6 +226,19 @@ export function ProjectsTab({
           }}
         />
       )}
+
+      <ConfirmDialog
+        open={!!pendingDelete}
+        onOpenChange={(o) => {
+          if (!o) setPendingDelete(undefined);
+        }}
+        title={`Delete "${pendingDelete?.title ?? ""}"?`}
+        description="This action cannot be undone. The project and all its data will be permanently removed."
+        onConfirm={confirmDelete}
+        isPending={del.isPending}
+        variant="destructive"
+        confirmLabel="Delete Project"
+      />
     </div>
   );
 }
