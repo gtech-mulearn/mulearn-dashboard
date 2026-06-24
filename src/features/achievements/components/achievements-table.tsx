@@ -3,7 +3,7 @@
 import { format } from "date-fns";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import * as React from "react";
-import Pagination from "@/components/dashboard/table/pagination";
+
 import ReusableTable from "@/components/dashboard/table/Table";
 import THead from "@/components/dashboard/table/Thead";
 import { Badge } from "@/components/ui/badge";
@@ -65,14 +65,22 @@ export function AchievementsTable() {
     );
   }, [achievements, search]);
 
-  const customCellRender = (column: string, row: any) => {
+  const customCellRender = (column: string, row: Record<string, unknown>) => {
     if (column === "icon") {
       return (
-        <AchievementIcon imageUrl={row.image_url} name={row.name} size={36} />
+        <AchievementIcon
+          imageUrl={row.image_url as string}
+          name={row.name as string}
+          size={36}
+        />
       );
     }
     if (column === "name") {
-      return <span className="font-medium text-foreground">{row.name}</span>;
+      return (
+        <span className="font-medium text-foreground">
+          {row.name as string}
+        </span>
+      );
     }
     if (column === "level_based") {
       return row.level_based ? (
@@ -104,7 +112,10 @@ export function AchievementsTable() {
       try {
         return (
           <span className="text-sm text-muted-foreground">
-            {format(new Date(createdAt), "dd MMM yyyy")}
+            {format(
+              new Date(createdAt as string | number | Date),
+              "dd MMM yyyy",
+            )}
           </span>
         );
       } catch {
@@ -114,7 +125,7 @@ export function AchievementsTable() {
     return null;
   };
 
-  const customActionRender = (row: any) => (
+  const customActionRender = (row: Record<string, unknown>) => (
     <TooltipProvider>
       <div className="flex items-center justify-end gap-1">
         <Tooltip>
@@ -179,9 +190,10 @@ export function AchievementsTable() {
         />
       </div>
 
-      <div className="w-full md:overflow-x-auto md:rounded-xl md:border md:border-border md:bg-card md:shadow-sm">
+      <div className="w-full ">
         <div className="w-full md:min-w-[800px]">
           <ReusableTable
+            // biome-ignore lint/suspicious/noExplicitAny: third-party types
             rows={filtered as any}
             isLoading={isLoading}
             page={1}

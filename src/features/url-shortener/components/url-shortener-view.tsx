@@ -46,7 +46,7 @@ export default function UrlShortenerView() {
 
   const rows = (data?.data ?? []) as ShortUrlItem[];
   const totalPages = data?.pagination.totalPages ?? 0;
-  const totalCount = data?.pagination.total;
+  const totalCount = data?.pagination.total ?? data?.pagination.count;
 
   const handleNextClick = () => {
     setCurrentPage((prev) => Math.min(prev + 1, totalPages || 1));

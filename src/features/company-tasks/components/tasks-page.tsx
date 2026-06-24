@@ -38,7 +38,11 @@ export function CompanyTasksPage() {
   const queryParams =
     statusFilter === "all"
       ? { page: 1, per_page: 50 }
-      : { approval_status: statusFilter as any, page: 1, per_page: 50 };
+      : {
+          approval_status: statusFilter as "pending" | "rejected" | "approved",
+          page: 1,
+          per_page: 50,
+        };
   const { data, isLoading, error } = useCompanyTasks(queryParams);
 
   if (isLoading) {
@@ -68,9 +72,10 @@ export function CompanyTasksPage() {
     );
   }
 
-  const tasks = Array.isArray(data)
+  const tasks: CompanyTask[] = Array.isArray(data)
     ? data
-    : data?.data || (data as any)?.results || [];
+    : // biome-ignore lint/suspicious/noExplicitAny: API type
+      data?.data || (data as any)?.results || [];
 
   // No need to locally filter anymore since the API does it, but we can leave it as a fallback.
   const filteredTasks = tasks.filter((task: CompanyTask) => {

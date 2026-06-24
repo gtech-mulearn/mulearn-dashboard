@@ -119,7 +119,7 @@ export function RulesTable() {
         />
       </div>
 
-      <div className="w-full md:overflow-x-auto md:rounded-xl md:border md:border-border md:bg-card md:shadow-sm">
+      <div className="w-full ">
         <div className="w-full md:min-w-[800px]">
           <ReusableTable
             rows={filtered as any}

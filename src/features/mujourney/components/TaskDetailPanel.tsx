@@ -11,7 +11,9 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { useEffect } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { useUserInfo } from "@/features/auth";
 import { chipColor } from "@/lib/chip-colors";
 import type { Task } from "../schemas";
 import { MarkdownRenderer } from "../utils/markdown";
@@ -37,6 +39,8 @@ export function TaskDetailPanel({
   onClose,
 }: TaskDetailPanelProps) {
   const extendedTask = task as ExtendedTask | null;
+  const userInfo = useUserInfo();
+  const discordConnected = userInfo.data?.exist_in_guild === true;
 
   // Prevent body scroll and manage focus when panel is open
   useEffect(() => {
@@ -207,13 +211,19 @@ export function TaskDetailPanel({
                   variant="default"
                   className="h-11 rounded-lg text-base font-semibold px-8"
                   onClick={() => {
+                    if (!discordConnected) {
+                      toast.error(
+                        "Please connect your Discord account first to submit proof of work.",
+                      );
+                      return;
+                    }
                     window.open(
                       "https://discord.com/channels/771670169691881483/782353185552465951",
                       "_blank",
                     );
                   }}
                 >
-                  Submit proof of Work
+                  Submit Proof of Work
                 </Button>
               </div>
             </div>

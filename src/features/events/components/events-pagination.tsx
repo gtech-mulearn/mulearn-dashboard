@@ -29,8 +29,10 @@ export function EventsPagination({
   // Prefer server-provided current page count, then API page size.
   // If neither exists, avoid guessing and fall back to the total count.
   const shownCount =
-    currentCount ??
-    (typeof apiPageSize === "number" ? apiPageSize : pagination.count);
+    pagination.count === 0
+      ? 0
+      : (currentCount ??
+        (typeof apiPageSize === "number" ? apiPageSize : pagination.count));
 
   const pages = Array.from({ length: pagination.totalPages }, (_, i) => i + 1);
   const visiblePages = pages.slice(

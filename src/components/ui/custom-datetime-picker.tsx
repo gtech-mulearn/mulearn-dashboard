@@ -38,8 +38,13 @@ function CustomDayButton({
   className,
   day,
   modifiers,
+  hasSelection,
   ...props
-}: { day: any; modifiers: any } & React.ComponentProps<"button">) {
+}: {
+  day: any;
+  modifiers: any;
+  hasSelection?: boolean;
+} & React.ComponentProps<"button">) {
   const ref = React.useRef<HTMLButtonElement>(null);
   React.useEffect(() => {
     if (modifiers.focused) ref.current?.focus();
@@ -56,9 +61,14 @@ function CustomDayButton({
         !modifiers.range_end &&
         !modifiers.range_middle
       }
+      data-today={modifiers.today}
       className={cn(
         "flex aspect-square size-auto w-full min-w-8 items-center justify-center font-normal text-[0.8rem]",
         "rounded-full transition-all duration-200 text-foreground cursor-pointer hover:bg-muted",
+        !hasSelection &&
+          "data-[today=true]:bg-brand-blue data-[today=true]:text-primary-foreground data-[today=true]:font-bold",
+        hasSelection &&
+          "data-[today=true]:bg-accent data-[today=true]:text-accent-foreground",
         "data-[selected-single=true]:!bg-brand-blue data-[selected-single=true]:!text-primary-foreground data-[selected-single=true]:font-bold",
         className,
       )}
@@ -266,7 +276,6 @@ export function CustomDateTimePicker({
     newDate.setHours(parseInt(hour, 10));
     onChange(formatLocalISO(newDate));
   };
-
   const handleMinuteChange = (minute: string) => {
     if (!date) return;
     const newDate = new Date(date);
@@ -299,9 +308,17 @@ export function CustomDateTimePicker({
               )}
             </div>
           ) : (
-            <span className="text-muted-foreground">
-              Pick a date{!hideTime && " and time"}
-            </span>
+            <div className="flex min-w-0 flex-1 items-center gap-2">
+              <span className="truncate">{format(new Date(), "PPP")}</span>
+              {!hideTime && (
+                <>
+                  <span className="text-muted-foreground" aria-hidden>
+                    ·
+                  </span>
+                  <span className="shrink-0">{format(new Date(), "p")}</span>
+                </>
+              )}
+            </div>
           )}
         </Button>
       </DialogTrigger>
@@ -321,7 +338,9 @@ export function CustomDateTimePicker({
               showOutsideDays={false}
               className="text-foreground"
               components={{
-                DayButton: CustomDayButton,
+                DayButton: (props: any) => (
+                  <CustomDayButton {...props} hasSelection={!!date} />
+                ),
                 MonthCaption: (props: any) => {
                   const date =
                     props.calendarMonth?.date ||
@@ -352,7 +371,7 @@ export function CustomDateTimePicker({
                   "h-8 w-8 rounded-full bg-background shadow-sm border flex items-center justify-center text-foreground hover:bg-muted pointer-events-auto cursor-pointer",
                 button_next:
                   "h-8 w-8 rounded-full bg-background shadow-sm border flex items-center justify-center text-foreground hover:bg-muted pointer-events-auto cursor-pointer",
-                today: "!bg-transparent",
+                today: "",
               }}
             />
           </div>
@@ -360,7 +379,9 @@ export function CustomDateTimePicker({
             <div className="flex items-center justify-center p-3 gap-2 bg-muted/50">
               <TimeWheel
                 items={HOURS}
-                selectedValue={date ? format(date, "HH") : "00"}
+                selectedValue={
+                  date ? format(date, "HH") : format(new Date(), "HH")
+                }
                 onChange={handleHourChange}
               />
               <div className="flex items-center justify-center font-bold text-xl pb-1">
@@ -368,7 +389,9 @@ export function CustomDateTimePicker({
               </div>
               <TimeWheel
                 items={MINUTES}
-                selectedValue={date ? format(date, "mm") : "00"}
+                selectedValue={
+                  date ? format(date, "mm") : format(new Date(), "mm")
+                }
                 onChange={handleMinuteChange}
               />
             </div>

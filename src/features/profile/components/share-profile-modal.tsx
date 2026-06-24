@@ -41,7 +41,7 @@ export function ShareProfileModal({
   const profileUrl =
     typeof window !== "undefined"
       ? `${window.location.origin}/profile/${muid}`
-      : `https://mulearn.org/profile/${muid}`;
+      : `https://app.mulearn.org/profile/${muid}`;
 
   const { data: qrBlob, isLoading: isLoadingQr } = useQRCode(profileUrl);
 

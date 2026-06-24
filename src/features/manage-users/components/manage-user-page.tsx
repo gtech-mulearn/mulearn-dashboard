@@ -49,7 +49,7 @@ export default function ManageUsers() {
 
   const rows = (data?.data ?? []) as ManageUserListItem[];
   const totalPages = data?.pagination.totalPages ?? 0;
-  const totalCount = data?.pagination.total;
+  const totalCount = data?.pagination.total ?? data?.pagination.count;
 
   const handleNextClick = () => {
     setCurrentPage((prev) => Math.min(prev + 1, totalPages || 1));

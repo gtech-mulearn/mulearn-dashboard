@@ -28,13 +28,13 @@ import { Input } from "@/components/ui/input";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { formatNumericRuleValue } from "../constants";
 import {
   useApplyJob,
   useLearnerApplications,
   useResubmitApplication,
   useTrackJobView,
 } from "../hooks";
-import { formatNumericRuleValue } from "../constants";
 import type { PublicJob } from "../types";
 
 interface JobDetailModalProps {

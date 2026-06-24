@@ -110,33 +110,35 @@ export function ApplicationRow({ application }: ApplicationRowProps) {
       <div className="flex items-center gap-3 shrink-0">
         <ApplicationStatusBadge status={application.status as AppStatus} />
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-foreground"
-            >
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {application.status === "rejected" && (
-              <DropdownMenuItem
-                onClick={() => setResubmitOpen(true)}
-                className="gap-2"
+        {application.status !== "selected" && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground"
               >
-                <RefreshCcw className="h-4 w-4" /> Resubmit Application
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {application.status === "rejected" && (
+                <DropdownMenuItem
+                  onClick={() => setResubmitOpen(true)}
+                  className="gap-2"
+                >
+                  <RefreshCcw className="h-4 w-4" /> Resubmit Application
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem
+                onClick={() => setWithdrawOpen(true)}
+                className="text-destructive focus:bg-destructive/10 focus:text-destructive gap-2"
+              >
+                <Trash2 className="h-4 w-4" /> Withdraw
               </DropdownMenuItem>
-            )}
-            <DropdownMenuItem
-              onClick={() => setWithdrawOpen(true)}
-              className="text-destructive focus:bg-destructive/10 focus:text-destructive gap-2"
-            >
-              <Trash2 className="h-4 w-4" /> Withdraw
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
 
       {/* Withdraw Dialog */}

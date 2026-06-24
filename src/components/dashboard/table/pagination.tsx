@@ -7,6 +7,7 @@ type Props = {
   totalPages: number;
   perPage: number;
   totalCount?: number;
+  currentPageCount?: number;
 };
 
 const Pagination = ({
@@ -16,19 +17,37 @@ const Pagination = ({
   totalPages,
   perPage,
   totalCount,
+  currentPageCount,
 }: Props) => {
+  const total =
+    totalCount ??
+    (currentPageCount != null && currentPage === totalPages
+      ? (totalPages - 1) * perPage + currentPageCount
+      : undefined);
   const start = (currentPage - 1) * perPage + 1;
-  const end = totalCount
-    ? Math.min(currentPage * perPage, totalCount)
-    : currentPage * perPage;
+  const end =
+    totalCount !== undefined
+      ? Math.min(currentPage * perPage, totalCount)
+      : currentPageCount !== undefined
+        ? (currentPage - 1) * perPage + currentPageCount
+        : currentPage * perPage;
 
   return (
     <>
       {totalPages > 0 && (
         <div className="flex flex-col items-start justify-between gap-4 border-t border-border/40 pt-4 sm:flex-row sm:items-center">
           <div className="text-sm text-muted-foreground">
-            Showing <strong className="text-foreground">{start}</strong> to{" "}
-            <strong className="text-foreground">{end}</strong> entries
+            Showing{" "}
+            <strong className="text-foreground">
+              {start} to {end}
+            </strong>
+            {total != null && (
+              <>
+                {" "}
+                out of <strong className="text-foreground">{total}</strong>{" "}
+                entries
+              </>
+            )}
           </div>
           <div className="flex w-full flex-wrap items-center justify-center gap-2 sm:w-auto sm:justify-normal">
             <Button

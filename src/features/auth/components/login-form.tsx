@@ -153,7 +153,12 @@ export function LoginForm({
               Forgot password?
             </Link>
             {onSwitchToOTP && (
-              <Button type="button" variant="link" onClick={onSwitchToOTP}>
+              <Button
+                type="button"
+                variant="link"
+                onClick={onSwitchToOTP}
+                className="text-sm p-0 h-auto"
+              >
                 Login with OTP
               </Button>
             )}
@@ -178,7 +183,7 @@ export function LoginForm({
           <span className="w-full border-t border-border" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className=" px-4 text-secondary-foreground">OR</span>
+          <span className="px-4 text-secondary-foreground">OR</span>
         </div>
       </div>
 

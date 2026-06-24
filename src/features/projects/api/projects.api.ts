@@ -1,5 +1,6 @@
-import { apiClient, authedFetch } from "@/api/client";
+import { ApiError, apiClient, authedFetch } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   type AddMemberRequest,
   CommentMutationResponseSchema,
@@ -116,14 +117,11 @@ async function postMultipart(
   });
   const raw = await res.json();
   if (!res.ok) {
-    // Backend returns { general_message: "..." } on error
-    const msg =
-      typeof raw?.message?.general_message === "string"
-        ? raw.message.general_message
-        : typeof raw?.message?.general_message === "object"
-          ? JSON.stringify(raw.message.general_message)
-          : `Server error (${res.status})`;
-    throw new Error(msg);
+    const msg = getApiResponseError(raw, {
+      fallback:
+        "Something went wrong while saving the project. Please try again.",
+    });
+    throw new ApiError(res.status, msg, raw);
   }
   return ProjectDetailResponseSchema.parse(raw).response.Project;
 }

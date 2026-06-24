@@ -47,6 +47,7 @@ export default function TaskForm({
     setValue,
     watch,
     formState: { errors },
+    // biome-ignore lint/suspicious/noExplicitAny: API type
   } = useForm<z.input<typeof TaskFormSchema>, any, TaskFormValues>({
     resolver: zodResolver(TaskFormSchema),
     defaultValues: {
@@ -88,10 +89,13 @@ export default function TaskForm({
     }
   }, [initialValues]);
 
-  const skillOptions = (refs?.skills ?? []).map((s: any) => ({
-    value: s.id,
-    label: s.name || s.title || s.id,
-  }));
+  const skillOptions = (refs?.skills ?? []).map(
+    // biome-ignore lint/suspicious/noExplicitAny: API type
+    (s: any) => ({
+      value: s.id,
+      label: s.name || s.title || s.id,
+    }),
+  );
 
   return (
     <form
@@ -167,6 +171,7 @@ export default function TaskForm({
                   <SelectValue placeholder="Select Channel" />
                 </SelectTrigger>
                 <SelectContent position="popper">
+                  {/* biome-ignore lint/suspicious/noExplicitAny: API type */}
                   {(refs?.channels ?? []).map((ch: any) => (
                     <SelectItem key={ch.id} value={ch.id}>
                       {ch.name || ch.title || ch.id}
@@ -199,6 +204,7 @@ export default function TaskForm({
                   <SelectValue placeholder="Select Type" />
                 </SelectTrigger>
                 <SelectContent position="popper">
+                  {/* biome-ignore lint/suspicious/noExplicitAny: API type */}
                   {(refs?.types ?? []).map((t: any) => (
                     <SelectItem key={t.id} value={t.id}>
                       {t.title || t.name || t.id}
@@ -232,6 +238,7 @@ export default function TaskForm({
                 </SelectTrigger>
                 <SelectContent position="popper">
                   <SelectItem value="none">None</SelectItem>
+                  {/* biome-ignore lint/suspicious/noExplicitAny: API type */}
                   {(refs?.levels ?? []).map((l: any) => (
                     <SelectItem key={l.id} value={l.id}>
                       {l.name || l.title || l.id}
@@ -262,6 +269,7 @@ export default function TaskForm({
                 </SelectTrigger>
                 <SelectContent position="popper">
                   <SelectItem value="none">None</SelectItem>
+                  {/* biome-ignore lint/suspicious/noExplicitAny: API type */}
                   {(refs?.igs ?? []).map((ig: any) => (
                     <SelectItem key={ig.id} value={ig.id}>
                       {ig.name || ig.title || ig.id}
@@ -292,6 +300,7 @@ export default function TaskForm({
                 </SelectTrigger>
                 <SelectContent position="popper">
                   <SelectItem value="none">None</SelectItem>
+                  {/* biome-ignore lint/suspicious/noExplicitAny: API type */}
                   {(refs?.organizations ?? []).map((org: any) => (
                     <SelectItem key={org.id} value={org.id}>
                       {org.title || org.name || org.id}
@@ -337,6 +346,7 @@ export default function TaskForm({
                 </SelectTrigger>
                 <SelectContent position="popper">
                   <SelectItem value="none">None</SelectItem>
+                  {/* biome-ignore lint/suspicious/noExplicitAny: API type */}
                   {(refs?.events ?? []).map((event: any) => (
                     <SelectItem key={event.id} value={event.id}>
                       {event.title || event.name || event.id}

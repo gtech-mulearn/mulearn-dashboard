@@ -2,38 +2,72 @@
 
 import { format } from "date-fns";
 import * as React from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Blank } from "@/components/dashboard/table/Blank";
+import Pagination from "@/components/dashboard/table/pagination";
+import Table, { type Data } from "@/components/dashboard/table/Table";
+import TableTop from "@/components/dashboard/table/TableTop";
+import THead from "@/components/dashboard/table/Thead";
 import { useDebounce } from "@/hooks/use-debounce";
-import {
-  ISSUED_LOGS_HEADERS,
-  ISSUED_LOGS_PAGE_SIZE,
-} from "../constants/constants";
+import { ISSUED_LOGS_PAGE_SIZE } from "../constants/constants";
 import { useIssuedLogs } from "../hooks/use-achievement-logs";
-import type { IssuedLog } from "../schemas";
 import { BulkIssueDialog } from "./bulk-issue-dialog";
+
+const COLUMN_ORDER = [
+  { column: "muid", Label: "MUID", isSortable: false },
+  { column: "user_name", Label: "User", isSortable: false },
+  { column: "achievement", Label: "Achievement", isSortable: false },
+  { column: "issued_by", Label: "Issued By", isSortable: false },
+  { column: "issued_on", Label: "Issued On", isSortable: false },
+];
 
 export function IssuedLogsTable() {
   const [page, setPage] = React.useState(1);
+  const [perPage, setPerPage] = React.useState(ISSUED_LOGS_PAGE_SIZE);
   const [search, setSearch] = React.useState("");
   const debouncedSearch = useDebounce(search, 400);
 
-  // Reset page when search input changes
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally reset page when search changes
   React.useEffect(() => {
     setPage(1);
   }, [search]);
 
-  const { data, isLoading, isFetching } = useIssuedLogs(
-    page,
-    ISSUED_LOGS_PAGE_SIZE,
-    debouncedSearch,
-  );
+  const { data, isLoading } = useIssuedLogs(page, perPage, debouncedSearch);
 
-  const rows = data?.data ?? [];
+  const rows = (data?.data ?? []) as unknown as Data[];
   const totalPages = data?.pagination.totalPages ?? 1;
   const total = data?.pagination.total ?? 0;
+
+  const customCellRender = (column: string, row: Data) => {
+    if (column === "muid") {
+      return (
+        <span className="font-mono text-xs">{String(row.muid ?? "")}</span>
+      );
+    }
+    if (column === "user_name") {
+      return <span className="font-medium">{String(row.user_name ?? "")}</span>;
+    }
+    if (column === "issued_by") {
+      return (
+        <span className="text-sm text-muted-foreground">
+          {String(row.issued_by ?? "")}
+        </span>
+      );
+    }
+    if (column === "issued_on") {
+      const val = row.issued_on;
+      if (!val) return <span className="text-sm text-muted-foreground">—</span>;
+      try {
+        return (
+          <span className="text-sm text-muted-foreground">
+            {format(new Date(String(val)), "dd MMM yyyy, HH:mm")}
+          </span>
+        );
+      } catch {
+        return <span className="text-sm text-muted-foreground">—</span>;
+      }
+    }
+    return null;
+  };
 
   return (
     <div className="space-y-4" data-testid="issued-logs-table">
@@ -47,123 +81,44 @@ export function IssuedLogsTable() {
         <BulkIssueDialog />
       </div>
 
-      {/* Search */}
-      <div className="max-w-sm">
-        <Input
-          placeholder="Search by MUID or user..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          data-testid="issued-logs-search"
+      <TableTop
+        onSearchText={(val) => setSearch(val)}
+        onPerPageNumber={(val) => {
+          setPerPage(val);
+          setPage(1);
+        }}
+        CSV=""
+        perPage={perPage}
+        perPageOptions={[10, 20, 50]}
+        searchPlaceholder="Search by MUID or user..."
+        searchSize="md"
+        searchPosition="left"
+      />
+
+      <Table
+        rows={rows}
+        isLoading={isLoading}
+        page={page}
+        perPage={perPage}
+        columnOrder={COLUMN_ORDER}
+        id={[]}
+        customCellRender={customCellRender}
+      >
+        <THead
+          columnOrder={COLUMN_ORDER}
+          onIconClick={() => {}}
+          action={false}
         />
-      </div>
-
-      {/* Table */}
-      <div className="rounded-md border">
-        <table className="w-full caption-bottom text-sm">
-          <thead className="[&_tr]:border-b">
-            <tr>
-              {ISSUED_LOGS_HEADERS.map((h: string) => (
-                <th
-                  key={h}
-                  className="h-12 px-4 text-left align-middle font-medium text-muted-foreground"
-                >
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="[&_tr:last-child]:border-0">
-            {isLoading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: Skeletons are static
-                <tr key={i} className="border-b">
-                  {ISSUED_LOGS_HEADERS.map((h: string) => (
-                    <td key={h} className="p-4">
-                      <Skeleton className="h-4 w-full" />
-                    </td>
-                  ))}
-                </tr>
-              ))
-            ) : rows.length > 0 ? (
-              rows.map((row: IssuedLog, i: number) => (
-                <tr
-                  key={row.id ?? i}
-                  className="border-b transition-colors hover:bg-muted/50"
-                  data-testid="issued-log-row"
-                >
-                  <td className="p-4">
-                    <span className="font-mono text-xs">{row.muid}</span>
-                  </td>
-                  <td className="p-4">
-                    <span className="font-medium">{row.user_name}</span>
-                  </td>
-                  <td className="p-4">{row.achievement}</td>
-                  <td className="p-4">
-                    <span className="text-sm text-muted-foreground">
-                      {row.issued_by}
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    <span className="text-sm text-muted-foreground">
-                      {(() => {
-                        if (!row.issued_on) return "—";
-                        try {
-                          return format(
-                            new Date(row.issued_on),
-                            "dd MMM yyyy, HH:mm",
-                          );
-                        } catch {
-                          return "—";
-                        }
-                      })()}
-                    </span>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td
-                  colSpan={ISSUED_LOGS_HEADERS.length}
-                  className="h-24 text-center text-muted-foreground"
-                >
-                  No issued logs found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Server-side pagination */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          {total} total record{total !== 1 ? "s" : ""}
-          {isFetching && !isLoading && " · updating..."}
-        </p>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page <= 1 || isLoading}
-            data-testid="issued-logs-prev"
-          >
-            Previous
-          </Button>
-          <span className="text-sm text-muted-foreground">
-            {page} / {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage((p) => p + 1)}
-            disabled={page >= totalPages || isLoading}
-            data-testid="issued-logs-next"
-          >
-            Next
-          </Button>
-        </div>
-      </div>
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          perPage={perPage}
+          totalCount={total}
+          handlePreviousClick={() => setPage((p) => Math.max(1, p - 1))}
+          handleNextClick={() => setPage((p) => p + 1)}
+        />
+        <Blank />
+      </Table>
     </div>
   );
 }

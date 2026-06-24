@@ -93,7 +93,7 @@ export function CircleList() {
 
       {/* Circle Grid — CSS columns for masonry effect */}
       {filteredCircles.length > 0 && (
-        <div className="columns-1 gap-4 sm:columns-2 lg:columns-3 [&>a]:mb-4 [&>a]:break-inside-avoid [&>a]:block">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 [&>a]:mb-4 [&>a]:break-inside-avoid [&>a]:block">
           {filteredCircles.map((circle, index) => (
             <div
               key={circle.id}

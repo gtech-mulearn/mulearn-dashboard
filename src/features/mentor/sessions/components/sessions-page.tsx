@@ -37,6 +37,7 @@ import {
 } from "../hooks/use-sessions";
 import type { Session } from "../schemas";
 import { ApproveSessionDialog } from "./approve-session-dialog";
+import { IncomingRequestsList } from "./incoming-requests-list";
 import { KarmaAwardDialog } from "./karma-award-dialog";
 import { SessionCreateDialog } from "./session-create-dialog";
 import { SessionEditSheet } from "./session-edit-sheet";
@@ -362,6 +363,7 @@ export function SessionsPage() {
           <TabsList>
             <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
             <TabsTrigger value="all">All Sessions</TabsTrigger>
+            <TabsTrigger value="requests">Student Requests</TabsTrigger>
             {isAdmin && (
               <TabsTrigger value="pending">
                 Pending
@@ -405,6 +407,10 @@ export function SessionsPage() {
               />
             </TabsContent>
           )}
+
+          <TabsContent value="requests" className="mt-4">
+            <IncomingRequestsList />
+          </TabsContent>
         </Tabs>
 
         <SessionCreateDialog open={createOpen} onOpenChange={setCreateOpen} />
