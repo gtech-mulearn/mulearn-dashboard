@@ -143,11 +143,8 @@ export function MarkdownEditor({
       const bulletMatch = currentLine.match(/^([-*>]\s)/);
       const numberedMatch = currentLine.match(/^(\d+)\.\s/);
 
-      if (!bulletMatch && !numberedMatch) return;
-
-      e.preventDefault();
-
       if (bulletMatch) {
+        e.preventDefault();
         const prefix = bulletMatch[1];
         const lineContent = currentLine.slice(prefix.length);
 
@@ -170,6 +167,7 @@ export function MarkdownEditor({
           });
         }
       } else if (numberedMatch) {
+        e.preventDefault();
         const num = parseInt(numberedMatch[1], 10);
         const prefixLen = numberedMatch[0].length;
         const lineContent = currentLine.slice(prefixLen);
@@ -185,6 +183,54 @@ export function MarkdownEditor({
         } else {
           // Continue with next sequential number
           const nextPrefix = `${num + 1}. `;
+          const insertion = "\n" + nextPrefix;
+          const newValue = text.slice(0, pos) + insertion + text.slice(pos);
+          onChange(newValue);
+          const newPos = pos + insertion.length;
+          requestAnimationFrame(() => {
+            textarea.setSelectionRange(newPos, newPos);
+          });
+        }
+      } else {
+        // No prefix on the current line. Check if we are inside a list block by scanning upwards.
+        let searchLineStart = lineStart;
+        let foundPrefix:
+          | { type: "bullet"; prefix: string }
+          | { type: "numbered"; num: number }
+          | null = null;
+
+        while (searchLineStart > 0) {
+          const prevLineEnd = searchLineStart - 1;
+          const prevLineStart = text.lastIndexOf("\n", prevLineEnd - 1) + 1;
+          const prevLine = text.slice(prevLineStart, prevLineEnd);
+
+          if (prevLine.trim() === "") {
+            break;
+          }
+
+          const bulletMatchPrev = prevLine.match(/^([-*>]\s)/);
+          const numberedMatchPrev = prevLine.match(/^(\d+)\.\s/);
+
+          if (bulletMatchPrev) {
+            foundPrefix = { type: "bullet", prefix: bulletMatchPrev[1] };
+            break;
+          } else if (numberedMatchPrev) {
+            foundPrefix = {
+              type: "numbered",
+              num: parseInt(numberedMatchPrev[1], 10),
+            };
+            break;
+          }
+
+          searchLineStart = prevLineStart;
+        }
+
+        if (foundPrefix) {
+          e.preventDefault();
+          const nextPrefix =
+            foundPrefix.type === "bullet"
+              ? foundPrefix.prefix
+              : `${foundPrefix.num + 1}. `;
           const insertion = "\n" + nextPrefix;
           const newValue = text.slice(0, pos) + insertion + text.slice(pos);
           onChange(newValue);
