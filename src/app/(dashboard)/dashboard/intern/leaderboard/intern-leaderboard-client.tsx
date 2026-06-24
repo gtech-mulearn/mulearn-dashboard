@@ -87,7 +87,8 @@ export function LeaderboardPageClient() {
         name: item.full_name,
         actualName: item.full_name,
         points: item.score,
-        streak: "-",
+        streak:
+          item.daily_streak !== undefined ? String(item.daily_streak) : "-",
         isCurrentUser,
         avatar: item.full_name
           ? item.full_name
@@ -336,7 +337,7 @@ export function LeaderboardPageClient() {
             <tr>
               {tableColumns.map((column) => (
                 <th
-                  className={`border-b border-border px-3.5 py-3 text-left text-sm font-bold tracking-wider ${(column as any).width || ""} bg-muted/20 border-b border-border/20 h-12 font-black uppercase text-[9px] tracking-[0.3em]`}
+                  className={`border-b border-border px-3.5 py-3 text-left text-sm font-bold tracking-wider ${(column as { width?: string }).width || ""} bg-muted/20 border-b border-border/20 h-12 font-black uppercase text-[9px] tracking-[0.3em]`}
                   key={column.column}
                 >
                   <div className="flex items-center gap-2">

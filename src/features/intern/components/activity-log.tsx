@@ -54,7 +54,10 @@ import type {
   TWeeklyReview,
   TWeeklyReviewUpdatePayload,
 } from "@/features/intern/types";
-import { getTaskKarma } from "@/features/intern/utils/intern-helpers";
+import {
+  getTaskBaseKarma,
+  getTaskKarma,
+} from "@/features/intern/utils/intern-helpers";
 import { getApiResponseError } from "@/hooks/use-get-error";
 
 type UnifiedActivity = {
@@ -65,6 +68,7 @@ type UnifiedActivity = {
   dateStr: string;
   rawDate: Date;
   status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED" | "COMPLETED";
+  points: number | null;
   karma: number | null;
   raw: TTimesheet | TWeeklyReview | TInternTask;
 };
@@ -206,6 +210,40 @@ export function QuestLog() {
     );
   };
 
+  const handleSaveChanges = () => {
+    if (!selectedItem) return;
+
+    if (selectedItem.type === "timesheet") {
+      const payload: TTimesheetUpdatePayload = {
+        hours: Number(tsHours),
+        description: tsDescription,
+        blockers: tsBlockers || "None",
+        end_of_day_note: tsEndOfDayNote,
+        edit_reason: tsEditReason || "Self correction of details",
+      };
+
+      editTimesheetMutation.mutate({
+        id: selectedItem.id,
+        payload,
+      });
+    } else {
+      const payload: TWeeklyReviewUpdatePayload = {
+        hours_committed: Number(wrHours),
+        weekly_review: wrWeeklyReview,
+        blockers: wrBlockers || "None",
+        suggestions: wrSuggestions || "None",
+        learnings: wrLearnings,
+        challenges_faced: wrChallenges,
+        next_week_plan: wrNextPlan,
+      };
+
+      editWeeklyReviewMutation.mutate({
+        id: selectedItem.id,
+        payload,
+      });
+    }
+  };
+
   const isLoading = isTimesheetLoading || isWeeklyLoading || isTasksLoading;
 
   if (isLoading) {
@@ -255,7 +293,8 @@ export function QuestLog() {
         }),
         rawDate: new Date(ts.created_at),
         status: ts.status,
-        karma: ts.score ?? ts.karma_awarded,
+        points: ts.score ?? null,
+        karma: ts.karma_awarded ?? null,
         raw: ts,
       }),
     ),
@@ -273,7 +312,8 @@ export function QuestLog() {
         }),
         rawDate: new Date(wr.created_at),
         status: wr.status,
-        karma: wr.score ?? wr.karma_awarded,
+        points: wr.score ?? null,
+        karma: wr.karma_awarded ?? null,
         raw: wr,
       }),
     ),
@@ -300,7 +340,8 @@ export function QuestLog() {
           ? new Date(task.updated_at)
           : new Date(task.created_at),
         status: "COMPLETED",
-        karma: getTaskKarma(task),
+        points: getTaskKarma(task),
+        karma: getTaskBaseKarma(task),
         raw: task,
       }),
     ),
@@ -317,7 +358,7 @@ export function QuestLog() {
       case "APPROVED":
         return (
           <div className="bg-success/15 text-success border border-success/30 font-black text-[9px] rounded-full px-2.5 py-0.5 uppercase tracking-wider flex items-center gap-1 shrink-0">
-            Gained {karma ?? 0} pts
+            Approved
           </div>
         );
       case "COMPLETED":
@@ -351,40 +392,6 @@ export function QuestLog() {
             {status}
           </div>
         );
-    }
-  };
-
-  const handleSaveChanges = () => {
-    if (!selectedItem) return;
-
-    if (selectedItem.type === "timesheet") {
-      const payload: TTimesheetUpdatePayload = {
-        hours: Number(tsHours),
-        description: tsDescription,
-        blockers: tsBlockers || "None",
-        end_of_day_note: tsEndOfDayNote,
-        edit_reason: tsEditReason || "Self correction of details",
-      };
-
-      editTimesheetMutation.mutate({
-        id: selectedItem.id,
-        payload,
-      });
-    } else {
-      const payload: TWeeklyReviewUpdatePayload = {
-        hours_committed: Number(wrHours),
-        weekly_review: wrWeeklyReview,
-        blockers: wrBlockers || "None",
-        suggestions: wrSuggestions || "None",
-        learnings: wrLearnings,
-        challenges_faced: wrChallenges,
-        next_week_plan: wrNextPlan,
-      };
-
-      editWeeklyReviewMutation.mutate({
-        id: selectedItem.id,
-        payload,
-      });
     }
   };
 
@@ -436,9 +443,34 @@ export function QuestLog() {
                       <span className="text-xs font-bold text-foreground break-words">
                         {activity.title}
                       </span>
-                      <span className="text-[9px] text-muted-foreground @md:hidden mt-0.5">
-                        {activity.dateStr}
-                      </span>
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
+                        <span className="text-[9px] text-muted-foreground @md:hidden">
+                          {activity.dateStr}
+                        </span>
+                        {activity.type === "completed_task" ? (
+                          <div className="flex items-center gap-1.5">
+                            <span className="inline-flex items-center rounded bg-brand-purple/10 px-1 py-0.2 text-[8px] font-black uppercase text-brand-purple">
+                              +{activity.points ?? 0} Pts
+                            </span>
+                            <span className="inline-flex items-center rounded bg-success/10 px-1 py-0.2 text-[8px] font-black uppercase text-success">
+                              +{activity.karma ?? 0} Karma
+                            </span>
+                          </div>
+                        ) : activity.status === "APPROVED" ? (
+                          <div className="flex items-center gap-1.5">
+                            <span className="inline-flex items-center rounded bg-brand-purple/10 px-1 py-0.2 text-[8px] font-black uppercase text-brand-purple">
+                              +{activity.points ?? 0} Pts
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1.5">
+                            <span className="inline-flex items-center rounded bg-muted/40 px-1 py-0.2 text-[8px] font-black uppercase text-muted-foreground">
+                              {activity.type === "timesheet" ? 25 : 50} Pts
+                              (Est.)
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </TableCell>
@@ -509,8 +541,8 @@ export function QuestLog() {
               </DialogHeader>
 
               <div className="max-h-[50vh] overflow-y-auto pr-1 space-y-4 py-4">
-                {/* Status and Points Banner */}
-                <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl border border-border/40 bg-background/40">
+                {/* Status and Points/Karma Banner */}
+                <div className="flex flex-wrap items-center justify-between gap-4 p-3.5 rounded-xl border border-border/40 bg-background/40">
                   <div className="space-y-0.5">
                     <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
                       Status
@@ -526,31 +558,40 @@ export function QuestLog() {
                     </div>
                   </div>
 
-                  {selectedItem.type === "completed_task" &&
-                    (selectedItem.raw as TInternTask).karma_awarded !==
-                      undefined && (
-                      <div className="text-center sm:text-right">
+                  <div className="flex items-center gap-6">
+                    <div className="text-right">
+                      <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
+                        {selectedItem.status === "APPROVED" ||
+                        selectedItem.type === "completed_task" ||
+                        (selectedItem.status === "COMPLETED" &&
+                          (selectedItem.raw as TInternTask).is_verified)
+                          ? "Points Earned"
+                          : "Estimated Points"}
+                      </p>
+                      <p className="text-sm font-black text-foreground mt-0.5 tabular-nums">
+                        {selectedItem.status === "APPROVED" ||
+                        selectedItem.type === "completed_task" ||
+                        (selectedItem.status === "COMPLETED" &&
+                          (selectedItem.raw as TInternTask).is_verified)
+                          ? `+${selectedItem.points ?? 0}`
+                          : selectedItem.type === "timesheet"
+                            ? 25
+                            : 50}{" "}
+                        Pts
+                      </p>
+                    </div>
+
+                    {selectedItem.type === "completed_task" && (
+                      <div className="text-right">
                         <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
-                          Base Karma
+                          Karma Earned
                         </p>
-                        <p className="text-sm font-bold text-foreground mt-0.5">
-                          {(selectedItem.raw as TInternTask).karma_awarded} pts
+                        <p className="text-sm font-black text-foreground mt-0.5 tabular-nums">
+                          +{selectedItem.karma ?? 0} Karma
                         </p>
                       </div>
                     )}
-
-                  {(selectedItem.status === "APPROVED" ||
-                    (selectedItem.status === "COMPLETED" &&
-                      (selectedItem.raw as TInternTask).is_verified)) && (
-                    <div className="text-right">
-                      <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
-                        Points Earned
-                      </p>
-                      <p className="text-lg font-black text-success mt-0.5">
-                        +{selectedItem.karma ?? 0} pts
-                      </p>
-                    </div>
-                  )}
+                  </div>
                 </div>
 
                 {/* Reviewer Note / Remarks if rejected or remarked */}
@@ -635,7 +676,10 @@ export function QuestLog() {
                         <SelectTrigger className="w-full bg-background/50 border-border/50 font-bold uppercase text-[10px] tracking-wider mt-1">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="bg-card font-bold border-border/60">
+                        <SelectContent
+                          position="popper"
+                          className="bg-card font-bold border-border/60"
+                        >
                           <SelectItem
                             value="WAITING_FOR_REVIEW"
                             className="uppercase text-[9px]"
@@ -920,7 +964,7 @@ export function QuestLog() {
                         type="button"
                         variant="outline"
                         onClick={() => setIsEditMode(false)}
-                        className=" text-[10px] uppercase tracking-widest h-9"
+                        className="font-black text-[10px] uppercase tracking-widest h-9"
                       >
                         Cancel
                       </Button>
@@ -930,7 +974,7 @@ export function QuestLog() {
                         disabled={
                           selectedItem.type === "timesheet" && !tsEditReason
                         }
-                        className=" text-[10px] uppercase tracking-widest h-9 bg-brand-blue hover:bg-brand-blue/80 text-white"
+                        className="font-black text-[10px] uppercase tracking-widest h-9 bg-brand-blue hover:bg-brand-blue/80 text-white"
                       >
                         Save Changes
                       </Button>
@@ -940,7 +984,7 @@ export function QuestLog() {
                   type="button"
                   variant="outline"
                   onClick={() => setSelectedItem(null)}
-                  className="text-[10px] uppercase tracking-widest h-9"
+                  className="font-black text-[10px] uppercase tracking-widest h-9"
                 >
                   Close
                 </Button>

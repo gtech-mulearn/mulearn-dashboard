@@ -116,7 +116,7 @@ export function LeaveFormDialog({ open, onOpenChange }: LeaveFormDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-card/95 backdrop-blur-xl border-border/60 w-full max-w-[calc(100%-2rem)] sm:max-w-md p-4 sm:p-6">
+      <DialogContent className="bg-card/95 backdrop-blur-xl border-border/60 w-full max-w-[calc(100%-2rem)] sm:max-w-md p-4 sm:p-6 rounded-2xl max-h-[calc(100vh-2rem)] flex flex-col">
         <DialogHeader className="pr-8">
           <DialogTitle className="text-xl font-black uppercase tracking-wider text-foreground">
             Apply for Leave
@@ -126,85 +126,90 @@ export function LeaveFormDialog({ open, onOpenChange }: LeaveFormDialogProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 py-2 w-full min-w-0">
-          <div className="space-y-2">
-            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-              Leave Type
-            </Label>
-            <Select
-              value={leaveType}
-              onValueChange={(val) =>
-                setLeaveType(val as "SICK" | "CASUAL" | "EMERGENCY")
-              }
-            >
-              <SelectTrigger className="w-full h-10 font-bold uppercase text-xs border-border/40 bg-background/50">
-                <SelectValue placeholder="Select Type" />
-              </SelectTrigger>
-              <SelectContent className="bg-card border-border/60 font-bold">
-                <SelectItem value="CASUAL" className="uppercase text-xs">
-                  Casual Leave
-                </SelectItem>
-                <SelectItem value="SICK" className="uppercase text-xs">
-                  Sick Leave
-                </SelectItem>
-                <SelectItem value="EMERGENCY" className="uppercase text-xs">
-                  Emergency Leave
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col min-h-0 w-full">
+          <div className="space-y-5 pt-2 my-2 pr-1 overflow-y-auto w-full min-w-0 flex-1">
             <div className="space-y-2">
               <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                Start Date
+                Leave Type
               </Label>
-              <Input
-                type="date"
-                required
-                min={getTodayDateString()}
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="h-10 bg-background/50 border-border/40 font-bold text-xs"
-              />
+              <Select
+                value={leaveType}
+                onValueChange={(val) =>
+                  setLeaveType(val as "SICK" | "CASUAL" | "EMERGENCY")
+                }
+              >
+                <SelectTrigger className="w-full h-10 font-bold uppercase text-xs border-border/40 bg-background/50">
+                  <SelectValue placeholder="Select Type" />
+                </SelectTrigger>
+                <SelectContent
+                  position="popper"
+                  className="bg-card border-border/60 font-bold"
+                >
+                  <SelectItem value="CASUAL" className="uppercase text-xs">
+                    Casual Leave
+                  </SelectItem>
+                  <SelectItem value="SICK" className="uppercase text-xs">
+                    Sick Leave
+                  </SelectItem>
+                  <SelectItem value="EMERGENCY" className="uppercase text-xs">
+                    Emergency Leave
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+                  Start Date
+                </Label>
+                <Input
+                  type="date"
+                  required
+                  min={getTodayDateString()}
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="h-10 bg-background/50 border-border/40 font-bold text-xs"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+                  End Date
+                </Label>
+                <Input
+                  type="date"
+                  required
+                  min={startDate || getTodayDateString()}
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="h-10 bg-background/50 border-border/40 font-bold text-xs"
+                />
+              </div>
+            </div>
+
+            {daysCount > 0 && (
+              <div className="p-3 bg-muted/30 border border-border/20 rounded-xl flex items-center justify-between text-xs gap-2">
+                <span className="font-bold text-muted-foreground uppercase">
+                  Calculated Duration
+                </span>
+                <span className="font-black text-brand-blue font-mono">
+                  {daysCount} {daysCount === 1 ? "Day" : "Days"}
+                </span>
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                End Date
+                Reason / Notes
               </Label>
-              <Input
-                type="date"
+              <Textarea
                 required
-                min={startDate || getTodayDateString()}
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="h-10 bg-background/50 border-border/40 font-bold text-xs"
+                placeholder="Provide a clear description of the leave..."
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                className="min-h-[100px] bg-background/50 border-border/40 font-semibold focus:ring-brand-blue/30 resize-none p-3 sm:p-4 text-xs"
               />
             </div>
-          </div>
-
-          {daysCount > 0 && (
-            <div className="p-3 bg-muted/30 border border-border/20 rounded-xl flex items-center justify-between text-xs gap-2">
-              <span className="font-bold text-muted-foreground uppercase">
-                Calculated Duration
-              </span>
-              <span className="font-black text-brand-blue font-mono">
-                {daysCount} {daysCount === 1 ? "Day" : "Days"}
-              </span>
-            </div>
-          )}
-
-          <div className="space-y-2">
-            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-              Reason / Notes
-            </Label>
-            <Textarea
-              required
-              placeholder="Provide a clear description of the leave..."
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              className="min-h-[100px] bg-background/50 border-border/40 font-semibold focus:ring-brand-blue/30 resize-none p-3 sm:p-4 text-xs"
-            />
           </div>
 
           <DialogFooter className="pt-4 gap-2">

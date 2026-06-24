@@ -86,7 +86,7 @@ export function UpdateDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-card/95 backdrop-blur-xl border-border/60 w-full max-w-[calc(100%-2rem)] sm:max-w-md p-4 sm:p-6">
+      <DialogContent className="bg-card/95 backdrop-blur-xl border-border/60 w-full max-w-[calc(100%-2rem)] sm:max-w-md p-4 sm:p-6 rounded-2xl max-h-[calc(100vh-2rem)] flex flex-col">
         <DialogHeader className="pr-8">
           <DialogTitle className="text-xl font-black uppercase tracking-wider text-foreground">
             Edit Intern
@@ -97,105 +97,116 @@ export function UpdateDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 py-4 w-full min-w-0">
-          <div className="space-y-2">
-            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-              Intern Name
-            </Label>
-            <div className="h-10 px-3 py-2 rounded-md border border-border/40 bg-muted/20 text-sm font-bold text-muted-foreground uppercase flex items-center">
-              {intern?.name}
+        <form onSubmit={handleSubmit} className="flex flex-col min-h-0 w-full">
+          <div className="space-y-5 pt-2 my-2 pr-1 overflow-y-auto w-full min-w-0 flex-1">
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+                Intern Name
+              </Label>
+              <div className="h-10 px-3 py-2 rounded-md border border-border/40 bg-muted/20 text-sm font-bold text-muted-foreground uppercase flex items-center">
+                {intern?.name}
+              </div>
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-              Guild
-            </Label>
-            <Select value={updateGuild} onValueChange={setUpdateGuild}>
-              <SelectTrigger className="w-full h-10 font-bold uppercase text-xs border-border/40 bg-background/50">
-                <SelectValue placeholder="Select Guild" />
-              </SelectTrigger>
-              <SelectContent className="bg-card/95 backdrop-blur-xl border-border/60">
-                {guildOptions.map((g) => (
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+                Guild
+              </Label>
+              <Select value={updateGuild} onValueChange={setUpdateGuild}>
+                <SelectTrigger className="w-full h-10 font-bold uppercase text-xs border-border/40 bg-background/50">
+                  <SelectValue placeholder="Select Guild" />
+                </SelectTrigger>
+                <SelectContent
+                  position="popper"
+                  className="bg-card/95 backdrop-blur-xl border-border/60"
+                >
+                  {guildOptions.map((g) => (
+                    <SelectItem
+                      key={g}
+                      value={g}
+                      className="font-bold uppercase text-xs"
+                    >
+                      {g}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+                Status
+              </Label>
+              <Select value={updateStatus} onValueChange={setUpdateStatus}>
+                <SelectTrigger
+                  className={`w-full h-10 font-bold uppercase text-xs border-border/40 bg-background/50 ${statusColorClass[updateStatus] ?? ""}`}
+                >
+                  <SelectValue placeholder="Select Status" />
+                </SelectTrigger>
+                <SelectContent
+                  position="popper"
+                  className="bg-card/95 backdrop-blur-xl border-border/60"
+                >
                   <SelectItem
-                    key={g}
-                    value={g}
+                    value="ACTIVE"
+                    className="font-bold uppercase text-xs text-success"
+                  >
+                    Active
+                  </SelectItem>
+                  <SelectItem
+                    value="AT_RISK"
+                    className="font-bold uppercase text-xs text-warning"
+                  >
+                    At Risk
+                  </SelectItem>
+                  <SelectItem
+                    value="INACTIVE"
+                    className="font-bold uppercase text-xs text-muted-foreground"
+                  >
+                    Inactive
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-1.5">
+                <Crown className="w-3 h-3 text-amber-500" />
+                Role
+              </Label>
+              <Select
+                value={updateRole}
+                onValueChange={(v) =>
+                  setUpdateRole(v as "INTERN" | "INTERN_LEAD")
+                }
+              >
+                <SelectTrigger className="w-full h-10 font-bold uppercase text-xs border-border/40 bg-background/50">
+                  <SelectValue placeholder="Select Role" />
+                </SelectTrigger>
+                <SelectContent
+                  position="popper"
+                  className="bg-card/95 backdrop-blur-xl border-border/60"
+                >
+                  <SelectItem
+                    value="INTERN"
                     className="font-bold uppercase text-xs"
                   >
-                    {g}
+                    Intern
                   </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-              Status
-            </Label>
-            <Select value={updateStatus} onValueChange={setUpdateStatus}>
-              <SelectTrigger
-                className={`w-full h-10 font-bold uppercase text-xs border-border/40 bg-background/50 ${statusColorClass[updateStatus] ?? ""}`}
-              >
-                <SelectValue placeholder="Select Status" />
-              </SelectTrigger>
-              <SelectContent className="bg-card/95 backdrop-blur-xl border-border/60">
-                <SelectItem
-                  value="ACTIVE"
-                  className="font-bold uppercase text-xs text-success"
-                >
-                  Active
-                </SelectItem>
-                <SelectItem
-                  value="AT_RISK"
-                  className="font-bold uppercase text-xs text-warning"
-                >
-                  At Risk
-                </SelectItem>
-                <SelectItem
-                  value="INACTIVE"
-                  className="font-bold uppercase text-xs text-muted-foreground"
-                >
-                  Inactive
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-1.5">
-              <Crown className="w-3 h-3 text-amber-500" />
-              Role
-            </Label>
-            <Select
-              value={updateRole}
-              onValueChange={(v) =>
-                setUpdateRole(v as "INTERN" | "INTERN_LEAD")
-              }
-            >
-              <SelectTrigger className="w-full h-10 font-bold uppercase text-xs border-border/40 bg-background/50">
-                <SelectValue placeholder="Select Role" />
-              </SelectTrigger>
-              <SelectContent className="bg-card/95 backdrop-blur-xl border-border/60">
-                <SelectItem
-                  value="INTERN"
-                  className="font-bold uppercase text-xs"
-                >
-                  Intern
-                </SelectItem>
-                <SelectItem
-                  value="INTERN_LEAD"
-                  className="font-bold uppercase text-xs text-amber-500"
-                >
-                  ⭐ Intern Lead
-                </SelectItem>
-              </SelectContent>
-            </Select>
-            {updateRole === "INTERN_LEAD" && (
-              <p className="text-[10px] text-amber-500/80 font-semibold">
-                Intern Lead can upload daily guild minutes.
-              </p>
-            )}
+                  <SelectItem
+                    value="INTERN_LEAD"
+                    className="font-bold uppercase text-xs text-amber-500"
+                  >
+                    ⭐ Intern Lead
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              {updateRole === "INTERN_LEAD" && (
+                <p className="text-[10px] text-amber-500/80 font-semibold">
+                  Intern Lead can upload daily guild minutes.
+                </p>
+              )}
+            </div>
           </div>
 
           <DialogFooter className="pt-4">
