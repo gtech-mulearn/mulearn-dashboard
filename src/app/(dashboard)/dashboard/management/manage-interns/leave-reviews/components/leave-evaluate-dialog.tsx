@@ -13,8 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useReviewLeave } from "@/features/intern/hooks/use-manage-interns";
-import type { TLeaveRequest } from "@/features/intern/types";
+import { type TLeaveRequest, useReviewLeave } from "@/features/intern";
 
 const calculateDurationDays = (startStr: string, endStr: string) => {
   if (!startStr || !endStr) return 0;

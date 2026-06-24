@@ -25,8 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useManageLeaves } from "@/features/intern/hooks/use-manage-interns";
-import type { TLeaveRequest } from "@/features/intern/types";
+import { type TLeaveRequest, useManageLeaves } from "@/features/intern";
 import { LeaveEvaluateDialog } from "./components/leave-evaluate-dialog";
 
 const calculateDurationDays = (startStr: string, endStr: string) => {
