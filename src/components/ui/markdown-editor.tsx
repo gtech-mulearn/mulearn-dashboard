@@ -13,7 +13,7 @@ import {
   Quote,
   Strikethrough,
 } from "lucide-react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState, type KeyboardEvent } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "./button";
 import { MarkdownRenderer } from "./markdown-renderer";
@@ -80,20 +80,25 @@ export function MarkdownEditor({
       const after = value.slice(end);
 
       if (action.block) {
-        // For block actions, add prefix at line start
+        // For block actions, add prefix at the start of each selected line
         const lineStart = before.lastIndexOf("\n") + 1;
         const beforeLine = value.slice(0, lineStart);
         const lineContent = value.slice(lineStart, end) || "text";
-        const newValue = `${beforeLine}${action.prefix}${lineContent}${action.suffix}${after}`;
+
+        // Split into individual lines and prefix each one
+        const lines = lineContent.split("\n");
+        const isNumberedList = action.prefix === "1. ";
+        const prefixedLines = lines.map((line, idx) => {
+          const prefix = isNumberedList ? `${idx + 1}. ` : action.prefix;
+          return `${prefix}${line}${action.suffix}`;
+        });
+        const newLineContent = prefixedLines.join("\n");
+        const newValue = `${beforeLine}${newLineContent}${after}`;
         onChange(newValue);
-        // Restore cursor
+        // Restore cursor to end of modified content
         requestAnimationFrame(() => {
           textarea.focus();
-          const cursorPos =
-            lineStart +
-            action.prefix.length +
-            lineContent.length +
-            action.suffix.length;
+          const cursorPos = lineStart + newLineContent.length;
           textarea.setSelectionRange(cursorPos, cursorPos);
         });
       } else {
@@ -115,6 +120,79 @@ export function MarkdownEditor({
             );
           }
         });
+      }
+    },
+    [value, onChange],
+  );
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLTextAreaElement>) => {
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+
+      if (e.key !== "Enter") return;
+
+      const pos = textarea.selectionStart;
+      const text = value;
+
+      // Find start of the current line
+      const lineStart = text.lastIndexOf("\n", pos - 1) + 1;
+      const currentLine = text.slice(lineStart, pos);
+
+      // Match list prefixes: `- `, `* `, `> `, or `N. `
+      const bulletMatch = currentLine.match(/^([-*>]\s)/);
+      const numberedMatch = currentLine.match(/^(\d+)\.\s/);
+
+      if (!bulletMatch && !numberedMatch) return;
+
+      e.preventDefault();
+
+      if (bulletMatch) {
+        const prefix = bulletMatch[1];
+        const lineContent = currentLine.slice(prefix.length);
+
+        if (lineContent.trim() === "") {
+          // Empty list line → remove prefix and exit list
+          const newValue =
+            text.slice(0, lineStart) + text.slice(lineStart + prefix.length);
+          onChange(newValue);
+          requestAnimationFrame(() => {
+            textarea.setSelectionRange(lineStart, lineStart);
+          });
+        } else {
+          // Continue with same prefix on next line
+          const insertion = "\n" + prefix;
+          const newValue = text.slice(0, pos) + insertion + text.slice(pos);
+          onChange(newValue);
+          const newPos = pos + insertion.length;
+          requestAnimationFrame(() => {
+            textarea.setSelectionRange(newPos, newPos);
+          });
+        }
+      } else if (numberedMatch) {
+        const num = parseInt(numberedMatch[1], 10);
+        const prefixLen = numberedMatch[0].length;
+        const lineContent = currentLine.slice(prefixLen);
+
+        if (lineContent.trim() === "") {
+          // Empty numbered line → remove prefix and exit list
+          const newValue =
+            text.slice(0, lineStart) + text.slice(lineStart + prefixLen);
+          onChange(newValue);
+          requestAnimationFrame(() => {
+            textarea.setSelectionRange(lineStart, lineStart);
+          });
+        } else {
+          // Continue with next sequential number
+          const nextPrefix = `${num + 1}. `;
+          const insertion = "\n" + nextPrefix;
+          const newValue = text.slice(0, pos) + insertion + text.slice(pos);
+          onChange(newValue);
+          const newPos = pos + insertion.length;
+          requestAnimationFrame(() => {
+            textarea.setSelectionRange(newPos, newPos);
+          });
+        }
       }
     },
     [value, onChange],
@@ -179,6 +257,7 @@ export function MarkdownEditor({
           ref={textareaRef}
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          onKeyDown={handleKeyDown}
           placeholder={placeholder}
           rows={rows}
           className="border-0 rounded-none rounded-b-lg focus-visible:ring-0 focus-visible:ring-offset-0 resize-y"
