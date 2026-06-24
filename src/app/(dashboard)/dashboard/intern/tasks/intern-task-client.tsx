@@ -21,14 +21,12 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import {
+  getTaskBaseKarma,
+  getTaskKarma,
   type TInternTask,
   useInternTasks,
   useUpdateTaskStatus,
 } from "@/features/intern";
-import {
-  getTaskBaseKarma,
-  getTaskKarma,
-} from "@/features/intern/utils/intern-helpers";
 import { useDebounce } from "@/hooks/use-debounce";
 import { SubmitDeliverableDialog } from "./components/submit-deliverable-dialog";
 import { TaskDetailDialog } from "./components/task-detail-dialog";

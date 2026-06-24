@@ -16,11 +16,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { type TInternTask, useUpdateTaskStatus } from "@/features/intern";
 import {
   getTaskBaseKarma,
   getTaskKarma,
-} from "@/features/intern/utils/intern-helpers";
+  type TInternTask,
+  useUpdateTaskStatus,
+} from "@/features/intern";
 
 const getComplexityColor = (complexity: string) => {
   switch (complexity) {

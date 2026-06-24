@@ -116,6 +116,8 @@ export type {
 export {
   formatTasksAssigned,
   formatTasksCompleted,
+  getTaskBaseKarma,
   getTaskGuild,
+  getTaskKarma,
   resolveInternStatus,
 } from "./utils/intern-helpers";
