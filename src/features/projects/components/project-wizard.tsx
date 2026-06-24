@@ -294,7 +294,7 @@ export function ProjectWizard({
                           }
                           className={
                             isActive
-                              ? "ring-2 ring-primary ring-offset-2"
+                              ? "ring-2 ring-brand-blue ring-offset-2"
                               : undefined
                           }
                         >
