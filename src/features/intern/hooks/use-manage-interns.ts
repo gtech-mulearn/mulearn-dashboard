@@ -288,7 +288,7 @@ export function useTasksByIntern(muid: string, params?: TInternQueryParams) {
 
 export function useManageTaskDetail(id: string) {
   return useQuery<TInternTask>({
-    queryKey: [...internKeys.manage(), "tasks", "detail", id],
+    queryKey: internKeys.manageTaskDetail(id),
     queryFn: () => manageInternsApi.getTaskDetail(id),
     enabled: !!id,
   });
@@ -304,7 +304,7 @@ export function useManageLeaves(params?: TInternQueryParams) {
 
 export function useLeaveDetail(id: string) {
   return useQuery<TLeaveRequest>({
-    queryKey: [...internKeys.manage(), "leaves", "detail", id],
+    queryKey: internKeys.manageLeaveDetail(id),
     queryFn: () => manageInternsApi.getLeaveDetail(id),
     enabled: !!id,
   });
