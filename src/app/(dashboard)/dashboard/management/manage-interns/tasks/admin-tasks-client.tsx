@@ -110,6 +110,9 @@ export function AdminTasksPageClient() {
   });
 
   const [reviewTaskId, setReviewTaskId] = useState<string | null>(null);
+  const [initializedTaskId, setInitializedTaskId] = useState<string | null>(
+    null,
+  );
   const {
     data: taskDetail,
     isFetching: isFetchingDetail,
@@ -117,14 +120,23 @@ export function AdminTasksPageClient() {
   } = useManageTaskDetail(reviewTaskId || "");
 
   useEffect(() => {
-    if (taskDetail) {
-      setReviewForm({
-        status: taskDetail.status,
-        karma: taskDetail.karma_awarded ? String(taskDetail.karma_awarded) : "",
-        remark: taskDetail.remark ?? "",
+    if (taskDetail && reviewTaskId && initializedTaskId !== reviewTaskId) {
+      setReviewForm((prev) => {
+        // Only overwrite/initialize if the user hasn't modified the remark yet
+        const hasUserTyped = prev.remark !== "";
+        return {
+          status: taskDetail.status,
+          karma: hasUserTyped
+            ? prev.karma
+            : taskDetail.karma_awarded
+              ? String(taskDetail.karma_awarded)
+              : "",
+          remark: hasUserTyped ? prev.remark : (taskDetail.remark ?? ""),
+        };
       });
+      setInitializedTaskId(reviewTaskId);
     }
-  }, [taskDetail]);
+  }, [taskDetail, reviewTaskId, initializedTaskId]);
 
   useEffect(() => {
     if (fetchDetailError) {
@@ -135,6 +147,7 @@ export function AdminTasksPageClient() {
       );
       setReviewTarget(null);
       setReviewTaskId(null);
+      setInitializedTaskId(null);
     }
   }, [fetchDetailError]);
 
@@ -605,6 +618,7 @@ export function AdminTasksPageClient() {
       onSuccess: () => {
         setReviewTarget(null);
         setReviewTaskId(null);
+        setInitializedTaskId(null);
       },
     });
   };
@@ -907,6 +921,7 @@ export function AdminTasksPageClient() {
         onClose={() => {
           setReviewTarget(null);
           setReviewTaskId(null);
+          setInitializedTaskId(null);
         }}
         onReviewFormChange={setReviewForm}
         onVerifySubmit={handleVerifySubmit}
@@ -921,6 +936,7 @@ export function AdminTasksPageClient() {
               onSuccess: () => {
                 setReviewTarget(null);
                 setReviewTaskId(null);
+                setInitializedTaskId(null);
               },
             },
           );
