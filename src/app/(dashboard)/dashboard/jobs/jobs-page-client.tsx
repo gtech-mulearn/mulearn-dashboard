@@ -126,7 +126,11 @@ export function LearnerJobsPageClient() {
   const jobs = publicJobsData?.jobs ?? [];
   const applications = applicationsData?.applications ?? [];
 
-  const handleSearchClear = useCallback(() => setSearch(""), []);
+  const handleSearchClear = useCallback(() => {
+    setSearch("");
+    setJobPageIndex(1);
+    setPageIndex(1);
+  }, []);
 
   return (
     <div className="space-y-6 p-1">
