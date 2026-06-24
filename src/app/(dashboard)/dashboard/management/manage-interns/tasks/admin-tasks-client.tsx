@@ -38,6 +38,7 @@ import {
   useVerifyTask,
 } from "@/features/intern";
 import { useDebounce } from "@/hooks/use-debounce";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   AssignTaskDialog,
   COMPLEXITY_OPTIONS,
@@ -502,7 +503,11 @@ export function AdminTasksPageClient() {
                   remark: detail.remark ?? "",
                 }));
               } catch (error) {
-                console.error("Failed to fetch task detail", error);
+                toast.error(
+                  getApiResponseError(error, {
+                    fallback: "Failed to fetch task details",
+                  }),
+                );
               } finally {
                 setIsFetchingDetail(false);
               }
