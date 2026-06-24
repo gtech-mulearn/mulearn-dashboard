@@ -425,7 +425,6 @@ export function QuestLogHistory() {
       <ActivityDetailDialog
         selectedItem={selectedItem}
         onClose={() => setSelectedItem(null)}
-        weeklyReviewQueryKey={["intern", "reviews"]}
       />
     </div>
   );

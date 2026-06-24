@@ -1,6 +1,5 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Clock, Edit2, HelpCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -23,8 +22,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { internApi } from "@/features/intern/api/intern.api";
-import { useUpdateTaskStatus } from "@/features/intern/hooks/use-intern";
+import {
+  useEditTimesheet,
+  useEditWeeklyReview,
+  useUpdateTaskStatus,
+} from "@/features/intern/hooks/use-intern";
 import type {
   TInternTask,
   TTimesheet,
@@ -32,7 +34,6 @@ import type {
   TWeeklyReview,
   TWeeklyReviewUpdatePayload,
 } from "@/features/intern/types";
-import { getApiResponseError } from "@/hooks/use-get-error";
 
 export type UnifiedActivity = {
   id: string;
@@ -96,19 +97,12 @@ export function getActivityStatusBadge(
 interface ActivityDetailDialogProps {
   selectedItem: UnifiedActivity | null;
   onClose: () => void;
-  /** Query key prefixes to invalidate on successful timesheet update */
-  timesheetQueryKey?: unknown[];
-  /** Query key prefixes to invalidate on successful weekly review update */
-  weeklyReviewQueryKey?: unknown[];
 }
 
 export function ActivityDetailDialog({
   selectedItem,
   onClose,
-  timesheetQueryKey = ["intern", "timesheets"],
-  weeklyReviewQueryKey = ["intern", "reviews"],
 }: ActivityDetailDialogProps) {
-  const queryClient = useQueryClient();
   const updateTaskStatusMutation = useUpdateTaskStatus();
 
   const [isEditMode, setIsEditMode] = useState(false);
@@ -178,49 +172,8 @@ export function ActivityDetailDialog({
     }
   }, [selectedItem]);
 
-  const editTimesheetMutation = useMutation({
-    mutationFn: ({
-      id,
-      payload,
-    }: {
-      id: string;
-      payload: TTimesheetUpdatePayload;
-    }) => internApi.updateTimesheet(id, payload),
-    onSuccess: async () => {
-      toast.success("Timesheet updated successfully!");
-      await queryClient.invalidateQueries({
-        queryKey: timesheetQueryKey,
-      });
-      onClose();
-    },
-    onError: (error) => {
-      toast.error(
-        getApiResponseError(error, { fallback: "Failed to update timesheet" }),
-      );
-    },
-  });
-
-  const editWeeklyReviewMutation = useMutation({
-    mutationFn: ({
-      id,
-      payload,
-    }: {
-      id: string;
-      payload: TWeeklyReviewUpdatePayload;
-    }) => internApi.updateWeeklyReview(id, payload),
-    onSuccess: async () => {
-      toast.success("Weekly review updated successfully!");
-      await queryClient.invalidateQueries({ queryKey: weeklyReviewQueryKey });
-      onClose();
-    },
-    onError: (error) => {
-      toast.error(
-        getApiResponseError(error, {
-          fallback: "Failed to update weekly review",
-        }),
-      );
-    },
-  });
+  const editTimesheetMutation = useEditTimesheet();
+  const editWeeklyReviewMutation = useEditWeeklyReview();
 
   const handleTaskStatusChange = (
     taskId: string,
@@ -243,7 +196,10 @@ export function ActivityDetailDialog({
         end_of_day_note: tsEndOfDayNote,
         edit_reason: tsEditReason || "Self correction of details",
       };
-      editTimesheetMutation.mutate({ id: selectedItem.id, payload });
+      editTimesheetMutation.mutate(
+        { id: selectedItem.id, payload },
+        { onSuccess: () => onClose() },
+      );
     } else {
       const payload: TWeeklyReviewUpdatePayload = {
         hours_committed: Number(wrHours),
@@ -254,7 +210,10 @@ export function ActivityDetailDialog({
         challenges_faced: wrChallenges,
         next_week_plan: wrNextPlan,
       };
-      editWeeklyReviewMutation.mutate({ id: selectedItem.id, payload });
+      editWeeklyReviewMutation.mutate(
+        { id: selectedItem.id, payload },
+        { onSuccess: () => onClose() },
+      );
     }
   };
 
