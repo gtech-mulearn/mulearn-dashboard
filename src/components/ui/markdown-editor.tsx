@@ -130,7 +130,7 @@ export function MarkdownEditor({
       const textarea = textareaRef.current;
       if (!textarea) return;
 
-      if (e.key !== "Enter") return;
+      if (e.key !== "Enter" || e.shiftKey) return;
 
       const pos = textarea.selectionStart;
       const text = value;
