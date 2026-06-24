@@ -26,14 +26,14 @@ import {
   useEditTimesheet,
   useEditWeeklyReview,
   useUpdateTaskStatus,
-} from "@/features/intern/hooks/use-intern";
+} from "../hooks/use-intern";
 import type {
   TInternTask,
   TTimesheet,
   TTimesheetUpdatePayload,
   TWeeklyReview,
   TWeeklyReviewUpdatePayload,
-} from "@/features/intern/types";
+} from "../types";
 
 export type UnifiedActivity = {
   id: string;

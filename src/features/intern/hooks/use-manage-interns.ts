@@ -286,6 +286,14 @@ export function useTasksByIntern(muid: string, params?: TInternQueryParams) {
   });
 }
 
+export function useManageTaskDetail(id: string) {
+  return useQuery<TInternTask>({
+    queryKey: [...internKeys.manage(), "tasks", "detail", id],
+    queryFn: () => manageInternsApi.getTaskDetail(id),
+    enabled: !!id,
+  });
+}
+
 // ── Leave Review ───────────────────────────────────────────
 export function useManageLeaves(params?: TInternQueryParams) {
   return useQuery({

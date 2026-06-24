@@ -10,7 +10,7 @@ import {
   Search,
   Trash2,
 } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table from "@/components/dashboard/table/Table";
@@ -32,6 +32,7 @@ import {
   useDeleteTask,
   useGuilds,
   useManageInternsList,
+  useManageTaskDetail,
   useManageTasks,
   useTaskCategories,
   useUpdateTask,
@@ -116,12 +117,40 @@ export function AdminTasksPageClient() {
   const [editTask, setEditTask] = useState<TInternTask | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [reviewTarget, setReviewTarget] = useState<TInternTask | null>(null);
-  const [isFetchingDetail, setIsFetchingDetail] = useState(false);
   const [reviewForm, setReviewForm] = useState<ReviewForm>({
     status: "",
     karma: "",
     remark: "",
   });
+
+  const [reviewTaskId, setReviewTaskId] = useState<string | null>(null);
+  const {
+    data: taskDetail,
+    isFetching: isFetchingDetail,
+    error: fetchDetailError,
+  } = useManageTaskDetail(reviewTaskId || "");
+
+  useEffect(() => {
+    if (taskDetail) {
+      setReviewForm({
+        status: taskDetail.status,
+        karma: taskDetail.karma_awarded ? String(taskDetail.karma_awarded) : "",
+        remark: taskDetail.remark ?? "",
+      });
+    }
+  }, [taskDetail]);
+
+  useEffect(() => {
+    if (fetchDetailError) {
+      toast.error(
+        getApiResponseError(fetchDetailError, {
+          fallback: "Failed to fetch task details",
+        }),
+      );
+      setReviewTarget(null);
+      setReviewTaskId(null);
+    }
+  }, [fetchDetailError]);
 
   // Form state
   const [form, setForm] = useState({ ...blankForm });
@@ -483,28 +512,8 @@ export function AdminTasksPageClient() {
                 karma: task.karma_awarded ? String(task.karma_awarded) : "",
                 remark: "",
               });
-              setIsFetchingDetail(true);
               setReviewTarget(task);
-              try {
-                const detail = await manageInternsApi.getTaskDetail(task.id);
-                setReviewTarget(detail);
-                setReviewForm((prev) => ({
-                  ...prev,
-                  status: detail.status,
-                  karma: detail.karma_awarded
-                    ? String(detail.karma_awarded)
-                    : prev.karma,
-                  remark: detail.remark ?? "",
-                }));
-              } catch (error) {
-                toast.error(
-                  getApiResponseError(error, {
-                    fallback: "Failed to fetch task details",
-                  }),
-                );
-              } finally {
-                setIsFetchingDetail(false);
-              }
+              setReviewTaskId(task.id);
             }}
             className="rounded-md text-muted-foreground hover:bg-muted hover:text-brand-blue size-8"
             title="Review Task"
@@ -901,14 +910,17 @@ export function AdminTasksPageClient() {
       />
 
       <ReviewTaskDialog
-        reviewTarget={reviewTarget}
+        reviewTarget={taskDetail || reviewTarget}
         reviewForm={reviewForm}
         isFetchingDetail={isFetchingDetail}
         isReviewPending={reviewMutation.isPending}
         isVerifyPending={verifyMutation.isPending}
         deleteTarget={deleteTarget}
         isDeletePending={deleteMutation.isPending}
-        onClose={() => setReviewTarget(null)}
+        onClose={() => {
+          setReviewTarget(null);
+          setReviewTaskId(null);
+        }}
         onReviewFormChange={setReviewForm}
         onVerifySubmit={handleVerifySubmit}
         onVerifyAndAward={() => {

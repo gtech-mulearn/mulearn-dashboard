@@ -63,6 +63,7 @@ export {
   useManageInternsStatus,
   useManageLeaves,
   useManageMinutes,
+  useManageTaskDetail,
   useManageTasks,
   useManageTimesheets,
   useManageWeeklyReviews,
