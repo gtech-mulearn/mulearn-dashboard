@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import {
+  getComplexityColor,
   getTaskBaseKarma,
   getTaskKarma,
   type TInternTask,
@@ -30,21 +31,6 @@ import {
 import { useDebounce } from "@/hooks/use-debounce";
 import { SubmitDeliverableDialog } from "./components/submit-deliverable-dialog";
 import { TaskDetailDialog } from "./components/task-detail-dialog";
-
-const getComplexityColor = (complexity: string) => {
-  switch (complexity) {
-    case "LOW":
-      return "border-success/30 bg-success/5 text-success";
-    case "MEDIUM":
-      return "border-brand-blue/30 bg-brand-blue/5 text-brand-blue";
-    case "HIGH":
-      return "border-warning/30 bg-warning/5 text-warning";
-    case "CRITICAL":
-      return "border-destructive/30 bg-destructive/5 text-destructive";
-    default:
-      return "border-border/30 bg-muted/50 text-muted-foreground";
-  }
-};
 
 export function InternTasksPageClient() {
   const [searchText, setSearchText] = useState("");

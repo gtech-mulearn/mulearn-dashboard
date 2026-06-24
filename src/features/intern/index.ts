@@ -117,6 +117,7 @@ export type {
 export {
   formatTasksAssigned,
   formatTasksCompleted,
+  getComplexityColor,
   getTaskBaseKarma,
   getTaskGuild,
   getTaskKarma,

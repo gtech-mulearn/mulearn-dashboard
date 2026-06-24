@@ -26,6 +26,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import type { TInternTask, TUpdateTaskPayload } from "@/features/intern";
 import {
+  getComplexityColor,
   getTaskGuild,
   manageInternsApi,
   useCreateTask,
@@ -53,21 +54,6 @@ import {
 } from "./components/review-task-dialog";
 
 // ── Helpers ───────────────────────────────────────────────────
-
-const complexityColor = (c: string) => {
-  switch (c) {
-    case "LOW":
-      return "border-success/30 bg-success/5 text-success";
-    case "MEDIUM":
-      return "border-brand-blue/30 bg-brand-blue/5 text-brand-blue";
-    case "HIGH":
-      return "border-warning/30 bg-warning/5 text-warning";
-    case "CRITICAL":
-      return "border-destructive/30 bg-destructive/5 text-destructive";
-    default:
-      return "border-border/30 bg-muted/20 text-muted-foreground";
-  }
-};
 
 // ── Blank form ────────────────────────────────────────────────
 const blankForm: TaskForm = {
@@ -428,7 +414,7 @@ export function AdminTasksPageClient() {
         case "complexity":
           return (
             <div
-              className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 font-bold uppercase tracking-wider ${complexityColor(task.complexity)}`}
+              className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 font-bold uppercase tracking-wider ${getComplexityColor(task.complexity)}`}
             >
               {task.complexity}
             </div>
@@ -618,6 +604,7 @@ export function AdminTasksPageClient() {
     reviewMutation.mutate(payload, {
       onSuccess: () => {
         setReviewTarget(null);
+        setReviewTaskId(null);
       },
     });
   };
@@ -930,7 +917,12 @@ export function AdminTasksPageClient() {
               id: reviewTarget.id,
               karma_awarded: reviewForm.karma ? Number(reviewForm.karma) : 0,
             },
-            { onSuccess: () => setReviewTarget(null) },
+            {
+              onSuccess: () => {
+                setReviewTarget(null);
+                setReviewTaskId(null);
+              },
+            },
           );
         }}
         onDeleteClose={() => setDeleteTarget(null)}
