@@ -20,10 +20,11 @@ import {
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  type TTimesheet,
+  type TWeeklyReview,
   useReviewTimesheet,
   useReviewWeeklyReview,
-} from "@/features/intern/hooks/use-manage-interns";
-import type { TTimesheet, TWeeklyReview } from "@/features/intern/types";
+} from "@/features/intern";
 import {
   formatTasksAssigned,
   formatTasksCompleted,

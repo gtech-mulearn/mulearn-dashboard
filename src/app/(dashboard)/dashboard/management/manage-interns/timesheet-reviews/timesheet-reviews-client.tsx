@@ -25,10 +25,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  type TTimesheet,
+  type TWeeklyReview,
   useManageTimesheets,
   useManageWeeklyReviews,
-} from "@/features/intern/hooks/use-manage-interns";
-import type { TTimesheet, TWeeklyReview } from "@/features/intern/types";
+} from "@/features/intern";
 import { TimesheetEvaluateDialog } from "./components/timesheet-evaluate-dialog";
 
 export function TimesheetReviewsPageClient() {
