@@ -24,12 +24,9 @@ import {
   useInternTasks,
   useTimesheetHistory,
   useWeeklyReviewHistory,
-} from "@/features/intern/hooks/use-intern";
-import type { TInternTask } from "@/features/intern/types";
-import {
-  getTaskBaseKarma,
-  getTaskKarma,
-} from "@/features/intern/utils/intern-helpers";
+} from "../hooks/use-intern";
+import type { TInternTask } from "../types";
+import { getTaskBaseKarma, getTaskKarma } from "../utils/intern-helpers";
 import {
   ActivityDetailDialog,
   getActivityStatusBadge,
