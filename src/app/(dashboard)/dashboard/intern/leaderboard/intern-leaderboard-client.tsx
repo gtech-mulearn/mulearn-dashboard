@@ -10,8 +10,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useUserInfo, useUserProfile } from "@/features/auth";
-import { useLeaderboard, useLeaderboardMe } from "@/features/intern";
-import { isCurrentLeaderboardUser } from "@/features/intern/utils/intern-helpers";
+import {
+  isCurrentLeaderboardUser,
+  useLeaderboard,
+  useLeaderboardMe,
+} from "@/features/intern";
 
 export function LeaderboardPageClient() {
   const [page, setPage] = useState(1);

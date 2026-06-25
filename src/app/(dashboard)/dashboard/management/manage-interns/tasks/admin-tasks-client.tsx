@@ -4,29 +4,18 @@ import {
   ArrowDown,
   ArrowUp,
   ArrowUpDown,
-  CheckCircle2,
   Edit,
-  ExternalLink,
   MessageSquareDot,
   Plus,
   Search,
   Trash2,
 } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table from "@/components/dashboard/table/Table";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -35,53 +24,43 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
-import { Textarea } from "@/components/ui/textarea";
+import type { TInternTask, TUpdateTaskPayload } from "@/features/intern";
 import {
+  getComplexityColor,
+  getTaskGuild,
   manageInternsApi,
   useCreateTask,
   useDeleteTask,
   useGuilds,
   useManageInternsList,
+  useManageTaskDetail,
   useManageTasks,
   useTaskCategories,
   useUpdateTask,
   useVerifyTask,
 } from "@/features/intern";
-import type { TInternTask, TUpdateTaskPayload } from "@/features/intern/types";
-import { getTaskGuild } from "@/features/intern/utils/intern-helpers";
 import { useDebounce } from "@/hooks/use-debounce";
+import { getApiResponseError } from "@/hooks/use-get-error";
+import {
+  AssignTaskDialog,
+  COMPLEXITY_OPTIONS,
+  type TaskForm,
+} from "./components/assign-task-dialog";
+import { EditTaskDialog } from "./components/edit-task-dialog";
+import {
+  type ReviewForm,
+  ReviewTaskDialog,
+  STATUS_OPTIONS,
+} from "./components/review-task-dialog";
 
 // ── Helpers ───────────────────────────────────────────────────
 
-const COMPLEXITY_OPTIONS = ["LOW", "MEDIUM", "HIGH", "CRITICAL"] as const;
-const _STATUS_OPTIONS = [
-  "WAITING_FOR_REVIEW",
-  "IN_PROGRESS",
-  "COMPLETED",
-  "ON_HOLD",
-] as const;
-
-const complexityColor = (c: string) => {
-  switch (c) {
-    case "LOW":
-      return "border-success/30 bg-success/5 text-success";
-    case "MEDIUM":
-      return "border-brand-blue/30 bg-brand-blue/5 text-brand-blue";
-    case "HIGH":
-      return "border-warning/30 bg-warning/5 text-warning";
-    case "CRITICAL":
-      return "border-destructive/30 bg-destructive/5 text-destructive";
-    default:
-      return "border-border/30 bg-muted/20 text-muted-foreground";
-  }
-};
-
 // ── Blank form ────────────────────────────────────────────────
-const blankForm = {
+const blankForm: TaskForm = {
   title: "",
   description: "",
   category: "",
-  complexity: "MEDIUM" as (typeof COMPLEXITY_OPTIONS)[number],
+  complexity: "MEDIUM",
   karma: "",
   assigned_to: "",
   assigneeName: "",
@@ -124,16 +103,45 @@ export function AdminTasksPageClient() {
   const [editTask, setEditTask] = useState<TInternTask | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [reviewTarget, setReviewTarget] = useState<TInternTask | null>(null);
-  const [isFetchingDetail, setIsFetchingDetail] = useState(false);
-  const [reviewForm, setReviewForm] = useState<{
-    status: string;
-    karma: string;
-    remark: string;
-  }>({
+  const [reviewForm, setReviewForm] = useState<ReviewForm>({
     status: "",
     karma: "",
     remark: "",
   });
+
+  const [reviewTaskId, setReviewTaskId] = useState<string | null>(null);
+  const [initializedTaskId, setInitializedTaskId] = useState<string | null>(
+    null,
+  );
+  const {
+    data: taskDetail,
+    isFetching: isFetchingDetail,
+    error: fetchDetailError,
+  } = useManageTaskDetail(reviewTaskId || "");
+
+  useEffect(() => {
+    if (taskDetail && reviewTaskId && initializedTaskId !== reviewTaskId) {
+      setReviewForm({
+        status: taskDetail.status,
+        karma: taskDetail.karma_awarded ? String(taskDetail.karma_awarded) : "",
+        remark: taskDetail.remark ?? "",
+      });
+      setInitializedTaskId(reviewTaskId);
+    }
+  }, [taskDetail, reviewTaskId, initializedTaskId]);
+
+  useEffect(() => {
+    if (fetchDetailError) {
+      toast.error(
+        getApiResponseError(fetchDetailError, {
+          fallback: "Failed to fetch task details",
+        }),
+      );
+      setReviewTarget(null);
+      setReviewTaskId(null);
+      setInitializedTaskId(null);
+    }
+  }, [fetchDetailError]);
 
   // Form state
   const [form, setForm] = useState({ ...blankForm });
@@ -150,14 +158,22 @@ export function AdminTasksPageClient() {
     );
   }, [internsData]);
 
+  // Map to InternOption shape — use `user` (user UUID) as `id` for assigned_to
   const filteredAssignees = useMemo(() => {
     const q = assigneeQuery.trim().toLowerCase();
-    if (!q) return internsList;
-    return internsList.filter(
+    const list = internsList.filter(
       (item) =>
+        !q ||
         item.full_name.toLowerCase().includes(q) ||
         item.muid.toLowerCase().includes(q),
     );
+    return list.map((item) => ({
+      id: item.user, // user UUID — what the API expects for assigned_to
+      full_name: item.full_name,
+      muid: item.muid,
+      guild: item.guild,
+      role: item.role,
+    }));
   }, [internsList, assigneeQuery]);
 
   const debouncedSearch = useDebounce(searchText, 300);
@@ -191,7 +207,6 @@ export function AdminTasksPageClient() {
     null,
   );
 
-  // Categories list for the table filter dropdown based on selected guild
   const tableFilterCategories = useMemo(() => {
     if (!guildFilter || guildFilter === "ALL") {
       const set = new Set<string>();
@@ -204,14 +219,12 @@ export function AdminTasksPageClient() {
       });
       return Array.from(set).sort();
     }
-    // Search case-insensitively for the selected guild's categories
     const key = Object.keys(taskCategories || {}).find(
       (k) => k.toUpperCase() === guildFilter.toUpperCase(),
     );
     return key ? (taskCategories[key] || []).slice().sort() : [];
   }, [taskCategories, guildFilter]);
 
-  // Categories for the Create Task form based on the selected user's guild
   const createFormCategories = useMemo(() => {
     if (selectedUserGuild) {
       const key = Object.keys(taskCategories || {}).find(
@@ -224,7 +237,6 @@ export function AdminTasksPageClient() {
     return [];
   }, [taskCategories, selectedUserGuild]);
 
-  // Categories for the Edit Task form based on the task's guild
   const editFormCategories = useMemo(() => {
     if (editTask) {
       const taskGuild = getTaskGuild(editTask);
@@ -357,7 +369,7 @@ export function AdminTasksPageClient() {
   const tableRows = useMemo(() => {
     return tasks.map((task) => ({
       ...task,
-      full_name: task.title, // Map to full_name for mobile card header
+      full_name: task.title,
     })) as unknown as import("@/components/dashboard/table/Table").Data[];
   }, [tasks]);
 
@@ -407,7 +419,7 @@ export function AdminTasksPageClient() {
         case "complexity":
           return (
             <div
-              className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 font-bold uppercase tracking-wider ${complexityColor(task.complexity)}`}
+              className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 font-bold uppercase tracking-wider ${getComplexityColor(task.complexity)}`}
             >
               {task.complexity}
             </div>
@@ -491,24 +503,8 @@ export function AdminTasksPageClient() {
                 karma: task.karma_awarded ? String(task.karma_awarded) : "",
                 remark: "",
               });
-              setIsFetchingDetail(true);
               setReviewTarget(task);
-              try {
-                const detail = await manageInternsApi.getTaskDetail(task.id);
-                setReviewTarget(detail);
-                setReviewForm((prev) => ({
-                  ...prev,
-                  status: detail.status,
-                  karma: detail.karma_awarded
-                    ? String(detail.karma_awarded)
-                    : prev.karma,
-                  remark: detail.remark ?? "",
-                }));
-              } catch (error) {
-                console.error("Failed to fetch task detail", error);
-              } finally {
-                setIsFetchingDetail(false);
-              }
+              setReviewTaskId(task.id);
             }}
             className="rounded-md text-muted-foreground hover:bg-muted hover:text-brand-blue size-8"
             title="Review Task"
@@ -613,6 +609,8 @@ export function AdminTasksPageClient() {
     reviewMutation.mutate(payload, {
       onSuccess: () => {
         setReviewTarget(null);
+        setReviewTaskId(null);
+        setInitializedTaskId(null);
       },
     });
   };
@@ -663,7 +661,7 @@ export function AdminTasksPageClient() {
             value={guildFilter}
             onValueChange={(value) => {
               setGuildFilter(value);
-              setCategoryFilter("ALL"); // Reset category filter when guild changes
+              setCategoryFilter("ALL");
               setPage(1);
             }}
           >
@@ -733,7 +731,7 @@ export function AdminTasksPageClient() {
               <SelectItem value="ALL" className="font-bold text-xs uppercase">
                 All Statuses
               </SelectItem>
-              {_STATUS_OPTIONS.map((status) => (
+              {STATUS_OPTIONS.map((status) => (
                 <SelectItem
                   key={status}
                   value={status}
@@ -852,741 +850,94 @@ export function AdminTasksPageClient() {
         </Table>
       )}
 
-      {/* ── Create Task Dialog ──────────────────────────────────── */}
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent
-          className="w-full max-w-[calc(100%-2rem)] sm:max-w-2xl border-border/40 bg-card backdrop-blur-xl"
-          onOpenAutoFocus={(e) => e.preventDefault()}
-        >
-          <DialogHeader className="pr-8">
-            <DialogTitle className="text-xl font-black uppercase tracking-widest">
-              Assign New Task
-            </DialogTitle>
-            <DialogDescription className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              Fill in the task details and assign it to an intern.
-            </DialogDescription>
-          </DialogHeader>
-          <form
-            onSubmit={handleCreate}
-            className="flex flex-col min-h-0 w-full"
-          >
-            <div className="space-y-5 pt-2 my-2 pr-1 max-h-[60vh] overflow-y-auto w-full min-w-0">
-              {/* Assign To (MUID or Name) */}
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  Assign To (MUID or Name){" "}
-                  <span className="text-destructive">*</span>
-                </Label>
-                {form.assigned_to ? (
-                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-brand-blue/10 to-brand-blue/5 border border-brand-blue/20 rounded-2xl shadow-sm transition-all duration-300">
-                    <div className="flex items-center gap-3.5 min-w-0">
-                      <div className="w-12 h-12 rounded-full bg-brand-blue/20 flex items-center justify-center text-base font-black text-brand-blue shrink-0 shadow-inner">
-                        {form.assigneeName[0]}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-base font-bold text-foreground truncate">
-                          {form.assigneeName}
-                        </p>
-                        <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider truncate flex items-center gap-1.5 mt-0.5">
-                          <span className="inline-block w-1.5 h-1.5 rounded-full bg-brand-blue/60" />
-                          @{form.assigneeMuid}
-                        </p>
-                      </div>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setForm({
-                          ...form,
-                          assigned_to: "",
-                          assigneeName: "",
-                          assigneeMuid: "",
-                          category: "",
-                        });
-                        setSelectedUserGuild(null);
-                      }}
-                      className="text-xs font-bold text-muted-foreground hover:text-destructive hover:border-destructive/30 shrink-0 px-3.5 h-9 rounded-xl transition-all duration-200"
-                    >
-                      Change Intern
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="relative">
-                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
-                    <Input
-                      placeholder="Search intern by name or MUID..."
-                      value={assigneeQuery}
-                      onChange={(e) => setAssigneeQuery(e.target.value)}
-                      onFocus={() => setIsAssigneeFocused(true)}
-                      onBlur={() => {
-                        setTimeout(() => setIsAssigneeFocused(false), 200);
-                      }}
-                      className="pl-11 h-11 bg-background/50 border-border/50 font-medium rounded-xl focus-visible:ring-brand-blue transition-all duration-200"
-                    />
-                    {isInternsLoading && (
-                      <Spinner className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-blue" />
-                    )}
-                    {isAssigneeFocused && filteredAssignees.length > 0 && (
-                      <div className="absolute z-50 top-full left-0 right-0 mt-1.5 bg-card/95 backdrop-blur-md border border-border/40 rounded-xl shadow-2xl overflow-hidden max-h-48 overflow-y-auto animate-in fade-in-50 slide-in-from-top-2 duration-200">
-                        {filteredAssignees.map((user) => (
-                          <button
-                            key={user.id}
-                            type="button"
-                            onMouseDown={(e) => {
-                              e.preventDefault();
-                              setForm({
-                                ...form,
-                                assigned_to: user.id,
-                                assigneeName: user.full_name,
-                                assigneeMuid: user.muid,
-                                category: "",
-                                team: user.guild || "",
-                              });
-                              setAssigneeQuery("");
-                              setIsAssigneeFocused(false);
-                              setSelectedUserGuild(user.guild || null);
-                            }}
-                            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-brand-blue/5 text-left transition-colors border-b border-border/10 last:border-0"
-                          >
-                            <div className="w-8 h-8 rounded-full bg-brand-blue/10 flex items-center justify-center text-xs font-black text-brand-blue">
-                              {user.full_name[0]}
-                            </div>
-                            <div>
-                              <p className="text-sm font-bold text-foreground">
-                                {user.full_name}
-                              </p>
-                              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                                @{user.muid}
-                              </p>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
+      {/* Dialogs */}
+      <AssignTaskDialog
+        open={createOpen}
+        form={form}
+        assigneeQuery={assigneeQuery}
+        isAssigneeFocused={isAssigneeFocused}
+        isInternsLoading={isInternsLoading}
+        filteredAssignees={filteredAssignees}
+        createFormCategories={createFormCategories}
+        isPending={createMutation.isPending}
+        onOpenChange={setCreateOpen}
+        onFormChange={setForm}
+        onAssigneeQueryChange={setAssigneeQuery}
+        onAssigneeFocusChange={setIsAssigneeFocused}
+        onAssigneeSelect={(user) => {
+          setForm({
+            ...form,
+            assigned_to: user.id,
+            assigneeName: user.full_name,
+            assigneeMuid: user.muid,
+            category: "",
+            team: user.guild || "",
+          });
+          setAssigneeQuery("");
+          setIsAssigneeFocused(false);
+          setSelectedUserGuild(user.guild || null);
+        }}
+        onClearAssignee={() => {
+          setForm({
+            ...form,
+            assigned_to: "",
+            assigneeName: "",
+            assigneeMuid: "",
+            category: "",
+          });
+          setSelectedUserGuild(null);
+        }}
+        onSubmit={handleCreate}
+      />
 
-              {/* Title */}
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  Title <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  required
-                  placeholder="e.g. Build authentication module"
-                  value={form.title}
-                  onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  className="h-10 bg-background/50 border-border/50 font-bold rounded-xl focus-visible:ring-brand-blue"
-                />
-              </div>
+      <EditTaskDialog
+        editTask={editTask}
+        form={form}
+        editFormCategories={editFormCategories}
+        createFormCategories={createFormCategories}
+        selectedUserGuild={selectedUserGuild}
+        isPending={updateMutation.isPending}
+        onClose={() => setEditTask(null)}
+        onFormChange={setForm}
+        onSubmit={handleUpdate}
+      />
 
-              {/* Description */}
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  Description <span className="text-destructive">*</span>
-                </Label>
-                <Textarea
-                  required
-                  placeholder="Detailed description of what needs to be done"
-                  value={form.description}
-                  onChange={(e) =>
-                    setForm({ ...form, description: e.target.value })
-                  }
-                  className="min-h-[140px] max-h-[220px] overflow-y-auto bg-background/50 border-border/50 font-medium resize-none rounded-xl focus-visible:ring-brand-blue"
-                />
-              </div>
-
-              {/* Guild & Category Row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Guild (Unchangeable) */}
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                    Guild
-                  </Label>
-                  <Input
-                    value={form.team ? form.team.replace(/_/g, " ") : ""}
-                    placeholder="Select intern to populate Guild"
-                    readOnly
-                    disabled
-                    className="h-10 bg-muted/40 border-border/40 font-bold text-xs uppercase cursor-not-allowed select-none rounded-xl"
-                  />
-                </div>
-
-                {/* Category */}
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                    Category <span className="text-destructive">*</span>
-                  </Label>
-                  <Select
-                    value={form.category}
-                    onValueChange={(v) => setForm({ ...form, category: v })}
-                    disabled={!form.team}
-                  >
-                    <SelectTrigger className="w-full h-10 bg-background/50 border-border/50 font-bold text-xs uppercase rounded-xl">
-                      <SelectValue
-                        placeholder={
-                          form.team ? "Select Category" : "Select Intern First"
-                        }
-                      />
-                    </SelectTrigger>
-                    <SelectContent
-                      position="popper"
-                      className="bg-card font-bold border-border/60 rounded-xl"
-                    >
-                      {createFormCategories.map((cat) => (
-                        <SelectItem
-                          key={cat}
-                          value={cat}
-                          className="font-bold text-xs uppercase"
-                        >
-                          {cat.replace(/_/g, " ")}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Complexity, Karma & Deadline Row */}
-              <div className="grid grid-cols-3 gap-4">
-                {/* Complexity */}
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                    Complexity
-                  </Label>
-                  <Select
-                    value={form.complexity}
-                    onValueChange={(v) =>
-                      setForm({
-                        ...form,
-                        complexity: v as (typeof COMPLEXITY_OPTIONS)[number],
-                      })
-                    }
-                  >
-                    <SelectTrigger className="w-full h-10 bg-background/50 border-border/50 font-bold text-xs rounded-xl">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent position="popper" className="rounded-xl">
-                      {COMPLEXITY_OPTIONS.map((c) => (
-                        <SelectItem
-                          key={c}
-                          value={c}
-                          className="font-bold text-xs uppercase"
-                        >
-                          {c}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Karma */}
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                    Karma
-                  </Label>
-                  <Input
-                    type="number"
-                    min="0"
-                    placeholder="e.g. 100"
-                    value={form.karma}
-                    onChange={(e) =>
-                      setForm({ ...form, karma: e.target.value })
-                    }
-                    className="h-10 bg-background/50 border-border/50 font-bold rounded-xl"
-                  />
-                </div>
-
-                {/* Deadline */}
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                    Deadline
-                  </Label>
-                  <Input
-                    type="date"
-                    value={form.deadline}
-                    onChange={(e) =>
-                      setForm({ ...form, deadline: e.target.value })
-                    }
-                    className="h-10 bg-background/50 border-border/50 font-bold rounded-xl"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <DialogFooter className="pt-4 border-t border-border/20">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setCreateOpen(false)}
-                className="font-bold"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={createMutation.isPending}
-                className="font-bold gap-2"
-              >
-                {createMutation.isPending ? (
-                  <>
-                    <Spinner className="w-4 h-4" /> Assigning...
-                  </>
-                ) : (
-                  <>
-                    <Plus className="w-4 h-4" /> Create Task
-                  </>
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* ── Edit Task Dialog ────────────────────────────────────── */}
-      <Dialog open={!!editTask} onOpenChange={(o) => !o && setEditTask(null)}>
-        <DialogContent
-          className="w-full max-w-[calc(100%-2rem)] sm:max-w-2xl border-border/40 bg-card backdrop-blur-xl"
-          onOpenAutoFocus={(e) => e.preventDefault()}
-        >
-          <DialogHeader className="pr-8">
-            <DialogTitle className="text-xl font-black uppercase tracking-widest">
-              Edit Task
-            </DialogTitle>
-            <DialogDescription className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              Update task details. Assignee changes are not supported via edit.
-            </DialogDescription>
-          </DialogHeader>
-          <form
-            onSubmit={handleUpdate}
-            className="flex flex-col min-h-0 w-full"
-          >
-            <div className="space-y-5 pt-2 my-2 pr-1 max-h-[60vh] overflow-y-auto w-full min-w-0">
-              {/* Title */}
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  Title
-                </Label>
-                <Input
-                  value={form.title}
-                  onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  className="h-10 bg-background/50 border-border/50 font-bold rounded-xl focus-visible:ring-brand-blue"
-                />
-              </div>
-
-              {/* Description */}
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  Description
-                </Label>
-                <Textarea
-                  value={form.description}
-                  onChange={(e) =>
-                    setForm({ ...form, description: e.target.value })
-                  }
-                  className="min-h-[140px] max-h-[220px] overflow-y-auto bg-background/50 border-border/50 font-medium resize-none rounded-xl focus-visible:ring-brand-blue"
-                />
-              </div>
-
-              {/* Guild & Category Row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Guild (Unchangeable) */}
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                    Guild
-                  </Label>
-                  <Input
-                    value={form.team ? form.team.replace(/_/g, " ") : ""}
-                    readOnly
-                    disabled
-                    className="h-10 bg-muted/40 border-border/40 font-bold text-xs uppercase cursor-not-allowed select-none rounded-xl"
-                  />
-                </div>
-
-                {/* Category */}
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                    Category
-                  </Label>
-                  <Select
-                    value={form.category}
-                    onValueChange={(v) => setForm({ ...form, category: v })}
-                  >
-                    <SelectTrigger className="w-full h-10 bg-background/50 border-border/50 font-bold text-xs uppercase rounded-xl">
-                      <SelectValue placeholder="Select Category" />
-                    </SelectTrigger>
-                    <SelectContent
-                      position="popper"
-                      className="bg-card font-bold border-border/60 rounded-xl"
-                    >
-                      {(selectedUserGuild
-                        ? createFormCategories
-                        : editFormCategories
-                      ).map((cat) => (
-                        <SelectItem
-                          key={cat}
-                          value={cat}
-                          className="font-bold text-xs uppercase"
-                        >
-                          {cat.replace(/_/g, " ")}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Complexity, Karma & Deadline Row */}
-              <div className="grid grid-cols-3 gap-4">
-                {/* Complexity */}
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                    Complexity
-                  </Label>
-                  <Select
-                    value={form.complexity}
-                    onValueChange={(v) =>
-                      setForm({
-                        ...form,
-                        complexity: v as (typeof COMPLEXITY_OPTIONS)[number],
-                      })
-                    }
-                  >
-                    <SelectTrigger className="w-full h-10 bg-background/50 border-border/50 font-bold text-xs rounded-xl">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent position="popper" className="rounded-xl">
-                      {COMPLEXITY_OPTIONS.map((c) => (
-                        <SelectItem
-                          key={c}
-                          value={c}
-                          className="font-bold text-xs uppercase"
-                        >
-                          {c}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Karma */}
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                    Karma
-                  </Label>
-                  <Input
-                    type="number"
-                    min="0"
-                    placeholder="e.g. 100"
-                    value={form.karma}
-                    onChange={(e) =>
-                      setForm({ ...form, karma: e.target.value })
-                    }
-                    className="h-10 bg-background/50 border-border/50 font-bold rounded-xl"
-                  />
-                </div>
-
-                {/* Deadline */}
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                    Deadline
-                  </Label>
-                  <Input
-                    type="date"
-                    value={form.deadline}
-                    onChange={(e) =>
-                      setForm({ ...form, deadline: e.target.value })
-                    }
-                    className="h-10 bg-background/50 border-border/50 font-bold rounded-xl"
-                  />
-                </div>
-              </div>
-            </div>
-            <DialogFooter className="pt-4 border-t border-border/20">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setEditTask(null)}
-                className="font-bold"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={updateMutation.isPending}
-                className="font-bold gap-2"
-              >
-                {updateMutation.isPending ? (
-                  <>
-                    <Spinner className="w-4 h-4" /> Saving...
-                  </>
-                ) : (
-                  "Save Changes"
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* ── Delete Confirmation Dialog ──────────────────────────── */}
-      <Dialog
-        open={!!deleteTarget}
-        onOpenChange={(o) => !o && setDeleteTarget(null)}
-      >
-        <DialogContent
-          className="w-full max-w-[calc(100%-2rem)] sm:max-w-md border-border/40 bg-card backdrop-blur-xl max-h-[calc(100vh-2rem)] flex flex-col p-4 sm:p-6 rounded-2xl"
-          onOpenAutoFocus={(e) => e.preventDefault()}
-        >
-          <DialogHeader>
-            <DialogTitle className="text-lg font-black uppercase tracking-widest text-destructive">
-              Delete Task
-            </DialogTitle>
-            <DialogDescription className="text-sm font-medium text-muted-foreground mt-2">
-              This action is permanent and cannot be undone. Are you sure you
-              want to delete this task?
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="pt-4">
-            <Button
-              variant="outline"
-              onClick={() => setDeleteTarget(null)}
-              className="font-bold"
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              disabled={deleteMutation.isPending}
-              onClick={handleDelete}
-              className="font-bold gap-2"
-            >
-              {deleteMutation.isPending ? (
-                <>
-                  <Spinner className="w-4 h-4" /> Deleting...
-                </>
-              ) : (
-                <>
-                  <Trash2 className="w-4 h-4" /> Delete Task
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* ── Review & Status Update Dialog ──────────────────────────────────── */}
-      <Dialog
-        open={!!reviewTarget}
-        onOpenChange={(o) => !o && setReviewTarget(null)}
-      >
-        <DialogContent
-          className="max-w-md border-border/40 bg-card backdrop-blur-xl"
-          onOpenAutoFocus={(e) => e.preventDefault()}
-        >
-          <DialogHeader>
-            <DialogTitle className="text-lg font-black uppercase tracking-widest text-brand-blue flex items-center gap-2">
-              <MessageSquareDot className="w-5 h-5" /> Review & Update Status
-            </DialogTitle>
-            <DialogDescription className="text-sm font-medium text-muted-foreground mt-2">
-              Update the task status and provide review feedback to the intern.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-3 my-2 pr-1 max-h-[60vh] overflow-y-auto w-full min-w-0">
-            {/* Read-only metadata */}
-            <div className="grid grid-cols-2 gap-3 p-3 rounded-xl border border-border/40 bg-background/40">
-              <div className="space-y-0.5">
-                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-wider block">
-                  Task
-                </span>
-                <span
-                  className="font-bold text-foreground text-xs truncate block"
-                  title={reviewTarget?.title}
-                >
-                  {reviewTarget?.title}
-                </span>
-              </div>
-              <div className="space-y-0.5">
-                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-wider block">
-                  Assigned To
-                </span>
-                <span className="font-semibold text-foreground text-xs truncate block">
-                  {reviewTarget?.assigned_to_name || reviewTarget?.assigned_to}
-                </span>
-              </div>
-            </div>
-
-            {/* Submission link */}
-            <div className="space-y-1">
-              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
-                Submission Link
-              </span>
-              {reviewTarget?.output_link ? (
-                <a
-                  href={reviewTarget.output_link}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-xs font-bold text-brand-blue hover:underline break-all flex items-center gap-1"
-                >
-                  <ExternalLink className="w-3 h-3 shrink-0" />
-                  {reviewTarget.output_link}
-                </a>
-              ) : isFetchingDetail ? (
-                <span className="text-xs text-muted-foreground italic">
-                  Loading submission link...
-                </span>
-              ) : (
-                <span className="text-xs text-muted-foreground italic">
-                  No submission link provided
-                </span>
-              )}
-            </div>
-
-            {/* Status selector */}
-            <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                Status <span className="text-destructive">*</span>
-              </Label>
-              <Select
-                value={reviewForm.status}
-                onValueChange={(v) =>
-                  setReviewForm((prev) => ({ ...prev, status: v }))
-                }
-              >
-                <SelectTrigger className="h-10 bg-background/50 border-border/50 font-bold text-xs uppercase">
-                  <SelectValue placeholder="Select Status" />
-                </SelectTrigger>
-                <SelectContent
-                  position="popper"
-                  className="bg-card font-bold border-border/60"
-                >
-                  {_STATUS_OPTIONS.map((s) => (
-                    <SelectItem
-                      key={s}
-                      value={s}
-                      className="font-bold text-xs uppercase"
-                    >
-                      {s.replace(/_/g, " ")}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Karma — visible only when status is COMPLETED */}
-            {reviewForm.status === "COMPLETED" && (
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  Karma Points Awarded
-                </Label>
-                <Input
-                  type="number"
-                  min="0"
-                  value={reviewForm.karma}
-                  onChange={(e) =>
-                    setReviewForm((prev) => ({
-                      ...prev,
-                      karma: e.target.value,
-                    }))
-                  }
-                  className="h-10 bg-background/50 border-border/50 font-bold"
-                  placeholder="e.g. 200"
-                />
-              </div>
-            )}
-
-            {/* Review Remark */}
-            <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                Review Remark
-                {(reviewForm.status === "IN_PROGRESS" ||
-                  reviewForm.status === "ON_HOLD") && (
-                  <span className="text-destructive ml-1">*</span>
-                )}
-              </Label>
-              <Textarea
-                placeholder={
-                  reviewForm.status === "COMPLETED"
-                    ? "Optional — e.g. Great work, well done!"
-                    : reviewForm.status === "IN_PROGRESS" ||
-                        reviewForm.status === "ON_HOLD"
-                      ? "Required — e.g. Failing test cases, please fix..."
-                      : "Optional remark..."
-                }
-                value={reviewForm.remark}
-                onChange={(e) =>
-                  setReviewForm((prev) => ({ ...prev, remark: e.target.value }))
-                }
-                className="min-h-[80px] max-h-[150px] overflow-y-auto bg-background/50 border-border/50 font-medium resize-none"
-              />
-            </div>
-          </div>
-          <DialogFooter className="pt-4 border-t border-border/20 flex-wrap gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setReviewTarget(null)}
-              className="font-bold"
-            >
-              Cancel
-            </Button>
-            {reviewForm.status === "COMPLETED" && (
-              <Button
-                disabled={verifyMutation.isPending || reviewMutation.isPending}
-                onClick={() => {
-                  if (!reviewTarget) return;
-                  verifyMutation.mutate(
-                    {
-                      id: reviewTarget.id,
-                      karma_awarded: reviewForm.karma
-                        ? Number(reviewForm.karma)
-                        : 0,
-                    },
-                    {
-                      onSuccess: () => setReviewTarget(null),
-                    },
-                  );
-                }}
-                className="bg-success hover:bg-success/90 text-white font-bold gap-2"
-              >
-                {verifyMutation.isPending ? (
-                  <>
-                    <Spinner className="w-4 h-4" /> Verifying...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 className="w-4 h-4" /> Verify &amp; Award
-                    Karma
-                  </>
-                )}
-              </Button>
-            )}
-            <Button
-              disabled={
-                reviewMutation.isPending ||
-                verifyMutation.isPending ||
-                !reviewForm.status ||
-                ((reviewForm.status === "IN_PROGRESS" ||
-                  reviewForm.status === "ON_HOLD") &&
-                  !reviewForm.remark.trim())
-              }
-              onClick={handleVerifySubmit}
-              className="bg-brand-blue hover:bg-brand-blue/90 text-white font-bold gap-2"
-            >
-              {reviewMutation.isPending ? (
-                <>
-                  <Spinner className="w-4 h-4" /> Saving...
-                </>
-              ) : (
-                <>
-                  <MessageSquareDot className="w-4 h-4" /> Save Review
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ReviewTaskDialog
+        reviewTarget={taskDetail || reviewTarget}
+        reviewForm={reviewForm}
+        isFetchingDetail={
+          isFetchingDetail && (!taskDetail || taskDetail.id !== reviewTaskId)
+        }
+        isReviewPending={reviewMutation.isPending}
+        isVerifyPending={verifyMutation.isPending}
+        deleteTarget={deleteTarget}
+        isDeletePending={deleteMutation.isPending}
+        onClose={() => {
+          setReviewTarget(null);
+          setReviewTaskId(null);
+          setInitializedTaskId(null);
+        }}
+        onReviewFormChange={setReviewForm}
+        onVerifySubmit={handleVerifySubmit}
+        onVerifyAndAward={() => {
+          if (!reviewTarget) return;
+          verifyMutation.mutate(
+            {
+              id: reviewTarget.id,
+              karma_awarded: reviewForm.karma ? Number(reviewForm.karma) : 0,
+            },
+            {
+              onSuccess: () => {
+                setReviewTarget(null);
+                setReviewTaskId(null);
+                setInitializedTaskId(null);
+              },
+            },
+          );
+        }}
+        onDeleteClose={() => setDeleteTarget(null)}
+        onDelete={handleDelete}
+      />
     </div>
   );
 }

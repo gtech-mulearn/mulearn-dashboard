@@ -9,8 +9,12 @@
 
 export type { TInternQueryParams } from "./api";
 export { internApi, manageInternsApi } from "./api";
+export type { UnifiedActivity } from "./components";
 export {
+  ActivityDetailDialog,
+  getActivityStatusBadge,
   LeaveFormDialog,
+  QuestLog,
   QuestLogHistory,
   WeeklyReviewForm,
 } from "./components";
@@ -59,6 +63,7 @@ export {
   useManageInternsStatus,
   useManageLeaves,
   useManageMinutes,
+  useManageTaskDetail,
   useManageTasks,
   useManageTimesheets,
   useManageWeeklyReviews,
@@ -108,3 +113,14 @@ export type {
   TWeeklyReviewSubmitPayload,
   TWeeklyReviewUpdatePayload,
 } from "./types";
+
+export {
+  formatTasksAssigned,
+  formatTasksCompleted,
+  getComplexityColor,
+  getTaskBaseKarma,
+  getTaskGuild,
+  getTaskKarma,
+  isCurrentLeaderboardUser,
+  resolveInternStatus,
+} from "./utils/intern-helpers";
