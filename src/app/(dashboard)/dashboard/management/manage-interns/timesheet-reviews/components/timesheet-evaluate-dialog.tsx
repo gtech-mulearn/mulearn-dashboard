@@ -107,9 +107,7 @@ export function TimesheetEvaluateDialog({
         {isDaily &&
           selectedTimesheet &&
           (() => {
-            const muid =
-              ((selectedTimesheet as unknown as Record<string, unknown>)
-                .muid as string) || "";
+            const muid = selectedTimesheet.muid || "";
             return (
               <div className="space-y-4 py-2 my-2 text-sm max-h-[60vh] overflow-y-auto pr-1 w-full min-w-0">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -118,21 +116,9 @@ export function TimesheetEvaluateDialog({
                       Intern
                     </span>
                     <span className="font-bold text-foreground text-sm">
-                      {String(
-                        (
-                          selectedTimesheet as unknown as Record<
-                            string,
-                            unknown
-                          >
-                        ).user_name ||
-                          (
-                            selectedTimesheet as unknown as Record<
-                              string,
-                              unknown
-                            >
-                          ).full_name ||
-                          "Unknown",
-                      )}
+                      {selectedTimesheet.user_name ||
+                        selectedTimesheet.full_name ||
+                        "Unknown"}
                     </span>
                   </div>
                   <div className="flex flex-col gap-1">
@@ -268,9 +254,7 @@ export function TimesheetEvaluateDialog({
         {!isDaily &&
           selectedWeeklyReview &&
           (() => {
-            const muid =
-              ((selectedWeeklyReview as unknown as Record<string, unknown>)
-                .muid as string) || "";
+            const muid = selectedWeeklyReview.muid || "";
             const remarks = selectedWeeklyReview.task_remarks;
             return (
               <div className="space-y-4 py-2 my-2 text-sm max-h-[60vh] overflow-y-auto pr-1 w-full min-w-0">
@@ -280,21 +264,9 @@ export function TimesheetEvaluateDialog({
                       Intern
                     </span>
                     <span className="font-bold text-foreground text-sm">
-                      {String(
-                        (
-                          selectedWeeklyReview as unknown as Record<
-                            string,
-                            unknown
-                          >
-                        ).user_name ||
-                          (
-                            selectedWeeklyReview as unknown as Record<
-                              string,
-                              unknown
-                            >
-                          ).full_name ||
-                          "Unknown",
-                      )}
+                      {selectedWeeklyReview.user_name ||
+                        selectedWeeklyReview.full_name ||
+                        "Unknown"}
                     </span>
                   </div>
                   <div className="flex flex-col gap-1">

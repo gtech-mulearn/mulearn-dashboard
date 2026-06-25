@@ -81,8 +81,14 @@ export function ReviewTaskDialog({
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
           <DialogHeader>
-            <DialogTitle className="text-lg font-black uppercase tracking-widest text-brand-blue flex items-center gap-2">
-              <MessageSquareDot className="w-5 h-5" /> Review & Update Status
+            <DialogTitle className="text-lg font-black uppercase tracking-widest text-brand-blue flex items-center gap-2 w-full justify-between">
+              <span className="flex items-center gap-2">
+                <MessageSquareDot className="w-5 h-5" /> Review &amp; Update
+                Status
+              </span>
+              {isFetchingDetail && (
+                <Spinner className="w-4 h-4 text-brand-blue shrink-0" />
+              )}
             </DialogTitle>
             <DialogDescription className="text-sm font-medium text-muted-foreground mt-2">
               Update the task status and provide review feedback to the intern.
@@ -148,6 +154,7 @@ export function ReviewTaskDialog({
                 onValueChange={(v) =>
                   onReviewFormChange({ ...reviewForm, status: v })
                 }
+                disabled={isFetchingDetail}
               >
                 <SelectTrigger className="h-10 bg-background/50 border-border/50 font-bold text-xs uppercase">
                   <SelectValue placeholder="Select Status" />
@@ -184,6 +191,7 @@ export function ReviewTaskDialog({
                   }
                   className="h-10 bg-background/50 border-border/50 font-bold"
                   placeholder="e.g. 200"
+                  disabled={isFetchingDetail}
                 />
               </div>
             )}
@@ -211,6 +219,7 @@ export function ReviewTaskDialog({
                   onReviewFormChange({ ...reviewForm, remark: e.target.value })
                 }
                 className="min-h-[80px] max-h-[150px] overflow-y-auto bg-background/50 border-border/50 font-medium resize-none"
+                disabled={isFetchingDetail}
               />
             </div>
           </div>
@@ -220,7 +229,9 @@ export function ReviewTaskDialog({
             </Button>
             {reviewForm.status === "COMPLETED" && (
               <Button
-                disabled={isVerifyPending || isReviewPending}
+                disabled={
+                  isVerifyPending || isReviewPending || isFetchingDetail
+                }
                 onClick={onVerifyAndAward}
                 className="bg-success hover:bg-success/90 text-white font-bold gap-2"
               >
@@ -240,6 +251,7 @@ export function ReviewTaskDialog({
               disabled={
                 isReviewPending ||
                 isVerifyPending ||
+                isFetchingDetail ||
                 !reviewForm.status ||
                 ((reviewForm.status === "IN_PROGRESS" ||
                   reviewForm.status === "ON_HOLD") &&

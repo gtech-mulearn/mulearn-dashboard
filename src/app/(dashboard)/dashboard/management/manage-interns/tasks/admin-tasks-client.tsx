@@ -121,18 +121,10 @@ export function AdminTasksPageClient() {
 
   useEffect(() => {
     if (taskDetail && reviewTaskId && initializedTaskId !== reviewTaskId) {
-      setReviewForm((prev) => {
-        // Only overwrite/initialize if the user hasn't modified the remark yet
-        const hasUserTyped = prev.remark !== "";
-        return {
-          status: taskDetail.status,
-          karma: hasUserTyped
-            ? prev.karma
-            : taskDetail.karma_awarded
-              ? String(taskDetail.karma_awarded)
-              : "",
-          remark: hasUserTyped ? prev.remark : (taskDetail.remark ?? ""),
-        };
+      setReviewForm({
+        status: taskDetail.status,
+        karma: taskDetail.karma_awarded ? String(taskDetail.karma_awarded) : "",
+        remark: taskDetail.remark ?? "",
       });
       setInitializedTaskId(reviewTaskId);
     }
@@ -913,7 +905,9 @@ export function AdminTasksPageClient() {
       <ReviewTaskDialog
         reviewTarget={taskDetail || reviewTarget}
         reviewForm={reviewForm}
-        isFetchingDetail={isFetchingDetail}
+        isFetchingDetail={
+          isFetchingDetail && (!taskDetail || taskDetail.id !== reviewTaskId)
+        }
         isReviewPending={reviewMutation.isPending}
         isVerifyPending={verifyMutation.isPending}
         deleteTarget={deleteTarget}
