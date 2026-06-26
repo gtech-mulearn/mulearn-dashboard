@@ -13,7 +13,7 @@ import {
   Quote,
   Strikethrough,
 } from "lucide-react";
-import { useCallback, useRef, useState, type KeyboardEvent } from "react";
+import { type KeyboardEvent, useCallback, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "./button";
 import { MarkdownRenderer } from "./markdown-renderer";
