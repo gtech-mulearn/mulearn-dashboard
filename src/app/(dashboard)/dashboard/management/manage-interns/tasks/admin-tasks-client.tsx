@@ -1,31 +1,21 @@
 "use client";
 
 import {
-  CalendarDays,
-  CheckCircle2,
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
   Edit,
+  MessageSquareDot,
   Plus,
   Search,
   Trash2,
-  X,
 } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table from "@/components/dashboard/table/Table";
-import THead from "@/components/dashboard/table/Thead";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -34,52 +24,43 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
-import { Textarea } from "@/components/ui/textarea";
+import type { TInternTask, TUpdateTaskPayload } from "@/features/intern";
 import {
+  getComplexityColor,
+  getTaskGuild,
   manageInternsApi,
   useCreateTask,
   useDeleteTask,
   useGuilds,
+  useManageInternsList,
+  useManageTaskDetail,
   useManageTasks,
+  useTaskCategories,
   useUpdateTask,
   useVerifyTask,
 } from "@/features/intern";
-import type { TInternTask } from "@/features/intern/types";
-import { getTaskGuild } from "@/features/intern/utils/intern-helpers";
 import { useDebounce } from "@/hooks/use-debounce";
-import { useSearch } from "@/hooks/use-search";
+import { getApiResponseError } from "@/hooks/use-get-error";
+import {
+  AssignTaskDialog,
+  COMPLEXITY_OPTIONS,
+  type TaskForm,
+} from "./components/assign-task-dialog";
+import { EditTaskDialog } from "./components/edit-task-dialog";
+import {
+  type ReviewForm,
+  ReviewTaskDialog,
+  STATUS_OPTIONS,
+} from "./components/review-task-dialog";
 
 // ── Helpers ───────────────────────────────────────────────────
 
-const COMPLEXITY_OPTIONS = ["LOW", "MEDIUM", "HIGH", "CRITICAL"] as const;
-const _STATUS_OPTIONS = [
-  "WAITING_FOR_REVIEW",
-  "IN_PROGRESS",
-  "COMPLETED",
-  "ON_HOLD",
-] as const;
-
-const complexityColor = (c: string) => {
-  switch (c) {
-    case "LOW":
-      return "border-success/30 bg-success/5 text-success";
-    case "MEDIUM":
-      return "border-brand-blue/30 bg-brand-blue/5 text-brand-blue";
-    case "HIGH":
-      return "border-warning/30 bg-warning/5 text-warning";
-    case "CRITICAL":
-      return "border-destructive/30 bg-destructive/5 text-destructive";
-    default:
-      return "border-border/30 bg-muted/20 text-muted-foreground";
-  }
-};
-
 // ── Blank form ────────────────────────────────────────────────
-const blankForm = {
+const blankForm: TaskForm = {
   title: "",
   description: "",
   category: "",
-  complexity: "MEDIUM" as (typeof COMPLEXITY_OPTIONS)[number],
+  complexity: "MEDIUM",
   karma: "",
   assigned_to: "",
   assigneeName: "",
@@ -97,26 +78,103 @@ export function AdminTasksPageClient() {
   const [complexityFilter, setComplexityFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [categoryFilter, setCategoryFilter] = useState("ALL");
+  const [sortBy, setSortBy] = useState<string | undefined>(undefined);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc" | undefined>(
+    undefined,
+  );
+
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      if (sortOrder === "asc") {
+        setSortOrder("desc");
+      } else {
+        setSortBy(undefined);
+        setSortOrder(undefined);
+      }
+    } else {
+      setSortBy(column);
+      setSortOrder("asc");
+    }
+    setPage(1);
+  };
 
   // Dialogs
   const [createOpen, setCreateOpen] = useState(false);
   const [editTask, setEditTask] = useState<TInternTask | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
-  const [verifyTarget, setVerifyTarget] = useState<TInternTask | null>(null);
-  const [verifyKarma, setVerifyKarma] = useState("");
-  const [isFetchingDetail, setIsFetchingDetail] = useState(false);
+  const [reviewTarget, setReviewTarget] = useState<TInternTask | null>(null);
+  const [reviewForm, setReviewForm] = useState<ReviewForm>({
+    status: "",
+    karma: "",
+    remark: "",
+  });
+
+  const [reviewTaskId, setReviewTaskId] = useState<string | null>(null);
+  const [initializedTaskId, setInitializedTaskId] = useState<string | null>(
+    null,
+  );
+  const {
+    data: taskDetail,
+    isFetching: isFetchingDetail,
+    error: fetchDetailError,
+  } = useManageTaskDetail(reviewTaskId || "");
+
+  useEffect(() => {
+    if (taskDetail && reviewTaskId && initializedTaskId !== reviewTaskId) {
+      setReviewForm({
+        status: taskDetail.status,
+        karma: taskDetail.karma_awarded ? String(taskDetail.karma_awarded) : "",
+        remark: taskDetail.remark ?? "",
+      });
+      setInitializedTaskId(reviewTaskId);
+    }
+  }, [taskDetail, reviewTaskId, initializedTaskId]);
+
+  useEffect(() => {
+    if (fetchDetailError) {
+      toast.error(
+        getApiResponseError(fetchDetailError, {
+          fallback: "Failed to fetch task details",
+        }),
+      );
+      setReviewTarget(null);
+      setReviewTaskId(null);
+      setInitializedTaskId(null);
+    }
+  }, [fetchDetailError]);
 
   // Form state
   const [form, setForm] = useState({ ...blankForm });
 
-  // Inline assignee search for create form
-  const {
-    query: assigneeQuery,
-    results: assigneeResults,
-    isLoading: isAssigneeLoading,
-    handleSearch: handleAssigneeSearch,
-    clearResults: clearAssigneeResults,
-  } = useSearch();
+  // Fetch onboarded interns for local search
+  const { data: internsData, isLoading: isInternsLoading } =
+    useManageInternsList({ page: 1, perPage: 1000 });
+  const [assigneeQuery, setAssigneeQuery] = useState("");
+  const [isAssigneeFocused, setIsAssigneeFocused] = useState(false);
+
+  const internsList = useMemo(() => {
+    return (internsData?.data ?? []).filter(
+      (item) => item.role?.toLowerCase() === "intern",
+    );
+  }, [internsData]);
+
+  // Map to InternOption shape — use `user` (user UUID) as `id` for assigned_to
+  const filteredAssignees = useMemo(() => {
+    const q = assigneeQuery.trim().toLowerCase();
+    const list = internsList.filter(
+      (item) =>
+        !q ||
+        item.full_name.toLowerCase().includes(q) ||
+        item.muid.toLowerCase().includes(q),
+    );
+    return list.map((item) => ({
+      id: item.user, // user UUID — what the API expects for assigned_to
+      full_name: item.full_name,
+      muid: item.muid,
+      guild: item.guild,
+      role: item.role,
+    }));
+  }, [internsList, assigneeQuery]);
 
   const debouncedSearch = useDebounce(searchText, 300);
 
@@ -128,6 +186,8 @@ export function AdminTasksPageClient() {
     complexity: complexityFilter === "ALL" ? undefined : complexityFilter,
     status: statusFilter === "ALL" ? undefined : statusFilter,
     category: categoryFilter === "ALL" ? undefined : categoryFilter,
+    sortBy,
+    sortOrder,
   });
 
   const { data: guilds = [] } = useGuilds();
@@ -142,17 +202,58 @@ export function AdminTasksPageClient() {
   ];
   const teams = guilds.length > 0 ? guilds : DEFAULT_TEAMS;
 
-  const apiCategories = Array.from(
-    new Set((tasksData?.data ?? []).map((t) => t.category).filter(Boolean)),
+  const { data: taskCategories = {} } = useTaskCategories();
+  const [selectedUserGuild, setSelectedUserGuild] = useState<string | null>(
+    null,
   );
-  const categories =
-    apiCategories.length > 0
-      ? apiCategories
-      : ["DEVELOPMENT", "DESIGN", "TESTING"];
+
+  const tableFilterCategories = useMemo(() => {
+    if (!guildFilter || guildFilter === "ALL") {
+      const set = new Set<string>();
+      Object.values(taskCategories || {}).forEach((cats) => {
+        if (Array.isArray(cats)) {
+          cats.forEach((cat) => {
+            set.add(cat);
+          });
+        }
+      });
+      return Array.from(set).sort();
+    }
+    const key = Object.keys(taskCategories || {}).find(
+      (k) => k.toUpperCase() === guildFilter.toUpperCase(),
+    );
+    return key ? (taskCategories[key] || []).slice().sort() : [];
+  }, [taskCategories, guildFilter]);
+
+  const createFormCategories = useMemo(() => {
+    if (selectedUserGuild) {
+      const key = Object.keys(taskCategories || {}).find(
+        (k) => k.toUpperCase() === selectedUserGuild.toUpperCase(),
+      );
+      if (key && taskCategories[key]) {
+        return taskCategories[key].slice().sort();
+      }
+    }
+    return [];
+  }, [taskCategories, selectedUserGuild]);
+
+  const editFormCategories = useMemo(() => {
+    if (editTask) {
+      const taskGuild = getTaskGuild(editTask);
+      const key = Object.keys(taskCategories || {}).find(
+        (k) => k.toUpperCase() === taskGuild.toUpperCase(),
+      );
+      if (key && taskCategories[key]) {
+        return taskCategories[key].slice().sort();
+      }
+    }
+    return [];
+  }, [taskCategories, editTask]);
 
   const createMutation = useCreateTask();
   const updateMutation = useUpdateTask(editTask?.id ?? "");
   const deleteMutation = useDeleteTask();
+  const reviewMutation = useUpdateTask(reviewTarget?.id ?? "");
   const verifyMutation = useVerifyTask();
 
   const tasks = useMemo(() => {
@@ -175,6 +276,47 @@ export function AdminTasksPageClient() {
     if (categoryFilter !== "ALL") {
       list = list.filter((task) => task.category === categoryFilter);
     }
+
+    if (sortBy) {
+      list = [...list].sort((a, b) => {
+        let valA = a[sortBy as keyof TInternTask];
+        let valB = b[sortBy as keyof TInternTask];
+
+        if (sortBy === "guild") {
+          valA = getTaskGuild(a);
+          valB = getTaskGuild(b);
+        }
+
+        if (valA === undefined || valA === null) valA = "";
+        if (valB === undefined || valB === null) valB = "";
+
+        if (sortBy === "deadline" || sortBy === "created_at") {
+          const timeA = valA ? new Date(valA as string).getTime() : 0;
+          const timeB = valB ? new Date(valB as string).getTime() : 0;
+          const isInvalidA = Number.isNaN(timeA);
+          const isInvalidB = Number.isNaN(timeB);
+          if (isInvalidA && isInvalidB) return 0;
+          if (isInvalidA) return sortOrder === "asc" ? 1 : -1;
+          if (isInvalidB) return sortOrder === "asc" ? -1 : 1;
+          return sortOrder === "asc" ? timeA - timeB : timeB - timeA;
+        }
+
+        const isNumA = typeof valA === "number";
+        const isNumB = typeof valB === "number";
+        if (isNumA && isNumB) {
+          return sortOrder === "asc"
+            ? (valA as unknown as number) - (valB as unknown as number)
+            : (valB as unknown as number) - (valA as unknown as number);
+        }
+
+        const strA = String(valA).toLowerCase();
+        const strB = String(valB).toLowerCase();
+        if (strA < strB) return sortOrder === "asc" ? -1 : 1;
+        if (strA > strB) return sortOrder === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+
     return list;
   }, [
     tasksData?.data,
@@ -182,6 +324,8 @@ export function AdminTasksPageClient() {
     guildFilter,
     complexityFilter,
     categoryFilter,
+    sortBy,
+    sortOrder,
   ]);
 
   const columnOrder = useMemo(
@@ -189,33 +333,33 @@ export function AdminTasksPageClient() {
       {
         column: "title",
         Label: "Title",
-        isSortable: false,
+        isSortable: true,
         width: "min-w-[150px]",
       },
       {
         column: "assigned_to_name",
         Label: "Assigned To",
-        isSortable: false,
+        isSortable: true,
         width: "min-w-[200px]",
       },
-      { column: "guild", Label: "Guild", isSortable: false, width: "w-36" },
+      { column: "guild", Label: "Guild", isSortable: true, width: "w-36" },
       {
         column: "complexity",
         Label: "Complexity",
-        isSortable: false,
+        isSortable: true,
         width: "w-28",
       },
       {
         column: "karma_awarded",
         Label: "Karma",
-        isSortable: false,
+        isSortable: true,
         width: "w-20",
       },
-      { column: "status", Label: "Status", isSortable: false, width: "w-40" },
+      { column: "status", Label: "Status", isSortable: true, width: "w-40" },
       {
         column: "deadline",
         Label: "Deadline",
-        isSortable: false,
+        isSortable: true,
         width: "w-32",
       },
     ],
@@ -225,7 +369,7 @@ export function AdminTasksPageClient() {
   const tableRows = useMemo(() => {
     return tasks.map((task) => ({
       ...task,
-      full_name: task.title, // Map to full_name for mobile card header
+      full_name: task.title,
     })) as unknown as import("@/components/dashboard/table/Table").Data[];
   }, [tasks]);
 
@@ -275,7 +419,7 @@ export function AdminTasksPageClient() {
         case "complexity":
           return (
             <div
-              className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 font-bold uppercase tracking-wider ${complexityColor(task.complexity)}`}
+              className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 font-bold uppercase tracking-wider ${getComplexityColor(task.complexity)}`}
             >
               {task.complexity}
             </div>
@@ -289,14 +433,19 @@ export function AdminTasksPageClient() {
         case "status":
           return (
             <div className="flex items-center gap-1.5">
-              <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 gap-1.5 text-foreground border-border">
+              <div
+                className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 gap-1.5 ${
+                  task.status === "COMPLETED" && task.is_verified
+                    ? "bg-success/10 border-success/30 text-success"
+                    : task.status === "WAITING_FOR_REVIEW"
+                      ? "bg-warning/10 border-warning/30 text-warning"
+                      : task.status === "IN_PROGRESS"
+                        ? "bg-brand-blue/10 border-brand-blue/30 text-brand-blue"
+                        : "text-foreground border-border"
+                }`}
+              >
                 {task.status.replace(/_/g, " ")}
               </div>
-              {task.is_verified && (
-                <div className="inline-flex items-center rounded-full border py-0.5 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 bg-success/10 border-success/30 text-success text-[8px] font-black uppercase tracking-wide h-4 px-1">
-                  Verified
-                </div>
-              )}
             </div>
           );
         case "deadline":
@@ -321,6 +470,8 @@ export function AdminTasksPageClient() {
   // ── Open edit dialog with pre-filled values ───────────────
   const openEdit = useCallback((task: TInternTask) => {
     setEditTask(task);
+    const taskGuild = getTaskGuild(task);
+    setSelectedUserGuild(task.team || taskGuild || null);
     setForm({
       title: task.title,
       description: task.description,
@@ -343,31 +494,23 @@ export function AdminTasksPageClient() {
       const task = row as unknown as TInternTask;
       return (
         <div className="flex items-center justify-center gap-1">
-          {task.status === "COMPLETED" && !task.is_verified && (
-            <Button
-              size="icon-sm"
-              variant="ghost"
-              onClick={async () => {
-                setVerifyTarget(task);
-                setVerifyKarma(
-                  task.karma_awarded ? String(task.karma_awarded) : "",
-                );
-                setIsFetchingDetail(true);
-                try {
-                  const detail = await manageInternsApi.getTaskDetail(task.id);
-                  setVerifyTarget(detail);
-                } catch (error) {
-                  console.error("Failed to fetch task detail", error);
-                } finally {
-                  setIsFetchingDetail(false);
-                }
-              }}
-              className="rounded-md text-muted-foreground hover:bg-muted hover:text-success"
-              title="Verify Task"
-            >
-              <CheckCircle2 className="w-3.5 h-3.5" />
-            </Button>
-          )}
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={async () => {
+              setReviewForm({
+                status: task.status,
+                karma: task.karma_awarded ? String(task.karma_awarded) : "",
+                remark: "",
+              });
+              setReviewTarget(task);
+              setReviewTaskId(task.id);
+            }}
+            className="rounded-md text-muted-foreground hover:bg-muted hover:text-brand-blue size-8"
+            title="Review Task"
+          >
+            <MessageSquareDot className="w-3.5 h-3.5" />
+          </Button>
           <Button
             size="icon-sm"
             variant="ghost"
@@ -419,7 +562,7 @@ export function AdminTasksPageClient() {
         onSuccess: () => {
           setCreateOpen(false);
           setForm({ ...blankForm });
-          clearAssigneeResults();
+          setAssigneeQuery("");
         },
       },
     );
@@ -457,19 +600,19 @@ export function AdminTasksPageClient() {
   };
 
   const handleVerifySubmit = () => {
-    if (!verifyTarget) return;
-    const karmaVal = verifyKarma ? Number(verifyKarma) : 0;
-    verifyMutation.mutate(
-      {
-        id: verifyTarget.id,
-        karma_awarded: karmaVal,
+    if (!reviewTarget) return;
+    const payload: TUpdateTaskPayload = {
+      status: reviewForm.status || undefined,
+      karma_awarded: reviewForm.karma ? Number(reviewForm.karma) : undefined,
+      remark: reviewForm.remark || undefined,
+    };
+    reviewMutation.mutate(payload, {
+      onSuccess: () => {
+        setReviewTarget(null);
+        setReviewTaskId(null);
+        setInitializedTaskId(null);
       },
-      {
-        onSuccess: () => {
-          setVerifyTarget(null);
-        },
-      },
-    );
+    });
   };
 
   return (
@@ -477,14 +620,6 @@ export function AdminTasksPageClient() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <div className="flex items-center gap-2 mb-2">
-            <Badge
-              variant="default"
-              className="px-3 py-1 rounded-full font-black text-[10px] uppercase tracking-widest"
-            >
-              Admin Console
-            </Badge>
-          </div>
           <h2 className="text-4xl font-black tracking-tighter text-foreground uppercase">
             Task Management
           </h2>
@@ -496,7 +631,8 @@ export function AdminTasksPageClient() {
           size="lg"
           onClick={() => {
             setForm({ ...blankForm });
-            clearAssigneeResults();
+            setAssigneeQuery("");
+            setSelectedUserGuild(null);
             setCreateOpen(true);
           }}
           className="gap-2 text-xs tracking-widest shadow-lg"
@@ -525,13 +661,17 @@ export function AdminTasksPageClient() {
             value={guildFilter}
             onValueChange={(value) => {
               setGuildFilter(value);
+              setCategoryFilter("ALL");
               setPage(1);
             }}
           >
             <SelectTrigger className="w-full h-10 bg-background/50 border-border/50 font-bold text-xs uppercase">
               <SelectValue placeholder="Filter by Guild" />
             </SelectTrigger>
-            <SelectContent className="bg-card font-bold border-border/60">
+            <SelectContent
+              position="popper"
+              className="bg-card font-bold border-border/60"
+            >
               <SelectItem value="ALL" className="font-bold text-xs uppercase">
                 All Guilds
               </SelectItem>
@@ -556,7 +696,10 @@ export function AdminTasksPageClient() {
             <SelectTrigger className="w-full h-10 bg-background/50 border-border/50 font-bold text-xs uppercase">
               <SelectValue placeholder="Filter by Complexity" />
             </SelectTrigger>
-            <SelectContent className="bg-card font-bold border-border/60">
+            <SelectContent
+              position="popper"
+              className="bg-card font-bold border-border/60"
+            >
               <SelectItem value="ALL" className="font-bold text-xs uppercase">
                 All Complexities
               </SelectItem>
@@ -581,11 +724,14 @@ export function AdminTasksPageClient() {
             <SelectTrigger className="w-full h-10 bg-background/50 border-border/50 font-bold text-xs uppercase">
               <SelectValue placeholder="Filter by Status" />
             </SelectTrigger>
-            <SelectContent className="bg-card font-bold border-border/60">
+            <SelectContent
+              position="popper"
+              className="bg-card font-bold border-border/60"
+            >
               <SelectItem value="ALL" className="font-bold text-xs uppercase">
                 All Statuses
               </SelectItem>
-              {_STATUS_OPTIONS.map((status) => (
+              {STATUS_OPTIONS.map((status) => (
                 <SelectItem
                   key={status}
                   value={status}
@@ -606,11 +752,14 @@ export function AdminTasksPageClient() {
             <SelectTrigger className="w-full h-10 bg-background/50 border-border/50 font-bold text-xs uppercase">
               <SelectValue placeholder="Filter by Category" />
             </SelectTrigger>
-            <SelectContent className="bg-card font-bold border-border/60">
+            <SelectContent
+              position="popper"
+              className="bg-card font-bold border-border/60"
+            >
               <SelectItem value="ALL" className="font-bold text-xs uppercase">
                 All Categories
               </SelectItem>
-              {categories.map((category) => (
+              {tableFilterCategories.map((category) => (
                 <SelectItem
                   key={category}
                   value={category}
@@ -641,12 +790,44 @@ export function AdminTasksPageClient() {
           customCellRender={customCellRender}
           customActionRender={customActionRender}
         >
-          <THead
-            columnOrder={columnOrder}
-            onIconClick={() => {}}
-            action
-            thClassName="bg-muted/20 border-b border-border/20 h-12 font-black uppercase text-[9px] tracking-[0.3em]"
-          />
+          <thead>
+            <tr>
+              <th className="border-b border-border px-3.5 py-3 text-left text-sm font-bold uppercase tracking-wider w-16 bg-muted/20 h-12 font-black text-[9px] tracking-[0.3em]">
+                Sl.no
+              </th>
+              {columnOrder.map((col) => (
+                <th
+                  key={col.column}
+                  className={`border-b border-border px-3.5 py-3 text-left text-sm font-bold tracking-wider bg-muted/20 h-12 font-black uppercase text-[9px] tracking-[0.3em] ${
+                    col.isSortable
+                      ? "cursor-pointer select-none hover:bg-muted/10 transition-colors"
+                      : ""
+                  } ${col.width || ""}`}
+                  onClick={() => col.isSortable && handleSort(col.column)}
+                >
+                  <div className="flex items-center gap-2">
+                    <span>{col.Label}</span>
+                    {col.isSortable && (
+                      <span className="inline-flex shrink-0">
+                        {sortBy === col.column ? (
+                          sortOrder === "asc" ? (
+                            <ArrowUp className="size-3 text-brand-blue font-bold" />
+                          ) : (
+                            <ArrowDown className="size-3 text-brand-blue font-bold" />
+                          )
+                        ) : (
+                          <ArrowUpDown className="size-3 text-muted-foreground/40" />
+                        )}
+                      </span>
+                    )}
+                  </div>
+                </th>
+              ))}
+              <th className="border-b border-border px-3.5 py-3 text-center text-sm font-bold tracking-wider w-32 bg-muted/20 h-12 font-black uppercase text-[9px] tracking-[0.3em]">
+                Action
+              </th>
+            </tr>
+          </thead>
           <div>
             {tasksData?.pagination && tasksData.pagination.totalPages > 1 && (
               <div className="p-4 border-t border-border/20">
@@ -669,576 +850,94 @@ export function AdminTasksPageClient() {
         </Table>
       )}
 
-      {/* ── Create Task Dialog ──────────────────────────────────── */}
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="w-full max-w-[calc(100%-2rem)] sm:max-w-2xl border-border/40 bg-card backdrop-blur-xl">
-          <DialogHeader className="pr-8">
-            <DialogTitle className="text-xl font-black uppercase tracking-widest">
-              Assign New Task
-            </DialogTitle>
-            <DialogDescription className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              Fill in the task details and assign it to an intern.
-            </DialogDescription>
-          </DialogHeader>
-          <form
-            onSubmit={handleCreate}
-            className="space-y-5 pt-2 w-full min-w-0"
-          >
-            {/* Title */}
-            <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                Title <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                required
-                placeholder="e.g. Build authentication module"
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-                className="h-10 bg-background/50 border-border/50 font-bold"
-              />
-            </div>
+      {/* Dialogs */}
+      <AssignTaskDialog
+        open={createOpen}
+        form={form}
+        assigneeQuery={assigneeQuery}
+        isAssigneeFocused={isAssigneeFocused}
+        isInternsLoading={isInternsLoading}
+        filteredAssignees={filteredAssignees}
+        createFormCategories={createFormCategories}
+        isPending={createMutation.isPending}
+        onOpenChange={setCreateOpen}
+        onFormChange={setForm}
+        onAssigneeQueryChange={setAssigneeQuery}
+        onAssigneeFocusChange={setIsAssigneeFocused}
+        onAssigneeSelect={(user) => {
+          setForm({
+            ...form,
+            assigned_to: user.id,
+            assigneeName: user.full_name,
+            assigneeMuid: user.muid,
+            category: "",
+            team: user.guild || "",
+          });
+          setAssigneeQuery("");
+          setIsAssigneeFocused(false);
+          setSelectedUserGuild(user.guild || null);
+        }}
+        onClearAssignee={() => {
+          setForm({
+            ...form,
+            assigned_to: "",
+            assigneeName: "",
+            assigneeMuid: "",
+            category: "",
+          });
+          setSelectedUserGuild(null);
+        }}
+        onSubmit={handleCreate}
+      />
 
-            {/* Description */}
-            <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                Description <span className="text-destructive">*</span>
-              </Label>
-              <Textarea
-                required
-                placeholder="Detailed description of what needs to be done..."
-                value={form.description}
-                onChange={(e) =>
-                  setForm({ ...form, description: e.target.value })
-                }
-                className="min-h-[90px] max-h-[160px] overflow-y-auto bg-background/50 border-border/50 font-medium resize-none"
-              />
-            </div>
+      <EditTaskDialog
+        editTask={editTask}
+        form={form}
+        editFormCategories={editFormCategories}
+        createFormCategories={createFormCategories}
+        selectedUserGuild={selectedUserGuild}
+        isPending={updateMutation.isPending}
+        onClose={() => setEditTask(null)}
+        onFormChange={setForm}
+        onSubmit={handleUpdate}
+      />
 
-            {/* Category + Complexity + Karma */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  Category <span className="text-destructive">*</span>
-                </Label>
-                <Select
-                  value={form.category}
-                  onValueChange={(v) => setForm({ ...form, category: v })}
-                >
-                  <SelectTrigger className="h-10 bg-background/50 border-border/50 font-bold text-xs uppercase">
-                    <SelectValue placeholder="Select Category" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card font-bold border-border/60">
-                    {categories.map((cat) => (
-                      <SelectItem
-                        key={cat}
-                        value={cat}
-                        className="font-bold text-xs uppercase"
-                      >
-                        {cat.replace(/_/g, " ")}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  Complexity
-                </Label>
-                <Select
-                  value={form.complexity}
-                  onValueChange={(v) =>
-                    setForm({
-                      ...form,
-                      complexity: v as (typeof COMPLEXITY_OPTIONS)[number],
-                    })
-                  }
-                >
-                  <SelectTrigger className="h-10 bg-background/50 border-border/50 font-bold text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {COMPLEXITY_OPTIONS.map((c) => (
-                      <SelectItem
-                        key={c}
-                        value={c}
-                        className="font-bold text-xs uppercase"
-                      >
-                        {c}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  Karma
-                </Label>
-                <Input
-                  type="number"
-                  min="0"
-                  placeholder="e.g. 100"
-                  value={form.karma}
-                  onChange={(e) => setForm({ ...form, karma: e.target.value })}
-                  className="h-10 bg-background/50 border-border/50 font-bold"
-                />
-              </div>
-            </div>
-
-            {/* Assignee search */}
-            <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                Assign To (MUID or Name){" "}
-                <span className="text-destructive">*</span>
-              </Label>
-              {form.assigned_to ? (
-                <div className="flex items-center gap-2 p-2 bg-brand-blue/5 border border-brand-blue/20 rounded-lg">
-                  <CheckCircle2 className="w-4 h-4 text-brand-blue" />
-                  <span className="text-sm font-bold text-foreground flex-1">
-                    {form.assigneeName}
-                  </span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() =>
-                      setForm({
-                        ...form,
-                        assigned_to: "",
-                        assigneeName: "",
-                        assigneeMuid: "",
-                      })
-                    }
-                    className="text-muted-foreground hover:text-destructive"
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-              ) : (
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
-                  <Input
-                    placeholder="Search intern by name or MUID..."
-                    value={assigneeQuery}
-                    onChange={(e) => handleAssigneeSearch(e.target.value)}
-                    className="pl-10 h-10 bg-background/50 border-border/50 font-medium"
-                  />
-                  {isAssigneeLoading && (
-                    <Spinner className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4" />
-                  )}
-                  {assigneeResults.length > 0 && (
-                    <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-card border border-border/40 rounded-xl shadow-2xl overflow-hidden max-h-48 overflow-y-auto">
-                      {assigneeResults.map((user) => (
-                        <button
-                          key={user.id}
-                          type="button"
-                          onClick={() => {
-                            setForm({
-                              ...form,
-                              assigned_to: user.id,
-                              assigneeName: user.full_name,
-                              assigneeMuid: user.muid,
-                            });
-                            clearAssigneeResults();
-                          }}
-                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/20 text-left transition-colors border-b border-border/10 last:border-0"
-                        >
-                          <div className="w-7 h-7 rounded-full bg-brand-blue/10 flex items-center justify-center text-[10px] font-black text-brand-blue">
-                            {user.full_name[0]}
-                          </div>
-                          <div>
-                            <p className="text-sm font-bold text-foreground">
-                              {user.full_name}
-                            </p>
-                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                              @{user.muid}
-                            </p>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Team + Deadline */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  Team
-                </Label>
-                <Select
-                  value={form.team}
-                  onValueChange={(v) => setForm({ ...form, team: v })}
-                >
-                  <SelectTrigger className="h-10 bg-background/50 border-border/50 font-bold text-xs uppercase">
-                    <SelectValue placeholder="Select Team" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card font-bold border-border/60">
-                    {teams.map((t) => (
-                      <SelectItem
-                        key={t}
-                        value={t}
-                        className="font-bold text-xs uppercase"
-                      >
-                        {t.replace(/_/g, " ")}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
-                  <CalendarDays className="w-3.5 h-3.5" /> Deadline
-                </Label>
-                <input
-                  type="date"
-                  value={form.deadline}
-                  onChange={(e) =>
-                    setForm({ ...form, deadline: e.target.value })
-                  }
-                  className="w-full h-10 rounded-md border border-border/50 bg-background/50 px-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
-                />
-              </div>
-            </div>
-
-            <DialogFooter className="pt-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setCreateOpen(false)}
-                className="font-bold"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={createMutation.isPending}
-                className="font-bold gap-2"
-              >
-                {createMutation.isPending ? (
-                  <>
-                    <Spinner className="w-4 h-4" /> Assigning...
-                  </>
-                ) : (
-                  <>
-                    <Plus className="w-4 h-4" /> Create Task
-                  </>
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* ── Edit Task Dialog ────────────────────────────────────── */}
-      <Dialog open={!!editTask} onOpenChange={(o) => !o && setEditTask(null)}>
-        <DialogContent className="w-full max-w-[calc(100%-2rem)] sm:max-w-2xl border-border/40 bg-card backdrop-blur-xl">
-          <DialogHeader className="pr-8">
-            <DialogTitle className="text-xl font-black uppercase tracking-widest">
-              Edit Task
-            </DialogTitle>
-            <DialogDescription className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              Update task details. Assignee changes are not supported via edit.
-            </DialogDescription>
-          </DialogHeader>
-          <form
-            onSubmit={handleUpdate}
-            className="space-y-5 pt-2 w-full min-w-0"
-          >
-            <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                Title
-              </Label>
-              <Input
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-                className="h-10 bg-background/50 border-border/50 font-bold"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                Description
-              </Label>
-              <Textarea
-                value={form.description}
-                onChange={(e) =>
-                  setForm({ ...form, description: e.target.value })
-                }
-                className="min-h-[80px] max-h-[160px] overflow-y-auto bg-background/50 border-border/50 font-medium resize-none"
-              />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  Category
-                </Label>
-                <Select
-                  value={form.category}
-                  onValueChange={(v) => setForm({ ...form, category: v })}
-                >
-                  <SelectTrigger className="h-10 bg-background/50 border-border/50 font-bold text-xs uppercase">
-                    <SelectValue placeholder="Select Category" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card font-bold border-border/60">
-                    {categories.map((cat) => (
-                      <SelectItem
-                        key={cat}
-                        value={cat}
-                        className="font-bold text-xs uppercase"
-                      >
-                        {cat.replace(/_/g, " ")}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  Complexity
-                </Label>
-                <Select
-                  value={form.complexity}
-                  onValueChange={(v) =>
-                    setForm({
-                      ...form,
-                      complexity: v as (typeof COMPLEXITY_OPTIONS)[number],
-                    })
-                  }
-                >
-                  <SelectTrigger className="h-10 bg-background/50 border-border/50 font-bold text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {COMPLEXITY_OPTIONS.map((c) => (
-                      <SelectItem
-                        key={c}
-                        value={c}
-                        className="font-bold text-xs uppercase"
-                      >
-                        {c}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  Karma
-                </Label>
-                <Input
-                  type="number"
-                  min="0"
-                  placeholder="e.g. 100"
-                  value={form.karma}
-                  onChange={(e) => setForm({ ...form, karma: e.target.value })}
-                  className="h-10 bg-background/50 border-border/50 font-bold"
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  Team
-                </Label>
-                <Select
-                  value={form.team}
-                  onValueChange={(v) => setForm({ ...form, team: v })}
-                >
-                  <SelectTrigger className="h-10 bg-background/50 border-border/50 font-bold text-xs uppercase">
-                    <SelectValue placeholder="Select Team" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card font-bold border-border/60">
-                    {teams.map((t) => (
-                      <SelectItem
-                        key={t}
-                        value={t}
-                        className="font-bold text-xs uppercase"
-                      >
-                        {t.replace(/_/g, " ")}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
-                  <CalendarDays className="w-3.5 h-3.5" /> Deadline
-                </Label>
-                <input
-                  type="date"
-                  value={form.deadline}
-                  onChange={(e) =>
-                    setForm({ ...form, deadline: e.target.value })
-                  }
-                  className="w-full h-10 rounded-md border border-border/50 bg-background/50 px-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
-                />
-              </div>
-            </div>
-            <DialogFooter className="pt-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setEditTask(null)}
-                className="font-bold"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={updateMutation.isPending}
-                className="font-bold gap-2"
-              >
-                {updateMutation.isPending ? (
-                  <>
-                    <Spinner className="w-4 h-4" /> Saving...
-                  </>
-                ) : (
-                  "Save Changes"
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* ── Delete Confirmation Dialog ──────────────────────────── */}
-      <Dialog
-        open={!!deleteTarget}
-        onOpenChange={(o) => !o && setDeleteTarget(null)}
-      >
-        <DialogContent className="max-w-md border-border/40 bg-card backdrop-blur-xl">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-black uppercase tracking-widest text-destructive">
-              Delete Task
-            </DialogTitle>
-            <DialogDescription className="text-sm font-medium text-muted-foreground mt-2">
-              This action is permanent and cannot be undone. Are you sure you
-              want to delete this task?
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="pt-4">
-            <Button
-              variant="outline"
-              onClick={() => setDeleteTarget(null)}
-              className="font-bold"
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              disabled={deleteMutation.isPending}
-              onClick={handleDelete}
-              className="font-bold gap-2"
-            >
-              {deleteMutation.isPending ? (
-                <>
-                  <Spinner className="w-4 h-4" /> Deleting...
-                </>
-              ) : (
-                <>
-                  <Trash2 className="w-4 h-4" /> Delete Task
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* ── Verify Task Dialog ──────────────────────────────────── */}
-      <Dialog
-        open={!!verifyTarget}
-        onOpenChange={(o) => !o && setVerifyTarget(null)}
-      >
-        <DialogContent className="max-w-md border-border/40 bg-card backdrop-blur-xl">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-black uppercase tracking-widest text-success flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5" /> Verify Completed Task
-            </DialogTitle>
-            <DialogDescription className="text-sm font-medium text-muted-foreground mt-2">
-              Approve and verify achievements for this task. You can override
-              the awarded karma value below.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-3">
-            <div className="space-y-1">
-              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
-                Task
-              </span>
-              <span className="font-bold text-foreground text-sm">
-                {verifyTarget?.title}
-              </span>
-            </div>
-            <div className="space-y-1">
-              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
-                Assigned To
-              </span>
-              <span className="font-semibold text-foreground text-xs">
-                {verifyTarget?.assigned_to_name || verifyTarget?.assigned_to}
-              </span>
-            </div>
-            <div className="space-y-1">
-              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
-                Submission Link
-              </span>
-              {verifyTarget?.output_link ? (
-                <a
-                  href={verifyTarget.output_link}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-xs font-bold text-brand-blue hover:underline break-all"
-                >
-                  {verifyTarget.output_link}
-                </a>
-              ) : isFetchingDetail ? (
-                <span className="text-xs text-muted-foreground italic flex items-center gap-1.5">
-                  <Spinner className="w-3 h-3 text-muted-foreground" /> Loading
-                  submission link...
-                </span>
-              ) : (
-                <span className="text-xs text-muted-foreground italic">
-                  No submission link provided
-                </span>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                Karma Points Awarded
-              </Label>
-              <Input
-                type="number"
-                min="0"
-                value={verifyKarma}
-                onChange={(e) => setVerifyKarma(e.target.value)}
-                className="h-10 bg-background/50 border-border/50 font-bold"
-              />
-            </div>
-          </div>
-          <DialogFooter className="pt-2">
-            <Button
-              variant="outline"
-              onClick={() => setVerifyTarget(null)}
-              className="font-bold"
-            >
-              Cancel
-            </Button>
-            <Button
-              disabled={verifyMutation.isPending}
-              onClick={handleVerifySubmit}
-              className="bg-success hover:bg-success/90 text-white font-bold gap-2"
-            >
-              {verifyMutation.isPending ? (
-                <>
-                  <Spinner className="w-4 h-4" /> Verifying...
-                </>
-              ) : (
-                <>
-                  <CheckCircle2 className="w-4 h-4" /> Verify & Award
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ReviewTaskDialog
+        reviewTarget={taskDetail || reviewTarget}
+        reviewForm={reviewForm}
+        isFetchingDetail={
+          isFetchingDetail && (!taskDetail || taskDetail.id !== reviewTaskId)
+        }
+        isReviewPending={reviewMutation.isPending}
+        isVerifyPending={verifyMutation.isPending}
+        deleteTarget={deleteTarget}
+        isDeletePending={deleteMutation.isPending}
+        onClose={() => {
+          setReviewTarget(null);
+          setReviewTaskId(null);
+          setInitializedTaskId(null);
+        }}
+        onReviewFormChange={setReviewForm}
+        onVerifySubmit={handleVerifySubmit}
+        onVerifyAndAward={() => {
+          if (!reviewTarget) return;
+          verifyMutation.mutate(
+            {
+              id: reviewTarget.id,
+              karma_awarded: reviewForm.karma ? Number(reviewForm.karma) : 0,
+            },
+            {
+              onSuccess: () => {
+                setReviewTarget(null);
+                setReviewTaskId(null);
+                setInitializedTaskId(null);
+              },
+            },
+          );
+        }}
+        onDeleteClose={() => setDeleteTarget(null)}
+        onDelete={handleDelete}
+      />
     </div>
   );
 }

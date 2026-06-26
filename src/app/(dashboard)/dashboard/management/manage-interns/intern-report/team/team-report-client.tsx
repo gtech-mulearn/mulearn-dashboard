@@ -10,8 +10,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { Spinner } from "@/components/ui/spinner";
-import { useManageWeeklyReviews } from "@/features/intern";
-import { formatTasksCompleted } from "@/features/intern/utils/intern-helpers";
+import {
+  formatTasksCompleted,
+  useManageWeeklyReviews,
+} from "@/features/intern";
 
 export function TeamReportPageClient() {
   const searchParams = useSearchParams();
@@ -47,11 +49,13 @@ export function TeamReportPageClient() {
         <div className="flex flex-col">
           <span className="font-bold uppercase text-[11px] tracking-tight">
             {String(
-              data || (row as Record<string, unknown>).full_name || "Unknown",
+              data ||
+                (row as unknown as { full_name?: string }).full_name ||
+                "Unknown",
             )}
           </span>
           <span className="text-[9px] text-muted-foreground font-bold leading-none mt-1">
-            {String((row as Record<string, unknown>).muid || "")}
+            {String(row.muid || "")}
           </span>
         </div>
       ),

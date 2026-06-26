@@ -20,18 +20,20 @@ const STATUS_STYLES: Record<CircleHealthStatus, string> = {
 export function CircleHealthCard({ items, isLoading }: CircleHealthCardProps) {
   return (
     <Card className="h-full rounded-2xl border bg-card shadow-sm">
-      <CardHeader className="flex-row items-center gap-2.5 px-5 py-4">
-        <div className="flex size-9 items-center justify-center rounded-xl bg-success/10">
-          <Activity className="size-4 text-success" />
+      <CardHeader className="px-5 pt-3 pb-2">
+        <div className="flex flex-row items-center gap-2.5">
+          <div className="flex size-9 items-center justify-center rounded-xl bg-success/10">
+            <Activity className="size-4 text-success" />
+          </div>
+          <CardTitle className="text-base font-bold text-foreground">
+            Circle Health
+          </CardTitle>
         </div>
-        <CardTitle className="text-base font-bold text-foreground">
-          Circle Health
-        </CardTitle>
       </CardHeader>
-      <CardContent className="px-5 pb-5 pt-0">
+      <CardContent className="px-5 pb-3 pt-0">
         {isLoading ? (
           <div className="space-y-3">
-            {[0, 1, 2, 3, 4].map((i) => (
+            {[0, 1, 2].map((i) => (
               <div key={i} className="flex items-center justify-between">
                 <div className="space-y-1">
                   <Skeleton className="h-4 w-36 rounded" />
@@ -42,7 +44,7 @@ export function CircleHealthCard({ items, isLoading }: CircleHealthCardProps) {
             ))}
           </div>
         ) : (
-          <div className="space-y-0">
+          <div className="space-y-0 max-h-[240px] overflow-y-auto pr-1">
             {(items ?? []).map((item) => (
               <div
                 key={item.circle_id}

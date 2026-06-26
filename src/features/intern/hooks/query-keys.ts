@@ -42,10 +42,14 @@ export const internKeys = {
     [...internKeys.manage(), "tasks", params] as const,
   manageLeaves: (params: TInternQueryParams) =>
     [...internKeys.manage(), "leaves", params] as const,
+  manageLeaveDetail: (id: string) =>
+    [...internKeys.manage(), "leaves", "detail", id] as const,
   manageTimesheets: (params: TInternQueryParams) =>
     [...internKeys.manage(), "timesheets", params] as const,
   manageReviews: (params: TInternQueryParams) =>
     [...internKeys.manage(), "reviews", params] as const,
   manageMinutes: (params: TInternQueryParams) =>
     [...internKeys.manage(), "minutes", params] as const,
+  manageTaskDetail: (id: string) =>
+    [...internKeys.manage(), "tasks", "detail", id] as const,
 };

@@ -131,7 +131,7 @@ export function resolveInternStatus(
   return "ACTIVE";
 }
 
-export function getTaskKarma(task: Partial<TInternTask>): number {
+export function getTaskBaseKarma(task: Partial<TInternTask>): number {
   const record = task as UnknownRecord;
   const explicitKarma = getRecordNumber(
     record,
@@ -141,19 +141,7 @@ export function getTaskKarma(task: Partial<TInternTask>): number {
     "points",
   );
 
-  let complexityScore = getRecordNumber(record, "complexity_score");
-  if (complexityScore === undefined) {
-    const comp = normalizeString(task.complexity);
-    if (comp === "LOW") complexityScore = 1;
-    else if (comp === "MEDIUM") complexityScore = 2;
-    else if (comp === "HIGH") complexityScore = 3;
-    else if (comp === "CRITICAL") complexityScore = 4;
-  }
-
   if (explicitKarma !== undefined) {
-    if (complexityScore !== undefined) {
-      return complexityScore * explicitKarma;
-    }
     return explicitKarma;
   }
 
@@ -165,7 +153,21 @@ export function getTaskKarma(task: Partial<TInternTask>): number {
     return 0;
   }
 
-  const baseKarma = TASK_COMPLEXITY_KARMA[complexity];
+  return TASK_COMPLEXITY_KARMA[complexity];
+}
+
+export function getTaskKarma(task: Partial<TInternTask>): number {
+  const record = task as UnknownRecord;
+  let complexityScore = getRecordNumber(record, "complexity_score");
+  if (complexityScore === undefined) {
+    const comp = normalizeString(task.complexity);
+    if (comp === "LOW") complexityScore = 1;
+    else if (comp === "MEDIUM") complexityScore = 2;
+    else if (comp === "HIGH") complexityScore = 3;
+    else if (comp === "CRITICAL") complexityScore = 4;
+  }
+
+  const baseKarma = getTaskBaseKarma(task);
   if (complexityScore !== undefined) {
     return complexityScore * baseKarma;
   }
@@ -299,4 +301,19 @@ export function formatTasksCompleted(
       .join("\n");
   }
   return tasksCompleted;
+}
+
+export function getComplexityColor(complexity: string): string {
+  switch (complexity) {
+    case "LOW":
+      return "border-success/30 bg-success/5 text-success";
+    case "MEDIUM":
+      return "border-brand-blue/30 bg-brand-blue/5 text-brand-blue";
+    case "HIGH":
+      return "border-warning/30 bg-warning/5 text-warning";
+    case "CRITICAL":
+      return "border-destructive/30 bg-destructive/5 text-destructive";
+    default:
+      return "border-border/30 bg-muted/50 text-muted-foreground";
+  }
 }

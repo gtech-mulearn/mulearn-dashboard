@@ -10,8 +10,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useUserInfo, useUserProfile } from "@/features/auth";
-import { useLeaderboard, useLeaderboardMe } from "@/features/intern";
-import { isCurrentLeaderboardUser } from "@/features/intern/utils/intern-helpers";
+import {
+  isCurrentLeaderboardUser,
+  useLeaderboard,
+  useLeaderboardMe,
+} from "@/features/intern";
 
 export function LeaderboardPageClient() {
   const [page, setPage] = useState(1);
@@ -87,7 +90,8 @@ export function LeaderboardPageClient() {
         name: item.full_name,
         actualName: item.full_name,
         points: item.score,
-        streak: "-",
+        streak:
+          item.daily_streak !== undefined ? String(item.daily_streak) : "-",
         isCurrentUser,
         avatar: item.full_name
           ? item.full_name
@@ -336,7 +340,7 @@ export function LeaderboardPageClient() {
             <tr>
               {tableColumns.map((column) => (
                 <th
-                  className={`border-b border-border px-3.5 py-3 text-left text-sm font-bold tracking-wider ${(column as any).width || ""} bg-muted/20 border-b border-border/20 h-12 font-black uppercase text-[9px] tracking-[0.3em]`}
+                  className={`border-b border-border px-3.5 py-3 text-left text-sm font-bold tracking-wider ${(column as { width?: string }).width || ""} bg-muted/20 border-b border-border/20 h-12 font-black uppercase text-[9px] tracking-[0.3em]`}
                   key={column.column}
                 >
                   <div className="flex items-center gap-2">

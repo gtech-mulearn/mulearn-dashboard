@@ -41,6 +41,7 @@ export interface TLeaderboardRow {
   rank: number;
   status?: string;
   profile_pic?: string | null;
+  daily_streak?: number;
 }
 
 export interface TTimesheet {
@@ -60,6 +61,9 @@ export interface TTimesheet {
   score?: number | null;
   review_note: string | null;
   created_at: string;
+  user_name?: string; // admin view
+  full_name?: string; // admin view
+  muid?: string; // admin view
 }
 
 export interface TTimesheetSubmitPayload {
@@ -127,6 +131,7 @@ export interface TWeeklyReview {
   review_note: string | null;
   created_at: string;
   user_name?: string; // admin view
+  full_name?: string; // admin view
   user_id?: string;
   muid?: string;
 }
@@ -174,6 +179,7 @@ export interface TInternTask {
   status: "WAITING_FOR_REVIEW" | "IN_PROGRESS" | "COMPLETED" | "ON_HOLD";
   output_link?: string | null;
   is_verified?: boolean;
+  remark?: string | null;
   created_by?: string;
   created_by_name?: string;
   created_at: string;
@@ -282,6 +288,7 @@ export interface TUpdateTaskPayload {
   deadline?: string;
   iso_week?: number;
   status?: string;
+  remark?: string;
 }
 
 export interface TLeaveReviewPayload {
@@ -319,4 +326,28 @@ export interface TSubmitMinutePayload {
   date: string;
   title: string;
   minutes: string;
+}
+
+export interface TBulkImportRowError {
+  row: number;
+  muid: string;
+  reason: string;
+  full_name?: string;
+  name?: string;
+}
+
+export interface TBulkImportRowSuccess {
+  row: number;
+  muid: string;
+  full_name?: string;
+  name?: string;
+  profile_pic?: string | null;
+  guild?: string;
+}
+
+export interface TBulkImportResponse {
+  success_count: number;
+  failed_count: number;
+  failed_rows: TBulkImportRowError[];
+  success_rows?: TBulkImportRowSuccess[];
 }

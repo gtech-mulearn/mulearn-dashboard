@@ -509,7 +509,11 @@ export const CampusMemberFunnelResponseSchema = ApiResponseSchema(
 // Circle Health
 export const CampusCircleHealthItemSchema = z.object({
   circle_id: z.string(),
-  circle_name: z.string(),
+  circle_name: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((v) => (v || "").trim() || "Unnamed Circle"),
   ig_id: z.string(),
   ig_name: z.string(),
   member_count: z.number(),

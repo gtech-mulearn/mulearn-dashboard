@@ -35,12 +35,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import {
+  formatTasksCompleted,
+  type TWeeklyReview,
   useManageWeeklyReviews,
   useReviewWeeklyReview,
 } from "@/features/intern";
-import type { TWeeklyReview } from "@/features/intern/types";
-import { formatTasksCompleted } from "@/features/intern/utils/intern-helpers";
 
 export function InternReportPageClient() {
   const router = useRouter();
@@ -356,7 +357,10 @@ export function InternReportPageClient() {
               <SelectTrigger className="h-14 bg-card/40 border-border/40 font-black uppercase text-[10px] tracking-widest rounded-md">
                 <SelectValue placeholder="All Teams" />
               </SelectTrigger>
-              <SelectContent className="bg-card font-bold border-border/60">
+              <SelectContent
+                position="popper"
+                className="bg-card font-bold border-border/60"
+              >
                 <SelectItem value="ALL" className="uppercase text-[10px]">
                   All Teams
                 </SelectItem>
@@ -425,7 +429,7 @@ export function InternReportPageClient() {
 
       {/* Weekly Review Evaluation Dialog */}
       <Dialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
-        <DialogContent className="bg-card/95 backdrop-blur-xl border-border/60">
+        <DialogContent className="bg-card/95 backdrop-blur-xl border-border/60 w-full max-w-[calc(100%-2rem)] sm:max-w-lg p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle className="text-xl font-black uppercase tracking-wider text-foreground">
               Evaluate Weekly Review
@@ -439,17 +443,22 @@ export function InternReportPageClient() {
             (() => {
               const muid = selectedReview.muid || "";
               return (
-                <div className="space-y-4 py-2 my-2 text-sm">
+                <div className="space-y-4 py-2 my-2 text-sm max-h-[60vh] overflow-y-auto pr-1 w-full min-w-0">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1">
                       <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">
                         Intern
                       </span>
                       <span className="font-bold text-foreground text-sm">
-                        {selectedReview.user_name ||
-                          // biome-ignore lint/suspicious/noExplicitAny: API type
-                          (selectedReview as any).full_name ||
-                          "Unknown"}
+                        {String(
+                          selectedReview.user_name ||
+                            (
+                              selectedReview as unknown as {
+                                full_name?: string;
+                              }
+                            ).full_name ||
+                            "Unknown",
+                        )}
                       </span>
                     </div>
                     <div className="flex flex-col gap-1">
@@ -573,11 +582,11 @@ export function InternReportPageClient() {
                     <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
                       Evaluation Notes / Feedback
                     </Label>
-                    <textarea
+                    <Textarea
                       value={reviewNote}
                       onChange={(e) => setReviewNote(e.target.value)}
                       placeholder="Feedback visible to the intern..."
-                      className="w-full min-h-[80px] bg-background/50 border border-border/40 rounded-lg p-3 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-primary/40 resize-none"
+                      className="min-h-[80px] text-xs font-semibold resize-none"
                     />
                   </div>
                 </div>

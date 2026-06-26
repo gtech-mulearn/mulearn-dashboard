@@ -19,6 +19,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -28,6 +29,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -229,19 +238,21 @@ export function LeaveManagementPageClient() {
             </CardHeader>
             <CardContent className="p-0">
               <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="border-b border-border/20 bg-muted/10 text-[10px] font-black uppercase text-muted-foreground tracking-widest">
-                      <th className="p-4 pl-6">Leave Type</th>
-                      <th className="p-4">Start Date</th>
-                      <th className="p-4">End Date</th>
-                      <th className="p-4">Duration</th>
-                      <th className="p-4">Reason / Notes</th>
-                      <th className="p-4">Status</th>
-                      <th className="p-4 pr-6 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border/20">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-b border-border/20 bg-muted/10 text-[10px] font-black uppercase text-muted-foreground tracking-widest hover:bg-muted/10">
+                      <TableHead className="p-4 pl-6">Leave Type</TableHead>
+                      <TableHead className="p-4">Start Date</TableHead>
+                      <TableHead className="p-4">End Date</TableHead>
+                      <TableHead className="p-4">Duration</TableHead>
+                      <TableHead className="p-4">Reason / Notes</TableHead>
+                      <TableHead className="p-4">Status</TableHead>
+                      <TableHead className="p-4 pr-6 text-right">
+                        Actions
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody className="divide-y divide-border/20">
                     {history?.data?.map((req) => {
                       const statusColors = {
                         PENDING: "bg-warning/10 text-warning border-warning/30",
@@ -258,19 +269,19 @@ export function LeaveManagementPageClient() {
                         cancelLeaveMutation.variables === req.id;
 
                       return (
-                        <tr
+                        <TableRow
                           key={req.id}
                           className="hover:bg-muted/10 transition-colors text-sm font-semibold text-foreground group"
                         >
-                          <td className="p-4 pl-6">
+                          <TableCell className="p-4 pl-6">
                             <Badge
                               variant="outline"
                               className="font-bold px-2 py-0.5 text-xs uppercase"
                             >
                               {req.leave_type}
                             </Badge>
-                          </td>
-                          <td className="p-4 text-xs">
+                          </TableCell>
+                          <TableCell className="p-4 text-xs">
                             {new Date(req.start_date).toLocaleDateString(
                               undefined,
                               {
@@ -279,8 +290,8 @@ export function LeaveManagementPageClient() {
                                 year: "numeric",
                               },
                             )}
-                          </td>
-                          <td className="p-4 text-xs">
+                          </TableCell>
+                          <TableCell className="p-4 text-xs">
                             {new Date(req.end_date).toLocaleDateString(
                               undefined,
                               {
@@ -289,13 +300,13 @@ export function LeaveManagementPageClient() {
                                 year: "numeric",
                               },
                             )}
-                          </td>
-                          <td className="p-4 text-xs text-brand-blue font-bold">
+                          </TableCell>
+                          <TableCell className="p-4 text-xs text-brand-blue font-bold">
                             {req.duration_days
                               ? `${req.duration_days} ${req.duration_days === 1 ? "day" : "days"}`
                               : "-"}
-                          </td>
-                          <td
+                          </TableCell>
+                          <TableCell
                             className="p-4 max-w-xs truncate text-xs text-muted-foreground"
                             title={req.reason}
                           >
@@ -305,8 +316,8 @@ export function LeaveManagementPageClient() {
                                 Reviewer: {req.review_note}
                               </div>
                             )}
-                          </td>
-                          <td className="p-4">
+                          </TableCell>
+                          <TableCell className="p-4">
                             <Badge
                               variant="outline"
                               className={`font-black tracking-widest text-[9px] px-2 py-0.5 rounded-full ${
@@ -316,8 +327,8 @@ export function LeaveManagementPageClient() {
                             >
                               {req.status}
                             </Badge>
-                          </td>
-                          <td className="p-4 pr-6 text-right">
+                          </TableCell>
+                          <TableCell className="p-4 pr-6 text-right">
                             {req.status === "PENDING" && (
                               <Button
                                 size="sm"
@@ -333,22 +344,22 @@ export function LeaveManagementPageClient() {
                                 )}
                               </Button>
                             )}
-                          </td>
-                        </tr>
+                          </TableCell>
+                        </TableRow>
                       );
                     })}
                     {(!history?.data || history.data.length === 0) && (
-                      <tr>
-                        <td
+                      <TableRow>
+                        <TableCell
                           colSpan={7}
                           className="p-12 text-center text-xs text-muted-foreground italic uppercase tracking-wider"
                         >
                           No leave history found
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     )}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
 
               {/* Pagination */}
@@ -421,7 +432,7 @@ export function LeaveManagementPageClient() {
                       <SelectTrigger className="w-full bg-background/50 border-border/50 h-10 font-bold focus:ring-brand-purple/30">
                         <SelectValue placeholder="Select leave type..." />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent position="popper">
                         <SelectItem
                           value="CASUAL"
                           className="font-bold text-xs"
@@ -446,12 +457,12 @@ export function LeaveManagementPageClient() {
                     <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
                       Start Date <span className="text-destructive">*</span>
                     </Label>
-                    <input
+                    <Input
                       type="date"
                       required
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
-                      className="w-full h-10 rounded-md border border-border/50 bg-background/50 px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-purple/30 focus:border-brand-purple/40"
+                      className="font-bold"
                     />
                   </div>
 
@@ -460,13 +471,13 @@ export function LeaveManagementPageClient() {
                     <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
                       End Date <span className="text-destructive">*</span>
                     </Label>
-                    <input
+                    <Input
                       type="date"
                       required
                       value={endDate}
                       min={startDate}
                       onChange={(e) => setEndDate(e.target.value)}
-                      className="w-full h-10 rounded-md border border-border/50 bg-background/50 px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-purple/30 focus:border-brand-purple/40"
+                      className="font-bold"
                     />
                   </div>
                 </div>

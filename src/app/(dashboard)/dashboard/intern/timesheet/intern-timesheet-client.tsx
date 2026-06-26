@@ -231,40 +231,12 @@ export function TimesheetPageClient() {
     <div className="space-y-8 max-w-7xl mx-auto w-full">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <div className="flex items-center gap-2 mb-2">
-            <Badge
-              variant="default"
-              className="px-3 py-1 rounded-full font-black text-[10px] uppercase tracking-widest"
-            >
-              Daily Submissions
-            </Badge>
-          </div>
           <h2 className="text-4xl font-black tracking-tighter text-foreground uppercase">
             Daily Timesheet
           </h2>
           <p className="text-muted-foreground mt-1 font-medium italic">
             Log your daily activities to maintain your legendary streak.
           </p>
-        </div>
-        <div className="flex items-center gap-4 bg-card/40 backdrop-blur-md border border-border/40 p-4 rounded-2xl shadow-xl">
-          <div className="flex flex-col items-end">
-            <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">
-              Multiplier
-            </span>
-            <span className="text-2xl font-black text-brand-blue">
-              {multiplier} XP
-            </span>
-          </div>
-          <div className="w-[1px] h-10 bg-border/40" />
-          <div className="flex items-center gap-2">
-            <Flame className="w-8 h-8 text-brand-blue fill-brand-blue animate-pulse" />
-            <div className="flex flex-col">
-              <span className="text-2xl font-black tabular-nums">{streak}</span>
-              <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">
-                Day Streak
-              </span>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -278,10 +250,10 @@ export function TimesheetPageClient() {
                   <CheckCircle2 className="h-8 w-8 text-success mt-1" />
                   <div className="space-y-2">
                     <AlertTitle className="text-2xl font-black uppercase tracking-tight">
-                      Daily quest commited
+                      Daily timesheet commited
                     </AlertTitle>
                     <AlertDescription className="font-bold opacity-80 text-sm">
-                      Awesome job! You have already submitted your daily quest
+                      Awesome job! You have already submitted your daily
                       timesheet for today. Keep up the consistency and maintain
                       your streak tomorrow!
                     </AlertDescription>
@@ -357,7 +329,7 @@ export function TimesheetPageClient() {
                             }
                           />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent position="popper">
                           <SelectItem
                             value="none"
                             className="font-bold uppercase text-xs text-muted-foreground"
@@ -391,7 +363,7 @@ export function TimesheetPageClient() {
                           <SelectTrigger className="w-full bg-background/50 border-border/50 !h-10 font-bold focus:ring-brand-blue/30">
                             <SelectValue placeholder="Update status..." />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent position="popper">
                             <SelectItem
                               value="WAITING_FOR_REVIEW"
                               className="font-bold uppercase text-xs"
@@ -464,7 +436,7 @@ export function TimesheetPageClient() {
                           Channeling Progress...
                         </>
                       ) : (
-                        "Commit Daily Quest"
+                        "Commit Daily Timesheet"
                       )}
                     </Button>
                   </div>
