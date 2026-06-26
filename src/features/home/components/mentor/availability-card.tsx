@@ -26,13 +26,15 @@ export function AvailabilityCard({ expertise, isLoading }: Props) {
 
   return (
     <Card className="rounded-2xl border bg-card shadow-sm">
-      <CardHeader className="flex-row items-center gap-2.5 px-5 py-4">
-        <div className="flex size-9 items-center justify-center rounded-xl bg-warning/10">
-          <Sparkles className="size-4 text-warning" />
+      <CardHeader className="px-5 py-4">
+        <div className="flex flex-row items-center gap-2.5">
+          <div className="flex size-9 items-center justify-center rounded-xl bg-warning/10">
+            <Sparkles className="size-4 text-warning" />
+          </div>
+          <CardTitle className="text-base font-bold text-foreground">
+            Availability &amp; Expertise
+          </CardTitle>
         </div>
-        <CardTitle className="text-base font-bold text-foreground">
-          Availability &amp; Expertise
-        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-5 px-5 pb-5 pt-0">
         <div className="flex items-center justify-between rounded-xl border bg-muted/40 px-4 py-3">

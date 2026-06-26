@@ -31,7 +31,7 @@ export const CalendarSessionItemSchema = z.object({
   id: z.string(),
   title: z.string(),
   description: z.string().nullable().optional(),
-  mode: z.string().optional(),
+  mode: z.string().nullable().optional(),
   starts_at: z.string(),
   ends_at: z.string(),
   status: z
@@ -39,7 +39,7 @@ export const CalendarSessionItemSchema = z.object({
     .or(z.string()),
   meeting_link: z.string().nullable().optional(),
   venue: z.string().nullable().optional(),
-  mentor_name: z.string().optional(),
+  mentor_name: z.string().nullable().optional(),
   mentee_count: z.coerce.number().default(0),
 });
 export type CalendarSessionItem = z.infer<typeof CalendarSessionItemSchema>;
