@@ -42,7 +42,7 @@ export function CircleHealthCard({ items, isLoading }: CircleHealthCardProps) {
             ))}
           </div>
         ) : (
-          <div className="space-y-0">
+          <div className="space-y-0 max-h-[340px] overflow-y-auto pr-1">
             {(items ?? []).map((item) => (
               <div
                 key={item.circle_id}
@@ -50,7 +50,7 @@ export function CircleHealthCard({ items, isLoading }: CircleHealthCardProps) {
               >
                 <div>
                   <p className="text-sm font-semibold text-foreground">
-                    {item.circle_name}
+                    {(item.circle_name || "").trim() || "Unnamed Circle"}
                   </p>
                   <p className="text-[11px] text-muted-foreground">
                     {item.member_count} members · {item.sessions_per_month}{" "}

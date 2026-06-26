@@ -3,6 +3,7 @@ import { Folder, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   useAddMember,
@@ -17,7 +18,6 @@ import type { Project, ProjectFormValues } from "../schemas";
 import { ProjectCard } from "./project-card";
 import { ProjectDetailModal } from "./project-detail-modal";
 import { ProjectWizard } from "./project-wizard";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface ProjectsTabProps {
   muid: string;
