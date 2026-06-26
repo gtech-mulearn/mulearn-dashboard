@@ -1,7 +1,4 @@
 export type {
-  CalendarBuckets,
-  CalendarParams,
-  CalendarSessionItem,
   CompanyMentor,
   CompanyTaskListParams,
   MentorStatus,
@@ -9,8 +6,6 @@ export type {
 } from "./api";
 export {
   applyToJob,
-  CalendarBucketResponseSchema,
-  CalendarSessionItemSchema,
   CompanyMentorSchema,
   createCompanyTask,
   createJob,
@@ -19,15 +14,12 @@ export {
   deleteJob,
   deleteJobRule,
   fetchAdminSummary,
-  fetchCampusMentorSessionCalendar,
   fetchCompanyDashboardSummary,
   fetchCompanyMentors,
   fetchCompanyProfile,
-  fetchCompanySessionCalendar,
   fetchCompanyTask,
   fetchCompanyTasks,
   fetchGigAnalytics,
-  fetchIgMentorSessionCalendar,
   fetchJobApplicants,
   fetchJobDetail,
   fetchJobEngagementAnalytics,
