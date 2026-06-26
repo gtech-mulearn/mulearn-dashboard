@@ -31,7 +31,7 @@ export function CircleHealthCard({ items, isLoading }: CircleHealthCardProps) {
       <CardContent className="px-5 pb-5 pt-0">
         {isLoading ? (
           <div className="space-y-3">
-            {[0, 1, 2, 3, 4].map((i) => (
+            {[0, 1, 2].map((i) => (
               <div key={i} className="flex items-center justify-between">
                 <div className="space-y-1">
                   <Skeleton className="h-4 w-36 rounded" />
@@ -42,7 +42,7 @@ export function CircleHealthCard({ items, isLoading }: CircleHealthCardProps) {
             ))}
           </div>
         ) : (
-          <div className="space-y-0 max-h-[340px] overflow-y-auto pr-1">
+          <div className="space-y-0 max-h-[196px] overflow-y-auto pr-1">
             {(items ?? []).map((item) => (
               <div
                 key={item.circle_id}
