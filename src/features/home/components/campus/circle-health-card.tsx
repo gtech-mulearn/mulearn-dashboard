@@ -20,7 +20,7 @@ const STATUS_STYLES: Record<CircleHealthStatus, string> = {
 export function CircleHealthCard({ items, isLoading }: CircleHealthCardProps) {
   return (
     <Card className="h-full rounded-2xl border bg-card shadow-sm">
-      <CardHeader className="px-5 py-4">
+      <CardHeader className="px-5 pt-3 pb-2">
         <div className="flex flex-row items-center gap-2.5">
           <div className="flex size-9 items-center justify-center rounded-xl bg-success/10">
             <Activity className="size-4 text-success" />
@@ -30,7 +30,7 @@ export function CircleHealthCard({ items, isLoading }: CircleHealthCardProps) {
           </CardTitle>
         </div>
       </CardHeader>
-      <CardContent className="px-5 pb-5 pt-0">
+      <CardContent className="px-5 pb-3 pt-0">
         {isLoading ? (
           <div className="space-y-3">
             {[0, 1, 2].map((i) => (
@@ -44,7 +44,7 @@ export function CircleHealthCard({ items, isLoading }: CircleHealthCardProps) {
             ))}
           </div>
         ) : (
-          <div className="space-y-0 max-h-[196px] overflow-y-auto pr-1">
+          <div className="space-y-0 max-h-[240px] overflow-y-auto pr-1">
             {(items ?? []).map((item) => (
               <div
                 key={item.circle_id}
@@ -52,7 +52,7 @@ export function CircleHealthCard({ items, isLoading }: CircleHealthCardProps) {
               >
                 <div>
                   <p className="text-sm font-semibold text-foreground">
-                    {(item.circle_name || "").trim() || "Unnamed Circle"}
+                    {item.circle_name}
                   </p>
                   <p className="text-[11px] text-muted-foreground">
                     {item.member_count} members · {item.sessions_per_month}{" "}
