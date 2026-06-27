@@ -380,18 +380,15 @@ export const PublicJobsResponseSchema = DjangoResponse(
             .number()
             .nullish()
             .transform((v) => v ?? 0),
-          total_pages: z
-            .number()
-            .nullish()
-            .transform((v) => v ?? 1),
-          current_page: z
-            .number()
-            .nullish()
-            .transform((v) => v ?? 1),
-          per_page: z
-            .number()
-            .nullish()
-            .transform((v) => v ?? 10),
+          // camelCase (new API shape)
+          totalPages: z.number().nullish(),
+          isNext: z.boolean().nullish(),
+          isPrev: z.boolean().nullish(),
+          nextPage: z.number().nullish(),
+          // snake_case (old API shape — kept for backwards compat)
+          total_pages: z.number().nullish(),
+          current_page: z.number().nullish(),
+          per_page: z.number().nullish(),
           next: z.string().nullable().optional(),
           previous: z.string().nullable().optional(),
         })
@@ -399,15 +396,21 @@ export const PublicJobsResponseSchema = DjangoResponse(
         .optional()
         .transform((v) => ({
           count: v?.count ?? 0,
-          totalPages: v?.total_pages ?? 1,
-          isNext: !!v?.next,
-          isPrev: !!v?.previous,
-          nextPage: v?.next ? (v.current_page ?? 1) + 1 : null,
+          totalPages: v?.totalPages ?? v?.total_pages ?? 1,
+          isNext: v?.isNext ?? !!v?.next,
+          isPrev: v?.isPrev ?? !!v?.previous,
+          nextPage: v?.nextPage ?? (v?.next ? (v.current_page ?? 1) + 1 : null),
         })),
     })
     .transform((val) => ({
       jobs: val.jobs ?? val.data ?? [],
-      pagination: val.pagination,
+      pagination: val.pagination ?? {
+        count: 0,
+        totalPages: 1,
+        isNext: false,
+        isPrev: false,
+        nextPage: null,
+      },
     })),
 );
 

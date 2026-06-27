@@ -44,15 +44,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import type { TManageInternItem } from "@/features/intern";
 import {
+  resolveInternStatus,
   useDeactivateIntern,
   useExportInterns,
   useGuilds,
   useManageInternsList,
   useUpdateIntern,
 } from "@/features/intern";
-import type { TManageInternItem } from "@/features/intern/types";
-import { resolveInternStatus } from "@/features/intern/utils/intern-helpers";
 import { useDebounce } from "@/hooks/use-debounce";
 import { InternsStats } from "../../../../../features/intern/components/interns-stats";
 import { OnboardDialog } from "../../../../../features/intern/components/onboard-dialog";

@@ -61,6 +61,9 @@ export interface TTimesheet {
   score?: number | null;
   review_note: string | null;
   created_at: string;
+  user_name?: string; // admin view
+  full_name?: string; // admin view
+  muid?: string; // admin view
 }
 
 export interface TTimesheetSubmitPayload {
@@ -128,6 +131,7 @@ export interface TWeeklyReview {
   review_note: string | null;
   created_at: string;
   user_name?: string; // admin view
+  full_name?: string; // admin view
   user_id?: string;
   muid?: string;
 }

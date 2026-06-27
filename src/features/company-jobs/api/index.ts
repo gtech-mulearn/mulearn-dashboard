@@ -1,25 +1,4 @@
 export type {
-  CalendarBuckets,
-  CalendarEventBuckets,
-  CalendarEventItem,
-  CalendarEventParams,
-  CalendarParams,
-  CalendarSessionItem,
-} from "./calendar.api";
-export {
-  CalendarBucketResponseSchema,
-  CalendarEventBucketResponseSchema,
-  CalendarEventItemSchema,
-  CalendarSessionItemSchema,
-  fetchCampusEventCalendar,
-  fetchCampusMentorSessionCalendar,
-  fetchCompanyEventCalendar,
-  fetchCompanySessionCalendar,
-  fetchGlobalEventCalendar,
-  fetchIgEventCalendar,
-  fetchIgMentorSessionCalendar,
-} from "./calendar.api";
-export type {
   CompanyMentor,
   MentorStatus,
   NominateMentorPayload,

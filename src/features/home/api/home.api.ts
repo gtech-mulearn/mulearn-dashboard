@@ -1,21 +1,7 @@
 import { apiClient, publicApiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
-import {
-  type CalendarBuckets,
-  type CalendarEventBuckets,
-  type CalendarEventItem,
-  type CalendarSessionItem,
-  fetchCampusEventCalendar,
-  fetchCampusMentorSessionCalendar,
-  fetchCompanyEventCalendar,
-  fetchCompanySessionCalendar,
-  fetchGlobalEventCalendar,
-  fetchIgEventCalendar,
-  fetchIgMentorSessionCalendar,
-} from "@/features/company-jobs/api";
 import { OrgListResponseSchema } from "@/features/organizations/schemas";
 import type { CalendarEvent } from "../schemas";
-
 import {
   CalendarEventsResponseSchema,
   CampusCircleHealthResponseSchema,
@@ -33,6 +19,19 @@ import {
   MentorSessionsResponseSchema,
   PublicJobsResponseSchema,
 } from "../schemas";
+import {
+  type CalendarBuckets,
+  type CalendarEventBuckets,
+  type CalendarEventItem,
+  type CalendarSessionItem,
+  fetchCampusEventCalendar,
+  fetchCampusMentorSessionCalendar,
+  fetchCompanyEventCalendar,
+  fetchCompanySessionCalendar,
+  fetchGlobalEventCalendar,
+  fetchIgEventCalendar,
+  fetchIgMentorSessionCalendar,
+} from "./calendar.api";
 
 // ============================================
 // Interest Groups

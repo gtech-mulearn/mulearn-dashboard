@@ -22,9 +22,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useUserInfo, useUserProfile } from "@/features/auth";
-import { useLeaderboardMe, useTopLeaderboard } from "@/features/intern";
-import { isCurrentLeaderboardUser } from "@/features/intern/utils/intern-helpers";
 import { cn } from "@/lib/utils";
+import { useLeaderboardMe, useTopLeaderboard } from "../hooks/use-intern";
+import { isCurrentLeaderboardUser } from "../utils/intern-helpers";
 
 export function EliteLeaders() {
   const { data: userInfo, isLoading: isUserLoading } = useUserInfo();

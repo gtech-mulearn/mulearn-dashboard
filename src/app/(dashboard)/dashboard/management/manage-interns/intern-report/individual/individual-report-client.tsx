@@ -8,11 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { Spinner } from "@/components/ui/spinner";
-import { useManageWeeklyReviews } from "@/features/intern";
 import {
   formatTasksAssigned,
   formatTasksCompleted,
-} from "@/features/intern/utils/intern-helpers";
+  useManageWeeklyReviews,
+} from "@/features/intern";
 
 export function IndividualReportPageClient() {
   const searchParams = useSearchParams();
