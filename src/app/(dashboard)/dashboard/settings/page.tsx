@@ -23,21 +23,23 @@ export default function SettingsPage() {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Card className="rounded-2xl">
-          <CardContent className="flex h-full flex-col justify-between gap-4 p-6">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <User2 className="text-muted-foreground h-4 w-4" />
-                <h2 className="text-base font-semibold">Account</h2>
+          <CardContent className="flex items-center justify-between p-6">
+            <div className="flex items-center gap-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted">
+                <User2 className="text-muted-foreground h-5 w-5" />
               </div>
-
-              <p className="text-muted-foreground text-sm">
-                Change your password.
-              </p>
+              <div className="space-y-0.5">
+                <h2 className="text-base font-semibold">Account</h2>
+                <p className="text-muted-foreground text-sm">
+                  Change your password.
+                </p>
+              </div>
             </div>
 
-            <Button asChild variant="default" className="w-full">
+            <Button asChild variant="link">
               <Link href="/dashboard/settings/account">
-                Open <ChevronRight className="h-4 w-4" />
+                Open
+                <ChevronRight className="h-5 w-5" />
               </Link>
             </Button>
           </CardContent>
@@ -45,21 +47,23 @@ export default function SettingsPage() {
 
         <RoleGate allowedRoles={CAMPUS_SETTINGS_ROLES}>
           <Card className="rounded-2xl">
-            <CardContent className="flex h-full flex-col justify-between gap-4 p-6">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Building2 className="text-muted-foreground h-4 w-4" />
-                  <h2 className="text-base font-semibold">Campus</h2>
+            <CardContent className="flex items-center justify-between p-6">
+              <div className="flex items-center gap-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted">
+                  <Building2 className="text-muted-foreground h-5 w-5" />
                 </div>
-
-                <p className="text-muted-foreground text-sm">
-                  Change your campus details.
-                </p>
+                <div className="space-y-0.5">
+                  <h2 className="text-base font-semibold">Campus</h2>
+                  <p className="text-muted-foreground text-sm">
+                    Change your campus details.
+                  </p>
+                </div>
               </div>
 
-              <Button asChild variant="default" className="w-full">
+              <Button asChild variant="link">
                 <Link href="/dashboard/settings/organization">
-                  Open <ChevronRight className="h-4 w-4" />
+                  Open
+                  <ChevronRight className="h-5 w-5" />
                 </Link>
               </Button>
             </CardContent>
