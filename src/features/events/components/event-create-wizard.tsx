@@ -670,6 +670,14 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
         toast.error(`Event saved as draft, but failed to publish: ${errMsg}`);
         resetWizard();
         onClose();
+      } else {
+        const errMsg = getApiResponseError(err, {
+          fallback:
+            action === "publish"
+              ? "Failed to publish event"
+              : "Failed to create event",
+        });
+        toast.error(errMsg);
       }
     }
   };
