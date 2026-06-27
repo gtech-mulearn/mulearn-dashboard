@@ -461,7 +461,7 @@ export function CampusManageDashboard() {
       page: 1,
       search: "",
       ig: "",
-      cluster: "",
+      category: "",
       alumni: "all",
     });
 
@@ -935,8 +935,8 @@ export function CampusManageDashboard() {
                   ]}
                 />
                 <FilterSelect
-                  value={leaderboardFilters.cluster}
-                  onChange={handleLeaderboardFilterChange("cluster")}
+                  value={leaderboardFilters.category}
+                  onChange={handleLeaderboardFilterChange("category")}
                   options={[
                     { label: "All Clusters", value: "" },
                     ...clusterOptions,

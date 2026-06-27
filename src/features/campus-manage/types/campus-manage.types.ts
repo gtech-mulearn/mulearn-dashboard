@@ -147,7 +147,7 @@ export interface CampusLeaderboardFilters {
   page: number;
   search: string;
   ig: string;
-  cluster: string;
+  category: string;
   alumni: "all" | "alumni" | "student";
 }
 

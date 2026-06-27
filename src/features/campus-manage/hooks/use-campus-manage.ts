@@ -21,7 +21,7 @@ export function useCampusLeaderboard(filters: CampusLeaderboardFilters) {
       filters.page,
       filters.search,
       filters.ig,
-      filters.cluster,
+      filters.category,
       filters.alumni,
     ),
     queryFn: () => campusManageApi.getLeaderboard(filters),

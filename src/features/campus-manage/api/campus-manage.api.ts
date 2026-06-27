@@ -283,7 +283,7 @@ export const campusManageApi = {
     if (filters.search) params.set("search", filters.search);
 
     if (filters.ig) params.set("ig_id", filters.ig);
-    if (filters.cluster) params.set("cluster", filters.cluster);
+    if (filters.category) params.set("category", filters.category);
 
     let endpoint: string;
 
