@@ -96,22 +96,53 @@ export function EventInlineEditForm({
         : "global"
     ) as "global" | "campus" | "ig" | "campus_ig";
 
-    const categoryObj = (event as unknown as Record<string, unknown>).category;
-    const categoryId =
-      typeof categoryObj === "object" && categoryObj !== null
-        ? ((categoryObj as Record<string, unknown>).id as string)
-        : (categoryObj as string);
+    // Resolve category UUID from category_name if not directly available
+    let resolvedCategory = "";
+    if (event.category_name && categoryOptions) {
+      const eventCatSlug = event.category_name
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "_");
+
+      const matchingCat = categoryOptions.find((c) => {
+        const catSlug = c.name.trim().toLowerCase().replace(/\s+/g, "_");
+        return (
+          catSlug === eventCatSlug ||
+          catSlug.includes(eventCatSlug) ||
+          eventCatSlug.includes(catSlug)
+        );
+      });
+      if (matchingCat) {
+        resolvedCategory = matchingCat.id;
+      }
+    }
+
+    // Resolve event_scope/cluster from organizer IG cluster if not directly available
+    let resolvedEventScope = "";
+    const rawCluster =
+      event.organizer?.ig?.cluster ||
+      event.organizer?.organiser_ig?.cluster ||
+      event.organizer?.ig?.category ||
+      event.organizer?.organiser_ig?.category ||
+      "";
+
+    if (rawCluster && clusterOptions) {
+      const matchingCluster = clusterOptions.find(
+        (item) => item.value.toLowerCase() === rawCluster.toLowerCase(),
+      );
+      if (matchingCluster) {
+        resolvedEventScope = matchingCluster.value;
+      }
+    }
 
     reset({
       ...EVENT_FORM_DEFAULT_VALUES,
       title: event.title ?? "",
       description: event.description ?? "",
       scope,
-      category: categoryId ?? "",
-      event_type: event.event_type ?? "",
-      event_scope:
-        ((event as unknown as Record<string, unknown>).event_scope as string) ??
-        "",
+      category: resolvedCategory,
+      event_type: event.event_type ?? (resolvedCategory ? event.category_name?.trim().toLowerCase().replace(/\s+/g, "_") : ""),
+      event_scope: resolvedEventScope,
       start_datetime: toDatetimeLocal(event.start_datetime),
       end_datetime: toDatetimeLocal(event.end_datetime),
       venue_type: event.venue?.type ?? "online",
@@ -145,51 +176,7 @@ export function EventInlineEditForm({
     );
     setSelectedIgName(event.scope_ig?.name ?? event.target_ig?.name ?? "");
     setSelectedCampusIgName(event.target_campus_ig?.name ?? "");
-  }, [event, reset]);
-
-  // Resolve category UUID from category_name if not directly available
-  useEffect(() => {
-    if (event.category_name && categoryOptions && !watch("category")) {
-      const eventCatSlug = event.category_name
-        .trim()
-        .toLowerCase()
-        .replace(/\s+/g, "_");
-
-      const matchingCat = categoryOptions.find((c) => {
-        const catSlug = c.name.trim().toLowerCase().replace(/\s+/g, "_");
-        return (
-          catSlug === eventCatSlug ||
-          catSlug.includes(eventCatSlug) ||
-          eventCatSlug.includes(catSlug)
-        );
-      });
-      if (matchingCat) {
-        setValue("category", matchingCat.id, { shouldDirty: false });
-        const slug = matchingCat.name.trim().toLowerCase().replace(/\s+/g, "_");
-        setValue("event_type", slug, { shouldDirty: false });
-      }
-    }
-  }, [event.category_name, categoryOptions, setValue, watch]);
-
-  // Resolve event_scope/cluster from organizer IG cluster if not directly available
-  useEffect(() => {
-    const rawCluster =
-      ((event as unknown as Record<string, unknown>).event_scope as string) ||
-      event.organizer?.ig?.cluster ||
-      event.organizer?.organiser_ig?.cluster ||
-      event.organizer?.ig?.category ||
-      event.organizer?.organiser_ig?.category ||
-      "";
-
-    if (rawCluster && clusterOptions && !watch("event_scope")) {
-      const matchingCluster = clusterOptions.find(
-        (item) => item.value.toLowerCase() === rawCluster.toLowerCase(),
-      );
-      if (matchingCluster) {
-        setValue("event_scope", matchingCluster.value, { shouldDirty: false });
-      }
-    }
-  }, [event, clusterOptions, setValue, watch]);
+  }, [event, reset, categoryOptions, clusterOptions]);
 
   const scope = watch("scope");
 

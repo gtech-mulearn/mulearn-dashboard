@@ -269,14 +269,14 @@ export interface LinkedTaskInput {
 export interface EventLog {
   id: UUID;
   action?:
-    | "event_updated"
-    | "co_owner_added"
-    | "co_owner_removed"
-    | "collaborator_invited"
-    | "collaborator_accepted"
-    | "collaborator_rejected"
-    | "collaborator_removed"
-    | string;
+  | "event_updated"
+  | "co_owner_added"
+  | "co_owner_removed"
+  | "collaborator_invited"
+  | "collaborator_accepted"
+  | "collaborator_rejected"
+  | "collaborator_removed"
+  | string;
   actor?: MinimalUser | null;
   performed_by?: MinimalUser | null;
   target_type?: string | null;
@@ -340,6 +340,8 @@ export interface EventListItem {
 
 /** EventDetail - full event object from /manage/<id>/ and detail endpoints */
 export interface EventDetail {
+  // NOTE: The backend does NOT return event_scope or category (UUID) in detail responses.
+  // They are only available in the write payload (EventWriteBody) and resolved via client-side helpers.
   id: UUID;
   title: string;
   slug: string;

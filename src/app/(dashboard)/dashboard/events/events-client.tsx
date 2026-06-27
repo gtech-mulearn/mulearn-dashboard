@@ -10,7 +10,9 @@ import {
   FeaturedEventsCarousel,
   useEventsList,
   useEventTypeScope,
+  resolveEventTypeValue,
 } from "@/features/events";
+import type { EventListItem } from "@/features/events";
 
 // Normalise a string to a slug for comparison (e.g. "Cultural Event" → "cultural_event")
 function toSlug(s?: string | null) {
@@ -85,6 +87,16 @@ export function EventsPageClient() {
     ];
   }, [typeScopeData]);
 
+  // ── Sort-order arrays ─────────────────────────────────────────────────────
+  const categoryOrder = useMemo(
+    () => clusterList.filter((c) => c.value !== "all").map((c) => c.value),
+    [clusterList],
+  );
+  const eventTypeOrder = useMemo(
+    () => eventTypeOptions.filter((t) => t.value !== "all").map((t) => t.value),
+    [eventTypeOptions],
+  );
+
   // ── Data fetch — all filtering delegated to the server ────────────────────
   const { data, isLoading } = useEventsList({
     pageIndex: currentPage,
@@ -98,6 +110,54 @@ export function EventsPageClient() {
 
   const events = data?.data ?? [];
   const pagination = data?.pagination;
+
+  // ── Client-side sort: cluster → event type → start_datetime desc ──────────
+  const sortedEvents = useMemo(() => {
+    const result = [...events];
+    result.sort((a, b) => {
+      // 1. Sort by cluster (event scope) if selectedCluster is "all"
+      if (selectedCluster === "all") {
+        const getClusterIndex = (event: EventListItem) => {
+          const rawCluster =
+            event.event_scope ||
+            event.organizer?.ig?.cluster ||
+            event.organizer?.organiser_ig?.cluster ||
+            event.organizer?.ig?.category ||
+            event.organizer?.organiser_ig?.category;
+
+          if (rawCluster) {
+            const idx = categoryOrder.indexOf(rawCluster.toLowerCase());
+            if (idx !== -1) return idx;
+          }
+          return 999;
+        };
+        const idxA = getClusterIndex(a);
+        const idxB = getClusterIndex(b);
+        if (idxA !== idxB) return idxA - idxB;
+      }
+
+      // 2. Sort by event type if selectedEventType is "all"
+      if (selectedEventType === "all") {
+        const getEventTypeIndex = (event: EventListItem) => {
+          const typeSlug = resolveEventTypeValue(event.event_type, event.category_name);
+          if (typeSlug) {
+            const idx = eventTypeOrder.indexOf(typeSlug);
+            if (idx !== -1) return idx;
+          }
+          return 999;
+        };
+        const idxA = getEventTypeIndex(a);
+        const idxB = getEventTypeIndex(b);
+        if (idxA !== idxB) return idxA - idxB;
+      }
+
+      // 3. Fallback to start_datetime desc
+      const dateA = new Date(a.start_datetime).getTime();
+      const dateB = new Date(b.start_datetime).getTime();
+      return dateB - dateA;
+    });
+    return result;
+  }, [events, selectedCluster, selectedEventType, categoryOrder, eventTypeOrder]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
   const handlePageChange = (page: number) => {
@@ -153,7 +213,7 @@ export function EventsPageClient() {
           </div>
         ) : (
           <EventsGrid
-            events={events}
+            events={sortedEvents}
             onEventView={(event) =>
               router.push(`/dashboard/events/${event.id}`)
             }
