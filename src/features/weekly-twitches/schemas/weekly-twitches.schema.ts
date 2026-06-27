@@ -1,12 +1,5 @@
 import { z } from "zod";
-
-export const ApiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
-  z.object({
-    hasError: z.boolean(),
-    statusCode: z.number(),
-    message: z.record(z.string(), z.array(z.string())).optional(),
-    response: dataSchema,
-  });
+import { ApiResponseSchema } from "@/lib/schemas/api-response";
 
 export const PaginationSchema = z.object({
   count: z.number().optional(),
