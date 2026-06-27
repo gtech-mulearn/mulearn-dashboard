@@ -79,7 +79,7 @@ export function IgChapterEditDialog({
 
   const handleSelectUser = (user: UserResult) => {
     setSelectedUser({ muid: user.muid, name: user.full_name });
-    form.setValue("lead", user.muid);
+    form.setValue("lead", user.id);
   };
 
   const handleClear = () => {
