@@ -1216,7 +1216,40 @@ export function CampusManageDashboard() {
                                     />
                                     <Tooltip
                                       cursor={{ fill: "transparent" }}
-                                      content={<ChartTooltip />}
+                                      content={({ active, payload }) => {
+                                        if (!active || !payload?.length)
+                                          return null;
+                                        const data = payload[0].payload;
+                                        return (
+                                          <div className="rounded-xl border border-border bg-popover px-3 py-2 text-popover-foreground shadow-lg">
+                                            <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                                              {data.cluster}
+                                            </p>
+                                            <div className="space-y-1">
+                                              <div className="flex items-center justify-between gap-4 text-xs font-semibold">
+                                                <span className="text-muted-foreground">
+                                                  Karma
+                                                </span>
+                                                <span className="font-bold text-foreground">
+                                                  {Number(
+                                                    data.karma,
+                                                  ).toLocaleString()}
+                                                </span>
+                                              </div>
+                                              <div className="flex items-center justify-between gap-4 text-xs font-semibold">
+                                                <span className="text-muted-foreground">
+                                                  Members
+                                                </span>
+                                                <span className="font-bold text-foreground">
+                                                  {Number(
+                                                    data.memberCount,
+                                                  ).toLocaleString()}
+                                                </span>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        );
+                                      }}
                                     />
                                     <Bar
                                       dataKey="karma"
