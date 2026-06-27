@@ -1798,9 +1798,12 @@ export function CampusManageDashboard() {
                                     variant="secondary"
                                     className="rounded-lg px-2 py-0 text-[9px] font-black uppercase tracking-widest"
                                   >
-                                    {member.role === "member"
-                                      ? "Execom"
-                                      : member.role}
+                                    {comboboxRoleOptions.find(
+                                      (r) => r.id === member.role,
+                                    )?.title ||
+                                      (member.role === "member"
+                                        ? "Execom"
+                                        : member.role)}
                                   </Badge>
                                 </div>
                               </div>
