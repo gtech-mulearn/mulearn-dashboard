@@ -72,8 +72,8 @@ export function CampusContentTab({ contentType }: Props) {
     zone: zone || undefined,
   };
 
-  const smtQuery = useSmtList(params);
-  const isQuery = useIsList(params);
+  const smtQuery = useSmtList(params, contentType === "smt");
+  const isQuery = useIsList(params, contentType === "isr");
   const query = contentType === "smt" ? smtQuery : isQuery;
 
   const smtMutations = useSmtMutations();

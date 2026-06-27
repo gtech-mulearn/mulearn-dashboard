@@ -100,10 +100,11 @@ export function useOfficeHoursMutations() {
 
 // ─── Salt Mango Tree ──────────────────────────────────────────
 
-export function useSmtList(params: ListParams) {
+export function useSmtList(params: ListParams, enabled = true) {
   return useQuery({
     queryKey: weeklyTwitchesKeys.smtList(params),
     queryFn: () => fetchSmtList(params),
+    enabled,
     placeholderData: keepPreviousData,
     staleTime: 2 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
@@ -172,10 +173,11 @@ export function useSmtMutations() {
 
 // ─── Inspiration Station ──────────────────────────────────────
 
-export function useIsList(params: ListParams) {
+export function useIsList(params: ListParams, enabled = true) {
   return useQuery({
     queryKey: weeklyTwitchesKeys.isList(params),
     queryFn: () => fetchIsList(params),
+    enabled,
     placeholderData: keepPreviousData,
     staleTime: 2 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
