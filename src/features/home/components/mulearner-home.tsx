@@ -1,7 +1,11 @@
 "use client";
 
 import { useUserInfo, useUserProfile } from "@/features/auth/hooks/use-session";
-import { useInterestGroupsList, useLearnerHomeSummary } from "../hooks";
+import {
+  useGlobalCalendarEvents,
+  useInterestGroupsList,
+  useLearnerHomeSummary,
+} from "../hooks";
 import { EventCalendarCard } from "./event-calendar-card";
 import { HeroCard } from "./hero-card";
 import { InterestGroupsCard } from "./interest-groups-card";

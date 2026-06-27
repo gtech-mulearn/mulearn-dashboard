@@ -575,7 +575,7 @@ export const eventsApi = {
       `${endpoints.events.company}${companyId}/${qs}`,
     );
   },
-
+  //
   // ─── ADMIN ENDPOINTS ─────────────────────────────────────────────────────
   adminList: async (params?: EventListQueryParams): Promise<EventListData> => {
     return fetchListWithStatusFallback(endpoints.events.admin, params);
