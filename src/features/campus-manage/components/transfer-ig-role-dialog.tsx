@@ -122,7 +122,7 @@ export function TransferIgRoleDialog({
                 <SelectTrigger>
                   <SelectValue placeholder="Select IG..." />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent position="popper">
                   {igCodes.map((code) => (
                     <SelectItem key={code} value={code}>
                       {code}
