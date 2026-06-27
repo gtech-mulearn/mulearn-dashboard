@@ -26,9 +26,6 @@ import {
 import type { CampusContentWrite, OfficeHoursWrite } from "../schemas";
 import { weeklyTwitchesKeys } from "./query-keys";
 
-const STALE = 2 * 60 * 1000;
-const GC = 15 * 60 * 1000;
-
 // ─── Office Hours ─────────────────────────────────────────────
 
 export function useOfficeHoursList(params: ListParams) {
@@ -36,8 +33,8 @@ export function useOfficeHoursList(params: ListParams) {
     queryKey: weeklyTwitchesKeys.officeHoursList(params),
     queryFn: () => fetchOfficeHoursList(params),
     placeholderData: keepPreviousData,
-    staleTime: STALE,
-    gcTime: GC,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
 }
@@ -54,7 +51,11 @@ export function useOfficeHoursMutations() {
       invalidate();
     },
     onError: (error) => {
-      toast.error(getApiResponseError(error));
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to create Office Hours session.",
+        }),
+      );
     },
   });
 
@@ -71,7 +72,11 @@ export function useOfficeHoursMutations() {
       invalidate();
     },
     onError: (error) => {
-      toast.error(getApiResponseError(error));
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to update Office Hours session.",
+        }),
+      );
     },
   });
 
@@ -82,7 +87,11 @@ export function useOfficeHoursMutations() {
       invalidate();
     },
     onError: (error) => {
-      toast.error(getApiResponseError(error));
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to delete Office Hours session.",
+        }),
+      );
     },
   });
 
@@ -96,8 +105,8 @@ export function useSmtList(params: ListParams) {
     queryKey: weeklyTwitchesKeys.smtList(params),
     queryFn: () => fetchSmtList(params),
     placeholderData: keepPreviousData,
-    staleTime: STALE,
-    gcTime: GC,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
 }
@@ -114,7 +123,11 @@ export function useSmtMutations() {
       invalidate();
     },
     onError: (error) => {
-      toast.error(getApiResponseError(error));
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to create Salt Mango Tree episode.",
+        }),
+      );
     },
   });
 
@@ -131,7 +144,11 @@ export function useSmtMutations() {
       invalidate();
     },
     onError: (error) => {
-      toast.error(getApiResponseError(error));
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to update Salt Mango Tree episode.",
+        }),
+      );
     },
   });
 
@@ -142,7 +159,11 @@ export function useSmtMutations() {
       invalidate();
     },
     onError: (error) => {
-      toast.error(getApiResponseError(error));
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to delete Salt Mango Tree episode.",
+        }),
+      );
     },
   });
 
@@ -156,8 +177,8 @@ export function useIsList(params: ListParams) {
     queryKey: weeklyTwitchesKeys.isList(params),
     queryFn: () => fetchIsList(params),
     placeholderData: keepPreviousData,
-    staleTime: STALE,
-    gcTime: GC,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
 }
@@ -174,7 +195,11 @@ export function useIsMutations() {
       invalidate();
     },
     onError: (error) => {
-      toast.error(getApiResponseError(error));
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to create Inspiration Station episode.",
+        }),
+      );
     },
   });
 
@@ -191,7 +216,11 @@ export function useIsMutations() {
       invalidate();
     },
     onError: (error) => {
-      toast.error(getApiResponseError(error));
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to update Inspiration Station episode.",
+        }),
+      );
     },
   });
 
@@ -202,7 +231,11 @@ export function useIsMutations() {
       invalidate();
     },
     onError: (error) => {
-      toast.error(getApiResponseError(error));
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to delete Inspiration Station episode.",
+        }),
+      );
     },
   });
 
