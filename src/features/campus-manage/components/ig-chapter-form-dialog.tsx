@@ -112,7 +112,7 @@ export function IgChapterFormDialog({ trigger }: IgChapterFormDialogProps) {
               <SelectTrigger>
                 <SelectValue placeholder="Select IG..." />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent position="popper">
                 {globalIgs.map((ig) => (
                   <SelectItem key={ig.id} value={ig.id}>
                     {ig.name}
