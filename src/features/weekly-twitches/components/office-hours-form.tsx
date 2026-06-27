@@ -40,7 +40,12 @@ const DEFAULTS: OfficeHoursWrite = {
 };
 
 function isoToInputDate(isoDate: string): string {
-  return isoDate ?? "";
+  if (!isoDate) return "";
+  if (isoDate.includes("/")) {
+    const [day, month, year] = isoDate.split("/");
+    return `${year}-${month}-${day}`;
+  }
+  return isoDate;
 }
 
 export function OfficeHoursForm({ isOpen, onClose, initialData }: Props) {
