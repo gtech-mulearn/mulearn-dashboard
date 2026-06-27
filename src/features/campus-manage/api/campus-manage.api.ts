@@ -274,7 +274,7 @@ export const campusManageApi = {
     filters: CampusLeaderboardFilters,
   ): Promise<CampusLeaderboardResponse> {
     const params = new URLSearchParams();
-    params.set("page", String(filters.page));
+    params.set("pageIndex", String(filters.page));
 
     // Filters supported by both endpoints
     if (filters.alumni !== "all") {
@@ -402,7 +402,7 @@ export const campusManageApi = {
 
   async getEvents(filters: CampusEventFilters): Promise<CampusEventsResponse> {
     const params = new URLSearchParams();
-    params.set("page", String(filters.page));
+    params.set("pageIndex", String(filters.page));
     if (filters.status) params.set("status", filters.status);
     if (filters.type) params.set("event_type", filters.type);
     if (filters.date) {
