@@ -89,6 +89,10 @@ export async function updateOfficeHours(
     {
       ...payload,
       ...(payload.date ? { date: toOfficeHoursDate(payload.date) } : {}),
+      link: payload.link || undefined,
+      poster_thumbnail: payload.poster_thumbnail || undefined,
+      performer: payload.performer || undefined,
+      designation: payload.designation || undefined,
     },
     MutationResponseSchema,
   );
@@ -136,7 +140,7 @@ export async function updateSmt(
 ): Promise<void> {
   await apiClient.patch(
     endpoints.weeklyTwitches.saltMangoTree.update(id),
-    payload,
+    { ...payload, link: payload.link || undefined },
     MutationResponseSchema,
   );
 }
@@ -183,7 +187,7 @@ export async function updateIs(
 ): Promise<void> {
   await apiClient.patch(
     endpoints.weeklyTwitches.inspirationStation.update(id),
-    payload,
+    { ...payload, link: payload.link || undefined },
     MutationResponseSchema,
   );
 }
