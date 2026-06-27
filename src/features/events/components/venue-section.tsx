@@ -88,6 +88,10 @@ export function VenueSection({
         />
       )}
 
+      {errors?.maps_url?.message ? (
+        <p className="text-xs text-destructive">{errors.maps_url.message}</p>
+      ) : null}
+
       {(venueType === "physical" || venueType === "hybrid") && (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <Controller
