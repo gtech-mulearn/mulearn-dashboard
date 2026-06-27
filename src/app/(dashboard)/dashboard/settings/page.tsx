@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { RoleExclude } from "@/components/auth/role-gate";
-import { ROLES } from "@/lib/auth";
+import { RoleGate } from "@/components/auth/role-gate";
+import { CAMPUS_SETTINGS_ROLES } from "@/lib/auth/roles";
 
 export const metadata: Metadata = {
   title: "Settings",
@@ -43,7 +43,7 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        <RoleExclude excludeRoles={[ROLES.COMPANY]}>
+        <RoleGate allowedRoles={CAMPUS_SETTINGS_ROLES}>
           <Card className="rounded-2xl">
             <CardContent className="flex h-full flex-col justify-between gap-4 p-6">
               <div className="space-y-2">
@@ -64,7 +64,7 @@ export default function SettingsPage() {
               </Button>
             </CardContent>
           </Card>
-        </RoleExclude>
+        </RoleGate>
       </div>
     </div>
   );
