@@ -243,7 +243,7 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
     clearErrors,
     formState: { errors, isDirty },
   } = useForm<CreateEventSchema>({
-    resolver: zodResolver(updateEventSchema) as Resolver<CreateEventSchema>,
+    resolver: zodResolver(createEventSchema) as Resolver<CreateEventSchema>,
     defaultValues: EVENT_FORM_DEFAULT_VALUES,
   });
 
