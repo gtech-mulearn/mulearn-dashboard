@@ -135,8 +135,9 @@ export function EventCalendarCard({
     const map = new Map<string, CalendarEvent[]>();
     for (const event of events) {
       const key = event.date.slice(0, 10);
-      const events = propEvents ?? fetchedEvents ?? [];
-      const isLoading = propIsLoading ?? isFetching;
+      const existing = map.get(key) ?? [];
+      existing.push(event);
+      map.set(key, existing);
     }
     return map;
   }, [events]);
