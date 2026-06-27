@@ -28,6 +28,7 @@ import {
   Link,
   Map as MapIcon,
   MapPin,
+  Radio,
   Rocket,
   Search,
   Settings,
@@ -349,6 +350,18 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: LayoutDashboard,
     section: "management",
     permission: "events:manage",
+  },
+  {
+    id: "weekly-twitches",
+    title: "Weekly Twitches",
+    href: "/dashboard/weekly-twitches",
+    icon: Radio,
+    section: "management",
+    roles: MANAGEMENT_ROLES,
+    dynamicCheck: (roles) =>
+      roles.includes(ROLES.ADMIN) ||
+      roles.includes(ROLES.ASSOCIATE) ||
+      roles.includes(ROLES.IG_LEAD),
   },
 
   // ── Bottom Section (all authenticated users) ──────────────
