@@ -36,7 +36,7 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <Button asChild variant="link">
+            <Button asChild variant="link" aria-label="Open account settings">
               <Link href="/dashboard/settings/account">
                 Open
                 <ChevronRight className="h-5 w-5" />
@@ -60,7 +60,7 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <Button asChild variant="link">
+              <Button asChild variant="link" aria-label="Open campus settings">
                 <Link href="/dashboard/settings/organization">
                   Open
                   <ChevronRight className="h-5 w-5" />
