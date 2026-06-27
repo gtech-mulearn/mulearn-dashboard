@@ -3,6 +3,7 @@ export type {
   CreateEventSchema,
   EventListParamsSchema,
   EventTypeScopeData,
+  EventTypeScopeResponseData,
   UpdateEventSchema,
 } from "./events.schema";
 export {
@@ -11,6 +12,7 @@ export {
   createEventSchema,
   eventListParamsSchema,
   eventTypeScopeSchema,
+  eventTypeScopeResponseSchema,
   updateEventSchema,
   venueTypeSchema,
 } from "./events.schema";

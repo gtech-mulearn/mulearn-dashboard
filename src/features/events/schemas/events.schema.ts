@@ -322,12 +322,16 @@ export const categoryListResponseSchema = z.object({
 
 /**
  * Validates the payload returned by the eventTypeScope endpoint.
- * This endpoint is NOT wrapped in a Django envelope, so the schema
- * matches the top-level response object directly.
+ * This endpoint is wrapped in a Django envelope.
  */
 export const eventTypeScopeSchema = z.object({
   event_type: z.array(z.string()),
   event_scope: z.array(z.string()),
+});
+
+export const eventTypeScopeResponseSchema = z.object({
+  hasError: z.boolean(),
+  response: eventTypeScopeSchema,
 });
 
 // ─── TYPE EXPORTS ──────────────────────────────────────────────────────────
@@ -337,3 +341,4 @@ export type UpdateEventSchema = z.infer<typeof updateEventSchema>;
 export type EventListParamsSchema = z.infer<typeof eventListParamsSchema>;
 export type CategoryItem = z.infer<typeof categorySchema>;
 export type EventTypeScopeData = z.infer<typeof eventTypeScopeSchema>;
+export type EventTypeScopeResponseData = z.infer<typeof eventTypeScopeResponseSchema>;

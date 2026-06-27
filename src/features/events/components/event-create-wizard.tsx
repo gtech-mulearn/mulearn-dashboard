@@ -194,8 +194,25 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
     useEventTypeScope();
 
   const eventTypeSelectOptions = useMemo(() => {
-    if (!typeScopeData?.event_type) return [];
-    return typeScopeData.event_type.map((type) => {
+    const list = typeScopeData?.event_type || [
+      "Hackathon",
+      "Workshop",
+      "Webinar",
+      "Seminar",
+      "Bootcamp",
+      "Meetup",
+      "Conference",
+      "Competition",
+      "Ideathon",
+      "Cultural Event",
+      "Sports Event",
+      "Community Event",
+      "Expo",
+      "Networking Event",
+      "Tech Talk",
+      "Others",
+    ];
+    return list.map((type) => {
       const val = type.trim().toLowerCase().replace(/\s+/g, "_");
       return { label: type, value: val };
     });

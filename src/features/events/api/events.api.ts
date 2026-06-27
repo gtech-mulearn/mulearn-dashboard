@@ -1,6 +1,10 @@
 import { apiClient, endpoints } from "@/api";
 import type { ApprovalTier } from "../lib/events.policy";
-import { categoryListResponseSchema, eventTypeScopeSchema } from "../schemas";
+import {
+  categoryListResponseSchema,
+  eventTypeScopeSchema,
+  eventTypeScopeResponseSchema,
+} from "../schemas";
 import type {
   CollaboratorInviteBody,
   CollaboratorsListData,
@@ -643,7 +647,11 @@ export const eventsApi = {
     event_type: string[];
     event_scope: string[];
   }> => {
-    return apiClient.get(endpoints.events.eventTypeScope, eventTypeScopeSchema);
+    const envelope = await apiClient.get(
+      endpoints.events.eventTypeScope,
+      eventTypeScopeResponseSchema,
+    );
+    return envelope.response;
   },
 
   /**

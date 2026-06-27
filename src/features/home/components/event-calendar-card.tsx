@@ -116,24 +116,16 @@ export function EventCalendarCard({
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
 
-  // Generate calendar grid days (6 weeks) and calculate range
-  const { calendarDays, startDate, endDate } = useMemo(() => {
+  // Generate calendar grid days (6 weeks)
+  const calendarDays = useMemo(() => {
     const monthStart = startOfMonth(currentMonth);
     const monthEnd = endOfMonth(currentMonth);
     const calStart = startOfWeek(monthStart, { weekStartsOn: 0 });
     const calEnd = endOfWeek(monthEnd, { weekStartsOn: 0 });
-    const days = eachDayOfInterval({ start: calStart, end: calEnd });
-    return {
-      calendarDays: days,
-      startDate: format(calStart, "yyyy-MM-dd"),
-      endDate: format(calEnd, "yyyy-MM-dd"),
-    };
+    return eachDayOfInterval({ start: calStart, end: calEnd });
   }, [currentMonth]);
 
-  const { data: fetchedEvents, isLoading: isFetching } = useCalendarEvents(
-    startDate,
-    endDate,
-  );
+  const { data: fetchedEvents, isLoading: isFetching } = useCalendarEvents();
 
   const events = propEvents ?? fetchedEvents ?? [];
   const isLoading = propIsLoading ?? isFetching;
