@@ -211,8 +211,11 @@ export function useTransferIgRole() {
 
 export function useDownloadStudentCsv() {
   return useMutation({
-    mutationFn: (filters?: { alumni?: "all" | "alumni" | "student" }) =>
-      campusManageApi.downloadStudentDetailsCsv(filters),
+    mutationFn: (filters?: {
+      alumni?: "all" | "alumni" | "student";
+      ig?: string;
+      category?: string;
+    }) => campusManageApi.downloadStudentDetailsCsv(filters),
     onError: (error) => {
       toast.error(
         getApiResponseError(error, { fallback: "Failed to download CSV" }),

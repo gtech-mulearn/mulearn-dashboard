@@ -958,7 +958,11 @@ export function CampusManageDashboard() {
                   disabled={isDownloadingCsv}
                   onClick={() =>
                     downloadCsv(
-                      { alumni: leaderboardFilters.alumni },
+                      {
+                        alumni: leaderboardFilters.alumni,
+                        ig: leaderboardFilters.ig || undefined,
+                        category: leaderboardFilters.category || undefined,
+                      },
                       {
                         onSuccess: () =>
                           toast.success("Student details exported"),

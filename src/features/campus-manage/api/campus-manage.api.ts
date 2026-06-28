@@ -459,10 +459,18 @@ export const campusManageApi = {
 
   async downloadStudentDetailsCsv(filters?: {
     alumni?: "all" | "alumni" | "student";
+    ig?: string;
+    category?: string;
   }): Promise<void> {
     const params = new URLSearchParams();
     if (filters?.alumni && filters.alumni !== "all") {
       params.set("is_alumni", String(filters.alumni === "alumni"));
+    }
+    if (filters?.ig) {
+      params.set("ig", filters.ig);
+    }
+    if (filters?.category) {
+      params.set("category", filters.category);
     }
     const suffix = params.toString();
     const endpoint = suffix
