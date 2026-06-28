@@ -679,6 +679,7 @@ export const campusManageApi = {
         name: safeToString(row.ig_name ?? ig.name ?? row.name, "IG Chapter"),
         code: safeToString(row.ig_code ?? ig.code),
         icon: safeToString(row.ig_icon ?? ig.icon),
+        iconLink: row.icon_link ? safeToString(row.icon_link) : undefined,
         leadId: safeToString(row.lead_id ?? lead.id),
         lead: safeToString(
           row.lead_name ?? lead.full_name ?? row.lead,
@@ -697,6 +698,7 @@ export const campusManageApi = {
   async createIgChapter(data: {
     ig: string;
     description?: string;
+    icon_link?: string;
     lead?: string;
   }) {
     return apiClient.post(endpoints.campusManage.igChapters, data);
@@ -704,7 +706,12 @@ export const campusManageApi = {
 
   async updateIgChapter(
     chapterId: string,
-    data: { description?: string; lead?: string; is_active?: boolean },
+    data: {
+      description?: string;
+      icon_link?: string;
+      lead?: string;
+      is_active?: boolean;
+    },
   ) {
     return apiClient.patch(
       endpoints.campusManage.igChapterDetail(chapterId),

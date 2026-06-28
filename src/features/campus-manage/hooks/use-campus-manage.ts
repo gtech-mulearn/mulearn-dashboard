@@ -253,8 +253,12 @@ export function useIgChapters() {
 export function useCreateIgChapter() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { ig: string; description?: string; lead?: string }) =>
-      campusManageApi.createIgChapter(data),
+    mutationFn: (data: {
+      ig: string;
+      description?: string;
+      icon_link?: string;
+      lead?: string;
+    }) => campusManageApi.createIgChapter(data),
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: campusManageKeys.igChapters(),
@@ -278,7 +282,12 @@ export function useUpdateIgChapter() {
       data,
     }: {
       chapterId: string;
-      data: { description?: string; lead?: string; is_active?: boolean };
+      data: {
+        description?: string;
+        icon_link?: string;
+        lead?: string;
+        is_active?: boolean;
+      };
     }) => campusManageApi.updateIgChapter(chapterId, data),
     onSuccess: () => {
       void queryClient.invalidateQueries({

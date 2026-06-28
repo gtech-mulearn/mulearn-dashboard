@@ -104,6 +104,7 @@ export interface IgChapter {
   name: string;
   code?: string;
   icon?: string;
+  iconLink?: string;
   leadId?: string;
   lead: string;
   membersCount: number;

@@ -16,6 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { MuidSearchInput } from "@/components/ui/muid-search-input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
@@ -27,6 +28,7 @@ import { TransferIgRoleDialog } from "./transfer-ig-role-dialog";
 
 const schema = z.object({
   description: z.string().optional(),
+  icon_link: z.string().url("Must be a valid URL").optional().or(z.literal("")),
   lead: z.string().optional(),
   is_active: z.boolean(),
 });
@@ -72,6 +74,7 @@ export function IgChapterEditDialog({
     resolver: zodResolver(schema),
     defaultValues: {
       description: chapter.description ?? "",
+      icon_link: chapter.iconLink ?? "",
       lead: chapter.leadId ?? "",
       is_active: chapter.isActive ?? true,
     },
@@ -98,6 +101,7 @@ export function IgChapterEditDialog({
         chapterId: chapter.id,
         data: {
           description: values.description || undefined,
+          icon_link: values.icon_link || "",
           lead: leadChanged ? values.lead || undefined : undefined,
           is_active: values.is_active,
         },
@@ -162,6 +166,24 @@ export function IgChapterEditDialog({
                 placeholder="Chapter description..."
                 rows={3}
               />
+            </div>
+            <div className="space-y-1.5">
+              <label
+                htmlFor="edit-chapter-icon-link"
+                className="text-sm font-medium"
+              >
+                Icon Link (optional)
+              </label>
+              <Input
+                id="edit-chapter-icon-link"
+                {...form.register("icon_link")}
+                placeholder="https://..."
+              />
+              {form.formState.errors.icon_link && (
+                <p className="text-xs text-destructive">
+                  {form.formState.errors.icon_link.message}
+                </p>
+              )}
             </div>
             {chapter.lead === "No Lead Assigned" ? (
               <div className="space-y-1.5">
