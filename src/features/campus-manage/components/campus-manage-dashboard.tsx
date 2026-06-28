@@ -102,6 +102,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import { chipColor } from "@/lib/chip-colors";
 import { cn } from "@/lib/utils";
+import { endpoints } from "@/api/endpoints";
 import {
   useAddExecomMember,
   useCampusEvents,
@@ -1710,6 +1711,10 @@ export function CampusManageDashboard() {
                               onClear={() => setSelectedExecomUser(null)}
                               placeholder="Search by name or MUID"
                               disabled={isAssigningExecomRole}
+                              searchOptions={{
+                                endpoint: endpoints.campusManage.execomSearch,
+                                queryParam: "q",
+                              }}
                             />
                           </div>
                           <div>

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { endpoints } from "@/api/endpoints";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
@@ -151,6 +152,10 @@ export function TransferIgRoleDialog({
                 keepOpen
                 placeholder="Search by name or MUID..."
                 disabled={isPending}
+                searchOptions={{
+                  endpoint: endpoints.campusManage.execomSearch,
+                  queryParam: "q",
+                }}
               />
               {form.formState.errors.muid && (
                 <p className="text-xs text-destructive">

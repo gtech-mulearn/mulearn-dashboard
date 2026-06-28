@@ -21,6 +21,7 @@ import { MuidSearchInput } from "@/components/ui/muid-search-input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { getApiResponseError } from "@/hooks/use-get-error";
+import { endpoints } from "@/api/endpoints";
 import type { UserResult } from "@/hooks/use-search";
 import { useDeleteIgChapter, useUpdateIgChapter } from "../hooks";
 import type { IgChapter } from "../types";
@@ -195,6 +196,10 @@ export function IgChapterEditDialog({
                   keepOpen
                   placeholder="Search for lead..."
                   disabled={isUpdating}
+                  searchOptions={{
+                    endpoint: endpoints.campusManage.execomSearch,
+                    queryParam: "q",
+                  }}
                 />
               </div>
             ) : (

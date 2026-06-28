@@ -16,6 +16,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { endpoints } from "@/api/endpoints";
 import { MuidSearchInput } from "@/components/ui/muid-search-input";
 import {
   Select,
@@ -170,6 +171,10 @@ export function IgChapterFormDialog({ trigger }: IgChapterFormDialogProps) {
               keepOpen
               placeholder="Search for initial lead..."
               disabled={isPending}
+              searchOptions={{
+                endpoint: endpoints.campusManage.execomSearch,
+                queryParam: "q",
+              }}
             />
           </div>
           <DialogFooter>

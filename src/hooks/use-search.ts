@@ -14,7 +14,25 @@ export interface UserResult {
 
 const EMPTY_EXCLUDED: string[] = [];
 
-export function useSearch(excludedMuids: string[] = EMPTY_EXCLUDED) {
+export interface SearchOptions {
+  excludedMuids?: string[];
+  endpoint?: string;
+  queryParam?: "search" | "q";
+}
+
+export function useSearch(options: SearchOptions | string[] = EMPTY_EXCLUDED) {
+  const excludedMuids = Array.isArray(options)
+    ? options
+    : (options.excludedMuids ?? []);
+  const endpoint =
+    !Array.isArray(options) && options.endpoint
+      ? options.endpoint
+      : endpoints.search.users;
+  const queryParam =
+    !Array.isArray(options) && options.queryParam
+      ? options.queryParam
+      : "search";
+
   const [query, setQuery] = React.useState("");
   const [results, setResults] = React.useState<UserResult[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -38,14 +56,17 @@ export function useSearch(excludedMuids: string[] = EMPTY_EXCLUDED) {
     setIsLoading(true);
 
     const params = new URLSearchParams({
-      search: debouncedQuery.trim(),
-      perPage: "15",
-      pageIndex: "1",
-      sortBy: "",
+      [queryParam]: debouncedQuery.trim(),
     });
 
+    if (endpoint === endpoints.search.users) {
+      params.append("perPage", "15");
+      params.append("pageIndex", "1");
+      params.append("sortBy", "");
+    }
+
     apiClient
-      .get<{ data: UserResult[] }>(`${endpoints.search.users}?${params}`)
+      .get<{ data: UserResult[] }>(`${endpoint}?${params}`)
       .then((response) => {
         if (!cancelled) {
           const users = response.data ?? [];
@@ -67,7 +88,7 @@ export function useSearch(excludedMuids: string[] = EMPTY_EXCLUDED) {
     return () => {
       cancelled = true;
     };
-  }, [debouncedQuery, stableExcluded]);
+  }, [debouncedQuery, stableExcluded, endpoint, queryParam]);
 
   const handleSearch = React.useCallback((val: string) => {
     setQuery(val);
