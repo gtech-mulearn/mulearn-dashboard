@@ -7,7 +7,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AvailabilitySlotPicker } from "@/features/mentor/components/availability-slot-picker";
+import {
+  AvailabilitySlotPicker,
+  scheduleHasOverlap,
+} from "@/features/mentor/components/availability-slot-picker";
 import {
   useAvailabilitySlots,
   useCreateAvailabilitySlots,
@@ -97,6 +100,7 @@ export function MentorHome() {
   }, [serverSchedule]);
 
   const isDirty = !scheduleEqual(localSchedule, savedSchedule);
+  const hasOverlap = scheduleHasOverlap(localSchedule);
 
   // Step 1: wait for application to load
   if (appLoading || (onboardingState === "rejected" && profileLoading)) {
@@ -224,6 +228,7 @@ export function MentorHome() {
     : null;
 
   function handleSave() {
+    if (hasOverlap) return; // guard: overlapping slots cannot be saved
     const igId = igRoles?.[0]?.id;
 
     saveSchedule(
@@ -340,7 +345,10 @@ export function MentorHome() {
                 type="button"
                 size="sm"
                 onClick={handleSave}
-                disabled={isSaving}
+                disabled={isSaving || hasOverlap}
+                title={
+                  hasOverlap ? "Resolve overlapping slots to save" : undefined
+                }
                 className="rounded-full px-4 cursor-pointer"
               >
                 {isSaving && (
@@ -364,11 +372,18 @@ export function MentorHome() {
               )}
             </div>
           ) : (
-            <AvailabilitySlotPicker
-              value={localSchedule}
-              onChange={setLocalSchedule}
-              disabled={isSaving}
-            />
+            <>
+              <AvailabilitySlotPicker
+                value={localSchedule}
+                onChange={setLocalSchedule}
+                disabled={isSaving}
+              />
+              {hasOverlap && (
+                <p className="mt-3 text-xs font-medium text-destructive">
+                  Some slots overlap. Adjust the highlighted times to save.
+                </p>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
