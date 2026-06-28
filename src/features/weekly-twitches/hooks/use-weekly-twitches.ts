@@ -18,10 +18,10 @@ import {
   fetchIsList,
   fetchOfficeHoursList,
   fetchSmtList,
+  type ListParams,
   updateIs,
   updateOfficeHours,
   updateSmt,
-  type ListParams,
 } from "../api";
 import type { CampusContentWrite, OfficeHoursWrite } from "../schemas";
 import { weeklyTwitchesKeys } from "./query-keys";

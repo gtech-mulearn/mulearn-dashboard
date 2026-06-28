@@ -2,15 +2,15 @@ import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
   CampusContentDetailResponseSchema,
-  CampusContentListResponseSchema,
-  MutationResponseSchema,
-  OfficeHoursDetailResponseSchema,
-  OfficeHoursListResponseSchema,
   type CampusContentItem,
   type CampusContentListData,
+  CampusContentListResponseSchema,
   type CampusContentWrite,
+  MutationResponseSchema,
+  OfficeHoursDetailResponseSchema,
   type OfficeHoursItem,
   type OfficeHoursListData,
+  OfficeHoursListResponseSchema,
   type OfficeHoursWrite,
 } from "../schemas";
 

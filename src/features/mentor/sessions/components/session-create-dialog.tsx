@@ -35,6 +35,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useMentorOverview } from "@/features/mentor/hooks";
 import { useTaskIgDropdown } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
 import { useCreateSession } from "../hooks/use-sessions";
 import { SessionFormSchema, type SessionFormValues } from "../schemas";
@@ -50,6 +51,14 @@ export function SessionCreateDialog({
 }: SessionCreateDialogProps) {
   const { data: myIgs = [] } = useTaskIgDropdown();
 
+  // Company mentors are scoped to their org by the backend and do not pick an
+  // IG. Detect the tier from the mentor overview scopes.
+  const { data: overview } = useMentorOverview();
+  const companyScope = overview?.scopes?.find(
+    (s) => s.scope_type === "COMPANY_MENTOR",
+  );
+  const isCompanyMentor = !!companyScope;
+
   const { mutate: create, isPending } = useCreateSession();
 
   const form = useForm<SessionFormValues>({
@@ -58,6 +67,7 @@ export function SessionCreateDialog({
       title: "",
       description: "",
       ig_id: "",
+      is_company_session: false,
       mode: "ONLINE",
       starts_at: "",
       ends_at: "",
@@ -90,6 +100,12 @@ export function SessionCreateDialog({
       form.setValue("ends_at", endsAt);
     }
   }, [open, form]);
+
+  // Keep the company-session discriminator in sync with the detected tier so
+  // the schema skips the IG requirement and the payload omits the IG.
+  useEffect(() => {
+    form.setValue("is_company_session", isCompanyMentor);
+  }, [isCompanyMentor, form]);
 
   function onSubmit(values: SessionFormValues) {
     create(values, {
@@ -144,44 +160,57 @@ export function SessionCreateDialog({
                 )}
               />
 
-              <FormField
-                control={form.control as any}
-                name="ig_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Interest Group</FormLabel>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div>
-                          <Select
-                            value={field.value}
-                            onValueChange={field.onChange}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select Interest Group" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {myIgs.map((ig) => (
-                                <SelectItem key={ig.id} value={ig.id}>
-                                  {ig.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </TooltipTrigger>
-                      {myIgs.length === 0 && (
-                        <TooltipContent>
-                          Link to an IG first via your profile
-                        </TooltipContent>
-                      )}
-                    </Tooltip>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {isCompanyMentor ? (
+                <div className="space-y-2">
+                  {/* Plain label — FormLabel requires a FormField context. */}
+                  <span className="text-sm font-medium leading-none">
+                    Company
+                  </span>
+                  <Input value={companyScope?.scope_name ?? ""} disabled />
+                  <p className="text-xs text-muted-foreground">
+                    This session will be scoped to your company.
+                  </p>
+                </div>
+              ) : (
+                <FormField
+                  control={form.control as any}
+                  name="ig_id"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Interest Group</FormLabel>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div>
+                            <Select
+                              value={field.value}
+                              onValueChange={field.onChange}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select Interest Group" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {myIgs.map((ig) => (
+                                  <SelectItem key={ig.id} value={ig.id}>
+                                    {ig.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </TooltipTrigger>
+                        {myIgs.length === 0 && (
+                          <TooltipContent>
+                            Link to an IG first via your profile
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
               <FormField
                 control={form.control as any}

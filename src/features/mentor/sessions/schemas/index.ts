@@ -101,7 +101,13 @@ export const ParticipantsListResponseSchema = ApiResponseSchema(
 export const SessionFormBaseSchema = z.object({
   title: z.string().min(1, "Title is required").max(150),
   description: z.string().optional(),
-  ig_id: z.string().min(1, "Interest Group is required"),
+  // IG is required only for IG mentors. Company mentors are scoped to their org
+  // by the backend (session_type=company_session), so they create sessions
+  // without selecting an Interest Group — see is_company_session below.
+  ig_id: z.string().optional(),
+  // Discriminator set by the dialog from the mentor's tier (COMPANY_MENTOR →
+  // true). Never sent to the backend; the payload builder strips it.
+  is_company_session: z.boolean().optional().default(false),
   mode: z.enum(["ONLINE", "OFFLINE", "HYBRID"]),
   starts_at: z.string().min(1, "Start time is required"),
   ends_at: z.string().min(1, "End time is required"),
@@ -121,6 +127,15 @@ export const SessionFormBaseSchema = z.object({
 export type SessionFormValues = z.infer<typeof SessionFormBaseSchema>;
 
 export const SessionFormSchema = SessionFormBaseSchema.superRefine((v, ctx) => {
+  // IG is mandatory unless this is a company-mentor session (org-scoped).
+  if (!v.is_company_session && !v.ig_id?.trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Interest Group is required",
+      path: ["ig_id"],
+    });
+  }
+
   // Basic end_at vs starts_at
   if (new Date(v.ends_at) <= new Date(v.starts_at)) {
     ctx.addIssue({

@@ -44,6 +44,10 @@ function toISO(value: string | undefined): string | undefined {
 function toBackendPayload(data: Partial<SessionFormValues>) {
   const {
     ig_id,
+    // UI-only discriminator — never sent to the backend. For COMPANY_MENTORs the
+    // backend derives the org scope itself (session_type=company_session) and
+    // rejects unknown fields, so it must be stripped here.
+    is_company_session: _is_company_session,
     meeting_link,
     description,
     venue,
@@ -57,8 +61,9 @@ function toBackendPayload(data: Partial<SessionFormValues>) {
   } = data;
   const payload: Record<string, unknown> = { ...rest, is_recurring };
 
-  // Map frontend ig_id to all possible backend fields to ensure compatibility
-  if (ig_id !== undefined) {
+  // IG mentors: scope the session to the selected Interest Group. Company
+  // mentors send no ig_id — the backend org-scopes the session itself.
+  if (ig_id?.trim()) {
     payload.ig = ig_id;
     payload.entity_id = ig_id;
     payload.session_type = "ig_session";
@@ -97,6 +102,9 @@ function toBackendPayload(data: Partial<SessionFormValues>) {
 function toUpdatePayload(data: Partial<SessionFormValues>) {
   const {
     ig_id,
+    // UI-only discriminator — never sent to the backend.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    is_company_session: _is_company_session,
     meeting_link,
     description,
     venue,
@@ -116,7 +124,7 @@ function toUpdatePayload(data: Partial<SessionFormValues>) {
 
   const payload: Record<string, unknown> = { ...rest };
 
-  if (ig_id !== undefined) {
+  if (ig_id?.trim()) {
     payload.ig = ig_id;
     payload.entity_id = ig_id;
     payload.session_type = "ig_session";
