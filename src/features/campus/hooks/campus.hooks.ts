@@ -8,10 +8,8 @@ import type { CampusSessionListParams } from "../api/campus.api";
 import {
   assignCampusMentor,
   campusService,
-  createCampusSession,
   fetchCampusSessions,
 } from "../api/campus.api";
-import type { CampusSessionCreateValues } from "../schemas";
 import { campusKeys } from "./query-keys";
 
 // ─── campusKeys: info + weekly-karma ─────────────────────────────────────────
@@ -90,26 +88,6 @@ export function useAssignCampusMentor() {
       toast.error(
         getApiResponseError(error, {
           fallback: "Failed to assign campus mentor",
-        }),
-      ),
-  });
-}
-
-// ─── #2 POST sessions/create/ ─────────────────────────────────────────────────
-export function useCreateCampusSession() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data: CampusSessionCreateValues) => createCampusSession(data),
-    onSuccess: () => {
-      toast.success(
-        "Campus session created successfully and is pending approval.",
-      );
-      void qc.invalidateQueries({ queryKey: campusMentorKeys.sessions() });
-    },
-    onError: (error) =>
-      toast.error(
-        getApiResponseError(error, {
-          fallback: "Failed to create campus session",
         }),
       ),
   });

@@ -31,10 +31,36 @@ type ApproveFormValues = z.infer<typeof ApproveFormSchema>;
 
 interface ApproveSessionDialogProps {
   session: Session | null;
-  action: "approve" | "reject";
+  action: "approve" | "reject" | "cancel";
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
+
+const ACTION_CONFIG = {
+  approve: {
+    status: "SCHEDULED" as const,
+    title: "Approve Session",
+    button: "Approve",
+    variant: "default" as const,
+    seriesHint:
+      "This will approve all future recurring sessions in this series.",
+  },
+  reject: {
+    status: "REJECTED" as const,
+    title: "Reject Session",
+    button: "Reject",
+    variant: "destructive" as const,
+    seriesHint:
+      "This will reject all future recurring sessions in this series.",
+  },
+  cancel: {
+    status: "CANCELLED" as const,
+    title: "Cancel Session",
+    button: "Cancel Session",
+    variant: "destructive" as const,
+    seriesHint: "This will cancel all scheduled sessions in this series.",
+  },
+};
 
 export function ApproveSessionDialog({
   session,
@@ -43,6 +69,7 @@ export function ApproveSessionDialog({
   onOpenChange,
 }: ApproveSessionDialogProps) {
   const { mutate: approve, isPending } = useApproveSession();
+  const config = ACTION_CONFIG[action];
 
   const form = useForm<ApproveFormValues>({
     resolver: zodResolver(ApproveFormSchema) as any,
@@ -53,12 +80,11 @@ export function ApproveSessionDialog({
 
   function onSubmit(values: ApproveFormValues) {
     if (!session) return;
-    // Doc payload: { status: "SCHEDULED" } to approve, { status: "REJECTED" } to reject
     approve(
       {
         id: session.id,
         data: {
-          status: isApprove ? "SCHEDULED" : "REJECTED",
+          status: config.status,
           apply_to_series: values.apply_to_series,
         },
       },
@@ -75,15 +101,11 @@ export function ApproveSessionDialog({
     );
   }
 
-  const isApprove = action === "approve";
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>
-            {isApprove ? "Approve Session" : "Reject Session"}
-          </DialogTitle>
+          <DialogTitle>{config.title}</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -105,11 +127,7 @@ export function ApproveSessionDialog({
                     </FormControl>
                     <div className="space-y-1 leading-none">
                       <FormLabel>Apply to entire series</FormLabel>
-                      <FormDescription>
-                        {isApprove
-                          ? "This will approve all future recurring sessions in this series."
-                          : "This will reject all future recurring sessions in this series."}
-                      </FormDescription>
+                      <FormDescription>{config.seriesHint}</FormDescription>
                     </div>
                   </FormItem>
                 )}
@@ -126,10 +144,10 @@ export function ApproveSessionDialog({
               </Button>
               <Button
                 type="submit"
-                variant={isApprove ? "default" : "destructive"}
+                variant={config.variant}
                 disabled={isPending}
               >
-                {isPending ? "Submitting..." : isApprove ? "Approve" : "Reject"}
+                {isPending ? "Submitting..." : config.button}
               </Button>
             </div>
           </form>
