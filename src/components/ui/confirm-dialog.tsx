@@ -60,6 +60,7 @@ export function ConfirmDialog({
         </DialogHeader>
         <DialogFooter className="gap-2">
           <Button
+            type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={isPending}
@@ -68,6 +69,7 @@ export function ConfirmDialog({
             {cancelLabel ?? "Cancel"}
           </Button>
           <Button
+            type="button"
             variant={isDestructive ? "destructive" : "default"}
             onClick={onConfirm}
             disabled={isPending}

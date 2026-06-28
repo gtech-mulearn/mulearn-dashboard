@@ -109,7 +109,13 @@ export function TransferIgRoleDialog({
               group.
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form
+            onSubmit={(e) => {
+              e.stopPropagation();
+              form.handleSubmit(onSubmit)(e);
+            }}
+            className="space-y-4"
+          >
             <div className="space-y-1.5">
               <p className="text-sm font-medium">Interest Group</p>
               <Select
