@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { EventListItem } from "@/features/events";
 import {
@@ -103,7 +103,7 @@ export function EventsPageClient() {
   );
 
   // Helper to extract cluster/event_scope
-  const resolveEventCluster = (event: EventListItem): string => {
+  const resolveEventCluster = useCallback((event: EventListItem): string => {
     const rawCluster =
       event.event_scope ||
       event.organizer?.ig?.cluster ||
@@ -112,16 +112,15 @@ export function EventsPageClient() {
       event.organizer?.organiser_ig?.category ||
       "";
     return rawCluster.toLowerCase();
-  };
+  }, []);
 
   // ── Data fetch ────────────────────────────────────────────────────────────
 
   const { data, isLoading } = useEventsList({
     pageIndex: currentPage,
     search: debouncedSearch || undefined,
-    cluster: selectedCluster === "all" ? undefined : selectedCluster,
-    event_type: selectedEventType === "all" ? undefined : selectedEventType,
-    sortBy: "-start_datetime",
+    status: "published",
+    sortBy: "-created_at",
     perPage: 12,
   });
 
