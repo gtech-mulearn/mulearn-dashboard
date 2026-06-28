@@ -3,16 +3,17 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { EventListItem } from "@/features/events";
 import {
   EventsFilters,
   EventsGrid,
   EventsPagination,
   FeaturedEventsCarousel,
+  resolveEventTypeValue,
   useEventsList,
   useEventTypeScope,
-  resolveEventTypeValue,
 } from "@/features/events";
-import type { EventListItem } from "@/features/events";
+import { useDebounce } from "@/hooks/use-debounce";
 
 // Normalise a string to a slug for comparison (e.g. "Cultural Event" → "cultural_event")
 function toSlug(s?: string | null) {
@@ -28,6 +29,7 @@ export function EventsPageClient() {
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
   const [selectedCluster, setSelectedCluster] = useState<string>("all");
   const [selectedEventType, setSelectedEventType] = useState<string>("all");
 
@@ -61,23 +63,23 @@ export function EventsPageClient() {
       typeScopeData && Array.isArray(typeScopeData.event_type)
         ? typeScopeData.event_type
         : [
-          "Hackathon",
-          "Workshop",
-          "Webinar",
-          "Seminar",
-          "Bootcamp",
-          "Meetup",
-          "Conference",
-          "Competition",
-          "Ideathon",
-          "Cultural event",
-          "Sports event",
-          "Community event",
-          "Expo",
-          "Networking event",
-          "Tech talk",
-          "Others",
-        ];
+            "Hackathon",
+            "Workshop",
+            "Webinar",
+            "Seminar",
+            "Bootcamp",
+            "Meetup",
+            "Conference",
+            "Competition",
+            "Ideathon",
+            "Cultural event",
+            "Sports event",
+            "Community event",
+            "Expo",
+            "Networking event",
+            "Tech talk",
+            "Others",
+          ];
     return [
       { label: "All Types", value: "all" },
       ...list.map((type) => ({
@@ -93,8 +95,10 @@ export function EventsPageClient() {
     [clusterList],
   );
   const eventTypeOrder = useMemo(
-
-    () => eventTypeOptions.filter((t) => t.value !== "all").map((t) => toSlug(t.value)),
+    () =>
+      eventTypeOptions
+        .filter((t) => t.value !== "all")
+        .map((t) => toSlug(t.value)),
     [eventTypeOptions],
   );
 
@@ -114,15 +118,15 @@ export function EventsPageClient() {
 
   const { data, isLoading } = useEventsList({
     pageIndex: currentPage,
-    search: search || undefined,
-    status: "published",
-    sortBy: "-created_at",
+    search: debouncedSearch || undefined,
+    cluster: selectedCluster === "all" ? undefined : selectedCluster,
+    event_type: selectedEventType === "all" ? undefined : selectedEventType,
+    sortBy: "-start_datetime",
     perPage: 12,
   });
 
   const events = data?.data ?? [];
   const pagination = data?.pagination;
-
 
   // ── Client-side Filter & Sort ─────────────────────────────────────────────
   const filteredAndSortedEvents = useMemo(() => {
@@ -138,7 +142,10 @@ export function EventsPageClient() {
 
     if (selectedEventType !== "all") {
       result = result.filter((event) => {
-        const typeSlug = resolveEventTypeValue(event.event_type, event.category_name);
+        const typeSlug = resolveEventTypeValue(
+          event.event_type,
+          event.category_name,
+        );
         return typeSlug === toSlug(selectedEventType);
       });
     }
@@ -156,8 +163,10 @@ export function EventsPageClient() {
 
       // If no event type filter is active, sort by event type order second
       if (selectedEventType === "all") {
-        const typeA = resolveEventTypeValue(a.event_type, a.category_name) ?? "";
-        const typeB = resolveEventTypeValue(b.event_type, b.category_name) ?? "";
+        const typeA =
+          resolveEventTypeValue(a.event_type, a.category_name) ?? "";
+        const typeB =
+          resolveEventTypeValue(b.event_type, b.category_name) ?? "";
         const idxA = eventTypeOrder.indexOf(typeA);
         const idxB = eventTypeOrder.indexOf(typeB);
         const cleanIdxA = idxA !== -1 ? idxA : 999;
@@ -171,9 +180,15 @@ export function EventsPageClient() {
       return timeB - timeA;
     });
 
-
     return result;
-  }, [events, selectedCluster, selectedEventType, categoryOrder, eventTypeOrder]);
+  }, [
+    events,
+    selectedCluster,
+    selectedEventType,
+    categoryOrder,
+    eventTypeOrder,
+    resolveEventCluster,
+  ]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
   const handlePageChange = (page: number) => {
@@ -229,9 +244,7 @@ export function EventsPageClient() {
           </div>
         ) : (
           <EventsGrid
-
             events={filteredAndSortedEvents}
-
             onEventView={(event) =>
               router.push(`/dashboard/events/${event.id}`)
             }
