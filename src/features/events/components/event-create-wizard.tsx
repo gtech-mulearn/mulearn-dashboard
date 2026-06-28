@@ -41,7 +41,7 @@ import {
   useOrganizerOptions,
 } from "../hooks";
 import { getAllowedScopes } from "../lib/events.policy";
-import { type CreateEventSchema, updateEventSchema } from "../schemas";
+import { type CreateEventSchema, createEventSchema } from "../schemas";
 import type {
   EventCreateWizardProps,
   EventScope,
@@ -247,19 +247,8 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
     defaultValues: EVENT_FORM_DEFAULT_VALUES,
   });
 
-  const minStartDatetime = useMemo(() => {
-    const date = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
-    const tzOffset = date.getTimezoneOffset() * 60000;
-    return new Date(date.getTime() - tzOffset).toISOString().slice(0, 16);
-  }, []);
-
   const startDatetimeValue = watch("start_datetime");
-  const minEndDatetime = useMemo(() => {
-    if (!startDatetimeValue) {
-      return minStartDatetime;
-    }
-    return startDatetimeValue;
-  }, [startDatetimeValue, minStartDatetime]);
+  const minEndDatetime = startDatetimeValue || undefined;
 
   // Auto-select the first available cluster when options load (replaces hardcoded "coder" default)
   useEffect(() => {
@@ -446,17 +435,6 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
           message: "Start datetime is required",
         });
         hasStepError = true;
-      } else {
-        const start = new Date(startDatetime).getTime();
-        const now = Date.now();
-        const oneHourInMs = 60 * 60 * 1000;
-        if (start < now + oneHourInMs) {
-          setError("start_datetime", {
-            type: "manual",
-            message: "Start time must be at least 1 hour in the future",
-          });
-          hasStepError = true;
-        }
       }
 
       if (!endDatetime) {
@@ -1204,7 +1182,6 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                       </p>
                       <Input
                         type="datetime-local"
-                        min={minStartDatetime}
                         {...register("start_datetime")}
                       />
                       {errors.start_datetime?.message ? (

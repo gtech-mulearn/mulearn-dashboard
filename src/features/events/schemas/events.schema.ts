@@ -95,11 +95,12 @@ const createEventBaseSchema = z.object({
   is_featured: z.boolean().optional(),
 });
 
-// Re-usable cross-field refinement logic
-function applyEventRefinements<T extends typeof createEventBaseSchema>(
+function applyEventRefinements<T extends z.ZodTypeAny>(
   schema: T,
+  _options?: { isUpdate?: boolean },
 ) {
-  return schema.superRefine((data, ctx) => {
+  return schema.superRefine((val, ctx) => {
+    const data = val as Partial<z.infer<typeof createEventBaseSchema>>;
     // Validate scope → target ID pairing
     if (data.scope === "campus" && !data.target_campus_id) {
       ctx.addIssue({
@@ -213,27 +214,17 @@ function applyEventRefinements<T extends typeof createEventBaseSchema>(
         });
       }
     }
-
-    // Validate start_datetime is at least 1 hour in the future
-    if (data.start_datetime) {
-      const start = new Date(data.start_datetime).getTime();
-      const now = Date.now();
-      const oneHourInMs = 60 * 60 * 1000;
-      if (start < now + oneHourInMs) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["start_datetime"],
-          message: "Start time must be at least 1 hour in the future",
-        });
-      }
-    }
   });
 }
 
-export const createEventSchema = applyEventRefinements(createEventBaseSchema);
+export const createEventSchema = applyEventRefinements(createEventBaseSchema, {
+  isUpdate: false,
+});
 
-// .partial() is called on the plain base object (no superRefine), which is valid in Zod
-export const updateEventSchema = createEventBaseSchema.partial();
+export const updateEventSchema = applyEventRefinements(
+  createEventBaseSchema.partial(),
+  { isUpdate: true },
+);
 
 // ─── EVENT LIST PARAMS SCHEMA ──────────────────────────────────────────────
 
@@ -341,4 +332,6 @@ export type UpdateEventSchema = z.infer<typeof updateEventSchema>;
 export type EventListParamsSchema = z.infer<typeof eventListParamsSchema>;
 export type CategoryItem = z.infer<typeof categorySchema>;
 export type EventTypeScopeData = z.infer<typeof eventTypeScopeSchema>;
-export type EventTypeScopeResponseData = z.infer<typeof eventTypeScopeResponseSchema>;
+export type EventTypeScopeResponseData = z.infer<
+  typeof eventTypeScopeResponseSchema
+>;

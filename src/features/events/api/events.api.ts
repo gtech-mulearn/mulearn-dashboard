@@ -2,7 +2,6 @@ import { apiClient, endpoints } from "@/api";
 import type { ApprovalTier } from "../lib/events.policy";
 import {
   categoryListResponseSchema,
-  eventTypeScopeSchema,
   eventTypeScopeResponseSchema,
 } from "../schemas";
 import type {
@@ -234,22 +233,30 @@ async function fetchListWithStatusFallback(
   endpoint: string,
   params?: EventListQueryParams,
 ): Promise<EventListData> {
-  const qs = buildQueryString(params);
+  // Strip sortBy parameter for management/admin lists since the backend endpoints
+  // /api/v1/dashboard/events/manage/ and /api/v1/dashboard/events/admin/ do not support
+  // the sortBy parameter and return a 500 Internal Server Error when it is provided.
+  const safeParams = params ? { ...params } : undefined;
+  if (safeParams) {
+    delete safeParams.sortBy;
+  }
+
+  const qs = buildQueryString(safeParams);
   let response = await apiClient.get<EventListData>(`${endpoint}${qs}`);
   response = mirrorEventTypeToCategoryList(response);
 
-  const status = params?.status;
+  const status = safeParams?.status;
   if (!status) {
     return response;
   }
 
-  const pageIndex = params?.pageIndex ?? 1;
-  const perPage = params?.perPage ?? 12;
+  const pageIndex = safeParams?.pageIndex ?? 1;
+  const perPage = safeParams?.perPage ?? 12;
 
   // Pending tab should include all pending states used across approval flows.
   if (status === "pending_approval") {
     const fallbackParams = {
-      ...params,
+      ...safeParams,
       pageIndex: 1,
       perPage: FETCH_ALL_LIMIT,
     };
@@ -270,7 +277,10 @@ async function fetchListWithStatusFallback(
 
   // Some deployments use American spelling in query parsing (`canceled`).
   if (status === "cancelled" && response.data.length === 0) {
-    const fallbackQs = buildQueryStringWithStatusOverride(params, "canceled");
+    const fallbackQs = buildQueryStringWithStatusOverride(
+      safeParams,
+      "canceled",
+    );
     const fallbackResponse = await apiClient.get<EventListData>(
       `${endpoint}${fallbackQs}`,
     );
@@ -283,11 +293,10 @@ async function fetchListWithStatusFallback(
     response.data.length === 0
   ) {
     const publishedFallbackParams: EventListQueryParams = {
-      ...params,
+      ...safeParams,
       status: "published",
       pageIndex: 1,
       perPage: FETCH_ALL_LIMIT,
-      sortBy: "-start_datetime",
     };
 
     const publishedResponse = await apiClient.get<EventListData>(
@@ -300,7 +309,14 @@ async function fetchListWithStatusFallback(
       status === "ongoing" ? isOngoingByTime(event) : isCompletedByTime(event),
     );
 
-    return paginateItems(filtered, pageIndex, perPage);
+    // Client-side sort fallback since server-side sort is not supported here
+    const sorted = [...filtered].sort((a, b) => {
+      const timeA = a.start_datetime ? new Date(a.start_datetime).getTime() : 0;
+      const timeB = b.start_datetime ? new Date(b.start_datetime).getTime() : 0;
+      return timeB - timeA;
+    });
+
+    return paginateItems(sorted, pageIndex, perPage);
   }
 
   return response;
