@@ -79,7 +79,7 @@ export function IgChapterEditDialog({
 
   const handleSelectUser = (user: UserResult) => {
     setSelectedUser({ muid: user.muid, name: user.full_name });
-    form.setValue("lead", user.id);
+    form.setValue("lead", user.muid);
   };
 
   const handleClear = () => {
@@ -88,12 +88,17 @@ export function IgChapterEditDialog({
   };
 
   const onSubmit = (values: FormValues) => {
+    // Only send `lead` if it actually changed (i.e., newly assigned).
+    // The initial `chapter.leadId` is a UUID, but the backend now expects an muid.
+    // Sending the unchanged UUID causes an "Object with muid=... does not exist" error.
+    const leadChanged = values.lead !== chapter.leadId;
+
     update(
       {
         chapterId: chapter.id,
         data: {
           description: values.description || undefined,
-          lead: values.lead || undefined,
+          lead: leadChanged ? values.lead || undefined : undefined,
           is_active: values.is_active,
         },
       },
