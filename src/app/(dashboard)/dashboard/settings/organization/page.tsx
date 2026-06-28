@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { requireRole } from "@/lib/auth/server";
+import { CAMPUS_SETTINGS_ROLES } from "@/lib/auth/roles";
 import { ChangeOrganizationPageClient } from "./organization-settings-client";
 
 export const metadata: Metadata = {
@@ -6,6 +8,7 @@ export const metadata: Metadata = {
   description: "Manage your organization settings.",
 };
 
-export default function OrganizationSettingsPage() {
+export default async function OrganizationSettingsPage() {
+  await requireRole(CAMPUS_SETTINGS_ROLES);
   return <ChangeOrganizationPageClient />;
 }
