@@ -906,13 +906,7 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                                                   .trim()
                                                   .toLowerCase()
                                                   .replace(/\s+/g, "_");
-                                                return (
-                                                  catSlug === item.value ||
-                                                  catSlug.includes(
-                                                    item.value,
-                                                  ) ||
-                                                  item.value.includes(catSlug)
-                                                );
+                                                return catSlug === item.value;
                                               },
                                             ) ||
                                             (categoryOptions ?? []).find(
