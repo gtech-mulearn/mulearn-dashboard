@@ -170,6 +170,11 @@ export const routeAccessMap: Record<string, RouteConfig> = {
     roles: [ROLES.ADMIN],
   },
 
+  // ── Weekly Twitches (Admin + Associate + IG Leads) ───────
+  "/dashboard/weekly-twitches": {
+    roles: [ROLES.ADMIN, ROLES.ASSOCIATE, ROLES.IG_LEAD],
+  },
+
   // ── URL Shortener (broader access) ───────────────────────
   "/dashboard/url-shortener": {
     roles: [ROLES.ADMIN, ROLES.ASSOCIATE],
