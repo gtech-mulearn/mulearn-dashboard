@@ -17,9 +17,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { useInterestGroupsList } from "@/features/interest-groups";
 import { useOfficeHoursMutations } from "../hooks";
 import {
-  OfficeHoursWriteSchema,
   type OfficeHoursItem,
   type OfficeHoursWrite,
+  OfficeHoursWriteSchema,
 } from "../schemas";
 
 interface Props {

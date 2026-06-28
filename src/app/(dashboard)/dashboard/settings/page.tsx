@@ -1,9 +1,9 @@
 import { Building2, ChevronRight, User2 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { RoleGate } from "@/components/auth/role-gate";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { RoleGate } from "@/components/auth/role-gate";
 import { CAMPUS_SETTINGS_ROLES } from "@/lib/auth/roles";
 
 export const metadata: Metadata = {

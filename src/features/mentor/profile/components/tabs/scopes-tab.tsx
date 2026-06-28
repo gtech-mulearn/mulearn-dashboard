@@ -39,6 +39,14 @@ export function ScopesTab({
     const Icon = mentorType === "company" ? Building2 : GraduationCap;
     const label = mentorType === "company" ? "Company" : "Campus";
 
+    // The profile only carries the org UUID; the overview scope carries its
+    // display name. Fall back to the id only if the name hasn't loaded.
+    const orgName =
+      overview?.scopes?.find(
+        (s) =>
+          s.scope_type === "COMPANY_MENTOR" || s.scope_type === "CAMPUS_MENTOR",
+      )?.scope_name ?? mentorProfile.org;
+
     return (
       <Card className="rounded-2xl border-border/50">
         <CardHeader>
@@ -55,7 +63,7 @@ export function ScopesTab({
             <div className="flex items-center gap-3 rounded-xl border border-border/50 bg-muted/40 px-4 py-3">
               <Icon className="h-5 w-5 shrink-0 text-muted-foreground" />
               <div>
-                <p className="text-sm font-medium">{mentorProfile.org}</p>
+                <p className="text-sm font-medium">{orgName}</p>
                 <p className="text-xs text-muted-foreground">{label} Mentor</p>
               </div>
             </div>
@@ -72,7 +80,10 @@ export function ScopesTab({
   // IG / Platform mentor: show IG scopes
   const igScopes =
     overview?.scopes?.filter(
-      (s) => s.scope_type === "Interest Group" || s.scope_type === "IG",
+      (s) =>
+        s.scope_type === "IG_MENTOR" ||
+        s.scope_type === "Interest Group" ||
+        s.scope_type === "IG",
     ) ?? [];
 
   return (

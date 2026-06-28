@@ -20,11 +20,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useSmtMutations, useIsMutations } from "../hooks";
+import { useIsMutations, useSmtMutations } from "../hooks";
 import {
-  CampusContentWriteSchema,
   type CampusContentItem,
   type CampusContentWrite,
+  CampusContentWriteSchema,
 } from "../schemas";
 
 export type CampusContentType = "smt" | "isr";

@@ -88,15 +88,13 @@ export const MentorApplicationResponseSchema = ApiResponseSchema(
 );
 
 // ─── Form values for POST/PATCH /register/ ───────────────────────────────────
+// `expertise` is collected as chips (an array) in the UI; it is joined to a
+// comma-separated string at the API boundary (see MentorProfileWrite).
 export const OnboardingFormSchema = z.object({
   about: z.string().min(50, "About must be at least 50 characters"),
   expertise: z
-    .string()
-    .refine(
-      (val) =>
-        val.split(",").filter((item) => item.trim().length > 0).length >= 3,
-      "Please provide at least three areas of expertise, separated by commas",
-    ),
+    .array(z.string())
+    .min(3, "Please add at least three areas of expertise"),
   reason: z.string().min(30, "Reason must be at least 30 characters"),
   hours: z.number().min(0).optional(),
   preferred_ig_ids: z
@@ -104,6 +102,14 @@ export const OnboardingFormSchema = z.object({
     .min(1, "Select at least one Interest Group"),
 });
 export type OnboardingFormValues = z.infer<typeof OnboardingFormSchema>;
+
+// ─── Wire payload for register/profile endpoints ──────────────────────────────
+// Derived from the form type, but with `expertise` as the comma-joined string
+// the backend stores (the forms collect it as chips and join before sending).
+// Keeping it tied to OnboardingFormValues avoids drift between form and wire.
+export type MentorProfileWrite = Omit<OnboardingFormValues, "expertise"> & {
+  expertise: string;
+};
 
 // ─── UI state derived from status ─────────────────────────────────────────────
 export type OnboardingState =

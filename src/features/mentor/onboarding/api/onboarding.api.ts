@@ -1,6 +1,6 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
-import type { OnboardingFormValues } from "../schemas";
+import type { MentorProfileWrite } from "../schemas";
 import {
   type MentorApplication,
   MentorApplicationResponseSchema,
@@ -22,7 +22,7 @@ export async function getMentorApplicationStatus(): Promise<MentorStatusData> {
 // ─── POST /register/ ──────────────────────────────────────────────────────────
 // Submit a new mentor application.
 export async function submitMentorApplication(
-  data: OnboardingFormValues,
+  data: MentorProfileWrite,
 ): Promise<MentorApplication> {
   const res = await apiClient.post(
     endpoints.mentor.register,
@@ -36,7 +36,7 @@ export async function submitMentorApplication(
 // ─── PATCH /register/ ─────────────────────────────────────────────────────────
 // Update a PENDING or REJECTED application (re-submits rejected ones as PENDING).
 export async function updateMentorApplication(
-  data: Partial<OnboardingFormValues>,
+  data: Partial<MentorProfileWrite>,
 ): Promise<MentorApplication> {
   const res = await apiClient.patch(
     endpoints.mentor.register,
@@ -61,7 +61,7 @@ export async function getMentorProfile(): Promise<MentorApplication> {
 // ─── PATCH /profile/ ──────────────────────────────────────────────────────────
 // Update approved mentor profile.
 export async function updateMentorProfile(
-  data: Partial<OnboardingFormValues>,
+  data: Partial<MentorProfileWrite>,
 ): Promise<MentorApplication> {
   const res = await apiClient.patch(
     endpoints.mentor.profile,

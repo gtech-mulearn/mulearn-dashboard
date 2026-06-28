@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { requireRole } from "@/lib/auth/server";
 import { CAMPUS_SETTINGS_ROLES } from "@/lib/auth/roles";
+import { requireRole } from "@/lib/auth/server";
 import { ChangeOrganizationPageClient } from "./organization-settings-client";
 
 export const metadata: Metadata = {

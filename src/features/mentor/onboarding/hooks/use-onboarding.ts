@@ -2,6 +2,8 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { mentorKeys } from "@/features/mentor/hooks";
+import { mentorTaskKeys } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   getMentorApplicationStatus,
@@ -10,7 +12,7 @@ import {
   updateMentorApplication,
   updateMentorProfile,
 } from "../api/onboarding.api";
-import type { OnboardingFormValues, OnboardingState } from "../schemas";
+import type { MentorProfileWrite, OnboardingState } from "../schemas";
 
 const ONBOARDING_KEYS = {
   all: ["mentor-onboarding"] as const,
@@ -96,7 +98,7 @@ export function useSubmitMentorApplication() {
 export function useUpdateMentorApplication() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: Partial<OnboardingFormValues>) =>
+    mutationFn: (data: Partial<MentorProfileWrite>) =>
       updateMentorApplication(data),
     onSuccess: () => {
       toast.success("Application updated.");
@@ -115,11 +117,15 @@ export function useUpdateMentorApplication() {
 export function useUpdateMentorProfile() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: Partial<OnboardingFormValues>) =>
+    mutationFn: (data: Partial<MentorProfileWrite>) =>
       updateMentorProfile(data),
     onSuccess: () => {
       toast.success("Profile updated.");
       void queryClient.invalidateQueries({ queryKey: ONBOARDING_KEYS.all });
+      void queryClient.invalidateQueries({ queryKey: mentorKeys.overview() });
+      void queryClient.invalidateQueries({
+        queryKey: mentorTaskKeys.igDropdown(),
+      });
     },
     onError: (error) =>
       toast.error(

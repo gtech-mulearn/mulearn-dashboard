@@ -46,10 +46,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useInterestGroupsList } from "@/features/home/hooks";
+import { useMentorOverview } from "@/features/mentor/hooks";
 import { useUpdateMentorProfile } from "@/features/mentor/onboarding/hooks/use-onboarding";
 import type {
   MentorApplication,
-  OnboardingFormValues,
+  MentorProfileWrite,
 } from "@/features/mentor/onboarding/schemas";
 import { useUpdateProfile, useUpdateProfileImage } from "@/features/profile";
 import type { UserProfile } from "@/features/profile/schemas";
@@ -57,10 +58,12 @@ import type { UserProfile } from "@/features/profile/schemas";
 const MentorEditSchema = z.object({
   full_name: z.string().trim().min(1, "Name is required"),
   about: z.string().trim().optional(),
-  expertise: z
-    .array(z.string())
-    .min(3, "Please provide at least three areas of expertise")
-    .optional(),
+  // Edit form: expertise is optional and must NOT hard-block saving other
+  // fields. The form initializes this to an array (never undefined), so a
+  // `.min(3)` here silently invalidated the whole form for any mentor onboarded
+  // with fewer than 3 skills — making "Save" do nothing. The onboarding form
+  // keeps its own min(3) quality bar for new applicants.
+  expertise: z.array(z.string()).optional(),
   preferred_ig_ids: z.array(z.string()).optional(),
   org: z.string().optional(),
   profile_pic: z.instanceof(File).optional(),
@@ -151,7 +154,22 @@ export function MentorEditProfileModal({
     setPreviewUrl(url);
   };
 
+  const isIgMentor = mentorProfile.mentor_tier === "IG_MENTOR";
+
+  // Resolve the org's display name (the profile only carries the org UUID).
+  const { data: overview } = useMentorOverview();
+  const orgName = overview?.scopes?.find(
+    (s) =>
+      s.scope_type === "COMPANY_MENTOR" || s.scope_type === "CAMPUS_MENTOR",
+  )?.scope_name;
+
   const handleSubmit = async (values: MentorEditValues) => {
+    // IG mentors must keep at least one Interest Group (the backend rejects an
+    // empty list with 400). Block early with a clear message.
+    if (isIgMentor && (values.preferred_ig_ids ?? []).length === 0) {
+      toast.error("Select at least one Interest Group.");
+      return;
+    }
     try {
       // 1. Update learner profile fields (name) if changed
       if (values.full_name !== userProfile.full_name) {
@@ -173,7 +191,7 @@ export function MentorEditProfileModal({
         JSON.stringify(mentorProfile.preferred_ig_ids ?? []);
 
       if (isAboutChanged || isExpertiseChanged || isIgsChanged) {
-        const payload: Partial<OnboardingFormValues> = {};
+        const payload: Partial<MentorProfileWrite> = {};
         if (isAboutChanged) payload.about = values.about ?? "";
         if (isExpertiseChanged) payload.expertise = newExpertise;
         if (isIgsChanged) payload.preferred_ig_ids = values.preferred_ig_ids;
@@ -322,22 +340,29 @@ export function MentorEditProfileModal({
                 </p>
               </div>
 
-              {/* Preferred IGs */}
-              <div className="space-y-2">
-                <div className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Preferred Interest Groups
+              {/* Preferred IGs — only IG mentors are scoped to Interest Groups.
+                  Company/Campus/global mentors are org-scoped, so the field is
+                  hidden for them. */}
+              {isIgMentor && (
+                <div className="space-y-2">
+                  <div className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Preferred Interest Groups
+                  </div>
+                  <MultiSelect
+                    options={igOptions}
+                    value={form.watch("preferred_ig_ids") ?? []}
+                    onChange={(vals) =>
+                      form.setValue("preferred_ig_ids", vals, {
+                        shouldDirty: true,
+                      })
+                    }
+                    placeholder="Select IGs you want to mentor in..."
+                  />
+                  <p className="text-[0.8rem] text-muted-foreground">
+                    Changes to your Interest Groups apply immediately.
+                  </p>
                 </div>
-                <MultiSelect
-                  options={igOptions}
-                  value={form.watch("preferred_ig_ids") ?? []}
-                  onChange={(vals) =>
-                    form.setValue("preferred_ig_ids", vals, {
-                      shouldDirty: true,
-                    })
-                  }
-                  placeholder="Select IGs you want to mentor in..."
-                />
-              </div>
+              )}
 
               {/* Affiliation */}
               <div className="space-y-2">
@@ -349,7 +374,7 @@ export function MentorEditProfileModal({
                     <TooltipTrigger asChild>
                       <div>
                         <Input
-                          value={form.watch("org") ?? ""}
+                          value={orgName ?? form.watch("org") ?? ""}
                           placeholder="Affiliation"
                           disabled
                           className="cursor-not-allowed"
