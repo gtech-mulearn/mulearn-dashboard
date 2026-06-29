@@ -23,7 +23,7 @@ export function OfficeHoursCards() {
   const [status, setStatus] = useState("");
   const [sheetItem, setSheetItem] = useState<OfficeHoursItem | null>(null);
 
-  const { data, isLoading } = useOfficeHoursList({
+  const { data, isLoading, isError } = useOfficeHoursList({
     pageIndex: page,
     perPage: 12,
     search,
@@ -84,8 +84,15 @@ export function OfficeHoursCards() {
             ))}
       </div>
 
+      {/* Error */}
+      {!isLoading && isError && (
+        <div className="flex flex-col items-center justify-center py-16 text-destructive">
+          <p className="text-sm">Failed to load sessions. Please try again.</p>
+        </div>
+      )}
+
       {/* Empty */}
-      {!isLoading && items.length === 0 && (
+      {!isLoading && !isError && items.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
           <p className="text-sm">No sessions found.</p>
         </div>

@@ -38,7 +38,8 @@ export function CampusContentCards({ contentType }: Props) {
 
   const smtQuery = useSmtList(params, contentType === "smt");
   const isQuery = useIsList(params, contentType === "isr");
-  const { data, isLoading } = contentType === "smt" ? smtQuery : isQuery;
+  const { data, isLoading, isError } =
+    contentType === "smt" ? smtQuery : isQuery;
 
   const items = data?.data ?? [];
   const totalPages = data?.pagination.totalPages ?? 0;
@@ -111,8 +112,15 @@ export function CampusContentCards({ contentType }: Props) {
             ))}
       </div>
 
+      {/* Error */}
+      {!isLoading && isError && (
+        <div className="flex flex-col items-center justify-center py-16 text-destructive">
+          <p className="text-sm">Failed to load episodes. Please try again.</p>
+        </div>
+      )}
+
       {/* Empty */}
-      {!isLoading && items.length === 0 && (
+      {!isLoading && !isError && items.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
           <p className="text-sm">No episodes found.</p>
         </div>
