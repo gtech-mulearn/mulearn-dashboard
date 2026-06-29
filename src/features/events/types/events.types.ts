@@ -269,14 +269,14 @@ export interface LinkedTaskInput {
 export interface EventLog {
   id: UUID;
   action?:
-  | "event_updated"
-  | "co_owner_added"
-  | "co_owner_removed"
-  | "collaborator_invited"
-  | "collaborator_accepted"
-  | "collaborator_rejected"
-  | "collaborator_removed"
-  | string;
+    | "event_updated"
+    | "co_owner_added"
+    | "co_owner_removed"
+    | "collaborator_invited"
+    | "collaborator_accepted"
+    | "collaborator_rejected"
+    | "collaborator_removed"
+    | string;
   actor?: MinimalUser | null;
   performed_by?: MinimalUser | null;
   target_type?: string | null;

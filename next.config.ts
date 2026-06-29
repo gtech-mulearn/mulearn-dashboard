@@ -30,7 +30,8 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "s3-ap-south-1.amazonaws.com",
+        hostname: "s3.ap-south-1.amazonaws.com",
+        pathname: "/**",
       },
       {
         protocol: "https",
@@ -38,8 +39,8 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  async headers() {
 
+  async headers() {
     return [
       {
         source: "/:path*",
@@ -86,7 +87,6 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-
 };
 
 export default withSentryConfig(nextConfig, {

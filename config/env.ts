@@ -14,6 +14,7 @@ export const env = createEnv({
   client: {
     NEXT_PUBLIC_DJANGO_API_URL: z.string().url(),
     NEXT_PUBLIC_DISCORD_AUTH_URL: z.string().url(),
+    NEXT_PUBLIC_CDN_URL: z.string().url().optional(),
     NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
   },
 
@@ -23,6 +24,7 @@ export const env = createEnv({
     NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
     NEXT_PUBLIC_DJANGO_API_URL: process.env.NEXT_PUBLIC_DJANGO_API_URL,
     NEXT_PUBLIC_DISCORD_AUTH_URL: process.env.NEXT_PUBLIC_DISCORD_AUTH_URL,
+    NEXT_PUBLIC_CDN_URL: process.env.NEXT_PUBLIC_CDN_URL,
   },
 
   /*
