@@ -26,7 +26,11 @@ export const OfficeHoursItemSchema = z.object({
   designation: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
   link: z.string().nullable().optional(),
-  interest_groups: z.array(z.string()).default([]),
+  interest_groups: z
+    .array(z.string())
+    .nullable()
+    .default([])
+    .transform((v) => v ?? []),
   poster_thumbnail: z.string().nullable().optional(),
   status: StatusSchema,
   created_at: z.string(),

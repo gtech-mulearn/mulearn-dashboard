@@ -45,6 +45,7 @@ export const routeAccessMap: Record<string, RouteConfig> = {
   "/dashboard/events": { roles: [] },
   "/dashboard/connect-discord": { roles: [] },
   "/dashboard/refer": { roles: [] },
+  "/dashboard/weekly-twitches": { roles: [] },
 
   // ── Campus Lead Dashboard ────────────────────────────────
   "/dashboard/campus/manage": {
@@ -172,7 +173,7 @@ export const routeAccessMap: Record<string, RouteConfig> = {
   },
 
   // ── Weekly Twitches (Admin + Associate + IG Leads) ───────
-  "/dashboard/weekly-twitches": {
+  "/dashboard/management/weekly-twitches": {
     roles: [ROLES.ADMIN, ROLES.ASSOCIATE, ROLES.IG_LEAD],
   },
 

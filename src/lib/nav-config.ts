@@ -169,6 +169,13 @@ export const NAV_ITEMS: readonly NavItem[] = [
     section: "main",
   },
   {
+    id: "weekly-twitches",
+    title: "Weekly Twitches",
+    href: "/dashboard/weekly-twitches",
+    icon: Radio,
+    section: "main",
+  },
+  {
     id: "leaderboard",
     title: "Leaderboard",
     href: "/dashboard/leaderboard",
@@ -352,9 +359,9 @@ export const NAV_ITEMS: readonly NavItem[] = [
     permission: "events:manage",
   },
   {
-    id: "weekly-twitches",
+    id: "weekly-twitches-manage",
     title: "Weekly Twitches",
-    href: "/dashboard/weekly-twitches",
+    href: "/dashboard/management/weekly-twitches",
     icon: Radio,
     section: "management",
     roles: MANAGEMENT_ROLES,
