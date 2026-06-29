@@ -1,6 +1,26 @@
 "use client";
 
-import { Lock, MapPin } from "lucide-react";
+import {
+  Award,
+  BookOpen,
+  Briefcase,
+  Code,
+  Compass,
+  Dribbble,
+  Gamepad2,
+  Globe,
+  Lightbulb,
+  Lock,
+  type LucideIcon,
+  MapPin,
+  Megaphone,
+  MessagesSquare,
+  Mic,
+  Presentation,
+  Sparkles,
+  Trophy,
+  Users,
+} from "lucide-react";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { resolveEventTypeValue } from "../hooks";
@@ -8,6 +28,36 @@ import type { EventListItem, OrganizerInfo } from "../types";
 import { EventStatusBadge } from "./event-status-badge";
 import { EventTypeBadge } from "./event-type-badge";
 import { InterestButton } from "./interest-button";
+
+const BADGE_CONFIG: Record<
+  string,
+  { label: string; icon: LucideIcon; className: string }
+> = {
+  // Clusters
+  coder: { label: "Coder", icon: Code, className: "ig-cat-coder" },
+  maker: { label: "Maker", icon: Users, className: "ig-cat-maker" },
+  creative: { label: "Creative", icon: Compass, className: "ig-cat-creative" },
+  manager: { label: "Manager", icon: Trophy, className: "ig-cat-manager" },
+};
+
+const EVENT_TYPE_ICONS: Record<string, LucideIcon> = {
+  workshop: BookOpen,
+  webinar: Globe,
+  hackathon: Code,
+  meetup: Users,
+  competition: Trophy,
+  seminar: Presentation,
+  bootcamp: Sparkles,
+  conference: Award,
+  ideathon: Lightbulb,
+  cultural_event: Gamepad2,
+  sports_event: Dribbble,
+  community_event: Megaphone,
+  expo: Briefcase,
+  networking_event: MessagesSquare,
+  tech_talk: Mic,
+  others: Compass,
+};
 
 interface EventCardProps {
   event: EventListItem;
@@ -69,6 +119,33 @@ export function EventCard({ event, isManageView, onView }: EventCardProps) {
 
   const isEnded = new Date(event.end_datetime).getTime() < Date.now();
 
+  // ── Cluster / event_scope ────────────────────────────────────────────────
+  // Priority: event.event_scope (direct API field) → organiser_ig cluster →
+  // organiser_ig category (older fallback).
+  const rawCluster =
+    event.event_scope ||
+    event.organizer?.ig?.cluster ||
+    event.organizer?.organiser_ig?.cluster ||
+    event.organizer?.ig?.category ||
+    event.organizer?.organiser_ig?.category;
+
+  const cluster = rawCluster?.toLowerCase() ?? null;
+  const clusterBadge = cluster ? BADGE_CONFIG[cluster] : null;
+
+  // ── Event type ────────────────────────────────────────────────────────────
+  // category_name is the human-readable label (e.g. "Sprint", "Workshop").
+  // event_type is the slug (e.g. "others", "hackathon").
+  // resolveEventTypeValue normalises both into a canonical slug for icon lookup.
+  const eventTypeSlug = resolveEventTypeValue(
+    event.event_type,
+    event.category_name,
+  );
+  const eventTypeLabel = event.category_name || event.event_type || null;
+  const EventTypeIcon =
+    eventTypeSlug && eventTypeSlug !== "others"
+      ? (EVENT_TYPE_ICONS[eventTypeSlug] ?? Compass)
+      : null;
+
   return (
     <article className="group relative h-full overflow-hidden rounded-2xl border border-border bg-card lc-card-shadow transition-all duration-300 hover:-translate-y-1 lc-card-shadow-hover cursor-pointer lc-slide-up">
       {onView ? (
@@ -89,16 +166,24 @@ export function EventCard({ event, isManageView, onView }: EventCardProps) {
         />
 
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/90 via-foreground/45 to-transparent" />
-
         <div className="absolute inset-0 bg-foreground/35 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
-        <div className="absolute left-3 top-3 z-30">
-          <EventTypeBadge
-            eventType={resolveEventTypeValue(
-              event.event_type,
-              event.category_name,
-            )}
-          />
+        {/* Top-left stickers: event type + cluster */}
+        <div className="absolute left-3 top-3 z-30 flex flex-col gap-1.5">
+          {EventTypeIcon && eventTypeLabel && (
+            <Badge className="bg-brand-blue/10 dark:bg-brand-blue/20 text-brand-blue border border-brand-blue/20 dark:border-brand-blue/30 hover:bg-brand-blue/20 font-semibold gap-1 text-[11px] px-2.5 py-0.5 rounded-full shadow-sm w-fit">
+              <EventTypeIcon className="h-3 w-3 shrink-0" />
+              {eventTypeLabel}
+            </Badge>
+          )}
+          {clusterBadge && (
+            <Badge
+              className={`${clusterBadge.className} font-medium gap-1 text-[11px] px-2.5 py-0.5 rounded-full shadow-sm w-fit`}
+            >
+              <clusterBadge.icon className="h-3 w-3 shrink-0" />
+              {clusterBadge.label}
+            </Badge>
+          )}
         </div>
 
         {isManageView ? (

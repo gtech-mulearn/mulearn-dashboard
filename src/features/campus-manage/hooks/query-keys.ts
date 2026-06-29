@@ -6,7 +6,7 @@ export const campusManageKeys = {
     page: number,
     search: string,
     ig: string,
-    cluster: string,
+    category: string,
     alumni: string,
   ) =>
     [
@@ -16,7 +16,7 @@ export const campusManageKeys = {
       page,
       search,
       ig,
-      cluster,
+      category,
       alumni,
     ] as const,
   karmaByCluster: (orgId?: string) =>

@@ -6,6 +6,7 @@ export { EventCard } from "./event-card";
 export { EventCreateWizard } from "./event-create-wizard";
 export { EventDetailView } from "./event-detail-view";
 export { EventInlineEditForm } from "./event-inline-edit-form";
+export { EventReviewPanel } from "./event-review-panel";
 export { EventSearch } from "./event-search";
 export { EventStatusBadge } from "./event-status-badge";
 export { EventTypeBadge } from "./event-type-badge";

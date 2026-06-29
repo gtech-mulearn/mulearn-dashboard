@@ -16,6 +16,7 @@ import { ChevronLeft, ChevronRight, ExternalLink, MapPin } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useCalendarEvents } from "../hooks";
 import type { CalendarEvent } from "../schemas";
 
 // ─── Day abbreviations ─────────────────────────────────────────────────────
@@ -109,29 +110,11 @@ type EventCalendarCardProps = {
 };
 
 export function EventCalendarCard({
-  events = [],
-  isLoading,
+  events: propEvents,
+  isLoading: propIsLoading,
 }: EventCalendarCardProps) {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
-
-  // Build a map of dates → events for quick lookup
-  const eventsByDate = useMemo(() => {
-    const map = new Map<string, CalendarEvent[]>();
-    for (const event of events) {
-      const key = event.date.slice(0, 10);
-      const existing = map.get(key) ?? [];
-      existing.push(event);
-      map.set(key, existing);
-    }
-    return map;
-  }, [events]);
-
-  // Events for the selected date
-  const selectedDateEvents = useMemo(() => {
-    const key = format(selectedDate, "yyyy-MM-dd");
-    return eventsByDate.get(key) ?? [];
-  }, [selectedDate, eventsByDate]);
 
   // Generate calendar grid days (6 weeks)
   const calendarDays = useMemo(() => {
@@ -141,6 +124,31 @@ export function EventCalendarCard({
     const calEnd = endOfWeek(monthEnd, { weekStartsOn: 0 });
     return eachDayOfInterval({ start: calStart, end: calEnd });
   }, [currentMonth]);
+
+  const { data: fetchedEvents, isLoading: isFetching } = useCalendarEvents();
+
+  const events = propEvents ?? fetchedEvents ?? [];
+  const isLoading = propIsLoading ?? isFetching;
+
+  // Build a map of dates → events for quick lookup
+  const eventsByDate = useMemo(() => {
+    const map = new Map<string, CalendarEvent[]>();
+    for (const event of events) {
+      const key = event.date.slice(0, 10);
+      const existing = map.get(key) ?? [];
+      existing.push(event);
+      map.set(key, existing);
+      const events = propEvents ?? fetchedEvents ?? [];
+      const isLoading = propIsLoading ?? isFetching;
+    }
+    return map;
+  }, [events]);
+
+  // Events for the selected date
+  const selectedDateEvents = useMemo(() => {
+    const key = format(selectedDate, "yyyy-MM-dd");
+    return eventsByDate.get(key) ?? [];
+  }, [selectedDate, eventsByDate]);
 
   const goToPrevMonth = useCallback(
     () => setCurrentMonth((m) => subMonths(m, 1)),

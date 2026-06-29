@@ -130,6 +130,22 @@ export function useOrganizerOptions() {
   });
 }
 
+export function useEventCategories() {
+  return useQuery<Array<{ id: string; name: string; description: string }>>({
+    queryKey: eventKeys.categories(),
+    queryFn: () => eventsApi.getCategories(),
+    staleTime: 10 * 60 * 1000, // 10 min — categories rarely change
+  });
+}
+
+export function useIGClusters() {
+  return useQuery<Array<{ label: string; value: string }>>({
+    queryKey: eventKeys.igClusters(),
+    queryFn: () => eventsApi.getIGClusters(),
+    staleTime: 10 * 60 * 1000, // 10 min — clusters rarely change
+  });
+}
+
 export function useCollaborationTargets(
   search: string,
   type?: CollaboratorType,
@@ -684,5 +700,13 @@ export function useAdminFeature(eventId: string) {
         }),
       );
     },
+  });
+}
+
+export function useEventTypeScope() {
+  return useQuery({
+    queryKey: eventKeys.eventTypeScope(),
+    queryFn: () => eventsApi.getEventTypeScope(),
+    staleTime: 10 * 60 * 1000, // 10 minutes
   });
 }

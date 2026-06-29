@@ -62,27 +62,35 @@ export function VenueSection({
         <p className="text-xs text-destructive">{errors.venue_type.message}</p>
       ) : null}
 
-      <Controller
-        control={control}
-        name="maps_url"
-        render={({ field }) => (
-          <div className="space-y-1">
-            <label
-              htmlFor="venue_maps_url"
-              className="text-sm font-medium text-foreground"
-            >
-              Maps URL{" "}
-              <span className="text-xs text-muted-foreground">(optional)</span>
-            </label>
-            <Input
-              id="venue_maps_url"
-              {...field}
-              value={field.value ?? ""}
-              placeholder="Google Maps URL"
-            />
-          </div>
-        )}
-      />
+      {(venueType === "physical" || venueType === "hybrid") && (
+        <Controller
+          control={control}
+          name="maps_url"
+          render={({ field }) => (
+            <div className="space-y-1">
+              <label
+                htmlFor="venue_maps_url"
+                className="text-sm font-medium text-foreground"
+              >
+                Maps URL{" "}
+                <span className="text-xs text-muted-foreground">
+                  (optional)
+                </span>
+              </label>
+              <Input
+                id="venue_maps_url"
+                {...field}
+                value={field.value ?? ""}
+                placeholder="Google Maps URL"
+              />
+            </div>
+          )}
+        />
+      )}
+
+      {errors?.maps_url?.message ? (
+        <p className="text-xs text-destructive">{errors.maps_url.message}</p>
+      ) : null}
 
       {(venueType === "physical" || venueType === "hybrid") && (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -179,6 +187,9 @@ export function VenueSection({
       ) : null}
       {errors?.city?.message ? (
         <p className="text-xs text-destructive">{errors.city.message}</p>
+      ) : null}
+      {errors?.maps_url?.message ? (
+        <p className="text-xs text-destructive">{errors.maps_url.message}</p>
       ) : null}
       {errors?.online_link?.message ? (
         <p className="text-xs text-destructive">{errors.online_link.message}</p>

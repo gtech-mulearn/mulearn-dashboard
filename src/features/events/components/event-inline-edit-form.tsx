@@ -1,12 +1,18 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Lock, Plus, X } from "lucide-react";
+import { Check, Lock, Plus, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Controller, type Resolver, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -21,6 +27,9 @@ import {
   eventEditSectionClassName,
   toDatetimeLocal,
   toEventFormData,
+  useEventCategories,
+  useEventTypeScope,
+  useIGClusters,
   usePatchEvent,
 } from "../hooks";
 import { type CreateEventSchema, updateEventSchema } from "../schemas";
@@ -41,6 +50,37 @@ export function EventInlineEditForm({
   const [selectedIgName, setSelectedIgName] = useState("");
   const [selectedCampusIgName, setSelectedCampusIgName] = useState("");
   const [tagInput, setTagInput] = useState("");
+
+  const { data: clusterOptions, isLoading: clustersLoading } = useIGClusters();
+  const { data: categoryOptions, isLoading: categoriesLoading } =
+    useEventCategories();
+  const { data: typeScopeData, isLoading: typeScopeLoading } =
+    useEventTypeScope();
+
+  const eventTypeSelectOptions = useMemo(() => {
+    const list = typeScopeData?.event_type || [
+      "Hackathon",
+      "Workshop",
+      "Webinar",
+      "Seminar",
+      "Bootcamp",
+      "Meetup",
+      "Conference",
+      "Competition",
+      "Ideathon",
+      "Cultural Event",
+      "Sports Event",
+      "Community Event",
+      "Expo",
+      "Networking Event",
+      "Tech Talk",
+      "Others",
+    ];
+    return list.map((type) => {
+      const val = type.trim().toLowerCase().replace(/\s+/g, "_");
+      return { label: type, value: val };
+    });
+  }, [typeScopeData]);
 
   const {
     control,
@@ -73,11 +113,57 @@ export function EventInlineEditForm({
         : "global"
     ) as "global" | "campus" | "ig" | "campus_ig";
 
+    // Resolve category UUID from category_name if not directly available
+    let resolvedCategory = "";
+    if (event.category_name && categoryOptions) {
+      const eventCatSlug = event.category_name
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "_");
+
+      const matchingCat = categoryOptions.find((c) => {
+        const catSlug = c.name.trim().toLowerCase().replace(/\s+/g, "_");
+        return (
+          catSlug === eventCatSlug ||
+          catSlug.includes(eventCatSlug) ||
+          eventCatSlug.includes(catSlug)
+        );
+      });
+      if (matchingCat) {
+        resolvedCategory = matchingCat.id;
+      }
+    }
+
+    // Resolve event_scope/cluster from organizer IG cluster if not directly available
+    let resolvedEventScope = "";
+    const rawCluster =
+      event.organizer?.ig?.cluster ||
+      event.organizer?.organiser_ig?.cluster ||
+      event.organizer?.ig?.category ||
+      event.organizer?.organiser_ig?.category ||
+      "";
+
+    if (rawCluster && clusterOptions) {
+      const matchingCluster = clusterOptions.find(
+        (item) => item.value.toLowerCase() === rawCluster.toLowerCase(),
+      );
+      if (matchingCluster) {
+        resolvedEventScope = matchingCluster.value;
+      }
+    }
+
     reset({
       ...EVENT_FORM_DEFAULT_VALUES,
       title: event.title ?? "",
       description: event.description ?? "",
       scope,
+      category: resolvedCategory,
+      event_type:
+        event.event_type ??
+        (resolvedCategory
+          ? event.category_name?.trim().toLowerCase().replace(/\s+/g, "_")
+          : ""),
+      event_scope: resolvedEventScope,
       start_datetime: toDatetimeLocal(event.start_datetime),
       end_datetime: toDatetimeLocal(event.end_datetime),
       venue_type: event.venue?.type ?? "online",
@@ -111,9 +197,11 @@ export function EventInlineEditForm({
     );
     setSelectedIgName(event.scope_ig?.name ?? event.target_ig?.name ?? "");
     setSelectedCampusIgName(event.target_campus_ig?.name ?? "");
-  }, [event, reset]);
+  }, [event, reset, categoryOptions, clusterOptions]);
 
   const scope = watch("scope");
+  const startDatetimeValue = watch("start_datetime");
+  const minEndDatetime = startDatetimeValue || undefined;
 
   const organizerName = useMemo(() => {
     if (event.organizer.type === "global_ig")
@@ -149,6 +237,20 @@ export function EventInlineEditForm({
       });
       hasRequiredError = true;
     }
+    if (!values.event_scope) {
+      setError("event_scope", {
+        type: "manual",
+        message: "Please select a cluster",
+      });
+      hasRequiredError = true;
+    }
+    if (!values.category) {
+      setError("category", {
+        type: "manual",
+        message: "Please select an event type",
+      });
+      hasRequiredError = true;
+    }
     if (!values.start_datetime) {
       setError("start_datetime", {
         type: "manual",
@@ -169,6 +271,18 @@ export function EventInlineEditForm({
         message: "Venue type is required",
       });
       hasRequiredError = true;
+    }
+
+    if (values.start_datetime && values.end_datetime) {
+      const start = new Date(values.start_datetime).getTime();
+      const end = new Date(values.end_datetime).getTime();
+      if (end <= start) {
+        setError("end_datetime", {
+          type: "manual",
+          message: "End datetime must be after start datetime",
+        });
+        hasRequiredError = true;
+      }
     }
 
     if (hasRequiredError) return;
@@ -253,6 +367,165 @@ export function EventInlineEditForm({
               {errors.description.message}
             </p>
           ) : null}
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-foreground">
+              Event Cluster / Category{" "}
+              <span className="text-destructive">*</span>
+            </p>
+            <Controller
+              control={control}
+              name="event_scope"
+              render={({ field }) => {
+                const currentCluster = (clusterOptions ?? []).find(
+                  (item) => item.value === field.value,
+                );
+
+                return (
+                  <div className="w-full">
+                    {clustersLoading ? (
+                      <div className="h-10 w-full animate-pulse rounded-xl bg-muted" />
+                    ) : (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full justify-between rounded-xl"
+                          >
+                            <span>
+                              {currentCluster?.label ?? "Select cluster"}
+                            </span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-full max-w-sm p-1">
+                          {(clusterOptions ?? [])
+                            .filter((item) => item.value !== "all")
+                            .map((item) => {
+                              const isSelected = field.value === item.value;
+                              return (
+                                <DropdownMenuItem
+                                  key={item.value}
+                                  onSelect={() => field.onChange(item.value)}
+                                  className="flex items-center justify-between rounded-md px-3 py-2"
+                                >
+                                  <span>{item.label}</span>
+                                  {isSelected ? (
+                                    <Check className="h-4 w-4 text-primary" />
+                                  ) : null}
+                                </DropdownMenuItem>
+                              );
+                            })}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </div>
+                );
+              }}
+            />
+            {errors.event_scope?.message ? (
+              <p className="text-xs text-destructive">
+                {errors.event_scope.message}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-foreground">
+              Event Type <span className="text-destructive">*</span>
+            </p>
+            <Controller
+              control={control}
+              name="category"
+              render={({ field }) => {
+                const eventTypeValue = watch("event_type");
+                const selectedType =
+                  eventTypeSelectOptions.find(
+                    (item) => item.value === eventTypeValue,
+                  ) ??
+                  eventTypeSelectOptions.find(
+                    (item) => item.value === "others",
+                  );
+
+                const isLoadingOptions = categoriesLoading || typeScopeLoading;
+
+                return (
+                  <div className="w-full">
+                    {isLoadingOptions ? (
+                      <div className="h-10 w-full animate-pulse rounded-xl bg-muted" />
+                    ) : (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full justify-between rounded-xl animate-fade-in"
+                          >
+                            <span>
+                              {selectedType?.label ?? "Select event type"}
+                            </span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-full max-w-sm p-1">
+                          {eventTypeSelectOptions.map((item) => {
+                            const isSelected =
+                              selectedType?.value === item.value;
+                            return (
+                              <DropdownMenuItem
+                                key={item.value}
+                                onSelect={() => {
+                                  const matchingCat =
+                                    (categoryOptions ?? []).find((c) => {
+                                      const catSlug = c.name
+                                        .trim()
+                                        .toLowerCase()
+                                        .replace(/\s+/g, "_");
+                                      return catSlug === item.value;
+                                    }) ||
+                                    (categoryOptions ?? []).find((c) => {
+                                      const catSlug = c.name
+                                        .trim()
+                                        .toLowerCase()
+                                        .replace(/\s+/g, "_");
+                                      return (
+                                        catSlug === "others" ||
+                                        catSlug === "other"
+                                      );
+                                    }) ||
+                                    categoryOptions?.[0];
+
+                                  if (matchingCat) {
+                                    field.onChange(matchingCat.id);
+                                  }
+                                  setValue("event_type", item.value, {
+                                    shouldDirty: true,
+                                    shouldValidate: true,
+                                  });
+                                }}
+                                className="flex items-center justify-between rounded-md px-3 py-2"
+                              >
+                                <span>{item.label}</span>
+                                {isSelected ? (
+                                  <Check className="h-4 w-4 text-primary" />
+                                ) : null}
+                              </DropdownMenuItem>
+                            );
+                          })}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </div>
+                );
+              }}
+            />
+            {errors.category?.message ? (
+              <p className="text-xs text-destructive">
+                {errors.category.message}
+              </p>
+            ) : null}
+          </div>
         </div>
       </section>
 
@@ -367,6 +640,7 @@ export function EventInlineEditForm({
             <Input
               className="rounded-xl border-border bg-background text-foreground"
               type="datetime-local"
+              min={minEndDatetime}
               {...register("end_datetime")}
             />
             {errors.end_datetime?.message ? (

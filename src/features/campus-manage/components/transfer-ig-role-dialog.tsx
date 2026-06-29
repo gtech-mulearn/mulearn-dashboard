@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { endpoints } from "@/api/endpoints";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
@@ -109,7 +110,13 @@ export function TransferIgRoleDialog({
               group.
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form
+            onSubmit={(e) => {
+              e.stopPropagation();
+              form.handleSubmit(onSubmit)(e);
+            }}
+            className="space-y-4"
+          >
             <div className="space-y-1.5">
               <p className="text-sm font-medium">Interest Group</p>
               <Select
@@ -122,7 +129,7 @@ export function TransferIgRoleDialog({
                 <SelectTrigger>
                   <SelectValue placeholder="Select IG..." />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent position="popper">
                   {igCodes.map((code) => (
                     <SelectItem key={code} value={code}>
                       {code}
@@ -145,6 +152,10 @@ export function TransferIgRoleDialog({
                 keepOpen
                 placeholder="Search by name or MUID..."
                 disabled={isPending}
+                searchOptions={{
+                  endpoint: endpoints.campusManage.execomSearch,
+                  queryParam: "q",
+                }}
               />
               {form.formState.errors.muid && (
                 <p className="text-xs text-destructive">

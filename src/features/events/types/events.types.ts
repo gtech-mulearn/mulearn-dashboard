@@ -10,7 +10,12 @@ export type ISODate = string;
 
 // ─── ENUMS ──────────────────────────────────────────────────────────────────
 
-export type IGCluster = "coder" | "maker" | "manager" | "creative";
+/**
+ * IG Cluster identifier — fetched dynamically from `/api/v1/dashboard/ig/list/`.
+ * Kept as `string` to avoid tight coupling to hardcoded values.
+ * Use `useIGClusters()` hook to get the current list of available clusters.
+ */
+export type IGCluster = string;
 
 export type EventScope = "global" | "campus" | "ig" | "campus_ig" | "company";
 
@@ -30,13 +35,22 @@ export type ViewerInterestStatus = "interested" | "none";
 
 /** Event type - kept for component backward compatibility */
 export type EventType =
+  | "hackathon"
   | "workshop"
   | "webinar"
-  | "hackathon"
+  | "seminar"
+  | "bootcamp"
   | "meetup"
+  | "conference"
   | "competition"
-  | "social_gathering"
-  | "other";
+  | "ideathon"
+  | "cultural_event"
+  | "sports_event"
+  | "community_event"
+  | "expo"
+  | "networking_event"
+  | "tech_talk"
+  | "others"; // API default — note: "others" (not "other")
 
 /** Internal/component type without API prefix */
 export type CollaboratorType = "ig" | "campus" | "campus_ig" | "company";
@@ -112,6 +126,7 @@ export interface MinimalIG {
   code?: string;
   logo?: string; // Backward compatibility
   cluster?: IGCluster;
+  category?: string;
 }
 
 export interface MinimalCampus {
@@ -254,14 +269,14 @@ export interface LinkedTaskInput {
 export interface EventLog {
   id: UUID;
   action?:
-    | "event_updated"
-    | "co_owner_added"
-    | "co_owner_removed"
-    | "collaborator_invited"
-    | "collaborator_accepted"
-    | "collaborator_rejected"
-    | "collaborator_removed"
-    | string;
+  | "event_updated"
+  | "co_owner_added"
+  | "co_owner_removed"
+  | "collaborator_invited"
+  | "collaborator_accepted"
+  | "collaborator_rejected"
+  | "collaborator_removed"
+  | string;
   actor?: MinimalUser | null;
   performed_by?: MinimalUser | null;
   target_type?: string | null;
@@ -299,8 +314,11 @@ export interface EventListItem {
   cover_image: string | null;
   status: EventStatus;
   scope: EventScope;
+  /** Direct cluster bucket returned by the cluster endpoint (e.g. "maker", "coder", "creative", "manager") */
+  event_scope?: string | null;
   start_datetime: ISODateTime;
   end_datetime: ISODateTime;
+  created_at?: ISODateTime;
   venue: EventVenue;
   organizer: OrganizerInfo;
   is_featured: boolean;
@@ -309,7 +327,10 @@ export interface EventListItem {
   min_karma: number;
   tags: Record<string, unknown> | null;
   user_limit: number;
+  /** Human-readable category name from the categories API (e.g. "Workshop", "Sprint") */
   category_name: string | null;
+  /** UUID of the category from the categories API */
+  category_id?: string | null;
   viewer_interest_status: ViewerInterestStatus | null;
   // Backward compatibility properties
   event_type?: EventType;
@@ -319,6 +340,8 @@ export interface EventListItem {
 
 /** EventDetail - full event object from /manage/<id>/ and detail endpoints */
 export interface EventDetail {
+  // NOTE: The backend does NOT return event_scope or category (UUID) in detail responses.
+  // They are only available in the write payload (EventWriteBody) and resolved via client-side helpers.
   id: UUID;
   title: string;
   slug: string;
@@ -390,6 +413,7 @@ export interface EventWriteBody {
   cover_image: string | null;
   banner_image: string | null;
   category: UUID | null;
+  event_type?: string | null;
   start_datetime: ISODateTime;
   end_datetime: ISODateTime;
   registration_url: string | null;
@@ -428,6 +452,7 @@ export interface EventListQueryParams {
   ig_id?: UUID;
   campus_id?: UUID;
   cluster?: string;
+  event_scope?: string;
   is_featured?: string;
   start_date?: ISODate;
   end_date?: ISODate;

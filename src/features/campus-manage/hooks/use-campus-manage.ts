@@ -21,7 +21,7 @@ export function useCampusLeaderboard(filters: CampusLeaderboardFilters) {
       filters.page,
       filters.search,
       filters.ig,
-      filters.cluster,
+      filters.category,
       filters.alumni,
     ),
     queryFn: () => campusManageApi.getLeaderboard(filters),
@@ -211,8 +211,11 @@ export function useTransferIgRole() {
 
 export function useDownloadStudentCsv() {
   return useMutation({
-    mutationFn: (filters?: { alumni?: "all" | "alumni" | "student" }) =>
-      campusManageApi.downloadStudentDetailsCsv(filters),
+    mutationFn: (filters?: {
+      alumni?: "all" | "alumni" | "student";
+      ig?: string;
+      category?: string;
+    }) => campusManageApi.downloadStudentDetailsCsv(filters),
     onError: (error) => {
       toast.error(
         getApiResponseError(error, { fallback: "Failed to download CSV" }),
@@ -250,8 +253,12 @@ export function useIgChapters() {
 export function useCreateIgChapter() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { ig: string; description?: string; lead?: string }) =>
-      campusManageApi.createIgChapter(data),
+    mutationFn: (data: {
+      ig: string;
+      description?: string;
+      icon_link?: string;
+      lead?: string;
+    }) => campusManageApi.createIgChapter(data),
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: campusManageKeys.igChapters(),
@@ -275,7 +282,12 @@ export function useUpdateIgChapter() {
       data,
     }: {
       chapterId: string;
-      data: { description?: string; lead?: string; is_active?: boolean };
+      data: {
+        description?: string;
+        icon_link?: string;
+        lead?: string;
+        is_active?: boolean;
+      };
     }) => campusManageApi.updateIgChapter(chapterId, data),
     onSuccess: () => {
       void queryClient.invalidateQueries({
