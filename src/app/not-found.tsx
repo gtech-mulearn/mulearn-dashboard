@@ -56,8 +56,8 @@ export default function NotFound() {
               Page not found
             </h2>
             <span className="text-sm sm:text-base">
-              Sorry, we couldn't find the page you're looking for. It may have
-              been moved, deleted, or the link might be incorrect.
+              The page you&apos;re looking for doesn&apos;t exist or has been
+              moved.
             </span>
           </div>
         </div>
