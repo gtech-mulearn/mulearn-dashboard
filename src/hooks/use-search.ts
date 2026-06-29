@@ -1,5 +1,6 @@
 import * as React from "react";
 import { toast } from "sonner";
+import { z } from "zod";
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import { getApiResponseError } from "@/hooks/use-get-error";
@@ -11,6 +12,17 @@ export interface UserResult {
   muid: string;
   profile_pic?: string | null;
 }
+
+const UserResultSchema = z.object({
+  id: z.string(),
+  full_name: z.string(),
+  muid: z.string(),
+  profile_pic: z.string().nullable().optional(),
+});
+
+const SearchResponseSchema = z.object({
+  data: z.array(UserResultSchema),
+});
 
 const EMPTY_EXCLUDED: string[] = [];
 
@@ -66,7 +78,10 @@ export function useSearch(options: SearchOptions | string[] = EMPTY_EXCLUDED) {
     }
 
     apiClient
-      .get<{ data: UserResult[] }>(`${endpoint}?${params}`)
+      .get<{ data: UserResult[] }>(
+        `${endpoint}?${params}`,
+        SearchResponseSchema,
+      )
       .then((response) => {
         if (!cancelled) {
           const users = response.data ?? [];
