@@ -1,15 +1,11 @@
 import type { Metadata } from "next";
-import { WeeklyTwitchesView } from "@/features/weekly-twitches";
-import { MANAGEMENT_ROLES, ROLES } from "@/lib/auth/roles";
-import { requireRole } from "@/lib/auth/server";
+import { WeeklyTwitchesViewer } from "@/features/weekly-twitches";
 
 export const metadata: Metadata = {
   title: "Weekly Twitches",
-  description:
-    "Manage Office Hours, Salt Mango Tree, and Inspiration Station content.",
+  description: "Office Hours, Salt Mango Tree, and Inspiration Station Radio.",
 };
 
-export default async function Page() {
-  await requireRole([...MANAGEMENT_ROLES, ROLES.IG_LEAD]);
-  return <WeeklyTwitchesView />;
+export default function Page() {
+  return <WeeklyTwitchesViewer />;
 }

@@ -21,12 +21,9 @@ import {
   useSmtList,
   useSmtMutations,
 } from "../hooks";
-import type { CampusContentItem } from "../schemas";
+import type { CampusContentItem, CampusContentType } from "../schemas";
 import { CampusContentDetailDialog } from "./campus-content-detail-dialog";
-import {
-  CampusContentForm,
-  type CampusContentType,
-} from "./campus-content-form";
+import { CampusContentForm } from "./campus-content-form";
 
 const STATUS_COLORS: Record<string, string> = {
   upcoming: "app-status-applied",
