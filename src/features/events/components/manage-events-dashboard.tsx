@@ -1,12 +1,19 @@
 "use client";
 
-import { useQueries, useQuery } from "@tanstack/react-query";
-import { Plus, Search } from "lucide-react";
+import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Plus } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { ApiError } from "@/api/client";
+import { SearchBar } from "@/components/dashboard/table/SearchBar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserInfo } from "@/features/auth/hooks";
 import { ROLES } from "@/lib/auth/roles";
@@ -32,6 +39,7 @@ function makeEventQuery(isAdmin: boolean, params: EventListQueryParams) {
 
 export default function ManageEventsDashboard() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -109,6 +117,7 @@ export default function ManageEventsDashboard() {
     pageIndex: page,
     search: search || undefined,
     status: statusFilter === "all" ? undefined : statusFilter,
+    sortBy: "-created_at",
     perPage: 12,
   };
 
@@ -144,7 +153,7 @@ export default function ManageEventsDashboard() {
   const pendingApprovalCount = statsQueries[2].data?.pagination.count ?? 0;
   const draftCount = statsQueries[3].data?.pagination.count ?? 0;
 
-  const { data, isLoading, isError, error, refetch } = useQuery(
+  const { data, isLoading, isError, error } = useQuery(
     makeEventQuery(canAdminView, listParams),
   );
 
@@ -152,7 +161,9 @@ export default function ManageEventsDashboard() {
 
   const is403 = error instanceof ApiError && error.status === 403;
 
-  const handleEventDeleted = useCallback(() => refetch(), [refetch]);
+  const handleEventDeleted = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: eventKeys.all });
+  }, [queryClient]);
   const handleCreateEvent = useCallback(() => setShowWizard(true), []);
   const handleEventView = useCallback(
     (event: { id: string }) =>
@@ -234,40 +245,36 @@ export default function ManageEventsDashboard() {
         )}
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {statusPills.map((pill) => {
-          const active = statusFilter === pill.value;
-          return (
-            <Button
-              key={pill.value}
-              size="sm"
-              variant={active ? "default" : "outline"}
-              aria-pressed={active}
-              className="rounded-full"
-              onClick={() => {
-                setStatusFilter(pill.value);
-                setPage(1);
-              }}
-            >
-              {pill.label}
-            </Button>
-          );
-        })}
-      </div>
-
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="relative w-full md:max-w-md">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            className="rounded-xl border-border bg-background pl-9"
-            placeholder="Search events"
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-          />
-        </div>
+        <Select
+          value={statusFilter}
+          onValueChange={(value) => {
+            setStatusFilter(value as EventStatus | "all");
+            setPage(1);
+          }}
+        >
+          <SelectTrigger className="w-full md:w-56 rounded-full">
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent>
+            {statusPills.map((pill) => (
+              <SelectItem key={pill.value} value={pill.value}>
+                {pill.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <SearchBar
+          onSearch={(val) => {
+            setSearch(val);
+            setPage(1);
+          }}
+          placeholder="Search events"
+          size="md"
+          showButton={false}
+          className="w-full md:max-w-md md:ml-auto"
+        />
       </div>
 
       {isLoading ? (
@@ -317,7 +324,7 @@ export default function ManageEventsDashboard() {
         open={showWizard}
         onClose={() => {
           setShowWizard(false);
-          refetch();
+          queryClient.invalidateQueries({ queryKey: eventKeys.all });
         }}
       />
 

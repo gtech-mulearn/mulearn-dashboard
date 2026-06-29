@@ -49,7 +49,7 @@ export function FeaturedEventsCarousel() {
   return (
     <section
       aria-label="Featured events carousel"
-      className="group relative h-48 w-full overflow-hidden rounded-2xl shadow-sm md:h-56 lc-slide-up"
+      className="group relative h-72 w-full overflow-hidden rounded-2xl shadow-sm md:h-96 lg:h-[28rem] lc-slide-up"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
@@ -75,7 +75,7 @@ export function FeaturedEventsCarousel() {
       ))}
 
       {/* Gradient overlay */}
-      <div className="absolute inset-0 z-10 bg-linear-to-t from-foreground/75 via-foreground/30 to-transparent" />
+      <div className="absolute inset-0 z-10 bg-gradient-to-t from-foreground/90 via-foreground/50 to-transparent" />
 
       <Link
         aria-label={`Open ${event.title}`}
@@ -84,25 +84,25 @@ export function FeaturedEventsCarousel() {
       />
 
       {/* Content overlay */}
-      <div className="absolute inset-x-0 bottom-0 z-20 p-4 text-primary-foreground sm:p-5">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div className="min-w-0 space-y-2">
+      <div className="absolute inset-x-0 bottom-0 z-20 p-6 text-primary-foreground sm:p-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="min-w-0 space-y-3">
             {/* Title */}
             <Link
               href={`/dashboard/events/${event.id}`}
               className="relative z-20"
             >
-              <h2 className="line-clamp-1 text-lg font-bold tracking-tight drop-shadow sm:text-xl hover:underline underline-offset-2 text-primary-foreground">
+              <h2 className="line-clamp-2 text-xl font-bold tracking-tight drop-shadow sm:text-2xl lg:text-3xl hover:underline underline-offset-2 text-primary-foreground">
                 {event.title}
               </h2>
             </Link>
 
             {/* Frosted glass info pill */}
-            <div className="inline-flex items-center gap-2 rounded-full bg-foreground/15 backdrop-blur-sm border border-foreground/20 px-3 py-1 text-xs text-primary-foreground/90">
-              <CalendarDays className="h-3.5 w-3.5" />
+            <div className="inline-flex items-center gap-2 rounded-full bg-foreground/15 backdrop-blur-sm border border-foreground/20 px-4 py-2 text-sm text-primary-foreground/90">
+              <CalendarDays className="h-4 w-4" />
               <span>{formatEventDate(event.start_datetime)}</span>
               <span>|</span>
-              <MapPin className="h-3.5 w-3.5" />
+              <MapPin className="h-4 w-4" />
               <span>{event.venue_city ?? "Venue TBA"}</span>
             </div>
           </div>
@@ -118,14 +118,14 @@ export function FeaturedEventsCarousel() {
 
         {/* Dots */}
         {featuredEvents.length > 1 ? (
-          <div className="relative z-20 mt-4 flex items-center gap-1.5">
+          <div className="relative z-20 mt-6 flex items-center gap-2">
             {featuredEvents.map((ev, i) => (
               <button
                 key={ev.id}
                 type="button"
                 aria-label={`Go to slide ${i + 1}`}
                 onClick={() => goTo(i)}
-                className={`h-1 rounded-full transition-all duration-300 ${
+                className={`h-2 rounded-full transition-all duration-300 ${
                   i === activeIndex
                     ? "w-8 bg-primary-foreground"
                     : "w-2 bg-primary-foreground/40 hover:bg-primary-foreground/60"

@@ -39,6 +39,7 @@ const nextConfig: NextConfig = {
     ],
   },
   async headers() {
+
     return [
       {
         source: "/:path*",
@@ -85,6 +86,7 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+
 };
 
 export default withSentryConfig(nextConfig, {

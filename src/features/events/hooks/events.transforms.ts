@@ -30,23 +30,14 @@ export function resolveEventTypeValue(
   eventType?: string | null,
   categoryName?: string | null,
 ): EventType | undefined {
-  if (eventType) {
-    return eventType as EventType;
-  }
+  const raw = eventType || categoryName;
+  if (!raw) return undefined;
 
-  const normalized = categoryName?.trim().toLowerCase().replace(/\s+/g, "_");
-  switch (normalized) {
-    case "workshop":
-    case "webinar":
-    case "hackathon":
-    case "meetup":
-    case "competition":
-    case "social_gathering":
-    case "other":
-      return normalized as EventType;
-    default:
-      return undefined;
+  const normalized = raw.trim().toLowerCase().replace(/\s+/g, "_");
+  if (normalized === "other") {
+    return "others";
   }
+  return normalized as EventType;
 }
 
 // Convert a datetime-local string (e.g. "2026-03-22T10:00") to a full ISO string in UTC.

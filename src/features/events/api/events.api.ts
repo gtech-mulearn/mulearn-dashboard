@@ -1,5 +1,9 @@
 import { apiClient, endpoints } from "@/api";
 import type { ApprovalTier } from "../lib/events.policy";
+import {
+  categoryListResponseSchema,
+  eventTypeScopeResponseSchema,
+} from "../schemas";
 import type {
   CollaboratorInviteBody,
   CollaboratorsListData,
@@ -122,6 +126,7 @@ function buildQueryString(params?: EventListQueryParams): string {
   if (params.ig_id) searchParams.set("ig_id", params.ig_id);
   if (params.campus_id) searchParams.set("campus_id", params.campus_id);
   if (params.cluster) searchParams.set("cluster", params.cluster);
+  if (params.event_scope) searchParams.set("event_scope", params.event_scope);
   if (params.is_featured !== undefined)
     searchParams.set("is_featured", String(params.is_featured));
   if (params.tags) searchParams.set("tags", params.tags);
@@ -156,6 +161,7 @@ function buildQueryStringWithStatusOverride(
   if (params.ig_id) searchParams.set("ig_id", params.ig_id);
   if (params.campus_id) searchParams.set("campus_id", params.campus_id);
   if (params.cluster) searchParams.set("cluster", params.cluster);
+  if (params.event_scope) searchParams.set("event_scope", params.event_scope);
   if (params.is_featured !== undefined)
     searchParams.set("is_featured", String(params.is_featured));
   if (params.tags) searchParams.set("tags", params.tags);
@@ -227,22 +233,30 @@ async function fetchListWithStatusFallback(
   endpoint: string,
   params?: EventListQueryParams,
 ): Promise<EventListData> {
-  const qs = buildQueryString(params);
+  // Strip sortBy parameter for management/admin lists since the backend endpoints
+  // /api/v1/dashboard/events/manage/ and /api/v1/dashboard/events/admin/ do not support
+  // the sortBy parameter and return a 500 Internal Server Error when it is provided.
+  const safeParams = params ? { ...params } : undefined;
+  if (safeParams) {
+    delete safeParams.sortBy;
+  }
+
+  const qs = buildQueryString(safeParams);
   let response = await apiClient.get<EventListData>(`${endpoint}${qs}`);
   response = mirrorEventTypeToCategoryList(response);
 
-  const status = params?.status;
+  const status = safeParams?.status;
   if (!status) {
     return response;
   }
 
-  const pageIndex = params?.pageIndex ?? 1;
-  const perPage = params?.perPage ?? 12;
+  const pageIndex = safeParams?.pageIndex ?? 1;
+  const perPage = safeParams?.perPage ?? 12;
 
   // Pending tab should include all pending states used across approval flows.
   if (status === "pending_approval") {
     const fallbackParams = {
-      ...params,
+      ...safeParams,
       pageIndex: 1,
       perPage: FETCH_ALL_LIMIT,
     };
@@ -263,7 +277,10 @@ async function fetchListWithStatusFallback(
 
   // Some deployments use American spelling in query parsing (`canceled`).
   if (status === "cancelled" && response.data.length === 0) {
-    const fallbackQs = buildQueryStringWithStatusOverride(params, "canceled");
+    const fallbackQs = buildQueryStringWithStatusOverride(
+      safeParams,
+      "canceled",
+    );
     const fallbackResponse = await apiClient.get<EventListData>(
       `${endpoint}${fallbackQs}`,
     );
@@ -276,11 +293,10 @@ async function fetchListWithStatusFallback(
     response.data.length === 0
   ) {
     const publishedFallbackParams: EventListQueryParams = {
-      ...params,
+      ...safeParams,
       status: "published",
       pageIndex: 1,
       perPage: FETCH_ALL_LIMIT,
-      sortBy: "-start_datetime",
     };
 
     const publishedResponse = await apiClient.get<EventListData>(
@@ -293,7 +309,14 @@ async function fetchListWithStatusFallback(
       status === "ongoing" ? isOngoingByTime(event) : isCompletedByTime(event),
     );
 
-    return paginateItems(filtered, pageIndex, perPage);
+    // Client-side sort fallback since server-side sort is not supported here
+    const sorted = [...filtered].sort((a, b) => {
+      const timeA = a.start_datetime ? new Date(a.start_datetime).getTime() : 0;
+      const timeB = b.start_datetime ? new Date(b.start_datetime).getTime() : 0;
+      return timeB - timeA;
+    });
+
+    return paginateItems(sorted, pageIndex, perPage);
   }
 
   return response;
@@ -572,7 +595,7 @@ export const eventsApi = {
       `${endpoints.events.company}${companyId}/${qs}`,
     );
   },
-
+  //
   // ─── ADMIN ENDPOINTS ─────────────────────────────────────────────────────
   adminList: async (params?: EventListQueryParams): Promise<EventListData> => {
     return fetchListWithStatusFallback(endpoints.events.admin, params);
@@ -624,5 +647,60 @@ export const eventsApi = {
     return apiClient.get<OrganizerOptionsResponse>(
       endpoints.events.meta.organizerOptions,
     );
+  },
+
+  getCategories: async (): Promise<
+    Array<{ id: string; name: string; description: string }>
+  > => {
+    const envelope = await apiClient.get(
+      endpoints.events.meta.categories,
+      categoryListResponseSchema,
+    );
+    return envelope.response;
+  },
+
+  getEventTypeScope: async (): Promise<{
+    event_type: string[];
+    event_scope: string[];
+  }> => {
+    const envelope = await apiClient.get(
+      endpoints.events.eventTypeScope,
+      eventTypeScopeResponseSchema,
+    );
+    return envelope.response;
+  },
+
+  /**
+   * Fetch the distinct IG cluster slugs via the event-type/scope endpoint.
+   * Falls back to a hardcoded list of the four canonical clusters
+   * (Maker, Coder, Manager, Creative) if the endpoint fails or returns an
+   * unexpected shape.
+   */
+  getIGClusters: async (): Promise<Array<{ label: string; value: string }>> => {
+    try {
+      const data = await eventsApi.getEventTypeScope();
+      return [
+        { label: "All", value: "all" },
+        ...data.event_scope.map((scope) => ({
+          label: scope,
+          value: scope.toLowerCase(),
+        })),
+      ];
+    } catch (err) {
+      if (process.env.NODE_ENV === "development") {
+        console.warn(
+          "[events] getIGClusters: fetch failed, using fallback:",
+          err,
+        );
+      }
+    }
+
+    return [
+      { label: "All", value: "all" },
+      { label: "Maker", value: "maker" },
+      { label: "Coder", value: "coder" },
+      { label: "Manager", value: "manager" },
+      { label: "Creative", value: "creative" },
+    ];
   },
 };

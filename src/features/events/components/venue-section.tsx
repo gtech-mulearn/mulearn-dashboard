@@ -188,6 +188,9 @@ export function VenueSection({
       {errors?.city?.message ? (
         <p className="text-xs text-destructive">{errors.city.message}</p>
       ) : null}
+      {errors?.maps_url?.message ? (
+        <p className="text-xs text-destructive">{errors.maps_url.message}</p>
+      ) : null}
       {errors?.online_link?.message ? (
         <p className="text-xs text-destructive">{errors.online_link.message}</p>
       ) : null}

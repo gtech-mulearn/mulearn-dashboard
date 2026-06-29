@@ -465,13 +465,14 @@ export const endpoints = {
     campus: "/api/v1/dashboard/events/campus/",
     campusIg: "/api/v1/dashboard/events/campus-ig/",
     company: "/api/v1/dashboard/events/company/",
+    eventTypeScope: "/api/v1/dashboard/events/meta/event-type-scope/",
     meta: {
       organizerOptions: "/api/v1/dashboard/events/meta/organizer-options/",
       collaborationTargets:
         "/api/v1/dashboard/events/meta/collaboration-targets/",
+      categories: "/api/v1/dashboard/events/meta/categories/",
     },
   },
-
   // ============================================
   // Campus Endpoints
   // ============================================

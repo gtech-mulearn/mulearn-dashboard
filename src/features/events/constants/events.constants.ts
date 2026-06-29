@@ -15,7 +15,6 @@ import type {
   EventScope,
   EventStatus,
   EventType,
-  IGCluster,
 } from "../types";
 
 type LabelValueOption<T extends string> = {
@@ -80,71 +79,85 @@ export const EVENT_TYPE_BADGE_CONFIG: Record<
   EventType,
   { label: string; icon: LucideIcon; className: string }
 > = {
-  workshop: {
-    label: "Workshop",
-    icon: BookOpen,
-    className: "ig-cat-manager",
-  },
-  webinar: {
-    label: "Webinar",
-    icon: Globe,
-    className: "ig-cat-coder",
-  },
-  hackathon: {
-    label: "Hackathon",
-    icon: Code,
-    className: "ig-cat-creative",
-  },
-  meetup: {
-    label: "Meetup",
-    icon: Users,
-    className: "ig-cat-maker",
-  },
+  hackathon: { label: "Hackathon", icon: Code, className: "ig-cat-creative" },
+  workshop: { label: "Workshop", icon: BookOpen, className: "ig-cat-manager" },
+  webinar: { label: "Webinar", icon: Globe, className: "ig-cat-coder" },
+  seminar: { label: "Seminar", icon: BookOpen, className: "ig-cat-coder" },
+  bootcamp: { label: "Bootcamp", icon: Code, className: "ig-cat-coder" },
+  meetup: { label: "Meetup", icon: Users, className: "ig-cat-maker" },
+  conference: { label: "Conference", icon: Users, className: "ig-cat-manager" },
   competition: {
     label: "Competition",
     icon: Trophy,
     className: "ig-cat-manager",
   },
-  social_gathering: {
-    label: "Social",
+  ideathon: {
+    label: "Ideathon",
+    icon: Lightbulb,
+    className: "ig-cat-creative",
+  },
+  cultural_event: {
+    label: "Cultural Event",
     icon: Gamepad2,
+    className: "ig-cat-creative",
+  },
+  sports_event: {
+    label: "Sports Event",
+    icon: Trophy,
     className: "ig-cat-maker",
   },
-  other: {
-    label: "Other",
-    icon: Lightbulb,
-    className: "ig-cat-others",
+  community_event: {
+    label: "Community Event",
+    icon: Users,
+    className: "ig-cat-maker",
   },
+  expo: { label: "Expo", icon: Globe, className: "ig-cat-manager" },
+  networking_event: {
+    label: "Networking",
+    icon: Users,
+    className: "ig-cat-coder",
+  },
+  tech_talk: { label: "Tech Talk", icon: Lightbulb, className: "ig-cat-coder" },
+  others: { label: "Others", icon: Lightbulb, className: "ig-cat-others" },
 };
-
-export const EVENT_CLUSTER_OPTIONS: Array<LabelValueOption<IGCluster | "all">> =
-  [
-    { label: "All", value: "all" },
-    { label: "Coder", value: "coder" },
-    { label: "Maker", value: "maker" },
-    { label: "Manager", value: "manager" },
-    { label: "Creative", value: "creative" },
-  ];
 
 export const EVENT_TYPE_OPTIONS: Array<LabelValueOption<EventType | "all">> = [
   { label: "All Types", value: "all" },
+  { label: "Hackathon", value: "hackathon" },
   { label: "Workshop", value: "workshop" },
   { label: "Webinar", value: "webinar" },
-  { label: "Hackathon", value: "hackathon" },
+  { label: "Seminar", value: "seminar" },
+  { label: "Bootcamp", value: "bootcamp" },
   { label: "Meetup", value: "meetup" },
+  { label: "Conference", value: "conference" },
   { label: "Competition", value: "competition" },
-  { label: "Social Gathering", value: "social_gathering" },
-  { label: "Other", value: "other" },
+  { label: "Ideathon", value: "ideathon" },
+  { label: "Cultural Event", value: "cultural_event" },
+  { label: "Sports Event", value: "sports_event" },
+  { label: "Community Event", value: "community_event" },
+  { label: "Expo", value: "expo" },
+  { label: "Networking", value: "networking_event" },
+  { label: "Tech Talk", value: "tech_talk" },
+  { label: "Others", value: "others" },
 ];
 
 export const EVENT_TYPE_SELECT_OPTIONS: Array<LabelValueOption<EventType>> = [
+  { label: "Hackathon", value: "hackathon" },
   { label: "Workshop", value: "workshop" },
   { label: "Webinar", value: "webinar" },
-  { label: "Hackathon", value: "hackathon" },
+  { label: "Seminar", value: "seminar" },
+  { label: "Bootcamp", value: "bootcamp" },
   { label: "Meetup", value: "meetup" },
+  { label: "Conference", value: "conference" },
   { label: "Competition", value: "competition" },
-  { label: "Social Gathering", value: "social_gathering" },
-  { label: "Other", value: "other" },
+  { label: "Ideathon", value: "ideathon" },
+  { label: "Cultural Event", value: "cultural_event" },
+  { label: "Sports Event", value: "sports_event" },
+  { label: "Community Event", value: "community_event" },
+  { label: "Expo", value: "expo" },
+  { label: "Networking", value: "networking_event" },
+  { label: "Tech Talk", value: "tech_talk" },
+  { label: "Others", value: "others" },
 ];
 
 export const EVENT_SCOPE_OPTIONS: Array<LabelValueOption<EventScope>> = [
@@ -189,7 +202,9 @@ export const MANAGE_EVENT_STATUS_PILLS: Array<
 export const EVENT_FORM_DEFAULT_VALUES: CreateEventSchema = {
   title: "",
   description: "",
-  event_scope: "coder",
+  event_scope: "",
+  category: "",
+  event_type: "",
 
   scope: "global",
   start_datetime: "",
