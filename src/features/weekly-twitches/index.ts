@@ -1,3 +1,2 @@
-export { WeeklyTwitchesView } from "./components";
-export { WeeklyTwitchesViewer } from "./components/weekly-twitches-viewer";
+export { WeeklyTwitchesView, WeeklyTwitchesViewer } from "./components";
 export * from "./schemas";

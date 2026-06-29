@@ -12,6 +12,8 @@ export const PaginationSchema = z.object({
 export const StatusSchema = z.enum(["upcoming", "ongoing", "completed"]);
 export const ZoneSchema = z.enum(["north", "central", "south"]);
 
+export type CampusContentType = "smt" | "isr";
+
 export const MutationResponseSchema = ApiResponseSchema(
   z.object({}).passthrough(),
 );

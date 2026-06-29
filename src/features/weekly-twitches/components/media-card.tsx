@@ -77,8 +77,8 @@ export function MediaCard({
           <div className={`absolute inset-0 bg-gradient-to-br ${gradient}`} />
         )}
 
-        <div className="absolute inset-0 bg-gradient-to-t from-foreground/90 via-foreground/40 to-transparent" />
-        <div className="absolute inset-0 bg-foreground/25 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent" />
+        <div className="absolute inset-0 bg-background/25 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
         {/* Status */}
         <div className="absolute left-3 top-3 z-10">
@@ -90,7 +90,7 @@ export function MediaCard({
         </div>
 
         {/* Content */}
-        <div className="absolute inset-x-0 bottom-0 z-10 p-4 text-primary-foreground">
+        <div className="absolute inset-x-0 bottom-0 z-10 p-4 text-foreground">
           <div className="mb-1 flex items-center gap-1 text-[11px] opacity-75">
             <Calendar className="h-3 w-3" />
             <span>{formatDate(date)}</span>

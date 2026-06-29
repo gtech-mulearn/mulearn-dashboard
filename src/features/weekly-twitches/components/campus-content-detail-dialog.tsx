@@ -7,8 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { CampusContentItem } from "../schemas";
-import type { CampusContentType } from "./campus-content-form";
+import type { CampusContentItem, CampusContentType } from "../schemas";
 
 const STATUS_COLORS: Record<string, string> = {
   upcoming: "app-status-applied",
@@ -17,8 +16,8 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const TITLES: Record<CampusContentType, string> = {
-  smt: "Salt Mango Tree Episode",
-  isr: "Inspiration Station Radio Episode",
+  smt: "Salt Mango Tree",
+  isr: "Inspiration Station Radio",
 };
 
 interface Props {

@@ -23,11 +23,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { useIsMutations, useSmtMutations } from "../hooks";
 import {
   type CampusContentItem,
+  type CampusContentType,
   type CampusContentWrite,
   CampusContentWriteSchema,
 } from "../schemas";
-
-export type CampusContentType = "smt" | "isr";
 
 const LABELS: Record<CampusContentType, { title: string; noun: string }> = {
   smt: { title: "Salt Mango Tree", noun: "episode" },

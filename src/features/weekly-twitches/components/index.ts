@@ -1,8 +1,9 @@
-export { WeeklyTwitchesView } from "./weekly-twitches-view";
+export { CampusContentCards } from "./campus-content-cards";
 export { MediaCard, MediaCardSkeleton } from "./media-card";
 export {
-  OfficeHoursDetailSheet,
   CampusContentDetailSheet,
+  OfficeHoursDetailSheet,
 } from "./media-detail-sheet";
 export { OfficeHoursCards } from "./office-hours-cards";
-export { CampusContentCards } from "./campus-content-cards";
+export { WeeklyTwitchesView } from "./weekly-twitches-view";
+export { WeeklyTwitchesViewer } from "./weekly-twitches-viewer";

@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
 import Pagination from "@/components/dashboard/table/pagination";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -11,8 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useIsList, useSmtList } from "../hooks";
-import type { CampusContentItem } from "../schemas";
-import type { CampusContentType } from "./campus-content-form";
+import type { CampusContentItem, CampusContentType } from "../schemas";
 import { MediaCard, MediaCardSkeleton } from "./media-card";
 import { CampusContentDetailSheet } from "./media-detail-sheet";
 
