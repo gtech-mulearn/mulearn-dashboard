@@ -138,8 +138,6 @@ export function EventCalendarCard({
       const existing = map.get(key) ?? [];
       existing.push(event);
       map.set(key, existing);
-      const events = propEvents ?? fetchedEvents ?? [];
-      const isLoading = propIsLoading ?? isFetching;
     }
     return map;
   }, [events]);

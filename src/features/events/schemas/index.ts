@@ -11,8 +11,8 @@ export {
   categorySchema,
   createEventSchema,
   eventListParamsSchema,
-  eventTypeScopeSchema,
   eventTypeScopeResponseSchema,
+  eventTypeScopeSchema,
   updateEventSchema,
   venueTypeSchema,
 } from "./events.schema";

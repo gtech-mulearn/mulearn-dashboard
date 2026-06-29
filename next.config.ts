@@ -35,17 +35,12 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "cdn.mulearn",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
         hostname: "www.madhyamam.com",
       },
     ],
   },
-  async headers() {
 
+  async headers() {
     return [
       {
         source: "/:path*",
@@ -92,7 +87,6 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-
 };
 
 export default withSentryConfig(nextConfig, {

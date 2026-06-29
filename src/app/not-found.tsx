@@ -1,7 +1,7 @@
-import { Button } from "@/components/ui/button";
-import { cdnUrl } from "@/hooks/use-cdn";
 import Image from "next/image";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { cdnUrl } from "@/lib/cdn";
 
 export default function NotFound() {
   const stone = cdnUrl("src/components/assests/NotFound/Stone.webp");
@@ -34,7 +34,7 @@ export default function NotFound() {
           <div className="animate-t">t</div>
         </div>
         <div className="flex flex-row items-center gap-1 font-semibold -mt-6 text-2xl sm:text-3xl md:text-5xl">
-          <div className="rotate-[3deg] animate-in">in</div>
+          <div className="rotate-[3deg] animate-float-in">in</div>
           <div className="-rotate-[2deg] animate-space">space</div>
         </div>
       </div>

@@ -1,8 +1,15 @@
 import type { CreateEventSchema } from "../schemas";
-import type { EventDetailManage, EventPatchBody, EventWriteBody } from "../types";
+import type {
+  EventDetailManage,
+  EventPatchBody,
+  EventWriteBody,
+} from "../types";
 import { toISOWithOffset } from "./events.transforms";
 
-export type ComparablePatchPayload = Omit<Partial<EventWriteBody>, "category" | "event_scope"> & {
+export type ComparablePatchPayload = Omit<
+  Partial<EventWriteBody>,
+  "category" | "event_scope"
+> & {
   category: string | null;
   event_scope: string | null;
 };
@@ -118,8 +125,8 @@ export function buildComparableInitialPayload(
     organiser_ci_id:
       organizerType === "campus_ig"
         ? ((organizer?.campus_ig?.id ?? organizer?.campus_ig_id ?? null) as
-          | string
-          | null)
+            | string
+            | null)
         : null,
     category: null, // Note: Omitted in detail response, resolved client-side
     event_type: currentEvent.event_type ?? null,

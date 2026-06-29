@@ -52,6 +52,7 @@ import {
   YAxis,
 } from "recharts";
 import { toast } from "sonner";
+import { endpoints } from "@/api/endpoints";
 import {
   AXIS_PROPS,
   ChartGradients,
@@ -102,7 +103,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import { chipColor } from "@/lib/chip-colors";
 import { cn } from "@/lib/utils";
-import { endpoints } from "@/api/endpoints";
 import {
   useAddExecomMember,
   useCampusEvents,

@@ -704,12 +704,35 @@ h5 {
     }
   }
 
-  .animate-rocks {
-    animation: rocks 10s ease-in-out infinite;
+  @keyframes twinkle {
+    0%,
+    100% {
+      opacity: 0.5;
+      transform: scale(0.8) rotate(0deg);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.2) rotate(15deg);
+      filter: drop-shadow(0 0 8px rgba(175, 46, 230, 0.8));
+    }
   }
 
-  .animate-ufo-float {
-    animation: ufoFloat 10s ease-in-out infinite;
+  @keyframes scroll-left {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  @keyframes scroll-right {
+    0% {
+      transform: translateX(-50%);
+    }
+    100% {
+      transform: translateX(0);
+    }
   }
 
   .animate-uh {
@@ -720,7 +743,11 @@ h5 {
     animation: floatY 2s ease-in-out 1s infinite;
   }
 
-  .animate-in {
+  .animate-span {
+    animation: floatY 2s ease-in-out 0.3s infinite;
+  }
+
+  .animate-float-in {
     animation: floatY 2s ease-in-out infinite;
   }
 
@@ -742,48 +769,6 @@ h5 {
 
   .animate-t {
     animation: floatY 2.5s ease-in-out 1.6s infinite;
-  }
-
-  @keyframes twinkle {
-    0%,
-    100% {
-      opacity: 0.5;
-      transform: scale(0.8) rotate(0deg);
-    }
-    50% {
-      opacity: 1;
-      transform: scale(1.2) rotate(15deg);
-      filter: drop-shadow(0 0 8px rgba(175, 46, 230, 0.8));
-    }
-  }
-}
-
-@keyframes floatY {
-  0%,
-  100% {
-    transform: translateY(0%);
-  }
-  50% {
-    transform: translateY(5%);
-  }
-}
-
-.animate-uh {
-  animation: floatY 2s ease-in-out infinite;
-}
-@layer utilities {
-  @keyframes floatY {
-    0%,
-    100% {
-      transform: translateY(0%);
-    }
-    50% {
-      transform: translateY(5%);
-    }
-  }
-
-  .animate-uh {
-    animation: floatY 2s ease-in-out infinite;
   }
 
   .animate-rocks {
