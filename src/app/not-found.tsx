@@ -62,7 +62,7 @@ export default function NotFound() {
           </div>
         </div>
         <Link href="/dashboard">
-          <Button className="mt-6 px-6 py-3 font-semibold">Back to Home</Button>
+          <Button className="mt-6 px-6 py-3 font-semibold">Go Home</Button>
         </Link>
       </div>
       <Image
