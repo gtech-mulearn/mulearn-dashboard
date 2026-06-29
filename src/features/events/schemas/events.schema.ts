@@ -37,11 +37,11 @@ const createEventBaseSchema = z.object({
     .optional()
     .transform((v) => (v === "" ? null : v)),
   maps_url: z
-    .union([z.string(), z.literal("")])
+    .union([z.string().url("Invalid URL"), z.literal("")])
     .optional()
     .transform((v) => (v === "" ? null : v)),
   online_link: z
-    .union([z.string(), z.literal("")])
+    .union([z.string().url("Invalid URL"), z.literal("")])
     .optional()
     .transform((v) => (v === "" ? null : v)),
   platform: z

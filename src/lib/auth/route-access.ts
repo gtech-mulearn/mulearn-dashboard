@@ -13,7 +13,7 @@
  * - More specific routes take precedence over general ones
  */
 
-import { ROLES } from "./roles";
+import { CAMPUS_SETTINGS_ROLES, ROLES } from "./roles";
 
 // ─── Types ──────────────────────────────────────────────────
 
@@ -40,6 +40,7 @@ export const routeAccessMap: Record<string, RouteConfig> = {
   "/dashboard/campus": { roles: [] },
   "/dashboard/search": { roles: [] },
   "/dashboard/settings": { roles: [] },
+  "/dashboard/settings/organization": { roles: CAMPUS_SETTINGS_ROLES },
   "/dashboard/hackathon": { roles: [] },
   "/dashboard/events": { roles: [] },
   "/dashboard/connect-discord": { roles: [] },
@@ -168,6 +169,11 @@ export const routeAccessMap: Record<string, RouteConfig> = {
   },
   "/dashboard/management/organization-transfer": {
     roles: [ROLES.ADMIN],
+  },
+
+  // ── Weekly Twitches (Admin + Associate + IG Leads) ───────
+  "/dashboard/weekly-twitches": {
+    roles: [ROLES.ADMIN, ROLES.ASSOCIATE, ROLES.IG_LEAD],
   },
 
   // ── URL Shortener (broader access) ───────────────────────

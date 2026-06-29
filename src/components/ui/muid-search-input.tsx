@@ -35,6 +35,8 @@ interface MuidSearchInputProps {
   selectedUser?: { muid: string; name: string } | null;
   /** Called when the user explicitly clears the selection */
   onClear?: () => void;
+  /** Options to pass down to useSearch */
+  searchOptions?: Parameters<typeof useSearch>[0];
 }
 
 function getInitials(name: string): string {
@@ -57,10 +59,25 @@ export function MuidSearchInput({
   keepOpen = false,
   selectedUser = null,
   onClear,
+  searchOptions,
 }: MuidSearchInputProps) {
   const [open, setOpen] = React.useState(false);
+
+  // If searchOptions is provided, ensure excludedMuids incorporates `value` if we are in multi-select mode
+  // But actually, `value` IS the excludedMuids in the old implementation (which is slightly overloaded).
+  // Let's merge them gracefully.
+  const mergedOptions = React.useMemo(() => {
+    if (searchOptions && !Array.isArray(searchOptions)) {
+      return {
+        ...searchOptions,
+        excludedMuids: searchOptions.excludedMuids ?? value,
+      };
+    }
+    return searchOptions ?? value;
+  }, [searchOptions, value]);
+
   const { query, results, isLoading, handleSearch, clearResults } =
-    useSearch(value);
+    useSearch(mergedOptions);
 
   const selectUser = (user: UserResult) => {
     if (onSelectUser) {

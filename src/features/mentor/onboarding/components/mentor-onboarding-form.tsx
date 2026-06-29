@@ -21,6 +21,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { MultiSelect } from "@/components/ui/multi-select";
+import { TagInput } from "@/components/ui/tag-input";
 import { Textarea } from "@/components/ui/textarea";
 import { useInterestGroupsList } from "@/features/home/hooks";
 import { useOnboardingDraftStore } from "../hooks/use-draft-store";
@@ -50,14 +51,18 @@ export function MentorOnboardingForm({
 
   const isPending = isSubmitting || isUpdating;
 
-  const defaultValues = {
+  const defaultValues: OnboardingFormValues = {
     about: existing?.about ?? "",
+    // Expertise is stored as a comma string on the backend; split into chips.
     expertise:
       typeof existing?.expertise === "string"
         ? existing.expertise
+            .split(",")
+            .map((t) => t.trim())
+            .filter(Boolean)
         : Array.isArray(existing?.expertise)
-          ? (existing.expertise as string[]).join(", ")
-          : "",
+          ? (existing.expertise as string[])
+          : [],
     reason: existing?.reason ?? "",
     preferred_ig_ids: existing?.preferred_ig_ids ?? [],
   };
@@ -79,10 +84,15 @@ export function MentorOnboardingForm({
   const igOptions = igList.map((ig) => ({ value: ig.id, label: ig.name }));
 
   function onSubmit(values: OnboardingFormValues) {
+    // Join expertise chips into the comma string the backend stores.
+    const payload = {
+      ...values,
+      expertise: (values.expertise ?? []).join(", "),
+    };
     if (isEdit) {
-      update(values, { onSuccess: clearDraft });
+      update(payload, { onSuccess: clearDraft });
     } else {
-      submit(values, { onSuccess: clearDraft });
+      submit(payload, { onSuccess: clearDraft });
     }
   }
 
@@ -135,10 +145,10 @@ export function MentorOnboardingForm({
                     </span>
                   </FormLabel>
                   <FormControl>
-                    <Textarea
-                      placeholder="Describe your areas of expertise, separated by commas…"
-                      rows={2}
-                      {...field}
+                    <TagInput
+                      value={field.value ?? []}
+                      onChange={field.onChange}
+                      placeholder="Type a skill and press Enter…"
                     />
                   </FormControl>
                   <FormMessage />

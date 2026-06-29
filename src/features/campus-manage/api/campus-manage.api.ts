@@ -274,7 +274,7 @@ export const campusManageApi = {
     filters: CampusLeaderboardFilters,
   ): Promise<CampusLeaderboardResponse> {
     const params = new URLSearchParams();
-    params.set("page", String(filters.page));
+    params.set("pageIndex", String(filters.page));
 
     // Filters supported by both endpoints
     if (filters.alumni !== "all") {
@@ -283,7 +283,7 @@ export const campusManageApi = {
     if (filters.search) params.set("search", filters.search);
 
     if (filters.ig) params.set("ig_id", filters.ig);
-    if (filters.cluster) params.set("cluster", filters.cluster);
+    if (filters.category) params.set("category", filters.category);
 
     let endpoint: string;
 
@@ -402,7 +402,7 @@ export const campusManageApi = {
 
   async getEvents(filters: CampusEventFilters): Promise<CampusEventsResponse> {
     const params = new URLSearchParams();
-    params.set("page", String(filters.page));
+    params.set("pageIndex", String(filters.page));
     if (filters.status) params.set("status", filters.status);
     if (filters.type) params.set("event_type", filters.type);
     if (filters.date) {
@@ -459,10 +459,18 @@ export const campusManageApi = {
 
   async downloadStudentDetailsCsv(filters?: {
     alumni?: "all" | "alumni" | "student";
+    ig?: string;
+    category?: string;
   }): Promise<void> {
     const params = new URLSearchParams();
     if (filters?.alumni && filters.alumni !== "all") {
       params.set("is_alumni", String(filters.alumni === "alumni"));
+    }
+    if (filters?.ig) {
+      params.set("ig", filters.ig);
+    }
+    if (filters?.category) {
+      params.set("category", filters.category);
     }
     const suffix = params.toString();
     const endpoint = suffix
@@ -671,6 +679,7 @@ export const campusManageApi = {
         name: safeToString(row.ig_name ?? ig.name ?? row.name, "IG Chapter"),
         code: safeToString(row.ig_code ?? ig.code),
         icon: safeToString(row.ig_icon ?? ig.icon),
+        iconLink: row.icon_link ? safeToString(row.icon_link) : undefined,
         leadId: safeToString(row.lead_id ?? lead.id),
         lead: safeToString(
           row.lead_name ?? lead.full_name ?? row.lead,
@@ -689,6 +698,7 @@ export const campusManageApi = {
   async createIgChapter(data: {
     ig: string;
     description?: string;
+    icon_link?: string;
     lead?: string;
   }) {
     return apiClient.post(endpoints.campusManage.igChapters, data);
@@ -696,7 +706,12 @@ export const campusManageApi = {
 
   async updateIgChapter(
     chapterId: string,
-    data: { description?: string; lead?: string; is_active?: boolean },
+    data: {
+      description?: string;
+      icon_link?: string;
+      lead?: string;
+      is_active?: boolean;
+    },
   ) {
     return apiClient.patch(
       endpoints.campusManage.igChapterDetail(chapterId),

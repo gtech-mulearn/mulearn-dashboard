@@ -17,7 +17,7 @@ import {
 import type { MentorTaskFormValues } from "../schemas";
 
 // ─── Query keys ───────────────────────────────────────────────────────────────
-const mentorTaskKeys = {
+export const mentorTaskKeys = {
   all: ["mentor-tasks"] as const,
   igDropdown: () => [...mentorTaskKeys.all, "ig-dropdown"] as const,
   taskTypes: () => [...mentorTaskKeys.all, "task-types"] as const,

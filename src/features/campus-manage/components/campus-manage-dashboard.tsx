@@ -102,6 +102,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import { chipColor } from "@/lib/chip-colors";
 import { cn } from "@/lib/utils";
+import { endpoints } from "@/api/endpoints";
 import {
   useAddExecomMember,
   useCampusEvents,
@@ -461,7 +462,7 @@ export function CampusManageDashboard() {
       page: 1,
       search: "",
       ig: "",
-      cluster: "",
+      category: "",
       alumni: "all",
     });
 
@@ -935,8 +936,8 @@ export function CampusManageDashboard() {
                   ]}
                 />
                 <FilterSelect
-                  value={leaderboardFilters.cluster}
-                  onChange={handleLeaderboardFilterChange("cluster")}
+                  value={leaderboardFilters.category}
+                  onChange={handleLeaderboardFilterChange("category")}
                   options={[
                     { label: "All Clusters", value: "" },
                     ...clusterOptions,
@@ -958,7 +959,11 @@ export function CampusManageDashboard() {
                   disabled={isDownloadingCsv}
                   onClick={() =>
                     downloadCsv(
-                      { alumni: leaderboardFilters.alumni },
+                      {
+                        alumni: leaderboardFilters.alumni,
+                        ig: leaderboardFilters.ig || undefined,
+                        category: leaderboardFilters.category || undefined,
+                      },
                       {
                         onSuccess: () =>
                           toast.success("Student details exported"),
@@ -1216,7 +1221,40 @@ export function CampusManageDashboard() {
                                     />
                                     <Tooltip
                                       cursor={{ fill: "transparent" }}
-                                      content={<ChartTooltip />}
+                                      content={({ active, payload }) => {
+                                        if (!active || !payload?.length)
+                                          return null;
+                                        const data = payload[0].payload;
+                                        return (
+                                          <div className="rounded-xl border border-border bg-popover px-3 py-2 text-popover-foreground shadow-lg">
+                                            <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                                              {data.cluster}
+                                            </p>
+                                            <div className="space-y-1">
+                                              <div className="flex items-center justify-between gap-4 text-xs font-semibold">
+                                                <span className="text-muted-foreground">
+                                                  Karma
+                                                </span>
+                                                <span className="font-bold text-foreground">
+                                                  {Number(
+                                                    data.karma,
+                                                  ).toLocaleString()}
+                                                </span>
+                                              </div>
+                                              <div className="flex items-center justify-between gap-4 text-xs font-semibold">
+                                                <span className="text-muted-foreground">
+                                                  Members
+                                                </span>
+                                                <span className="font-bold text-foreground">
+                                                  {Number(
+                                                    data.memberCount,
+                                                  ).toLocaleString()}
+                                                </span>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        );
+                                      }}
                                     />
                                     <Bar
                                       dataKey="karma"
@@ -1673,6 +1711,10 @@ export function CampusManageDashboard() {
                               onClear={() => setSelectedExecomUser(null)}
                               placeholder="Search by name or MUID"
                               disabled={isAssigningExecomRole}
+                              searchOptions={{
+                                endpoint: endpoints.campusManage.execomSearch,
+                                queryParam: "q",
+                              }}
                             />
                           </div>
                           <div>
@@ -1765,9 +1807,12 @@ export function CampusManageDashboard() {
                                     variant="secondary"
                                     className="rounded-lg px-2 py-0 text-[9px] font-black uppercase tracking-widest"
                                   >
-                                    {member.role === "member"
-                                      ? "Execom"
-                                      : member.role}
+                                    {comboboxRoleOptions.find(
+                                      (r) => r.id === member.role,
+                                    )?.title ||
+                                      (member.role === "member"
+                                        ? "Execom"
+                                        : member.role)}
                                   </Badge>
                                 </div>
                               </div>

@@ -15,6 +15,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { endpoints } from "@/api/endpoints";
 import { MuidSearchInput } from "@/components/ui/muid-search-input";
 import {
   Select,
@@ -31,6 +33,7 @@ import { useCreateIgChapter, useGlobalIgs } from "../hooks";
 const schema = z.object({
   ig: z.string().min(1, "Select an interest group"),
   description: z.string().optional(),
+  icon_link: z.string().url("Must be a valid URL").optional().or(z.literal("")),
   lead: z.string().optional(),
 });
 type FormValues = z.infer<typeof schema>;
@@ -51,12 +54,12 @@ export function IgChapterFormDialog({ trigger }: IgChapterFormDialogProps) {
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { ig: "", description: "", lead: "" },
+    defaultValues: { ig: "", description: "", icon_link: "", lead: "" },
   });
 
   const handleSelectUser = (user: UserResult) => {
     setSelectedUser({ id: user.id, muid: user.muid, name: user.full_name });
-    form.setValue("lead", user.id);
+    form.setValue("lead", user.muid);
   };
 
   const handleClear = () => {
@@ -69,6 +72,7 @@ export function IgChapterFormDialog({ trigger }: IgChapterFormDialogProps) {
       {
         ig: values.ig,
         description: values.description || undefined,
+        icon_link: values.icon_link || undefined,
         lead: values.lead || undefined,
       },
       {
@@ -112,7 +116,7 @@ export function IgChapterFormDialog({ trigger }: IgChapterFormDialogProps) {
               <SelectTrigger>
                 <SelectValue placeholder="Select IG..." />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent position="popper">
                 {globalIgs.map((ig) => (
                   <SelectItem key={ig.id} value={ig.id}>
                     {ig.name}
@@ -141,6 +145,24 @@ export function IgChapterFormDialog({ trigger }: IgChapterFormDialogProps) {
             />
           </div>
           <div className="space-y-1.5">
+            <label
+              htmlFor="chapter-form-icon-link"
+              className="text-sm font-medium"
+            >
+              Icon Link (optional)
+            </label>
+            <Input
+              id="chapter-form-icon-link"
+              {...form.register("icon_link")}
+              placeholder="https://..."
+            />
+            {form.formState.errors.icon_link && (
+              <p className="text-xs text-destructive">
+                {form.formState.errors.icon_link.message}
+              </p>
+            )}
+          </div>
+          <div className="space-y-1.5">
             <p className="text-sm font-medium">Lead (optional)</p>
             <MuidSearchInput
               onSelectUser={handleSelectUser}
@@ -149,6 +171,10 @@ export function IgChapterFormDialog({ trigger }: IgChapterFormDialogProps) {
               keepOpen
               placeholder="Search for initial lead..."
               disabled={isPending}
+              searchOptions={{
+                endpoint: endpoints.campusManage.execomSearch,
+                queryParam: "q",
+              }}
             />
           </div>
           <DialogFooter>

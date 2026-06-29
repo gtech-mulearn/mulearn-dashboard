@@ -108,3 +108,31 @@ export const IG_ROLES = [ROLES.ADMIN] as const;
 
 /** Roles with technical access (error logs, debugging tools) */
 export const TECH_ROLES = [ROLES.ADMIN, ROLES.TECH_TEAM] as const;
+
+/**
+ * Roles allowed to access campus/organization settings.
+ * Excludes Company accounts which have no campus affiliation.
+ */
+export const CAMPUS_SETTINGS_ROLES = [
+  ROLES.ADMIN,
+  ROLES.DISCORD_MODERATOR,
+  ROLES.EX_OFFICIAL,
+  ROLES.FELLOW,
+  ROLES.ASSOCIATE,
+  ROLES.ZONAL_CAMPUS_LEAD,
+  ROLES.APPRAISER,
+  ROLES.DISTRICT_CAMPUS_LEAD,
+  ROLES.MENTOR,
+  ROLES.INTERN,
+  ROLES.INTERN_LEAD,
+  ROLES.CAMPUS_LEAD,
+  ROLES.BOT_DEV,
+  ROLES.PRE_MEMBER,
+  ROLES.SUSPENDED,
+  ROLES.STUDENT,
+  ROLES.ENABLER,
+  ROLES.TECH_TEAM,
+  ROLES.IG_LEAD,
+  ROLES.CAMPUS_ACTIVATION_TEAM,
+  ROLES.LEAD_ENABLER,
+] as const;

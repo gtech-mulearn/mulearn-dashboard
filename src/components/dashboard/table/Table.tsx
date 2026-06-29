@@ -148,7 +148,7 @@ const Table: FC<TableProps> = (props) => {
             onScroll={updateScrollIndicator}
             className="block overflow-x-auto overflow-y-hidden rounded-xl border border-border bg-card"
           >
-            <table className="min-w-full border-collapse">
+            <table className="min-w-full border-collapse text-sm md:text-base">
               {props.children?.[0]}
               {props.isLoading ? (
                 <tbody>

@@ -533,6 +533,8 @@ export const endpoints = {
     execom: "/api/v1/dashboard/campus/execom/",
     /** GET - List available Execom role titles */
     execomRoles: "/api/v1/dashboard/campus/execom/roles/",
+    /** GET - Search Execom candidates (active non-alumni campus members) */
+    execomSearch: "/api/v1/dashboard/campus/execom/search/",
     /** DELETE - Remove an Execom role from a member by role link ID */
     execomDelete: (memberId: string) =>
       `/api/v1/dashboard/campus/execom/${memberId}/`,
@@ -1289,6 +1291,58 @@ export const endpoints = {
     minutes: "/api/v1/dashboard/intern/minutes/",
     importTemplate: "/api/v1/dashboard/manage-interns/interns/import/template/",
     bulkImport: "/api/v1/dashboard/manage-interns/interns/import/",
+  },
+
+  // ============================================
+  // Weekly Twitches — Media Content Endpoints
+  // Base: /api/v1/dashboard/media-content/
+  // ============================================
+  weeklyTwitches: {
+    officeHours: {
+      /** GET - List Office Hours sessions (public) */
+      list: "/api/v1/dashboard/media-content/office-hours/",
+      /** GET - Single Office Hours session (public) */
+      detail: (id: string) =>
+        `/api/v1/dashboard/media-content/office-hours/${id}/`,
+      /** POST - Create Office Hours session (admin) */
+      create: "/api/v1/dashboard/media-content/office-hours/",
+      /** PATCH - Update Office Hours session (admin) */
+      update: (id: string) =>
+        `/api/v1/dashboard/media-content/office-hours/${id}/`,
+      /** DELETE - Soft-delete Office Hours session (admin) */
+      delete: (id: string) =>
+        `/api/v1/dashboard/media-content/office-hours/${id}/`,
+    },
+    saltMangoTree: {
+      /** GET - List Salt Mango Tree episodes (public) */
+      list: "/api/v1/dashboard/media-content/salt-mango-tree/",
+      /** GET - Single SMT episode (public) */
+      detail: (id: string) =>
+        `/api/v1/dashboard/media-content/salt-mango-tree/${id}/`,
+      /** POST - Create SMT episode (admin) */
+      create: "/api/v1/dashboard/media-content/salt-mango-tree/",
+      /** PATCH - Update SMT episode (admin) */
+      update: (id: string) =>
+        `/api/v1/dashboard/media-content/salt-mango-tree/${id}/`,
+      /** DELETE - Soft-delete SMT episode (admin) */
+      delete: (id: string) =>
+        `/api/v1/dashboard/media-content/salt-mango-tree/${id}/`,
+    },
+    inspirationStation: {
+      /** GET - List Inspiration Station episodes (public) */
+      list: "/api/v1/dashboard/media-content/inspiration-station/",
+      /** GET - Single Inspiration Station episode (public) */
+      detail: (id: string) =>
+        `/api/v1/dashboard/media-content/inspiration-station/${id}/`,
+      /** POST - Create Inspiration Station episode (admin) */
+      create: "/api/v1/dashboard/media-content/inspiration-station/",
+      /** PATCH - Update Inspiration Station episode (admin) */
+      update: (id: string) =>
+        `/api/v1/dashboard/media-content/inspiration-station/${id}/`,
+      /** DELETE - Soft-delete Inspiration Station episode (admin) */
+      delete: (id: string) =>
+        `/api/v1/dashboard/media-content/inspiration-station/${id}/`,
+    },
   },
 
   // ============================================
