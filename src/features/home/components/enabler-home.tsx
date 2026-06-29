@@ -26,7 +26,7 @@ export function EnablerHome() {
       orgId: overview?.orgId,
       search: "",
       ig: "",
-      cluster: "",
+      category: "",
       alumni: "all",
     });
   const campusId = summary?.campus?.org_id;

@@ -1,5 +1,6 @@
 import * as React from "react";
 import { toast } from "sonner";
+import { z } from "zod";
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import { getApiResponseError } from "@/hooks/use-get-error";
@@ -12,9 +13,38 @@ export interface UserResult {
   profile_pic?: string | null;
 }
 
+const UserResultSchema = z.object({
+  id: z.string(),
+  full_name: z.string(),
+  muid: z.string(),
+  profile_pic: z.string().nullable().optional(),
+});
+
+const SearchResponseSchema = z.object({
+  data: z.array(UserResultSchema),
+});
+
 const EMPTY_EXCLUDED: string[] = [];
 
-export function useSearch(excludedMuids: string[] = EMPTY_EXCLUDED) {
+export interface SearchOptions {
+  excludedMuids?: string[];
+  endpoint?: string;
+  queryParam?: "search" | "q";
+}
+
+export function useSearch(options: SearchOptions | string[] = EMPTY_EXCLUDED) {
+  const excludedMuids = Array.isArray(options)
+    ? options
+    : (options.excludedMuids ?? []);
+  const endpoint =
+    !Array.isArray(options) && options.endpoint
+      ? options.endpoint
+      : endpoints.search.users;
+  const queryParam =
+    !Array.isArray(options) && options.queryParam
+      ? options.queryParam
+      : "search";
+
   const [query, setQuery] = React.useState("");
   const [results, setResults] = React.useState<UserResult[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -38,14 +68,20 @@ export function useSearch(excludedMuids: string[] = EMPTY_EXCLUDED) {
     setIsLoading(true);
 
     const params = new URLSearchParams({
-      search: debouncedQuery.trim(),
-      perPage: "15",
-      pageIndex: "1",
-      sortBy: "",
+      [queryParam]: debouncedQuery.trim(),
     });
 
+    if (endpoint === endpoints.search.users) {
+      params.append("perPage", "15");
+      params.append("pageIndex", "1");
+      params.append("sortBy", "");
+    }
+
     apiClient
-      .get<{ data: UserResult[] }>(`${endpoints.search.users}?${params}`)
+      .get<{ data: UserResult[] }>(
+        `${endpoint}?${params}`,
+        SearchResponseSchema,
+      )
       .then((response) => {
         if (!cancelled) {
           const users = response.data ?? [];
@@ -67,7 +103,7 @@ export function useSearch(excludedMuids: string[] = EMPTY_EXCLUDED) {
     return () => {
       cancelled = true;
     };
-  }, [debouncedQuery, stableExcluded]);
+  }, [debouncedQuery, stableExcluded, endpoint, queryParam]);
 
   const handleSearch = React.useCallback((val: string) => {
     setQuery(val);
