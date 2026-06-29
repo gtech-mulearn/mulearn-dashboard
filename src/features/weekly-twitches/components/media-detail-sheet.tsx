@@ -57,6 +57,18 @@ function LinkField({ label, href }: { label: string; href?: string | null }) {
   );
 }
 
+function formatDate(date: string): string {
+  try {
+    return new Date(date).toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  } catch {
+    return date;
+  }
+}
+
 // ─── Office Hours Sheet ───────────────────────────────────────────────────────
 
 interface OfficeHoursSheetProps {
@@ -80,7 +92,7 @@ export function OfficeHoursDetailSheet({
             <Field label="Title">{item.title}</Field>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Date">{item.date}</Field>
+              <Field label="Date">{formatDate(item.date)}</Field>
               <Field label="Status">
                 <span
                   className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${STATUS_CLASSES[item.status] ?? ""}`}
@@ -118,10 +130,6 @@ export function OfficeHoursDetailSheet({
                 <span className="text-muted-foreground">—</span>
               )}
             </Field>
-
-            {item.poster_thumbnail ? (
-              <LinkField label="Poster" href={item.poster_thumbnail} />
-            ) : null}
           </div>
         )}
       </SheetContent>
@@ -166,7 +174,7 @@ export function CampusContentDetailSheet({
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Date">{item.date}</Field>
+              <Field label="Date">{formatDate(item.date)}</Field>
               <Field label="Status">
                 <span
                   className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${STATUS_CLASSES[item.status] ?? ""}`}
