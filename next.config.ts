@@ -30,7 +30,13 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "s3-ap-south-1.amazonaws.com",
+        hostname: "s3.ap-south-1.amazonaws.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "cdn.mulearn",
+        pathname: "/**",
       },
       {
         protocol: "https",
