@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CampusContentCards } from "./campus-content-cards";
 import { OfficeHoursCards } from "./office-hours-cards";
 
@@ -68,15 +68,15 @@ export function WeeklyTwitchesViewer() {
           ))}
         </TabsList>
 
-        <div className="mt-4">
-          {activeTab === "office-hours" && <OfficeHoursCards />}
-          {activeTab === "salt-mango-tree" && (
-            <CampusContentCards contentType="smt" />
-          )}
-          {activeTab === "inspiration-station" && (
-            <CampusContentCards contentType="isr" />
-          )}
-        </div>
+        <TabsContent value="office-hours" className="mt-4">
+          <OfficeHoursCards />
+        </TabsContent>
+        <TabsContent value="salt-mango-tree" className="mt-4">
+          <CampusContentCards contentType="smt" />
+        </TabsContent>
+        <TabsContent value="inspiration-station" className="mt-4">
+          <CampusContentCards contentType="isr" />
+        </TabsContent>
       </Tabs>
     </div>
   );
