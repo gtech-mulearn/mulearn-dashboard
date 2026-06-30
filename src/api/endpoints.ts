@@ -487,9 +487,6 @@ export const endpoints = {
     /** POST - Nominate a student as a Campus Mentor (Campus Lead / Lead Enabler) */
     assignMentor: "/api/v1/dashboard/campus/assign-mentor/",
 
-    /** POST - Campus mentor creates a new session (pending admin approval) */
-    sessionsCreate: "/api/v1/dashboard/campus/sessions/create/",
-
     /** GET - List campus sessions for the authenticated user's college */
     sessionsList: "/api/v1/dashboard/campus/sessions/list/",
   },

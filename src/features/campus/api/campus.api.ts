@@ -1,13 +1,8 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
-import type {
-  CampusSessionCreated,
-  CampusSessionCreateValues,
-  CampusSessionItem,
-} from "../schemas";
+import type { CampusSessionItem } from "../schemas";
 import {
   AssignMentorResponseSchema,
-  CampusSessionCreateResponseSchema,
   CampusSessionListResponseSchema,
 } from "../schemas";
 import type { CampusInfo, WeeklyKarma } from "../types";
@@ -33,21 +28,6 @@ export async function assignCampusMentor(muid: string): Promise<void> {
     AssignMentorResponseSchema,
     OPT,
   );
-}
-
-// ─── #2 POST sessions/create/ ─────────────────────────────────────────────────
-// Approved campus mentor creates a session (status: PENDING_APPROVAL).
-// entity_id and session_type are set server-side — do not send them.
-export async function createCampusSession(
-  data: CampusSessionCreateValues,
-): Promise<CampusSessionCreated> {
-  const res = await apiClient.post(
-    endpoints.campus.sessionsCreate,
-    data,
-    CampusSessionCreateResponseSchema,
-    OPT,
-  );
-  return res.response;
 }
 
 // ─── #3 GET sessions/list/ ────────────────────────────────────────────────────

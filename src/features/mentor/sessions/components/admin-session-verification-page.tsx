@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Ban,
   CalendarClock,
   CheckCircle,
   Clock,
@@ -118,7 +119,7 @@ function SessionVerificationTable({
 }: {
   sessions: Session[] | undefined;
   isLoading: boolean;
-  onApprove: (s: Session, action: "approve" | "reject") => void;
+  onApprove: (s: Session, action: "approve" | "reject" | "cancel") => void;
   page: number;
   totalPages: number;
   totalCount: number;
@@ -185,7 +186,7 @@ function SessionVerificationTable({
   const customActionRender = (row: any) => {
     const status = row.status ?? "PENDING_APPROVAL";
     const isPending = status === "PENDING_APPROVAL";
-    const isTerminal = ["COMPLETED", "CANCELLED", "REJECTED"].includes(status);
+    const isScheduled = status === "SCHEDULED";
 
     return (
       <div className="flex items-center justify-end gap-1">
@@ -196,7 +197,8 @@ function SessionVerificationTable({
               size="icon"
               className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950/40 disabled:opacity-40"
               onClick={() => onApprove(row as Session, "approve")}
-              disabled={!isPending || isTerminal}
+              disabled={!isPending}
+              aria-label="Approve session"
             >
               <CheckCircle className="h-4 w-4" />
             </Button>
@@ -213,13 +215,33 @@ function SessionVerificationTable({
               size="icon"
               className="h-8 w-8 text-destructive hover:bg-destructive/10 disabled:opacity-40"
               onClick={() => onApprove(row as Session, "reject")}
-              disabled={!isPending || isTerminal}
+              disabled={!isPending}
+              aria-label="Reject session"
             >
               <XCircle className="h-4 w-4" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>
             {isPending ? "Reject Session" : "Already processed"}
+          </TooltipContent>
+        </Tooltip>
+
+        {/* Cancel / unpublish a live (scheduled) session — post-moderation. */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-destructive hover:bg-destructive/10 disabled:opacity-40"
+              onClick={() => onApprove(row as Session, "cancel")}
+              disabled={!isScheduled}
+              aria-label="Cancel or unpublish session"
+            >
+              <Ban className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {isScheduled ? "Cancel / Unpublish" : "Only scheduled sessions"}
           </TooltipContent>
         </Tooltip>
       </div>
@@ -281,7 +303,7 @@ export function AdminSessionVerificationPage() {
   const [activeTab, setActiveTab] = useState("pending");
   const [approveState, setApproveState] = useState<{
     session: Session;
-    action: "approve" | "reject";
+    action: "approve" | "reject" | "cancel";
   } | null>(null);
 
   const [pendingPage, setPendingPage] = useState(1);

@@ -103,7 +103,7 @@ export function useCreateSession() {
   return useMutation({
     mutationFn: (data: SessionFormValues) => createSession(data),
     onSuccess: () => {
-      toast.success("Session created and pending approval.");
+      toast.success("Session created.");
       void qc.invalidateQueries({ queryKey: mentorKeys.sessions.all });
     },
     onError: (error) =>
