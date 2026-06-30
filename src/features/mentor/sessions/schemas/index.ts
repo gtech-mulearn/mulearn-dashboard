@@ -36,6 +36,17 @@ export const SessionParticipantSchema = z.object({
   feedback: z.string().nullable().optional(),
   contributed_minutes: z.number().nullable().optional(),
   created_at: z.string().optional(),
+  // Session details — populated by the participant-history endpoint so a
+  // participant row can be rendered without an extra session fetch.
+  session_title: z.string().nullable().optional(),
+  session_starts_at: z.string().nullable().optional(),
+  session_ends_at: z.string().nullable().optional(),
+  session_mode: z.string().nullable().optional(),
+  session_meeting_link: z.string().nullable().optional(),
+  session_venue: z.string().nullable().optional(),
+  session_status: z.string().nullable().optional(),
+  session_entity_id: z.string().nullable().optional(),
+  session_entity_name: z.string().nullable().optional(),
 });
 export type SessionParticipant = z.infer<typeof SessionParticipantSchema>;
 

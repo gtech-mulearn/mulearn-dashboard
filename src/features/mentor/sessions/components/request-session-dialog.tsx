@@ -55,9 +55,9 @@ export function RequestSessionDialog({
   const { data: profile } = useUserProfile();
   const createRequest = useCreateStudentRequest();
 
-  // biome-ignore lint/suspicious/noExplicitAny: API type
   const form = useForm<
     z.input<typeof StudentSessionRequestFormSchema>,
+    // biome-ignore lint/suspicious/noExplicitAny: react-hook-form context type param
     any,
     StudentSessionRequestFormValues
   >({
@@ -65,8 +65,10 @@ export function RequestSessionDialog({
     defaultValues: {
       title: "",
       description: "",
-      session_type: "campus_session",
-      entity_id: profile?.college_id ?? "",
+      // All sessions are Interest-Group scoped — campus/company requests are
+      // no longer supported by the backend.
+      session_type: "ig_session",
+      entity_id: "",
       mode: "ONLINE",
       starts_at: "",
       ends_at: "",
@@ -75,7 +77,6 @@ export function RequestSessionDialog({
     },
   });
 
-  const sessionType = form.watch("session_type");
   const mode = form.watch("mode");
 
   function onSubmit(values: StudentSessionRequestFormValues) {
@@ -91,27 +92,12 @@ export function RequestSessionDialog({
     });
   }
 
-  // Generate entity options based on selected type
-  let entityOptions: { id: string; name: string }[] = [];
-  if (profile) {
-    if (sessionType === "campus_session") {
-      if (profile.college_id) {
-        entityOptions.push({ id: profile.college_id, name: "My Campus" });
-      }
-    } else if (sessionType === "company_session") {
-      // Assuming college_id stores the org ID if it's a company as well
-      if (profile.college_id) {
-        entityOptions.push({ id: profile.college_id, name: "My Company" });
-      }
-    } else if (sessionType === "ig_session") {
-      entityOptions = (profile.interest_groups || [])
-        .map((ig) => ({
-          id: ig.id ?? "",
-          name: ig.name,
-        }))
-        .filter((ig) => ig.id !== "");
-    }
-  }
+  // Students request sessions scoped to one of their Interest Groups.
+  const entityOptions: { id: string; name: string }[] = (
+    profile?.interest_groups || []
+  )
+    .map((ig) => ({ id: ig.id ?? "", name: ig.name }))
+    .filter((ig) => ig.id !== "");
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
@@ -120,63 +106,32 @@ export function RequestSessionDialog({
         <DialogHeader>
           <DialogTitle>Request a Session</DialogTitle>
           <DialogDescription>
-            Request a mentorship session from your Campus, Company, or Interest
-            Group mentors.
+            Request a mentorship session from the mentors of one of your
+            Interest Groups.
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="session_type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Session Type</FormLabel>
-                    <Select
-                      onValueChange={(val) => {
-                        field.onChange(val);
-                        form.setValue("entity_id", "");
-                      }}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="campus_session">Campus</SelectItem>
-                        <SelectItem value="company_session">Company</SelectItem>
-                        <SelectItem value="ig_session">
-                          Interest Group (IG)
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="entity_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Entity</FormLabel>
+            <FormField
+              control={form.control}
+              name="entity_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Interest Group</FormLabel>
+                  {entityOptions.length === 0 ? (
+                    <div className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
+                      You're not part of any Interest Group yet. Join an
+                      Interest Group to request a mentorship session.
+                    </div>
+                  ) : (
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select entity" />
+                          <SelectValue placeholder="Select an Interest Group" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {entityOptions.length === 0 && (
-                          <SelectItem value="none" disabled>
-                            No available options
-                          </SelectItem>
-                        )}
                         {entityOptions.map((opt) => (
                           <SelectItem key={opt.id} value={opt.id}>
                             {opt.name}
@@ -184,11 +139,11 @@ export function RequestSessionDialog({
                         ))}
                       </SelectContent>
                     </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}

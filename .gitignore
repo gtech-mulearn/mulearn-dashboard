@@ -45,3 +45,7 @@ package-lock.json
 bun.lock
 # Local Netlify folder
 .netlify
+
+
+.env*
+!.env.example

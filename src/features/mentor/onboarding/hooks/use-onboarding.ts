@@ -120,7 +120,6 @@ export function useUpdateMentorProfile() {
     mutationFn: (data: Partial<MentorProfileWrite>) =>
       updateMentorProfile(data),
     onSuccess: () => {
-      toast.success("Profile updated.");
       void queryClient.invalidateQueries({ queryKey: ONBOARDING_KEYS.all });
       void queryClient.invalidateQueries({ queryKey: mentorKeys.overview() });
       void queryClient.invalidateQueries({

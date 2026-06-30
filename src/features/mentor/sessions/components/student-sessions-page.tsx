@@ -4,7 +4,8 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MenteesPage } from "@/features/mentor/mentees";
+import { AvailableSessionsList } from "./available-sessions-list";
+import { MyInvitedSessionsList } from "./my-invited-sessions-list";
 import { MyRequestsList } from "./my-requests-list";
 import { RequestSessionDialog } from "./request-session-dialog";
 
@@ -21,18 +22,23 @@ export function StudentSessionsPage() {
         </Button>
       </div>
 
-      <Tabs defaultValue="history">
+      <Tabs defaultValue="available">
         <TabsList>
-          <TabsTrigger value="history">History & Invites</TabsTrigger>
+          <TabsTrigger value="available">Available</TabsTrigger>
           <TabsTrigger value="requests">My Requests</TabsTrigger>
+          <TabsTrigger value="history">History &amp; Invites</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="history" className="mt-4">
-          <MenteesPage title="" />
+        <TabsContent value="available" className="mt-4">
+          <AvailableSessionsList />
         </TabsContent>
 
         <TabsContent value="requests" className="mt-4">
           <MyRequestsList />
+        </TabsContent>
+
+        <TabsContent value="history" className="mt-4">
+          <MyInvitedSessionsList />
         </TabsContent>
       </Tabs>
 
