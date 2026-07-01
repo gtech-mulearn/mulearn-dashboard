@@ -44,14 +44,20 @@ function eventItemToCalendarEvent(item: CalendarEventItem): CalendarEvent {
   };
 }
 
+const SESSION_STATUS_TYPE: Record<string, CalendarEvent["type"]> = {
+  SCHEDULED: "workshop",
+  COMPLETED: "other",
+  CANCELLED: "deadline",
+};
+
 function sessionItemToCalendarEvent(item: CalendarSessionItem): CalendarEvent {
   return {
     id: item.id,
     title: item.title,
     description: item.description ?? "",
     date: item.starts_at,
-    type: "meetup",
-    location: item.venue ?? "",
+    type: SESSION_STATUS_TYPE[item.status] ?? "other",
+    location: item.venue ?? item.mode ?? "",
     link: item.meeting_link ?? "",
   };
 }
