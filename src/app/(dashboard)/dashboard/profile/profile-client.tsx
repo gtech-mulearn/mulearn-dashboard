@@ -129,6 +129,7 @@ export function ProfilePageClient() {
         dirtyFields.mobile ||
         dirtyFields.gender ||
         dirtyFields.dob ||
+        dirtyFields.district_id ||
         dirtyFields.communities,
     );
 
@@ -143,6 +144,8 @@ export function ProfilePageClient() {
       const baseGender =
         editableProfile?.gender?.trim() || profile.gender || "";
       const baseDob = editableProfile?.dob?.trim() || profile.dob || "";
+      const baseDistrictId =
+        editableProfile?.district?.id || profile.org_district_id || null;
       const baseCommunities = editableProfile?.communities ?? [];
 
       const profilePayload: UpdateProfileRequest = {
@@ -151,6 +154,9 @@ export function ProfilePageClient() {
         mobile: data.mobile?.trim() || baseMobile,
         gender: data.gender?.trim() || baseGender,
         dob: data.dob?.trim() || baseDob,
+        district_id: dirtyFields.district_id
+          ? data.district_id || null
+          : baseDistrictId,
         communities: dirtyFields.communities
           ? (data.communities ?? [])
           : baseCommunities,

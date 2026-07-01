@@ -197,9 +197,10 @@ export function EditProfileModal({
           ? editableProfile.dob.slice(0, 10)
           : "",
       communities: editableProfile?.communities ?? [],
-      country_id: "",
-      state_id: "",
-      district_id: "",
+      country_id: editableProfile?.district?.state?.country?.id || "",
+      state_id: editableProfile?.district?.state?.id || "",
+      district_id:
+        editableProfile?.district?.id || profile.org_district_id || "",
       org_id: profile.college_id || "",
       department_id: currentDepartmentRaw,
       has_college_changes: false,
