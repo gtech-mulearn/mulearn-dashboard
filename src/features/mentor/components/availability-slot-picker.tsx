@@ -19,6 +19,46 @@ const DAYS: { label: string; short: string; num: number }[] = [
 
 const DEFAULT_SLOT: TimeSlot = { start: "09:00", end: "17:00" };
 
+// ─── Time helpers ("HH:MM" ↔ minutes) ────────────────────────
+
+function toMinutes(t: string): number {
+  const [h, m] = t.split(":").map(Number);
+  return h * 60 + (m || 0);
+}
+
+function fromMinutes(n: number): string {
+  const clamped = Math.max(0, Math.min(23 * 60 + 59, n));
+  const h = Math.floor(clamped / 60);
+  const m = clamped % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
+function addMinutes(t: string, delta: number): string {
+  return fromMinutes(toMinutes(t) + delta);
+}
+
+// ─── Overlap detection (for inline validation, used by the parent too) ──────────
+
+/** Indices of slots that overlap at least one other slot on the same day. */
+export function getOverlappingSlotIndices(slots: TimeSlot[]): Set<number> {
+  const overlapping = new Set<number>();
+  for (let i = 0; i < slots.length; i++) {
+    for (let j = i + 1; j < slots.length; j++) {
+      // Overlap (touching boundaries like 09:00–10:00 / 10:00–11:00 is allowed).
+      if (slots[i].start < slots[j].end && slots[j].start < slots[i].end) {
+        overlapping.add(i);
+        overlapping.add(j);
+      }
+    }
+  }
+  return overlapping;
+}
+
+/** True if any day in the schedule has overlapping slots (blocks save). */
+export function scheduleHasOverlap(schedule: WeeklySchedule): boolean {
+  return schedule.some((d) => getOverlappingSlotIndices(d.slots).size > 0);
+}
+
 // ─── Pure schedule helpers ───────────────────────────────────
 
 function getSlots(schedule: WeeklySchedule, day: number): TimeSlot[] {
@@ -83,23 +123,23 @@ function updateSlot(
   patch: Partial<TimeSlot>,
 ): WeeklySchedule {
   const slots = getSlots(schedule, day);
-  const newSlot = { ...slots[idx], ...patch };
+  let newSlot = { ...slots[idx], ...patch };
 
-  if (newSlot.start >= newSlot.end) {
-    toast.error("Start time must be before end time.", { id: "invalid-time" });
-    return schedule;
-  }
-
-  const newSlots = slots.map((s, i) => (i === idx ? newSlot : s));
-
-  const sorted = [...newSlots].sort((a, b) => a.start.localeCompare(b.start));
-  for (let i = 0; i < sorted.length - 1; i++) {
-    if (sorted[i].end > sorted[i + 1].start) {
-      toast.error("Time slots cannot overlap.", { id: "overlap-time" });
-      return schedule;
+  // Never reject/revert the user's edit. Keep start < end by nudging the OTHER
+  // field (calendar-style): moving start past end pushes end forward, and vice
+  // versa, so the value the user picked always sticks.
+  if (toMinutes(newSlot.start) >= toMinutes(newSlot.end)) {
+    if ("start" in patch) {
+      newSlot = { ...newSlot, end: addMinutes(newSlot.start, 60) };
+    } else {
+      newSlot = { ...newSlot, start: addMinutes(newSlot.end, -60) };
     }
   }
 
+  // Overlaps are NOT reverted here — they're surfaced inline and block Save
+  // (see getOverlappingSlotIndices / scheduleHasOverlap). This lets the mentor
+  // freely rearrange slots and fix conflicts without losing their input.
+  const newSlots = slots.map((s, i) => (i === idx ? newSlot : s));
   const rest = schedule.filter((d) => d.day !== day);
   return [...rest, { day, slots: newSlots }];
 }
@@ -157,6 +197,7 @@ export function AvailabilitySlotPicker({ value, onChange, disabled }: Props) {
             {DAYS.map(({ short, label, num }, _index) => {
               const enabled = isDayEnabled(value, num);
               const slots = getSlots(value, num);
+              const overlappingIdx = getOverlappingSlotIndices(slots);
               const switchId = `${id}-day-${num}`;
               return (
                 <div
@@ -212,7 +253,12 @@ export function AvailabilitySlotPicker({ value, onChange, disabled }: Props) {
                           <div
                             // biome-ignore lint/suspicious/noArrayIndexKey: slots have no stable id
                             key={idx}
-                            className="group relative rounded-xl border border-border bg-background p-2 transition-shadow hover:shadow-sm"
+                            className={cn(
+                              "group relative rounded-xl border bg-background p-2 transition-shadow hover:shadow-sm",
+                              overlappingIdx.has(idx)
+                                ? "border-destructive ring-1 ring-destructive/40"
+                                : "border-border",
+                            )}
                           >
                             <div className="space-y-1">
                               <ScrollableTimePicker
@@ -255,6 +301,11 @@ export function AvailabilitySlotPicker({ value, onChange, disabled }: Props) {
                             >
                               <Trash2 className="size-2" />
                             </button>
+                            {overlappingIdx.has(idx) && (
+                              <p className="mt-1 text-[10px] font-medium text-destructive">
+                                Overlaps another slot
+                              </p>
+                            )}
                           </div>
                         ))}
                       </div>

@@ -28,40 +28,8 @@ export type CampusSessionMode = (typeof CAMPUS_SESSION_MODES)[number];
 // Response: generic success envelope with empty response object
 export const AssignMentorResponseSchema = ApiResponseSchema(z.unknown());
 
-// ─── #2 POST sessions/create/ ─────────────────────────────────────────────────
-// Request body shape (sent to API)
-export const CampusSessionCreateSchema = z.object({
-  title: z.string().min(1, "Title is required").max(150, "Max 150 characters"),
-  description: z.string().optional(),
-  mode: z.enum(CAMPUS_SESSION_MODES),
-  starts_at: z.string().min(1, "Start time is required"),
-  ends_at: z.string().min(1, "End time is required"),
-  meeting_link: z.string().url().optional().or(z.literal("")),
-  venue: z.string().max(255).nullable().optional(),
-  max_participants: z.coerce.number().int().positive().optional(),
-});
-export type CampusSessionCreateValues = z.infer<
-  typeof CampusSessionCreateSchema
->;
-
-// Response: envelope with session data
-export const CampusSessionCreatedSchema = z.object({
-  entity_id: z.string().optional(),
-  session_type: z.string().optional(),
-  title: z.string(),
-  description: z.string().nullable().optional(),
-  mode: z.string(),
-  starts_at: z.string(),
-  ends_at: z.string(),
-  meeting_link: z.string().nullable().optional(),
-  venue: z.string().nullable().optional(),
-  max_participants: z.number().nullable().optional(),
-});
-export type CampusSessionCreated = z.infer<typeof CampusSessionCreatedSchema>;
-
-export const CampusSessionCreateResponseSchema = ApiResponseSchema(
-  CampusSessionCreatedSchema,
-);
+// Campus session creation was removed (sessions are IG-scoped; campus mentors
+// don't create sessions). The list schema below remains for viewing sessions.
 
 // ─── #3 GET sessions/list/ ────────────────────────────────────────────────────
 // A single item in the list

@@ -2,7 +2,6 @@ export type { CampusSessionListParams } from "./api";
 export {
   assignCampusMentor,
   campusService,
-  createCampusSession,
   fetchCampusSessions,
 } from "./api";
 export { CampusView, StatsCards, WeeklyKarmaCard } from "./components";
@@ -12,12 +11,9 @@ export {
   useAssignCampusMentor,
   useCampusInfo,
   useCampusSessions,
-  useCreateCampusSession,
   useWeeklyKarma,
 } from "./hooks";
 export type {
-  CampusSessionCreated,
-  CampusSessionCreateValues,
   CampusSessionItem,
   CampusSessionMode,
   CampusSessionStatus,
@@ -27,9 +23,6 @@ export {
   CAMPUS_SESSION_MODES,
   CAMPUS_SESSION_STATUSES,
   CampusPaginationSchema,
-  CampusSessionCreatedSchema,
-  CampusSessionCreateResponseSchema,
-  CampusSessionCreateSchema,
   CampusSessionItemSchema,
   CampusSessionListResponseSchema,
 } from "./schemas";

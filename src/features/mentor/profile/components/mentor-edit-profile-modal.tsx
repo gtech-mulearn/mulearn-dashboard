@@ -154,8 +154,6 @@ export function MentorEditProfileModal({
     setPreviewUrl(url);
   };
 
-  const isIgMentor = mentorProfile.mentor_tier === "IG_MENTOR";
-
   // Resolve the org's display name (the profile only carries the org UUID).
   const { data: overview } = useMentorOverview();
   const orgName = overview?.scopes?.find(
@@ -164,12 +162,9 @@ export function MentorEditProfileModal({
   )?.scope_name;
 
   const handleSubmit = async (values: MentorEditValues) => {
-    // IG mentors must keep at least one Interest Group (the backend rejects an
-    // empty list with 400). Block early with a clear message.
-    if (isIgMentor && (values.preferred_ig_ids ?? []).length === 0) {
-      toast.error("Select at least one Interest Group.");
-      return;
-    }
+    // IG selection is open to every tier (org and IG scopes coexist). The
+    // backend enforces "keep at least one scope" — surfaced via the mutation's
+    // error toast — so no tier-specific block is needed here.
     try {
       // 1. Update learner profile fields (name) if changed
       if (values.full_name !== userProfile.full_name) {
@@ -340,29 +335,26 @@ export function MentorEditProfileModal({
                 </p>
               </div>
 
-              {/* Preferred IGs — only IG mentors are scoped to Interest Groups.
-                  Company/Campus/global mentors are org-scoped, so the field is
-                  hidden for them. */}
-              {isIgMentor && (
-                <div className="space-y-2">
-                  <div className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    Preferred Interest Groups
-                  </div>
-                  <MultiSelect
-                    options={igOptions}
-                    value={form.watch("preferred_ig_ids") ?? []}
-                    onChange={(vals) =>
-                      form.setValue("preferred_ig_ids", vals, {
-                        shouldDirty: true,
-                      })
-                    }
-                    placeholder="Select IGs you want to mentor in..."
-                  />
-                  <p className="text-[0.8rem] text-muted-foreground">
-                    Changes to your Interest Groups apply immediately.
-                  </p>
+              {/* Preferred IGs — available to every tier. IG mentoring is an
+                  orthogonal scope that coexists with any company/campus scope. */}
+              <div className="space-y-2">
+                <div className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Preferred Interest Groups
                 </div>
-              )}
+                <MultiSelect
+                  options={igOptions}
+                  value={form.watch("preferred_ig_ids") ?? []}
+                  onChange={(vals) =>
+                    form.setValue("preferred_ig_ids", vals, {
+                      shouldDirty: true,
+                    })
+                  }
+                  placeholder="Select IGs you want to mentor in..."
+                />
+                <p className="text-[0.8rem] text-muted-foreground">
+                  Changes to your Interest Groups apply immediately.
+                </p>
+              </div>
 
               {/* Affiliation */}
               <div className="space-y-2">
