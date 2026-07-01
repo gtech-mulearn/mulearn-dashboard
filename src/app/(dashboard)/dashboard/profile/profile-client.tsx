@@ -136,7 +136,6 @@ export function ProfilePageClient() {
       const baseFullName =
         editableProfile?.full_name?.trim() || profile.full_name?.trim() || "";
       const finalFullName = data.full_name?.trim() || baseFullName;
-      const [firstName, ...lastNameParts] = finalFullName.split(" ");
 
       const baseEmail = editableProfile?.email?.trim() || profile.email || "";
       const baseMobile =
@@ -147,8 +146,6 @@ export function ProfilePageClient() {
       const baseCommunities = editableProfile?.communities ?? [];
 
       const profilePayload: UpdateProfileRequest = {
-        first_name: firstName?.trim() || "",
-        last_name: lastNameParts.join(" ").trim(),
         full_name: finalFullName,
         email: data.email?.trim() || baseEmail,
         mobile: data.mobile?.trim() || baseMobile,
