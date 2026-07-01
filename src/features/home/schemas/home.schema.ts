@@ -603,11 +603,9 @@ export const CalendarBucketResponseSchema = ApiResponseSchema(
     completed: z.array(CalendarSessionItemSchema).default([]),
   }),
 );
-export type CalendarBuckets = {
-  upcoming: CalendarSessionItem[];
-  ongoing: CalendarSessionItem[];
-  completed: CalendarSessionItem[];
-};
+export type CalendarBuckets = z.infer<
+  typeof CalendarBucketResponseSchema
+>["response"];
 
 /** Single event item in a calendar bucket */
 export const CalendarEventItemSchema = z.object({
@@ -632,11 +630,9 @@ export const CalendarEventBucketResponseSchema = ApiResponseSchema(
     completed: z.array(CalendarEventItemSchema).default([]),
   }),
 );
-export type CalendarEventBuckets = {
-  upcoming: CalendarEventItem[];
-  ongoing: CalendarEventItem[];
-  completed: CalendarEventItem[];
-};
+export type CalendarEventBuckets = z.infer<
+  typeof CalendarEventBucketResponseSchema
+>["response"];
 
 /** Query params for session calendar endpoints */
 export interface CalendarParams {
