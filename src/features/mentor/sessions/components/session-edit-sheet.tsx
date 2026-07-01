@@ -30,6 +30,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
+import { utcIsoToLocalInput } from "@/lib/datetime";
 import { useSessionDetail, useUpdateSession } from "../hooks/use-sessions";
 import type { Session } from "../schemas";
 
@@ -91,8 +92,8 @@ export function SessionEditSheet({
       form.reset({
         title: currentSession.title,
         description: currentSession.description ?? "",
-        starts_at: currentSession.starts_at?.slice(0, 16) ?? "",
-        ends_at: currentSession.ends_at?.slice(0, 16) ?? "",
+        starts_at: utcIsoToLocalInput(currentSession.starts_at),
+        ends_at: utcIsoToLocalInput(currentSession.ends_at),
         mode: (currentSession.mode as any) || "ONLINE",
         meeting_link: currentSession.meeting_link ?? "",
         venue: currentSession.venue ?? "",
@@ -230,9 +231,12 @@ export function SessionEditSheet({
                   name="venue"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Venue</FormLabel>
+                      <FormLabel>Location (Google Maps link)</FormLabel>
                       <FormControl>
-                        <Input placeholder="Location, e.g., Lab 3" {...field} />
+                        <Input
+                          placeholder="https://maps.google.com/..."
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

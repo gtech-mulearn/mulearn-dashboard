@@ -152,14 +152,14 @@ export const NAV_ITEMS: readonly NavItem[] = [
 
   {
     id: "learner-sessions",
-    title: "Session",
+    title: "Sessions",
     href: "/dashboard/sessions",
-    icon: Users,
+    icon: CalendarDays,
     section: "main",
+    // Visible to learners/enablers/admins/etc. — everyone except mentors (who
+    // use the mentor Sessions view) and companies.
     dynamicCheck: (roles) =>
-      !roles.some(
-        (r) => r === ROLES.MENTOR || r === ROLES.COMPANY || r === ROLES.ADMIN,
-      ),
+      !roles.some((r) => r === ROLES.MENTOR || r === ROLES.COMPANY),
   },
   {
     id: "events",
