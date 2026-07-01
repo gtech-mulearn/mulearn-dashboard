@@ -88,7 +88,7 @@ export function ProfilePageClient() {
     profile?.roles.includes(ROLES.MENTOR) &&
     isVerifiedMentor;
 
-  const updateProfileMutation = useUpdateProfile();
+  const updateProfileMutation = useUpdateProfile({ suppressErrorToast: true });
   const { data: editableProfile } = useEditableProfile();
   const changeOrganizationMutation = useEditCollege();
   const updateProfileImageMutation = useUpdateProfileImage();

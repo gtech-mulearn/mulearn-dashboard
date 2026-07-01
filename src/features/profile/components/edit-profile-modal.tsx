@@ -33,6 +33,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { MultiSelectDropdown } from "@/features/manage-users/components";
 import { useDepartments } from "@/features/settings";
+import { extractDjangoMessage } from "@/api/errors";
 import {
   useCommunities,
   useCountries,
@@ -275,8 +276,48 @@ export function EditProfileModal({
     try {
       await onSave(normalizedValues, dirtyFields);
       onOpenChange(false);
-    } catch {
-      toast.error("Failed to update profile");
+    } catch (error: any) {
+      let hasFieldErrors = false;
+
+      // Handle backend validation errors that come in `error.data.response` or `error.data.message`
+      const backendErrors = error?.data?.response || error?.data?.message;
+
+      if (backendErrors && typeof backendErrors === "object") {
+        for (const [key, messages] of Object.entries(
+          backendErrors as Record<string, unknown>,
+        )) {
+          let errorMessage = "";
+          if (Array.isArray(messages) && messages.length > 0) {
+            errorMessage = Array.from(new Set(messages)).join(" ");
+          } else if (typeof messages === "string") {
+            errorMessage = messages;
+          }
+
+          if (errorMessage) {
+            // Check if the key exists in our form schema
+            const isValidField = Object.keys(form.getValues()).includes(key);
+            if (isValidField) {
+              form.setError(key as keyof EditProfileFormValues, {
+                type: "server",
+                message: errorMessage,
+              });
+              hasFieldErrors = true;
+            }
+          }
+        }
+      }
+
+      if (hasFieldErrors) {
+        toast.error("Please fix the validation errors in the form");
+        return;
+      }
+
+      // If no specific field errors were found or it's a general error, show a toast
+      const generalMessage =
+        extractDjangoMessage(error?.data) ||
+        error?.message ||
+        "Failed to update profile";
+      toast.error(generalMessage);
     }
   };
 
