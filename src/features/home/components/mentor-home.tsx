@@ -27,6 +27,7 @@ import {
   useMentorOverview,
   useMentorSessions,
 } from "../hooks";
+import { flattenEventBuckets, flattenSessionBuckets } from "../utils";
 import { EventCalendarCard } from "./event-calendar-card";
 import { MentorHeroCard } from "./mentor/mentor-hero-card";
 import { MentorSetupPrompt } from "./mentor/mentor-setup-prompt";
@@ -82,8 +83,8 @@ export function MentorHome() {
   const { data: sessionEvents, isLoading: loadingSessionCal } =
     useIgMentorSessionCalendar(primaryIgId);
   const mergedCalendarEvents = [
-    ...(calendarEvents ?? []),
-    ...(sessionEvents ?? []),
+    ...flattenEventBuckets(calendarEvents),
+    ...flattenSessionBuckets(sessionEvents),
   ];
 
   const [localSchedule, setLocalSchedule] = useState<WeeklySchedule>([]);

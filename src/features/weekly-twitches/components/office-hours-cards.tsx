@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
 import Pagination from "@/components/dashboard/table/pagination";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,

@@ -11,6 +11,7 @@ import {
   useCompanyOrgId,
   useCompanySessionCalendar,
 } from "../hooks";
+import { flattenEventBuckets, flattenSessionBuckets } from "../utils";
 import { ActiveJobListingsCard } from "./company/active-job-listings-card";
 import { CompanyHeroCard } from "./company/company-hero-card";
 import { CompanyStatCards } from "./company/company-stat-cards";
@@ -31,8 +32,8 @@ export function CompanyHome() {
   const { data: sessionEvents, isLoading: loadingSessions } =
     useCompanySessionCalendar(companyOrgId ?? undefined);
   const mergedCalendarEvents = [
-    ...(calendarEvents ?? []),
-    ...(sessionEvents ?? []),
+    ...flattenEventBuckets(calendarEvents),
+    ...flattenSessionBuckets(sessionEvents),
   ];
 
   const jobsPosted =

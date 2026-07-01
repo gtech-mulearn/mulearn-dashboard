@@ -1,9 +1,7 @@
-import { apiClient, publicApiClient } from "@/api/client";
+import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import { OrgListResponseSchema } from "@/features/organizations/schemas";
-import type { CalendarEvent } from "../schemas";
 import {
-  CalendarEventsResponseSchema,
   CampusCircleHealthResponseSchema,
   CampusHomeSummaryResponseSchema,
   CampusMemberFunnelResponseSchema,
@@ -19,19 +17,6 @@ import {
   MentorSessionsResponseSchema,
   PublicJobsResponseSchema,
 } from "../schemas";
-import {
-  type CalendarBuckets,
-  type CalendarEventBuckets,
-  type CalendarEventItem,
-  type CalendarSessionItem,
-  fetchCampusEventCalendar,
-  fetchCampusMentorSessionCalendar,
-  fetchCompanyEventCalendar,
-  fetchCompanySessionCalendar,
-  fetchGlobalEventCalendar,
-  fetchIgEventCalendar,
-  fetchIgMentorSessionCalendar,
-} from "./calendar.api";
 
 // ============================================
 // Interest Groups
@@ -55,18 +40,6 @@ export async function getKarmaFeed() {
     KarmaFeedResponseSchema,
   );
   return response.response;
-}
-
-// ============================================
-// Calendar Events
-// ============================================
-
-export async function getCalendarEvents() {
-  const response = await apiClient.get(
-    endpoints.dashboard.calendarEvents,
-    CalendarEventsResponseSchema,
-  );
-  return response.response.events;
 }
 
 // ============================================
@@ -294,110 +267,4 @@ export async function declineSessionRequest(
     undefined,
     { skipAuthRedirectOn403: true },
   );
-}
-
-// ============================================
-// Global Event Calendar (/api/v1/calendar/events/)
-// ============================================
-
-const CATEGORY_TO_TYPE: Record<string, CalendarEvent["type"]> = {
-  hackathon: "hackathon",
-  workshop: "workshop",
-  meetup: "meetup",
-};
-
-function mapEventItemToCalendarEvent(item: CalendarEventItem): CalendarEvent {
-  const rawCategory = (item.category_name ?? "").toLowerCase();
-  return {
-    id: item.id,
-    title: item.title,
-    description: "",
-    date: item.start,
-    type: CATEGORY_TO_TYPE[rawCategory] ?? "other",
-    location: item.venue_type ?? "",
-    link: `/dashboard/events/${item.id}`,
-  };
-}
-
-function flattenBuckets(buckets: CalendarEventBuckets): CalendarEvent[] {
-  return [...buckets.upcoming, ...buckets.ongoing, ...buckets.completed].map(
-    mapEventItemToCalendarEvent,
-  );
-}
-
-export async function getGlobalCalendarEvents(): Promise<CalendarEvent[]> {
-  const buckets = await fetchGlobalEventCalendar();
-  return flattenBuckets(buckets);
-}
-
-export async function getCompanyCalendarEvents(
-  companyId: string,
-): Promise<CalendarEvent[]> {
-  const buckets = await fetchCompanyEventCalendar(companyId);
-  return flattenBuckets(buckets);
-}
-
-export async function getCampusCalendarEvents(
-  campusId: string,
-): Promise<CalendarEvent[]> {
-  const buckets = await fetchCampusEventCalendar(campusId);
-  return flattenBuckets(buckets);
-}
-
-export async function getIgCalendarEvents(
-  igId: string,
-): Promise<CalendarEvent[]> {
-  const buckets = await fetchIgEventCalendar(igId);
-  return flattenBuckets(buckets);
-}
-
-// ============================================
-// Session Calendar → CalendarEvent mapping
-// ============================================
-
-const SESSION_STATUS_TYPE: Record<string, CalendarEvent["type"]> = {
-  SCHEDULED: "workshop",
-  COMPLETED: "other",
-  CANCELLED: "deadline",
-};
-
-function mapSessionItemToCalendarEvent(
-  item: CalendarSessionItem,
-): CalendarEvent {
-  return {
-    id: item.id,
-    title: item.title,
-    description: item.description ?? "",
-    date: item.starts_at,
-    type: SESSION_STATUS_TYPE[item.status] ?? "other",
-    location: item.venue ?? item.mode ?? "",
-    link: item.meeting_link ?? "",
-  };
-}
-
-function flattenSessionBuckets(buckets: CalendarBuckets): CalendarEvent[] {
-  return [...buckets.upcoming, ...buckets.ongoing, ...buckets.completed].map(
-    mapSessionItemToCalendarEvent,
-  );
-}
-
-export async function getCompanySessionCalendarEvents(
-  companyOrgId: string,
-): Promise<CalendarEvent[]> {
-  const buckets = await fetchCompanySessionCalendar(companyOrgId);
-  return flattenSessionBuckets(buckets);
-}
-
-export async function getIgMentorSessionCalendarEvents(
-  igId: string,
-): Promise<CalendarEvent[]> {
-  const buckets = await fetchIgMentorSessionCalendar(igId);
-  return flattenSessionBuckets(buckets);
-}
-
-export async function getCampusMentorSessionCalendarEvents(
-  campusId: string,
-): Promise<CalendarEvent[]> {
-  const buckets = await fetchCampusMentorSessionCalendar(campusId);
-  return flattenSessionBuckets(buckets);
 }

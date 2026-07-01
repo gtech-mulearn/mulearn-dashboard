@@ -5,8 +5,13 @@
  */
 
 export type {
+  CalendarBuckets,
   CalendarEvent,
-  CalendarEventsResponse,
+  CalendarEventBuckets,
+  CalendarEventItem,
+  CalendarEventParams,
+  CalendarParams,
+  CalendarSessionItem,
   CampusCircleHealthItem,
   CampusFunnelStage,
   CampusHomeSummaryData,
@@ -46,9 +51,11 @@ export type {
 } from "./home.schema";
 export {
   ApiResponseSchema,
+  CalendarBucketResponseSchema,
+  CalendarEventBucketResponseSchema,
+  CalendarEventItemSchema,
   CalendarEventSchema,
-  CalendarEventsDataSchema,
-  CalendarEventsResponseSchema,
+  CalendarSessionItemSchema,
   CampusActivityActorSchema,
   CampusCircleHealthItemSchema,
   CampusCircleHealthResponseSchema,

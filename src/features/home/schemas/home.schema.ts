@@ -108,17 +108,6 @@ export const CalendarEventSchema = z.object({
 });
 export type CalendarEvent = z.infer<typeof CalendarEventSchema>;
 
-export const CalendarEventsDataSchema = z.object({
-  events: z.array(CalendarEventSchema),
-});
-
-export const CalendarEventsResponseSchema = ApiResponseSchema(
-  CalendarEventsDataSchema,
-);
-export type CalendarEventsResponse = z.infer<
-  typeof CalendarEventsResponseSchema
->;
-
 // ============================================
 // Pagination (shared)
 // ============================================
@@ -583,3 +572,86 @@ export type CampusHomeSummaryData = z.infer<typeof CampusHomeSummaryDataSchema>;
 export const CampusHomeSummaryResponseSchema = ApiResponseSchema(
   CampusHomeSummaryDataSchema,
 );
+
+// ============================================
+// Session Calendar (/api/v1/calendar/*)
+// ============================================
+
+/** Single session item in a calendar bucket */
+export const CalendarSessionItemSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string().nullable().optional(),
+  mode: z.string().nullable().optional(),
+  starts_at: z.string(),
+  ends_at: z.string(),
+  status: z
+    .enum(["SCHEDULED", "COMPLETED", "CANCELLED", "PENDING_APPROVAL"])
+    .or(z.string()),
+  meeting_link: z.string().nullable().optional(),
+  venue: z.string().nullable().optional(),
+  mentor_name: z.string().nullable().optional(),
+  mentee_count: z.coerce.number().default(0),
+});
+export type CalendarSessionItem = z.infer<typeof CalendarSessionItemSchema>;
+
+/** Calendar response grouped into upcoming / ongoing / completed */
+export const CalendarBucketResponseSchema = ApiResponseSchema(
+  z.object({
+    upcoming: z.array(CalendarSessionItemSchema).default([]),
+    ongoing: z.array(CalendarSessionItemSchema).default([]),
+    completed: z.array(CalendarSessionItemSchema).default([]),
+  }),
+);
+export type CalendarBuckets = {
+  upcoming: CalendarSessionItem[];
+  ongoing: CalendarSessionItem[];
+  completed: CalendarSessionItem[];
+};
+
+/** Single event item in a calendar bucket */
+export const CalendarEventItemSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  slug: z.string(),
+  status: z.string(),
+  start: z.string(),
+  end: z.string(),
+  venue_type: z.string().optional(),
+  organiser_name: z.string().optional(),
+  category_name: z.string().nullable().optional(),
+  is_featured: z.boolean().optional(),
+});
+export type CalendarEventItem = z.infer<typeof CalendarEventItemSchema>;
+
+/** Event calendar response grouped into upcoming / ongoing / completed */
+export const CalendarEventBucketResponseSchema = ApiResponseSchema(
+  z.object({
+    upcoming: z.array(CalendarEventItemSchema).default([]),
+    ongoing: z.array(CalendarEventItemSchema).default([]),
+    completed: z.array(CalendarEventItemSchema).default([]),
+  }),
+);
+export type CalendarEventBuckets = {
+  upcoming: CalendarEventItem[];
+  ongoing: CalendarEventItem[];
+  completed: CalendarEventItem[];
+};
+
+/** Query params for session calendar endpoints */
+export interface CalendarParams {
+  /** Filter by month: YYYY-MM (e.g. "2026-06") */
+  month?: string;
+  /** Filter by session status */
+  status?: "SCHEDULED" | "COMPLETED" | "CANCELLED";
+}
+
+/** Query params for event calendar endpoints */
+export interface CalendarEventParams {
+  /** Filter by month: YYYY-MM (e.g. "2026-06") */
+  month?: string;
+  /** Filter by scope (global endpoint only) */
+  scope?: "ig" | "campus" | "global" | "company";
+  /** Filter by status */
+  status?: "ongoing" | "upcoming" | "completed";
+}

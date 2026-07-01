@@ -3,20 +3,19 @@ import { toast } from "sonner";
 import { fetchStudentLeaderboard } from "@/features/leaderboard/api/leaderboard.api";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
-  getCalendarEvents,
-  getCampusCalendarEvents,
+  fetchCampusEventCalendar,
+  fetchCampusMentorSessionCalendar,
+  fetchCompanyEventCalendar,
+  fetchCompanySessionCalendar,
+  fetchGlobalEventCalendar,
+  fetchIgEventCalendar,
+  fetchIgMentorSessionCalendar,
   getCampusCircleHealth,
   getCampusHomeSummary,
   getCampusMemberFunnel,
-  getCampusMentorSessionCalendarEvents,
   getCampusRecentActivity,
-  getCompanyCalendarEvents,
   getCompanyHomeSummary,
   getCompanyOrgId,
-  getCompanySessionCalendarEvents,
-  getGlobalCalendarEvents,
-  getIgCalendarEvents,
-  getIgMentorSessionCalendarEvents,
   getInterestGroupsList,
   getKarmaFeed,
   getLearnerHomeSummary,
@@ -48,26 +47,18 @@ export function useKarmaFeed() {
   });
 }
 
-export function useCalendarEvents() {
-  return useQuery({
-    queryKey: homeKeys.calendarEvents(),
-    queryFn: getCalendarEvents,
-    staleTime: HOME_STALE_TIME,
-  });
-}
-
 export function useGlobalCalendarEvents() {
   return useQuery({
     queryKey: homeKeys.globalCalendarEvents(),
-    queryFn: getGlobalCalendarEvents,
+    queryFn: () => fetchGlobalEventCalendar(),
     staleTime: HOME_STALE_TIME,
   });
 }
 
 export function useCompanyCalendarEvents(companyId: string | undefined) {
   return useQuery({
-    queryKey: homeKeys.companyCalendarEvents(companyId ?? ""),
-    queryFn: () => getCompanyCalendarEvents(companyId!),
+    queryKey: homeKeys.companyCalendarEvents(companyId!),
+    queryFn: () => fetchCompanyEventCalendar(companyId!),
     staleTime: HOME_STALE_TIME,
     enabled: !!companyId,
   });
@@ -75,8 +66,8 @@ export function useCompanyCalendarEvents(companyId: string | undefined) {
 
 export function useCampusCalendarEvents(campusId: string | undefined) {
   return useQuery({
-    queryKey: homeKeys.campusCalendarEvents(campusId ?? ""),
-    queryFn: () => getCampusCalendarEvents(campusId!),
+    queryKey: homeKeys.campusCalendarEvents(campusId!),
+    queryFn: () => fetchCampusEventCalendar(campusId!),
     staleTime: HOME_STALE_TIME,
     enabled: !!campusId,
   });
@@ -84,8 +75,8 @@ export function useCampusCalendarEvents(campusId: string | undefined) {
 
 export function useIgCalendarEvents(igId: string | undefined) {
   return useQuery({
-    queryKey: homeKeys.igCalendarEvents(igId ?? ""),
-    queryFn: () => getIgCalendarEvents(igId!),
+    queryKey: homeKeys.igCalendarEvents(igId!),
+    queryFn: () => fetchIgEventCalendar(igId!),
     staleTime: HOME_STALE_TIME,
     enabled: !!igId,
   });
@@ -93,8 +84,8 @@ export function useIgCalendarEvents(igId: string | undefined) {
 
 export function useCompanySessionCalendar(companyOrgId: string | undefined) {
   return useQuery({
-    queryKey: homeKeys.companySessionCalendar(companyOrgId ?? ""),
-    queryFn: () => getCompanySessionCalendarEvents(companyOrgId!),
+    queryKey: homeKeys.companySessionCalendar(companyOrgId!),
+    queryFn: () => fetchCompanySessionCalendar(companyOrgId!),
     staleTime: HOME_STALE_TIME,
     enabled: !!companyOrgId,
   });
@@ -102,8 +93,8 @@ export function useCompanySessionCalendar(companyOrgId: string | undefined) {
 
 export function useIgMentorSessionCalendar(igId: string | undefined) {
   return useQuery({
-    queryKey: homeKeys.igMentorSessionCalendar(igId ?? ""),
-    queryFn: () => getIgMentorSessionCalendarEvents(igId!),
+    queryKey: homeKeys.igMentorSessionCalendar(igId!),
+    queryFn: () => fetchIgMentorSessionCalendar(igId!),
     staleTime: HOME_STALE_TIME,
     enabled: !!igId,
   });
@@ -111,8 +102,8 @@ export function useIgMentorSessionCalendar(igId: string | undefined) {
 
 export function useCampusMentorSessionCalendar(campusId: string | undefined) {
   return useQuery({
-    queryKey: homeKeys.campusMentorSessionCalendar(campusId ?? ""),
-    queryFn: () => getCampusMentorSessionCalendarEvents(campusId!),
+    queryKey: homeKeys.campusMentorSessionCalendar(campusId!),
+    queryFn: () => fetchCampusMentorSessionCalendar(campusId!),
     staleTime: HOME_STALE_TIME,
     enabled: !!campusId,
   });
@@ -120,7 +111,7 @@ export function useCampusMentorSessionCalendar(campusId: string | undefined) {
 
 export function useCompanyOrgId(companyName: string | undefined) {
   return useQuery({
-    queryKey: homeKeys.companyOrgId(companyName ?? ""),
+    queryKey: homeKeys.companyOrgId(companyName!),
     queryFn: () => getCompanyOrgId(companyName!),
     staleTime: 30 * 60 * 1000,
     enabled: !!companyName,

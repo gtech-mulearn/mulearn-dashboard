@@ -1,6 +1,5 @@
 export { homeKeys } from "./query-keys";
 export {
-  useCalendarEvents,
   useCampusCalendarEvents,
   useCampusCircleHealth,
   useCampusHomeSummary,

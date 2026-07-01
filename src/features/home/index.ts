@@ -1,20 +1,19 @@
 export {
   acceptSessionRequest,
   declineSessionRequest,
-  getCalendarEvents,
-  getCampusCalendarEvents,
+  fetchCampusEventCalendar,
+  fetchCampusMentorSessionCalendar,
+  fetchCompanyEventCalendar,
+  fetchCompanySessionCalendar,
+  fetchGlobalEventCalendar,
+  fetchIgEventCalendar,
+  fetchIgMentorSessionCalendar,
   getCampusCircleHealth,
   getCampusHomeSummary,
   getCampusMemberFunnel,
-  getCampusMentorSessionCalendarEvents,
   getCampusRecentActivity,
-  getCompanyCalendarEvents,
   getCompanyHomeSummary,
   getCompanyOrgId,
-  getCompanySessionCalendarEvents,
-  getGlobalCalendarEvents,
-  getIgCalendarEvents,
-  getIgMentorSessionCalendarEvents,
   getInterestGroupsList,
   getKarmaFeed,
   getLearnerHomeSummary,
@@ -44,7 +43,6 @@ export {
 } from "./components";
 export {
   homeKeys,
-  useCalendarEvents,
   useCampusCalendarEvents,
   useCampusCircleHealth,
   useCampusHomeSummary,
@@ -71,8 +69,13 @@ export {
   useTopPerformers,
 } from "./hooks";
 export type {
+  CalendarBuckets,
   CalendarEvent,
-  CalendarEventsResponse,
+  CalendarEventBuckets,
+  CalendarEventItem,
+  CalendarEventParams,
+  CalendarParams,
+  CalendarSessionItem,
   CampusCircleHealthItem,
   CampusFunnelStage,
   CampusHomeSummaryData,
@@ -112,9 +115,11 @@ export type {
 } from "./schemas";
 export {
   ApiResponseSchema,
+  CalendarBucketResponseSchema,
+  CalendarEventBucketResponseSchema,
+  CalendarEventItemSchema,
   CalendarEventSchema,
-  CalendarEventsDataSchema,
-  CalendarEventsResponseSchema,
+  CalendarSessionItemSchema,
   CampusActivityActorSchema,
   CampusCircleHealthItemSchema,
   CampusCircleHealthResponseSchema,
@@ -167,3 +172,4 @@ export {
   PublicJobsResponseSchema,
   TalentPoolTopIgSchema,
 } from "./schemas";
+export { flattenEventBuckets, flattenSessionBuckets } from "./utils";

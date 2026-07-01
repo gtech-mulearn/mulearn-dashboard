@@ -10,6 +10,7 @@ import {
   useCampusHomeSummary,
   useCampusMentorSessionCalendar,
 } from "../hooks";
+import { flattenEventBuckets, flattenSessionBuckets } from "../utils";
 import { CampusStatCards } from "./campus/campus-stat-cards";
 import { CircleHealthCard } from "./campus/circle-health-card";
 import { MemberFunnelCard } from "./campus/member-funnel-card";
@@ -35,8 +36,8 @@ export function EnablerHome() {
   const { data: sessionEvents, isLoading: loadingSessionCal } =
     useCampusMentorSessionCalendar(campusId);
   const mergedCalendarEvents = [
-    ...(calendarEvents ?? []),
-    ...(sessionEvents ?? []),
+    ...flattenEventBuckets(calendarEvents),
+    ...flattenSessionBuckets(sessionEvents),
   ];
 
   const campusLabel = summary?.campus

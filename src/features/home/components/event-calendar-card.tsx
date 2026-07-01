@@ -16,7 +16,6 @@ import { ChevronLeft, ChevronRight, ExternalLink, MapPin } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useCalendarEvents } from "../hooks";
 import type { CalendarEvent } from "../schemas";
 
 // ─── Day abbreviations ─────────────────────────────────────────────────────
@@ -125,10 +124,8 @@ export function EventCalendarCard({
     return eachDayOfInterval({ start: calStart, end: calEnd });
   }, [currentMonth]);
 
-  const { data: fetchedEvents, isLoading: isFetching } = useCalendarEvents();
-
-  const events = propEvents ?? fetchedEvents ?? [];
-  const isLoading = propIsLoading ?? isFetching;
+  const events = propEvents ?? [];
+  const isLoading = propIsLoading ?? false;
 
   // Build a map of dates → events for quick lookup
   const eventsByDate = useMemo(() => {

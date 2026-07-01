@@ -6,6 +6,7 @@ import {
   useInterestGroupsList,
   useLearnerHomeSummary,
 } from "../hooks";
+import { flattenEventBuckets } from "../utils";
 import { EventCalendarCard } from "./event-calendar-card";
 import { HeroCard } from "./hero-card";
 import { InterestGroupsCard } from "./interest-groups-card";
@@ -19,6 +20,8 @@ export function MuLearnerHome() {
   const { data: interestGroups, isLoading: loadingGroups } =
     useInterestGroupsList();
   const { data: summary } = useLearnerHomeSummary();
+  const { data: calendarEvents, isLoading: loadingCalendar } =
+    useGlobalCalendarEvents();
 
   const displayName = userInfo?.full_name?.split(" ")[0] ?? "Learner";
   const groups = interestGroups ?? [];
@@ -59,7 +62,10 @@ export function MuLearnerHome() {
         {/* Right column: Calendar + Top Performers */}
         <div className="self-start lg:sticky lg:top-5 space-y-5">
           <div className="hidden lg:block">
-            <EventCalendarCard />
+            <EventCalendarCard
+              events={flattenEventBuckets(calendarEvents)}
+              isLoading={loadingCalendar}
+            />
           </div>
           <KarmaEarnersCard />
         </div>

@@ -446,8 +446,6 @@ export const endpoints = {
     interestGroups: "/api/v1/dashboard/ig/list/",
     /** GET - Featured events (replaced Google Sheets) — use events.featured instead */
     events: "/api/v1/dashboard/events/featured/",
-    /** GET - Calendar events for dashboard */
-    calendarEvents: "/api/v1/dashboard/events/calendar/",
   },
 
   // ============================================
