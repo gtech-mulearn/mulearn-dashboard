@@ -408,7 +408,7 @@ export function EditProfileModal({
                               <SelectValue placeholder="Select gender" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent>
+                          <SelectContent position="popper">
                             <SelectItem value="__none__">None</SelectItem>
                             <SelectItem value="Male">Male</SelectItem>
                             <SelectItem value="Female">Female</SelectItem>
@@ -505,7 +505,7 @@ export function EditProfileModal({
                               <SelectValue placeholder="Select country" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent>
+                          <SelectContent position="popper">
                             <SelectItem value="__none__">None</SelectItem>
                             {countries.map((country) => (
                               <SelectItem
@@ -549,7 +549,7 @@ export function EditProfileModal({
                               <SelectValue placeholder="Select state" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent>
+                          <SelectContent position="popper">
                             <SelectItem value="__none__">None</SelectItem>
                             {states.map((state) => (
                               <SelectItem key={state.value} value={state.value}>
@@ -587,7 +587,7 @@ export function EditProfileModal({
                               <SelectValue placeholder="Select district" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent>
+                          <SelectContent position="popper">
                             <SelectItem value="__none__">None</SelectItem>
                             {districts.map((district) => (
                               <SelectItem
@@ -624,7 +624,7 @@ export function EditProfileModal({
                               <SelectValue placeholder="Select college / school" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent>
+                          <SelectContent position="popper">
                             <SelectItem value="__none__">None</SelectItem>
                             {organizations.map((organization) => (
                               <SelectItem
@@ -661,7 +661,7 @@ export function EditProfileModal({
                               <SelectValue placeholder="Select department" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent>
+                          <SelectContent position="popper">
                             <SelectItem value="__none__">None</SelectItem>
                             {departments.map((department) => (
                               <SelectItem
