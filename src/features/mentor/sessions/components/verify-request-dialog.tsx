@@ -28,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { utcIsoToLocalInput } from "@/lib/datetime";
 import { useVerifyStudentRequest } from "../hooks/use-student-requests";
 import {
   MentorVerifyRequestSchema,
@@ -62,8 +63,8 @@ export function VerifyRequestDialog({
     if (request) {
       form.reset({
         status: "APPROVED",
-        starts_at: request.starts_at.slice(0, 16),
-        ends_at: request.ends_at.slice(0, 16),
+        starts_at: utcIsoToLocalInput(request.starts_at),
+        ends_at: utcIsoToLocalInput(request.ends_at),
         mode: request.mode as "ONLINE" | "OFFLINE" | "HYBRID",
         meeting_link: request.meeting_link ?? "",
         venue: request.venue ?? "",

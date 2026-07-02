@@ -1,5 +1,6 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
+import { localInputToUtcIso } from "@/lib/datetime";
 import type {
   AddParticipantFormValues,
   AdminVerifySessionValues,
@@ -30,16 +31,11 @@ interface ListParams {
 
 // ─── Helper: map frontend form → backend payload ─────────────────────────────
 // • Passes ig_id as-is (backend field name is ig_id, omit when undefined for global session)
-// • Converts datetime-local strings ("YYYY-MM-DDTHH:mm") to full ISO-8601
-//   ("YYYY-MM-DDTHH:mm:ss") — Django rejects the truncated format with 400.
+// • Converts the picker's LOCAL wall-clock ("YYYY-MM-DDTHH:mm") to a UTC ISO
+//   instant so times are stored correctly (see @/lib/datetime).
 // • Drops empty-string values for optional fields (meeting_link, description,
 //   venue) so Django's URLField / CharField does not receive invalid input.
-function toISO(value: string | undefined): string | undefined {
-  if (!value) return undefined;
-  // datetime-local gives "YYYY-MM-DDTHH:mm" (16 chars); append ":00" if needed
-  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) return `${value}:00`;
-  return value;
-}
+const toISO = localInputToUtcIso;
 
 function toBackendPayload(data: Partial<SessionFormValues>) {
   const {

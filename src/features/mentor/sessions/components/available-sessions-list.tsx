@@ -3,7 +3,6 @@
 import {
   CalendarClock,
   Check,
-  ExternalLink,
   LogIn,
   MapPin,
   Users,
@@ -13,12 +12,16 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { chipColor } from "@/lib/chip-colors";
+import { cn } from "@/lib/utils";
 import {
   useAvailableSessions,
   useJoinSession,
   useParticipantHistory,
 } from "../hooks/use-sessions";
 import type { Session } from "../schemas";
+import { ExpandableText } from "./expandable-text";
+import { SessionAccessButtons, venueDisplay } from "./session-access";
 
 function formatRange(startIso?: string | null, endIso?: string | null): string {
   if (!startIso) return "Time TBD";
@@ -52,24 +55,26 @@ function SessionCard({
   const mode = (session.mode ?? "").toUpperCase();
   const isOnline = mode === "ONLINE" || mode === "HYBRID";
   const isOffline = mode === "OFFLINE" || mode === "HYBRID";
-  const meetingLink = session.meeting_link?.trim();
 
   return (
     <Card className="flex h-full flex-col rounded-2xl border bg-card shadow-sm">
       <CardContent className="flex flex-1 flex-col gap-3 p-4">
         <div className="space-y-1.5">
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-col items-start gap-2">
             <p className="font-semibold text-foreground">{session.title}</p>
             {session.entity_name && (
-              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary ring-1 ring-primary/20">
+              <span
+                className={cn(
+                  "rounded-full px-2 py-0.5 text-[11px] font-medium",
+                  chipColor(session.entity_name),
+                )}
+              >
                 {session.entity_name}
               </span>
             )}
           </div>
           {session.description && (
-            <p className="line-clamp-2 text-sm text-muted-foreground">
-              {session.description}
-            </p>
+            <ExpandableText text={session.description} title={session.title} />
           )}
         </div>
 
@@ -85,10 +90,10 @@ function SessionCard({
                 Online
               </span>
             )}
-            {isOffline && session.venue && (
+            {isOffline && venueDisplay(session.venue) && (
               <span className="flex items-center gap-1">
                 <MapPin className="size-3.5" />
-                {session.venue}
+                {venueDisplay(session.venue)}
               </span>
             )}
             {session.max_participants ? (
@@ -100,11 +105,10 @@ function SessionCard({
           </div>
         </div>
 
-        <div className="mt-auto flex items-center gap-2 pt-1">
+        <div className="mt-auto flex flex-col gap-2 pt-1">
           <Button
             type="button"
             size="sm"
-            className="flex-1"
             disabled={isPending || joined}
             onClick={() =>
               join(session.id, { onSuccess: () => setJustJoined(true) })
@@ -122,20 +126,12 @@ function SessionCard({
               </>
             )}
           </Button>
-          {meetingLink && (
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              className="shrink-0"
-              onClick={() =>
-                window.open(meetingLink, "_blank", "noopener,noreferrer")
-              }
-            >
-              <ExternalLink className="mr-1.5 size-4" />
-              Meeting link
-            </Button>
-          )}
+          {/* Always surface how to attend: meeting link (online) / map (offline). */}
+          <SessionAccessButtons
+            mode={session.mode}
+            meetingLink={session.meeting_link}
+            venue={session.venue}
+          />
         </div>
       </CardContent>
     </Card>
