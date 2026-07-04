@@ -137,6 +137,15 @@ export const EditableProfileSchema = z
     district: DistrictLocationSchema.nullable().optional(),
     communities: z.array(z.string()).nullable().optional(),
     community: z.array(z.string()).nullable().optional(),
+    department: z
+      .object({
+        id: z.string().nullable().optional(),
+        title: z.string().nullable().optional(),
+        name: z.string().nullable().optional(),
+      })
+      .passthrough()
+      .nullable()
+      .optional(),
   })
   .transform((data) => ({
     full_name: data.full_name ?? "",
@@ -146,6 +155,7 @@ export const EditableProfileSchema = z
     dob: data.dob ?? "",
     district: data.district ?? null,
     communities: data.communities ?? data.community ?? [],
+    department: data.department ?? null,
   }));
 export type EditableProfile = z.infer<typeof EditableProfileSchema>;
 

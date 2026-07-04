@@ -145,15 +145,21 @@ export function EditProfileModal({
         label: collegeOrgDisplayName,
       }
     : null;
+  const p = profile as any;
   const currentDepartmentRaw =
-    profile.department_id ||
-    profile.department?.id ||
+    p.department_id ||
+    (typeof p.department === "string" ? p.department : p.department?.id) ||
+    p.branch_id ||
+    (typeof p.branch === "string" ? p.branch : p.branch?.id) ||
+    editableProfile?.department?.id ||
     fallbackDepartmentId ||
     "";
   const currentDepartmentDisplayName =
     profile.department_name ||
     profile.department?.title ||
     profile.department?.name ||
+    editableProfile?.department?.title ||
+    editableProfile?.department?.name ||
     allDepartments.find((department) => department.id === currentDepartmentRaw)
       ?.title ||
     currentDepartmentRaw;
