@@ -31,6 +31,7 @@ export const InterestGroupSchema = z.object({
       count: z.number(),
     })
     .default({ unit: "level", count: 1 }),
+  selected: z.boolean().optional(),
 });
 export type InterestGroup = z.infer<typeof InterestGroupSchema>;
 
@@ -101,7 +102,9 @@ export const UserProfileSchema = z.object({
     .optional(),
   is_verified: z.boolean().optional(),
   lead_enabler_verified: z.boolean().optional(),
-  interest_groups: z.array(InterestGroupSchema),
+  interest_groups: z
+    .array(InterestGroupSchema)
+    .transform((igs) => igs.filter((ig) => ig.selected !== false)),
   karma_distribution: z.array(KarmaDistributionSchema),
 });
 export type UserProfile = z.infer<typeof UserProfileSchema>;
