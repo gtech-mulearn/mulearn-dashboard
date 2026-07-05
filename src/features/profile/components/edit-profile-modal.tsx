@@ -88,12 +88,12 @@ function normalizeGenderValue(value: string | null | undefined) {
     raw === "prefer_not" ||
     raw === "n/a"
   ) {
-    return "prefer-not-to-say";
+    return "Prefer not to say";
   }
   if (value === "Male" || value === "Female" || value === "Other") {
     return value;
   }
-  if (value === "prefer-not-to-say") {
+  if (value === "Prefer not to say") {
     return value;
   }
   return "";
@@ -469,7 +469,7 @@ export function EditProfileModal({
                             <SelectItem value="Male">Male</SelectItem>
                             <SelectItem value="Female">Female</SelectItem>
                             <SelectItem value="Other">Other</SelectItem>
-                            <SelectItem value="prefer-not-to-say">
+                            <SelectItem value="Prefer not to say">
                               Prefer not to say
                             </SelectItem>
                           </SelectContent>
