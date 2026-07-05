@@ -145,7 +145,11 @@ export function EditProfileModal({
         label: collegeOrgDisplayName,
       }
     : null;
-  const p = profile as any;
+  const p = profile as typeof profile & {
+    department_id?: string | null;
+    branch_id?: string | null;
+    branch?: string | { id?: string | null } | null;
+  };
   const currentDepartmentRaw =
     p.department_id ||
     (typeof p.department === "string" ? p.department : p.department?.id) ||
@@ -283,11 +287,15 @@ export function EditProfileModal({
     try {
       await onSave(normalizedValues, dirtyFields);
       onOpenChange(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as {
+        data?: { response?: unknown; message?: unknown };
+        message?: string;
+      } | null;
       let hasFieldErrors = false;
 
       // Handle backend validation errors that come in `error.data.response` or `error.data.message`
-      const backendErrors = error?.data?.response || error?.data?.message;
+      const backendErrors = err?.data?.response || err?.data?.message;
 
       if (backendErrors && typeof backendErrors === "object") {
         for (const [key, messages] of Object.entries(
@@ -321,8 +329,8 @@ export function EditProfileModal({
 
       // If no specific field errors were found or it's a general error, show a toast
       const generalMessage =
-        extractDjangoMessage(error?.data) ||
-        error?.message ||
+        extractDjangoMessage(err?.data) ||
+        err?.message ||
         "Failed to update profile";
       toast.error(generalMessage);
     }

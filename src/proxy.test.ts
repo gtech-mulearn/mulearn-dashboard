@@ -67,3 +67,23 @@ describe("proxy access-token recovery", () => {
     expect(res.headers.get("location")).toBeNull();
   });
 });
+
+describe("proxy public routes", () => {
+  it("allows unauthenticated requests to public profiles (/profile/<slug>)", () => {
+    const res = proxy(requestFor("/profile/some-company", {}));
+    // Unauthenticated request should NOT redirect (allowed through)
+    expect(res.headers.get("location")).toBeNull();
+  });
+
+  it("protects /profile without a slug", () => {
+    const res = proxy(requestFor("/profile", {}));
+    // Should redirect to login since it is protected
+    expect(res.headers.get("location")).toContain("/login");
+  });
+
+  it("protects the user's own profile (/dashboard/profile)", () => {
+    const res = proxy(requestFor("/dashboard/profile", {}));
+    // Should redirect to login since it is protected
+    expect(res.headers.get("location")).toContain("/login");
+  });
+});

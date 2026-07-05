@@ -18,7 +18,7 @@ import Link from "next/link";
 import { useState } from "react";
 import Loader from "@/app/loading";
 import { StatCard } from "@/components/ui/stat-card";
-import { ShareProfileModal } from "@/features/profile/components/share-profile-modal";
+import { ShareProfileModal } from "@/features/profile";
 import { useCompanyProfile } from "../../hooks/use-company-profile";
 import { useJobs } from "../../hooks/use-jobs";
 import { CompanyCultureSection } from "./company-culture-section";
