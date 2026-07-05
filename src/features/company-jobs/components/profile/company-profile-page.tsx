@@ -12,10 +12,13 @@ import {
   Mail,
   Pencil,
   Users,
+  Share2,
 } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 import Loader from "@/app/loading";
 import { StatCard } from "@/components/ui/stat-card";
+import { ShareProfileModal } from "@/features/profile/components/share-profile-modal";
 import { useCompanyProfile } from "../../hooks/use-company-profile";
 import { useJobs } from "../../hooks/use-jobs";
 import { CompanyCultureSection } from "./company-culture-section";
@@ -30,8 +33,16 @@ function CompanyProfileSidebar({
 }: {
   profile: ReturnType<typeof useCompanyProfile>["profile"] & object;
 }) {
+  const [showShare, setShowShare] = useState(false);
+
   return (
     <div className="space-y-4">
+      <ShareProfileModal
+        open={showShare}
+        onOpenChange={setShowShare}
+        muid={profile.slug}
+        isPublic={true}
+      />
       {/* Quick Actions */}
       <div className="rounded-2xl bg-card p-4 shadow-sm">
         <h3 className="mb-3 px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -83,6 +94,23 @@ function CompanyProfileSidebar({
                 </span>
               </div>
             </div>
+          )}
+          {profile.status === "verified" && (
+            <button
+              type="button"
+              onClick={() => setShowShare(true)}
+              className="flex w-full items-center justify-between rounded-xl p-3 text-left transition-colors hover:bg-muted"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex size-9 items-center justify-center rounded-lg bg-indigo-500/10">
+                  <Share2 className="size-4 text-indigo-500" />
+                </div>
+                <span className="text-sm font-medium text-foreground">
+                  Share Profile
+                </span>
+              </div>
+              <ChevronRight className="size-4 text-muted-foreground" />
+            </button>
           )}
         </div>
       </div>
