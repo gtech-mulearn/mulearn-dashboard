@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
+import { StateDisplay } from "@/components/ui/state-display";
 import {
   getComplexityColor,
   getTaskBaseKarma,
@@ -280,11 +281,16 @@ export function InternTasksPageClient() {
             </Card>
           ))}
 
-          {filteredTasks.length === 0 && (
-            <div className="col-span-full py-16 text-center text-xs text-muted-foreground italic uppercase tracking-wider">
-              No tasks found
-            </div>
-          )}
+          {filteredTasks.length === 0 &&
+            (searchText || statusFilter !== "ALL" ? (
+              <StateDisplay
+                variant="no-results"
+                size="sm"
+                className="col-span-full"
+              />
+            ) : (
+              <StateDisplay variant="no-tasks" className="col-span-full" />
+            ))}
         </div>
       )}
 

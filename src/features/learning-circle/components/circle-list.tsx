@@ -8,10 +8,11 @@
 
 "use client";
 
-import { Search, Users } from "lucide-react";
+import { Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import { StateDisplay } from "@/components/ui/state-display";
 import { useCircles } from "../hooks";
 import { CircleCard } from "./circle-card";
 
@@ -76,19 +77,16 @@ export function CircleList() {
 
       {/* Empty State */}
       {filteredCircles.length === 0 && (
-        <div className="lc-fade-in flex flex-col items-center justify-center rounded-2xl border border-border bg-card px-8 py-24 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-          <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted">
-            <Users className="h-7 w-7 text-muted-foreground" />
-          </div>
-          <h3 className="mb-2 text-[18px] font-bold tracking-[-0.02em] text-foreground">
-            {searchQuery ? "No circles found" : "No Learning Circles Yet"}
-          </h3>
-          <p className="max-w-sm text-center text-[14px] leading-relaxed text-muted-foreground">
-            {searchQuery
-              ? "Try a different search term or adjust your filters"
-              : "Be the first to create a learning circle and start collaborating with peers!"}
-          </p>
-        </div>
+        <StateDisplay
+          variant="no-results"
+          className="lc-fade-in rounded-2xl border border-border bg-card shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
+          title={searchQuery ? undefined : "No Learning Circles Yet"}
+          description={
+            searchQuery
+              ? undefined
+              : "Be the first to create a learning circle and start collaborating with peers!"
+          }
+        />
       )}
 
       {/* Circle Grid — CSS columns for masonry effect */}

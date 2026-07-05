@@ -5,7 +5,6 @@ import {
   ArrowDownUp,
   Briefcase,
   FileText,
-  Filter,
   Search,
   X,
 } from "lucide-react";
@@ -21,6 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StateDisplay } from "@/components/ui/state-display";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ApplicationRow,
@@ -286,16 +286,12 @@ export function LearnerJobsPageClient() {
           ) : jobsError ? (
             <ErrorState message="Failed to load jobs. Please try again." />
           ) : jobs.length === 0 ? (
-            <EmptyState
-              icon={<Filter className="h-8 w-8 text-muted-foreground" />}
-              title={
-                debouncedSearch
-                  ? "No jobs match your search"
-                  : "No jobs available"
-              }
+            <StateDisplay
+              variant="no-results"
+              title={debouncedSearch ? undefined : "No jobs available"}
               description={
                 debouncedSearch
-                  ? "Try a different keyword."
+                  ? undefined
                   : "Check back soon for new opportunities."
               }
             />
@@ -354,8 +350,8 @@ export function LearnerJobsPageClient() {
           ) : applicationsError ? (
             <ErrorState message="Failed to load your applications." />
           ) : applications.length === 0 ? (
-            <EmptyState
-              icon={<FileText className="h-8 w-8 text-muted-foreground" />}
+            <StateDisplay
+              variant="no-results"
               title="No applications yet"
               description="Browse jobs and hit Apply to get started."
               action={
@@ -428,31 +424,6 @@ function ErrorState({ message }: { message: string }) {
           <AlertTriangle className="h-6 w-6 text-destructive" />
         </div>
         <p className="text-sm text-muted-foreground">{message}</p>
-      </CardContent>
-    </Card>
-  );
-}
-
-function EmptyState({
-  icon,
-  title,
-  description,
-  action,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  action?: React.ReactNode;
-}) {
-  return (
-    <Card className="border-dashed border-border">
-      <CardContent className="flex min-h-[200px] flex-col items-center justify-center gap-3 py-12 text-center">
-        <div className="rounded-full bg-muted p-4">{icon}</div>
-        <div className="space-y-1">
-          <p className="font-medium text-foreground">{title}</p>
-          <p className="text-sm text-muted-foreground">{description}</p>
-        </div>
-        {action}
       </CardContent>
     </Card>
   );

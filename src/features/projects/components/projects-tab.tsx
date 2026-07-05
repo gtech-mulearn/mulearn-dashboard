@@ -1,9 +1,10 @@
 "use client";
-import { Folder, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { StateDisplay } from "@/components/ui/state-display";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   useAddMember,
@@ -127,14 +128,15 @@ export function ProjectsTab({
       </div>
 
       {!projects || projects.length === 0 ? (
-        <div className="text-center py-12">
-          <Folder className="h-12 w-12 text-muted-foreground/40 mx-auto" />
-          <p className="mt-3 text-muted-foreground">
-            {isOwnProfile
+        <StateDisplay
+          variant="no-results"
+          size="sm"
+          description={
+            isOwnProfile
               ? "No projects yet. Create your first one."
-              : "This user hasn't shared any projects."}
-          </p>
-        </div>
+              : "This user hasn't shared any projects."
+          }
+        />
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
           {projects.map((p) => (

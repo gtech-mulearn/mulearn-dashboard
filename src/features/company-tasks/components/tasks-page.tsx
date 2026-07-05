@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StateDisplay } from "@/components/ui/state-display";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   useCompanyTasks,
@@ -118,11 +119,19 @@ export function CompanyTasksPage() {
       </Tabs>
 
       {tasks.length === 0 || filteredTasks.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed p-12 text-center">
-          <h3 className="text-lg font-semibold text-muted-foreground">
-            No tasks found.
-          </h3>
-        </div>
+        statusFilter === "all" ? (
+          <StateDisplay
+            variant="no-tasks"
+            className="rounded-2xl border border-dashed"
+          />
+        ) : (
+          <StateDisplay
+            variant="no-results"
+            size="sm"
+            className="rounded-2xl border border-dashed"
+            description={`No ${statusFilter} tasks right now. Try a different path and keep exploring.`}
+          />
+        )
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {filteredTasks.map((task: CompanyTask) => (
