@@ -1,12 +1,12 @@
 "use client";
 
-import { Folder } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Pagination from "@/components/dashboard/table/pagination";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
+import { StateDisplay } from "@/components/ui/state-display";
 import { useUserProfile } from "@/features/profile";
 import { useDebounce } from "@/hooks/use-debounce";
 import { usePublicProjects } from "../hooks";
@@ -105,14 +105,14 @@ export function ProjectsListingPage() {
             </Button>
           </div>
         ) : projects.length === 0 ? (
-          <div className="py-12 text-center">
-            <Folder className="mx-auto h-12 w-12 text-muted-foreground/40" />
-            <p className="mt-3 text-muted-foreground">
-              {debouncedSearch
-                ? `No projects match "${debouncedSearch}". Try a different search.`
-                : "No projects published yet. Be the first!"}
-            </p>
-          </div>
+          <StateDisplay
+            variant="no-results"
+            description={
+              debouncedSearch
+                ? `No projects match "${debouncedSearch}". Try a different path and keep exploring.`
+                : "No projects published yet. Be the first!"
+            }
+          />
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {projects.map((p) => (

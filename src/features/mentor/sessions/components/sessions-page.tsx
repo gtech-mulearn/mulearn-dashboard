@@ -22,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StateDisplay } from "@/components/ui/state-display";
 import {
   Table,
   TableBody,
@@ -330,12 +331,7 @@ function SessionTable({
   }
 
   if (!sessions || sessions.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[200px] gap-2 text-muted-foreground">
-        <Users className="w-8 h-8" />
-        <p className="text-sm">No sessions found.</p>
-      </div>
-    );
+    return <StateDisplay variant="no-results" size="sm" className="min-h-50" />;
   }
 
   return (

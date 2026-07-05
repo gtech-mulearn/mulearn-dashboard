@@ -8,6 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
+import { StateDisplay } from "@/components/ui/state-display";
 import { useInfiniteScroll, useSearchCampuses } from "../hooks";
 import { CampusSearchCard } from "./CampusSearchCard";
 import { SearchInput } from "./SearchInput";
@@ -89,9 +90,7 @@ export function CampusesSearchClient() {
           </p>
         </div>
       ) : campuses.length === 0 && !isLoading ? (
-        <div className="text-center py-16">
-          <p className="text-muted-foreground text-lg">No campuses found</p>
-        </div>
+        <StateDisplay variant="no-results" />
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

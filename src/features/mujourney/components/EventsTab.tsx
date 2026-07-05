@@ -8,10 +8,11 @@
  * Shows event-based tasks — pre-filtered to is_event_task=true
  */
 
-import { BookOpen, Calendar, Search, X } from "lucide-react";
+import { Calendar, Search, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { StateDisplay } from "@/components/ui/state-display";
 import { LevelCard } from "@/features/mujourney/components/LevelCard";
 import type { UserLevelData } from "@/features/mujourney/schemas";
 import { usePublicTasks } from "@/features/tasks/hooks";
@@ -135,29 +136,19 @@ export function EventsTab() {
           </div>
         </div>
       ) : groupedLevels.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-muted">
-            <BookOpen className="size-7 text-muted-foreground" />
-          </div>
-          <h3 className="text-base font-semibold text-foreground">
-            No event tasks found
-          </h3>
-          <p className="mt-1 text-sm text-muted-foreground max-w-xs">
-            {searchInput
-              ? `No event tasks match "${searchInput}". Try a different keyword.`
-              : "No event tasks are available right now."}
-          </p>
-          {searchInput && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={clearSearch}
-              className="mt-4"
-            >
-              Clear search
-            </Button>
-          )}
-        </div>
+        searchInput ? (
+          <StateDisplay
+            variant="no-results"
+            description={`No event tasks match "${searchInput}". Try a different path and keep exploring.`}
+            action={
+              <Button variant="outline" size="sm" onClick={clearSearch}>
+                Clear search
+              </Button>
+            }
+          />
+        ) : (
+          <StateDisplay variant="no-tasks" />
+        )
       ) : (
         <div className="space-y-10">
           {groupedLevels.map((level) => (

@@ -9,6 +9,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { StateDisplay } from "@/components/ui/state-display";
 import type { GetUserLevelsResponse, Task, UserLevelData } from "../schemas";
 import { LevelCard } from "./LevelCard";
 
@@ -80,11 +81,7 @@ export function StartLearningTab({
   }
 
   if (!data?.response) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <p className="text-muted-foreground">No levels available</p>
-      </div>
-    );
+    return <StateDisplay variant="no-tasks" />;
   }
 
   return (
@@ -99,11 +96,12 @@ export function StartLearningTab({
         return <LevelCard key={uniqueKey} level={level} isLocked={false} />;
       })}
 
-      {foundationLevels.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">No foundation tasks available</p>
-        </div>
-      )}
+      {foundationLevels.length === 0 &&
+        (filter === "completed" || filter === "incomplete" ? (
+          <StateDisplay variant="no-results" />
+        ) : (
+          <StateDisplay variant="no-tasks" />
+        ))}
     </div>
   );
 }
