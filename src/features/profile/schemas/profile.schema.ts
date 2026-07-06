@@ -31,6 +31,7 @@ export const InterestGroupSchema = z.object({
       count: z.number(),
     })
     .default({ unit: "level", count: 1 }),
+  selected: z.boolean().optional(),
 });
 export type InterestGroup = z.infer<typeof InterestGroupSchema>;
 
@@ -101,7 +102,9 @@ export const UserProfileSchema = z.object({
     .optional(),
   is_verified: z.boolean().optional(),
   lead_enabler_verified: z.boolean().optional(),
-  interest_groups: z.array(InterestGroupSchema),
+  interest_groups: z
+    .array(InterestGroupSchema)
+    .transform((igs) => igs.filter((ig) => ig.selected !== false)),
   karma_distribution: z.array(KarmaDistributionSchema),
 });
 export type UserProfile = z.infer<typeof UserProfileSchema>;
@@ -109,6 +112,19 @@ export type UserProfile = z.infer<typeof UserProfileSchema>;
 /** Wrapped response for API validation */
 export const UserProfileResponseSchema = ApiResponseSchema(UserProfileSchema);
 export type UserProfileResponse = z.infer<typeof UserProfileResponseSchema>;
+
+export const DistrictLocationSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  state: z.object({
+    id: z.string(),
+    name: z.string(),
+    country: z.object({
+      id: z.string(),
+      name: z.string(),
+    }),
+  }),
+});
 
 /** GET /api/v1/dashboard/profile/ - edit profile prefill */
 export const EditableProfileSchema = z
@@ -118,8 +134,18 @@ export const EditableProfileSchema = z
     mobile: z.string().nullable().optional().default(""),
     gender: z.string().nullable().optional().default(""),
     dob: z.string().nullable().optional().default(""),
+    district: DistrictLocationSchema.nullable().optional(),
     communities: z.array(z.string()).nullable().optional(),
     community: z.array(z.string()).nullable().optional(),
+    department: z
+      .object({
+        id: z.string().nullable().optional(),
+        title: z.string().nullable().optional(),
+        name: z.string().nullable().optional(),
+      })
+      .passthrough()
+      .nullable()
+      .optional(),
   })
   .transform((data) => ({
     full_name: data.full_name ?? "",
@@ -127,7 +153,9 @@ export const EditableProfileSchema = z
     mobile: data.mobile ?? "",
     gender: data.gender ?? "",
     dob: data.dob ?? "",
+    district: data.district ?? null,
     communities: data.communities ?? data.community ?? [],
+    department: data.department ?? null,
   }));
 export type EditableProfile = z.infer<typeof EditableProfileSchema>;
 
@@ -256,13 +284,12 @@ export type UserPreferencesResponseType = z.infer<
 // ============================================
 
 export const UpdateProfileRequestSchema = z.object({
-  first_name: z.string().optional(),
-  last_name: z.string().optional(),
   full_name: z.string().optional(),
   email: z.string().optional(),
   mobile: z.string().optional(),
   gender: z.string().optional(),
   dob: z.string().optional(),
+  district_id: z.string().nullable().optional(),
   communities: z.array(z.string()).optional(),
 });
 export type UpdateProfileRequest = z.infer<typeof UpdateProfileRequestSchema>;

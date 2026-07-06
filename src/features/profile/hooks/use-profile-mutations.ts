@@ -212,7 +212,9 @@ export function useDeleteCoverPic() {
 }
 
 /** Update profile fields */
-export function useUpdateProfile() {
+export function useUpdateProfile(
+  options: { suppressErrorToast?: boolean } = {},
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -227,9 +229,11 @@ export function useUpdateProfile() {
       toast.success("Profile updated");
     },
     onError: (error) => {
-      toast.error(
-        getApiResponseError(error, { fallback: "Failed to update profile" }),
-      );
+      if (!options.suppressErrorToast) {
+        toast.error(
+          getApiResponseError(error, { fallback: "Failed to update profile" }),
+        );
+      }
     },
   });
 }
