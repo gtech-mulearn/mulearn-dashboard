@@ -106,6 +106,9 @@ export function useSwitchMentorPersona() {
       queryClient.invalidateQueries({
         queryKey: [...homeKeys.all, "mentor"],
       });
+      queryClient.invalidateQueries({
+        queryKey: [...homeKeys.all, "dashboard-calendar"],
+      });
     },
     onError: (error) => {
       toast.error(
