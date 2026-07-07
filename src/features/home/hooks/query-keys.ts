@@ -4,8 +4,9 @@ export const homeKeys = {
   interestGroups: () => [...homeKeys.all, "interest-groups"] as const,
   karmaFeed: () => [...homeKeys.all, "karma-feed"] as const,
   events: () => [...homeKeys.all, "events"] as const,
+  dashboardCalendarAll: () => [...homeKeys.all, "dashboard-calendar"] as const,
   dashboardCalendar: <T extends object>(params: T) =>
-    [...homeKeys.all, "dashboard-calendar", params] as const,
+    [...homeKeys.dashboardCalendarAll(), params] as const,
   topPerformers: () => [...homeKeys.all, "top-performers"] as const,
 
   mentorOverview: () => [...homeKeys.all, "mentor", "overview"] as const,
