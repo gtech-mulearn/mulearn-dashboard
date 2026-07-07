@@ -1,6 +1,5 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
-import { OrgListResponseSchema } from "@/features/organizations/schemas";
 import {
   CampusCircleHealthResponseSchema,
   CampusHomeSummaryResponseSchema,
@@ -173,19 +172,6 @@ export async function getCompanyHomeSummary(params?: {
     skipAuthRedirectOn403: true,
   });
   return response.response;
-}
-
-// ============================================
-// Company Org ID (from Organisation table)
-// ============================================
-
-export async function getCompanyOrgId(
-  companyName: string,
-): Promise<string | null> {
-  const url = `${endpoints.organizations.listByType("company")}?search=${encodeURIComponent(companyName)}&perPage=1&pageIndex=1`;
-  const response = await apiClient.get(url, OrgListResponseSchema);
-  const match = response.response.data[0];
-  return match?.id ?? null;
 }
 
 // Learner endpoints require auth — 403 intentionally triggers global redirect

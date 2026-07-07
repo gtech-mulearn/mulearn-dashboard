@@ -4,4 +4,4 @@
  * 📍 src/features/home/utils/index.ts
  */
 
-export { flattenEventBuckets, flattenSessionBuckets } from "./calendar";
+export { flattenDashboardCalendar } from "./calendar";

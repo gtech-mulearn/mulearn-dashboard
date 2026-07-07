@@ -578,29 +578,12 @@ export const endpoints = {
 
   // ============================================
   // Calendar Endpoints
-  // Base: /api/v1/calendar/
-  // All endpoints are public (no auth required)
+  // Base: /api/v1/dashboard/calendar/
+  // Role/scope auto-detected from JWT; public data if unauthenticated
   // ============================================
   calendar: {
-    /** GET - Company session calendar by org UUID (public) — query: month (YYYY-MM), status */
-    companySessions: (companyOrgId: string) =>
-      `/api/v1/calendar/company/${companyOrgId}/sessions/`,
-    /** GET - IG Mentor session calendar by IG UUID (public) — query: month (YYYY-MM), status */
-    igMentorSessions: (igId: string) =>
-      `/api/v1/calendar/ig-mentor/${igId}/sessions/`,
-    /** GET - Campus Mentor session calendar by campus UUID (public) — query: month (YYYY-MM), status */
-    campusMentorSessions: (campusId: string) =>
-      `/api/v1/calendar/campus-mentor/${campusId}/sessions/`,
-    /** GET - Global event calendar (public) — query: month (YYYY-MM), scope, status */
-    events: "/api/v1/calendar/events/",
-    /** GET - IG event calendar (public) — query: month (YYYY-MM), status */
-    igEvents: (igId: string) => `/api/v1/calendar/ig/${igId}/events/`,
-    /** GET - Campus event calendar (public) — query: month (YYYY-MM), status */
-    campusEvents: (campusId: string) =>
-      `/api/v1/calendar/campus/${campusId}/events/`,
-    /** GET - Company event calendar (public) — query: month (YYYY-MM), status */
-    companyEvents: (companyId: string) =>
-      `/api/v1/calendar/company/${companyId}/events/`,
+    /** GET - Unified dashboard calendar (events + sessions), role-scoped via JWT — query: month|year OR start_date+end_date, status */
+    dashboard: "/api/v1/dashboard/calendar/events/",
   },
 
   // ============================================

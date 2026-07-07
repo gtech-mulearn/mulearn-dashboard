@@ -574,44 +574,15 @@ export const CampusHomeSummaryResponseSchema = ApiResponseSchema(
 );
 
 // ============================================
-// Session Calendar (/api/v1/calendar/*)
+// Dashboard Calendar (/api/v1/dashboard/calendar/events/)
+// Unified events + mentorship sessions, role/scope auto-detected from JWT.
 // ============================================
 
-/** Single session item in a calendar bucket */
-export const CalendarSessionItemSchema = z.object({
+/** Single event item in a dashboard calendar bucket */
+export const DashboardCalendarEventItemSchema = z.object({
   id: z.string(),
   title: z.string(),
-  description: z.string().nullable().optional(),
-  mode: z.string().nullable().optional(),
-  starts_at: z.string(),
-  ends_at: z.string(),
-  status: z
-    .enum(["SCHEDULED", "COMPLETED", "CANCELLED", "PENDING_APPROVAL"])
-    .or(z.string()),
-  meeting_link: z.string().nullable().optional(),
-  venue: z.string().nullable().optional(),
-  mentor_name: z.string().nullable().optional(),
-  mentee_count: z.coerce.number().default(0),
-});
-export type CalendarSessionItem = z.infer<typeof CalendarSessionItemSchema>;
-
-/** Calendar response grouped into upcoming / ongoing / completed */
-export const CalendarBucketResponseSchema = ApiResponseSchema(
-  z.object({
-    upcoming: z.array(CalendarSessionItemSchema).default([]),
-    ongoing: z.array(CalendarSessionItemSchema).default([]),
-    completed: z.array(CalendarSessionItemSchema).default([]),
-  }),
-);
-export type CalendarBuckets = z.infer<
-  typeof CalendarBucketResponseSchema
->["response"];
-
-/** Single event item in a calendar bucket */
-export const CalendarEventItemSchema = z.object({
-  id: z.string(),
-  title: z.string(),
-  slug: z.string(),
+  slug: z.string().optional(),
   status: z.string(),
   start: z.string(),
   end: z.string(),
@@ -620,34 +591,53 @@ export const CalendarEventItemSchema = z.object({
   category_name: z.string().nullable().optional(),
   is_featured: z.boolean().optional(),
 });
-export type CalendarEventItem = z.infer<typeof CalendarEventItemSchema>;
+export type DashboardCalendarEventItem = z.infer<
+  typeof DashboardCalendarEventItemSchema
+>;
 
-/** Event calendar response grouped into upcoming / ongoing / completed */
-export const CalendarEventBucketResponseSchema = ApiResponseSchema(
-  z.object({
-    upcoming: z.array(CalendarEventItemSchema).default([]),
-    ongoing: z.array(CalendarEventItemSchema).default([]),
-    completed: z.array(CalendarEventItemSchema).default([]),
-  }),
-);
-export type CalendarEventBuckets = z.infer<
-  typeof CalendarEventBucketResponseSchema
->["response"];
+/** Single mentorship session item in a dashboard calendar bucket */
+export const DashboardCalendarSessionItemSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string().nullable().optional().default(""),
+  starts_at: z.string(),
+  ends_at: z.string(),
+  status: z.string(),
+  meeting_link: z.string().nullable().optional(),
+});
+export type DashboardCalendarSessionItem = z.infer<
+  typeof DashboardCalendarSessionItemSchema
+>;
 
-/** Query params for session calendar endpoints */
-export interface CalendarParams {
-  /** Filter by month: YYYY-MM (e.g. "2026-06") */
-  month?: string;
-  /** Filter by session status */
-  status?: "SCHEDULED" | "COMPLETED" | "CANCELLED";
+function calendarBucketOf<T extends z.ZodTypeAny>(item: T) {
+  return z.object({
+    upcoming: z.array(item).default([]),
+    ongoing: z.array(item).default([]),
+    completed: z.array(item).default([]),
+  });
 }
 
-/** Query params for event calendar endpoints */
-export interface CalendarEventParams {
-  /** Filter by month: YYYY-MM (e.g. "2026-06") */
+/** Unified dashboard calendar response: events + sessions, each bucketed */
+export const DashboardCalendarResponseSchema = ApiResponseSchema(
+  z.object({
+    events: calendarBucketOf(DashboardCalendarEventItemSchema),
+    sessions: calendarBucketOf(DashboardCalendarSessionItemSchema),
+  }),
+);
+export type DashboardCalendarBuckets = z.infer<
+  typeof DashboardCalendarResponseSchema
+>["response"];
+
+/** Query params for the unified dashboard calendar endpoint */
+export interface DashboardCalendarParams {
+  /** Month name/abbreviation, e.g. "June" or "jun" */
   month?: string;
-  /** Filter by scope (global endpoint only) */
-  scope?: "ig" | "campus" | "global" | "company";
-  /** Filter by status */
-  status?: "ongoing" | "upcoming" | "completed";
+  /** Defaults to current year if omitted */
+  year?: number;
+  /** YYYY-MM-DD — required if `month` omitted. Max 93-day window with end_date */
+  start_date?: string;
+  /** YYYY-MM-DD — required if `month` omitted */
+  end_date?: string;
+  /** Filter to a single bucket */
+  status?: "upcoming" | "ongoing" | "completed";
 }

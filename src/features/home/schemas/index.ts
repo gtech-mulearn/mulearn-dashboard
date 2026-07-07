@@ -5,13 +5,7 @@
  */
 
 export type {
-  CalendarBuckets,
   CalendarEvent,
-  CalendarEventBuckets,
-  CalendarEventItem,
-  CalendarEventParams,
-  CalendarParams,
-  CalendarSessionItem,
   CampusCircleHealthItem,
   CampusFunnelStage,
   CampusHomeSummaryData,
@@ -22,6 +16,10 @@ export type {
   CompanyQuickStats,
   CompanyStatCard,
   CompanyTalentPool,
+  DashboardCalendarBuckets,
+  DashboardCalendarEventItem,
+  DashboardCalendarParams,
+  DashboardCalendarSessionItem,
   Event,
   EventRow,
   Events,
@@ -51,11 +49,7 @@ export type {
 } from "./home.schema";
 export {
   ApiResponseSchema,
-  CalendarBucketResponseSchema,
-  CalendarEventBucketResponseSchema,
-  CalendarEventItemSchema,
   CalendarEventSchema,
-  CalendarSessionItemSchema,
   CampusActivityActorSchema,
   CampusCircleHealthItemSchema,
   CampusCircleHealthResponseSchema,
@@ -72,6 +66,9 @@ export {
   CompanyQuickStatsSchema,
   CompanyStatCardSchema,
   CompanyTalentPoolSchema,
+  DashboardCalendarEventItemSchema,
+  DashboardCalendarResponseSchema,
+  DashboardCalendarSessionItemSchema,
   EventRowSchema,
   EventSchema,
   EventsSchema,

@@ -106,11 +106,13 @@ function CalendarSkeleton() {
 type EventCalendarCardProps = {
   events?: CalendarEvent[];
   isLoading?: boolean;
+  onMonthChange?: (month: Date) => void;
 };
 
 export function EventCalendarCard({
   events: propEvents,
   isLoading: propIsLoading,
+  onMonthChange,
 }: EventCalendarCardProps) {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
@@ -131,6 +133,7 @@ export function EventCalendarCard({
   const eventsByDate = useMemo(() => {
     const map = new Map<string, CalendarEvent[]>();
     for (const event of events) {
+      if (!event.date) continue;
       const key = event.date.slice(0, 10);
       const existing = map.get(key) ?? [];
       existing.push(event);
@@ -145,14 +148,16 @@ export function EventCalendarCard({
     return eventsByDate.get(key) ?? [];
   }, [selectedDate, eventsByDate]);
 
-  const goToPrevMonth = useCallback(
-    () => setCurrentMonth((m) => subMonths(m, 1)),
-    [],
-  );
-  const goToNextMonth = useCallback(
-    () => setCurrentMonth((m) => addMonths(m, 1)),
-    [],
-  );
+  const goToPrevMonth = useCallback(() => {
+    const next = subMonths(currentMonth, 1);
+    setCurrentMonth(next);
+    onMonthChange?.(next);
+  }, [currentMonth, onMonthChange]);
+  const goToNextMonth = useCallback(() => {
+    const next = addMonths(currentMonth, 1);
+    setCurrentMonth(next);
+    onMonthChange?.(next);
+  }, [currentMonth, onMonthChange]);
 
   if (isLoading) return <CalendarSkeleton />;
 

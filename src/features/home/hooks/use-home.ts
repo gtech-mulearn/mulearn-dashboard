@@ -3,19 +3,12 @@ import { toast } from "sonner";
 import { fetchStudentLeaderboard } from "@/features/leaderboard/api/leaderboard.api";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
-  fetchCampusEventCalendar,
-  fetchCampusMentorSessionCalendar,
-  fetchCompanyEventCalendar,
-  fetchCompanySessionCalendar,
-  fetchGlobalEventCalendar,
-  fetchIgEventCalendar,
-  fetchIgMentorSessionCalendar,
+  fetchDashboardCalendar,
   getCampusCircleHealth,
   getCampusHomeSummary,
   getCampusMemberFunnel,
   getCampusRecentActivity,
   getCompanyHomeSummary,
-  getCompanyOrgId,
   getInterestGroupsList,
   getKarmaFeed,
   getLearnerHomeSummary,
@@ -27,6 +20,7 @@ import {
   getPublicJobsCount,
   switchMentorPersona,
 } from "../api";
+import type { DashboardCalendarParams } from "../schemas";
 import { homeKeys } from "./query-keys";
 
 const HOME_STALE_TIME = 5 * 60 * 1000;
@@ -47,74 +41,11 @@ export function useKarmaFeed() {
   });
 }
 
-export function useGlobalCalendarEvents() {
+export function useDashboardCalendar(params: DashboardCalendarParams) {
   return useQuery({
-    queryKey: homeKeys.globalCalendarEvents(),
-    queryFn: () => fetchGlobalEventCalendar(),
+    queryKey: homeKeys.dashboardCalendar(params),
+    queryFn: () => fetchDashboardCalendar(params),
     staleTime: HOME_STALE_TIME,
-  });
-}
-
-export function useCompanyCalendarEvents(companyId: string | undefined) {
-  return useQuery({
-    queryKey: homeKeys.companyCalendarEvents(companyId ?? ""),
-    queryFn: () => fetchCompanyEventCalendar(companyId!),
-    staleTime: HOME_STALE_TIME,
-    enabled: !!companyId,
-  });
-}
-
-export function useCampusCalendarEvents(campusId: string | undefined) {
-  return useQuery({
-    queryKey: homeKeys.campusCalendarEvents(campusId ?? ""),
-    queryFn: () => fetchCampusEventCalendar(campusId!),
-    staleTime: HOME_STALE_TIME,
-    enabled: !!campusId,
-  });
-}
-
-export function useIgCalendarEvents(igId: string | undefined) {
-  return useQuery({
-    queryKey: homeKeys.igCalendarEvents(igId ?? ""),
-    queryFn: () => fetchIgEventCalendar(igId!),
-    staleTime: HOME_STALE_TIME,
-    enabled: !!igId,
-  });
-}
-
-export function useCompanySessionCalendar(companyOrgId: string | undefined) {
-  return useQuery({
-    queryKey: homeKeys.companySessionCalendar(companyOrgId ?? ""),
-    queryFn: () => fetchCompanySessionCalendar(companyOrgId!),
-    staleTime: HOME_STALE_TIME,
-    enabled: !!companyOrgId,
-  });
-}
-
-export function useIgMentorSessionCalendar(igId: string | undefined) {
-  return useQuery({
-    queryKey: homeKeys.igMentorSessionCalendar(igId ?? ""),
-    queryFn: () => fetchIgMentorSessionCalendar(igId!),
-    staleTime: HOME_STALE_TIME,
-    enabled: !!igId,
-  });
-}
-
-export function useCampusMentorSessionCalendar(campusId: string | undefined) {
-  return useQuery({
-    queryKey: homeKeys.campusMentorSessionCalendar(campusId ?? ""),
-    queryFn: () => fetchCampusMentorSessionCalendar(campusId!),
-    staleTime: HOME_STALE_TIME,
-    enabled: !!campusId,
-  });
-}
-
-export function useCompanyOrgId(companyName: string | undefined) {
-  return useQuery({
-    queryKey: homeKeys.companyOrgId(companyName ?? ""),
-    queryFn: () => getCompanyOrgId(companyName!),
-    staleTime: 30 * 60 * 1000,
-    enabled: !!companyName,
   });
 }
 

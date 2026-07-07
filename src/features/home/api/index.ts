@@ -1,12 +1,4 @@
-export {
-  fetchCampusEventCalendar,
-  fetchCampusMentorSessionCalendar,
-  fetchCompanyEventCalendar,
-  fetchCompanySessionCalendar,
-  fetchGlobalEventCalendar,
-  fetchIgEventCalendar,
-  fetchIgMentorSessionCalendar,
-} from "./calendar.api";
+export { fetchDashboardCalendar } from "./calendar.api";
 export {
   acceptSessionRequest,
   declineSessionRequest,
@@ -15,7 +7,6 @@ export {
   getCampusMemberFunnel,
   getCampusRecentActivity,
   getCompanyHomeSummary,
-  getCompanyOrgId,
   getInterestGroupsList,
   getKarmaFeed,
   getLearnerHomeSummary,
