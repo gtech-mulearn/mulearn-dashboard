@@ -64,9 +64,13 @@ export function StepLegal() {
           </p>
           <Input
             {...register("verification_document_url")}
-            className="rounded-xl border-border bg-background"
+            disabled
+            className="rounded-xl border-border bg-background/50 text-muted-foreground"
             placeholder="https://docs.example.com/certificate.pdf"
           />
+          <p className="text-xs text-muted-foreground">
+            Document URL (cannot be changed)
+          </p>
         </div>
       </div>
     </div>

@@ -1,6 +1,15 @@
 "use client";
 
-import { Copy, Pencil, Plus, Star, Trash, Users } from "lucide-react";
+import {
+  Copy,
+  MapPin,
+  Pencil,
+  Plus,
+  Star,
+  Trash,
+  Users,
+  Video,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StateDisplay } from "@/components/ui/state-display";
 import {
   Table,
   TableBody,
@@ -39,6 +49,7 @@ import type { Session } from "../schemas";
 import { ApproveSessionDialog } from "./approve-session-dialog";
 import { IncomingRequestsList } from "./incoming-requests-list";
 import { KarmaAwardDialog } from "./karma-award-dialog";
+import { getSessionAccess } from "./session-access";
 import { SessionCreateDialog } from "./session-create-dialog";
 import { SessionEditSheet } from "./session-edit-sheet";
 import { SessionParticipantsDialog } from "./session-participants-dialog";
@@ -76,6 +87,11 @@ function SessionRow({
   onDelete: (id: string) => void;
 }) {
   const status = session.status || "PENDING_APPROVAL";
+  const { meetingUrl, mapUrl } = getSessionAccess(
+    session.mode,
+    session.meeting_link,
+    session.venue,
+  );
 
   return (
     <TableRow>
@@ -130,6 +146,44 @@ function SessionRow({
       </TableCell>
       <TableCell className="text-right">
         <div className="flex items-center justify-end gap-1">
+          {meetingUrl && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-primary hover:text-primary"
+                  aria-label="Join meeting"
+                  onClick={() =>
+                    window.open(meetingUrl, "_blank", "noopener,noreferrer")
+                  }
+                >
+                  <Video className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Join meeting</TooltipContent>
+            </Tooltip>
+          )}
+
+          {mapUrl && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-primary hover:text-primary"
+                  aria-label="View location on map"
+                  onClick={() =>
+                    window.open(mapUrl, "_blank", "noopener,noreferrer")
+                  }
+                >
+                  <MapPin className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>View location</TooltipContent>
+            </Tooltip>
+          )}
+
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -277,12 +331,7 @@ function SessionTable({
   }
 
   if (!sessions || sessions.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[200px] gap-2 text-muted-foreground">
-        <Users className="w-8 h-8" />
-        <p className="text-sm">No sessions found.</p>
-      </div>
-    );
+    return <StateDisplay variant="no-results" size="sm" className="min-h-50" />;
   }
 
   return (

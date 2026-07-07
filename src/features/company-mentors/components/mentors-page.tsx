@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StateDisplay } from "@/components/ui/state-display";
 import { useCompanyMentorNominations } from "@/features/company-jobs/hooks/use-mentor-nominate";
 import { NominateMentorModal } from "./nominate-mentor-modal";
 
@@ -70,14 +71,12 @@ export function MentorsPage() {
       </div>
 
       {mentorsList.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed p-12 text-center">
-          <h3 className="text-lg font-semibold text-muted-foreground">
-            No mentors nominated yet.
-          </h3>
-          <p className="text-sm text-muted-foreground mt-2">
-            Click "Nominate Mentor" to suggest a user from your organization.
-          </p>
-        </div>
+        <StateDisplay
+          variant="no-results"
+          className="rounded-2xl border border-dashed"
+          title="No mentors nominated yet"
+          description='Click "Nominate Mentor" to suggest a user from your organization.'
+        />
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {mentorsList.map((mentor) => (

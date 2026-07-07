@@ -295,9 +295,12 @@ export function RequestSessionDialog({
                 name="venue"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Venue</FormLabel>
+                    <FormLabel>Location (Google Maps link)</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. Library Room 1" {...field} />
+                      <Input
+                        placeholder="https://maps.google.com/... or an address"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

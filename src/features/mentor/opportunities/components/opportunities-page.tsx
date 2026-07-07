@@ -1,11 +1,12 @@
 "use client";
 
-import { Pencil, Plus, Trash2, Users } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StateDisplay } from "@/components/ui/state-display";
 import {
   Table,
   TableBody,
@@ -60,12 +61,7 @@ function OpportunityTable({
   }
 
   if (!items || items.length === 0) {
-    return (
-      <div className="flex min-h-[200px] flex-col items-center justify-center gap-2 text-muted-foreground">
-        <Users className="h-8 w-8" />
-        <p className="text-sm">No opportunities found.</p>
-      </div>
-    );
+    return <StateDisplay variant="no-results" size="sm" className="min-h-50" />;
   }
 
   return (

@@ -1,5 +1,6 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
+import { localInputToUtcIso } from "@/lib/datetime";
 import type {
   MentorVerifyRequestValues,
   StudentSessionRequest,
@@ -22,11 +23,9 @@ interface ListParams {
 }
 
 // ─── Helper: map frontend form → backend payload ─────────────────────────────
-function toISO(value: string | undefined): string | undefined {
-  if (!value) return undefined;
-  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) return `${value}:00`;
-  return value;
-}
+// Convert the picker's LOCAL wall-clock ("YYYY-MM-DDTHH:mm") to a UTC ISO
+// instant so requested times are stored correctly (see @/lib/datetime).
+const toISO = localInputToUtcIso;
 
 function toBackendPayload(data: Partial<StudentSessionRequestFormValues>) {
   const { starts_at, ends_at, meeting_link, description, venue, ...rest } =

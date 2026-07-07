@@ -8,8 +8,8 @@
 
 "use client";
 
-import { Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
+import { StateDisplay } from "@/components/ui/state-display";
 import { SearchInput } from "@/features/search/components/SearchInput";
 import type { InterestGroup } from "../schemas/interest-groups.schema";
 import { InterestGroupCard } from "./interest-group-card";
@@ -66,19 +66,13 @@ export function InterestGroupsGrid({
       )}
 
       {!isLoading && filteredGroups.length === 0 && (
-        <div className="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-border bg-muted/30 py-12 sm:py-20 px-4">
-          <div className="rounded-full bg-muted p-3 sm:p-4">
-            <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground" />
-          </div>
-          <h3 className="mt-4 text-lg font-semibold text-foreground">
-            No interest groups found
-          </h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {searchQuery
-              ? "Try adjusting your search"
-              : "Check back later for new groups"}
-          </p>
-        </div>
+        <StateDisplay
+          variant="no-results"
+          className="rounded-3xl border-2 border-dashed border-border bg-muted/30"
+          description={
+            searchQuery ? undefined : "Check back later for new groups"
+          }
+        />
       )}
 
       {!isLoading && filteredGroups.length > 0 && (

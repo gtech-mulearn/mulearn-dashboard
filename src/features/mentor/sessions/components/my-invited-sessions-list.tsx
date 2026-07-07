@@ -1,12 +1,17 @@
 "use client";
 
-import { CalendarClock, ExternalLink, MapPin, Video } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { CalendarClock, MapPin, Video } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { chipColor } from "@/lib/chip-colors";
 import { cn } from "@/lib/utils";
 import { useParticipantHistory } from "../hooks/use-sessions";
 import type { SessionParticipant } from "../schemas";
+import {
+  getSessionAccess,
+  SessionAccessButtons,
+  venueDisplay,
+} from "./session-access";
 
 const STATUS_STYLES: Record<string, string> = {
   SCHEDULED: "bg-success/15 text-success",
@@ -47,19 +52,28 @@ function InviteCard({ participant }: { participant: SessionParticipant }) {
   const mode = (participant.session_mode ?? "").toUpperCase();
   const isOnline = mode === "ONLINE" || mode === "HYBRID";
   const isOffline = mode === "OFFLINE" || mode === "HYBRID";
-  const link = participant.session_meeting_link?.trim();
-  const canJoinMeeting = status === "SCHEDULED" && !!link;
+  const { meetingUrl, mapUrl } = getSessionAccess(
+    participant.session_mode,
+    participant.session_meeting_link,
+    participant.session_venue,
+  );
+  const hasAccess = !!(meetingUrl || mapUrl);
 
   return (
     <Card className="flex h-full flex-col rounded-2xl border bg-card shadow-sm">
       <CardContent className="flex flex-1 flex-col gap-3 p-4">
         <div className="space-y-1.5">
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-col  items-start gap-2">
             <p className="font-semibold text-foreground">
               {participant.session_title ?? "Session"}
             </p>
             {participant.session_entity_name && (
-              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary ring-1 ring-primary/20">
+              <span
+                className={cn(
+                  "rounded-full px-2 py-0.5 text-[11px] font-medium",
+                  chipColor(participant.session_entity_name),
+                )}
+              >
                 {participant.session_entity_name}
               </span>
             )}
@@ -98,30 +112,26 @@ function InviteCard({ participant }: { participant: SessionParticipant }) {
                 Online
               </span>
             )}
-            {isOffline && participant.session_venue && (
+            {isOffline && venueDisplay(participant.session_venue) && (
               <span className="flex items-center gap-1">
                 <MapPin className="size-3.5" />
-                {participant.session_venue}
+                {venueDisplay(participant.session_venue)}
               </span>
             )}
           </div>
         </div>
 
         <div className="mt-auto pt-1">
-          {canJoinMeeting ? (
-            <Button
-              type="button"
-              size="sm"
-              className="w-full"
-              onClick={() => window.open(link, "_blank", "noopener,noreferrer")}
-            >
-              <ExternalLink className="mr-1.5 size-4" />
-              Join meeting
-            </Button>
+          {hasAccess ? (
+            <SessionAccessButtons
+              mode={participant.session_mode}
+              meetingLink={participant.session_meeting_link}
+              venue={participant.session_venue}
+            />
           ) : (
             <p className="text-[11px] text-muted-foreground">
               {status === "SCHEDULED"
-                ? "Meeting link will appear here once the host adds it."
+                ? "Meeting details will appear here once the host adds them."
                 : "You'll be able to join once this session is scheduled."}
             </p>
           )}

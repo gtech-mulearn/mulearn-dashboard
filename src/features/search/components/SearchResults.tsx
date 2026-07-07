@@ -1,6 +1,7 @@
 "use client";
 
 import { Spinner } from "@/components/ui/spinner";
+import { StateDisplay } from "@/components/ui/state-display";
 import type { CampusSearchResult, UserSearchResult } from "../schemas";
 import { CampusSearchCard } from "./CampusSearchCard";
 import { UserSearchCard } from "./UserSearchCard";
@@ -52,9 +53,11 @@ export function SearchResults({
 
       {/* Empty state */}
       {data?.length === 0 && searchQuery.length >= 3 && !isLoading && (
-        <p className="text-center text-muted-foreground">
-          No {type === "user" ? "users" : "campuses"} found
-        </p>
+        <StateDisplay
+          variant="no-results"
+          size="sm"
+          description={`No ${type === "user" ? "members" : "campuses"} match "${searchQuery}". Try a different path and keep exploring.`}
+        />
       )}
 
       {/* Results */}

@@ -10,15 +10,14 @@ export async function updateCompanyProfile(
   payload: Partial<ProfileEditFormValues>,
   status?: string,
 ) {
+  // Strip out non-editable fields to prevent API rejection
+  const { slug, verification_document_url, ...allowedPayload } = payload;
+
   if (status === "pending" || status === "rejected") {
     // Strip out undefined/null/empty values to avoid validation errors
     const cleanedPayload = Object.fromEntries(
-      Object.entries(payload).filter(
-        ([key, value]) =>
-          key !== "slug" &&
-          value !== undefined &&
-          value !== null &&
-          value !== "",
+      Object.entries(allowedPayload).filter(
+        ([key, value]) => value !== undefined && value !== null && value !== "",
       ),
     );
     const res = await updateCompanyRegistration(
@@ -34,7 +33,7 @@ export async function updateCompanyProfile(
 
   const res = await apiClient.patch(
     endpoints.company.profile,
-    payload,
+    allowedPayload,
     CompanyProfileResponseSchema,
   );
   return {

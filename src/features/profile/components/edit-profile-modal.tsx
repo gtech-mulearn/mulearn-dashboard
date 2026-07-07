@@ -33,6 +33,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { MultiSelectDropdown } from "@/features/manage-users/components";
 import { useDepartments } from "@/features/settings";
+import { extractDjangoMessage } from "@/api/errors";
 import {
   useCommunities,
   useCountries,
@@ -87,12 +88,12 @@ function normalizeGenderValue(value: string | null | undefined) {
     raw === "prefer_not" ||
     raw === "n/a"
   ) {
-    return "prefer-not-to-say";
+    return "Prefer not to say";
   }
   if (value === "Male" || value === "Female" || value === "Other") {
     return value;
   }
-  if (value === "prefer-not-to-say") {
+  if (value === "Prefer not to say") {
     return value;
   }
   return "";
@@ -144,15 +145,25 @@ export function EditProfileModal({
         label: collegeOrgDisplayName,
       }
     : null;
+  const p = profile as typeof profile & {
+    department_id?: string | null;
+    branch_id?: string | null;
+    branch?: string | { id?: string | null } | null;
+  };
   const currentDepartmentRaw =
-    profile.department_id ||
-    profile.department?.id ||
+    p.department_id ||
+    (typeof p.department === "string" ? p.department : p.department?.id) ||
+    p.branch_id ||
+    (typeof p.branch === "string" ? p.branch : p.branch?.id) ||
+    editableProfile?.department?.id ||
     fallbackDepartmentId ||
     "";
   const currentDepartmentDisplayName =
     profile.department_name ||
     profile.department?.title ||
     profile.department?.name ||
+    editableProfile?.department?.title ||
+    editableProfile?.department?.name ||
     allDepartments.find((department) => department.id === currentDepartmentRaw)
       ?.title ||
     currentDepartmentRaw;
@@ -196,9 +207,10 @@ export function EditProfileModal({
           ? editableProfile.dob.slice(0, 10)
           : "",
       communities: editableProfile?.communities ?? [],
-      country_id: "",
-      state_id: "",
-      district_id: "",
+      country_id: editableProfile?.district?.state?.country?.id || "",
+      state_id: editableProfile?.district?.state?.id || "",
+      district_id:
+        editableProfile?.district?.id || profile.org_district_id || "",
       org_id: profile.college_id || "",
       department_id: currentDepartmentRaw,
       has_college_changes: false,
@@ -275,8 +287,52 @@ export function EditProfileModal({
     try {
       await onSave(normalizedValues, dirtyFields);
       onOpenChange(false);
-    } catch {
-      toast.error("Failed to update profile");
+    } catch (error: unknown) {
+      const err = error as {
+        data?: { response?: unknown; message?: unknown };
+        message?: string;
+      } | null;
+      let hasFieldErrors = false;
+
+      // Handle backend validation errors that come in `error.data.response` or `error.data.message`
+      const backendErrors = err?.data?.response || err?.data?.message;
+
+      if (backendErrors && typeof backendErrors === "object") {
+        for (const [key, messages] of Object.entries(
+          backendErrors as Record<string, unknown>,
+        )) {
+          let errorMessage = "";
+          if (Array.isArray(messages) && messages.length > 0) {
+            errorMessage = Array.from(new Set(messages)).join(" ");
+          } else if (typeof messages === "string") {
+            errorMessage = messages;
+          }
+
+          if (errorMessage) {
+            // Check if the key exists in our form schema
+            const isValidField = Object.keys(form.getValues()).includes(key);
+            if (isValidField) {
+              form.setError(key as keyof EditProfileFormValues, {
+                type: "server",
+                message: errorMessage,
+              });
+              hasFieldErrors = true;
+            }
+          }
+        }
+      }
+
+      if (hasFieldErrors) {
+        toast.error("Please fix the validation errors in the form");
+        return;
+      }
+
+      // If no specific field errors were found or it's a general error, show a toast
+      const generalMessage =
+        extractDjangoMessage(err?.data) ||
+        err?.message ||
+        "Failed to update profile";
+      toast.error(generalMessage);
     }
   };
 
@@ -408,12 +464,12 @@ export function EditProfileModal({
                               <SelectValue placeholder="Select gender" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent>
+                          <SelectContent position="popper">
                             <SelectItem value="__none__">None</SelectItem>
                             <SelectItem value="Male">Male</SelectItem>
                             <SelectItem value="Female">Female</SelectItem>
                             <SelectItem value="Other">Other</SelectItem>
-                            <SelectItem value="prefer-not-to-say">
+                            <SelectItem value="Prefer not to say">
                               Prefer not to say
                             </SelectItem>
                           </SelectContent>
@@ -505,7 +561,7 @@ export function EditProfileModal({
                               <SelectValue placeholder="Select country" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent>
+                          <SelectContent position="popper">
                             <SelectItem value="__none__">None</SelectItem>
                             {countries.map((country) => (
                               <SelectItem
@@ -549,7 +605,7 @@ export function EditProfileModal({
                               <SelectValue placeholder="Select state" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent>
+                          <SelectContent position="popper">
                             <SelectItem value="__none__">None</SelectItem>
                             {states.map((state) => (
                               <SelectItem key={state.value} value={state.value}>
@@ -587,7 +643,7 @@ export function EditProfileModal({
                               <SelectValue placeholder="Select district" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent>
+                          <SelectContent position="popper">
                             <SelectItem value="__none__">None</SelectItem>
                             {districts.map((district) => (
                               <SelectItem
@@ -624,7 +680,7 @@ export function EditProfileModal({
                               <SelectValue placeholder="Select college / school" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent>
+                          <SelectContent position="popper">
                             <SelectItem value="__none__">None</SelectItem>
                             {organizations.map((organization) => (
                               <SelectItem
@@ -661,7 +717,7 @@ export function EditProfileModal({
                               <SelectValue placeholder="Select department" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent>
+                          <SelectContent position="popper">
                             <SelectItem value="__none__">None</SelectItem>
                             {departments.map((department) => (
                               <SelectItem

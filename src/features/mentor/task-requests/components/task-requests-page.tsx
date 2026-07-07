@@ -42,6 +42,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StateDisplay } from "@/components/ui/state-display";
 import {
   Table,
   TableBody,
@@ -577,10 +578,11 @@ function TasksTable({
 
   if (!tasks || tasks.length === 0) {
     return (
-      <div className="flex min-h-[220px] flex-col items-center justify-center gap-2 rounded-lg border border-dashed text-muted-foreground">
-        <CheckCircle2 className="h-8 w-8 opacity-40" />
-        <p className="text-sm">No tasks found.</p>
-      </div>
+      <StateDisplay
+        variant="no-tasks"
+        size="sm"
+        className="rounded-lg border border-dashed"
+      />
     );
   }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { Spinner } from "@/components/ui/spinner";
+import { StateDisplay } from "@/components/ui/state-display";
 import { useInfiniteScroll, useSearchMentors } from "../hooks";
 import { SearchInput } from "./SearchInput";
 import { SearchTabsClient } from "./SearchTabsClient";
@@ -57,9 +58,7 @@ export function MentorsSearchClient() {
           </p>
         </div>
       ) : mentors.length === 0 && !isLoading ? (
-        <div className="text-center py-16">
-          <p className="text-muted-foreground text-lg">No mentors found</p>
-        </div>
+        <StateDisplay variant="no-results" />
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

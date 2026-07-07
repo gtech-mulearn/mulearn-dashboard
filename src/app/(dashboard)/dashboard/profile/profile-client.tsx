@@ -88,7 +88,7 @@ export function ProfilePageClient() {
     profile?.roles.includes(ROLES.MENTOR) &&
     isVerifiedMentor;
 
-  const updateProfileMutation = useUpdateProfile();
+  const updateProfileMutation = useUpdateProfile({ suppressErrorToast: true });
   const { data: editableProfile } = useEditableProfile();
   const changeOrganizationMutation = useEditCollege();
   const updateProfileImageMutation = useUpdateProfileImage();
@@ -129,6 +129,7 @@ export function ProfilePageClient() {
         dirtyFields.mobile ||
         dirtyFields.gender ||
         dirtyFields.dob ||
+        dirtyFields.district_id ||
         dirtyFields.communities,
     );
 
@@ -136,7 +137,6 @@ export function ProfilePageClient() {
       const baseFullName =
         editableProfile?.full_name?.trim() || profile.full_name?.trim() || "";
       const finalFullName = data.full_name?.trim() || baseFullName;
-      const [firstName, ...lastNameParts] = finalFullName.split(" ");
 
       const baseEmail = editableProfile?.email?.trim() || profile.email || "";
       const baseMobile =
@@ -144,16 +144,19 @@ export function ProfilePageClient() {
       const baseGender =
         editableProfile?.gender?.trim() || profile.gender || "";
       const baseDob = editableProfile?.dob?.trim() || profile.dob || "";
+      const baseDistrictId =
+        editableProfile?.district?.id || profile.org_district_id || null;
       const baseCommunities = editableProfile?.communities ?? [];
 
       const profilePayload: UpdateProfileRequest = {
-        first_name: firstName?.trim() || "",
-        last_name: lastNameParts.join(" ").trim(),
         full_name: finalFullName,
         email: data.email?.trim() || baseEmail,
         mobile: data.mobile?.trim() || baseMobile,
         gender: data.gender?.trim() || baseGender,
         dob: data.dob?.trim() || baseDob,
+        district_id: dirtyFields.district_id
+          ? data.district_id || null
+          : baseDistrictId,
         communities: dirtyFields.communities
           ? (data.communities ?? [])
           : baseCommunities,

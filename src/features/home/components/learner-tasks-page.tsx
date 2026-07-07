@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, Search, SlidersHorizontal, X } from "lucide-react";
+import { Search, SlidersHorizontal, X } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { StateDisplay } from "@/components/ui/state-display";
 import { LevelCard } from "@/features/mujourney/components/LevelCard";
 import type { UserLevelData } from "@/features/mujourney/schemas";
 import { usePublicTasks } from "@/features/tasks/hooks";
@@ -258,29 +259,23 @@ export function LearnerTasksPage({ taskSource = "" }: LearnerTasksPageProps) {
           </div>
         </div>
       ) : groupedLevels.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-muted">
-            <BookOpen className="size-7 text-muted-foreground" />
-          </div>
-          <h3 className="text-base font-semibold text-foreground">
-            No tasks found
-          </h3>
-          <p className="mt-1 text-sm text-muted-foreground max-w-xs">
-            {searchInput
-              ? `No tasks match "${searchInput}". Try a different keyword.`
-              : "No tasks are available with the current filters."}
-          </p>
-          {hasActiveFilters && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={clearAllFilters}
-              className="mt-4"
-            >
-              Clear all filters
-            </Button>
-          )}
-        </div>
+        hasActiveFilters ? (
+          <StateDisplay
+            variant="no-results"
+            description={
+              searchInput
+                ? `No tasks match "${searchInput}". Try a different path and keep exploring.`
+                : undefined
+            }
+            action={
+              <Button variant="outline" size="sm" onClick={clearAllFilters}>
+                Clear all filters
+              </Button>
+            }
+          />
+        ) : (
+          <StateDisplay variant="no-tasks" />
+        )
       ) : (
         <div className="space-y-10">
           {groupedLevels.map((level) => (

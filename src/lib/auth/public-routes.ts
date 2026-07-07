@@ -20,9 +20,15 @@ const PUBLIC_DASHBOARD_PREFIXES = [
 ];
 
 export function isPublicDashboardRoute(pathname: string): boolean {
-  // Public profile pages: /dashboard/profile/<slug> (3 segments).
+  // Public profile pages: /profile/<slug> (2 segments).
   // /dashboard/profile (2 segments) stays protected (the user's own profile).
   const parts = pathname.split("/").filter(Boolean);
+
+  if (parts.length === 2 && parts[0] === "profile") {
+    return true;
+  }
+
+  // Legacy fallback for old /dashboard/profile/<slug> route
   if (
     parts.length === 3 &&
     parts[0] === "dashboard" &&

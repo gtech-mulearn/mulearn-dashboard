@@ -28,7 +28,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useTaskIgDropdown } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
 import { useCreateSession } from "../hooks/use-sessions";
@@ -66,7 +65,6 @@ export function SessionCreateDialog({
     } as any,
   });
 
-  const isRecurring = form.watch("is_recurring");
   const mode = form.watch("mode");
 
   useEffect(() => {
@@ -257,9 +255,12 @@ export function SessionCreateDialog({
                   name="venue"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Venue</FormLabel>
+                      <FormLabel>Location (Google Maps link)</FormLabel>
                       <FormControl>
-                        <Input placeholder="Location, e.g., Lab 3" {...field} />
+                        <Input
+                          placeholder="https://maps.google.com/... or an address"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -267,101 +268,9 @@ export function SessionCreateDialog({
                 />
               )}
 
-              <FormField
-                control={form.control as any}
-                name="is_recurring"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-base">
-                        Recurring Session
-                      </FormLabel>
-                      <div className="text-sm text-muted-foreground">
-                        Repeat this session on a schedule.
-                      </div>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              {isRecurring && (
-                <div className="grid grid-cols-2 gap-4 rounded-lg border p-4 bg-muted/20">
-                  <FormField
-                    control={form.control as any}
-                    name="recurrence_type"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Frequency</FormLabel>
-                        <Select
-                          value={field.value}
-                          onValueChange={field.onChange}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select..." />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="DAILY">Daily</SelectItem>
-                            <SelectItem value="WEEKLY">Weekly</SelectItem>
-                            <SelectItem value="MONTHLY">Monthly</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control as any}
-                    name="recurrence_interval"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          Every X{" "}
-                          {form.watch("recurrence_type")?.toLowerCase() ||
-                            "weeks"}
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            min={1}
-                            {...field}
-                            onChange={(e) =>
-                              field.onChange(parseInt(e.target.value, 10) || 1)
-                            }
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control as any}
-                    name="recurrence_end_date"
-                    render={({ field }) => (
-                      <FormItem className="col-span-2">
-                        <FormLabel>End Series On</FormLabel>
-                        <FormControl>
-                          <CustomDateTimePicker
-                            value={field.value}
-                            onChange={field.onChange}
-                            hideTime
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              )}
+              {/* Recurring sessions are temporarily disabled — the recurrence
+                  flow has open bugs. Sessions are created as one-off; the
+                  is_recurring default (false) is still sent in the payload. */}
             </div>
 
             <div className="shrink-0 flex justify-end gap-2 px-6 py-4 border-t border-border">
