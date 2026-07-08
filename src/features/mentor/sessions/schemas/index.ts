@@ -66,7 +66,10 @@ export const SessionSchema = z.object({
   // §4.2 — entity fields present in /session/available/ response
   entity_id: z.string().nullable().optional(),
   entity_name: z.string().nullable().optional(),
-  session_type: z.enum(["ig_session", "company_session"]).nullable().optional(),
+  session_type: z
+    .enum(["ig_session", "campus_session", "company_session"])
+    .nullable()
+    .optional(),
   mode: z.string().nullable().optional(),
   starts_at: z.string().nullable().optional(),
   ends_at: z.string().nullable().optional(),
