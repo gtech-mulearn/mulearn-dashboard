@@ -1,5 +1,6 @@
 "use client";
 
+import { format } from "date-fns";
 import { AlertTriangle, BookOpen, CalendarCheck2, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -25,11 +26,11 @@ import { useTaskIgDropdown } from "@/features/mentor/tasks/hooks/use-mentor-task
 import type { WeeklySchedule } from "@/features/mentor/types";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
-  useIgCalendarEvents,
-  useIgMentorSessionCalendar,
+  useDashboardCalendar,
   useMentorOverview,
   useMentorSessions,
 } from "../hooks";
+import { flattenDashboardCalendar } from "../utils";
 import { EventCalendarCard } from "./event-calendar-card";
 import { MentorHeroCard } from "./mentor/mentor-hero-card";
 import { MentorSetupPrompt } from "./mentor/mentor-setup-prompt";
@@ -76,18 +77,12 @@ export function MentorHome() {
   const { mutate: saveSchedule, isPending: isSaving } =
     useCreateAvailabilitySlots();
   const { data: igRoles } = useTaskIgDropdown();
-  const primaryIgId =
-    overview?.scopes?.[0]?.scope_type === "ig"
-      ? overview.scopes[0].scope_id
-      : undefined;
-  const { data: calendarEvents, isLoading: loadingCalendar } =
-    useIgCalendarEvents(primaryIgId);
-  const { data: sessionEvents, isLoading: loadingSessionCal } =
-    useIgMentorSessionCalendar(primaryIgId);
-  const mergedCalendarEvents = [
-    ...(calendarEvents ?? []),
-    ...(sessionEvents ?? []),
-  ];
+  const [calendarMonth, setCalendarMonth] = useState(new Date());
+  const { data: calendarData, isLoading: loadingCalendar } =
+    useDashboardCalendar({
+      month: format(calendarMonth, "MMMM"),
+      year: calendarMonth.getFullYear(),
+    });
 
   const [localSchedule, setLocalSchedule] = useState<WeeklySchedule>([]);
   const [savedSchedule, setSavedSchedule] = useState<WeeklySchedule>([]);
@@ -305,8 +300,9 @@ export function MentorHome() {
           </CardContent>
         </Card>
         <EventCalendarCard
-          events={mergedCalendarEvents}
-          isLoading={loadingCalendar || loadingSessionCal}
+          events={flattenDashboardCalendar(calendarData)}
+          isLoading={loadingCalendar}
+          onMonthChange={setCalendarMonth}
         />
       </div>
 

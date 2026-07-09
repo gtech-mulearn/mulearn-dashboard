@@ -1,11 +1,14 @@
 "use client";
 
+import { format } from "date-fns";
+import { useState } from "react";
 import { useUserInfo, useUserProfile } from "@/features/auth/hooks/use-session";
 import {
-  useGlobalCalendarEvents,
+  useDashboardCalendar,
   useInterestGroupsList,
   useLearnerHomeSummary,
 } from "../hooks";
+import { flattenDashboardCalendar } from "../utils";
 import { EventCalendarCard } from "./event-calendar-card";
 import { HeroCard } from "./hero-card";
 import { InterestGroupsCard } from "./interest-groups-card";
@@ -19,6 +22,12 @@ export function MuLearnerHome() {
   const { data: interestGroups, isLoading: loadingGroups } =
     useInterestGroupsList();
   const { data: summary } = useLearnerHomeSummary();
+  const [calendarMonth, setCalendarMonth] = useState(new Date());
+  const { data: calendarData, isLoading: loadingCalendar } =
+    useDashboardCalendar({
+      month: format(calendarMonth, "MMMM"),
+      year: calendarMonth.getFullYear(),
+    });
 
   const displayName = userInfo?.full_name?.split(" ")[0] ?? "Learner";
   const groups = interestGroups ?? [];
@@ -59,7 +68,11 @@ export function MuLearnerHome() {
         {/* Right column: Calendar + Top Performers */}
         <div className="self-start lg:sticky lg:top-5 space-y-5">
           <div className="hidden lg:block">
-            <EventCalendarCard />
+            <EventCalendarCard
+              events={flattenDashboardCalendar(calendarData)}
+              isLoading={loadingCalendar}
+              onMonthChange={setCalendarMonth}
+            />
           </div>
           <KarmaEarnersCard />
         </div>

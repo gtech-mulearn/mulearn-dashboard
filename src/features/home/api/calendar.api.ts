@@ -1,243 +1,47 @@
 /**
- * Calendar API
+ * Dashboard Calendar API
  *
- * 📍 src/features/company-jobs/api/calendar.api.ts
+ * 📍 src/features/home/api/calendar.api.ts
  *
- * Session calendar endpoints for Company, IG Mentor, and Campus Mentor views.
- * Base: /api/v1/calendar/
- *
- * All endpoints are PUBLIC (no auth required).
- * Sessions are grouped into upcoming / ongoing / completed buckets.
- * Items use MentorshipSessionCalendarSerializer — include mentor_name and
- * mentee_count, NOT a participants array.
+ * Unified dashboard calendar: GET /api/v1/dashboard/calendar/events/
+ * Returns Events + Mentorship Sessions pre-sorted into upcoming/ongoing/completed
+ * buckets. Role/scope (global, company, IG, campus, mentor) is auto-detected
+ * server-side from the JWT — anonymous callers get public data only.
  */
 
-import { z } from "zod";
-import { publicApiClient } from "@/api/client";
+import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
+import {
+  type DashboardCalendarBuckets,
+  type DashboardCalendarParams,
+  DashboardCalendarResponseSchema,
+} from "../schemas";
 
-// ─── Schemas ──────────────────────────────────────────────────────────────────
+function buildDashboardCalendarUrl(params: DashboardCalendarParams): string {
+  const q = new URLSearchParams();
+  if (params.month) q.set("month", params.month);
+  if (params.year !== undefined) q.set("year", String(params.year));
+  if (params.start_date) q.set("start_date", params.start_date);
+  if (params.end_date) q.set("end_date", params.end_date);
+  if (params.status) q.set("status", params.status);
+  const qs = q.toString();
+  return qs
+    ? `${endpoints.calendar.dashboard}?${qs}`
+    : endpoints.calendar.dashboard;
+}
 
-const DjangoResponse = <T extends z.ZodTypeAny>(dataSchema: T) =>
-  z.object({
-    hasError: z.boolean().optional(),
-    statusCode: z.number().optional(),
-    message: z.unknown().optional(),
-    response: dataSchema,
+/**
+ * GET /api/v1/dashboard/calendar/events/
+ *
+ * Caller must supply either `month` (+ optional `year`) or `start_date` &
+ * `end_date` (max 93-day window). Works with or without an access token.
+ */
+export async function fetchDashboardCalendar(
+  params: DashboardCalendarParams,
+): Promise<DashboardCalendarBuckets> {
+  const url = buildDashboardCalendarUrl(params);
+  const res = await apiClient.get(url, DashboardCalendarResponseSchema, {
+    skipAuthRedirectOn403: true,
   });
-
-/** Single session item in a calendar bucket */
-export const CalendarSessionItemSchema = z.object({
-  id: z.string(),
-  title: z.string(),
-  description: z.string().nullable().optional(),
-  mode: z.string().nullable().optional(),
-  starts_at: z.string(),
-  ends_at: z.string(),
-  status: z
-    .enum(["SCHEDULED", "COMPLETED", "CANCELLED", "PENDING_APPROVAL"])
-    .or(z.string()),
-  meeting_link: z.string().nullable().optional(),
-  venue: z.string().nullable().optional(),
-  mentor_name: z.string().nullable().optional(),
-  mentee_count: z.coerce.number().default(0),
-});
-export type CalendarSessionItem = z.infer<typeof CalendarSessionItemSchema>;
-
-/** Calendar response grouped into upcoming / ongoing / completed */
-export const CalendarBucketResponseSchema = DjangoResponse(
-  z.object({
-    upcoming: z.array(CalendarSessionItemSchema).default([]),
-    ongoing: z.array(CalendarSessionItemSchema).default([]),
-    completed: z.array(CalendarSessionItemSchema).default([]),
-  }),
-);
-export type CalendarBuckets = {
-  upcoming: CalendarSessionItem[];
-  ongoing: CalendarSessionItem[];
-  completed: CalendarSessionItem[];
-};
-
-/** Single event item in a calendar bucket */
-export const CalendarEventItemSchema = z.object({
-  id: z.string(),
-  title: z.string(),
-  slug: z.string(),
-  status: z.string(),
-  start: z.string(),
-  end: z.string(),
-  venue_type: z.string().optional(),
-  organiser_name: z.string().optional(),
-  category_name: z.string().nullable().optional(),
-  is_featured: z.boolean().optional(),
-});
-export type CalendarEventItem = z.infer<typeof CalendarEventItemSchema>;
-
-/** Event calendar response grouped into upcoming / ongoing / completed */
-export const CalendarEventBucketResponseSchema = DjangoResponse(
-  z.object({
-    upcoming: z.array(CalendarEventItemSchema).default([]),
-    ongoing: z.array(CalendarEventItemSchema).default([]),
-    completed: z.array(CalendarEventItemSchema).default([]),
-  }),
-);
-export type CalendarEventBuckets = {
-  upcoming: CalendarEventItem[];
-  ongoing: CalendarEventItem[];
-  completed: CalendarEventItem[];
-};
-
-// ─── Query Params ─────────────────────────────────────────────────────────────
-
-export interface CalendarParams {
-  /** Filter by month: YYYY-MM (e.g. "2026-06") */
-  month?: string;
-  /** Filter by session status */
-  status?: "SCHEDULED" | "COMPLETED" | "CANCELLED";
-}
-
-export interface CalendarEventParams {
-  /** Filter by month: YYYY-MM (e.g. "2026-06") */
-  month?: string;
-  /** Filter by scope (global endpoint only) */
-  scope?: "ig" | "campus" | "global" | "company";
-  /** Filter by status */
-  status?: "ongoing" | "upcoming" | "completed";
-}
-
-function buildCalendarUrl(base: string, params?: CalendarParams): string {
-  const q = new URLSearchParams();
-  if (params?.month) q.set("month", params.month);
-  if (params?.status) q.set("status", params.status);
-  const qs = q.toString();
-  return qs ? `${base}?${qs}` : base;
-}
-
-function buildEventCalendarUrl(
-  base: string,
-  params?: CalendarEventParams,
-): string {
-  const q = new URLSearchParams();
-  if (params?.month) q.set("month", params.month);
-  if (params?.scope) q.set("scope", params.scope);
-  if (params?.status) q.set("status", params.status);
-  const qs = q.toString();
-  return qs ? `${base}?${qs}` : base;
-}
-
-// ─── API Functions ────────────────────────────────────────────────────────────
-
-/**
- * GET /api/v1/calendar/company/<company_org_id>/sessions/
- *
- * Calendar view of all mentorship sessions for a specific company org.
- * company_org_id — UUID of the company's Organisation record (org_type = Company)
- */
-export async function fetchCompanySessionCalendar(
-  companyOrgId: string,
-  params?: CalendarParams,
-): Promise<CalendarBuckets> {
-  const url = buildCalendarUrl(
-    endpoints.calendar.companySessions(companyOrgId),
-    params,
-  );
-  const res = await publicApiClient.get(url, CalendarBucketResponseSchema);
-  return res.response;
-}
-
-/**
- * GET /api/v1/calendar/ig-mentor/<ig_id>/sessions/
- *
- * Calendar view of mentorship sessions for a specific Interest Group.
- */
-export async function fetchIgMentorSessionCalendar(
-  igId: string,
-  params?: CalendarParams,
-): Promise<CalendarBuckets> {
-  const url = buildCalendarUrl(
-    endpoints.calendar.igMentorSessions(igId),
-    params,
-  );
-  const res = await publicApiClient.get(url, CalendarBucketResponseSchema);
-  return res.response;
-}
-
-/**
- * GET /api/v1/calendar/campus-mentor/<campus_id>/sessions/
- *
- * Calendar view of mentorship sessions for a specific campus (college org).
- */
-export async function fetchCampusMentorSessionCalendar(
-  campusId: string,
-  params?: CalendarParams,
-): Promise<CalendarBuckets> {
-  const url = buildCalendarUrl(
-    endpoints.calendar.campusMentorSessions(campusId),
-    params,
-  );
-  const res = await publicApiClient.get(url, CalendarBucketResponseSchema);
-  return res.response;
-}
-
-// ─── Event Calendar API Functions ────────────────────────────────────────────
-
-/**
- * GET /api/v1/calendar/events/
- *
- * Global platform events calendar grouped into upcoming / ongoing / completed.
- */
-export async function fetchGlobalEventCalendar(
-  params?: CalendarEventParams,
-): Promise<CalendarEventBuckets> {
-  const url = buildEventCalendarUrl(endpoints.calendar.events, params);
-  const res = await publicApiClient.get(url, CalendarEventBucketResponseSchema);
-  return res.response;
-}
-
-/**
- * GET /api/v1/calendar/ig/<ig_id>/events/
- *
- * Events calendar scoped to a specific Interest Group.
- */
-export async function fetchIgEventCalendar(
-  igId: string,
-  params?: CalendarEventParams,
-): Promise<CalendarEventBuckets> {
-  const url = buildEventCalendarUrl(endpoints.calendar.igEvents(igId), params);
-  const res = await publicApiClient.get(url, CalendarEventBucketResponseSchema);
-  return res.response;
-}
-
-/**
- * GET /api/v1/calendar/campus/<campus_id>/events/
- *
- * Events calendar scoped to a specific Campus.
- */
-export async function fetchCampusEventCalendar(
-  campusId: string,
-  params?: CalendarEventParams,
-): Promise<CalendarEventBuckets> {
-  const url = buildEventCalendarUrl(
-    endpoints.calendar.campusEvents(campusId),
-    params,
-  );
-  const res = await publicApiClient.get(url, CalendarEventBucketResponseSchema);
-  return res.response;
-}
-
-/**
- * GET /api/v1/calendar/company/<company_id>/events/
- *
- * Events calendar scoped to a specific Company.
- */
-export async function fetchCompanyEventCalendar(
-  companyId: string,
-  params?: CalendarEventParams,
-): Promise<CalendarEventBuckets> {
-  const url = buildEventCalendarUrl(
-    endpoints.calendar.companyEvents(companyId),
-    params,
-  );
-  const res = await publicApiClient.get(url, CalendarEventBucketResponseSchema);
   return res.response;
 }
