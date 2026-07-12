@@ -129,8 +129,12 @@ export async function removeUserRole(payload: {
   user_id: string;
   role_id: string;
 }): Promise<void> {
+  const queryParams = new URLSearchParams({
+    user_id: payload.user_id,
+    role_id: payload.role_id,
+  });
   await apiClient.delete(
-    endpoints.manageRoles.userRole,
+    `${endpoints.manageRoles.userRole}?${queryParams}`,
     payload,
     GenericMutationResponseSchema,
   );
@@ -160,10 +164,11 @@ export async function fetchUsersWithoutRole(
 export async function bulkAssignRole(
   roleId: string,
   users: string[],
+  extra?: Record<string, any>,
 ): Promise<void> {
   await apiClient.post(
     endpoints.manageRoles.bulkAssign(roleId),
-    { users },
+    { users, ...extra },
     GenericMutationResponseSchema,
   );
 }

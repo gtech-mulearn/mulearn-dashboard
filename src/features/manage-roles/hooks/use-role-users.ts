@@ -110,7 +110,13 @@ export function useRemoveUserRole(roleId: string) {
 export function useBulkAssignRole(roleId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (users: string[]) => bulkAssignRole(roleId, users),
+    mutationFn: ({
+      users,
+      extra,
+    }: {
+      users: string[];
+      extra?: Record<string, any>;
+    }) => bulkAssignRole(roleId, users, extra),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [...manageRolesKeys.all, "users-by-role", roleId],
