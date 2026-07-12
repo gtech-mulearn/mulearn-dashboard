@@ -1,15 +1,14 @@
 "use client";
 
+import { format } from "date-fns";
+import { useState } from "react";
 import { WeeklyKarmaCard } from "@/features/campus/components";
 import {
   useCampusLeaderboard,
   useCampusOverview,
 } from "@/features/campus-manage/hooks";
-import {
-  useCampusCalendarEvents,
-  useCampusHomeSummary,
-  useCampusMentorSessionCalendar,
-} from "../hooks";
+import { useCampusHomeSummary, useDashboardCalendar } from "../hooks";
+import { flattenDashboardCalendar } from "../utils";
 import { CampusStatCards } from "./campus/campus-stat-cards";
 import { CircleHealthCard } from "./campus/circle-health-card";
 import { MemberFunnelCard } from "./campus/member-funnel-card";
@@ -29,15 +28,12 @@ export function EnablerHome() {
       category: "",
       alumni: "all",
     });
-  const campusId = summary?.campus?.org_id;
-  const { data: calendarEvents, isLoading: loadingCalendar } =
-    useCampusCalendarEvents(campusId);
-  const { data: sessionEvents, isLoading: loadingSessionCal } =
-    useCampusMentorSessionCalendar(campusId);
-  const mergedCalendarEvents = [
-    ...(calendarEvents ?? []),
-    ...(sessionEvents ?? []),
-  ];
+  const [calendarMonth, setCalendarMonth] = useState(new Date());
+  const { data: calendarData, isLoading: loadingCalendar } =
+    useDashboardCalendar({
+      month: format(calendarMonth, "MMMM"),
+      year: calendarMonth.getFullYear(),
+    });
 
   const campusLabel = summary?.campus
     ? `${summary.campus.college_name} · ${new Date().toLocaleString("default", { month: "long", year: "numeric" })}`
@@ -62,8 +58,9 @@ export function EnablerHome() {
           isLoading={summaryLoading}
         />
         <EventCalendarCard
-          events={mergedCalendarEvents}
-          isLoading={loadingCalendar || loadingSessionCal}
+          events={flattenDashboardCalendar(calendarData)}
+          isLoading={loadingCalendar}
+          onMonthChange={setCalendarMonth}
         />
         <CircleHealthCard
           items={summary?.circle_health}

@@ -1,16 +1,14 @@
 "use client";
 
+import { format } from "date-fns";
+import { useState } from "react";
 import { useCompanyOnboardingStatus } from "@/features/auth/hooks";
 import { useUserInfo } from "@/features/auth/hooks/use-session";
 import { useCompanyProfile } from "@/features/company-jobs/hooks/use-company-profile";
 import { useJobs } from "@/features/company-jobs/hooks/use-jobs";
 import { ROLES } from "@/lib/auth";
-import {
-  useCompanyCalendarEvents,
-  useCompanyHomeSummary,
-  useCompanyOrgId,
-  useCompanySessionCalendar,
-} from "../hooks";
+import { useCompanyHomeSummary, useDashboardCalendar } from "../hooks";
+import { flattenDashboardCalendar } from "../utils";
 import { ActiveJobListingsCard } from "./company/active-job-listings-card";
 import { CompanyHeroCard } from "./company/company-hero-card";
 import { CompanyStatCards } from "./company/company-stat-cards";
@@ -24,16 +22,12 @@ export function CompanyHome() {
   const { profile, isLoading: profileLoading } = useCompanyProfile();
   const { data: jobsData, isLoading: jobsLoading } = useJobs({ perPage: 100 });
   const { data: summary, isLoading: summaryLoading } = useCompanyHomeSummary();
-  const companyName = profile?.name ?? summary?.company?.name;
-  const { data: companyOrgId } = useCompanyOrgId(companyName);
-  const { data: calendarEvents, isLoading: loadingCalendar } =
-    useCompanyCalendarEvents(companyOrgId ?? undefined);
-  const { data: sessionEvents, isLoading: loadingSessions } =
-    useCompanySessionCalendar(companyOrgId ?? undefined);
-  const mergedCalendarEvents = [
-    ...(calendarEvents ?? []),
-    ...(sessionEvents ?? []),
-  ];
+  const [calendarMonth, setCalendarMonth] = useState(new Date());
+  const { data: calendarData, isLoading: loadingCalendar } =
+    useDashboardCalendar({
+      month: format(calendarMonth, "MMMM"),
+      year: calendarMonth.getFullYear(),
+    });
 
   const jobsPosted =
     summary?.quick_stats?.jobs_posted ?? jobsData?.pagination?.count ?? 0;
@@ -69,8 +63,9 @@ export function CompanyHome() {
         <ActiveJobListingsCard isVerified={isVerified} />
         <div className="space-y-5">
           <EventCalendarCard
-            events={mergedCalendarEvents}
-            isLoading={loadingCalendar || loadingSessions}
+            events={flattenDashboardCalendar(calendarData)}
+            isLoading={loadingCalendar}
+            onMonthChange={setCalendarMonth}
           />
           <TalentPoolCard
             talentPool={summary?.talent_pool}
