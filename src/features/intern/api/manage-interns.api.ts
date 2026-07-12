@@ -21,9 +21,16 @@ import type { TInternQueryParams } from "./intern.api";
 function buildQueryString(params?: TInternQueryParams): string {
   if (!params) return "";
   const searchParams = new URLSearchParams();
-  if (params.page !== undefined) searchParams.set("page", String(params.page));
-  if (params.perPage !== undefined)
+  if (params.page !== undefined) {
+    searchParams.set("page", String(params.page));
+    searchParams.set("pageIndex", String(params.page));
+    searchParams.set("page_index", String(params.page));
+  }
+  if (params.perPage !== undefined) {
     searchParams.set("perPage", String(params.perPage));
+    searchParams.set("per_page", String(params.perPage));
+    searchParams.set("page_size", String(params.perPage));
+  }
   if (params.search) searchParams.set("search", params.search);
   if (params.sortBy) searchParams.set("sortBy", params.sortBy);
   if (params.sortOrder) searchParams.set("sortOrder", params.sortOrder);

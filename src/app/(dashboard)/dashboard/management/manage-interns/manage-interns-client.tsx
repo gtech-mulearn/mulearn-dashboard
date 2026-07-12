@@ -225,11 +225,8 @@ export function ManageInternsPageClient() {
   const totalPages = listData?.pagination?.totalPages ?? 1;
   const totalCount = listData?.pagination?.count ?? 0;
 
-  const isClientFiltered = statusFilter !== "all" || roleFilter !== "all";
-  const displayedTotalCount = isClientFiltered ? rows.length : totalCount;
-  const displayedTotalPages = isClientFiltered
-    ? Math.ceil(rows.length / perPage) || 1
-    : totalPages;
+  const displayedTotalCount = totalCount || rows.length;
+  const displayedTotalPages = totalPages;
 
   const tableColumns = useMemo(() => {
     return [
