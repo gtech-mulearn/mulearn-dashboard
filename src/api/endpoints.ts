@@ -637,11 +637,13 @@ export const endpoints = {
     /** DELETE - Delete achievement */
     delete: (id: string) => `/api/v1/dashboard/achievement/delete/${id}/`,
 
-    /** GET - Rules Engine */
+    /** GET - Rules */
     rules: "/api/v1/dashboard/achievement/rules/",
     createRule: "/api/v1/dashboard/achievement/rules/create/",
     deactivateRule: (ruleId: string) =>
       `/api/v1/dashboard/achievement/rules/${ruleId}/deactivate/`,
+    activateRule: (ruleId: string) =>
+      `/api/v1/dashboard/achievement/rules/${ruleId}/activate/`,
 
     /** Simulation */
     simulate: (muid: string) =>
