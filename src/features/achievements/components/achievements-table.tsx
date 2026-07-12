@@ -27,7 +27,6 @@ const COLUMN_ORDER = [
   { column: "name", Label: "Name", isSortable: true },
   { column: "level_based", Label: "Level Based", isSortable: false },
   { column: "has_vc", Label: "Has VC", isSortable: false },
-  { column: "is_active", Label: "Status", isSortable: false },
   { column: "created_at", Label: "Created On", isSortable: true },
 ];
 
@@ -59,17 +58,53 @@ export function AchievementsTable() {
     });
   };
 
-  const filtered = React.useMemo(() => {
-    return achievements.filter((row) =>
+  const [sortConfig, setSortConfig] = React.useState<{
+    key: string;
+    direction: "asc" | "desc";
+  } | null>(null);
+
+  const handleSort = (column: string) => {
+    let direction: "asc" | "desc" = "asc";
+    if (sortConfig?.key === column && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key: column, direction });
+  };
+
+  const filteredAndSorted = React.useMemo(() => {
+    let result = achievements.filter((row) =>
       row.name.toLowerCase().includes(search.toLowerCase()),
     );
-  }, [achievements, search]);
+
+    if (sortConfig) {
+      result = [...result].sort((a, b) => {
+        const aVal = a[sortConfig.key as keyof Achievement];
+        const bVal = b[sortConfig.key as keyof Achievement];
+        if (aVal === bVal) return 0;
+        if (aVal === null || aVal === undefined) return 1;
+        if (bVal === null || bVal === undefined) return -1;
+
+        if (sortConfig.key === "created_at") {
+          const aTime = new Date(aVal as string).getTime();
+          const bTime = new Date(bVal as string).getTime();
+          return sortConfig.direction === "asc" ? aTime - bTime : bTime - aTime;
+        }
+
+        const aStr = String(aVal).toLowerCase();
+        const bStr = String(bVal).toLowerCase();
+        if (aStr < bStr) return sortConfig.direction === "asc" ? -1 : 1;
+        if (aStr > bStr) return sortConfig.direction === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+    return result;
+  }, [achievements, search, sortConfig]);
 
   const customCellRender = (column: string, row: Record<string, unknown>) => {
     if (column === "icon") {
       return (
         <AchievementIcon
-          imageUrl={row.image_url as string}
+          imageUrl={row.icon as string}
           name={row.name as string}
           size={36}
         />
@@ -83,7 +118,8 @@ export function AchievementsTable() {
       );
     }
     if (column === "level_based") {
-      return row.level_based ? (
+      const isLevelBased = row.level_based ?? !!row.level_id;
+      return isLevelBased ? (
         <Badge variant="secondary">Yes</Badge>
       ) : (
         <Badge variant="outline">No</Badge>
@@ -94,15 +130,6 @@ export function AchievementsTable() {
         <Badge variant="secondary">Yes</Badge>
       ) : (
         <Badge variant="outline">No</Badge>
-      );
-    }
-    if (column === "is_active") {
-      return row.is_active ? (
-        <Badge variant="success">Active</Badge>
-      ) : (
-        <Badge variant="outline" className="text-muted-foreground">
-          Inactive
-        </Badge>
       );
     }
     if (column === "created_at") {
@@ -133,7 +160,7 @@ export function AchievementsTable() {
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0"
+              className="h-8 w-8 p-0 text-muted-foreground hover:bg-muted hover:text-foreground"
               onClick={() => openEdit(row as Achievement)}
               data-testid={`edit-achievement-${row.id}`}
             >
@@ -194,16 +221,16 @@ export function AchievementsTable() {
         <div className="w-full md:min-w-[800px]">
           <ReusableTable
             // biome-ignore lint/suspicious/noExplicitAny: third-party types
-            rows={filtered as any}
+            rows={filteredAndSorted as any}
             isLoading={isLoading}
             page={1}
-            perPage={filtered.length || 1}
+            perPage={filteredAndSorted.length || 1}
             columnOrder={COLUMN_ORDER}
             id={["id"]}
             customCellRender={customCellRender}
             customActionRender={customActionRender}
           >
-            <THead columnOrder={COLUMN_ORDER} onIconClick={() => {}} action />
+            <THead columnOrder={COLUMN_ORDER} onIconClick={handleSort} action />
             <div />
             <div />
           </ReusableTable>
