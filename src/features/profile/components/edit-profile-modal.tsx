@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { extractDjangoMessage } from "@/api/errors";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -33,7 +34,6 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { MultiSelectDropdown } from "@/features/manage-users/components";
 import { useDepartments } from "@/features/settings";
-import { extractDjangoMessage } from "@/api/errors";
 import {
   useCommunities,
   useCountries,
