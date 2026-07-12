@@ -71,12 +71,7 @@ export function CollegeSection({
               <Select
                 value={field.value || "__empty"}
                 onValueChange={(value) => {
-                  const nextValue = value === "__empty" ? "" : value;
-                  field.onChange(nextValue);
-                  setValue("state_id", "", { shouldDirty: true });
-                  setValue("district_id", "", { shouldDirty: true });
-                  setValue("college_id", "", { shouldDirty: true });
-                  setValue("department_id", "", { shouldDirty: true });
+                  field.onChange(value === "__empty" ? "" : value);
                 }}
                 disabled={isBusy}
               >
@@ -107,11 +102,7 @@ export function CollegeSection({
               <Select
                 value={field.value || "__empty"}
                 onValueChange={(value) => {
-                  const nextValue = value === "__empty" ? "" : value;
-                  field.onChange(nextValue);
-                  setValue("district_id", "", { shouldDirty: true });
-                  setValue("college_id", "", { shouldDirty: true });
-                  setValue("department_id", "", { shouldDirty: true });
+                  field.onChange(value === "__empty" ? "" : value);
                 }}
                 disabled={isBusy || !countryId}
               >
@@ -142,10 +133,7 @@ export function CollegeSection({
               <Select
                 value={field.value || "__empty"}
                 onValueChange={(value) => {
-                  const nextValue = value === "__empty" ? "" : value;
-                  field.onChange(nextValue);
-                  setValue("college_id", "", { shouldDirty: true });
-                  setValue("department_id", "", { shouldDirty: true });
+                  field.onChange(value === "__empty" ? "" : value);
                 }}
                 disabled={isBusy || !stateId}
               >
