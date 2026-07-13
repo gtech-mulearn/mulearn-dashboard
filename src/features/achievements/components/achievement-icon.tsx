@@ -1,6 +1,5 @@
 "use client";
 import { Trophy } from "lucide-react";
-import Image from "next/image";
 
 interface AchievementIconProps {
   imageUrl?: string | null;
@@ -13,11 +12,18 @@ export function AchievementIcon({
   name,
   size = 40,
 }: AchievementIconProps) {
-  if (imageUrl) {
+  let src = imageUrl;
+  if (src && !src.startsWith("http")) {
+    const base = process.env.NEXT_PUBLIC_DJANGO_API_URL ?? "";
+    const sep = base.endsWith("/") || src.startsWith("/") ? "" : "/";
+    src = `${base}${sep}${src}`;
+  }
+
+  if (src) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
-      <Image
-        src={imageUrl}
+      <img
+        src={src}
         alt={name ?? "Achievement icon"}
         width={size}
         height={size}

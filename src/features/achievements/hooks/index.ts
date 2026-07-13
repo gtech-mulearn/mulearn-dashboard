@@ -16,4 +16,5 @@ export {
   useAchievementRules,
   useAchievements,
   useSimulation,
+  useUserAchievements,
 } from "./use-achievements";
