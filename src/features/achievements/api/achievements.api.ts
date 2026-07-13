@@ -217,19 +217,15 @@ export async function fetchIssuedLogs(
     };
   }
 
-  if (
-    responseData &&
-    typeof responseData === "object" &&
-    "data" in responseData
-  ) {
-    const data = (responseData as any).data || [];
-    const pagination = (responseData as any).pagination || {};
+  if (responseData && !Array.isArray(responseData)) {
+    const data = responseData.data || [];
+    const pagination = responseData.pagination || {};
     return {
       data,
       pagination: {
-        total: Number(pagination.count ?? pagination.total ?? data.length),
-        page: Number(pagination.page ?? page),
-        perPage: Number(pagination.perPage ?? perPage),
+        total: Number(pagination.count ?? data.length),
+        page,
+        perPage,
         totalPages: Number(pagination.totalPages ?? 1),
       },
     };
@@ -248,7 +244,7 @@ export async function fetchIssuedLogs(
 export async function fetchAuditLogs(muid: string): Promise<AuditLog[]> {
   const url = muid.trim()
     ? endpoints.achievements.auditLogs(muid)
-    : "/api/v1/dashboard/achievement/audit/";
+    : endpoints.achievements.auditLogsAll;
   const res = await apiClient.get(url, AuditLogListResponseSchema);
   return res.response;
 }

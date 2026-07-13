@@ -136,14 +136,14 @@ export type RevokeRequest = z.infer<typeof RevokeRequestSchema>;
 // ==========================================
 
 export const AuditLogSchema = z.object({
-  id: z.any().optional(),
-  achievement_id: z.any().optional(),
-  achievement_name: z.any().optional(),
-  action: z.any().optional(),
-  rule_version: z.any().optional(),
-  metadata: z.any().optional(),
-  performed_by: z.any().optional(),
-  created_at: z.any().optional(),
+  id: z.string().optional(),
+  achievement_id: z.string().optional(),
+  achievement_name: z.string().optional(),
+  action: z.string().optional(),
+  rule_version: z.number().optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
+  performed_by: z.string().nullable().optional(),
+  created_at: z.string().optional(),
 });
 
 export type AuditLog = z.infer<typeof AuditLogSchema>;

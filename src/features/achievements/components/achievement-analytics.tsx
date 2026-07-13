@@ -110,7 +110,7 @@ export function AchievementAnalytics() {
       return row.has_vc ? (
         <Badge
           variant="outline"
-          className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+          className="bg-success/10 text-success border-success/20"
         >
           Yes
         </Badge>
@@ -153,7 +153,7 @@ export function AchievementAnalytics() {
                   {isLoading ? "..." : totalCount}
                 </p>
               </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-warning/10 text-warning">
                 <Trophy className="h-6 w-6" />
               </div>
             </div>
@@ -172,7 +172,7 @@ export function AchievementAnalytics() {
                   {isLoading ? "..." : vcCount}
                 </p>
               </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-success/10 text-success">
                 <ShieldCheck className="h-6 w-6" />
               </div>
             </div>
@@ -191,7 +191,7 @@ export function AchievementAnalytics() {
                   {isLoading ? "..." : standardCount}
                 </p>
               </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-blue/10 text-brand-blue">
                 <Award className="h-6 w-6" />
               </div>
             </div>

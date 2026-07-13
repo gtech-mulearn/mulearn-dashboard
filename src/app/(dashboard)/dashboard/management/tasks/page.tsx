@@ -4,9 +4,9 @@ import {
   ClipboardCheck,
   FileSpreadsheet,
   ListTodo,
+  type LucideIcon,
   PlusSquare,
   Type,
-  type LucideIcon,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";

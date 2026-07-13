@@ -2,9 +2,9 @@ import {
   AlertTriangle,
   ChevronLeft,
   ChevronRight,
+  type LucideIcon,
   Settings2,
   Ticket,
-  type LucideIcon,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";

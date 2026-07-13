@@ -97,9 +97,9 @@ export function AuditLogsTable() {
   const totalLogs = isUserSelected
     ? auditLogs.length
     : (pagination?.total ?? 0);
-  const issuedCount = isUserSelected
+  const issuedOrUniqueRecipientsCount = isUserSelected
     ? auditLogs.filter((l) => l.action?.toLowerCase() === "issue").length
-    : (pagination?.total ?? 0);
+    : new Set(globalLogs.map((l) => l.muid).filter(Boolean)).size;
 
   const revokedOrUniqueAchievementsCount = isUserSelected
     ? auditLogs.filter((l) => l.action?.toLowerCase() === "revoke").length
@@ -258,18 +258,18 @@ export function AuditLogsTable() {
               </div>
             </div>
 
-            {/* Middle Card: Issued / Unique Users */}
+            {/* Middle Card: Issued / Page Unique Recipients */}
             <div className="rounded-2xl border border-border bg-card p-6 shadow-xs">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">
-                    {isUserSelected ? "Issued" : "Total Achievements Issued"}
+                    {isUserSelected ? "Issued" : "Page Unique Recipients"}
                   </p>
                   <p className="mt-1 text-3xl font-bold tracking-tight text-foreground">
-                    {issuedCount}
+                    {issuedOrUniqueRecipientsCount}
                   </p>
                 </div>
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-success/10 text-success">
                   {isUserSelected ? (
                     <CheckCircle className="size-6" />
                   ) : (
@@ -375,7 +375,7 @@ export function AuditLogsTable() {
                                 variant="outline"
                                 className={
                                   auditLog.action?.toLowerCase() === "issue"
-                                    ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+                                    ? "bg-success/10 text-success border-success/20"
                                     : "bg-destructive/10 text-destructive border-destructive/20"
                                 }
                               >
@@ -425,7 +425,7 @@ export function AuditLogsTable() {
                           <TableCell>
                             <Badge
                               variant="outline"
-                              className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+                              className="bg-success/10 text-success border-success/20"
                             >
                               Issued
                             </Badge>

@@ -67,7 +67,7 @@ function AchievementIdBox({ id }: { id: string }) {
       >
         {copied ? (
           <>
-            <Check className="h-3.5 w-3.5 text-emerald-500" />
+            <Check className="h-3.5 w-3.5 text-success" />
             Copied!
           </>
         ) : (
@@ -152,7 +152,7 @@ export function BulkIssuePanel() {
             {selectedAchievement && (
               <Badge
                 variant="outline"
-                className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-[10px] font-semibold px-2 py-0.5 self-start sm:self-center"
+                className="bg-success/10 text-success border-success/20 text-[10px] font-semibold px-2 py-0.5 self-start sm:self-center"
               >
                 {selectedAchievement.type || "Standard"}
               </Badge>

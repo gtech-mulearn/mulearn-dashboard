@@ -1,11 +1,11 @@
 import {
   ChevronLeft,
   ChevronRight,
+  type LucideIcon,
   Shield,
   ShieldCheck,
   User,
   Users,
-  type LucideIcon,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";

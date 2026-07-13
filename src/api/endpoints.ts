@@ -657,6 +657,7 @@ export const endpoints = {
 
     /** Audit & Logs */
     auditLogs: (muid: string) => `/api/v1/dashboard/achievement/audit/${muid}/`,
+    auditLogsAll: "/api/v1/dashboard/achievement/audit/",
     bulkIssue: "/api/v1/dashboard/achievement/bulk-issue/",
     bulkIssueTemplate: "/api/v1/dashboard/achievement/bulk-issue/template/",
     issuedLog: "/api/v1/dashboard/achievement/issued-log/",

@@ -2,11 +2,11 @@ import {
   ChevronLeft,
   ChevronRight,
   GraduationCap,
+  type LucideIcon,
   MapPin,
   Megaphone,
   Users,
   Wrench,
-  type LucideIcon,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";

@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { useTaskLevels } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
+import { useTaskLevels } from "@/features/mentor";
 import {
   useCreateAchievement,
   useUpdateAchievement,
