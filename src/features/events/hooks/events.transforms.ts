@@ -31,7 +31,7 @@ export function resolveEventTypeValue(
   categoryName?: string | null,
 ): EventType | undefined {
   const raw = eventType || categoryName;
-  if (!raw || typeof raw !== "string") return undefined;
+  if (!raw) return undefined;
 
   const normalized = raw.trim().toLowerCase().replace(/\s+/g, "_");
   if (normalized === "other") {
