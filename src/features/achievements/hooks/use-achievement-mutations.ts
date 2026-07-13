@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
+  activateRule,
   bulkIssueAchievements,
   createAchievement,
   createRule,
@@ -46,8 +47,13 @@ export function useUpdateAchievement() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, formData }: { id: string; formData: FormData }) =>
-      updateAchievement(id, formData),
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: FormData | Record<string, unknown>;
+    }) => updateAchievement(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ACHIEVEMENT_KEYS.list() });
       toast.success("Achievement updated successfully");
@@ -135,6 +141,27 @@ export function useDeactivateRule() {
     onError: (error) => {
       toast.error(
         getApiResponseError(error, { fallback: "Failed to deactivate rule" }),
+      );
+    },
+  });
+}
+
+// ==========================================
+// useActivateRule
+// ==========================================
+
+export function useActivateRule() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (ruleId: string) => activateRule(ruleId), // Ensure activateRule is imported
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ACHIEVEMENT_KEYS.rules() });
+      toast.success("Rule activated");
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to activate rule" }),
       );
     },
   });

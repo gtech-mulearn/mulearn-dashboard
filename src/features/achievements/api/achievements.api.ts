@@ -5,10 +5,11 @@ import type {
   AchievementRule,
   AuditLog,
   CreateRuleRequest,
+  IssuedLog,
   ManualIssueRequest,
-  PaginatedIssuedLog,
   RevokeRequest,
   SimulationResult,
+  UserAchievement,
 } from "../schemas";
 import {
   AchievementListResponseSchema,
@@ -18,6 +19,7 @@ import {
   GenericSuccessResponseSchema,
   IssuedLogListResponseSchema,
   SimulationListResponseSchema,
+  UserAchievementListResponseSchema,
 } from "../schemas";
 
 // ==========================================
@@ -45,13 +47,14 @@ export async function createAchievement(
 
 export async function updateAchievement(
   id: string,
-  formData: FormData,
+  data: FormData | Record<string, unknown>,
 ): Promise<Achievement> {
-  return apiClient.patch<Achievement>(
+  const isFormData = data instanceof FormData;
+  return apiClient.put<Achievement>(
     endpoints.achievements.update(id),
-    formData,
+    data,
     undefined,
-    { isFormData: true },
+    { isFormData },
   );
 }
 
@@ -63,7 +66,7 @@ export async function deleteAchievement(id: string): Promise<void> {
 }
 
 // ==========================================
-// Rules Engine
+// Rules
 // ==========================================
 
 export async function fetchRules(): Promise<AchievementRule[]> {
@@ -88,6 +91,14 @@ export async function createRule(
 export async function deactivateRule(ruleId: string): Promise<void> {
   await apiClient.post(
     endpoints.achievements.deactivateRule(ruleId),
+    {},
+    GenericSuccessResponseSchema,
+  );
+}
+
+export async function activateRule(ruleId: string): Promise<void> {
+  await apiClient.post(
+    endpoints.achievements.activateRule(ruleId),
     {},
     GenericSuccessResponseSchema,
   );
@@ -159,14 +170,22 @@ export async function downloadBulkTemplate(): Promise<Blob> {
 }
 
 // ==========================================
-// Issued Logs (server-paginated)
+// Issued Logs
 // ==========================================
 
 export async function fetchIssuedLogs(
   page: number,
   perPage: number,
   search?: string,
-): Promise<PaginatedIssuedLog> {
+): Promise<{
+  data: IssuedLog[];
+  pagination: {
+    total: number;
+    page: number;
+    perPage: number;
+    totalPages: number;
+  };
+}> {
   const query = new URLSearchParams({
     page: String(page),
     perPage: String(perPage),
@@ -177,7 +196,49 @@ export async function fetchIssuedLogs(
     `${endpoints.achievements.issuedLog}?${query.toString()}`,
     IssuedLogListResponseSchema,
   );
-  return res.response;
+
+  const responseData = res?.response;
+  if (!responseData) {
+    return {
+      data: [],
+      pagination: { total: 0, page, perPage, totalPages: 0 },
+    };
+  }
+
+  if (Array.isArray(responseData)) {
+    return {
+      data: responseData,
+      pagination: {
+        total: responseData.length,
+        page: 1,
+        perPage: responseData.length,
+        totalPages: 1,
+      },
+    };
+  }
+
+  if (
+    responseData &&
+    typeof responseData === "object" &&
+    "data" in responseData
+  ) {
+    const data = (responseData as any).data || [];
+    const pagination = (responseData as any).pagination || {};
+    return {
+      data,
+      pagination: {
+        total: Number(pagination.count ?? pagination.total ?? data.length),
+        page: Number(pagination.page ?? page),
+        perPage: Number(pagination.perPage ?? perPage),
+        totalPages: Number(pagination.totalPages ?? 1),
+      },
+    };
+  }
+
+  return {
+    data: [],
+    pagination: { total: 0, page, perPage, totalPages: 0 },
+  };
 }
 
 // ==========================================
@@ -185,9 +246,23 @@ export async function fetchIssuedLogs(
 // ==========================================
 
 export async function fetchAuditLogs(muid: string): Promise<AuditLog[]> {
+  const url = muid.trim()
+    ? endpoints.achievements.auditLogs(muid)
+    : "/api/v1/dashboard/achievement/audit/";
+  const res = await apiClient.get(url, AuditLogListResponseSchema);
+  return res.response;
+}
+
+// ==========================================
+// User Specific Achievements List
+// ==========================================
+
+export async function fetchUserAchievements(
+  muid: string,
+): Promise<UserAchievement[]> {
   const res = await apiClient.get(
-    endpoints.achievements.auditLogs(muid),
-    AuditLogListResponseSchema,
+    `${endpoints.achievements.list}?user_id=${muid}`,
+    UserAchievementListResponseSchema,
   );
   return res.response;
 }
