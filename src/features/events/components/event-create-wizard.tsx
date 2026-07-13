@@ -212,12 +212,10 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
       "Tech Talk",
       "Others",
     ];
-    return list
-      .filter((type): type is string => typeof type === "string")
-      .map((type) => {
-        const val = type.trim().toLowerCase().replace(/\s+/g, "_");
-        return { label: type, value: val };
-      });
+    return list.map((type) => {
+      const val = type.trim().toLowerCase().replace(/\s+/g, "_");
+      return { label: type, value: val };
+    });
   }, [typeScopeData]);
 
   const creatorCampusName =
