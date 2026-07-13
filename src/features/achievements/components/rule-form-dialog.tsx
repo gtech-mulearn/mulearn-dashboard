@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Trash2 } from "lucide-react";
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -95,6 +96,24 @@ export function RuleFormDialog({
 
   const [isCustomType, setIsCustomType] = React.useState(false);
   const [customTypeValue, setCustomTypeValue] = React.useState("");
+  const [customPairs, setCustomPairs] = React.useState<
+    { id: string; key: string; value: string }[]
+  >([]);
+
+  const addPair = () =>
+    setCustomPairs((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), key: "", value: "" },
+    ]);
+  const removePair = (id: string) =>
+    setCustomPairs((prev) => prev.filter((p) => p.id !== id));
+  const updatePair = (id: string, field: "key" | "value", val: string) =>
+    setCustomPairs((prev) => {
+      const next = [...prev];
+      const idx = next.findIndex((p) => p.id === id);
+      if (idx !== -1) next[idx] = { ...next[idx], [field]: val };
+      return next;
+    });
 
   const knownTypes = React.useMemo(() => {
     const list = [...new Set(rules.map((r) => r.rule_type))].filter(Boolean);
@@ -135,6 +154,7 @@ export function RuleFormDialog({
       });
       setIsCustomType(false);
       setCustomTypeValue("");
+      setCustomPairs([]);
     } else if (initialRule) {
       const conditions = initialRule.conditions || {};
       const type = initialRule.rule_type;
@@ -180,9 +200,17 @@ export function RuleFormDialog({
       if (!isKnown) {
         setIsCustomType(true);
         setCustomTypeValue(type);
+        setCustomPairs(
+          Object.entries(conditions).map(([k, v]) => ({
+            id: crypto.randomUUID(),
+            key: k,
+            value: typeof v === "object" ? JSON.stringify(v) : String(v),
+          })),
+        );
       } else {
         setIsCustomType(false);
         setCustomTypeValue("");
+        setCustomPairs([]);
       }
     }
   }, [open, initialRule, form]);
@@ -249,14 +277,27 @@ export function RuleFormDialog({
         break;
       case "custom":
       default: {
-        try {
-          conditions = JSON.parse(values.custom_conditions || "{}");
-        } catch {
-          form.setError("custom_conditions", {
-            message: "Invalid JSON format",
-          });
-          return;
+        const obj: Record<string, unknown> = {};
+        for (const pair of customPairs) {
+          const k = pair.key.trim();
+          if (!k) continue;
+          const raw = pair.value.trim();
+          // Coerce type: bool → bool, numeric → number, else string
+          let parsed: unknown = raw;
+          if (raw.toLowerCase() === "true") parsed = true;
+          else if (raw.toLowerCase() === "false") parsed = false;
+          else if (raw !== "" && !Number.isNaN(Number(raw)))
+            parsed = Number(raw);
+          else {
+            try {
+              parsed = JSON.parse(raw);
+            } catch {
+              /* keep as string */
+            }
+          }
+          obj[k] = parsed;
         }
+        conditions = obj;
         break;
       }
     }
@@ -366,25 +407,58 @@ export function RuleFormDialog({
                     onChange={(e) => setCustomTypeValue(e.target.value)}
                   />
                 </div>
-                <FormField
-                  control={form.control as any}
-                  name="custom_conditions"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Conditions (JSON)</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder='{ "key": "value" }'
-                          rows={4}
-                          className="font-mono text-xs text-foreground bg-background/50"
-                          {...field}
-                          value={field.value ?? ""}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+
+                {/* Dynamic key-value condition editor */}
+                <div className="space-y-2">
+                  <Label className="flex items-center justify-between">
+                    <span>Conditions</span>
+                    <button
+                      type="button"
+                      onClick={addPair}
+                      className="text-xs text-brand-blue hover:text-brand-blue/80 font-medium transition-colors"
+                    >
+                      + Add field
+                    </button>
+                  </Label>
+                  {customPairs.length === 0 ? (
+                    <p className="text-xs text-muted-foreground italic border border-dashed rounded-lg p-3 text-center">
+                      No conditions yet. Click "+ Add field" to add one.
+                    </p>
+                  ) : (
+                    <div className="space-y-2">
+                      {customPairs.map((pair) => (
+                        <div key={pair.id} className="flex items-center gap-2">
+                          <Input
+                            placeholder="key"
+                            value={pair.key}
+                            onChange={(e) =>
+                              updatePair(pair.id, "key", e.target.value)
+                            }
+                            className="flex-1 font-mono text-xs h-8"
+                          />
+                          <span className="text-muted-foreground text-xs shrink-0">
+                            :
+                          </span>
+                          <Input
+                            placeholder="value"
+                            value={pair.value}
+                            onChange={(e) =>
+                              updatePair(pair.id, "value", e.target.value)
+                            }
+                            className="flex-1 font-mono text-xs h-8"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removePair(pair.id)}
+                            className="shrink-0 text-muted-foreground hover:text-destructive transition-colors"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   )}
-                />
+                </div>
               </div>
             )}
 
@@ -569,7 +643,11 @@ export function RuleFormDialog({
                 Cancel
               </Button>
               <Button type="submit" disabled={isPending}>
-                {isPending ? "Creating..." : "Create Rule"}
+                {isPending
+                  ? "Saving..."
+                  : initialRule
+                    ? "Edit Rule"
+                    : "Create Rule"}
               </Button>
             </DialogFooter>
           </form>
