@@ -1,11 +1,11 @@
 import {
   ChevronLeft,
   ChevronRight,
-  ClipboardCheck,
-  FileSpreadsheet,
-  ListTodo,
-  PlusSquare,
-  Type,
+  GraduationCap,
+  MapPin,
+  Megaphone,
+  Users,
+  Wrench,
   type LucideIcon,
 } from "lucide-react";
 import type { Metadata } from "next";
@@ -14,12 +14,12 @@ import { ROLES } from "@/lib/auth/roles";
 import { requireRole } from "@/lib/auth/server";
 
 export const metadata: Metadata = {
-  title: "Task Hub | Management",
+  title: "Community Settings | Management",
   description:
-    "Configure task lists, creation, types, bulk imports, and verifications.",
+    "Configure interest groups, college levels, locations, channels, and integrations.",
 };
 
-interface TaskItem {
+interface CommunityItem {
   title: string;
   description: string;
   href: string;
@@ -27,45 +27,45 @@ interface TaskItem {
   iconBg: string;
 }
 
-const TASK_ITEMS: TaskItem[] = [
+const COMMUNITY_ITEMS: CommunityItem[] = [
   {
-    title: "Tasks List",
-    description: "View, edit, and manage tasks.",
-    href: "/dashboard/management/tasks/list",
-    icon: ListTodo,
+    title: "Interest Groups",
+    description: "Manage user interest groups and categories.",
+    href: "/dashboard/management/manage-interest-groups",
+    icon: Users,
     iconBg: "bg-warning/15 text-warning",
   },
   {
-    title: "Task Create",
-    description: "Verify and create tasks based on interest groups.",
-    href: "/dashboard/management/tasks/create",
-    icon: PlusSquare,
+    title: "College Levels",
+    description: "Manage educational levels and institutions.",
+    href: "/dashboard/management/college-levels",
+    icon: GraduationCap,
     iconBg: "bg-success/15 text-success",
   },
   {
-    title: "Task Type",
-    description: "Manage Task Types.",
-    href: "/dashboard/management/tasks/task-type",
-    icon: Type,
+    title: "Locations",
+    description: "Manage geographical locations for events and users.",
+    href: "/dashboard/management/manage-locations",
+    icon: MapPin,
     iconBg: "bg-brand-blue/15 text-brand-blue",
   },
   {
-    title: "Tasks Bulk Import",
-    description: "Bulk-import tasks via CSV.",
-    href: "/dashboard/management/tasks/bulk-import",
-    icon: FileSpreadsheet,
+    title: "Channels",
+    description: "Configure communication channels.",
+    href: "/dashboard/management/channels",
+    icon: Megaphone,
     iconBg: "bg-brand-purple/15 text-brand-purple",
   },
   {
-    title: "Task Verification",
-    description: "Review, approve, and verify pending tasks.",
-    href: "/dashboard/management/tasks/task-verification",
-    icon: ClipboardCheck,
+    title: "Discord Moderation",
+    description: "Moderate and manage Discord integration.",
+    href: "/dashboard/management/discord-moderation",
+    icon: Wrench,
     iconBg: "bg-destructive/15 text-destructive",
   },
 ];
 
-export default async function TaskHubPage() {
+export default async function CommunitySettingsPage() {
   await requireRole([ROLES.ADMIN]);
 
   return (
@@ -80,16 +80,19 @@ export default async function TaskHubPage() {
           Back to Management
         </Link>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Task Hub</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Community Settings
+          </h1>
           <p className="mt-1 text-muted-foreground">
-            Configure tasks, templates, verifications, and csv uploads.
+            Configure interest groups, college levels, locations, channels, and
+            integrations.
           </p>
         </div>
       </div>
 
       {/* Grid of Sub-Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {TASK_ITEMS.map((card) => (
+        {COMMUNITY_ITEMS.map((card) => (
           <Link
             key={card.href}
             href={card.href}

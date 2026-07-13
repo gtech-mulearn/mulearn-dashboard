@@ -1,11 +1,9 @@
 import {
+  AlertTriangle,
   ChevronLeft,
   ChevronRight,
-  ClipboardCheck,
-  FileSpreadsheet,
-  ListTodo,
-  PlusSquare,
-  Type,
+  Settings2,
+  Ticket,
   type LucideIcon,
 } from "lucide-react";
 import type { Metadata } from "next";
@@ -14,12 +12,11 @@ import { ROLES } from "@/lib/auth/roles";
 import { requireRole } from "@/lib/auth/server";
 
 export const metadata: Metadata = {
-  title: "Task Hub | Management",
-  description:
-    "Configure task lists, creation, types, bulk imports, and verifications.",
+  title: "System & Configurations | Management",
+  description: "Configure point distribution, system diagnostics, and types.",
 };
 
-interface TaskItem {
+interface SystemItem {
   title: string;
   description: string;
   href: string;
@@ -27,45 +24,31 @@ interface TaskItem {
   iconBg: string;
 }
 
-const TASK_ITEMS: TaskItem[] = [
+const SYSTEM_ITEMS: SystemItem[] = [
   {
-    title: "Tasks List",
-    description: "View, edit, and manage tasks.",
-    href: "/dashboard/management/tasks/list",
-    icon: ListTodo,
+    title: "Karma Voucher",
+    description: "Manage karma point vouchers and distribution.",
+    href: "/dashboard/management/karma-voucher",
+    icon: Ticket,
     iconBg: "bg-warning/15 text-warning",
   },
   {
-    title: "Task Create",
-    description: "Verify and create tasks based on interest groups.",
-    href: "/dashboard/management/tasks/create",
-    icon: PlusSquare,
-    iconBg: "bg-success/15 text-success",
-  },
-  {
-    title: "Task Type",
-    description: "Manage Task Types.",
-    href: "/dashboard/management/tasks/task-type",
-    icon: Type,
-    iconBg: "bg-brand-blue/15 text-brand-blue",
-  },
-  {
-    title: "Tasks Bulk Import",
-    description: "Bulk-import tasks via CSV.",
-    href: "/dashboard/management/tasks/bulk-import",
-    icon: FileSpreadsheet,
-    iconBg: "bg-brand-purple/15 text-brand-purple",
-  },
-  {
-    title: "Task Verification",
-    description: "Review, approve, and verify pending tasks.",
-    href: "/dashboard/management/tasks/task-verification",
-    icon: ClipboardCheck,
+    title: "Error Log",
+    description: "View and manage system error reports.",
+    href: "/dashboard/management/error-log",
+    icon: AlertTriangle,
     iconBg: "bg-destructive/15 text-destructive",
+  },
+  {
+    title: "Dynamic Type",
+    description: "Configure dynamic content types.",
+    href: "/dashboard/management/dynamic-type",
+    icon: Settings2,
+    iconBg: "bg-brand-blue/15 text-brand-blue",
   },
 ];
 
-export default async function TaskHubPage() {
+export default async function SystemPage() {
   await requireRole([ROLES.ADMIN]);
 
   return (
@@ -80,16 +63,18 @@ export default async function TaskHubPage() {
           Back to Management
         </Link>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Task Hub</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            System & Configurations
+          </h1>
           <p className="mt-1 text-muted-foreground">
-            Configure tasks, templates, verifications, and csv uploads.
+            Manage point distribution, error reports, and dynamic categories.
           </p>
         </div>
       </div>
 
       {/* Grid of Sub-Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {TASK_ITEMS.map((card) => (
+        {SYSTEM_ITEMS.map((card) => (
           <Link
             key={card.href}
             href={card.href}
