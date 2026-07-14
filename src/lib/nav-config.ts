@@ -195,7 +195,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     href: "/dashboard/jobs",
     icon: Briefcase,
     section: "main",
-    roles: [ROLES.ADMIN, ROLES.STUDENT, ROLES.COMPANY],
+    dynamicCheck: (roles) => !roles.includes(ROLES.MENTOR),
   },
   {
     id: "talent-pool",

@@ -87,3 +87,42 @@ describe("proxy public routes", () => {
     expect(res.headers.get("location")).toContain("/login");
   });
 });
+
+import { ROLES } from "./lib/auth/roles";
+
+describe("proxy jobs route policy", () => {
+  it("grants access to ADMIN, STUDENT, and COMPANY", () => {
+    [ROLES.ADMIN, ROLES.STUDENT, ROLES.COMPANY].forEach((role) => {
+      const res = proxy(
+        requestFor("/dashboard/jobs", {
+          accessToken: makeToken({ expiry: FUTURE, roles: [role] }),
+          refreshToken: "r",
+        }),
+      );
+      // Allowed through
+      expect(res.headers.get("location")).toBeNull();
+    });
+  });
+
+  it("grants access to community roles like ENABLER", () => {
+    const res = proxy(
+      requestFor("/dashboard/jobs", {
+        accessToken: makeToken({ expiry: FUTURE, roles: [ROLES.ENABLER] }),
+        refreshToken: "r",
+      }),
+    );
+    expect(res.headers.get("location")).toBeNull();
+  });
+
+  it("blocks MENTOR", () => {
+    const res = proxy(
+      requestFor("/dashboard/jobs", {
+        accessToken: makeToken({ expiry: FUTURE, roles: [ROLES.MENTOR] }),
+        refreshToken: "r",
+      }),
+    );
+    const location = res.headers.get("location");
+    expect(location).toContain("/dashboard");
+    expect(location).toContain("unauthorized=true");
+  });
+});

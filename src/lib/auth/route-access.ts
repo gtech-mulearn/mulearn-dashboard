@@ -200,7 +200,11 @@ export const routeAccessMap: Record<string, RouteConfig> = {
 
   // ── Jobs Dashboard ───────────────────────────────────────
   "/dashboard/jobs": {
-    roles: [ROLES.ADMIN, ROLES.STUDENT, ROLES.COMPANY],
+    // The non-empty array triggers the proxy middleware check.
+    // The actual authorization logic is handled by dynamicCheck,
+    // which grants broad access to the community while blocking Mentors.
+    roles: [ROLES.ADMIN],
+    dynamicCheck: (roles) => !roles.includes(ROLES.MENTOR),
   },
 
   // ── Mentor Dashboard ────────────────────────────────────
