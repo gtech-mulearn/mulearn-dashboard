@@ -1,4 +1,5 @@
 export {
+  activateRule,
   bulkIssueAchievements,
   createAchievement,
   createRule,
@@ -13,6 +14,7 @@ export {
   revokeAchievement,
   simulateForUser,
   updateAchievement,
+  updateRule,
 } from "./api";
 export {
   AchievementAnalytics,
@@ -31,6 +33,7 @@ export {
   useAchievementQueryClient,
   useAchievementRules,
   useAchievements,
+  useActivateRule,
   useAuditLogs,
   useBulkIssue,
   useCreateAchievement,
@@ -42,6 +45,7 @@ export {
   useRules,
   useSimulation,
   useUpdateAchievement,
+  useUpdateRule,
 } from "./hooks";
 export type {
   Achievement,

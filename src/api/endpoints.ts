@@ -643,6 +643,8 @@ export const endpoints = {
     /** GET - Rules */
     rules: "/api/v1/dashboard/achievement/rules/",
     createRule: "/api/v1/dashboard/achievement/rules/create/",
+    updateRule: (ruleId: string) =>
+      `/api/v1/dashboard/achievement/rules/${ruleId}/`,
     deactivateRule: (ruleId: string) =>
       `/api/v1/dashboard/achievement/rules/${ruleId}/deactivate/`,
     activateRule: (ruleId: string) =>

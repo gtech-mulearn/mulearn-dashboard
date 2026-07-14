@@ -88,6 +88,18 @@ export async function createRule(
   return res.response;
 }
 
+export async function updateRule(
+  ruleId: string,
+  data: CreateRuleRequest,
+): Promise<AchievementRule> {
+  const res = await apiClient.put(
+    endpoints.achievements.updateRule(ruleId),
+    data,
+    AchievementRuleResponseSchema,
+  );
+  return res.response;
+}
+
 export async function deactivateRule(ruleId: string): Promise<void> {
   await apiClient.post(
     endpoints.achievements.deactivateRule(ruleId),

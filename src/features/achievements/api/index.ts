@@ -16,4 +16,5 @@ export {
   revokeAchievement,
   simulateForUser,
   updateAchievement,
+  updateRule,
 } from "./achievements.api";

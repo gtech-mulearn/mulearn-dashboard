@@ -34,7 +34,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { useEventsList } from "@/features/events";
 import { useInterestGroupsList } from "@/features/interest-groups";
 import { useTasks } from "@/features/tasks";
-import { useCreateRule } from "../hooks/use-achievement-mutations";
+import {
+  useCreateRule,
+  useUpdateRule,
+} from "../hooks/use-achievement-mutations";
 import { useRules } from "../hooks/use-achievement-rules";
 import { useAchievements } from "../hooks/use-achievements";
 import type { AchievementRule } from "../schemas";
@@ -78,7 +81,8 @@ export function RuleFormDialog({
     useAchievements();
   const { data: rules = [] } = useRules();
   const createMutation = useCreateRule();
-  const isPending = createMutation.isPending;
+  const updateMutation = useUpdateRule();
+  const isPending = createMutation.isPending || updateMutation.isPending;
 
   // Fetch events, tasks, interest groups for dropdowns
   const { data: eventsData, isLoading: isLoadingEvents } = useEventsList({
@@ -215,7 +219,7 @@ export function RuleFormDialog({
     }
   }, [open, initialRule, form]);
 
-  const onSubmit = (values: any) => {
+  const onSubmit = (values: RuleFormValues) => {
     const actualRuleType = isCustomType
       ? customTypeValue.trim()
       : values.rule_type;
@@ -302,16 +306,32 @@ export function RuleFormDialog({
       }
     }
 
-    createMutation.mutate(
-      {
-        achievement_id: values.achievement_id,
-        rule_type: actualRuleType,
-        conditions,
-      },
-      {
-        onSuccess: () => onOpenChange(false),
-      },
-    );
+    if (initialRule) {
+      updateMutation.mutate(
+        {
+          ruleId: initialRule.id,
+          data: {
+            achievement_id: values.achievement_id,
+            rule_type: actualRuleType,
+            conditions,
+          },
+        },
+        {
+          onSuccess: () => onOpenChange(false),
+        },
+      );
+    } else {
+      createMutation.mutate(
+        {
+          achievement_id: values.achievement_id,
+          rule_type: actualRuleType,
+          conditions,
+        },
+        {
+          onSuccess: () => onOpenChange(false),
+        },
+      );
+    }
   };
 
   return (

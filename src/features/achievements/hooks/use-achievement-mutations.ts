@@ -13,7 +13,9 @@ import {
   manualIssue,
   revokeAchievement,
   updateAchievement,
+  updateRule,
 } from "../api";
+import type { CreateRuleRequest } from "../schemas";
 import { ACHIEVEMENT_KEYS } from "./use-achievements";
 
 // ==========================================
@@ -120,6 +122,33 @@ export function useCreateRule() {
     onError: (error) => {
       toast.error(
         getApiResponseError(error, { fallback: "Failed to create rule" }),
+      );
+    },
+  });
+}
+
+// ==========================================
+// useUpdateRule
+// ==========================================
+
+export function useUpdateRule() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      ruleId,
+      data,
+    }: {
+      ruleId: string;
+      data: CreateRuleRequest;
+    }) => updateRule(ruleId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ACHIEVEMENT_KEYS.rules() });
+      toast.success("Rule updated successfully");
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to update rule" }),
       );
     },
   });
