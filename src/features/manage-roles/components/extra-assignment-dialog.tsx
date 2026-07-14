@@ -20,10 +20,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useInterestGroupsList } from "../../interest-groups/hooks/useInterestGroupsList";
-import { useGuilds } from "../../intern/hooks/use-intern";
-import { useColleges } from "../../onboarding/hooks/use-colleges";
-import { useCompanies } from "../../onboarding/hooks/use-companies";
+import { useInterestGroupsList } from "@/features/interest-groups";
+import { useGuilds } from "@/features/intern";
+import { useColleges, useCompanies } from "@/features/onboarding";
 import type { Role, RoleUser } from "../schemas";
 
 interface ExtraAssignmentDialogProps {

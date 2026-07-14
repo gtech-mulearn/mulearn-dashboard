@@ -31,9 +31,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useEventsList } from "@/features/events/hooks";
-import { useInterestGroupsList } from "@/features/interest-groups/hooks";
-import { useTasks } from "@/features/tasks/hooks";
+import { useEventsList } from "@/features/events";
+import { useInterestGroupsList } from "@/features/interest-groups";
+import { useTasks } from "@/features/tasks";
 import { useCreateRule } from "../hooks/use-achievement-mutations";
 import { useRules } from "../hooks/use-achievement-rules";
 import { useAchievements } from "../hooks/use-achievements";

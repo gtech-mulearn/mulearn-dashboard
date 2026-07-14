@@ -217,23 +217,16 @@ export async function fetchIssuedLogs(
     };
   }
 
-  if (responseData && !Array.isArray(responseData)) {
-    const data = responseData.data || [];
-    const pagination = responseData.pagination || {};
-    return {
-      data,
-      pagination: {
-        total: Number(pagination.count ?? data.length),
-        page,
-        perPage,
-        totalPages: Number(pagination.totalPages ?? 1),
-      },
-    };
-  }
-
+  const data = responseData.data || [];
+  const pagination = responseData.pagination || {};
   return {
-    data: [],
-    pagination: { total: 0, page, perPage, totalPages: 0 },
+    data,
+    pagination: {
+      total: Number(pagination.count ?? data.length),
+      page,
+      perPage,
+      totalPages: Number(pagination.totalPages ?? 1),
+    },
   };
 }
 

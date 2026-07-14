@@ -161,10 +161,17 @@ export async function fetchUsersWithoutRole(
   return extractUserArray(response.response);
 }
 
+export interface BulkAssignExtraPayload {
+  guild?: string;
+  mentor_tier?: string;
+  ig_ids?: string[];
+  org_id?: string;
+}
+
 export async function bulkAssignRole(
   roleId: string,
   users: string[],
-  extra?: Record<string, any>,
+  extra?: BulkAssignExtraPayload,
 ): Promise<void> {
   await apiClient.post(
     endpoints.manageRoles.bulkAssign(roleId),

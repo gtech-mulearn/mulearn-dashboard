@@ -31,6 +31,7 @@ import { useGuilds } from "@/features/intern";
 import { useColleges } from "@/features/onboarding";
 import { searchUsers } from "@/features/search";
 import { useDebounce } from "@/hooks/use-debounce";
+import type { BulkAssignExtraPayload } from "../api/manage-roles.api";
 import { manageRolesKeys } from "../hooks/query-keys";
 import {
   useAssignUserRole,
@@ -510,7 +511,7 @@ function BulkAddTab({ role }: { role: Role }) {
     const ids = selectedUsers.map((u) => u.id);
     if (!ids.length || !isExtraValid) return;
 
-    const extra: Record<string, any> = {};
+    const extra: BulkAssignExtraPayload = {};
     if (isIntern) {
       extra.guild = guild.trim();
     }

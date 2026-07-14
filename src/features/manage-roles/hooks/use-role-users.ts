@@ -12,6 +12,7 @@ import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   type AssignUserRolePayload,
   assignUserRole,
+  type BulkAssignExtraPayload,
   bulkAssignFromExcel,
   bulkAssignRole,
   bulkRemoveRole,
@@ -115,7 +116,7 @@ export function useBulkAssignRole(roleId: string) {
       extra,
     }: {
       users: string[];
-      extra?: Record<string, any>;
+      extra?: BulkAssignExtraPayload;
     }) => bulkAssignRole(roleId, users, extra),
     onSuccess: () => {
       queryClient.invalidateQueries({
