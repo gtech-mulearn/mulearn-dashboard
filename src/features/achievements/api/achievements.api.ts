@@ -257,7 +257,7 @@ export async function fetchUserAchievements(
   muid: string,
 ): Promise<UserAchievement[]> {
   const res = await apiClient.get(
-    `${endpoints.achievements.list}?user_id=${muid}`,
+    endpoints.achievements.listByUser(muid),
     UserAchievementListResponseSchema,
   );
   return res.response;

@@ -39,14 +39,10 @@ function buildQueryString(params?: TInternQueryParams): string {
   const searchParams = new URLSearchParams();
   if (params.page !== undefined) {
     searchParams.set("page", String(params.page));
-    searchParams.set("pageIndex", String(params.page));
-    searchParams.set("page_index", String(params.page));
   }
   const perPageVal = params.perPage ?? params.page_size;
   if (perPageVal !== undefined) {
     searchParams.set("perPage", String(perPageVal));
-    searchParams.set("per_page", String(perPageVal));
-    searchParams.set("page_size", String(perPageVal));
   }
   if (params.search) searchParams.set("search", params.search);
   if (params.sortBy) searchParams.set("sortBy", params.sortBy);

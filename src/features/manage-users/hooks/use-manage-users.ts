@@ -150,7 +150,7 @@ export function useCollegeData(districtId: string) {
 
 export function useResolveLocation() {
   return useQuery({
-    queryKey: ["resolve-location-list"],
+    queryKey: manageUsersKeys.resolveLocation(),
     queryFn: () => searchLocations("india"),
     staleTime: 24 * 60 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,

@@ -630,6 +630,9 @@ export const endpoints = {
 
     /** GET - List all achievements */
     list: "/api/v1/dashboard/achievement/list/",
+    /** GET - List all achievements with has_achievement flag for a user */
+    listByUser: (muid: string) =>
+      `/api/v1/dashboard/achievement/list/?user_id=${muid}`,
     /** POST - Create new achievement */
     create: "/api/v1/dashboard/achievement/create/",
     /** PUT - Update achievement */
