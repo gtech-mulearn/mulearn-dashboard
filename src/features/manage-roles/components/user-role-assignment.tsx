@@ -26,11 +26,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useInterestGroupsList } from "@/features/interest-groups";
+import { useGuilds } from "@/features/intern";
+import { useColleges } from "@/features/onboarding";
 import { searchUsers } from "@/features/search";
 import { useDebounce } from "@/hooks/use-debounce";
-import { useInterestGroupsList } from "../../interest-groups/hooks/useInterestGroupsList";
-import { useGuilds } from "../../intern/hooks/use-intern";
-import { useColleges } from "../../onboarding/hooks/use-colleges";
+import { manageRolesKeys } from "../hooks/query-keys";
 import {
   useAssignUserRole,
   useBulkAssignRole,
@@ -68,7 +69,7 @@ function SingleTab({ role }: { role: Role }) {
 
   // Search all users in the system via the global user search API
   const { data: searchData, isLoading } = useQuery({
-    queryKey: ["role-user-search", debouncedQuery],
+    queryKey: manageRolesKeys.searchUsers(debouncedQuery),
     queryFn: () => searchUsers({ search: debouncedQuery, perPage: 30 }),
     enabled: debouncedQuery.length >= 2,
     staleTime: 30_000,
