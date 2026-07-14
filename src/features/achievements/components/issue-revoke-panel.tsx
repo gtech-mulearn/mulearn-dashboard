@@ -139,25 +139,21 @@ function ActionDialog({
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="action-message">
-              {isIssue
-                ? "Message (optional)"
-                : "Reason for revocation (optional)"}
-            </Label>
-            <Textarea
-              id="action-message"
-              placeholder={
-                isIssue
-                  ? "Add a note about this manual issue..."
-                  : "Why is this achievement being revoked?"
-              }
-              rows={3}
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              disabled={isPending}
-            />
-          </div>
+          {!isIssue && (
+            <div className="space-y-2">
+              <Label htmlFor="action-message">
+                Reason for revocation (optional)
+              </Label>
+              <Textarea
+                id="action-message"
+                placeholder="Why is this achievement being revoked?"
+                rows={3}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                disabled={isPending}
+              />
+            </div>
+          )}
         </div>
 
         <DialogFooter>
