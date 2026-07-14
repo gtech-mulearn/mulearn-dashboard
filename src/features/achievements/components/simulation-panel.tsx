@@ -30,18 +30,18 @@ const SIM_STATUS_CONFIG: Record<
 > = {
   eligible: {
     label: "Eligible",
-    badgeClass: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
-    barClass: "bg-brand-blue",
+    badgeClass: "bg-success/10 text-success border-success/20",
+    barClass: "bg-success",
   },
   claimed: {
     label: "Claimed",
-    badgeClass: "bg-blue-500/10 text-blue-600 border-blue-500/20",
-    barClass: "bg-blue-500",
+    badgeClass: "bg-brand-blue/10 text-brand-blue border-brand-blue/20",
+    barClass: "bg-brand-blue",
   },
   "in-progress": {
     label: "In Progress",
-    badgeClass: "bg-amber-500/10 text-amber-600 border-amber-500/20",
-    barClass: "bg-amber-500",
+    badgeClass: "bg-warning/10 text-warning border-warning/20",
+    barClass: "bg-warning",
   },
   locked: {
     label: "Not Eligible",

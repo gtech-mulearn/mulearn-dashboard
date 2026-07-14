@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
+import { searchUsers } from "@/features/search";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   type AssignUserRolePayload,
@@ -54,6 +55,16 @@ export function useUsersWithoutRole(roleId: string) {
     enabled: Boolean(roleId),
     staleTime: 60 * 1000,
     refetchOnWindowFocus: false,
+  });
+}
+
+export function useRoleUserSearch(query: string, limit = 30) {
+  const isSearchActive = query.length >= 2;
+  return useQuery({
+    queryKey: [...manageRolesKeys.searchUsers(query), limit] as const,
+    queryFn: () => searchUsers({ search: query, perPage: limit }),
+    enabled: isSearchActive,
+    staleTime: 30_000,
   });
 }
 

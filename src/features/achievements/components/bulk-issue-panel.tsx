@@ -28,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { downloadBulkTemplate } from "../api";
 import { useBulkIssue } from "../hooks/use-achievement-mutations";
 import { useAchievements } from "../hooks/use-achievements";
@@ -115,6 +116,12 @@ export function BulkIssuePanel() {
       a.download = "achievement_bulk_import_template.xlsx";
       a.click();
       URL.revokeObjectURL(url);
+    } catch (error) {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to download template",
+        }),
+      );
     } finally {
       setIsDownloading(false);
     }

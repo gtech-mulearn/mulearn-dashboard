@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Trash2 } from "lucide-react";
 import * as React from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,7 +30,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { useEventsList } from "@/features/events";
 import { useInterestGroupsList } from "@/features/interest-groups";
 import { useTasks } from "@/features/tasks";
@@ -128,17 +127,19 @@ export function RuleFormDialog({
     return list;
   }, [rules]);
 
-  const form = useForm({
-    resolver: zodResolver(RuleFormSchema),
+  const form = useForm<RuleFormValues>({
+    resolver: zodResolver(
+      RuleFormSchema,
+    ) as unknown as Resolver<RuleFormValues>,
     defaultValues: {
       achievement_id: "",
       rule_type: "",
-      karma_amount: undefined as number | undefined,
+      karma_amount: undefined,
       event_id: "",
       task_id: "",
-      streak_count: undefined as number | undefined,
+      streak_count: undefined,
       ig_id: "",
-      ig_karma_amount: undefined as number | undefined,
+      ig_karma_amount: undefined,
       custom_conditions: "{}",
     },
   });
@@ -235,7 +236,10 @@ export function RuleFormDialog({
 
     switch (values.rule_type) {
       case "karma":
-        if (values.karma_amount === undefined || isNaN(values.karma_amount)) {
+        if (
+          values.karma_amount === undefined ||
+          Number.isNaN(values.karma_amount)
+        ) {
           form.setError("karma_amount", { message: "Invalid karma amount" });
           return;
         }
@@ -256,7 +260,10 @@ export function RuleFormDialog({
         conditions = { task_id: values.task_id };
         break;
       case "streak":
-        if (values.streak_count === undefined || isNaN(values.streak_count)) {
+        if (
+          values.streak_count === undefined ||
+          Number.isNaN(values.streak_count)
+        ) {
           form.setError("streak_count", { message: "Invalid streak count" });
           return;
         }
@@ -269,7 +276,7 @@ export function RuleFormDialog({
         }
         if (
           values.ig_karma_amount === undefined ||
-          isNaN(values.ig_karma_amount)
+          Number.isNaN(values.ig_karma_amount)
         ) {
           form.setError("ig_karma_amount", { message: "Invalid karma amount" });
           return;
@@ -279,7 +286,6 @@ export function RuleFormDialog({
           karma: Number(values.ig_karma_amount),
         };
         break;
-      case "custom":
       default: {
         const obj: Record<string, unknown> = {};
         for (const pair of customPairs) {
@@ -345,7 +351,7 @@ export function RuleFormDialog({
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
             {/* Achievement */}
             <FormField
-              control={form.control as any}
+              control={form.control}
               name="achievement_id"
               render={({ field }) => (
                 <FormItem>
@@ -381,7 +387,7 @@ export function RuleFormDialog({
 
             {/* Rule Type */}
             <FormField
-              control={form.control as any}
+              control={form.control}
               name="rule_type"
               render={({ field }) => (
                 <FormItem>
@@ -485,7 +491,7 @@ export function RuleFormDialog({
             {/* Dynamic Rule Conditions Inputs */}
             {form.watch("rule_type") === "karma" && (
               <FormField
-                control={form.control as any}
+                control={form.control}
                 name="karma_amount"
                 render={({ field }) => (
                   <FormItem>
@@ -506,7 +512,7 @@ export function RuleFormDialog({
 
             {form.watch("rule_type") === "event" && (
               <FormField
-                control={form.control as any}
+                control={form.control}
                 name="event_id"
                 render={({ field }) => (
                   <FormItem>
@@ -527,7 +533,7 @@ export function RuleFormDialog({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {events.map((e: any) => (
+                        {events.map((e) => (
                           <SelectItem key={e.id} value={e.id}>
                             {e.title}
                           </SelectItem>
@@ -542,7 +548,7 @@ export function RuleFormDialog({
 
             {form.watch("rule_type") === "task" && (
               <FormField
-                control={form.control as any}
+                control={form.control}
                 name="task_id"
                 render={({ field }) => (
                   <FormItem>
@@ -563,8 +569,8 @@ export function RuleFormDialog({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {tasks.map((t: any) => (
-                          <SelectItem key={t.id} value={t.id}>
+                        {tasks.map((t) => (
+                          <SelectItem key={t.id} value={String(t.id)}>
                             {t.title}
                           </SelectItem>
                         ))}
@@ -578,7 +584,7 @@ export function RuleFormDialog({
 
             {form.watch("rule_type") === "streak" && (
               <FormField
-                control={form.control as any}
+                control={form.control}
                 name="streak_count"
                 render={({ field }) => (
                   <FormItem>
@@ -600,7 +606,7 @@ export function RuleFormDialog({
             {form.watch("rule_type") === "ig_karma" && (
               <div className="space-y-4">
                 <FormField
-                  control={form.control as any}
+                  control={form.control}
                   name="ig_id"
                   render={({ field }) => (
                     <FormItem>
@@ -621,7 +627,7 @@ export function RuleFormDialog({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {igs.map((ig: any) => (
+                          {igs.map((ig) => (
                             <SelectItem key={ig.id} value={ig.id}>
                               {ig.name}
                             </SelectItem>
@@ -633,7 +639,7 @@ export function RuleFormDialog({
                   )}
                 />
                 <FormField
-                  control={form.control as any}
+                  control={form.control}
                   name="ig_karma_amount"
                   render={({ field }) => (
                     <FormItem>

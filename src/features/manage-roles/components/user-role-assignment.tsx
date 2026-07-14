@@ -1,6 +1,5 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { Check, Loader2, Search, UserMinus, UserPlus } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -29,16 +28,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useInterestGroupsList } from "@/features/interest-groups";
 import { useGuilds } from "@/features/intern";
 import { useColleges } from "@/features/onboarding";
-import { searchUsers } from "@/features/search";
 import { useDebounce } from "@/hooks/use-debounce";
 import type { BulkAssignExtraPayload } from "../api/manage-roles.api";
-import { manageRolesKeys } from "../hooks/query-keys";
 import {
   useAssignUserRole,
   useBulkAssignRole,
   useBulkRemoveRole,
   useBulkRoleUsers,
   useRemoveUserRole,
+  useRoleUserSearch,
   useUsersWithoutRole,
 } from "../hooks/use-role-users";
 import type { Role, RoleUser } from "../schemas";
@@ -69,12 +67,7 @@ function SingleTab({ role }: { role: Role }) {
   const removeMutation = useRemoveUserRole(role.id);
 
   // Search all users in the system via the global user search API
-  const { data: searchData, isLoading } = useQuery({
-    queryKey: manageRolesKeys.searchUsers(debouncedQuery),
-    queryFn: () => searchUsers({ search: debouncedQuery, perPage: 30 }),
-    enabled: debouncedQuery.length >= 2,
-    staleTime: 30_000,
-  });
+  const { data: searchData, isLoading } = useRoleUserSearch(debouncedQuery, 30);
   const results: RoleUser[] = (searchData?.data ?? []).map((u) => ({
     id: String(u.id),
     full_name: u.full_name,
@@ -404,12 +397,10 @@ function BulkAddTab({ role }: { role: Role }) {
 
   const isSearchActive = debouncedSearch.length >= 2;
 
-  const { data: searchData, isLoading } = useQuery({
-    queryKey: ["bulk-user-search", debouncedSearch],
-    queryFn: () => searchUsers({ search: debouncedSearch, perPage: 50 }),
-    enabled: isSearchActive,
-    staleTime: 30_000,
-  });
+  const { data: searchData, isLoading } = useRoleUserSearch(
+    debouncedSearch,
+    50,
+  );
 
   const users: RoleUser[] = isSearchActive
     ? (searchData?.data ?? []).map((u) => ({

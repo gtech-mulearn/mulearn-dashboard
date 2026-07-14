@@ -9,6 +9,7 @@ import {
   Trophy,
   X,
 } from "lucide-react";
+import Image from "next/image";
 import * as React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -201,6 +202,7 @@ function AchievementRow({
   onIssue,
   onRevoke,
 }: AchievementRowProps) {
+  const [hasError, setHasError] = React.useState(false);
   const iconSrc = React.useMemo(() => {
     const src = achievement.icon;
     if (!src) return null;
@@ -215,14 +217,15 @@ function AchievementRow({
       <div className="flex items-center gap-3 min-w-0 w-full">
         {/* Icon */}
         <div className="shrink-0">
-          {iconSrc ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+          {iconSrc && !hasError ? (
+            <Image
               src={iconSrc}
               alt={achievement.name}
               width={40}
               height={40}
               className="rounded-md object-cover"
+              onError={() => setHasError(true)}
+              unoptimized
             />
           ) : (
             <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted">
