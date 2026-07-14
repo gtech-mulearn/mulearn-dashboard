@@ -198,6 +198,11 @@ export const routeAccessMap: Record<string, RouteConfig> = {
       roles.some((r) => r.endsWith(" IGLead") || r.endsWith(" CampusLead")),
   },
 
+  // ── Jobs Dashboard ───────────────────────────────────────
+  "/dashboard/jobs": {
+    roles: [ROLES.ADMIN, ROLES.STUDENT, ROLES.COMPANY],
+  },
+
   // ── Mentor Dashboard ────────────────────────────────────
   "/dashboard/mentor": {
     roles: [ROLES.MENTOR],
