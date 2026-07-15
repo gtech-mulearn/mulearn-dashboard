@@ -221,7 +221,21 @@ export const AnalyticsView = ({ params }: AnalyticsViewProps) => {
     isLoading,
     isError,
     refetch,
+    isFetching,
   } = useShortUrlAnalytics(id);
+
+  const handleRefresh = async () => {
+    try {
+      const result = await refetch();
+      if (result.isError) {
+        toast.error("Failed to refresh analytics.");
+      } else {
+        toast.success("Analytics refreshed successfully!");
+      }
+    } catch {
+      toast.error("Failed to refresh analytics.");
+    }
+  };
 
   if (!id)
     return (
@@ -229,7 +243,7 @@ export const AnalyticsView = ({ params }: AnalyticsViewProps) => {
         icon={<Link2 className="size-7" />}
         title="Invalid URL ID"
         desc="The URL ID is missing or invalid. Go back and try again."
-        action={<Button onClick={() => refetch()}>Retry</Button>}
+        action={<Button onClick={handleRefresh}>Retry</Button>}
       />
     );
 
@@ -238,12 +252,16 @@ export const AnalyticsView = ({ params }: AnalyticsViewProps) => {
   if (isError)
     return (
       <EmptyState
-        icon={<RefreshCw className="size-7" />}
+        icon={
+          <RefreshCw className={`size-7 ${isFetching ? "animate-spin" : ""}`} />
+        }
         title="Failed to Load"
         desc="We couldn't fetch analytics data. Check your connection and try again."
         action={
-          <Button onClick={() => refetch()}>
-            <RefreshCw className="size-3.5 mr-1.5" />
+          <Button onClick={handleRefresh} disabled={isFetching}>
+            <RefreshCw
+              className={`size-3.5 mr-1.5 ${isFetching ? "animate-spin" : ""}`}
+            />
             Try Again
           </Button>
         }
@@ -257,8 +275,10 @@ export const AnalyticsView = ({ params }: AnalyticsViewProps) => {
         title="No Analytics Yet"
         desc="Share your short link to start tracking clicks and engagement."
         action={
-          <Button onClick={() => refetch()}>
-            <RefreshCw className="size-3.5 mr-1.5" />
+          <Button onClick={handleRefresh} disabled={isFetching}>
+            <RefreshCw
+              className={`size-3.5 mr-1.5 ${isFetching ? "animate-spin" : ""}`}
+            />
             Refresh
           </Button>
         }
@@ -303,10 +323,13 @@ export const AnalyticsView = ({ params }: AnalyticsViewProps) => {
 
             <Button
               type="button"
-              onClick={() => refetch()}
+              onClick={handleRefresh}
               className="flex items-center gap-1.5"
+              disabled={isFetching}
             >
-              <RefreshCw className="size-3.5" />
+              <RefreshCw
+                className={`size-3.5 ${isFetching ? "animate-spin" : ""}`}
+              />
               <span className="hidden sm:inline">Refresh</span>
             </Button>
           </div>
