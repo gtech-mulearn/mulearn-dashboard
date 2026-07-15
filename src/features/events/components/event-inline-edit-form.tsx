@@ -76,10 +76,12 @@ export function EventInlineEditForm({
       "Tech Talk",
       "Others",
     ];
-    return list.map((type) => {
-      const val = type.trim().toLowerCase().replace(/\s+/g, "_");
-      return { label: type, value: val };
-    });
+    return list
+      .filter((type): type is string => typeof type === "string")
+      .map((type) => {
+        const val = type.trim().toLowerCase().replace(/\s+/g, "_");
+        return { label: type, value: val };
+      });
   }, [typeScopeData]);
 
   const {
@@ -115,13 +117,18 @@ export function EventInlineEditForm({
 
     // Resolve category UUID from category_name if not directly available
     let resolvedCategory = "";
-    if (event.category_name && categoryOptions) {
+    if (
+      event.category_name &&
+      typeof event.category_name === "string" &&
+      categoryOptions
+    ) {
       const eventCatSlug = event.category_name
         .trim()
         .toLowerCase()
         .replace(/\s+/g, "_");
 
       const matchingCat = categoryOptions.find((c) => {
+        if (typeof c.name !== "string") return false;
         const catSlug = c.name.trim().toLowerCase().replace(/\s+/g, "_");
         return (
           catSlug === eventCatSlug ||
@@ -160,8 +167,8 @@ export function EventInlineEditForm({
       category: resolvedCategory,
       event_type:
         event.event_type ??
-        (resolvedCategory
-          ? event.category_name?.trim().toLowerCase().replace(/\s+/g, "_")
+        (resolvedCategory && typeof event.category_name === "string"
+          ? event.category_name.trim().toLowerCase().replace(/\s+/g, "_")
           : ""),
       event_scope: resolvedEventScope,
       start_datetime: toDatetimeLocal(event.start_datetime),
@@ -478,6 +485,8 @@ export function EventInlineEditForm({
                                 onSelect={() => {
                                   const matchingCat =
                                     (categoryOptions ?? []).find((c) => {
+                                      if (typeof c.name !== "string")
+                                        return false;
                                       const catSlug = c.name
                                         .trim()
                                         .toLowerCase()
@@ -485,6 +494,8 @@ export function EventInlineEditForm({
                                       return catSlug === item.value;
                                     }) ||
                                     (categoryOptions ?? []).find((c) => {
+                                      if (typeof c.name !== "string")
+                                        return false;
                                       const catSlug = c.name
                                         .trim()
                                         .toLowerCase()

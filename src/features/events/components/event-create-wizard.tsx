@@ -262,6 +262,7 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
     if (!watch("category") && categoryOptions && categoryOptions.length > 0) {
       const othersCat =
         categoryOptions.find((c) => {
+          if (typeof c.name !== "string") return false;
           const catSlug = c.name.trim().toLowerCase().replace(/\s+/g, "_");
           return catSlug === "others" || catSlug === "other";
         }) || categoryOptions[0];
@@ -902,6 +903,8 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                                           const matchingCat =
                                             (categoryOptions ?? []).find(
                                               (c) => {
+                                                if (typeof c.name !== "string")
+                                                  return false;
                                                 const catSlug = c.name
                                                   .trim()
                                                   .toLowerCase()
@@ -911,6 +914,8 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                                             ) ||
                                             (categoryOptions ?? []).find(
                                               (c) => {
+                                                if (typeof c.name !== "string")
+                                                  return false;
                                                 const catSlug = c.name
                                                   .trim()
                                                   .toLowerCase()
