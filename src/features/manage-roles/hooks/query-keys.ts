@@ -20,6 +20,4 @@ export const manageRolesKeys = {
     [...manageRolesKeys.all, "bulk-users", roleId] as const,
   usersWithoutRole: (roleId: string) =>
     [...manageRolesKeys.all, "users-without-role", roleId] as const,
-  searchUsers: (query: string) =>
-    [...manageRolesKeys.all, "search-users", query] as const,
 };

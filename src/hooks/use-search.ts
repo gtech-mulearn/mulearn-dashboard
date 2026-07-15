@@ -4,7 +4,6 @@ import { z } from "zod";
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import { getApiResponseError } from "@/hooks/use-get-error";
-import { ApiResponseSchema } from "@/lib/schemas/api-response";
 import { useDebounce } from "./use-debounce";
 
 export interface UserResult {
@@ -21,11 +20,9 @@ const UserResultSchema = z.object({
   profile_pic: z.string().nullable().optional(),
 });
 
-const SearchResponseSchema = ApiResponseSchema(
-  z.object({
-    data: z.array(UserResultSchema),
-  }),
-);
+const SearchResponseSchema = z.object({
+  data: z.array(UserResultSchema),
+});
 
 const EMPTY_EXCLUDED: string[] = [];
 
@@ -81,10 +78,13 @@ export function useSearch(options: SearchOptions | string[] = EMPTY_EXCLUDED) {
     }
 
     apiClient
-      .get(`${endpoint}?${params}`, SearchResponseSchema)
+      .get<{ data: UserResult[] }>(
+        `${endpoint}?${params}`,
+        SearchResponseSchema,
+      )
       .then((response) => {
         if (!cancelled) {
-          const users = response.response.data ?? [];
+          const users = response.data ?? [];
           setResults(users.filter((u) => !stableExcluded.includes(u.muid)));
         }
       })

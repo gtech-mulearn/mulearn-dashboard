@@ -24,5 +24,4 @@ export const manageUsersKeys = {
     [...manageUsersKeys.all, "districts", stateId] as const,
   collegeData: (districtId: string) =>
     [...manageUsersKeys.all, "college-data", districtId] as const,
-  resolveLocation: () => [...manageUsersKeys.all, "resolve-location"] as const,
 };

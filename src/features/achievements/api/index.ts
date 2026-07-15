@@ -1,5 +1,4 @@
 export {
-  activateRule,
   bulkIssueAchievements,
   createAchievement,
   createRule,
@@ -11,10 +10,8 @@ export {
   fetchAuditLogs,
   fetchIssuedLogs,
   fetchRules,
-  fetchUserAchievements,
   manualIssue,
   revokeAchievement,
   simulateForUser,
   updateAchievement,
-  updateRule,
 } from "./achievements.api";

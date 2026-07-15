@@ -51,13 +51,13 @@ export const DepartmentsResponseSchema = ApiResponseSchema(
 
 export const CompanySchema = z
   .object({
-    id: z.union([z.string(), z.number()]).transform((v) => String(v)),
+    id: z.string(),
     title: z.string(),
   })
   .passthrough();
 
 export const CompaniesResponseSchema = ApiResponseSchema(
-  z.object({ data: z.array(CompanySchema) }).passthrough(),
+  z.object({ companies: z.array(CompanySchema) }).passthrough(),
 );
 
 export const RoleSchema = z

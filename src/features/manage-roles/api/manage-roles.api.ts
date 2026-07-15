@@ -129,12 +129,8 @@ export async function removeUserRole(payload: {
   user_id: string;
   role_id: string;
 }): Promise<void> {
-  const queryParams = new URLSearchParams({
-    user_id: payload.user_id,
-    role_id: payload.role_id,
-  });
   await apiClient.delete(
-    `${endpoints.manageRoles.userRole}?${queryParams}`,
+    endpoints.manageRoles.userRole,
     payload,
     GenericMutationResponseSchema,
   );
@@ -161,21 +157,13 @@ export async function fetchUsersWithoutRole(
   return extractUserArray(response.response);
 }
 
-export interface BulkAssignExtraPayload {
-  guild?: string;
-  mentor_tier?: string;
-  ig_ids?: string[];
-  org_id?: string;
-}
-
 export async function bulkAssignRole(
   roleId: string,
   users: string[],
-  extra?: BulkAssignExtraPayload,
 ): Promise<void> {
   await apiClient.post(
     endpoints.manageRoles.bulkAssign(roleId),
-    { users, ...extra },
+    { users },
     GenericMutationResponseSchema,
   );
 }

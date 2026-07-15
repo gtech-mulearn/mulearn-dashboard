@@ -9,7 +9,6 @@ export default function Loader() {
         height={400}
         width={400}
         priority
-        unoptimized
       />
     </div>
   );

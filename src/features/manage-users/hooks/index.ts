@@ -13,7 +13,6 @@ export {
   useManageUsersCsvDownload,
   useManageUsersList,
   useManageUsersMeta,
-  useResolveLocation,
   useStates,
   useUpdateManageUser,
 } from "./use-manage-users";

@@ -48,24 +48,21 @@ export function normalizePayload(
   if (dirty.interest_groups) payload.interest_groups = values.interest_groups;
 
   if (dirty.location_id || dirty.district_id) {
-    payload.district = values.location_id || values.district_id || null;
+    payload.district = values.location_id || values.district_id;
   }
 
-  // College organization details (org, department, graduation year) are linked on the backend.
-  // We must send them together if any of them are modified.
-  if (
-    dirty.college_id ||
-    dirty.community ||
-    dirty.department_id ||
-    dirty.graduation_year
-  ) {
+  if (dirty.college_id || dirty.community || dirty.department_id) {
     payload.organizations = values.college_id
       ? [values.college_id, ...values.community]
       : values.community;
-    payload.department = values.department_id || null;
+    /*payload.community = values.community;*/
+    payload.department = values.department_id;
+  }
+
+  if (dirty.graduation_year) {
     payload.graduation_year = values.graduation_year
       ? Number(values.graduation_year)
-      : null;
+      : undefined;
   }
 
   for (const key of Object.keys(payload)) {
@@ -73,8 +70,12 @@ export function normalizePayload(
     const isEmptyString = typeof value === "string" && value.trim() === "";
     const isEmptyArray = Array.isArray(value) && value.length === 0;
 
-    // Do NOT delete null values (e.g. for graduation_year or department) as they are used to clear fields.
-    if (value === undefined || isEmptyString || isEmptyArray) {
+    if (
+      value === undefined ||
+      value === null ||
+      isEmptyString ||
+      isEmptyArray
+    ) {
       delete payload[key];
     }
   }

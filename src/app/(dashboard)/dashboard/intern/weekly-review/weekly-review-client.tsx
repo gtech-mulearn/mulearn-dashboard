@@ -1,6 +1,7 @@
 "use client";
 
 import { Trophy } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { useWeeklyReviewCurrent, WeeklyReviewForm } from "@/features/intern";
 
 function getISOWeekAndYear(date: Date = new Date()) {

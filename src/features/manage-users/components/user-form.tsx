@@ -2,13 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CheckCircle2 } from "lucide-react";
-import {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useMemo,
-  useState,
-} from "react";
+import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import Loader from "@/app/loading";
@@ -20,7 +14,6 @@ import {
   useLocationSearch,
   useManageUserDetail,
   useManageUsersMeta,
-  useResolveLocation,
   useStates,
   useUpdateManageUser,
 } from "../hooks";
@@ -50,7 +43,6 @@ export const UserForm = forwardRef<
 
   const [locationSearch, setLocationSearch] = useState("");
   const [isLocationMenuOpen, setIsLocationMenuOpen] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
 
   const form = useForm<ManageUserFormValues>({
     resolver: zodResolver(ManageUserFormSchema),
@@ -76,193 +68,101 @@ export const UserForm = forwardRef<
   const stateId = form.watch("state_id") || "";
   const districtId = form.watch("district_id") || "";
 
-  // 1. Parse saved college organization info
-  const collegeOrg = useMemo(() => {
-    const organizations = detail?.organizations ?? [];
-    return organizations.find((org) => {
+  const { data: locationOptions = [], isFetching: isLocationFetching } =
+    useLocationSearch(locationSearch);
+  const { data: states = [] } = useStates(countryId);
+  const { data: districts = [] } = useDistricts(stateId);
+  const { data: collegeData } = useCollegeData(districtId);
+
+  const colleges = collegeData?.colleges ?? [];
+  const departments = collegeData?.departments ?? [];
+  const { data: companies = [] } = useCompanies();
+  const isBusy =
+    isDetailLoading || isMetaLoading || updateUserMutation.isPending;
+
+  useEffect(() => {
+    if (!detail) return;
+
+    const organizations = detail.organizations ?? [];
+    const collegeOrg = organizations.find((org) => {
       const type = (org.org_type ?? "").toLowerCase();
       return type === "college" || type === "school";
     });
-  }, [detail]);
 
-  // 2. Resolve Country ID
-  const resolvedCountryId = useMemo(() => {
-    return resolveOptionValue(collegeOrg?.country, meta?.countries ?? []);
-  }, [collegeOrg?.country, meta?.countries]);
+    const selectedCommunities = organizations
+      .filter((org) => (org.org_type ?? "").toLowerCase() === "community")
+      .map((org) => org.org);
 
-  // Use resolved initial country before form is ready/initialized, watched value after
-  const activeCountryId = isInitialized ? countryId : resolvedCountryId;
+    const selectedRoles = detail.roles?.length
+      ? detail.roles
+      : (detail.role ?? []);
 
-  // 3. Fetch & Resolve States
-  const { data: states = [], isLoading: isStatesLoading } =
-    useStates(activeCountryId);
-  const resolvedStateId = useMemo(() => {
-    return resolveOptionValue(collegeOrg?.state, states);
-  }, [collegeOrg?.state, states]);
+    form.reset({
+      full_name: detail.full_name ?? "",
+      email: detail.email ?? "",
+      mobile: detail.mobile ?? "",
+      discord_id: detail.discord_id ?? "",
+      location_id: detail.district ?? "",
+      community: selectedCommunities,
+      roles: selectedRoles,
+      interest_groups: detail.interest_groups ?? [],
+      country_id: resolveOptionValue(
+        collegeOrg?.country,
+        meta?.countries ?? [],
+      ),
+      state_id: collegeOrg?.state ?? "",
+      district_id: collegeOrg?.district ?? "",
+      college_id: collegeOrg?.org ?? "",
+      department_id: collegeOrg?.department ?? "",
+      graduation_year: collegeOrg?.graduation_year
+        ? String(collegeOrg.graduation_year)
+        : "",
+    });
 
-  const activeStateId = isInitialized ? stateId : resolvedStateId;
-
-  // 4. Fetch & Resolve Districts
-  const { data: districts = [], isLoading: isDistrictsLoading } =
-    useDistricts(activeStateId);
-  const resolvedDistrictId = useMemo(() => {
-    return resolveOptionValue(collegeOrg?.district, districts);
-  }, [collegeOrg?.district, districts]);
-
-  const activeDistrictId = isInitialized ? districtId : resolvedDistrictId;
-
-  // 5. Fetch & Resolve Colleges and Departments
-  const { data: collegeData, isLoading: isCollegeDataLoading } =
-    useCollegeData(activeDistrictId);
-  const colleges = collegeData?.colleges ?? [];
-  const departments = collegeData?.departments ?? [];
-
-  const resolvedCollegeId = useMemo(() => {
-    return resolveOptionValue(collegeOrg?.org, colleges);
-  }, [collegeOrg?.org, colleges]);
-
-  const resolvedDepartmentId = useMemo(() => {
-    return resolveOptionValue(collegeOrg?.department, departments);
-  }, [collegeOrg?.department, departments]);
-
-  // 6. Location (District) resolution
-  const savedDistrictUuid = detail?.district ?? "";
-  const { data: locationsList = [], isLoading: isLocationResolving } =
-    useResolveLocation();
-  const resolvedLocation = useMemo(() => {
-    if (!savedDistrictUuid || locationsList.length === 0) return undefined;
-    return locationsList.find((o) => o.value === savedDistrictUuid);
-  }, [savedDistrictUuid, locationsList]);
-
-  // 7. General Location query for typing/searching
-  const { data: locationOptions = [], isFetching: isLocationFetching } =
-    useLocationSearch(locationSearch);
-
-  const { data: companies = [] } = useCompanies();
-
-  const isBusy =
-    isDetailLoading ||
-    isMetaLoading ||
-    isStatesLoading ||
-    isDistrictsLoading ||
-    isCollegeDataLoading ||
-    isLocationResolving ||
-    updateUserMutation.isPending;
-
-  // Combined readiness flag
-  const isReady = useMemo(() => {
-    const basicReady = !isDetailLoading && !isMetaLoading;
-    if (!basicReady) return false;
-
-    // If there is country/state/district saved info, wait until their option lists are loaded
-    if (resolvedCountryId && isStatesLoading) return false;
-    if (resolvedStateId && isDistrictsLoading) return false;
-    if (resolvedDistrictId && isCollegeDataLoading) return false;
-    if (savedDistrictUuid && isLocationResolving) return false;
-
-    return true;
-  }, [
-    isDetailLoading,
-    isMetaLoading,
-    resolvedCountryId,
-    isStatesLoading,
-    resolvedStateId,
-    isDistrictsLoading,
-    resolvedDistrictId,
-    isCollegeDataLoading,
-    savedDistrictUuid,
-    isLocationResolving,
-  ]);
-
-  // Sync: reset state_id, district_id, college_id, department_id when countryId changes
-  // biome-ignore lint/correctness/useExhaustiveDependencies: countryId is the intentional trigger; form and isInitialized guard against premature resets
-  useEffect(() => {
-    if (form.formState.isDirty && isInitialized) {
-      form.setValue("state_id", "");
-      form.setValue("district_id", "");
-      form.setValue("college_id", "");
-      form.setValue("department_id", "");
-    }
-  }, [countryId, form, isInitialized]);
-
-  // Sync: reset district_id, college_id, department_id when stateId changes
-  // biome-ignore lint/correctness/useExhaustiveDependencies: stateId is the intentional trigger
-  useEffect(() => {
-    if (form.formState.isDirty && isInitialized) {
-      form.setValue("district_id", "");
-      form.setValue("college_id", "");
-      form.setValue("department_id", "");
-    }
-  }, [stateId, form, isInitialized]);
-
-  // Sync: reset college_id, department_id when districtId changes
-  // biome-ignore lint/correctness/useExhaustiveDependencies: districtId is the intentional trigger
-  useEffect(() => {
-    if (form.formState.isDirty && isInitialized) {
-      form.setValue("college_id", "");
-      form.setValue("department_id", "");
-    }
-  }, [districtId, form, isInitialized]);
-
-  // Reset initialization when user id changes
-  // biome-ignore lint/correctness/useExhaustiveDependencies: id is a prop-level trigger; setters are stable
-  useEffect(() => {
-    setIsInitialized(false);
     setLocationSearch("");
-  }, [id]);
+  }, [detail, form, meta?.countries]);
 
-  // One-time initialization of form fields when all data is fully loaded and resolved
+  // Resolve prefilled label values to option ids once cascading options are loaded.
   useEffect(() => {
-    if (isReady && !isInitialized && detail) {
-      const organizations = detail.organizations ?? [];
-      const selectedCommunities = organizations
-        .filter((org) => (org.org_type ?? "").toLowerCase() === "community")
-        .map((org) => org.org);
+    if (!detail) return;
+    const organizations = detail.organizations ?? [];
+    const collegeOrg = organizations.find((org) => {
+      const type = (org.org_type ?? "").toLowerCase();
+      return type === "college" || type === "school";
+    });
+    if (!collegeOrg) return;
 
-      const selectedRoles = detail.roles?.length
-        ? detail.roles
-        : (detail.role ?? []);
-
-      form.reset({
-        full_name: detail.full_name ?? "",
-        email: detail.email ?? "",
-        mobile: detail.mobile ?? "",
-        discord_id: detail.discord_id ?? "",
-        location_id: detail.district ?? "",
-        community: selectedCommunities,
-        roles: selectedRoles,
-        interest_groups: detail.interest_groups ?? [],
-        country_id: resolvedCountryId,
-        state_id: resolvedStateId,
-        district_id: resolvedDistrictId,
-        college_id: resolvedCollegeId,
-        department_id: resolvedDepartmentId,
-        graduation_year: collegeOrg?.graduation_year
-          ? String(collegeOrg.graduation_year)
-          : "",
-      });
-
-      if (resolvedLocation) {
-        setLocationSearch(resolvedLocation.label);
-      } else {
-        setLocationSearch("");
-      }
-
-      setIsInitialized(true);
+    const resolvedState = resolveOptionValue(collegeOrg.state, states);
+    if (resolvedState && form.getValues("state_id") !== resolvedState) {
+      form.setValue("state_id", resolvedState, { shouldDirty: false });
     }
-  }, [
-    isReady,
-    isInitialized,
-    detail,
-    resolvedCountryId,
-    resolvedStateId,
-    resolvedDistrictId,
-    resolvedCollegeId,
-    resolvedDepartmentId,
-    resolvedLocation,
-    collegeOrg,
-    form,
-  ]);
+
+    const resolvedDistrict = resolveOptionValue(collegeOrg.district, districts);
+    if (
+      resolvedDistrict &&
+      form.getValues("district_id") !== resolvedDistrict
+    ) {
+      form.setValue("district_id", resolvedDistrict, { shouldDirty: false });
+    }
+
+    const resolvedCollege = resolveOptionValue(collegeOrg.org, colleges);
+    if (resolvedCollege && form.getValues("college_id") !== resolvedCollege) {
+      form.setValue("college_id", resolvedCollege, { shouldDirty: false });
+    }
+
+    const resolvedDepartment = resolveOptionValue(
+      collegeOrg.department,
+      departments,
+    );
+    if (
+      resolvedDepartment &&
+      form.getValues("department_id") !== resolvedDepartment
+    ) {
+      form.setValue("department_id", resolvedDepartment, {
+        shouldDirty: false,
+      });
+    }
+  }, [detail, states, districts, colleges, departments, form]);
 
   const selectedCommunities = form.watch("community");
   const selectedRoles = form.watch("roles");
@@ -322,7 +222,7 @@ export const UserForm = forwardRef<
     },
   }));
 
-  if (!isInitialized || !isReady) {
+  if (isDetailLoading) {
     return (
       <div className="flex items-center justify-center py-10">
         <Loader />

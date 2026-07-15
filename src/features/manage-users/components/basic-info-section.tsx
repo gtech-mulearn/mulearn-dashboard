@@ -8,10 +8,17 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { Control } from "react-hook-form";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   FormControl,
   FormField,
@@ -20,7 +27,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -28,7 +34,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useGuilds } from "../../intern/hooks/use-intern";
 import { useAssignUserRole } from "../hooks";
 import type { ManageUserFormValues } from "../schemas";
 import { INTERN_ROLE_NAME, MENTOR_ROLE_NAME, type UiOption } from "../schemas";
@@ -81,98 +86,46 @@ export function BasicInfoSection({
   selectedRoles,
   selectedInterests,
   colleges = [],
+  companies = [],
   onToggleArrayField,
 }: BasicInfoSectionProps) {
   const [pendingRoleId, setPendingRoleId] = useState<string | null>(null);
   const [pendingRoleType, setPendingRoleType] = useState<
-    "intern" | "mentor" | "both" | null
+    "intern" | "mentor" | null
   >(null);
-  const [pendingRoleLabel, setPendingRoleLabel] = useState("");
   const [guild, setGuild] = useState("");
   const [mentorTier, setMentorTier] = useState("");
   const [igIds, setIgIds] = useState<string[]>([]);
   const [orgId, setOrgId] = useState("");
   const assignRole = useAssignUserRole(user_id);
-  const { data: guildsList = [], isLoading: isLoadingGuilds } = useGuilds();
 
-  // Sync: reset all extra fields whenever a new role is pending
-  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional reactive reset — must re-run when pendingRoleId changes
-  useEffect(() => {
-    setGuild("");
-    setMentorTier("");
-    setIgIds([]);
-    setOrgId("");
-  }, [pendingRoleId]);
-
-  // Sync: derive pendingRoleType from pendingRoleId + roles list
-  useEffect(() => {
-    if (!pendingRoleId) {
-      setPendingRoleType(null);
-      return;
-    }
-    const label =
-      roles.find((r) => r.value === pendingRoleId)?.label?.toLowerCase() ?? "";
-    const hasIntern = label.includes(INTERN_ROLE_NAME);
-    const hasMentor = label.includes(MENTOR_ROLE_NAME);
-    if (hasIntern && hasMentor) setPendingRoleType("both");
-    else if (hasIntern) setPendingRoleType("intern");
-    else if (hasMentor) setPendingRoleType("mentor");
-    else setPendingRoleType(null);
-  }, [pendingRoleId, roles]);
-
-  // Sync: derive label reactively from pendingRoleId
-  useEffect(() => {
-    if (!pendingRoleId) {
-      setPendingRoleLabel("");
-      return;
-    }
-    setPendingRoleLabel(
-      roles.find((r) => r.value === pendingRoleId)?.label ?? "",
-    );
-  }, [pendingRoleId, roles]);
-
-  // Sync: reset IG / org selections whenever mentor tier changes
-  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional reactive reset — must re-run when mentorTier changes
-  useEffect(() => {
-    setIgIds([]);
-    setOrgId("");
-  }, [mentorTier]);
-
-  // Toggle handler — only sets pendingRoleId; pendingRoleType is synced by effect
   const handleRoleToggle = (value: string, checked: boolean) => {
     if (checked) {
       const label =
         roles.find((r) => r.value === value)?.label?.toLowerCase() ?? "";
-      const isSpecialRole =
-        label.includes(INTERN_ROLE_NAME) || label.includes(MENTOR_ROLE_NAME);
-      if (isSpecialRole) {
+      if (label.includes(INTERN_ROLE_NAME)) {
         setPendingRoleId(value);
+        setPendingRoleType("intern");
+        return;
+      }
+      if (label.includes(MENTOR_ROLE_NAME)) {
+        setPendingRoleId(value);
+        setPendingRoleType("mentor");
         return;
       }
     }
     onToggleArrayField("roles", value, checked);
   };
 
-  // Cancel — only clears pendingRoleId; all derived state cascades via effects
-  const handleCancel = () => {
-    setPendingRoleId(null);
-  };
-
-  const handleAssignRole = async () => {
+  const handleDialogConfirm = async () => {
     if (!pendingRoleId) return;
 
-    if (
-      (pendingRoleType === "intern" || pendingRoleType === "both") &&
-      !guild
-    ) {
+    if (pendingRoleType === "intern" && !guild) {
       toast.error("Please select a guild");
       return;
     }
 
-    if (
-      (pendingRoleType === "mentor" || pendingRoleType === "both") &&
-      !mentorTier
-    ) {
+    if (pendingRoleType === "mentor" && !mentorTier) {
       toast.error("Please select a mentor tier");
       return;
     }
@@ -182,7 +135,10 @@ export function BasicInfoSection({
       return;
     }
 
-    if (mentorTier === "CAMPUS_MENTOR" && !orgId) {
+    if (
+      (mentorTier === "CAMPUS_MENTOR" || mentorTier === "COMPANY_MENTOR") &&
+      !orgId
+    ) {
       toast.error("Please select an organisation");
       return;
     }
@@ -190,18 +146,12 @@ export function BasicInfoSection({
     try {
       let payload: Parameters<typeof assignRole.mutateAsync>[0];
 
-      if (pendingRoleType === "both") {
-        const extra: Record<string, unknown> = {
+      if (pendingRoleType === "intern") {
+        payload = {
           user_id,
           role_id: pendingRoleId,
           guild,
-          mentor_tier: mentorTier,
         };
-        if (mentorTier === "IG_MENTOR") extra.ig_ids = igIds;
-        else if (mentorTier === "CAMPUS_MENTOR") extra.org_id = orgId;
-        payload = extra as Parameters<typeof assignRole.mutateAsync>[0];
-      } else if (pendingRoleType === "intern") {
-        payload = { user_id, role_id: pendingRoleId, guild };
       } else if (mentorTier === "IG_MENTOR") {
         payload = {
           user_id,
@@ -209,31 +159,40 @@ export function BasicInfoSection({
           mentor_tier: "IG_MENTOR",
           ig_ids: igIds,
         };
-      } else if (mentorTier === "CAMPUS_MENTOR") {
+      } else if (
+        mentorTier === "CAMPUS_MENTOR" ||
+        mentorTier === "COMPANY_MENTOR"
+      ) {
         payload = {
           user_id,
           role_id: pendingRoleId,
-          mentor_tier: "CAMPUS_MENTOR",
+          mentor_tier: mentorTier,
           org_id: orgId,
         };
       } else {
-        payload = { user_id, role_id: pendingRoleId };
+        payload = {
+          user_id,
+          role_id: pendingRoleId,
+          mentor_tier: "MENTOR",
+        };
       }
 
       await assignRole.mutateAsync(payload);
+
       onToggleArrayField("roles", pendingRoleId, true);
+
       toast.success("Role assigned successfully");
     } catch {
       toast.error("Failed to assign role");
     } finally {
-      handleCancel();
+      setPendingRoleId(null);
+      setPendingRoleType(null);
+      setGuild("");
+      setMentorTier("");
+      setIgIds([]);
+      setOrgId("");
     }
   };
-
-  const showInlineExtra = !!pendingRoleId && !!pendingRoleType;
-  const needsGuild = pendingRoleType === "intern" || pendingRoleType === "both";
-  const needsMentor =
-    pendingRoleType === "mentor" || pendingRoleType === "both";
 
   return (
     <div className="space-y-4">
@@ -342,6 +301,148 @@ export function BasicInfoSection({
           onToggle={handleRoleToggle}
         />
 
+        {/* Follow-up dialog for Intern / Mentor */}
+        <Dialog
+          open={!!pendingRoleId}
+          onOpenChange={(open) => {
+            if (!open) {
+              setPendingRoleId(null);
+              setPendingRoleType(null);
+              setGuild("");
+              setMentorTier("");
+            }
+          }}
+        >
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>
+                {pendingRoleType === "intern"
+                  ? "Select Guild"
+                  : "Select Mentor Tier"}
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              {pendingRoleType === "intern" && (
+                <Select value={guild} onValueChange={setGuild}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a guild…" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[
+                      "Backend Guild",
+                      "Frontend Guild",
+                      "DevOps Guild",
+                      "Design Guild",
+                      "Data Guild",
+                      "Mobile Guild",
+                    ].map((g) => (
+                      <SelectItem key={g} value={g}>
+                        {g}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+
+              {pendingRoleType === "mentor" && (
+                <>
+                  <Select
+                    value={mentorTier}
+                    onValueChange={(v) => {
+                      setMentorTier(v);
+                      setIgIds([]);
+                      setOrgId("");
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select mentor tier…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="MENTOR">
+                        General Platform Mentor
+                      </SelectItem>
+                      <SelectItem value="IG_MENTOR">
+                        Interest Group Mentor
+                      </SelectItem>
+                      <SelectItem value="CAMPUS_MENTOR">
+                        Campus Mentor
+                      </SelectItem>
+                      <SelectItem value="COMPANY_MENTOR">
+                        Company Mentor
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {(mentorTier === "CAMPUS_MENTOR" ||
+                    mentorTier === "COMPANY_MENTOR") && (
+                    <OrganizationCombobox
+                      value={orgId}
+                      onChange={setOrgId}
+                      options={
+                        mentorTier === "CAMPUS_MENTOR" ? colleges : companies
+                      }
+                      placeholder={
+                        mentorTier === "CAMPUS_MENTOR"
+                          ? "Select college..."
+                          : "Select company..."
+                      }
+                      searchPlaceholder={
+                        mentorTier === "CAMPUS_MENTOR"
+                          ? "Search college..."
+                          : "Search company..."
+                      }
+                    />
+                  )}
+
+                  {mentorTier === "IG_MENTOR" && (
+                    <Select
+                      value={igIds[0] ?? ""}
+                      onValueChange={(value) => setIgIds([value])}
+                    >
+                      <SelectTrigger>
+                        <SelectValue
+                          placeholder={
+                            mentorTier === "IG_MENTOR"
+                              ? "Select IG…"
+                              : "Select company…"
+                          }
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {interests.map((org) => (
+                          <SelectItem key={org.value} value={org.value}>
+                            {org.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </>
+              )}
+            </div>
+
+            <DialogFooter>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setPendingRoleId(null);
+                  setPendingRoleType(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleDialogConfirm}
+                disabled={assignRole.isPending}
+              >
+                {assignRole.isPending ? "Assigning…" : "Confirm"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
         <MultiSelectDropdown
           label="Interest Groups"
           options={interests}
@@ -351,143 +452,6 @@ export function BasicInfoSection({
           }
         />
       </div>
-
-      {/* ── Inline extra-fields panel ── */}
-      {showInlineExtra && (
-        <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-semibold text-foreground">
-                Additional details for{" "}
-                <span className="text-primary">{pendingRoleLabel}</span>
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Fill in the required fields to assign this role.
-              </p>
-            </div>
-          </div>
-
-          {/* Guild picker (intern / both) */}
-          {needsGuild && (
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Guild <span className="text-destructive">*</span>
-              </Label>
-              <Select
-                value={guild}
-                onValueChange={setGuild}
-                disabled={isLoadingGuilds || assignRole.isPending}
-              >
-                <SelectTrigger className="h-11 rounded-xl">
-                  <SelectValue
-                    placeholder={
-                      isLoadingGuilds ? "Loading guilds…" : "Select a guild…"
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {guildsList.map((g) => (
-                    <SelectItem key={g} value={g}>
-                      {g}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          {/* Mentor tier picker (mentor / both) */}
-          {needsMentor && (
-            <div className="space-y-3">
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Mentor Tier <span className="text-destructive">*</span>
-                </Label>
-                <Select
-                  value={mentorTier}
-                  onValueChange={setMentorTier}
-                  disabled={assignRole.isPending}
-                >
-                  <SelectTrigger className="h-11 rounded-xl">
-                    <SelectValue placeholder="Select mentor tier…" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="IG_MENTOR">
-                      Interest Group Mentor
-                    </SelectItem>
-                    <SelectItem value="CAMPUS_MENTOR">Campus Mentor</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Interest Group (IG_MENTOR) */}
-              {mentorTier === "IG_MENTOR" && (
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    Interest Group <span className="text-destructive">*</span>
-                  </Label>
-                  <Select
-                    value={igIds[0] ?? ""}
-                    onValueChange={(v) => setIgIds([v])}
-                    disabled={assignRole.isPending}
-                  >
-                    <SelectTrigger className="h-11 rounded-xl">
-                      <SelectValue placeholder="Select interest group…" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {interests.map((ig) => (
-                        <SelectItem key={ig.value} value={ig.value}>
-                          {ig.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
-              {/* Campus college (CAMPUS_MENTOR) */}
-              {mentorTier === "CAMPUS_MENTOR" && (
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    Campus College <span className="text-destructive">*</span>
-                  </Label>
-                  <OrganizationCombobox
-                    value={orgId}
-                    onChange={setOrgId}
-                    options={colleges}
-                    placeholder="Select college..."
-                    searchPlaceholder="Search college..."
-                  />
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Action row */}
-          <div className="flex items-center justify-end gap-2 pt-1">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="rounded-xl text-muted-foreground"
-              onClick={handleCancel}
-              disabled={assignRole.isPending}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              className="rounded-xl"
-              onClick={handleAssignRole}
-              disabled={assignRole.isPending}
-            >
-              {assignRole.isPending ? "Assigning…" : "Assign Role"}
-            </Button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

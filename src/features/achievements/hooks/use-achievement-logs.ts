@@ -1,3 +1,5 @@
+"use client";
+
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { fetchAuditLogs, fetchIssuedLogs } from "../api";
 import { ACHIEVEMENT_KEYS } from "./use-achievements";
@@ -10,7 +12,7 @@ export function useAuditLogs(muid: string) {
   return useQuery({
     queryKey: ACHIEVEMENT_KEYS.auditLogs(muid),
     queryFn: () => fetchAuditLogs(muid),
-    enabled: Boolean(muid.trim()),
+    enabled: Boolean(muid),
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,

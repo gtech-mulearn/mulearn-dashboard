@@ -20,7 +20,7 @@ export const ISSUED_LOGS_PAGE_SIZE = 20;
 /** Column headers for the issued-logs manual HTML table */
 export const ISSUED_LOGS_HEADERS = [
   "MUID",
-  "Issued To",
+  "User",
   "Achievement",
   "Issued By",
   "Issued On",

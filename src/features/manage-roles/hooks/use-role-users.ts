@@ -8,12 +8,10 @@ import {
 } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { searchUsers } from "@/features/search";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   type AssignUserRolePayload,
   assignUserRole,
-  type BulkAssignExtraPayload,
   bulkAssignFromExcel,
   bulkAssignRole,
   bulkRemoveRole,
@@ -55,16 +53,6 @@ export function useUsersWithoutRole(roleId: string) {
     enabled: Boolean(roleId),
     staleTime: 60 * 1000,
     refetchOnWindowFocus: false,
-  });
-}
-
-export function useRoleUserSearch(query: string, limit = 30) {
-  const isSearchActive = query.length >= 2;
-  return useQuery({
-    queryKey: [...manageRolesKeys.searchUsers(query), limit] as const,
-    queryFn: () => searchUsers({ search: query, perPage: limit }),
-    enabled: isSearchActive,
-    staleTime: 30_000,
   });
 }
 
@@ -122,13 +110,7 @@ export function useRemoveUserRole(roleId: string) {
 export function useBulkAssignRole(roleId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      users,
-      extra,
-    }: {
-      users: string[];
-      extra?: BulkAssignExtraPayload;
-    }) => bulkAssignRole(roleId, users, extra),
+    mutationFn: (users: string[]) => bulkAssignRole(roleId, users),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [...manageRolesKeys.all, "users-by-role", roleId],
