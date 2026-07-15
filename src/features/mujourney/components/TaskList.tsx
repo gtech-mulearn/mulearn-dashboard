@@ -67,20 +67,33 @@ export function TaskList({
 
   return (
     <div className="relative group">
-      {/* Left Arrow */}
-      <button
-        type="button"
-        onClick={() => scroll("left")}
-        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-card hover:bg-muted rounded-full p-3 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring"
-        aria-label="Scroll left"
-      >
-        <ChevronLeft className="w-6 h-6 text-card-foreground" />
-      </button>
+      {/* Arrow wrapper perfectly aligned with the cards (accounting for py-8) */}
+      <div className="absolute inset-y-8 left-0 right-0 pointer-events-none z-10">
+        {/* Left Arrow */}
+        <button
+          type="button"
+          onClick={() => scroll("left")}
+          className="absolute left-0 top-1/2 -translate-y-1/2 bg-card hover:bg-muted rounded-full p-3 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer pointer-events-auto focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring"
+          aria-label="Scroll left"
+        >
+          <ChevronLeft className="w-6 h-6 text-card-foreground" />
+        </button>
+
+        {/* Right Arrow */}
+        <button
+          type="button"
+          onClick={() => scroll("right")}
+          className="absolute right-0 top-1/2 -translate-y-1/2 bg-card hover:bg-muted rounded-full p-3 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer pointer-events-auto focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring"
+          aria-label="Scroll right"
+        >
+          <ChevronRight className="w-6 h-6 text-card-foreground" />
+        </button>
+      </div>
 
       {/* Horizontal scrollable container */}
       <div
         ref={scrollContainerRef}
-        className="flex gap-6 min-h-[500px] overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+        className="flex gap-6 min-h-[500px] py-8 px-2 overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         {tasks.map((task, index) => {
@@ -104,16 +117,6 @@ export function TaskList({
           );
         })}
       </div>
-
-      {/* Right Arrow */}
-      <button
-        type="button"
-        onClick={() => scroll("right")}
-        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-card hover:bg-muted rounded-full p-3 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring"
-        aria-label="Scroll right"
-      >
-        <ChevronRight className="w-6 h-6 text-card-foreground" />
-      </button>
 
       {/* Task Detail Panel */}
       <TaskDetailPanel

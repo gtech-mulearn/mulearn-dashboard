@@ -163,7 +163,7 @@ export async function fetchSessions(params: ListParams = {}): Promise<{
   );
   return {
     data: res.response.data,
-    totalPages: res.response.pagination.totalPages,
+    totalPages: res.response.pagination?.totalPages ?? 1,
   };
 }
 
@@ -217,7 +217,7 @@ export async function fetchAvailableSessions(
   );
   return {
     data: res.response.data,
-    totalPages: res.response.pagination.totalPages,
+    totalPages: res.response.pagination?.totalPages ?? 1,
   };
 }
 
@@ -249,10 +249,10 @@ export async function fetchAdminSessions(params: ListParams = {}): Promise<{
   return {
     data: res.response.data,
     pagination: {
-      count: p.count ?? 0,
-      totalPages: p.totalPages,
-      isNext: p.isNext ?? false,
-      isPrev: p.isPrev ?? false,
+      count: p?.count ?? 0,
+      totalPages: p?.totalPages ?? 1,
+      isNext: p?.isNext ?? false,
+      isPrev: p?.isPrev ?? false,
     },
   };
 }
