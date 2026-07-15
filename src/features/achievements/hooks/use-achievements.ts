@@ -1,12 +1,7 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  fetchAchievements,
-  fetchRules,
-  fetchUserAchievements,
-  simulateForUser,
-} from "../api";
+import { fetchAchievements, fetchRules, simulateForUser } from "../api";
 
 // ==========================================
 // Query Key Constants (inline — no separate file)
@@ -15,8 +10,6 @@ import {
 export const ACHIEVEMENT_KEYS = {
   all: ["achievements"] as const,
   list: () => [...ACHIEVEMENT_KEYS.all, "list"] as const,
-  userList: (muid: string) =>
-    [...ACHIEVEMENT_KEYS.all, "user-list", muid] as const,
   rules: () => [...ACHIEVEMENT_KEYS.all, "rules"] as const,
   simulation: (muid: string) =>
     [...ACHIEVEMENT_KEYS.all, "simulation", muid] as const,
@@ -67,21 +60,6 @@ export function useSimulation(muid: string) {
   return useQuery({
     queryKey: ACHIEVEMENT_KEYS.simulation(muid),
     queryFn: () => simulateForUser(muid),
-    enabled: Boolean(muid),
-    staleTime: 1 * 60 * 1000,
-    gcTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false,
-  });
-}
-
-// ==========================================
-// useUserAchievements — list achievements for a specific user
-// ==========================================
-
-export function useUserAchievements(muid: string) {
-  return useQuery({
-    queryKey: ACHIEVEMENT_KEYS.userList(muid),
-    queryFn: () => fetchUserAchievements(muid),
     enabled: Boolean(muid),
     staleTime: 1 * 60 * 1000,
     gcTime: 5 * 60 * 1000,

@@ -450,7 +450,7 @@ export type AssignRoleFormValues = z.infer<typeof AssignRoleFormSchema>;
 
 export const CompaniesResponseSchema = ApiResponseSchema(
   z.object({
-    data: z.array(
+    companies: z.array(
       z.object({
         id: z
           .union([z.string(), z.number()])

@@ -6,6 +6,7 @@ import {
   ChevronRight,
   Clock,
   FileText,
+  Flame,
   Sparkles,
   Zap,
 } from "lucide-react";

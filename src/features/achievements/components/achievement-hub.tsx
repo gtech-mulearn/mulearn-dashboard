@@ -1,9 +1,9 @@
 "use client";
 
 import {
+  BookOpen,
   ChevronRight,
   FileText,
-  FlaskConical,
   GitBranch,
   Send,
   Trophy,
@@ -22,7 +22,7 @@ const HUB_CARDS = [
     iconBg: "bg-warning/15 text-warning",
   },
   {
-    title: "Rules",
+    title: "Rules Engine",
     description: "Define and manage achievement unlock rules.",
     href: `${BASE}/rules`,
     icon: GitBranch,
@@ -32,7 +32,7 @@ const HUB_CARDS = [
     title: "Simulate",
     description: "Test achievement eligibility for any user.",
     href: `${BASE}/simulate`,
-    icon: FlaskConical,
+    icon: BookOpen,
     iconBg: "bg-brand-blue/15 text-brand-blue",
   },
   {
@@ -50,9 +50,8 @@ const HUB_CARDS = [
     iconBg: "bg-destructive/15 text-destructive",
   },
   {
-    title: "Logs & Analytics",
-    description:
-      "View achievement statistics, issuance history, and audit trail.",
+    title: "Audit Logs",
+    description: "View issuance history and audit trail.",
     href: `${BASE}/logs`,
     icon: FileText,
     iconBg: "bg-slate-500/15 text-slate-600 dark:text-slate-400",

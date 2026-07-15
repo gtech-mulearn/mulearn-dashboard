@@ -630,9 +630,6 @@ export const endpoints = {
 
     /** GET - List all achievements */
     list: "/api/v1/dashboard/achievement/list/",
-    /** GET - List all achievements with has_achievement flag for a user */
-    listByUser: (muid: string) =>
-      `/api/v1/dashboard/achievement/list/?user_id=${muid}`,
     /** POST - Create new achievement */
     create: "/api/v1/dashboard/achievement/create/",
     /** PUT - Update achievement */
@@ -640,15 +637,11 @@ export const endpoints = {
     /** DELETE - Delete achievement */
     delete: (id: string) => `/api/v1/dashboard/achievement/delete/${id}/`,
 
-    /** GET - Rules */
+    /** GET - Rules Engine */
     rules: "/api/v1/dashboard/achievement/rules/",
     createRule: "/api/v1/dashboard/achievement/rules/create/",
-    updateRule: (ruleId: string) =>
-      `/api/v1/dashboard/achievement/rules/${ruleId}/`,
     deactivateRule: (ruleId: string) =>
       `/api/v1/dashboard/achievement/rules/${ruleId}/deactivate/`,
-    activateRule: (ruleId: string) =>
-      `/api/v1/dashboard/achievement/rules/${ruleId}/activate/`,
 
     /** Simulation */
     simulate: (muid: string) =>
@@ -662,7 +655,6 @@ export const endpoints = {
 
     /** Audit & Logs */
     auditLogs: (muid: string) => `/api/v1/dashboard/achievement/audit/${muid}/`,
-    auditLogsAll: "/api/v1/dashboard/achievement/audit/",
     bulkIssue: "/api/v1/dashboard/achievement/bulk-issue/",
     bulkIssueTemplate: "/api/v1/dashboard/achievement/bulk-issue/template/",
     issuedLog: "/api/v1/dashboard/achievement/issued-log/",

@@ -300,7 +300,7 @@ function SessionVerificationTable({
 
 export function AdminSessionVerificationPage() {
   const [search, setSearch] = useState("");
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState("pending");
   const [approveState, setApproveState] = useState<{
     session: Session;
     action: "approve" | "reject" | "cancel";
@@ -439,12 +439,12 @@ export function AdminSessionVerificationPage() {
                 <SelectValue placeholder="Select Tab" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Sessions</SelectItem>
                 <SelectItem value="pending">
                   Pending ({pendingPagination.count})
                 </SelectItem>
                 <SelectItem value="scheduled">Scheduled</SelectItem>
                 <SelectItem value="rejected">Rejected</SelectItem>
+                <SelectItem value="all">All Sessions</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -452,9 +452,6 @@ export function AdminSessionVerificationPage() {
           <div className="hidden md:flex items-center gap-2">
             <Filter className="h-4 w-4 text-muted-foreground" />
             <TabsList>
-              <TabsTrigger value="all" id="tab-all">
-                All Sessions
-              </TabsTrigger>
               <TabsTrigger value="pending" id="tab-pending">
                 Pending
                 {pendingPagination.count > 0 && (
@@ -472,21 +469,11 @@ export function AdminSessionVerificationPage() {
               <TabsTrigger value="rejected" id="tab-rejected">
                 Rejected
               </TabsTrigger>
+              <TabsTrigger value="all" id="tab-all">
+                All Sessions
+              </TabsTrigger>
             </TabsList>
           </div>
-
-          {/* All */}
-          <TabsContent value="all" className="mt-4">
-            <SessionVerificationTable
-              sessions={allSessions}
-              isLoading={allLoading}
-              onApprove={(s, action) => setApproveState({ session: s, action })}
-              page={allPage}
-              totalPages={allPagination.totalPages}
-              totalCount={allPagination.count}
-              onPageChange={setAllPage}
-            />
-          </TabsContent>
 
           {/* Pending */}
           <TabsContent value="pending" className="mt-4">
@@ -524,6 +511,19 @@ export function AdminSessionVerificationPage() {
               totalPages={rejectedPagination.totalPages}
               totalCount={rejectedPagination.count}
               onPageChange={setRejectedPage}
+            />
+          </TabsContent>
+
+          {/* All */}
+          <TabsContent value="all" className="mt-4">
+            <SessionVerificationTable
+              sessions={allSessions}
+              isLoading={allLoading}
+              onApprove={(s, action) => setApproveState({ session: s, action })}
+              page={allPage}
+              totalPages={allPagination.totalPages}
+              totalCount={allPagination.count}
+              onPageChange={setAllPage}
             />
           </TabsContent>
         </Tabs>
