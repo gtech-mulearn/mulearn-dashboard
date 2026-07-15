@@ -19,6 +19,13 @@ import {
 import Link from "next/link";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   CityBreakdown,
@@ -109,20 +116,41 @@ function TabBar<T extends string>({
   active: T;
   onChange: (v: T) => void;
 }) {
+  const activeTabLabel = tabs.find((t) => t.id === active)?.label || "";
+
   return (
-    <div className="flex gap-1 rounded-full p-1">
-      {tabs.map(({ id, label }) => (
-        <Button
-          key={id}
-          variant={active === id ? "default" : "outline"}
-          type="button"
-          onClick={() => onChange(id)}
-          className="text-xs font-semibold"
-        >
-          {label}
-        </Button>
-      ))}
-    </div>
+    <>
+      {/* Mobile Select dropdown */}
+      <div className="block lg:hidden w-full max-w-[200px]">
+        <Select value={active} onValueChange={onChange}>
+          <SelectTrigger className="w-full">
+            <SelectValue>{activeTabLabel}</SelectValue>
+          </SelectTrigger>
+          <SelectContent position="popper">
+            {tabs.map(({ id, label }) => (
+              <SelectItem key={id} value={id}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Desktop Buttons */}
+      <div className="hidden lg:flex gap-1 rounded-full p-1">
+        {tabs.map(({ id, label }) => (
+          <Button
+            key={id}
+            variant={active === id ? "default" : "outline"}
+            type="button"
+            onClick={() => onChange(id)}
+            className="text-xs font-semibold"
+          >
+            {label}
+          </Button>
+        ))}
+      </div>
+    </>
   );
 }
 
@@ -137,7 +165,7 @@ function BreakdownPanel<T extends string>({
   const [active, setActive] = useState<T>(tabs[0].id);
   return (
     <div className="flex flex-col rounded-2xl border border-border bg-card overflow-hidden">
-      <div className="flex items-center justify-between gap-2 border-b border-border px-5 py-4">
+      <div className="flex items-center justify-center lg:justify-between gap-2 border-b border-border px-5 py-4">
         <TabBar tabs={tabs} active={active} onChange={setActive} />
       </div>
       <div className="flex-1 p-5">{panels[active]}</div>
@@ -482,7 +510,7 @@ export const AnalyticsView = ({ params }: AnalyticsViewProps) => {
           <BreakdownPanel
             tabs={[
               { id: "sources" as const, label: "Sources" },
-              { id: "ips" as const, label: "IP Addrs" },
+              { id: "ips" as const, label: "IP Address" },
               { id: "dist" as const, label: "Distribution" },
             ]}
             panels={{
