@@ -66,10 +66,10 @@ export const SessionSchema = z.object({
   // §4.2 — entity fields present in /session/available/ response
   entity_id: z.string().nullable().optional(),
   entity_name: z.string().nullable().optional(),
-  // Use z.string() + .catch(null) instead of a strict enum so any unknown
-  // session_type value returned by the backend (e.g. a future type) falls back
-  // to null gracefully instead of triggering a schema mismatch warning.
-  session_type: z.string().nullable().optional().catch(null),
+  // Use z.string() instead of a strict enum so any unknown
+  // session_type value returned by the backend (e.g. a future type)
+  // is accepted gracefully as long as it's a string.
+  session_type: z.string().nullable().optional(),
   mode: z.string().nullable().optional(),
   starts_at: z.string().nullable().optional(),
   ends_at: z.string().nullable().optional(),

@@ -93,7 +93,7 @@ export function TaskList({
       {/* Horizontal scrollable container */}
       <div
         ref={scrollContainerRef}
-        className="flex gap-6 py-8 px-2 overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+        className="flex gap-6 min-h-[500px] py-8 px-2 overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         {tasks.map((task, index) => {
