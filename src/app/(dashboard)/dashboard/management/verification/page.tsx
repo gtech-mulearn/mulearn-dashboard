@@ -1,12 +1,13 @@
 import {
+  Briefcase,
+  CalendarCheck,
   ChevronLeft,
   ChevronRight,
   ClipboardCheck,
-  FileSpreadsheet,
-  ListTodo,
+  GraduationCap,
   type LucideIcon,
-  PlusSquare,
-  Type,
+  ShieldCheck,
+  UserCheck,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -14,12 +15,11 @@ import { ROLES } from "@/lib/auth/roles";
 import { requireRole } from "@/lib/auth/server";
 
 export const metadata: Metadata = {
-  title: "Task Hub | Management",
-  description:
-    "Configure task lists, creation, types, bulk imports, and verifications.",
+  title: "Verification Portal | Management",
+  description: "Centralized panel for all pending approvals & verifications.",
 };
 
-interface TaskItem {
+interface VerificationItem {
   title: string;
   description: string;
   href: string;
@@ -27,45 +27,52 @@ interface TaskItem {
   iconBg: string;
 }
 
-const TASK_ITEMS: TaskItem[] = [
+const VERIFICATION_ITEMS: VerificationItem[] = [
   {
-    title: "Tasks List",
-    description: "View, edit, and manage tasks.",
-    href: "/dashboard/management/tasks/list",
-    icon: ListTodo,
+    title: "Role Verification",
+    description: "Verify and assign roles to users.",
+    href: "/dashboard/management/role-verification",
+    icon: ShieldCheck,
     iconBg: "bg-warning/15 text-warning",
   },
   {
-    title: "Task Create",
-    description: "Verify and create tasks based on interest groups.",
-    href: "/dashboard/management/tasks/create",
-    icon: PlusSquare,
+    title: "Session Verification",
+    description: "Approve or reject mentor-submitted sessions.",
+    href: "/dashboard/management/session-verification",
+    icon: CalendarCheck,
     iconBg: "bg-success/15 text-success",
-  },
-  {
-    title: "Task Type",
-    description: "Manage Task Types.",
-    href: "/dashboard/management/tasks/task-type",
-    icon: Type,
-    iconBg: "bg-brand-blue/15 text-brand-blue",
-  },
-  {
-    title: "Tasks Bulk Import",
-    description: "Bulk-import tasks via CSV.",
-    href: "/dashboard/management/tasks/bulk-import",
-    icon: FileSpreadsheet,
-    iconBg: "bg-brand-purple/15 text-brand-purple",
   },
   {
     title: "Task Verification",
     description: "Review, approve, and verify pending tasks.",
     href: "/dashboard/management/tasks/task-verification",
     icon: ClipboardCheck,
+    iconBg: "bg-brand-blue/15 text-brand-blue",
+  },
+  {
+    title: "Organization Verification",
+    description: "Verify legitimacy of registered organizations.",
+    href: "/dashboard/management/organizations/verify",
+    icon: GraduationCap,
+    iconBg: "bg-brand-purple/15 text-brand-purple",
+  },
+  {
+    title: "Company Verification",
+    description: "Review and verify company registration requests.",
+    href: "/dashboard/management/manage-companies",
+    icon: Briefcase,
     iconBg: "bg-destructive/15 text-destructive",
+  },
+  {
+    title: "Mentor Verification",
+    description: "Review and verify mentor applications.",
+    href: "/dashboard/management/mentor-verification",
+    icon: UserCheck,
+    iconBg: "bg-slate-500/15 text-slate-600 dark:text-slate-400",
   },
 ];
 
-export default async function TaskHubPage() {
+export default async function VerificationPortalPage() {
   await requireRole([ROLES.ADMIN]);
 
   return (
@@ -80,16 +87,18 @@ export default async function TaskHubPage() {
           Back to Management
         </Link>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Task Hub</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Verification Portal
+          </h1>
           <p className="mt-1 text-muted-foreground">
-            Configure tasks, templates, verifications, and csv uploads.
+            Centralized panel for all pending approvals & verifications.
           </p>
         </div>
       </div>
 
       {/* Grid of Sub-Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {TASK_ITEMS.map((card) => (
+        {VERIFICATION_ITEMS.map((card) => (
           <Link
             key={card.href}
             href={card.href}

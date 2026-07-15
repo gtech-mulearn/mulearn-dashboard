@@ -7,7 +7,6 @@ import {
   ArrowUpDown,
   CheckCircle2,
   Search,
-  Sparkles,
   Trophy,
   XCircle,
 } from "lucide-react";

@@ -272,7 +272,7 @@ export async function fetchCompanies(): Promise<UiOption[]> {
     CompaniesResponseSchema,
   );
 
-  return response.response.companies.map((company) => ({
+  return response.response.data.map((company) => ({
     value: company.id,
     label: company.title,
   }));
