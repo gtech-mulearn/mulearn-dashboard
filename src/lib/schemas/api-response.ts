@@ -22,9 +22,6 @@ export const ApiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
   z.object({
     hasError: z.boolean(),
     statusCode: z.number(),
-    message: z
-      .union([z.string(), z.record(z.string(), z.array(z.string()))])
-      .optional()
-      .nullable(),
+    message: z.record(z.string(), z.array(z.string())).optional().nullable(),
     response: dataSchema,
   });
