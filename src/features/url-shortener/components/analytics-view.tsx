@@ -283,42 +283,33 @@ export const AnalyticsView = ({ params }: AnalyticsViewProps) => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* ════════════════════════════════════════════════════════════════
-          HEADER
-      ════════════════════════════════════════════════════════════════ */}
       <div className="border-b border-border">
         <div className="max-w-full mx-auto px-4 sm:px-6 pt-5 pb-6">
           {/* Top row: back + refresh */}
           <div className="flex items-center justify-between mb-5">
-            <Link
-              href="/dashboard/url-shortener"
-              aria-label="Back"
-              className="flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5
-                         text-sm font-medium text-muted-foreground
-                         transition-colors duration-150 hover:border-ring/30 hover:text-foreground"
-            >
-              <ArrowLeft className="size-3.5" />
-              <span className="hidden sm:inline">URL Shortener</span>
+            <Link href="/dashboard/url-shortener" aria-label="Back">
+              <Button
+                type="button"
+                variant="link"
+                className="flex items-center gap-1.5"
+              >
+                <ArrowLeft className="size-3.5" />
+                <span className="hidden sm:inline">URL Shortener</span>
+              </Button>
             </Link>
 
-            <button
+            <Button
               type="button"
               onClick={() => refetch()}
-              className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5
-                         text-sm font-medium text-muted-foreground
-                         transition-colors duration-150 hover:border-ring/30 hover:text-foreground"
+              className="flex items-center gap-1.5"
             >
               <RefreshCw className="size-3.5" />
               <span className="hidden sm:inline">Refresh</span>
-            </button>
+            </Button>
           </div>
 
           {/* Title + badge */}
           <div className="mb-5">
-            <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-[var(--brand-purple)]/20 bg-[var(--brand-purple)]/[0.06] px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-[var(--brand-purple)]">
-              <Activity className="size-3" />
-              Analytics Dashboard
-            </div>
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight leading-snug">
               {title || "Link Analytics"}
             </h1>
@@ -392,15 +383,11 @@ export const AnalyticsView = ({ params }: AnalyticsViewProps) => {
         </div>
       </div>
 
-      {/* ════════════════════════════════════════════════════════════════
-          BODY
-      ════════════════════════════════════════════════════════════════ */}
       <div className="max-w-full mx-auto px-4 sm:px-6 py-6 space-y-5">
-        {/* Zero clicks warning */}
         {total_clicks === 0 && (
           <div
             className="flex items-center gap-3 rounded-xl border border-[var(--warning)]/25
-                          bg-[var(--warning)]/[0.06] px-4 py-3.5"
+                          bg-warning/[0.06] px-4 py-3.5"
           >
             <MousePointerClick className="size-4 shrink-0 text-[var(--warning)]" />
             <p className="text-sm text-foreground/80">
@@ -413,10 +400,7 @@ export const AnalyticsView = ({ params }: AnalyticsViewProps) => {
         <div className="rounded-2xl border border-border bg-card overflow-hidden">
           <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
             <div className="flex items-center gap-2.5">
-              <span
-                className="flex h-7 w-7 items-center justify-center rounded-lg text-white"
-                style={{ background: "var(--brand-purple)" }}
-              >
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg text-white bg-brand-purple">
                 <Activity className="size-3.5" />
               </span>
               <span className="font-semibold text-sm text-foreground">
