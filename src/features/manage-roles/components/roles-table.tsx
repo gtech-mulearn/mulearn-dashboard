@@ -1,7 +1,7 @@
 "use client";
 
 import { FileSpreadsheet, Plus, Shield, UserPlus } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { endpoints } from "@/api/endpoints";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table from "@/components/dashboard/table/Table";
@@ -112,6 +112,22 @@ export default function ManageRoles() {
   const totalPages = data?.pagination.totalPages ?? 0;
   const totalCount = data?.pagination.count;
 
+  // Sync: update editRole when rows update
+  useEffect(() => {
+    if (editRole) {
+      const updated = rows.find((r) => r.id === editRole.id);
+      setEditRole(updated ?? null);
+    }
+  }, [rows, editRole]);
+
+  // Sync: update assignRole when rows update
+  useEffect(() => {
+    if (assignRole) {
+      const updated = rows.find((r) => r.id === assignRole.id);
+      setAssignRole(updated ?? null);
+    }
+  }, [rows, assignRole]);
+
   // ─── Handlers ────────────────────────────────────────────────────
   const handleSearch = (value: string) => {
     setCurrentPage(1);
@@ -210,47 +226,42 @@ export default function ManageRoles() {
             searchInputClassName="h-10 text-sm"
           />
 
-          {/* Desktop: outer wrapper enables horizontal scroll without compressing table-fixed columns */}
-          <div className="w-full ">
-            <div className="w-full md:min-w-[800px]">
-              <Table
-                rows={rows}
-                isLoading={isLoading}
-                page={currentPage}
-                perPage={perPage}
-                columnOrder={columnOrder}
-                id={["id"]}
-                onEditClick={handleEditRow}
-                onDeleteClick={handleDeleteRow}
-                modalDeleteHeading="Delete Role"
-                modalDeleteContent="Are you sure you want to delete this role? This cannot be undone."
-                modalTypeContent="error"
-              >
-                <THead
-                  columnOrder={columnOrder}
-                  onIconClick={handleSortChange}
-                  action
+          <Table
+            rows={rows}
+            isLoading={isLoading}
+            page={currentPage}
+            perPage={perPage}
+            columnOrder={columnOrder}
+            id={["id"]}
+            onEditClick={handleEditRow}
+            onDeleteClick={handleDeleteRow}
+            modalDeleteHeading="Delete Role"
+            modalDeleteContent="Are you sure you want to delete this role? This cannot be undone."
+            modalTypeContent="error"
+          >
+            <THead
+              columnOrder={columnOrder}
+              onIconClick={handleSortChange}
+              action
+            />
+            <div>
+              {!isLoading && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  handleNextClick={() =>
+                    setCurrentPage((p) => Math.min(p + 1, totalPages || 1))
+                  }
+                  handlePreviousClick={() =>
+                    setCurrentPage((p) => Math.max(p - 1, 1))
+                  }
+                  perPage={perPage}
+                  totalCount={totalCount}
                 />
-                <div>
-                  {!isLoading && (
-                    <Pagination
-                      currentPage={currentPage}
-                      totalPages={totalPages}
-                      handleNextClick={() =>
-                        setCurrentPage((p) => Math.min(p + 1, totalPages || 1))
-                      }
-                      handlePreviousClick={() =>
-                        setCurrentPage((p) => Math.max(p - 1, 1))
-                      }
-                      perPage={perPage}
-                      totalCount={totalCount}
-                    />
-                  )}
-                </div>
-                <div />
-              </Table>
+              )}
             </div>
-          </div>
+            <div />
+          </Table>
         </CardContent>
       </Card>
 

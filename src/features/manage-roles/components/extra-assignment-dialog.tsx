@@ -20,10 +20,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useInterestGroupsList } from "../../interest-groups/hooks/useInterestGroupsList";
-import { useGuilds } from "../../intern/hooks/use-intern";
-import { useColleges } from "../../onboarding/hooks/use-colleges";
-import { useCompanies } from "../../onboarding/hooks/use-companies";
+import { useInterestGroupsList } from "@/features/interest-groups";
+import { useGuilds } from "@/features/intern";
+import { useColleges, useCompanies } from "@/features/onboarding";
 import type { Role, RoleUser } from "../schemas";
 
 interface ExtraAssignmentDialogProps {
@@ -48,12 +47,19 @@ export function ExtraAssignmentDialog({
   onConfirm,
   isPending = false,
 }: ExtraAssignmentDialogProps) {
-  const isIntern = role?.title.toLowerCase() === "intern";
-  const isMentor = role?.title.toLowerCase() === "mentor";
+  // Derived role classification — updated reactively when role changes
+  const [isIntern, setIsIntern] = React.useState(false);
+  const [isMentor, setIsMentor] = React.useState(false);
+
+  React.useEffect(() => {
+    const lowerTitle = role?.title.toLowerCase() ?? "";
+    setIsIntern(lowerTitle.includes("intern"));
+    setIsMentor(lowerTitle.includes("mentor"));
+  }, [role]);
 
   // Form states
   const [guild, setGuild] = React.useState("");
-  const [mentorTier, setMentorTier] = React.useState("MENTOR");
+  const [mentorTier, setMentorTier] = React.useState("");
   const [selectedIgs, setSelectedIgs] = React.useState<string[]>([]);
   const [orgId, setOrgId] = React.useState("");
 
@@ -73,15 +79,21 @@ export function ExtraAssignmentDialog({
     }));
   }, [guilds]);
 
-  // Reset form when dialog opens/changes
+  // Sync: reset all fields when dialog opens or the target role changes
+  // biome-ignore lint/correctness/useExhaustiveDependencies: open and role?.id are intentional triggers; setters are stable
   React.useEffect(() => {
-    if (open) {
-      setGuild("");
-      setMentorTier("MENTOR");
-      setSelectedIgs([]);
-      setOrgId("");
-    }
-  }, [open]);
+    setGuild("");
+    setMentorTier("");
+    setSelectedIgs([]);
+    setOrgId("");
+  }, [open, role?.id]);
+
+  // Sync: reset sub-fields when mentor tier changes
+  // biome-ignore lint/correctness/useExhaustiveDependencies: mentorTier is the intentional trigger; setters are stable
+  React.useEffect(() => {
+    setSelectedIgs([]);
+    setOrgId("");
+  }, [mentorTier]);
 
   // Map IGs to MultiSelect options format
   const igOptions = React.useMemo(() => {
@@ -95,15 +107,21 @@ export function ExtraAssignmentDialog({
   // Validation
   const isValid = React.useMemo(() => {
     if (!role || !user) return false;
-    if (isIntern) {
-      return guild.trim().length > 0;
+    // Compound role: both intern and mentor
+    if (isIntern && isMentor) {
+      const guildOk = guild.trim().length > 0;
+      const tierOk =
+        mentorTier === "IG_MENTOR"
+          ? selectedIgs.length > 0
+          : mentorTier === "CAMPUS_MENTOR"
+            ? orgId.trim().length > 0
+            : false;
+      return guildOk && tierOk;
     }
+    if (isIntern) return guild.trim().length > 0;
     if (isMentor) {
-      if (mentorTier === "MENTOR") return true;
       if (mentorTier === "IG_MENTOR") return selectedIgs.length > 0;
-      if (mentorTier === "CAMPUS_MENTOR" || mentorTier === "COMPANY_MENTOR") {
-        return orgId.trim().length > 0;
-      }
+      if (mentorTier === "CAMPUS_MENTOR") return orgId.trim().length > 0;
     }
     return false;
   }, [role, user, isIntern, isMentor, guild, mentorTier, selectedIgs, orgId]);
@@ -111,6 +129,18 @@ export function ExtraAssignmentDialog({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!isValid) return;
+
+    // Compound role: both intern and mentor
+    if (isIntern && isMentor) {
+      const extra: Record<string, unknown> = {
+        guild: guild.trim(),
+        mentor_tier: mentorTier,
+      };
+      if (mentorTier === "IG_MENTOR") extra.ig_ids = selectedIgs;
+      else if (mentorTier === "CAMPUS_MENTOR") extra.org_id = orgId;
+      onConfirm(extra as Parameters<typeof onConfirm>[0]);
+      return;
+    }
 
     if (isIntern) {
       onConfirm({ guild: guild.trim() });
@@ -120,15 +150,8 @@ export function ExtraAssignmentDialog({
         ig_ids?: string[];
         org_id?: string;
       } = { mentor_tier: mentorTier };
-
-      if (mentorTier === "IG_MENTOR") {
-        extra.ig_ids = selectedIgs;
-      } else if (
-        mentorTier === "CAMPUS_MENTOR" ||
-        mentorTier === "COMPANY_MENTOR"
-      ) {
-        extra.org_id = orgId;
-      }
+      if (mentorTier === "IG_MENTOR") extra.ig_ids = selectedIgs;
+      else if (mentorTier === "CAMPUS_MENTOR") extra.org_id = orgId;
       onConfirm(extra);
     }
   };
@@ -178,25 +201,17 @@ export function ExtraAssignmentDialog({
                 </Label>
                 <Select
                   value={mentorTier}
-                  onValueChange={(val) => {
-                    setMentorTier(val);
-                    setOrgId("");
-                    setSelectedIgs([]);
-                  }}
+                  onValueChange={setMentorTier}
                   disabled={isPending}
                 >
                   <SelectTrigger id="mentor-tier" className="h-11 rounded-xl">
                     <SelectValue placeholder="Select tier" />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl">
-                    <SelectItem value="MENTOR">General Mentor</SelectItem>
                     <SelectItem value="IG_MENTOR">
                       Interest Group Mentor
                     </SelectItem>
                     <SelectItem value="CAMPUS_MENTOR">Campus Mentor</SelectItem>
-                    <SelectItem value="COMPANY_MENTOR">
-                      Company Mentor
-                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -237,27 +252,6 @@ export function ExtraAssignmentDialog({
                     searchPlaceholder="Search colleges..."
                     emptyText="No colleges found."
                     disabled={isPending || isLoadingColleges}
-                  />
-                </div>
-              )}
-
-              {mentorTier === "COMPANY_MENTOR" && (
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold">
-                    Company <span className="text-destructive">*</span>
-                  </Label>
-                  <Combobox
-                    options={companies}
-                    value={orgId}
-                    onValueChange={setOrgId}
-                    placeholder={
-                      isLoadingCompanies
-                        ? "Loading companies..."
-                        : "Search company..."
-                    }
-                    searchPlaceholder="Search companies..."
-                    emptyText="No companies found."
-                    disabled={isPending || isLoadingCompanies}
                   />
                 </div>
               )}

@@ -11,6 +11,7 @@ export type {
   RevokeRequest,
   SimulationResult,
   UpdateAchievementRequest,
+  UserAchievement,
 } from "./achievements.schema";
 export {
   AchievementFormSchema,
@@ -34,4 +35,6 @@ export {
   SimulationListResponseSchema,
   SimulationResultSchema,
   UpdateAchievementRequestSchema,
+  UserAchievementListResponseSchema,
+  UserAchievementSchema,
 } from "./achievements.schema";

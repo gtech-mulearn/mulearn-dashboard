@@ -40,7 +40,7 @@ export function BulkIssueDialog() {
     const formData = new FormData();
     formData.append("achievement_id", achievementId);
     if (!csvFile) return;
-    formData.append("file", csvFile);
+    formData.append("excel_file", csvFile);
     bulkIssueMutation.mutate(formData, {
       onSuccess: () => {
         setOpen(false);
@@ -57,7 +57,7 @@ export function BulkIssueDialog() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "bulk-issue-template.csv";
+      a.download = "achievement_bulk_import_template.xlsx";
       a.click();
       URL.revokeObjectURL(url);
     } finally {
@@ -88,7 +88,10 @@ export function BulkIssueDialog() {
           <div className="space-y-2">
             <Label>Achievement</Label>
             <Select value={achievementId} onValueChange={setAchievementId}>
-              <SelectTrigger data-testid="bulk-achievement-select">
+              <SelectTrigger
+                className="w-full"
+                data-testid="bulk-achievement-select"
+              >
                 <SelectValue placeholder="Select an achievement" />
               </SelectTrigger>
               <SelectContent>
@@ -101,10 +104,10 @@ export function BulkIssueDialog() {
             </Select>
           </div>
 
-          {/* CSV Upload */}
+          {/* Excel Upload */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label>CSV File</Label>
+              <Label>Excel File</Label>
               <Button
                 type="button"
                 variant="ghost"
@@ -121,8 +124,8 @@ export function BulkIssueDialog() {
             <FileUpload
               value={csvFile}
               onChange={setCsvFile}
-              accept=".csv"
-              placeholder="Upload CSV file with MUIDs"
+              accept=".xlsx,.xls"
+              placeholder="Upload Excel file with MUIDs"
             />
           </div>
         </div>

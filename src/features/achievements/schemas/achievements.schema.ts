@@ -8,14 +8,14 @@ export const AchievementSchema = z.object({
   id: z.string().uuid(),
   name: z.string().min(1),
   description: z.string().nullable().optional(),
-  // Django may return "" (empty string) or a relative path — accept any string or null
-  image_url: z.string().nullable().optional(),
-  level_based: z.boolean().optional(), // missing from API
-  level_id: z.string().nullable().optional(), // not always a UUID in old db
+  icon: z.string().nullable().optional(),
+  level_based: z.boolean().optional(),
+  level_id: z.string().nullable().optional(),
   has_vc: z.boolean().optional(),
-  is_active: z.boolean().optional(), // missing from API
-  // Django returns microsecond datetimes like "2024-01-15T10:30:00.123456Z"
-  // z.string().datetime() can be strict; use z.string() to accept any format
+  is_active: z.boolean().optional(),
+  tags: z.array(z.string()).optional().default([]),
+  type: z.string().optional().nullable(),
+  template_id: z.string().optional().nullable(),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
 });
@@ -33,6 +33,8 @@ const CreateAchievementBaseSchema = z.object({
   level_id: z.string().uuid().optional().nullable(),
   has_vc: z.boolean(),
   is_active: z.boolean().optional().default(true),
+  tags: z.string().min(1, "Tags are required"),
+  type: z.string().min(1, "Type is required"),
 });
 
 export const CreateAchievementRequestSchema =
@@ -62,7 +64,7 @@ export type UpdateAchievementRequest = z.infer<
 >;
 
 // ==========================================
-// Rules Engine Schemas
+// Rules Schemas
 // ==========================================
 
 export const AchievementRuleSchema = z.object({
@@ -90,11 +92,20 @@ export type CreateRuleRequest = z.infer<typeof CreateRuleRequestSchema>;
 // Simulation Schemas
 // ==========================================
 
+export const SimulationProgressSchema = z.object({
+  current: z.number().optional(),
+  required: z.number().optional(),
+  percentage: z.number().optional(),
+  milestone_type: z.string().optional(),
+});
+
+export type SimulationProgress = z.infer<typeof SimulationProgressSchema>;
+
 export const SimulationResultSchema = z.object({
   achievement_id: z.string().uuid(),
   achievement_name: z.string(),
   eligible: z.boolean(),
-  progress: z.number().min(0).max(100),
+  progress: SimulationProgressSchema.optional().nullable(),
   reason: z.string().optional(),
   debug_info: z.record(z.string(), z.unknown()).optional(),
 });
@@ -138,21 +149,6 @@ export const AuditLogSchema = z.object({
 export type AuditLog = z.infer<typeof AuditLogSchema>;
 
 // ==========================================
-// Issued Log Schemas
-// ==========================================
-
-export const IssuedLogSchema = z.object({
-  id: z.string().optional(),
-  muid: z.string(),
-  user_name: z.string(),
-  achievement: z.string(),
-  issued_by: z.string().optional(),
-  issued_on: z.string().optional(),
-});
-
-export type IssuedLog = z.infer<typeof IssuedLogSchema>;
-
-// ==========================================
 // Django API Response Wrappers
 // ==========================================
 
@@ -165,6 +161,31 @@ export const DjangoResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
       .union([z.string(), z.record(z.string(), z.unknown())])
       .optional(),
   });
+
+// ==========================================
+// User Achievement (per-user list with has_achievement flag)
+// ==========================================
+
+export const UserAchievementSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().min(1),
+  description: z.string().nullable().optional(),
+  icon: z.string().nullable().optional(),
+  level_based: z.boolean().optional(),
+  level_id: z.string().nullable().optional(),
+  has_vc: z.boolean().optional(),
+  is_active: z.boolean().optional(),
+  tags: z.array(z.string()).optional().default([]),
+  type: z.string().optional().nullable(),
+  template_id: z.string().optional().nullable(),
+  has_achievement: z.boolean().default(false),
+});
+
+export type UserAchievement = z.infer<typeof UserAchievementSchema>;
+
+export const UserAchievementListResponseSchema = DjangoResponseSchema(
+  z.array(UserAchievementSchema),
+);
 
 export const AchievementListResponseSchema = DjangoResponseSchema(
   z.array(AchievementSchema),
@@ -189,35 +210,45 @@ export const AuditLogListResponseSchema = DjangoResponseSchema(
   z.array(AuditLogSchema),
 );
 
-export const IssuedLogListResponseSchema = DjangoResponseSchema(
-  z.object({
-    data: z.array(IssuedLogSchema),
-    pagination: z.object({
-      total: z.number(),
-      page: z.number(),
-      perPage: z.number(),
-      totalPages: z.number(),
-    }),
-  }),
-);
-
 export const GenericSuccessResponseSchema = DjangoResponseSchema(z.unknown());
 
 // ==========================================
-// Paginated Result Type
+// Issued Log Schemas
 // ==========================================
+
+export const IssuedLogSchema = z.object({
+  id: z.string().optional(),
+  muid: z.string().nullable().optional(),
+  user_name: z.string().nullable().optional(),
+  achievement_name: z.string().nullable().optional(),
+  issued_by: z.string().nullable().optional(),
+  is_issued: z.boolean().optional(),
+  created_at: z.string().optional(),
+});
+
+export type IssuedLog = z.infer<typeof IssuedLogSchema>;
 
 export const PaginatedIssuedLogSchema = z.object({
   data: z.array(IssuedLogSchema),
-  pagination: z.object({
-    total: z.number(),
-    page: z.number(),
-    perPage: z.number(),
-    totalPages: z.number(),
-  }),
+  pagination: z
+    .object({
+      count: z.number().optional().nullable(),
+      totalPages: z.number().optional().nullable(),
+      isNext: z.boolean().optional().nullable(),
+      isPrev: z.boolean().optional().nullable(),
+      nextPage: z.number().optional().nullable(),
+    })
+    .optional()
+    .nullable(),
 });
 
 export type PaginatedIssuedLog = z.infer<typeof PaginatedIssuedLogSchema>;
+
+export const IssuedLogListResponseSchema = DjangoResponseSchema(
+  z.union([z.array(IssuedLogSchema), PaginatedIssuedLogSchema]),
+);
+
+// ==========================================
 
 export const AchievementFormSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -226,6 +257,10 @@ export const AchievementFormSchema = z.object({
   level_id: z.string().nullable().optional(),
   has_vc: z.boolean(),
   is_active: z.boolean().optional(),
+  tags: z.string(),
+  type: z.string().min(1, "Type is required"),
+  icon_url: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  template_id: z.string().optional(),
 });
 
 export type AchievementFormValues = z.infer<typeof AchievementFormSchema>;
