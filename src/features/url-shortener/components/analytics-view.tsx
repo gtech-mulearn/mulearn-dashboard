@@ -17,6 +17,7 @@ import {
   LayoutGrid,
 } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -72,23 +73,29 @@ interface AnalyticsViewProps {
 function CopyBtn({ text }: { text: string }) {
   const [ok, setOk] = useState(false);
   return (
-    <button
+    <Button
       type="button"
-      onClick={() => {
-        navigator.clipboard.writeText(text);
-        setOk(true);
-        setTimeout(() => setOk(false), 1800);
+      variant="secondary"
+      size="icon-sm"
+      onClick={async () => {
+        try {
+          await navigator.clipboard.writeText(text);
+          setOk(true);
+          toast.success("URL copied to clipboard!");
+          setTimeout(() => setOk(false), 1800);
+        } catch {
+          toast.error("Failed to copy URL to clipboard.");
+        }
       }}
       aria-label="Copy"
-      className="cursor-pointer rounded p-1 text-muted-foreground transition-colors duration-150
-                 hover:bg-muted hover:text-foreground"
+      className="h-7 w-7 shrink-0"
     >
       {ok ? (
-        <Check className="size-3.5 text-[var(--success)]" />
+        <Check className="size-3.5 text-success" />
       ) : (
         <Copy className="size-3.5" />
       )}
-    </button>
+    </Button>
   );
 }
 
@@ -103,21 +110,17 @@ function TabBar<T extends string>({
   onChange: (v: T) => void;
 }) {
   return (
-    <div className="flex gap-1 rounded-lg bg-muted p-1">
+    <div className="flex gap-1 rounded-full p-1">
       {tabs.map(({ id, label }) => (
-        <button
+        <Button
           key={id}
+          variant={active === id ? "default" : "outline"}
           type="button"
           onClick={() => onChange(id)}
-          className={`cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition-all duration-150
-            ${
-              active === id
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
+          className="text-xs font-semibold"
         >
           {label}
-        </button>
+        </Button>
       ))}
     </div>
   );
@@ -327,6 +330,7 @@ export const AnalyticsView = ({ params }: AnalyticsViewProps) => {
                     href={shortFull}
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label="Open short URL in new tab"
                     className="cursor-pointer text-muted-foreground transition-colors duration-150 hover:text-foreground"
                   >
                     <ExternalLink className="size-3" />
@@ -386,10 +390,10 @@ export const AnalyticsView = ({ params }: AnalyticsViewProps) => {
       <div className="max-w-full mx-auto px-4 sm:px-6 py-6 space-y-5">
         {total_clicks === 0 && (
           <div
-            className="flex items-center gap-3 rounded-xl border border-[var(--warning)]/25
+            className="flex items-center gap-3 rounded-xl border border-warning/25
                           bg-warning/[0.06] px-4 py-3.5"
           >
-            <MousePointerClick className="size-4 shrink-0 text-[var(--warning)]" />
+            <MousePointerClick className="size-4 shrink-0 text-warning" />
             <p className="text-sm text-foreground/80">
               No clicks recorded yet — share your link to start seeing data.
             </p>
@@ -400,14 +404,14 @@ export const AnalyticsView = ({ params }: AnalyticsViewProps) => {
         <div className="rounded-2xl border border-border bg-card overflow-hidden">
           <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
             <div className="flex items-center gap-2.5">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg text-white bg-brand-purple">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-purple">
                 <Activity className="size-3.5" />
               </span>
               <span className="font-semibold text-sm text-foreground">
                 Click Timeline
               </span>
             </div>
-            <span className="rounded-full bg-[var(--brand-purple)]/10 px-2.5 py-0.5 text-[11px] font-bold text-[var(--brand-purple)]">
+            <span className="rounded-full bg-brand-purple/10 px-2.5 py-0.5 text-[11px] font-bold text-brand-purple">
               {total_clicks.toLocaleString()} clicks
             </span>
           </div>
