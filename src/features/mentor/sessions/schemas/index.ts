@@ -66,7 +66,10 @@ export const SessionSchema = z.object({
   // §4.2 — entity fields present in /session/available/ response
   entity_id: z.string().nullable().optional(),
   entity_name: z.string().nullable().optional(),
-  session_type: z.enum(["ig_session", "company_session"]).nullable().optional(),
+  // Use z.string() + .catch(null) instead of a strict enum so any unknown
+  // session_type value returned by the backend (e.g. a future type) falls back
+  // to null gracefully instead of triggering a schema mismatch warning.
+  session_type: z.string().nullable().optional().catch(null),
   mode: z.string().nullable().optional(),
   starts_at: z.string().nullable().optional(),
   ends_at: z.string().nullable().optional(),
@@ -94,7 +97,7 @@ export type Session = z.infer<typeof SessionSchema>;
 export const SessionsListResponseSchema = ApiResponseSchema(
   z.object({
     data: z.array(SessionSchema),
-    pagination: PaginationSchema,
+    pagination: PaginationSchema.optional().nullable(),
   }),
 );
 
