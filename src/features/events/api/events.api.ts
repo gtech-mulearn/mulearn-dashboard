@@ -2,6 +2,7 @@ import { apiClient, endpoints } from "@/api";
 import type { ApprovalTier } from "../lib/events.policy";
 import {
   categoryListResponseSchema,
+  type EventTypeScopeData,
   eventTypeScopeResponseSchema,
 } from "../schemas";
 import type {
@@ -659,10 +660,7 @@ export const eventsApi = {
     return envelope.response;
   },
 
-  getEventTypeScope: async (): Promise<{
-    event_type: string[];
-    event_scope: string[];
-  }> => {
+  getEventTypeScope: async (): Promise<EventTypeScopeData> => {
     const envelope = await apiClient.get(
       endpoints.events.eventTypeScope,
       eventTypeScopeResponseSchema,
@@ -671,36 +669,19 @@ export const eventsApi = {
   },
 
   /**
-   * Fetch the distinct IG cluster slugs via the event-type/scope endpoint.
-   * Falls back to a hardcoded list of the four canonical clusters
-   * (Maker, Coder, Manager, Creative) if the endpoint fails or returns an
-   * unexpected shape.
+   * Fetch the distinct IG cluster options via the event-type/scope endpoint.
+   * The endpoint returns `event_scope` as `{ value, label }` pairs already —
+   * do not re-derive `value` from `label`, it's not guaranteed to match.
+   * No hardcoded fallback — a failed fetch surfaces as a query error.
    */
   getIGClusters: async (): Promise<Array<{ label: string; value: string }>> => {
-    try {
-      const data = await eventsApi.getEventTypeScope();
-      return [
-        { label: "All", value: "all" },
-        ...data.event_scope.map((scope) => ({
-          label: scope,
-          value: scope.toLowerCase(),
-        })),
-      ];
-    } catch (err) {
-      if (process.env.NODE_ENV === "development") {
-        console.warn(
-          "[events] getIGClusters: fetch failed, using fallback:",
-          err,
-        );
-      }
-    }
-
+    const data = await eventsApi.getEventTypeScope();
     return [
       { label: "All", value: "all" },
-      { label: "Maker", value: "maker" },
-      { label: "Coder", value: "coder" },
-      { label: "Manager", value: "manager" },
-      { label: "Creative", value: "creative" },
+      ...data.event_scope.map((scope) => ({
+        label: scope.label,
+        value: scope.value,
+      })),
     ];
   },
 };

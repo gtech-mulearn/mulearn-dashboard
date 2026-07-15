@@ -386,6 +386,12 @@ export interface EventDetail {
     icon: string;
     code?: string;
   } | null;
+  // Not returned by the detail endpoint itself — merged in client-side from
+  // a cached manage/admin list entry for the same id (see useManageEventDetail).
+  // The manage list badge already shows the correct cluster because
+  // EventListItem carries this field directly; the detail endpoint doesn't.
+  event_scope?: string | null;
+  category_id?: string | null;
 }
 
 /** EventDetailManage - EventDetail with edit_history (only from manage endpoints) */

@@ -57,32 +57,10 @@ export function EventInlineEditForm({
   const { data: typeScopeData, isLoading: typeScopeLoading } =
     useEventTypeScope();
 
-  const eventTypeSelectOptions = useMemo(() => {
-    const list = typeScopeData?.event_type || [
-      "Hackathon",
-      "Workshop",
-      "Webinar",
-      "Seminar",
-      "Bootcamp",
-      "Meetup",
-      "Conference",
-      "Competition",
-      "Ideathon",
-      "Cultural Event",
-      "Sports Event",
-      "Community Event",
-      "Expo",
-      "Networking Event",
-      "Tech Talk",
-      "Others",
-    ];
-    return list
-      .filter((type): type is string => typeof type === "string")
-      .map((type) => {
-        const val = type.trim().toLowerCase().replace(/\s+/g, "_");
-        return { label: type, value: val };
-      });
-  }, [typeScopeData]);
+  const eventTypeSelectOptions = useMemo(
+    () => typeScopeData?.event_type ?? [],
+    [typeScopeData],
+  );
 
   const {
     control,
@@ -115,49 +93,23 @@ export function EventInlineEditForm({
         : "global"
     ) as "global" | "campus" | "ig" | "campus_ig";
 
-    // Resolve category UUID from category_name if not directly available
-    let resolvedCategory = "";
-    if (
-      event.category_name &&
-      typeof event.category_name === "string" &&
-      categoryOptions
-    ) {
-      const eventCatSlug = event.category_name
-        .trim()
-        .toLowerCase()
-        .replace(/\s+/g, "_");
+    // category_id/event_scope/event_type come straight off the event object
+    // (merged in client-side from the manage-list cache by
+    // useManageEventDetail, since the detail endpoint itself omits them —
+    // see EventDetail type comment). No inference/fuzzy-matching fallback.
+    const resolvedCategory =
+      event.category_id &&
+      categoryOptions?.some((c) => c.id === event.category_id)
+        ? event.category_id
+        : "";
 
-      const matchingCat = categoryOptions.find((c) => {
-        if (typeof c.name !== "string") return false;
-        const catSlug = c.name.trim().toLowerCase().replace(/\s+/g, "_");
-        return (
-          catSlug === eventCatSlug ||
-          catSlug.includes(eventCatSlug) ||
-          eventCatSlug.includes(catSlug)
-        );
-      });
-      if (matchingCat) {
-        resolvedCategory = matchingCat.id;
-      }
-    }
-
-    // Resolve event_scope/cluster from organizer IG cluster if not directly available
-    let resolvedEventScope = "";
-    const rawCluster =
-      event.organizer?.ig?.cluster ||
-      event.organizer?.organiser_ig?.cluster ||
-      event.organizer?.ig?.category ||
-      event.organizer?.organiser_ig?.category ||
-      "";
-
-    if (rawCluster && clusterOptions) {
-      const matchingCluster = clusterOptions.find(
-        (item) => item.value.toLowerCase() === rawCluster.toLowerCase(),
-      );
-      if (matchingCluster) {
-        resolvedEventScope = matchingCluster.value;
-      }
-    }
+    const resolvedEventScope =
+      event.event_scope &&
+      clusterOptions?.some(
+        (item) => item.value.toLowerCase() === event.event_scope?.toLowerCase(),
+      )
+        ? event.event_scope.toLowerCase()
+        : "";
 
     reset({
       ...EVENT_FORM_DEFAULT_VALUES,
@@ -165,11 +117,7 @@ export function EventInlineEditForm({
       description: event.description ?? "",
       scope,
       category: resolvedCategory,
-      event_type:
-        event.event_type ??
-        (resolvedCategory && typeof event.category_name === "string"
-          ? event.category_name.trim().toLowerCase().replace(/\s+/g, "_")
-          : ""),
+      event_type: event.event_type ?? "",
       event_scope: resolvedEventScope,
       start_datetime: toDatetimeLocal(event.start_datetime),
       end_datetime: toDatetimeLocal(event.end_datetime),
