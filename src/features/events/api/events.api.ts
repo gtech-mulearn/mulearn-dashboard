@@ -43,6 +43,21 @@ type EventOrganizerShape = {
   organiser_ci_id?: string | null;
 };
 
+type EventVenueShape = {
+  type?: string;
+  address?: string | null;
+  city?: string | null;
+  maps_url?: string | null;
+  online_link?: string | null;
+  platform?: string | null;
+  venue_type?: string;
+  venue_address?: string | null;
+  venue_city?: string | null;
+  venue_maps_url?: string | null;
+  venue_online_link?: string | null;
+  venue_platform?: string | null;
+};
+
 type EventShape = {
   id?: string;
   status?: string | null;
@@ -51,6 +66,7 @@ type EventShape = {
   event_type?: string | null;
   category_name?: string | null;
   organizer?: EventOrganizerShape;
+  venue?: EventVenueShape;
 };
 
 const PENDING_STATUS_GROUP = [
@@ -90,6 +106,32 @@ function mirrorEventTypeToCategory<T extends EventShape>(event: T): T {
     }
     if (org.campus_ig_id === undefined && org.organiser_ci_id !== undefined) {
       org.campus_ig_id = org.organiser_ci_id;
+    }
+  }
+
+  // Normalize venue properties if they use the 'venue_' prefix
+  const venue = event.venue;
+  if (venue && typeof venue === "object") {
+    if (venue.type === undefined && venue.venue_type !== undefined) {
+      venue.type = venue.venue_type;
+    }
+    if (venue.address === undefined && venue.venue_address !== undefined) {
+      venue.address = venue.venue_address;
+    }
+    if (venue.city === undefined && venue.venue_city !== undefined) {
+      venue.city = venue.venue_city;
+    }
+    if (venue.maps_url === undefined && venue.venue_maps_url !== undefined) {
+      venue.maps_url = venue.venue_maps_url;
+    }
+    if (
+      venue.online_link === undefined &&
+      venue.venue_online_link !== undefined
+    ) {
+      venue.online_link = venue.venue_online_link;
+    }
+    if (venue.platform === undefined && venue.venue_platform !== undefined) {
+      venue.platform = venue.venue_platform;
     }
   }
 

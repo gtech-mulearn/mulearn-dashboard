@@ -1,6 +1,5 @@
 "use client";
 
-import type { QueryClient } from "@tanstack/react-query";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ApiError } from "@/api/errors";
@@ -13,7 +12,6 @@ import type {
   CollaboratorType,
   EventCollaborator,
   EventDetailData,
-  EventDetailManageData,
   EventListData,
   EventListQueryParams,
   EventPatchBody,
@@ -54,53 +52,10 @@ export function useEventDetail(id?: string) {
   });
 }
 
-// The detail endpoint (`/manage/<id>/`) doesn't return `event_scope` (cluster)
-// or `category_id`, unlike the manage/admin list endpoints, which return both
-// directly per row (that's why the cluster badge on the manage list is
-// correct while the edit form's dropdowns aren't). If the user navigated here
-// from a list — the common path — that list response is still sitting in the
-// query cache, so backfill the two missing fields from it.
-function findCachedListFields(queryClient: QueryClient, id: string) {
-  const cachedLists = queryClient.getQueriesData<EventListData>({
-    queryKey: eventKeys.all,
-  });
-
-  for (const [, data] of cachedLists) {
-    const match = data?.data?.find((item) => item.id === id);
-    if (
-      match &&
-      (match.event_scope != null ||
-        match.category_id != null ||
-        match.event_type != null)
-    ) {
-      return {
-        event_scope: match.event_scope,
-        category_id: match.category_id,
-        event_type: match.event_type,
-      };
-    }
-  }
-
-  return undefined;
-}
-
 export function useManageEventDetail(id?: string) {
-  const queryClient = useQueryClient();
-
   return useQuery({
     queryKey: eventKeys.manageDetail(id as string),
-    queryFn: async (): Promise<EventDetailManageData> => {
-      const detail = await eventsApi.manageDetail(id as string);
-      const cachedFields = findCachedListFields(queryClient, id as string);
-      if (!cachedFields) return detail;
-
-      return {
-        ...detail,
-        event_scope: detail.event_scope ?? cachedFields.event_scope,
-        category_id: detail.category_id ?? cachedFields.category_id,
-        event_type: detail.event_type ?? cachedFields.event_type,
-      };
-    },
+    queryFn: () => eventsApi.manageDetail(id as string),
     enabled: !!id,
   });
 }

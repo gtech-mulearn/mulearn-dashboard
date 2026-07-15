@@ -93,10 +93,8 @@ export function EventInlineEditForm({
         : "global"
     ) as "global" | "campus" | "ig" | "campus_ig";
 
-    // category_id/event_scope/event_type come straight off the event object
-    // (merged in client-side from the manage-list cache by
-    // useManageEventDetail, since the detail endpoint itself omits them —
-    // see EventDetail type comment). No inference/fuzzy-matching fallback.
+    // category_id/event_scope/event_type come straight off the API response.
+    // No inference/fuzzy-matching fallback.
     const resolvedCategory =
       event.category_id &&
       categoryOptions?.some((c) => c.id === event.category_id)

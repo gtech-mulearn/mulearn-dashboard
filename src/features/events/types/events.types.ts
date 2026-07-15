@@ -340,8 +340,6 @@ export interface EventListItem {
 
 /** EventDetail - full event object from /manage/<id>/ and detail endpoints */
 export interface EventDetail {
-  // NOTE: The backend does NOT return event_scope or category (UUID) in detail responses.
-  // They are only available in the write payload (EventWriteBody) and resolved via client-side helpers.
   id: UUID;
   title: string;
   slug: string;
@@ -386,10 +384,6 @@ export interface EventDetail {
     icon: string;
     code?: string;
   } | null;
-  // Not returned by the detail endpoint itself — merged in client-side from
-  // a cached manage/admin list entry for the same id (see useManageEventDetail).
-  // The manage list badge already shows the correct cluster because
-  // EventListItem carries this field directly; the detail endpoint doesn't.
   event_scope?: string | null;
   category_id?: string | null;
 }
