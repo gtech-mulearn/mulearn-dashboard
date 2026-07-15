@@ -340,8 +340,6 @@ export interface EventListItem {
 
 /** EventDetail - full event object from /manage/<id>/ and detail endpoints */
 export interface EventDetail {
-  // NOTE: The backend does NOT return event_scope or category (UUID) in detail responses.
-  // They are only available in the write payload (EventWriteBody) and resolved via client-side helpers.
   id: UUID;
   title: string;
   slug: string;
@@ -386,6 +384,8 @@ export interface EventDetail {
     icon: string;
     code?: string;
   } | null;
+  event_scope?: string | null;
+  category_id?: string | null;
 }
 
 /** EventDetailManage - EventDetail with edit_history (only from manage endpoints) */

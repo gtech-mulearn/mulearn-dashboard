@@ -2,6 +2,7 @@ import { apiClient, endpoints } from "@/api";
 import type { ApprovalTier } from "../lib/events.policy";
 import {
   categoryListResponseSchema,
+  type EventTypeScopeData,
   eventTypeScopeResponseSchema,
 } from "../schemas";
 import type {
@@ -42,6 +43,21 @@ type EventOrganizerShape = {
   organiser_ci_id?: string | null;
 };
 
+type EventVenueShape = {
+  type?: string;
+  address?: string | null;
+  city?: string | null;
+  maps_url?: string | null;
+  online_link?: string | null;
+  platform?: string | null;
+  venue_type?: string;
+  venue_address?: string | null;
+  venue_city?: string | null;
+  venue_maps_url?: string | null;
+  venue_online_link?: string | null;
+  venue_platform?: string | null;
+};
+
 type EventShape = {
   id?: string;
   status?: string | null;
@@ -50,6 +66,7 @@ type EventShape = {
   event_type?: string | null;
   category_name?: string | null;
   organizer?: EventOrganizerShape;
+  venue?: EventVenueShape;
 };
 
 const PENDING_STATUS_GROUP = [
@@ -89,6 +106,32 @@ function mirrorEventTypeToCategory<T extends EventShape>(event: T): T {
     }
     if (org.campus_ig_id === undefined && org.organiser_ci_id !== undefined) {
       org.campus_ig_id = org.organiser_ci_id;
+    }
+  }
+
+  // Normalize venue properties if they use the 'venue_' prefix
+  const venue = event.venue;
+  if (venue && typeof venue === "object") {
+    if (venue.type === undefined && venue.venue_type !== undefined) {
+      venue.type = venue.venue_type;
+    }
+    if (venue.address === undefined && venue.venue_address !== undefined) {
+      venue.address = venue.venue_address;
+    }
+    if (venue.city === undefined && venue.venue_city !== undefined) {
+      venue.city = venue.venue_city;
+    }
+    if (venue.maps_url === undefined && venue.venue_maps_url !== undefined) {
+      venue.maps_url = venue.venue_maps_url;
+    }
+    if (
+      venue.online_link === undefined &&
+      venue.venue_online_link !== undefined
+    ) {
+      venue.online_link = venue.venue_online_link;
+    }
+    if (venue.platform === undefined && venue.venue_platform !== undefined) {
+      venue.platform = venue.venue_platform;
     }
   }
 
@@ -659,10 +702,7 @@ export const eventsApi = {
     return envelope.response;
   },
 
-  getEventTypeScope: async (): Promise<{
-    event_type: string[];
-    event_scope: string[];
-  }> => {
+  getEventTypeScope: async (): Promise<EventTypeScopeData> => {
     const envelope = await apiClient.get(
       endpoints.events.eventTypeScope,
       eventTypeScopeResponseSchema,
@@ -671,36 +711,19 @@ export const eventsApi = {
   },
 
   /**
-   * Fetch the distinct IG cluster slugs via the event-type/scope endpoint.
-   * Falls back to a hardcoded list of the four canonical clusters
-   * (Maker, Coder, Manager, Creative) if the endpoint fails or returns an
-   * unexpected shape.
+   * Fetch the distinct IG cluster options via the event-type/scope endpoint.
+   * The endpoint returns `event_scope` as `{ value, label }` pairs already —
+   * do not re-derive `value` from `label`, it's not guaranteed to match.
+   * No hardcoded fallback — a failed fetch surfaces as a query error.
    */
   getIGClusters: async (): Promise<Array<{ label: string; value: string }>> => {
-    try {
-      const data = await eventsApi.getEventTypeScope();
-      return [
-        { label: "All", value: "all" },
-        ...data.event_scope.map((scope) => ({
-          label: scope,
-          value: scope.toLowerCase(),
-        })),
-      ];
-    } catch (err) {
-      if (process.env.NODE_ENV === "development") {
-        console.warn(
-          "[events] getIGClusters: fetch failed, using fallback:",
-          err,
-        );
-      }
-    }
-
+    const data = await eventsApi.getEventTypeScope();
     return [
       { label: "All", value: "all" },
-      { label: "Maker", value: "maker" },
-      { label: "Coder", value: "coder" },
-      { label: "Manager", value: "manager" },
-      { label: "Creative", value: "creative" },
+      ...data.event_scope.map((scope) => ({
+        label: scope.label,
+        value: scope.value,
+      })),
     ];
   },
 };
