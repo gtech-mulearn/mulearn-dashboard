@@ -22,46 +22,48 @@ export const WeeklyKarmaCard = ({ data = [] }: WeeklyKarmaCardProps) => {
       </CardHeader>
       <CardContent>
         {data.length > 0 ? (
-          <div className="flex h-64 items-end gap-3 pt-12 px-2 pb-2">
-            {data.map((day) => {
-              const height =
-                maxWeeklyKarma > 0 ? (day.value / maxWeeklyKarma) * 100 : 0;
-              const dateObj = parseISO(day.date);
-              return (
-                <div
-                  key={day.date}
-                  className="flex-1 flex flex-col items-center gap-2 group relative h-full"
-                >
-                  <div className="flex-1 w-full flex flex-col items-center justify-end gap-2">
-                    <span
-                      className={`text-[12px] font-bold transition-opacity ${day.value > 0 ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
-                    >
-                      {day.value}
-                    </span>
-                    <div
-                      className="w-full bg-primary transition-all rounded-t-md relative cursor-default border-t border-x border-primary/10"
-                      style={{ height: `${Math.max(height, 2)}%` }}
-                    >
-                      <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-popover text-popover-foreground text-[10px] font-bold px-2 py-1.5 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 border pointer-events-none">
-                        {day.value} Karma
-                        <br />
-                        <span className="text-muted-foreground font-normal">
-                          {format(dateObj, "MMM d, yyyy")}
-                        </span>
+          <div className="overflow-x-auto scrollbar-none -mx-2 px-2">
+            <div className="flex h-64 items-end gap-3 pt-12 pb-2 min-w-[480px] md:min-w-0">
+              {data.map((day) => {
+                const height =
+                  maxWeeklyKarma > 0 ? (day.value / maxWeeklyKarma) * 100 : 0;
+                const dateObj = parseISO(day.date);
+                return (
+                  <div
+                    key={day.date}
+                    className="flex-1 flex flex-col items-center gap-2 group relative h-full"
+                  >
+                    <div className="flex-1 w-full flex flex-col items-center justify-end gap-2">
+                      <span
+                        className={`text-[12px] font-bold transition-opacity ${day.value > 0 ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
+                      >
+                        {day.value}
+                      </span>
+                      <div
+                        className="w-full bg-primary transition-all rounded-t-md relative cursor-default border-t border-x border-primary/10"
+                        style={{ height: `${Math.max(height, 2)}%` }}
+                      >
+                        <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-popover text-popover-foreground text-[10px] font-bold px-2 py-1.5 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 border pointer-events-none">
+                          {day.value} Karma
+                          <br />
+                          <span className="text-muted-foreground font-normal">
+                            {format(dateObj, "MMM d, yyyy")}
+                          </span>
+                        </div>
                       </div>
                     </div>
+                    <div className="h-10 flex flex-col items-center justify-start mt-1">
+                      <span className="text-[12px] text-muted-foreground font-bold uppercase tracking-widest">
+                        {format(dateObj, "EEE")}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {format(dateObj, "MM/dd")}
+                      </span>
+                    </div>
                   </div>
-                  <div className="h-10 flex flex-col items-center justify-start mt-1">
-                    <span className="text-[12px] text-muted-foreground font-bold uppercase tracking-widest">
-                      {format(dateObj, "EEE")}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground">
-                      {format(dateObj, "MM/dd")}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         ) : (
           <div className="flex h-64 items-center justify-center text-muted-foreground border-2 border-dashed rounded-xl">
