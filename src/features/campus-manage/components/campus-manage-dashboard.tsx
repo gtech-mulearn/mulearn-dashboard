@@ -197,6 +197,53 @@ const SOCIAL_PLATFORMS = [
   },
 ] as const;
 
+/**
+ * Authoritative hostname suffixes for each constrained platform.
+ * `website` and `other` are intentionally absent — they accept any URL.
+ */
+const SOCIAL_PLATFORM_DOMAINS: Partial<Record<string, readonly string[]>> = {
+  instagram: ["instagram.com"],
+  linkedin: ["linkedin.com"],
+  twitter: ["twitter.com", "x.com"],
+  facebook: ["facebook.com", "fb.com", "fb.me"],
+  youtube: ["youtube.com", "youtu.be"],
+  discord: ["discord.gg", "discord.com"],
+  github: ["github.com"],
+};
+
+/**
+ * Returns an error message when the normalised URL's domain does not belong
+ * to the selected platform, or `null` when the URL is valid / unconstrained.
+ */
+const validateSocialUrl = (
+  platformId: string,
+  rawInput: string,
+): string | null => {
+  const allowedDomains = SOCIAL_PLATFORM_DOMAINS[platformId];
+  // Platforms without a domain list (website, other) accept anything.
+  if (!allowedDomains) return null;
+
+  const normalized = normalizeSocialUrl(platformId, rawInput);
+  if (!normalized) return null;
+
+  try {
+    const { hostname } = new URL(normalized);
+    // Strip leading "www." for comparison
+    const bare = hostname.replace(/^www\./, "");
+    const matches = allowedDomains.some(
+      (domain) => bare === domain || bare.endsWith(`.${domain}`),
+    );
+    if (!matches) {
+      const platformLabel =
+        SOCIAL_PLATFORMS.find((p) => p.id === platformId)?.label ?? platformId;
+      return `This URL doesn't look like a ${platformLabel} link. Please enter a valid ${platformLabel} URL.`;
+    }
+  } catch {
+    // Malformed URLs are handled separately by the existing syntactic check.
+  }
+  return null;
+};
+
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 const formatDateRange = (start?: string, end?: string) => {
@@ -528,6 +575,7 @@ export function CampusManageDashboard() {
   // ─── Social presence state ──
   const [editingPlatform, setEditingPlatform] = useState<string | null>(null);
   const [socialValue, setSocialValue] = useState("");
+  const [socialUrlError, setSocialUrlError] = useState<string | null>(null);
   const [isAddingNewSocial, setIsAddingNewSocial] = useState(false);
 
   // ─── Derived data ────────────────────────────────────────────────────────
@@ -1992,88 +2040,116 @@ export function CampusManageDashboard() {
 
                             {isEditing ? (
                               /* Edit mode: inline input + save/cancel */
-                              <div className="flex min-w-0 flex-1 items-center gap-1 animate-in fade-in slide-in-from-right-2">
-                                <Input
-                                  value={socialValue}
-                                  onChange={(e) =>
-                                    setSocialValue(e.target.value)
-                                  }
-                                  placeholder={
-                                    platform.id === "website" ||
-                                    platform.id === "other"
-                                      ? `Full URL (https://...)`
-                                      : `Username or full URL`
-                                  }
-                                  className="h-8 min-w-0 text-[11px] font-medium"
-                                  autoFocus
-                                  onKeyDown={(e) => {
-                                    if (
-                                      e.key === "Enter" &&
-                                      socialValue.trim()
-                                    ) {
-                                      const normalizedUrl = normalizeSocialUrl(
-                                        platform.id,
-                                        socialValue,
-                                      );
-                                      upsertSocial(
-                                        {
-                                          platform: platform.id,
-                                          url: normalizedUrl,
-                                        },
-                                        {
-                                          onSuccess: () =>
-                                            setEditingPlatform(null),
-                                        },
-                                      );
-                                    }
-                                    if (e.key === "Escape")
-                                      setEditingPlatform(null);
-                                  }}
-                                />
-                                <div className="flex shrink-0 items-center gap-0.5">
-                                  <Button
-                                    size="icon"
-                                    variant="ghost"
-                                    className="h-7 w-7 text-success hover:bg-success/10"
-                                    disabled={
-                                      isUpsertingSocial || !socialValue.trim()
-                                    }
-                                    title="Save"
-                                    aria-label="Save"
-                                    onClick={() => {
-                                      const normalizedUrl = normalizeSocialUrl(
-                                        platform.id,
-                                        socialValue,
-                                      );
-                                      upsertSocial(
-                                        {
-                                          platform: platform.id,
-                                          url: normalizedUrl,
-                                        },
-                                        {
-                                          onSuccess: () =>
-                                            setEditingPlatform(null),
-                                        },
+                              <div className="flex min-w-0 flex-1 flex-col gap-1 animate-in fade-in slide-in-from-right-2">
+                                <div className="flex items-center gap-1">
+                                  <Input
+                                    value={socialValue}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      setSocialValue(val);
+                                      setSocialUrlError(
+                                        val.trim()
+                                          ? validateSocialUrl(platform.id, val)
+                                          : null,
                                       );
                                     }}
-                                  >
-                                    {isUpsertingSocial ? (
-                                      <Loader2 className="h-3 w-3 animate-spin" />
-                                    ) : (
-                                      <Plus className="h-3.5 w-3.5" />
+                                    placeholder={
+                                      platform.id === "website" ||
+                                      platform.id === "other"
+                                        ? `Full URL (https://...)`
+                                        : `Username or full URL`
+                                    }
+                                    className={cn(
+                                      "h-8 min-w-0 text-[11px] font-medium",
+                                      socialUrlError &&
+                                        "border-destructive focus-visible:ring-destructive/30",
                                     )}
-                                  </Button>
-                                  <Button
-                                    size="icon"
-                                    variant="ghost"
-                                    className="h-7 w-7 text-muted-foreground hover:bg-muted"
-                                    title="Cancel"
-                                    aria-label="Cancel"
-                                    onClick={() => setEditingPlatform(null)}
-                                  >
-                                    <X className="h-3.5 w-3.5" />
-                                  </Button>
+                                    autoFocus
+                                    onKeyDown={(e) => {
+                                      if (
+                                        e.key === "Enter" &&
+                                        socialValue.trim() &&
+                                        !socialUrlError
+                                      ) {
+                                        const normalizedUrl =
+                                          normalizeSocialUrl(
+                                            platform.id,
+                                            socialValue,
+                                          );
+                                        upsertSocial(
+                                          {
+                                            platform: platform.id,
+                                            url: normalizedUrl,
+                                          },
+                                          {
+                                            onSuccess: () =>
+                                              setEditingPlatform(null),
+                                          },
+                                        );
+                                      }
+                                      if (e.key === "Escape") {
+                                        setEditingPlatform(null);
+                                        setSocialUrlError(null);
+                                      }
+                                    }}
+                                  />
+                                  <div className="flex shrink-0 items-center gap-0.5">
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      className="h-7 w-7 text-success hover:bg-success/10"
+                                      disabled={
+                                        isUpsertingSocial ||
+                                        !socialValue.trim() ||
+                                        !!socialUrlError
+                                      }
+                                      title="Save"
+                                      aria-label="Save"
+                                      onClick={() => {
+                                        const normalizedUrl =
+                                          normalizeSocialUrl(
+                                            platform.id,
+                                            socialValue,
+                                          );
+                                        upsertSocial(
+                                          {
+                                            platform: platform.id,
+                                            url: normalizedUrl,
+                                          },
+                                          {
+                                            onSuccess: () =>
+                                              setEditingPlatform(null),
+                                          },
+                                        );
+                                      }}
+                                    >
+                                      {isUpsertingSocial ? (
+                                        <Loader2 className="h-3 w-3 animate-spin" />
+                                      ) : (
+                                        <Plus className="h-3.5 w-3.5" />
+                                      )}
+                                    </Button>
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      className="h-7 w-7 text-muted-foreground hover:bg-muted"
+                                      title="Cancel"
+                                      aria-label="Cancel"
+                                      onClick={() => {
+                                        setEditingPlatform(null);
+                                        setSocialUrlError(null);
+                                      }}
+                                    >
+                                      <X className="h-3.5 w-3.5" />
+                                    </Button>
+                                  </div>
                                 </div>
+                                {socialUrlError && (
+                                  <p className="flex items-center gap-1 text-[10px] font-semibold text-destructive animate-in fade-in slide-in-from-top-1">
+                                    <span aria-hidden="true">⚠</span>
+                                    {socialUrlError}
+                                  </p>
+                                )}
                               </div>
                             ) : (
                               /* View mode: platform label + display handle + edit/delete */
@@ -2103,6 +2179,8 @@ export function CampusManageDashboard() {
                                       setEditingPlatform(platform.id);
                                       // Pre-fill with the raw URL so the user can see it
                                       setSocialValue(linkData?.url || "");
+                                      // Clear any stale error from a previous session
+                                      setSocialUrlError(null);
                                     }}
                                   >
                                     <Pencil className="h-3.5 w-3.5" />
@@ -2156,6 +2234,7 @@ export function CampusManageDashboard() {
                           onValueChange={(val) => {
                             setEditingPlatform(val);
                             setSocialValue("");
+                            setSocialUrlError(null);
                             setIsAddingNewSocial(false);
                           }}
                         >
