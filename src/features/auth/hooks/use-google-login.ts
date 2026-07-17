@@ -14,9 +14,9 @@ import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import { authStore } from "@/lib/auth";
+import { useGoogleTempTokenStore } from "@/stores/oauth-store";
 import { fetchGoogleAuthUrl, fetchGoogleCallback, fetchUserInfo } from "../api";
 import { authKeys } from "./query-keys";
-import { useGoogleTempTokenStore } from "@/stores/oauth-store";
 
 /**
  * Hook to initiate Google OAuth2 flow.

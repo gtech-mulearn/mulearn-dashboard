@@ -27,7 +27,6 @@ import {
   useCompanyRegister,
   useRegister,
 } from "@/features/auth";
-import { useGoogleTempTokenStore } from "@/stores/oauth-store";
 import {
   useColleges,
   useCompanies,
@@ -37,6 +36,7 @@ import {
   useSelectOrganization,
 } from "@/features/onboarding";
 import { getApiResponseError } from "@/hooks/use-get-error";
+import { useGoogleTempTokenStore } from "@/stores/oauth-store";
 
 interface RegisterClientProps {
   redirectUri?: string;
