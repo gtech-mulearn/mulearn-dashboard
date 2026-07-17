@@ -1071,6 +1071,7 @@ export function CampusManageDashboard() {
                           checked={student.alumni}
                           disabled={isChangingType}
                           onCheckedChange={() => setPendingStudent(student)}
+                          aria-label={`Toggle alumni status for ${student.name}`}
                         />
                       );
                     default:
