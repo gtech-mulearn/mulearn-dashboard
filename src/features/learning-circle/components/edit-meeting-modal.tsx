@@ -49,25 +49,34 @@ const PLATFORMS = [
 ] as const;
 type Platform = (typeof PLATFORMS)[number];
 
-const EditMeetingFormSchema = z
-  .object({
-    title: z.string().min(1, "Title is required").max(100),
-    description: z.string().min(1, "Description is required").max(1000),
-    mode: z.enum(["online", "offline"]),
-    platform: z.enum(PLATFORMS).nullable().optional(),
-    meet_place: z.string().min(1, "Meeting place is required").max(200),
-    meet_time: z.string().min(1, "Meeting time is required"),
-    duration: z.number().min(1).max(24),
-  })
-  .refine((data) => data.mode !== "online" || !!data.platform, {
-    message: "Platform is required for online meetings",
-    path: ["platform"],
-  })
-  .superRefine((data, ctx) => {
-    // BUG-013: meet_time must be at least MIN_BUFFER_MINUTES in the future.
-    // The form value is a datetime-local string (local time); convert to UTC
-    // before comparing so the check is timezone-agnostic.
-    if (data.meet_time) {
+/**
+ * Build the edit-meeting schema. We pass in the original local datetime string
+ * (as returned by utcToLocalDateTimeInput) so that the superRefine can skip
+ * the "15 minutes in the future" check when the user hasn't changed the time.
+ * This lets organisers fix a title/description on past or near-future meetings
+ * without being blocked by the time-buffer validation (P1 fix).
+ */
+function buildEditMeetingSchema(originalMeetTime: string) {
+  return z
+    .object({
+      title: z.string().min(1, "Title is required").max(100),
+      description: z.string().min(1, "Description is required").max(1000),
+      mode: z.enum(["online", "offline"]),
+      platform: z.enum(PLATFORMS).nullable().optional(),
+      meet_place: z.string().min(1, "Meeting place is required").max(200),
+      meet_time: z.string().min(1, "Meeting time is required"),
+      duration: z.number().min(1).max(24),
+    })
+    .refine((data) => data.mode !== "online" || !!data.platform, {
+      message: "Platform is required for online meetings",
+      path: ["platform"],
+    })
+    .superRefine((data, ctx) => {
+      // P1 fix: only validate the time-buffer when the organiser actually
+      // changed meet_time. If it matches the original value we loaded from the
+      // server, skip the check so they can edit other fields freely.
+      if (!data.meet_time || data.meet_time === originalMeetTime) return;
+
       const utcIso = new Date(data.meet_time).toISOString();
       if (!isMeetTimeValid(utcIso)) {
         ctx.addIssue({
@@ -76,10 +85,11 @@ const EditMeetingFormSchema = z
           message: getMeetTimeErrorMessage(),
         });
       }
-    }
-  });
+    });
+}
 
-type EditMeetingFormData = z.infer<typeof EditMeetingFormSchema>;
+// EditMeetingFormData is now declared inside the component (after the schema
+// is built) so the type always reflects the current meeting's schema.
 
 function utcToLocalDateTimeInput(value: string) {
   const date = new Date(value);
@@ -111,6 +121,20 @@ export function EditMeetingModal({
   // biome-ignore lint/correctness/useExhaustiveDependencies: Recomputed each time the modal opens
   const minMeetTime = useMemo(() => getMinDateTimeLocalValue(), [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Derive the original local datetime string once — used both as the form
+  // default value and as the baseline for the skip-validation check.
+  const originalMeetTime = utcToLocalDateTimeInput(meeting.meet_time);
+
+  // Rebuild the schema whenever the meeting changes so the originalMeetTime
+  // closure is always in sync with the currently-open meeting.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: schema depends on originalMeetTime derived from meeting
+  const EditMeetingFormSchema = useMemo(
+    () => buildEditMeetingSchema(originalMeetTime),
+    [meeting.meet_time], // eslint-disable-line react-hooks/exhaustive-deps
+  );
+
+  type EditMeetingFormData = z.infer<typeof EditMeetingFormSchema>;
+
   const {
     register,
     handleSubmit,
@@ -128,7 +152,7 @@ export function EditMeetingModal({
         ? (meeting.meet_place as Platform)
         : null,
       meet_place: meeting.meet_link || meeting.meet_place || "",
-      meet_time: utcToLocalDateTimeInput(meeting.meet_time),
+      meet_time: originalMeetTime,
       duration: meeting.duration,
     },
   });
@@ -144,10 +168,12 @@ export function EditMeetingModal({
         ? (meeting.meet_place as Platform)
         : null,
       meet_place: meeting.meet_link || meeting.meet_place || "",
-      meet_time: utcToLocalDateTimeInput(meeting.meet_time),
+      // Use the already-computed originalMeetTime so the reset value matches
+      // the baseline the schema was built with.
+      meet_time: originalMeetTime,
       duration: meeting.duration,
     });
-  }, [meeting, reset]);
+  }, [meeting, reset, originalMeetTime]);
 
   const onSubmit = async (data: EditMeetingFormData) => {
     try {
