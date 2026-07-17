@@ -26,8 +26,8 @@ import {
   type Role,
   useCompanyRegister,
   useRegister,
-  useGoogleTempTokenStore,
 } from "@/features/auth";
+import { useGoogleTempTokenStore } from "@/stores/oauth-store";
 import {
   useColleges,
   useCompanies,

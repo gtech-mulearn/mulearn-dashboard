@@ -16,7 +16,7 @@ import { getApiResponseError } from "@/hooks/use-get-error";
 import { authStore } from "@/lib/auth";
 import { fetchGoogleAuthUrl, fetchGoogleCallback, fetchUserInfo } from "../api";
 import { authKeys } from "./query-keys";
-import { useGoogleTempTokenStore } from "./use-google-temp-token-store";
+import { useGoogleTempTokenStore } from "@/stores/oauth-store";
 
 /**
  * Hook to initiate Google OAuth2 flow.

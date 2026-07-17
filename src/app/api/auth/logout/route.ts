@@ -1,14 +1,23 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { endpoints } from "@/api/endpoints";
+import { publicServerClient } from "@/api/server";
 
 export async function POST() {
-  // TODO(backend): the Django API exposes no logout/revoke endpoint, so the
-  // refreshToken JWT stays valid server-side until it naturally expires. When a
-  // revoke endpoint exists, POST the refreshToken to it here BEFORE deleting the
-  // cookies for true server-side invalidation.
   const cookieStore = await cookies();
+  const refreshToken = cookieStore.get("refreshToken")?.value;
+
+  if (refreshToken) {
+    try {
+      await publicServerClient.post(endpoints.auth.logout, { refreshToken });
+    } catch (error) {
+      console.error("Backend logout request failed:", error);
+    }
+  }
+
   cookieStore.delete("accessToken");
   cookieStore.delete("refreshToken");
   cookieStore.delete("isAuthenticated");
+
   return NextResponse.json({ success: true });
 }
