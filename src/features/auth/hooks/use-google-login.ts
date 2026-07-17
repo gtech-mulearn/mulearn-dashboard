@@ -16,6 +16,7 @@ import { getApiResponseError } from "@/hooks/use-get-error";
 import { authStore } from "@/lib/auth";
 import { fetchGoogleAuthUrl, fetchGoogleCallback, fetchUserInfo } from "../api";
 import { authKeys } from "./query-keys";
+import { useGoogleTempTokenStore } from "./use-google-temp-token-store";
 
 /**
  * Hook to initiate Google OAuth2 flow.
@@ -53,12 +54,16 @@ export function useGoogleCallback(code?: string, error?: string) {
     mutationFn: async ({ code: authCode }: { code: string }) => {
       const tokenData = await fetchGoogleCallback(authCode);
 
-      if (tokenData.isNewUser === true && tokenData.email) {
+      if (tokenData.isNewUser === true && tokenData.tempToken) {
+        // Store the signed JWT in-memory in the Zustand store — never expose it in the URL
+        // (avoids browser history, server logs, referrer header leakage, storage vulnerabilities).
+        // It is consumed and deleted immediately when RegisterClient mounts.
+        useGoogleTempTokenStore.getState().setTempToken(tokenData.tempToken);
+
         const params = new URLSearchParams();
-        params.set("email", tokenData.email);
-        if (tokenData.fullName) {
-          params.set("fullName", tokenData.fullName);
-        }
+        // email + fullName are only for pre-filling the UI — not sensitive
+        if (tokenData.email) params.set("email", tokenData.email);
+        if (tokenData.fullName) params.set("fullName", tokenData.fullName);
         router.replace(`/register?${params.toString()}`);
         return { isNewUser: true };
       }

@@ -26,6 +26,7 @@ import {
   type Role,
   useCompanyRegister,
   useRegister,
+  useGoogleTempTokenStore,
 } from "@/features/auth";
 import {
   useColleges,
@@ -53,13 +54,30 @@ export function RegisterClient({
   fullName,
 }: RegisterClientProps) {
   const router = useRouter();
-  const [step, setStep] = useState<RegistrationStep>("basic");
+
+  // Read the Google temp token from Zustand store — written there by
+  // useGoogleCallback before redirecting. Consumed + deleted immediately
+  // so it only lives in memory for the duration of this signup flow.
+  const [tempToken] = useState<string | null>(() => {
+    const token = useGoogleTempTokenStore.getState().tempToken;
+    if (token) useGoogleTempTokenStore.getState().clearTempToken();
+    return token;
+  });
+
+  // When a tempToken is present the user authenticated via Google.
+  // We already know their email + name — skip the basic-info step.
+  const isGoogleSignup = !!tempToken;
+
+  const [step, setStep] = useState<RegistrationStep>(
+    isGoogleSignup ? "role" : "basic",
+  );
+
   const [basicData, setBasicData] = useState<{
     fullName: string;
     email: string;
     password: string;
   } | null>(() => {
-    if (email || fullName) {
+    if (isGoogleSignup || email || fullName) {
       return {
         fullName: fullName || "",
         email: email || "",
@@ -245,10 +263,11 @@ export function RegisterClient({
       user: {
         full_name: basicData.fullName,
         email: basicData.email,
-        password: basicData.password,
+        ...(isGoogleSignup ? {} : { password: basicData.password }),
         role: roleId,
       },
       referral: referralId ? { muid: referralId } : undefined,
+      ...(isGoogleSignup && tempToken ? { tempToken } : {}),
     });
 
     // 3. Now authenticated — handle org linking for student / enabler
