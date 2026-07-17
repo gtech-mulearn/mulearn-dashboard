@@ -5,12 +5,15 @@
  *
  * Single source of truth for the "meeting must be in the future" rule.
  *
- * ─── Why a shared util? ──────────────────────────────────────────────────────
- * The rule is enforced at two distinct Zod layers:
- *   1. CreateMeetingRequestSchema  (schemas/meeting.schema.ts)  — catches any
- *      code path that builds a CreateMeetingRequest object.
- *   2. CreateMeetingFormSchema / EditMeetingFormSchema (modal components) —
- *      gives the user immediate, field-level feedback before the API call.
+ * ─── Where the check actually runs ───────────────────────────────────────────
+ * Runtime enforcement lives exclusively in the two form schemas:
+ *   • CreateMeetingFormSchema  (components/create-meeting-modal.tsx)
+ *   • EditMeetingFormSchema    (components/edit-meeting-modal.tsx)
+ *
+ * These give the user immediate, field-level feedback before the API call is
+ * made.  `CreateMeetingRequestSchema` in meeting.schema.ts is used only as a
+ * TypeScript type source; `apiClient.post` validates the *response* schema, not
+ * the request body, so no Zod check runs on the data at the API boundary.
  *
  * Keeping the constant and helper here means changing the buffer (e.g. from 15
  * to 30 minutes) is a single-line edit — not a multi-file search-and-replace.

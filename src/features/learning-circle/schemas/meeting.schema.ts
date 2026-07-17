@@ -7,10 +7,6 @@
  */
 
 import { z } from "zod";
-import {
-  getMeetTimeErrorMessage,
-  isMeetTimeValid,
-} from "../utils/meet-time-validation";
 import { ApiResponseSchema } from "./circle.schema";
 
 // ============================================
@@ -122,44 +118,38 @@ export type MeetingDetail = z.infer<typeof MeetingDetailSchema>;
 // Request Schemas
 // ============================================
 
-export const CreateMeetingRequestSchema = z
-  .object({
-    title: z.string().min(1).max(100),
-    description: z.string().min(1).max(1000),
-    mode: z.enum(["online", "offline"]),
-    platform: z
-      .enum(["Zoom", "Google Meet", "Microsoft Teams", "Discord", "Other"])
-      .optional()
-      .nullable(),
-    meet_place: z.string().min(1).max(100),
-    meet_link: z.string().url().optional().nullable(),
-    /**
-     * UTC ISO-8601 string.  Must be at least MIN_BUFFER_MINUTES in the future
-     * relative to the server clock.
-     *
-     * NOTE (BUG-013): The Django backend MUST independently enforce this rule
-     * server-side (e.g. `if meet_time <= timezone.now(): raise ValidationError`).
-     * Frontend-only validation can be bypassed by direct API calls.
-     */
-    meet_time: z.string(),
-    duration: z.number().min(1).max(24),
-    coord_x: z.number(),
-    coord_y: z.number(),
-    is_recurring: z.boolean(),
-    recurrence_type: z.enum(["weekly", "monthly"]).optional().nullable(),
-    recurrence: z.number().optional().nullable(),
-    is_report_needed: z.boolean(),
-    report_description: z.string().max(1000).optional().nullable(),
-  })
-  .superRefine((data, ctx) => {
-    if (data.meet_time && !isMeetTimeValid(data.meet_time)) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["meet_time"],
-        message: getMeetTimeErrorMessage(),
-      });
-    }
-  });
+export const CreateMeetingRequestSchema = z.object({
+  title: z.string().min(1).max(100),
+  description: z.string().min(1).max(1000),
+  mode: z.enum(["online", "offline"]),
+  platform: z
+    .enum(["Zoom", "Google Meet", "Microsoft Teams", "Discord", "Other"])
+    .optional()
+    .nullable(),
+  meet_place: z.string().min(1).max(100),
+  meet_link: z.string().url().optional().nullable(),
+  /**
+   * UTC ISO-8601 string.
+   *
+   * The 15-minute future-buffer rule is enforced by the form schemas
+   * (CreateMeetingFormSchema / EditMeetingFormSchema) before this value ever
+   * reaches the API layer.  No runtime Zod check runs on the request body
+   * itself — `apiClient.post` validates only the response schema.
+   *
+   * ⚠️  BUG-013: The Django backend MUST independently enforce
+   * `meet_time > now()` server-side so the rule cannot be bypassed by a
+   * direct API call.
+   */
+  meet_time: z.string(),
+  duration: z.number().min(1).max(24),
+  coord_x: z.number(),
+  coord_y: z.number(),
+  is_recurring: z.boolean(),
+  recurrence_type: z.enum(["weekly", "monthly"]).optional().nullable(),
+  recurrence: z.number().optional().nullable(),
+  is_report_needed: z.boolean(),
+  report_description: z.string().max(1000).optional().nullable(),
+});
 
 export type CreateMeetingRequest = z.infer<typeof CreateMeetingRequestSchema>;
 
