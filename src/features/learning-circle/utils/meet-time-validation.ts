@@ -36,9 +36,10 @@
  * Minimum number of minutes a meeting must be scheduled ahead of the current
  * time.  Change this value to adjust the rule globally.
  *
- * Product decision (approved 2026-07-17): 15 minutes.
+ * Product decision (updated 2026-07-18): 1 minute — meetings can be scheduled
+ * starting from the very next minute after the current time.
  */
-export const MIN_BUFFER_MINUTES = 15;
+export const MIN_BUFFER_MINUTES = 1;
 
 /**
  * Returns the earliest acceptable `meet_time` as a UTC epoch timestamp (ms).
@@ -64,7 +65,8 @@ export function isMeetTimeValid(utcIsoString: string): boolean {
  * Human-readable validation error to show under the Date & Time field.
  */
 export function getMeetTimeErrorMessage(): string {
-  return `Meeting time must be at least ${MIN_BUFFER_MINUTES} minutes in the future`;
+  const unit = MIN_BUFFER_MINUTES === 1 ? "minute" : "minutes";
+  return `Meeting time must be at least ${MIN_BUFFER_MINUTES} ${unit} in the future`;
 }
 
 /**
