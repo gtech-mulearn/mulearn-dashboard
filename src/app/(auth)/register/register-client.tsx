@@ -43,6 +43,7 @@ interface RegisterClientProps {
   referralId?: string;
   email?: string;
   fullName?: string;
+  initialTempToken?: string | null;
 }
 
 type RegistrationStep = "basic" | "role" | "details";
@@ -52,12 +53,11 @@ export function RegisterClient({
   referralId,
   email,
   fullName,
+  initialTempToken,
 }: RegisterClientProps) {
   const router = useRouter();
 
-  const [tempToken] = useState<string | null>(() =>
-    typeof window !== "undefined" ? authStore.getTempToken() || null : null,
-  );
+  const [tempToken] = useState<string | null>(initialTempToken || null);
 
   const isGoogleSignup = !!tempToken;
 
