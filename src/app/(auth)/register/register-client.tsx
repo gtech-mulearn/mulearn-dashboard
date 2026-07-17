@@ -386,7 +386,7 @@ export function RegisterClient({
     return (
       <RegisterRoleSelection
         onSubmit={handleRoleSubmit}
-        onBack={handleBackToBasic}
+        onBack={isGoogleSignup ? undefined : handleBackToBasic}
         isLoading={isLoading}
         defaultValue={selectedRole || undefined}
       />
