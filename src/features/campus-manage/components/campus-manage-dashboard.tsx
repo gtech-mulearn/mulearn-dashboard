@@ -91,14 +91,8 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatCard } from "@/components/ui/stat-card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import Table from "@/components/dashboard/table/Table";
+import THead from "@/components/dashboard/table/Thead";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import { chipColor } from "@/lib/chip-colors";
@@ -450,7 +444,18 @@ function CompactStatCard({
   );
 }
 
-// ─── Main Dashboard ──────────────────────────────────────────────────────────
+const LEADERBOARD_COLUMNS = [
+  {
+    column: "rank",
+    Label: "Rank",
+    isSortable: false,
+    width: "w-24 text-center",
+  },
+  { column: "name", Label: "Student", isSortable: false },
+  { column: "karma", Label: "Karma", isSortable: false },
+  { column: "level", Label: "Level", isSortable: false },
+  { column: "cluster", Label: "Department / Cluster", isSortable: false },
+];
 
 export function CampusManageDashboard() {
   const router = useRouter();
@@ -990,149 +995,129 @@ export function CampusManageDashboard() {
             {isLeaderboardLoading ? (
               <Skeleton className="h-[500px] w-full rounded-2xl" />
             ) : (
-              <Card className="overflow-hidden border-border/60 shadow-md">
-                <CardContent className="p-0">
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader className="bg-muted/30">
-                        <TableRow className="hover:bg-transparent">
-                          <TableHead className="w-24 text-center">
-                            Rank
-                          </TableHead>
-                          <TableHead>Student</TableHead>
-                          <TableHead>Karma</TableHead>
-                          <TableHead>Level</TableHead>
-                          <TableHead>Department / Cluster</TableHead>
-                          <TableHead className="w-[50px]" />
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {leaderboard.map((student) => (
-                          <TableRow
-                            key={student.id}
-                            className="group transition-colors hover:bg-muted/50"
-                          >
-                            <TableCell className="text-center font-bold">
-                              <div
-                                className={`mx-auto flex h-9 w-9 items-center justify-center rounded-full text-xs font-black shadow-sm transition-all duration-300 ${
-                                  student.rank === 1
-                                    ? "bg-amber-100 text-amber-700 ring-2 ring-amber-500/30 dark:bg-amber-950/35 dark:text-amber-400 dark:ring-amber-500/20"
-                                    : student.rank === 2
-                                      ? "bg-slate-100 text-slate-700 ring-2 ring-slate-400/30 dark:bg-slate-800/80 dark:text-slate-300 dark:ring-slate-700/50"
-                                      : student.rank === 3
-                                        ? "bg-orange-100 text-orange-800 ring-2 ring-orange-400/30 dark:bg-orange-950/35 dark:text-orange-400 dark:ring-orange-500/20"
-                                        : "bg-background text-muted-foreground border border-border/50"
-                                }`}
-                              >
-                                #{student.rank}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex flex-col">
-                                <span className="text-sm font-semibold tracking-tight transition-colors group-hover:text-primary">
-                                  {student.name}
-                                </span>
-                                <span className="text-[11px] text-muted-foreground">
-                                  @{student.muid.split("@")[0]}
-                                </span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <span className="text-lg font-black tracking-tighter text-success">
-                                {student.karma.toLocaleString()}
-                              </span>
-                            </TableCell>
-                            <TableCell>
-                              <Badge
-                                className={`h-6 px-2.5 font-bold uppercase tracking-wider text-[10px] shadow-sm ${
-                                  student.level?.includes("7")
-                                    ? "bg-purple-600 hover:bg-purple-700"
-                                    : student.level?.includes("6")
-                                      ? "bg-brand-blue hover:bg-brand-blue/90"
-                                      : student.level?.includes("5")
-                                        ? "bg-primary hover:bg-primary/90 font-black"
-                                        : student.level?.includes("4")
-                                          ? "bg-teal-600 hover:bg-teal-700 font-black"
-                                          : "bg-slate-500/80 hover:bg-slate-500 font-black"
-                                }`}
-                              >
-                                {student.level}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="max-w-[200px] truncate text-xs text-muted-foreground">
-                              {student.cluster}
-                            </TableCell>
-                            <TableCell>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-7 w-7"
-                                    disabled={isChangingType}
-                                  >
-                                    <MoreHorizontal className="h-3.5 w-3.5" />
-                                    <span className="sr-only">
-                                      Student actions
-                                    </span>
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem
-                                    onClick={() => setPendingStudent(student)}
-                                  >
-                                    {student.alumni
-                                      ? "Mark as Active"
-                                      : "Mark as Alumni"}
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                        {leaderboard.length === 0 && (
-                          <TableRow>
-                            <TableCell
-                              colSpan={6}
-                              className="py-12 text-center text-muted-foreground"
-                            >
-                              <div className="flex flex-col items-center gap-2 opacity-50">
-                                <Users className="h-10 w-10" />
-                                <p className="text-sm">
-                                  No students found matching your filters.
-                                </p>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
-                  </div>
-                  <div className="p-4">
-                    <Pagination
-                      currentPage={leaderboardPage}
-                      totalPages={totalPages}
-                      handleNextClick={() => {
-                        const next = Math.min(leaderboardPage + 1, totalPages);
-                        setLeaderboardPage(next);
-                        setLeaderboardFilters((prev) => ({
-                          ...prev,
-                          page: next,
-                        }));
-                      }}
-                      handlePreviousClick={() => {
-                        const prev = Math.max(leaderboardPage - 1, 1);
-                        setLeaderboardPage(prev);
-                        setLeaderboardFilters((p) => ({ ...p, page: prev }));
-                      }}
-                      perPage={PAGE_SIZE}
-                      totalCount={
-                        leaderboardPagination?.count ?? leaderboard.length
-                      }
-                    />
-                  </div>
-                </CardContent>
-              </Card>
+              <Table
+                rows={leaderboard as any}
+                isLoading={isLeaderboardLoading}
+                page={leaderboardPage}
+                perPage={PAGE_SIZE}
+                columnOrder={LEADERBOARD_COLUMNS}
+                id={["id"]}
+                customCellRender={(column, row) => {
+                  const student = row as unknown as CampusLeaderboardItem;
+                  switch (column) {
+                    case "rank":
+                      return (
+                        <div
+                          className={`mx-auto flex h-9 w-9 items-center justify-center rounded-full text-xs font-black shadow-sm transition-all duration-300 ${
+                            student.rank === 1
+                              ? "bg-chart-4/15 text-chart-4 ring-2 ring-chart-4/25"
+                              : student.rank === 2
+                                ? "bg-muted text-muted-foreground ring-2 ring-border"
+                                : student.rank === 3
+                                  ? "bg-warning/15 text-warning ring-2 ring-warning/25"
+                                  : "bg-background text-muted-foreground border border-border/50"
+                          }`}
+                        >
+                          #{student.rank}
+                        </div>
+                      );
+                    case "name":
+                      return (
+                        <div className="flex flex-col">
+                          <span className="text-sm font-semibold tracking-tight transition-colors group-hover:text-primary">
+                            {student.name}
+                          </span>
+                          <span className="text-[11px] text-muted-foreground">
+                            @{student.muid.split("@")[0]}
+                          </span>
+                        </div>
+                      );
+                    case "karma":
+                      return (
+                        <span className="text-lg font-black tracking-tighter text-success">
+                          {student.karma.toLocaleString()}
+                        </span>
+                      );
+                    case "level":
+                      return (
+                        <Badge
+                          className={`h-6 px-2.5 font-bold uppercase tracking-wider text-[10px] shadow-sm ${
+                            student.level?.includes("7")
+                              ? "bg-brand-purple hover:bg-brand-purple/90"
+                              : student.level?.includes("6")
+                                ? "bg-brand-blue hover:bg-brand-blue/90"
+                                : student.level?.includes("5")
+                                  ? "bg-primary hover:bg-primary/90 text-primary-foreground font-black"
+                                  : student.level?.includes("4")
+                                    ? "bg-chart-3 hover:bg-chart-3/90 font-black"
+                                    : "bg-muted-foreground/80 hover:bg-muted-foreground font-black"
+                          }`}
+                        >
+                          {student.level}
+                        </Badge>
+                      );
+                    case "cluster":
+                      return (
+                        <span className="max-w-[200px] truncate text-xs text-muted-foreground block">
+                          {student.cluster}
+                        </span>
+                      );
+                    default:
+                      return null;
+                  }
+                }}
+                customActionRender={(row) => {
+                  const student = row as unknown as CampusLeaderboardItem;
+                  return student.alumni ? (
+                    <Button
+                      variant="default"
+                      className="font-semibold"
+                      disabled={isChangingType}
+                      onClick={() => setPendingStudent(student)}
+                    >
+                      Mark Active
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      className="font-semibold"
+                      disabled={isChangingType}
+                      onClick={() => setPendingStudent(student)}
+                    >
+                      Mark Alumni
+                    </Button>
+                  );
+                }}
+              >
+                <THead
+                  columnOrder={LEADERBOARD_COLUMNS}
+                  onIconClick={() => {}}
+                  action
+                />
+                <div>
+                  <Pagination
+                    currentPage={leaderboardPage}
+                    totalPages={totalPages}
+                    handleNextClick={() => {
+                      const next = Math.min(leaderboardPage + 1, totalPages);
+                      setLeaderboardPage(next);
+                      setLeaderboardFilters((prev) => ({
+                        ...prev,
+                        page: next,
+                      }));
+                    }}
+                    handlePreviousClick={() => {
+                      const prev = Math.max(leaderboardPage - 1, 1);
+                      setLeaderboardPage(prev);
+                      setLeaderboardFilters((p) => ({ ...p, page: prev }));
+                    }}
+                    perPage={PAGE_SIZE}
+                    totalCount={
+                      leaderboardPagination?.count ?? leaderboard.length
+                    }
+                  />
+                </div>
+              </Table>
             )}
           </section>
 

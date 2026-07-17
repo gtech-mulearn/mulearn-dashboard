@@ -225,6 +225,7 @@ export function useDownloadStudentCsv() {
 }
 
 export function useChangeStudentType() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({
       memberId,
@@ -233,6 +234,11 @@ export function useChangeStudentType() {
       memberId: string;
       data: Record<string, unknown>;
     }) => campusManageApi.changeStudentType(memberId, data),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: ["campus-manage", "leaderboard"],
+      });
+    },
     onError: (error) => {
       toast.error(
         getApiResponseError(error, {
