@@ -18,7 +18,6 @@ import {
   Loader2,
   MapPin,
   MessageSquare,
-  MoreHorizontal,
   MoreVertical,
   Pencil,
   Plus,
@@ -71,12 +70,6 @@ import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Combobox } from "@/components/ui/combobox";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { MuidSearchInput } from "@/components/ui/muid-search-input";
 import {
