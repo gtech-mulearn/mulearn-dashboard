@@ -51,9 +51,17 @@ import {
 } from "../hooks";
 
 import type {
+  CreateCountryInput,
+  CreateDistrictInput,
+  CreateStateInput,
+  CreateZoneInput,
   DistrictItemSchema,
   LocationItemSchema,
   StateItemSchema,
+  UpdateCountryInput,
+  UpdateDistrictInput,
+  UpdateStateInput,
+  UpdateZoneInput,
   ZoneItemSchema,
 } from "../schema";
 
@@ -73,6 +81,8 @@ type FormData = {
   state: string;
   zone: string;
 };
+
+type MutationFn<TInput> = (data: TInput) => Promise<void>;
 
 const TABS = ["countries", "states", "zones", "districts"] as const;
 type TabType = (typeof TABS)[number];
@@ -144,15 +154,20 @@ function LocationContent() {
 
   // ─── Mutations ─────────────────────────────────────────────────────────────
 
-  const { mutateAsync: addCountry } = useAddCountry();
-  const { mutateAsync: addState } = useAddState();
-  const { mutateAsync: addZone } = useAddZone();
-  const { mutateAsync: addDistrict } = useAddDistrict();
+  const addCountry: MutationFn<CreateCountryInput> =
+    useAddCountry().mutateAsync;
+  const addState: MutationFn<CreateStateInput> = useAddState().mutateAsync;
+  const addZone: MutationFn<CreateZoneInput> = useAddZone().mutateAsync;
+  const addDistrict: MutationFn<CreateDistrictInput> =
+    useAddDistrict().mutateAsync;
 
-  const { mutateAsync: updateCountry } = useUpdateCountry();
-  const { mutateAsync: updateState } = useUpdateState();
-  const { mutateAsync: updateZone } = useUpdateZone();
-  const { mutateAsync: updateDistrict } = useUpdateDistrict();
+  const updateCountry: MutationFn<UpdateCountryInput> =
+    useUpdateCountry().mutateAsync;
+  const updateState: MutationFn<UpdateStateInput> =
+    useUpdateState().mutateAsync;
+  const updateZone: MutationFn<UpdateZoneInput> = useUpdateZone().mutateAsync;
+  const updateDistrict: MutationFn<UpdateDistrictInput> =
+    useUpdateDistrict().mutateAsync;
 
   // ─── Dropdowns ─────────────────────────────────────────────────────────────
 
@@ -235,13 +250,11 @@ function LocationContent() {
         } else if (activeTab === "states") {
           await updateState({ id, label, country: countryId });
         } else if (activeTab === "zones") {
-          await updateZone({ id, label, country: countryId, state: stateId });
+          await updateZone({ id, label, state: stateId });
         } else {
           await updateDistrict({
             id,
             label,
-            country: countryId,
-            state: stateId,
             zone: zoneId,
           });
         }
@@ -251,9 +264,9 @@ function LocationContent() {
         } else if (activeTab === "states") {
           await addState({ label, country });
         } else if (activeTab === "zones") {
-          await addZone({ label, country, state });
+          await addZone({ label, state });
         } else {
-          await addDistrict({ label, country, state, zone });
+          await addDistrict({ label, zone });
         }
       }
 
