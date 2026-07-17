@@ -23,6 +23,7 @@ export async function POST() {
   cookieStore.delete("accessToken");
   cookieStore.delete("refreshToken");
   cookieStore.delete("isAuthenticated");
+  cookieStore.delete("tempToken");
 
   return NextResponse.json({ success: true });
 }

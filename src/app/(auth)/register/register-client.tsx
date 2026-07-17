@@ -36,7 +36,7 @@ import {
   useSelectOrganization,
 } from "@/features/onboarding";
 import { getApiResponseError } from "@/hooks/use-get-error";
-import { useGoogleTempTokenStore } from "@/stores/oauth-store";
+import { authStore } from "@/lib/auth";
 
 interface RegisterClientProps {
   redirectUri?: string;
@@ -55,8 +55,8 @@ export function RegisterClient({
 }: RegisterClientProps) {
   const router = useRouter();
 
-  const [tempToken] = useState<string | null>(
-    () => useGoogleTempTokenStore.getState().tempToken,
+  const [tempToken] = useState<string | null>(() =>
+    typeof window !== "undefined" ? authStore.getTempToken() || null : null,
   );
 
   const isGoogleSignup = !!tempToken;
@@ -223,7 +223,7 @@ export function RegisterClient({
       "Company registration submitted! Awaiting admin verification.",
     );
 
-    useGoogleTempTokenStore.getState().clearTempToken();
+    await authStore.clearTempToken();
     router.push("/dashboard");
   }
 
@@ -342,7 +342,7 @@ export function RegisterClient({
 
     toast.success("Account created successfully!");
 
-    useGoogleTempTokenStore.getState().clearTempToken();
+    await authStore.clearTempToken();
 
     // 5. Navigate to interests onboarding → role-based dashboard redirect
     //    happens inside interests-client.tsx after domains are selected.

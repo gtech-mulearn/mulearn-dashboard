@@ -14,7 +14,6 @@ import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import { authStore } from "@/lib/auth";
-import { useGoogleTempTokenStore } from "@/stores/oauth-store";
 import { fetchGoogleAuthUrl, fetchGoogleCallback, fetchUserInfo } from "../api";
 import { authKeys } from "./query-keys";
 
@@ -55,7 +54,7 @@ export function useGoogleCallback(code?: string, error?: string) {
       const tokenData = await fetchGoogleCallback(authCode);
 
       if (tokenData.isNewUser === true && tokenData.tempToken) {
-        useGoogleTempTokenStore.getState().setTempToken(tokenData.tempToken);
+        await authStore.setTempToken(tokenData.tempToken);
 
         const params = new URLSearchParams();
         if (tokenData.email) params.set("email", tokenData.email);
