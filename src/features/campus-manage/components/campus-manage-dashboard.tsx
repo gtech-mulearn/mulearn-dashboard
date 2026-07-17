@@ -63,6 +63,8 @@ import {
   seriesGradient,
 } from "@/components/charts/chart-theme";
 import Pagination from "@/components/dashboard/table/pagination";
+import Table from "@/components/dashboard/table/Table";
+import THead from "@/components/dashboard/table/Thead";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -92,8 +94,6 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatCard } from "@/components/ui/stat-card";
 import { Switch } from "@/components/ui/switch";
-import Table from "@/components/dashboard/table/Table";
-import THead from "@/components/dashboard/table/Thead";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import { chipColor } from "@/lib/chip-colors";

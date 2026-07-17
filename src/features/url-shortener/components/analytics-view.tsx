@@ -1,22 +1,22 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import { use, useState } from "react";
 import {
+  Activity,
   ArrowLeft,
   CalendarDays,
   Check,
   Copy,
   ExternalLink,
   Globe,
+  LayoutGrid,
+  Link2,
   MapPin,
   MousePointerClick,
   RefreshCw,
-  Link2,
-  Activity,
-  LayoutGrid,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
+import { use, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {

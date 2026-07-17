@@ -11,8 +11,8 @@ import {
   MapPin,
   MessageSquare,
   Twitter,
-  Zap,
   Youtube,
+  Zap,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCampusInfo, useWeeklyKarma } from "../hooks";
