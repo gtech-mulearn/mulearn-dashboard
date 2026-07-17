@@ -55,13 +55,9 @@ export function useGoogleCallback(code?: string, error?: string) {
       const tokenData = await fetchGoogleCallback(authCode);
 
       if (tokenData.isNewUser === true && tokenData.tempToken) {
-        // Store the signed JWT in-memory in the Zustand store — never expose it in the URL
-        // (avoids browser history, server logs, referrer header leakage, storage vulnerabilities).
-        // It is consumed and deleted immediately when RegisterClient mounts.
         useGoogleTempTokenStore.getState().setTempToken(tokenData.tempToken);
 
         const params = new URLSearchParams();
-        // email + fullName are only for pre-filling the UI — not sensitive
         if (tokenData.email) params.set("email", tokenData.email);
         if (tokenData.fullName) params.set("fullName", tokenData.fullName);
         router.replace(`/register?${params.toString()}`);

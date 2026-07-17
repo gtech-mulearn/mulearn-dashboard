@@ -13,10 +13,6 @@ export interface GoogleTempTokenActions {
 export type GoogleTempTokenStore = GoogleTempTokenState &
   GoogleTempTokenActions;
 
-/**
- * Zustand store to hold the temporary Google registration token in-memory.
- * This is more secure than localStorage or sessionStorage, avoiding storage vulnerability.
- */
 export const useGoogleTempTokenStore = create<GoogleTempTokenStore>()(
   subscribeWithSelector((set) => ({
     tempToken: null,

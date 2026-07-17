@@ -55,17 +55,12 @@ export function RegisterClient({
 }: RegisterClientProps) {
   const router = useRouter();
 
-  // Read the Google temp token from Zustand store — written there by
-  // useGoogleCallback before redirecting. Consumed + deleted immediately
-  // so it only lives in memory for the duration of this signup flow.
   const [tempToken] = useState<string | null>(() => {
     const token = useGoogleTempTokenStore.getState().tempToken;
     if (token) useGoogleTempTokenStore.getState().clearTempToken();
     return token;
   });
 
-  // When a tempToken is present the user authenticated via Google.
-  // We already know their email + name — skip the basic-info step.
   const isGoogleSignup = !!tempToken;
 
   const [step, setStep] = useState<RegistrationStep>(
