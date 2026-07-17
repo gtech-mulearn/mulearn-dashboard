@@ -10,7 +10,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Calendar } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -33,6 +33,11 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import { useCreateMeeting } from "../hooks";
+import {
+  getMeetTimeErrorMessage,
+  getMinDateTimeLocalValue,
+  isMeetTimeValid,
+} from "../utils/meet-time-validation";
 
 const DAYS_OF_WEEK = [
   { value: 1, label: "Monday" },
@@ -92,6 +97,21 @@ const CreateMeetingFormSchema = z
         });
       }
     }
+  })
+  .superRefine((data, ctx) => {
+    // BUG-013: meet_time must be at least MIN_BUFFER_MINUTES in the future.
+    // The form value is a datetime-local string (local time); convert to UTC
+    // before comparing so the check is timezone-agnostic.
+    if (data.meet_time) {
+      const utcIso = new Date(data.meet_time).toISOString();
+      if (!isMeetTimeValid(utcIso)) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["meet_time"],
+          message: getMeetTimeErrorMessage(),
+        });
+      }
+    }
   });
 
 type CreateMeetingFormData = z.infer<typeof CreateMeetingFormSchema>;
@@ -122,6 +142,11 @@ export function CreateMeetingModal({
   suggestedMeetTime,
 }: CreateMeetingModalProps) {
   const createMeeting = useCreateMeeting(circleId);
+
+  // Recomputed each time the modal opens to reflect the current clock.
+  // Drives the native `min` attribute on the datetime-local input.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Recomputed each time the modal opens
+  const minMeetTime = useMemo(() => getMinDateTimeLocalValue(), [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const {
     register,
@@ -357,11 +382,12 @@ export function CreateMeetingModal({
                   htmlFor="meet_time"
                   className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
                 >
-                  Date & Time
+                  Date &amp; Time
                 </Label>
                 <Input
                   id="meet_time"
                   type="datetime-local"
+                  min={minMeetTime}
                   {...register("meet_time")}
                   className="rounded-xl border-border/40"
                 />
