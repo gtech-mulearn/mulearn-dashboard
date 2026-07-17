@@ -66,8 +66,8 @@ const SOCIAL_PLATFORMS = [
     id: "github",
     label: "GitHub",
     icon: Github,
-    color: "text-slate-800",
-    bg: "bg-slate-800/10",
+    color: "text-foreground",
+    bg: "bg-muted",
   },
   {
     id: "website",

@@ -236,7 +236,7 @@ export function useChangeStudentType() {
     }) => campusManageApi.changeStudentType(memberId, data),
     onSuccess: () => {
       void queryClient.invalidateQueries({
-        queryKey: ["campus-manage", "leaderboard"],
+        queryKey: campusManageKeys.leaderboards(),
       });
     },
     onError: (error) => {

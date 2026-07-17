@@ -184,8 +184,8 @@ const SOCIAL_PLATFORMS = [
     id: "github",
     label: "GitHub",
     icon: Github,
-    color: "text-slate-800",
-    bg: "bg-slate-800/10",
+    color: "text-foreground",
+    bg: "bg-muted",
   },
   {
     id: "website",
@@ -1050,16 +1050,16 @@ export function CampusManageDashboard() {
                     case "level":
                       return (
                         <Badge
-                          className={`h-6 px-2.5 font-bold uppercase tracking-wider text-[10px] shadow-sm ${
+                          className={`h-6 px-2.5 font-bold uppercase tracking-wider text-[10px] shadow-sm border-transparent ${
                             student.level?.includes("7")
-                              ? "bg-brand-purple hover:bg-brand-purple/90"
+                              ? "bg-brand-purple text-white hover:bg-brand-purple/90"
                               : student.level?.includes("6")
-                                ? "bg-brand-blue hover:bg-brand-blue/90"
+                                ? "bg-brand-blue text-white hover:bg-brand-blue/90"
                                 : student.level?.includes("5")
-                                  ? "bg-primary hover:bg-primary/90 text-primary-foreground font-black"
+                                  ? "bg-primary text-primary-foreground hover:bg-primary/90 font-black"
                                   : student.level?.includes("4")
-                                    ? "bg-chart-3 hover:bg-chart-3/90 font-black"
-                                    : "bg-muted-foreground/80 hover:bg-muted-foreground font-black"
+                                    ? "bg-chart-3 text-white hover:bg-chart-3/90 font-black"
+                                    : "bg-muted text-muted-foreground hover:bg-muted/90 font-black"
                           }`}
                         >
                           {student.level}
