@@ -994,6 +994,15 @@ export function CampusManageDashboard() {
 
             {isLeaderboardLoading ? (
               <Skeleton className="h-[500px] w-full rounded-2xl" />
+            ) : leaderboard.length === 0 ? (
+              <Card className="overflow-hidden border-border/60 shadow-md">
+                <CardContent className="py-12 text-center text-muted-foreground bg-card">
+                  <div className="flex flex-col items-center gap-2 opacity-50">
+                    <Users className="h-10 w-10" />
+                    <p className="text-sm">No students found.</p>
+                  </div>
+                </CardContent>
+              </Card>
             ) : (
               <Table
                 rows={leaderboard as any}
