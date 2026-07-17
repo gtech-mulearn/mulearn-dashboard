@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Activity,
   Facebook,
   Github,
   Globe,
@@ -11,10 +10,7 @@ import {
   Linkedin,
   MapPin,
   MessageSquare,
-  Sparkles,
-  Trophy,
   Twitter,
-  Users,
   Zap,
   Youtube,
 } from "lucide-react";
