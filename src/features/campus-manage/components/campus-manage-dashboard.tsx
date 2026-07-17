@@ -211,39 +211,6 @@ const SOCIAL_PLATFORM_DOMAINS: Partial<Record<string, readonly string[]>> = {
   github: ["github.com"],
 };
 
-/**
- * Returns an error message when the normalised URL's domain does not belong
- * to the selected platform, or `null` when the URL is valid / unconstrained.
- */
-const validateSocialUrl = (
-  platformId: string,
-  rawInput: string,
-): string | null => {
-  const allowedDomains = SOCIAL_PLATFORM_DOMAINS[platformId];
-  // Platforms without a domain list (website, other) accept anything.
-  if (!allowedDomains) return null;
-
-  const normalized = normalizeSocialUrl(platformId, rawInput);
-  if (!normalized) return null;
-
-  try {
-    const { hostname } = new URL(normalized);
-    // Strip leading "www." for comparison
-    const bare = hostname.replace(/^www\./, "");
-    const matches = allowedDomains.some(
-      (domain) => bare === domain || bare.endsWith(`.${domain}`),
-    );
-    if (!matches) {
-      const platformLabel =
-        SOCIAL_PLATFORMS.find((p) => p.id === platformId)?.label ?? platformId;
-      return `This URL doesn't look like a ${platformLabel} link. Please enter a valid ${platformLabel} URL.`;
-    }
-  } catch {
-    // Malformed URLs are handled separately by the existing syntactic check.
-  }
-  return null;
-};
-
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 const formatDateRange = (start?: string, end?: string) => {
@@ -262,17 +229,22 @@ const formatDateRange = (start?: string, end?: string) => {
   return `${format(startDate, "MMM d")} - ${format(endDate, "MMM d, yyyy")}`;
 };
 
+/**
+ * Normalises raw user input (handle, slug, or full URL) into an absolute URL
+ * for the given platform. Must be declared before `validateSocialUrl` to avoid
+ * a Temporal Dead Zone (TDZ) crash at runtime.
+ */
 const normalizeSocialUrl = (platformId: string, input: string): string => {
   const value = input.trim();
   if (!value) return "";
 
   // If it already looks like a URL (starts with http:// or https://)
-  // return it unchanged to avoid double-wrapping like https://github.com/https://github.com/...
-  if (/^(f|ht)tps?:\/\//i.test(value)) {
+  // return it unchanged to avoid double-wrapping.
+  if (/^https?:\/\//i.test(value)) {
     return value;
   }
 
-  // Treat domain-like inputs without a scheme as URLs
+  // Treat domain-like inputs without a scheme as full URLs.
   if (
     /^[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+(?:\/|$)/.test(value) &&
     !value.startsWith("@")
@@ -280,34 +252,61 @@ const normalizeSocialUrl = (platformId: string, input: string): string => {
     return `https://${value}`;
   }
 
-  // Generate URL based on platform rules
+  // Generate URL based on platform rules.
   switch (platformId) {
     case "instagram":
       return `https://instagram.com/${value.replace(/^@/, "")}`;
     case "linkedin":
-      if (value.startsWith("in/")) {
+      if (value.startsWith("in/") || value.startsWith("company/")) {
         return `https://linkedin.com/${value}`;
       }
-      if (value.startsWith("company/")) {
-        return `https://linkedin.com/${value}`;
-      }
-      return `https://linkedin.com/in/${value}`;
+      return `https://linkedin.com/in/${value.replace(/^\//, "")}`;
     case "twitter":
-      return `https://twitter.com/${value.replace(/^@/, "")}`;
+      return `https://x.com/${value.replace(/^@/, "")}`;
     case "facebook":
-      return `https://facebook.com/${value}`;
+      return `https://facebook.com/${value.replace(/^\//, "")}`;
     case "youtube":
       return `https://youtube.com/${value.startsWith("@") ? value : `@${value}`}`;
     case "discord":
-      if (value.includes("discord.gg") || value.includes("discord.com")) {
-        return value;
-      }
       return `https://discord.gg/${value}`;
     case "github":
-      return `https://github.com/${value}`;
+      return `https://github.com/${value.replace(/^\//, "")}`;
     default:
       return value;
   }
+};
+
+/**
+ * Returns an error message when the normalised URL's domain does not belong
+ * to the selected platform, or `null` when the URL is valid / unconstrained.
+ */
+const validateSocialUrl = (
+  platformId: string,
+  rawInput: string,
+): string | null => {
+  const allowedDomains = SOCIAL_PLATFORM_DOMAINS[platformId];
+  // Platforms without a domain list (website, other) accept anything.
+  if (!allowedDomains) return null;
+
+  const normalized = normalizeSocialUrl(platformId, rawInput);
+  if (!normalized) return null;
+
+  try {
+    const { hostname } = new URL(normalized);
+    // Strip leading "www." for comparison.
+    const bare = hostname.replace(/^www\./, "");
+    const matches = allowedDomains.some(
+      (domain) => bare === domain || bare.endsWith(`.${domain}`),
+    );
+    if (!matches) {
+      const platformLabel =
+        SOCIAL_PLATFORMS.find((p) => p.id === platformId)?.label ?? platformId;
+      return `This URL doesn't look like a ${platformLabel} link. Please enter a valid ${platformLabel} URL.`;
+    }
+  } catch {
+    // Malformed URLs are handled separately by the existing syntactic check.
+  }
+  return null;
 };
 
 /** Derives a clean, human-readable display label from a full social URL. */
@@ -315,7 +314,7 @@ const getSocialDisplayLabel = (platformId: string, url: string): string => {
   if (!url) return "";
   try {
     const u = new URL(url);
-    // Strip leading/trailing slashes from the path
+    // Strip leading/trailing slashes from the path.
     const path = u.pathname.replace(/^\//, "").replace(/\/$/, "");
     switch (platformId) {
       case "instagram":
@@ -326,22 +325,25 @@ const getSocialDisplayLabel = (platformId: string, url: string): string => {
         // YouTube channels use @handle
         return path.startsWith("@") ? path : `@${path}`;
       case "linkedin":
-        // Strip the "in/" or "company/" prefix → show just the slug
+        // Strip the "in/" or "company/" prefix → show just the slug.
         return path.replace(/^(in|company)\//, "");
       case "github":
-        // Just the org/username, no leading slash
+        // Just the org/username, no leading slash.
         return path;
       case "facebook":
-        // Just the page name
+        // Just the page name.
         return path;
-      case "discord":
-        return path ? `discord.gg/${path}` : u.hostname;
+      case "discord": {
+        // Strip redundant "invite/" segment that discord.com URLs include.
+        const cleanPath = path.replace(/^invite\//, "");
+        return cleanPath ? `discord.gg/${cleanPath}` : u.hostname;
+      }
       default:
-        // For websites: show hostname + path (without trailing slash)
+        // For websites: show hostname + path (without trailing slash).
         return u.hostname + (path ? `/${path}` : "");
     }
   } catch {
-    // If URL parsing fails, return as-is
+    // If URL parsing fails, return as-is.
     return url;
   }
 };
