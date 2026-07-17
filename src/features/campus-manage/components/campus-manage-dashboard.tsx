@@ -91,6 +91,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatCard } from "@/components/ui/stat-card";
+import { Switch } from "@/components/ui/switch";
 import Table from "@/components/dashboard/table/Table";
 import THead from "@/components/dashboard/table/Thead";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -455,6 +456,7 @@ const LEADERBOARD_COLUMNS = [
   { column: "karma", Label: "Karma", isSortable: false },
   { column: "level", Label: "Level", isSortable: false },
   { column: "cluster", Label: "Department / Cluster", isSortable: false },
+  { column: "alumni", Label: "Alumni Status", isSortable: false },
 ];
 
 export function CampusManageDashboard() {
@@ -1010,7 +1012,6 @@ export function CampusManageDashboard() {
                 page={leaderboardPage}
                 perPage={PAGE_SIZE}
                 columnOrder={LEADERBOARD_COLUMNS}
-                id={["id"]}
                 customCellRender={(column, row) => {
                   const student = row as unknown as CampusLeaderboardItem;
                   switch (column) {
@@ -1071,37 +1072,23 @@ export function CampusManageDashboard() {
                           {student.cluster}
                         </span>
                       );
+                    case "alumni":
+                      return (
+                        <Switch
+                          checked={student.alumni}
+                          disabled={isChangingType}
+                          onCheckedChange={() => setPendingStudent(student)}
+                        />
+                      );
                     default:
                       return null;
                   }
-                }}
-                customActionRender={(row) => {
-                  const student = row as unknown as CampusLeaderboardItem;
-                  return student.alumni ? (
-                    <Button
-                      variant="default"
-                      className="font-semibold"
-                      disabled={isChangingType}
-                      onClick={() => setPendingStudent(student)}
-                    >
-                      Mark Active
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      className="font-semibold"
-                      disabled={isChangingType}
-                      onClick={() => setPendingStudent(student)}
-                    >
-                      Mark Alumni
-                    </Button>
-                  );
                 }}
               >
                 <THead
                   columnOrder={LEADERBOARD_COLUMNS}
                   onIconClick={() => {}}
-                  action
+                  action={false}
                 />
                 <div>
                   <Pagination
