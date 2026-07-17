@@ -2178,11 +2178,18 @@ export function CampusManageDashboard() {
                                     title={`Edit ${platform.label}`}
                                     aria-label={`Edit ${platform.label}`}
                                     onClick={() => {
+                                      const prefillUrl = linkData?.url || "";
                                       setEditingPlatform(platform.id);
                                       // Pre-fill with the raw URL so the user can see it
-                                      setSocialValue(linkData?.url || "");
-                                      // Clear any stale error from a previous session
-                                      setSocialUrlError(null);
+                                      setSocialValue(prefillUrl);
+                                      // Validate the pre-filled value so the Save button is
+                                      // correctly disabled for previously-stored invalid URLs.
+                                      setSocialUrlError(
+                                        validateSocialUrl(
+                                          platform.id,
+                                          prefillUrl,
+                                        ),
+                                      );
                                     }}
                                   >
                                     <Pencil className="h-3.5 w-3.5" />
