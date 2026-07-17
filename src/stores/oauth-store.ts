@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { subscribeWithSelector } from "zustand/middleware";
 
 export interface GoogleTempTokenState {
   tempToken: string | null;
@@ -14,9 +13,9 @@ export type GoogleTempTokenStore = GoogleTempTokenState &
   GoogleTempTokenActions;
 
 export const useGoogleTempTokenStore = create<GoogleTempTokenStore>()(
-  subscribeWithSelector((set) => ({
+  (set) => ({
     tempToken: null,
     setTempToken: (token) => set({ tempToken: token }),
     clearTempToken: () => set({ tempToken: null }),
-  })),
+  }),
 );

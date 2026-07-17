@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { endpoints } from "@/api/endpoints";
 import { publicServerClient } from "@/api/server";
 
@@ -9,7 +10,11 @@ export async function POST() {
 
   if (refreshToken) {
     try {
-      await publicServerClient.post(endpoints.auth.logout, { refreshToken });
+      await publicServerClient.post(
+        endpoints.auth.logout,
+        { refreshToken },
+        z.unknown(),
+      );
     } catch (error) {
       console.error("Backend logout request failed:", error);
     }

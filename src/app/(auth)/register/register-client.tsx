@@ -55,11 +55,15 @@ export function RegisterClient({
 }: RegisterClientProps) {
   const router = useRouter();
 
-  const [tempToken] = useState<string | null>(() => {
-    const token = useGoogleTempTokenStore.getState().tempToken;
-    if (token) useGoogleTempTokenStore.getState().clearTempToken();
-    return token;
-  });
+  const [tempToken] = useState<string | null>(
+    () => useGoogleTempTokenStore.getState().tempToken,
+  );
+
+  useEffect(() => {
+    if (tempToken) {
+      useGoogleTempTokenStore.getState().clearTempToken();
+    }
+  }, [tempToken]);
 
   const isGoogleSignup = !!tempToken;
 
@@ -187,10 +191,11 @@ export function RegisterClient({
       user: {
         full_name: basicData.fullName,
         email: basicData.email,
-        password: basicData.password,
+        ...(isGoogleSignup ? {} : { password: basicData.password }),
         role: roleId,
       },
       referral: referralId ? { muid: referralId } : undefined,
+      ...(isGoogleSignup && tempToken ? { tempToken } : {}),
     });
 
     // 2. Register the company
