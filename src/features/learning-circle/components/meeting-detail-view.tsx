@@ -326,6 +326,7 @@ export function MeetingDetailView({
                 size="icon"
                 onClick={() => setShowEditModal(true)}
                 title="Edit Meeting"
+                aria-label="Edit Meeting"
               >
                 <Edit2 className="h-4 w-4" />
               </Button>

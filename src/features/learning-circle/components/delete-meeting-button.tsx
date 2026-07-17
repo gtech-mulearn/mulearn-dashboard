@@ -58,6 +58,7 @@ export function DeleteMeetingButton({
         size="icon"
         onClick={() => setOpen(true)}
         title="Delete Meeting"
+        aria-label="Delete Meeting"
         className="text-destructive hover:bg-destructive/10 hover:text-destructive"
       >
         <Trash2 className="h-4 w-4" />
