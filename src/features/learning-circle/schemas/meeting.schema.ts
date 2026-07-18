@@ -132,7 +132,7 @@ export const CreateMeetingRequestSchema = z
     description: z.string().min(1).max(1000),
     mode: z.enum(["online", "offline"]),
     platform: z
-      .enum(["Zoom", "Google Meet", "Microsoft Teams", "Discord", "Other"])
+      .enum(["Zoom", "Google Meet", "Microsoft Teams", "Discord"])
       .optional()
       .nullable(),
     meet_place: z.string().min(1).max(100),
