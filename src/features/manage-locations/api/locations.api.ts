@@ -89,9 +89,11 @@ export async function addCountry(data: CreateCountryInput): Promise<void> {
 }
 
 export async function updateCountry(data: UpdateCountryInput): Promise<void> {
+  const { id, ...payload } = data;
+
   await apiClient.patch(
-    endpoints.countries.update(data.id),
-    data,
+    endpoints.countries.update(id),
+    payload,
     MutationResponseSchema,
   );
 }
@@ -125,9 +127,11 @@ export async function addState(data: CreateStateInput): Promise<void> {
 }
 
 export async function updateState(data: UpdateStateInput): Promise<void> {
+  const { id, ...payload } = data;
+
   await apiClient.patch(
-    endpoints.states.update(data.id),
-    data,
+    endpoints.states.update(id),
+    payload,
     MutationResponseSchema,
   );
 }
@@ -159,9 +163,11 @@ export async function addZone(data: CreateZoneInput): Promise<void> {
 }
 
 export async function updateZone(data: UpdateZoneInput): Promise<void> {
+  const { id, ...payload } = data;
+
   await apiClient.patch(
-    endpoints.zones.update(data.id),
-    data,
+    endpoints.zones.update(id),
+    payload,
     MutationResponseSchema,
   );
 }
@@ -199,9 +205,11 @@ export async function addDistrict(data: CreateDistrictInput): Promise<void> {
 }
 
 export async function updateDistrict(data: UpdateDistrictInput): Promise<void> {
+  const { id, ...payload } = data;
+
   await apiClient.patch(
-    endpoints.districts.update(data.id),
-    data,
+    endpoints.districts.update(id),
+    payload,
     MutationResponseSchema,
   );
 }
