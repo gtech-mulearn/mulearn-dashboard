@@ -11,11 +11,11 @@ function CardWrapper({
   children: React.ReactNode;
 }) {
   return href ? (
-    <Link href={href} className="group block">
+    <Link href={href} className="group block flex-1">
       {children}
     </Link>
   ) : (
-    <div className="group block">{children}</div>
+    <div className="group block flex-1">{children}</div>
   );
 }
 
@@ -228,7 +228,7 @@ export function Podium({ entries }: PodiumProps) {
               </div>
 
               <div className="mt-4">
-                <h3 className="font-bold text-xs md:text-sm text-foreground leading-snug line-clamp-1 max-w-[100px] md:max-w-[150px]">
+                <h3 className="font-bold text-xs md:text-sm text-foreground leading-snug max-w-[100px] md:max-w-[150px]">
                   {second.name}
                 </h3>
                 <p className="text-[10px] md:text-xs text-muted-foreground font-semibold mt-1">
@@ -262,7 +262,7 @@ export function Podium({ entries }: PodiumProps) {
               </div>
 
               <div className="mt-4">
-                <h3 className="font-extrabold text-sm md:text-base text-foreground leading-snug line-clamp-1 max-w-[120px] md:max-w-[180px]">
+                <h3 className="font-extrabold text-sm md:text-base text-foreground leading-snug max-w-[120px] md:max-w-[180px]">
                   {first.name}
                 </h3>
                 <p className="text-xs md:text-sm font-bold text-warning mt-1">
@@ -296,7 +296,7 @@ export function Podium({ entries }: PodiumProps) {
               </div>
 
               <div className="mt-4">
-                <h3 className="font-bold text-xs md:text-sm text-foreground leading-snug line-clamp-1 max-w-[100px] md:max-w-[150px]">
+                <h3 className="font-bold text-xs md:text-sm text-foreground leading-snug max-w-[100px] md:max-w-[150px]">
                   {third.name}
                 </h3>
                 <p className="text-[10px] md:text-xs text-muted-foreground font-semibold mt-1">
