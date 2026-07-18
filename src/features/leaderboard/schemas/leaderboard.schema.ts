@@ -17,6 +17,10 @@ export const ApiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
   });
 
 export const StudentLeaderboardEntrySchema = z.object({
+  muid: z
+    .string()
+    .nullish()
+    .transform((value) => value ?? undefined),
   full_name: z
     .string()
     .nullish()
@@ -33,6 +37,7 @@ export const StudentLeaderboardEntrySchema = z.object({
 });
 
 export const CollegeLeaderboardEntrySchema = z.object({
+  id: z.string().optional(),
   code: z.string(),
   title: z.string().optional(),
   total_karma: z.number(),

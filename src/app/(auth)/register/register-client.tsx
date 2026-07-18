@@ -36,12 +36,14 @@ import {
   useSelectOrganization,
 } from "@/features/onboarding";
 import { getApiResponseError } from "@/hooks/use-get-error";
+import { authStore } from "@/lib/auth";
 
 interface RegisterClientProps {
   redirectUri?: string;
   referralId?: string;
   email?: string;
   fullName?: string;
+  initialTempToken?: string | null;
 }
 
 type RegistrationStep = "basic" | "role" | "details";
@@ -51,15 +53,24 @@ export function RegisterClient({
   referralId,
   email,
   fullName,
+  initialTempToken,
 }: RegisterClientProps) {
   const router = useRouter();
-  const [step, setStep] = useState<RegistrationStep>("basic");
+
+  const [tempToken] = useState<string | null>(initialTempToken || null);
+
+  const isGoogleSignup = !!tempToken;
+
+  const [step, setStep] = useState<RegistrationStep>(
+    isGoogleSignup ? "role" : "basic",
+  );
+
   const [basicData, setBasicData] = useState<{
     fullName: string;
     email: string;
     password: string;
   } | null>(() => {
-    if (email || fullName) {
+    if (isGoogleSignup || email || fullName) {
       return {
         fullName: fullName || "",
         email: email || "",
@@ -174,10 +185,11 @@ export function RegisterClient({
       user: {
         full_name: basicData.fullName,
         email: basicData.email,
-        password: basicData.password,
+        ...(isGoogleSignup ? {} : { password: basicData.password }),
         role: roleId,
       },
       referral: referralId ? { muid: referralId } : undefined,
+      ...(isGoogleSignup && tempToken ? { tempToken } : {}),
     });
 
     // 2. Register the company
@@ -211,6 +223,7 @@ export function RegisterClient({
       "Company registration submitted! Awaiting admin verification.",
     );
 
+    await authStore.clearTempToken();
     router.push("/dashboard");
   }
 
@@ -245,10 +258,11 @@ export function RegisterClient({
       user: {
         full_name: basicData.fullName,
         email: basicData.email,
-        password: basicData.password,
+        ...(isGoogleSignup ? {} : { password: basicData.password }),
         role: roleId,
       },
       referral: referralId ? { muid: referralId } : undefined,
+      ...(isGoogleSignup && tempToken ? { tempToken } : {}),
     });
 
     // 3. Now authenticated — handle org linking for student / enabler
@@ -328,6 +342,8 @@ export function RegisterClient({
 
     toast.success("Account created successfully!");
 
+    await authStore.clearTempToken();
+
     // 5. Navigate to interests onboarding → role-based dashboard redirect
     //    happens inside interests-client.tsx after domains are selected.
     const redirectPath = redirectUri
@@ -367,7 +383,7 @@ export function RegisterClient({
     return (
       <RegisterRoleSelection
         onSubmit={handleRoleSubmit}
-        onBack={handleBackToBasic}
+        onBack={isGoogleSignup ? undefined : handleBackToBasic}
         isLoading={isLoading}
         defaultValue={selectedRole || undefined}
       />

@@ -317,7 +317,18 @@ export async function getMeetingDetail(
   return response.response;
 }
 
-/** Create meeting */
+/**
+ * Create meeting.
+ *
+ * @param circleId - The circle to create the meeting in.
+ * @param data - Meeting payload.  `meet_time` MUST be a UTC ISO-8601 string
+ *   that is at least {@link MIN_BUFFER_MINUTES} minutes in the future.
+ *
+ * ⚠️  BUG-013: The Django backend must independently enforce this rule
+ * (e.g. `if meet_time <= timezone.now(): raise ValidationError`).  The
+ * frontend Zod schemas catch the common case, but a direct API call can
+ * bypass them.
+ */
 export async function createMeeting(
   circleId: string,
   data: CreateMeetingRequest,
@@ -329,7 +340,16 @@ export async function createMeeting(
   );
 }
 
-/** Edit meeting */
+/**
+ * Edit meeting.
+ *
+ * @param meetingId - The meeting to update.
+ * @param data - Partial meeting payload.  If `meet_time` is provided it MUST
+ *   be a UTC ISO-8601 string that is at least {@link MIN_BUFFER_MINUTES}
+ *   minutes in the future.
+ *
+ * ⚠️  BUG-013: Same backend enforcement requirement as `createMeeting`.
+ */
 export async function editMeeting(
   meetingId: string,
   data: Partial<CreateMeetingRequest>,

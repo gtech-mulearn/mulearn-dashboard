@@ -24,10 +24,12 @@ export const RegisterUserDataSchema = z.object({
     .min(3, "Full name must be at least 3 characters")
     .max(100, "Full name must be at most 100 characters"),
   email: z.string().email("Invalid email address"),
+
   password: z
     .string()
     .min(8, "Password must be at least 8 characters")
-    .max(100, "Password must be at most 100 characters"),
+    .max(100, "Password must be at most 100 characters")
+    .optional(),
   /** DB UUID of the role (Student / Mentor / Enabler) */
   role: z.string().optional(),
 });
@@ -73,6 +75,11 @@ export const RegisterRequestSchema = z.object({
   organization: z.string().optional(),
   department: z.string().optional(),
   graduation_year: z.number().optional(),
+  /**
+   * Short-lived JWT issued by the auth server for Google sign-ups.
+   * When present, mulearnbackend verifies it and skips password auth.
+   */
+  tempToken: z.string().optional(),
 });
 
 /**

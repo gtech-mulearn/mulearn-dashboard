@@ -475,10 +475,47 @@ export function useDeleteMeeting() {
 
   return useMutation({
     mutationFn: (meetingId: string) => deleteMeeting(meetingId),
-    onSuccess: () => {
+    onSuccess: (_, meetingId) => {
+      /**
+       * BUG-014 (post-delete 400 race fix):
+       *
+       * DO NOT use invalidateQueries(learningCircleKeys.meetings()) here.
+       * That parent key is a prefix for *all* meeting queries, including
+       * meetingDetail, meetingReport, and attendeeReport for the now-deleted
+       * meeting. Invalidating them causes React Query to immediately refetch
+       * those endpoints, which return 400 "Meeting not found" because the
+       * record no longer exists.
+       *
+       * Instead:
+       *  1. removeQueries() for the deleted meeting's specific cache entries.
+       *     This evicts them from the cache and cancels any in-flight fetches
+       *     — no 400 errors.
+       *  2. invalidateQueries() only on the list-level keys so the circle's
+       *     meeting list and user's meeting list refresh correctly.
+       */
+
+      // Evict the deleted meeting's individual cache entries.
+      // removeQueries() cancels any in-flight fetch and removes the entry from
+      // the cache entirely, so React Query will never attempt a refetch of a
+      // resource that no longer exists.
+      queryClient.removeQueries({
+        queryKey: learningCircleKeys.meetingDetail(meetingId),
+      });
+      queryClient.removeQueries({
+        queryKey: learningCircleKeys.meetingReport(meetingId),
+      });
+      queryClient.removeQueries({
+        queryKey: learningCircleKeys.attendeeReport(meetingId),
+      });
+
+      // Now it is safe to invalidate the parent meetings key — the three
+      // deleted-meeting entries above are already gone, so the invalidation
+      // only causes the list-level queries (meetingsByCircle, meetingsUser,
+      // meetingsPublic) to refetch, which is exactly what we want.
       queryClient.invalidateQueries({
         queryKey: learningCircleKeys.meetings(),
       });
+
       toast.success("Meeting deleted successfully");
     },
     onError: (error) => {

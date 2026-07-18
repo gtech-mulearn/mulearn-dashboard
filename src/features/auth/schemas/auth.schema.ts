@@ -243,6 +243,7 @@ export const GoogleCallbackResponseDataSchema = z.object({
   refreshToken: z.string().optional(),
   expiry: z.string().optional(),
   isNewUser: z.boolean().optional(),
+  tempToken: z.string().optional(),
   email: z.string().email().optional(),
   fullName: z.string().optional(),
 });
