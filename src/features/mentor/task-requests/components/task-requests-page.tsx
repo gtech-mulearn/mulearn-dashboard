@@ -232,7 +232,7 @@ function TaskFormDialog({
           <DialogTitle>{isEdit ? "Edit Task" : "Submit New Task"}</DialogTitle>
           <DialogDescription>
             {isEdit
-              ? "Update the task details. It will be re-submitted for admin approval."
+              ? "Saving sends this task back for admin approval and takes it offline until re-approved."
               : "Submit a new task for admin review and approval."}
           </DialogDescription>
         </DialogHeader>

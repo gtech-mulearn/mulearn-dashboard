@@ -34,51 +34,68 @@ import type { UserProfile } from "@/features/profile/schemas";
 
 const DEFAULT_COVER = "/images/profile-banner.webp";
 
-export type MentorType = "ig" | "platform" | "company" | "campus";
-
-export function deriveMentorType(profile: MentorApplication): MentorType {
-  const tier = (profile.mentor_tier ?? "").toLowerCase();
-  if (tier.includes("company")) return "company";
-  if (tier.includes("campus")) return "campus";
-  if (tier.includes("platform") || tier.includes("global")) return "platform";
-  // Fallback: if they have preferred IGs they're an IG mentor
-  if ((profile.preferred_ig_ids ?? []).length > 0) return "ig";
-  return "ig";
-}
-
-const MENTOR_TYPE_CONFIG: Record<
-  MentorType,
+// One badge per scope TYPE the mentor holds — a mentor may hold several at
+// once (IG + Company + Campus); never reduce them to a single "mentor type".
+const SCOPE_BADGE_CONFIG: Record<
+  string,
   {
     label: string;
     icon: React.ComponentType<{ className?: string }>;
     color: string;
   }
 > = {
-  ig: {
+  IG_MENTOR: {
     label: "IG Mentor",
     icon: BookUser,
     color: "bg-violet-500/20 text-white ring-violet-500/30",
   },
-  platform: {
+  MENTOR: {
     label: "Platform Mentor",
     icon: Users,
     color: "bg-blue-500/20 text-white ring-blue-500/30",
   },
-  company: {
+  COMPANY_MENTOR: {
     label: "Company Mentor",
     icon: Building2,
     color: "bg-amber-500/20 text-white ring-amber-500/30",
   },
-  campus: {
+  CAMPUS_MENTOR: {
     label: "Campus Mentor",
     icon: GraduationCap,
     color: "bg-emerald-500/20 text-white ring-emerald-500/30",
   },
 };
 
+// Legacy scope_type strings the overview endpoint has emitted historically.
+function normalizeScopeType(scopeType: string): string {
+  if (scopeType === "IG" || scopeType === "Interest Group") return "IG_MENTOR";
+  return scopeType;
+}
+
+/** Distinct scope types to badge, from overview scopes with the mentor
+ *  record's own tier as fallback while the overview loads. */
+export function deriveScopeTypes(
+  profile: MentorApplication,
+  scopes?: { scope_type: string }[],
+): string[] {
+  const fromScopes = [
+    ...new Set(
+      (scopes ?? [])
+        .map((s) => normalizeScopeType(s.scope_type))
+        .filter((t) => t in SCOPE_BADGE_CONFIG),
+    ),
+  ];
+  if (fromScopes.length > 0) return fromScopes;
+  const tier = profile.mentor_tier ?? "";
+  if (tier in SCOPE_BADGE_CONFIG) return [tier];
+  return ["IG_MENTOR"];
+}
+
 interface MentorProfileHeaderProps {
   userProfile: UserProfile;
   mentorProfile: MentorApplication;
+  /** overview.scopes — one badge is rendered per distinct scope type */
+  scopes?: { scope_type: string }[];
   onEdit?: () => void;
   onShare?: () => void;
   onSwitchToLearner?: () => void;
@@ -87,6 +104,7 @@ interface MentorProfileHeaderProps {
 export function MentorProfileHeader({
   userProfile,
   mentorProfile,
+  scopes,
   onEdit,
   onShare,
   onSwitchToLearner,
@@ -105,9 +123,7 @@ export function MentorProfileHeader({
     setCoverError(false);
   }, [userProfile.cover_pic]);
 
-  const mentorType = deriveMentorType(mentorProfile);
-  const typeConfig = MENTOR_TYPE_CONFIG[mentorType];
-  const TypeIcon = typeConfig.icon;
+  const scopeTypes = deriveScopeTypes(mentorProfile, scopes);
 
   const isVerified = mentorProfile.status === "APPROVED";
   const mentorSince = mentorProfile.created_at
@@ -196,15 +212,29 @@ export function MentorProfileHeader({
               <Copy className="h-3 w-3 shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
             </button>
 
-            {/* Badges row */}
+            {/* Employer — identity line, shown for every mentor tier */}
+            {mentorProfile.company ? (
+              <p className="flex items-center gap-1 truncate text-xs text-white/80 drop-shadow sm:text-sm">
+                <Building2 className="h-3 w-3 shrink-0" />
+                {mentorProfile.company}
+              </p>
+            ) : null}
+
+            {/* Badges row — one chip per scope type held */}
             <div className="flex flex-wrap items-center gap-1.5">
-              {/* Mentor type badge */}
-              <span
-                className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 backdrop-blur-sm sm:text-xs ${typeConfig.color}`}
-              >
-                <TypeIcon className="h-3 w-3" />
-                {typeConfig.label}
-              </span>
+              {scopeTypes.map((scopeType) => {
+                const cfg = SCOPE_BADGE_CONFIG[scopeType];
+                const ScopeIcon = cfg.icon;
+                return (
+                  <span
+                    key={scopeType}
+                    className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 backdrop-blur-sm sm:text-xs ${cfg.color}`}
+                  >
+                    <ScopeIcon className="h-3 w-3" />
+                    {cfg.label}
+                  </span>
+                );
+              })}
 
               {/* Verified / Pending */}
               {isVerified ? (

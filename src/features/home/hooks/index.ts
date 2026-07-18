@@ -11,10 +11,8 @@ export {
   useLearnerHomeSummary,
   useLearnerStreak,
   useMentorHomeSummary,
-  useMentorIgRoles,
   useMentorOverview,
   useMentorSessions,
   usePublicJobsCount,
-  useSwitchMentorPersona,
   useTopPerformers,
 } from "./use-home";

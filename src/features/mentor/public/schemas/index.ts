@@ -44,6 +44,8 @@ export const PublicMentorProfileSchema = z.object({
   status: z.string().optional(),
   preferred_ig_ids: z.array(z.string()).optional().default([]),
   org: z.string().nullable().optional(),
+  // §2.4/§2.8: employer name (org title → Company org-link fallback), all tiers
+  company: z.string().nullable().optional(),
   verified_by: z.string().nullable().optional(),
   verified_at: z.string().nullable().optional(),
   verification_note: z.string().nullable().optional(),

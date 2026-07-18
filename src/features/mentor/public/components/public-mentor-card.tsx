@@ -131,10 +131,11 @@ export function PublicMentorCard({ mentorId }: PublicMentorCardProps) {
 
         {/* Stats and Affiliation Row */}
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-8 text-sm">
-          {profile.org && (
+          {/* §2.4/§2.8: employer name for every tier (org is a raw UUID) */}
+          {(profile.company ?? profile.org) && (
             <div className="flex items-center gap-1.5 text-muted-foreground">
               <Building2 className="h-4 w-4" />
-              <span>{profile.org}</span>
+              <span>{profile.company ?? profile.org}</span>
             </div>
           )}
           {typeof profile.hours === "number" && (

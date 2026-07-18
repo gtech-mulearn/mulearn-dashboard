@@ -1,5 +1,4 @@
 export { MentorEditProfileModal } from "./components/mentor-edit-profile-modal";
-export type { MentorType } from "./components/mentor-profile-header";
 export { MentorProfileHeader } from "./components/mentor-profile-header";
 export { MentorProfilePage } from "./components/mentor-profile-page";
 export { MentorProfileSidebar } from "./components/mentor-profile-sidebar";

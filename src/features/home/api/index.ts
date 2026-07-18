@@ -12,9 +12,7 @@ export {
   getLearnerHomeSummary,
   getLearnerStreak,
   getMentorHomeSummary,
-  getMentorIgRoles,
   getMentorOverview,
   getMentorSessions,
   getPublicJobsCount,
-  switchMentorPersona,
 } from "./home.api";

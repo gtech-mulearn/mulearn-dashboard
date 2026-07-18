@@ -23,6 +23,7 @@ import {
   Plus,
   PlusCircle,
   Search,
+  ShieldPlus,
   Trash2,
   Trophy,
   Twitter,
@@ -88,6 +89,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { StatCard } from "@/components/ui/stat-card";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAssignCampusMentor } from "@/features/campus/hooks/campus.hooks";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import { chipColor } from "@/lib/chip-colors";
 import { cn } from "@/lib/utils";
@@ -568,6 +570,9 @@ export function CampusManageDashboard() {
     useDownloadStudentCsv();
 
   // ─── Student type change confirmation state ──
+  const [nominateStudent, setNominateStudent] =
+    useState<CampusLeaderboardItem | null>(null);
+  const assignCampusMentor = useAssignCampusMentor();
   const [pendingStudent, setPendingStudent] =
     useState<CampusLeaderboardItem | null>(null);
 
@@ -1055,6 +1060,23 @@ export function CampusManageDashboard() {
                 page={leaderboardPage}
                 perPage={PAGE_SIZE}
                 columnOrder={LEADERBOARD_COLUMNS}
+                id={["id"]}
+                customActionRender={(row) => {
+                  const student = row as unknown as CampusLeaderboardItem;
+                  if (student.alumni) return null;
+                  return (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                      title="Nominate as Campus Mentor"
+                      aria-label={`Nominate ${student.name} as Campus Mentor`}
+                      onClick={() => setNominateStudent(student)}
+                    >
+                      <ShieldPlus className="h-4 w-4" />
+                    </Button>
+                  );
+                }}
                 customCellRender={(column, row) => {
                   const student = row as unknown as CampusLeaderboardItem;
                   switch (column) {
@@ -1132,7 +1154,7 @@ export function CampusManageDashboard() {
                 <THead
                   columnOrder={LEADERBOARD_COLUMNS}
                   onIconClick={() => {}}
-                  action={false}
+                  action={true}
                 />
                 <div>
                   <Pagination
@@ -2298,6 +2320,25 @@ export function CampusManageDashboard() {
           </section>
         </CardContent>
       </Card>
+
+      {/* §12.1: campus lead nominates a student as Campus Mentor */}
+      <ConfirmDialog
+        open={nominateStudent !== null}
+        onOpenChange={(open) => {
+          if (!open) setNominateStudent(null);
+        }}
+        variant="warning"
+        title={`Nominate ${nominateStudent?.name ?? "this student"} as Campus Mentor?`}
+        description="They must be a current (non-alumni) member of your campus. A platform admin gives the final approval."
+        confirmLabel="Nominate"
+        isPending={assignCampusMentor.isPending}
+        onConfirm={() => {
+          if (!nominateStudent) return;
+          assignCampusMentor.mutate(nominateStudent.muid, {
+            onSuccess: () => setNominateStudent(null),
+          });
+        }}
+      />
 
       <ConfirmDialog
         open={pendingStudent !== null}
