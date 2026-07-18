@@ -21,10 +21,22 @@ export function useAuditLogs(muid: string) {
 // useIssuedLogs — server-paginated issued log
 // ==========================================
 
-export function useIssuedLogs(page: number, perPage: number, search?: string) {
+export function useIssuedLogs(
+  page: number,
+  perPage: number,
+  search?: string,
+  sortBy?: string,
+  sortOrder?: "asc" | "desc",
+) {
   return useQuery({
-    queryKey: ACHIEVEMENT_KEYS.issuedLogs(page, perPage, search),
-    queryFn: () => fetchIssuedLogs(page, perPage, search),
+    queryKey: ACHIEVEMENT_KEYS.issuedLogs(
+      page,
+      perPage,
+      search,
+      sortBy,
+      sortOrder,
+    ),
+    queryFn: () => fetchIssuedLogs(page, perPage, search, sortBy, sortOrder),
     placeholderData: keepPreviousData,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,

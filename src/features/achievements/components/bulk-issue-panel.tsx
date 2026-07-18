@@ -1,16 +1,8 @@
 "use client";
 
-import {
-  Award,
-  Check,
-  Copy,
-  Download,
-  FileSpreadsheet,
-  Loader2,
-} from "lucide-react";
+import { Award, Download, FileSpreadsheet, Loader2 } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -21,86 +13,24 @@ import {
 } from "@/components/ui/card";
 import { FileUpload } from "@/components/ui/file-upload";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import { downloadBulkTemplate } from "../api";
 import { useBulkIssue } from "../hooks/use-achievement-mutations";
-import { useAchievements } from "../hooks/use-achievements";
-
-function AchievementIdBox({ id }: { id: string }) {
-  const [copied, setCopied] = React.useState(false);
-
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(id);
-    setCopied(true);
-    toast.success("Achievement ID copied to clipboard!");
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  return (
-    <div className="mt-2 flex items-center gap-3 rounded-xl border border-border/50 bg-muted/30 px-4 py-3">
-      <div className="min-w-0 flex-1">
-        <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-0.5">
-          Achievement ID
-        </p>
-        <p className="font-mono text-xs text-foreground select-all truncate">
-          {id}
-        </p>
-        <p className="text-[10px] text-muted-foreground mt-1">
-          Copy and paste this ID into the{" "}
-          <code className="text-xs bg-muted rounded px-1">achievement_id</code>{" "}
-          column of your spreadsheet.
-        </p>
-      </div>
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        className="shrink-0 h-8 gap-1.5 rounded-lg text-xs transition-all"
-        onClick={handleCopy}
-        data-testid="copy-achievement-id-btn"
-      >
-        {copied ? (
-          <>
-            <Check className="h-3.5 w-3.5 text-success" />
-            Copied!
-          </>
-        ) : (
-          <>
-            <Copy className="h-3.5 w-3.5" />
-            Copy ID
-          </>
-        )}
-      </Button>
-    </div>
-  );
-}
 
 export function BulkIssuePanel() {
-  const { data: achievements = [] } = useAchievements();
   const bulkIssueMutation = useBulkIssue();
 
-  const [achievementId, setAchievementId] = React.useState("");
   const [csvFile, setCsvFile] = React.useState<File | null>(null);
   const [isDownloading, setIsDownloading] = React.useState(false);
 
-  const canSubmit = Boolean(achievementId && csvFile);
+  const canSubmit = Boolean(csvFile);
 
   const handleSubmit = () => {
-    if (!canSubmit) return;
+    if (!canSubmit || !csvFile) return;
     const formData = new FormData();
-    formData.append("achievement_id", achievementId);
-    if (!csvFile) return;
     formData.append("excel_file", csvFile);
     bulkIssueMutation.mutate(formData, {
       onSuccess: () => {
-        setAchievementId("");
         setCsvFile(null);
       },
     });
@@ -127,10 +57,6 @@ export function BulkIssuePanel() {
     }
   };
 
-  const selectedAchievement = React.useMemo(() => {
-    return achievements.find((a) => a.id === achievementId);
-  }, [achievements, achievementId]);
-
   return (
     <div className="mx-auto max-w-xl space-y-6" data-testid="bulk-issue-panel">
       {/* Page Header */}
@@ -152,62 +78,18 @@ export function BulkIssuePanel() {
                 Bulk Issue Achievements
               </CardTitle>
               <CardDescription className="text-xs mt-0.5">
-                Configure the target achievement and upload an Excel file
-                containing user MUIDs.
+                Upload an Excel file containing user MUIDs and Achievement IDs.
               </CardDescription>
             </div>
-            {selectedAchievement && (
-              <Badge
-                variant="outline"
-                className="bg-success/10 text-success border-success/20 text-[10px] font-semibold px-2 py-0.5 self-start sm:self-center"
-              >
-                {selectedAchievement.type || "Standard"}
-              </Badge>
-            )}
           </div>
         </CardHeader>
         <CardContent className="p-6 space-y-5">
-          {/* Step 1: Select Achievement */}
-          <div className="space-y-2">
-            <Label className="text-sm font-semibold flex items-center gap-2">
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand-blue/10 text-xs font-bold text-brand-blue">
-                1
-              </span>
-              Target Achievement
-            </Label>
-            <Select value={achievementId} onValueChange={setAchievementId}>
-              <SelectTrigger
-                className="w-full h-10 bg-background/50 border-border/60 rounded-xl px-3 text-sm"
-                data-testid="bulk-achievement-select"
-              >
-                <SelectValue placeholder="Select an achievement..." />
-              </SelectTrigger>
-              <SelectContent className="rounded-xl">
-                {achievements.map((a) => (
-                  <SelectItem
-                    key={a.id}
-                    value={a.id}
-                    className="rounded-lg text-sm"
-                  >
-                    {a.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {selectedAchievement?.description && (
-              <p className="text-xs text-muted-foreground italic pl-7">
-                "{selectedAchievement.description}"
-              </p>
-            )}
-            {achievementId && <AchievementIdBox id={achievementId} />}
-          </div>
-
-          {/* Step 2: Excel Upload */}
+          {/* Step 1: Excel Upload */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label className="text-sm font-semibold flex items-center gap-2">
                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand-blue/10 text-xs font-bold text-brand-blue">
-                  2
+                  1
                 </span>
                 Upload Spreadsheet File
               </Label>
@@ -229,7 +111,7 @@ export function BulkIssuePanel() {
               value={csvFile}
               onChange={setCsvFile}
               accept=".xlsx,.xls"
-              placeholder="Upload Excel file with MUIDs (.xlsx, .xls)"
+              placeholder="Upload Excel file with muid and achievement_id columns (.xlsx, .xls)"
             />
           </div>
 

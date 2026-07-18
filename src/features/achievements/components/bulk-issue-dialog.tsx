@@ -13,38 +13,25 @@ import {
 } from "@/components/ui/dialog";
 import { FileUpload } from "@/components/ui/file-upload";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { downloadBulkTemplate } from "../api";
 import { useBulkIssue } from "../hooks/use-achievement-mutations";
-import { useAchievements } from "../hooks/use-achievements";
 
 export function BulkIssueDialog() {
-  const { data: achievements = [] } = useAchievements();
   const bulkIssueMutation = useBulkIssue();
 
   const [open, setOpen] = React.useState(false);
-  const [achievementId, setAchievementId] = React.useState("");
   const [csvFile, setCsvFile] = React.useState<File | null>(null);
   const [isDownloading, setIsDownloading] = React.useState(false);
 
-  const canSubmit = Boolean(achievementId && csvFile);
+  const canSubmit = Boolean(csvFile);
 
   const handleSubmit = () => {
-    if (!canSubmit) return;
+    if (!canSubmit || !csvFile) return;
     const formData = new FormData();
-    formData.append("achievement_id", achievementId);
-    if (!csvFile) return;
     formData.append("excel_file", csvFile);
     bulkIssueMutation.mutate(formData, {
       onSuccess: () => {
         setOpen(false);
-        setAchievementId("");
         setCsvFile(null);
       },
     });
@@ -68,7 +55,6 @@ export function BulkIssueDialog() {
   const handleOpenChange = (val: boolean) => {
     setOpen(val);
     if (!val) {
-      setAchievementId("");
       setCsvFile(null);
     }
   };
@@ -80,30 +66,10 @@ export function BulkIssueDialog() {
       </DialogTrigger>
       <DialogContent className="sm:max-w-md" data-testid="bulk-issue-dialog">
         <DialogHeader>
-          <DialogTitle>Bulk Issue Achievement</DialogTitle>
+          <DialogTitle>Bulk Issue Achievements</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
-          {/* Achievement Select */}
-          <div className="space-y-2">
-            <Label>Achievement</Label>
-            <Select value={achievementId} onValueChange={setAchievementId}>
-              <SelectTrigger
-                className="w-full"
-                data-testid="bulk-achievement-select"
-              >
-                <SelectValue placeholder="Select an achievement" />
-              </SelectTrigger>
-              <SelectContent>
-                {achievements.map((a) => (
-                  <SelectItem key={a.id} value={a.id}>
-                    {a.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
           {/* Excel Upload */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
@@ -125,7 +91,7 @@ export function BulkIssueDialog() {
               value={csvFile}
               onChange={setCsvFile}
               accept=".xlsx,.xls"
-              placeholder="Upload Excel file with MUIDs"
+              placeholder="Upload Excel file with muid and achievement_id columns"
             />
           </div>
         </div>

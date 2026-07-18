@@ -1,17 +1,33 @@
 "use client";
-
-import { FlaskConical, Loader2, Search, X } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  FlaskConical,
+  Loader2,
+  Search,
+  X,
+} from "lucide-react";
 import * as React from "react";
+import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { getApiResponseError } from "@/hooks/use-get-error";
 import { useSearch } from "@/hooks/use-search";
 import { debugAchievement } from "../api";
 import { useSimulation } from "../hooks/use-achievements";
-import type { SimulationResult } from "../schemas";
+import type { DebugResponseData, SimulationResult } from "../schemas";
 
 type SimStatus = "eligible" | "claimed" | "in-progress" | "locked";
 
@@ -31,7 +47,7 @@ const SIM_STATUS_CONFIG: Record<
   eligible: {
     label: "Eligible",
     badgeClass: "bg-success/10 text-success border-success/20",
-    barClass: "bg-success",
+    barClass: "bg-brand-blue",
   },
   claimed: {
     label: "Claimed",
@@ -63,19 +79,43 @@ function ProgressBar({ value, barClass }: { value: number; barClass: string }) {
   );
 }
 
-function SimulationResultRow({ result }: { result: SimulationResult }) {
-  const [_expanded, _setExpanded] = React.useState(false);
-  const [_debugData, _setDebugData] = React.useState<unknown>(null);
-  const [_loadingDebug, _setLoadingDebug] = React.useState(false);
+function SimulationResultRow({
+  result,
+  muid,
+}: {
+  result: SimulationResult;
+  muid: string;
+}) {
+  const [expanded, setExpanded] = React.useState(false);
+  const [debugData, setDebugData] = React.useState<DebugResponseData | null>(
+    null,
+  );
+  const [loadingDebug, setLoadingDebug] = React.useState(false);
 
-  const _handleDebug = async (muid: string) => {
-    _setLoadingDebug(true);
+  const handleDebug = async () => {
+    if (!muid) return;
+    if (expanded) {
+      setExpanded(false);
+      return;
+    }
+    if (debugData) {
+      setExpanded(true);
+      return;
+    }
+
+    setLoadingDebug(true);
     try {
       const data = await debugAchievement(muid, result.achievement_id);
-      _setDebugData(data);
-      _setExpanded(true);
+      setDebugData(data);
+      setExpanded(true);
+    } catch (error) {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to load debug info",
+        }),
+      );
     } finally {
-      _setLoadingDebug(false);
+      setLoadingDebug(false);
     }
   };
 
@@ -89,7 +129,7 @@ function SimulationResultRow({ result }: { result: SimulationResult }) {
 
   return (
     <div
-      className="group rounded-2xl border border-border/60 bg-card p-5 shadow-xs hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 space-y-3.5"
+      className="group rounded-2xl border border-border/60 bg-card p-5 shadow-xs hover:shadow-md transition-all duration-300 space-y-3.5"
       data-testid={`sim-result-${result.achievement_id}`}
     >
       <div className="flex items-center justify-between gap-3 min-w-0">
@@ -109,18 +149,211 @@ function SimulationResultRow({ result }: { result: SimulationResult }) {
               {config.label}
             </Badge>
           )}
-          {hasProgress && (
-            <span className="text-xs text-muted-foreground">
-              {current !== undefined && required !== undefined
-                ? `${current} / ${required}`
-                : `${pct}%`}
-            </span>
+          {hasProgress && current == null && (
+            <span className="text-xs text-muted-foreground">{pct}%</span>
           )}
         </div>
       </div>
       {hasProgress && <ProgressBar value={pct} barClass={config.barClass} />}
-      {result.reason && (
-        <p className="text-xs text-muted-foreground">{result.reason}</p>
+      {hasProgress && current != null && required != null ? (
+        current >= required ? (
+          <div className="flex items-center justify-between gap-2 text-xs">
+            <span className="text-muted-foreground">
+              <span className="font-semibold text-foreground">{required}</span>
+              {" / "}
+              {required}
+              <span className="ml-1.5 text-success font-medium">
+                (Completed)
+              </span>
+            </span>
+            <span className="text-muted-foreground shrink-0">
+              Current:{" "}
+              <span className="font-semibold text-foreground">
+                {current.toLocaleString()}
+              </span>
+            </span>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+            <span>
+              <span className="font-semibold text-foreground">
+                {current.toLocaleString()}
+              </span>
+              {" / "}
+              {required.toLocaleString()}
+            </span>
+          </div>
+        )
+      ) : (
+        result.reason && (
+          <p className="text-xs text-muted-foreground">{result.reason}</p>
+        )
+      )}
+
+      {/* Debug Info Button */}
+      {muid && (
+        <div className="pt-1 flex items-center justify-between">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handleDebug}
+            disabled={loadingDebug}
+            className="h-7 text-xs text-brand-blue hover:bg-brand-blue/5 gap-1 px-2"
+          >
+            {loadingDebug ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : expanded ? (
+              <ChevronUp className="h-3 w-3" />
+            ) : (
+              <ChevronDown className="h-3 w-3" />
+            )}
+            Debug Info
+          </Button>
+        </div>
+      )}
+
+      {/* Expanded Debug Data Tables */}
+      {expanded && debugData && (
+        <div className="mt-4 pt-3 border-t space-y-4 text-xs">
+          {/* IG Karma */}
+          <div className="space-y-1.5">
+            <h4 className="font-bold text-[10px] uppercase tracking-wider text-muted-foreground">
+              Interest Group Karma
+            </h4>
+            {debugData.user_data.ig_karma.length === 0 ? (
+              <p className="text-muted-foreground italic pl-1">
+                No IG karma logs found.
+              </p>
+            ) : (
+              <div className="rounded-lg border overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="h-7 bg-muted/40 hover:bg-muted/40">
+                      <TableHead className="h-7 py-1">IG ID</TableHead>
+                      <TableHead className="h-7 py-1 text-right">
+                        Total Karma
+                      </TableHead>
+                      <TableHead className="h-7 py-1 text-right">
+                        Task Count
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {debugData.user_data.ig_karma.map((ig, idx) => (
+                      <TableRow
+                        key={ig.ig_id || idx}
+                        className="h-7 hover:bg-transparent"
+                      >
+                        <TableCell className="font-mono py-1 truncate max-w-[150px]">
+                          {ig.ig_id}
+                        </TableCell>
+                        <TableCell className="py-1 text-right font-medium">
+                          {ig.total_karma}
+                        </TableCell>
+                        <TableCell className="py-1 text-right text-muted-foreground">
+                          {ig.task_count}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </div>
+
+          {/* Streaks */}
+          <div className="space-y-1.5">
+            <h4 className="font-bold text-[10px] uppercase tracking-wider text-muted-foreground">
+              Daily Streaks
+            </h4>
+            {debugData.user_data.streaks.length === 0 ? (
+              <p className="text-muted-foreground italic pl-1">
+                No streak data found.
+              </p>
+            ) : (
+              <div className="rounded-lg border overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="h-7 bg-muted/40 hover:bg-muted/40">
+                      <TableHead className="h-7 py-1">Streak Type</TableHead>
+                      <TableHead className="h-7 py-1 text-right">
+                        Current
+                      </TableHead>
+                      <TableHead className="h-7 py-1 text-right">
+                        Longest
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {debugData.user_data.streaks.map((s, idx) => (
+                      <TableRow
+                        key={s.streak_type || idx}
+                        className="h-7 hover:bg-transparent"
+                      >
+                        <TableCell className="font-medium py-1">
+                          {s.streak_type}
+                        </TableCell>
+                        <TableCell className="py-1 text-right text-success font-semibold">
+                          {s.current_streak}
+                        </TableCell>
+                        <TableCell className="py-1 text-right text-muted-foreground">
+                          {s.longest_streak}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </div>
+
+          {/* Skill Progress */}
+          <div className="space-y-1.5">
+            <h4 className="font-bold text-[10px] uppercase tracking-wider text-muted-foreground">
+              Skill Progress
+            </h4>
+            {debugData.user_data.skill_progress.length === 0 ? (
+              <p className="text-muted-foreground italic pl-1">
+                No skill progress logs found.
+              </p>
+            ) : (
+              <div className="rounded-lg border overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="h-7 bg-muted/40 hover:bg-muted/40">
+                      <TableHead className="h-7 py-1">Skill ID</TableHead>
+                      <TableHead className="h-7 py-1 text-right">
+                        Completed Tasks
+                      </TableHead>
+                      <TableHead className="h-7 py-1 text-right">
+                        Total Karma
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {debugData.user_data.skill_progress.map((sk, idx) => (
+                      <TableRow
+                        key={sk.skill_id || idx}
+                        className="h-7 hover:bg-transparent"
+                      >
+                        <TableCell className="font-mono py-1 truncate max-w-[150px]">
+                          {sk.skill_id}
+                        </TableCell>
+                        <TableCell className="py-1 text-right font-medium">
+                          {sk.completed_task_count}
+                        </TableCell>
+                        <TableCell className="py-1 text-right text-muted-foreground">
+                          {sk.total_karma}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
@@ -323,6 +556,7 @@ export function SimulationPanel() {
                 <SimulationResultRow
                   key={result?.achievement_id ?? Math.random().toString()}
                   result={result}
+                  muid={activeMuid}
                 />
               ))}
           </div>

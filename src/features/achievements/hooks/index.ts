@@ -1,11 +1,14 @@
 export { useAuditLogs, useIssuedLogs } from "./use-achievement-logs";
 export {
   useActivateRule,
+  useBulkClaimAchievements,
   useBulkIssue,
+  useClaimAchievement,
   useCreateAchievement,
   useCreateRule,
   useDeactivateRule,
   useDeleteAchievement,
+  useIssueVC,
   useManualIssue,
   useRevokeAchievement,
   useUpdateAchievement,
@@ -14,9 +17,13 @@ export {
 export { useRules } from "./use-achievement-rules";
 export {
   ACHIEVEMENT_KEYS,
+  useAchievementProgress,
   useAchievementQueryClient,
   useAchievementRules,
   useAchievements,
+  useAllAchievementsForUser,
+  useEligibleAchievements,
   useSimulation,
+  useSingleRule,
   useUserAchievements,
 } from "./use-achievements";

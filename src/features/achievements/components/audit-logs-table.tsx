@@ -59,16 +59,8 @@ export function AuditLogsTable() {
   const [page, setPage] = React.useState(1);
   const [perPage, setPerPage] = React.useState(20);
   const [globalSearch, setGlobalSearch] = React.useState("");
-  const [debouncedGlobalSearch, setDebouncedGlobalSearch] = React.useState("");
-
-  // Debounce global logs search
-  React.useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedGlobalSearch(globalSearch);
-      setPage(1);
-    }, 500);
-    return () => clearTimeout(handler);
-  }, [globalSearch]);
+  const [sortBy, setSortBy] = React.useState<string | undefined>(undefined);
+  const [sortOrder, setSortOrder] = React.useState<"asc" | "desc">("desc");
 
   // Reset pagination when mode swaps
   // biome-ignore lint/correctness/useExhaustiveDependencies: activeMuid is the intentional trigger; setPage is a stable setter
@@ -80,17 +72,34 @@ export function AuditLogsTable() {
   const { data: auditLogs = [], isLoading: isAuditLoading } =
     useAuditLogs(activeMuid);
 
-  // Global issued logs when no user selected (paginated)
+  // Global issued logs when no user selected (paginated + server-sorted)
   const { data: globalLogsData, isLoading: isGlobalLoading } = useIssuedLogs(
     page,
     perPage,
-    debouncedGlobalSearch,
+    "", // Pass empty string to avoid server-side search crash
+    sortBy,
+    sortOrder,
   );
 
   const isUserSelected = Boolean(activeMuid);
   const globalLogs = globalLogsData?.data || [];
   const pagination = globalLogsData?.pagination;
-  const logs = isUserSelected ? auditLogs : globalLogs;
+  const rawLogs = isUserSelected ? auditLogs : globalLogs;
+
+  const logs = React.useMemo(() => {
+    if (isUserSelected) return rawLogs;
+    if (!globalSearch.trim()) return rawLogs;
+    const queryLower = globalSearch.toLowerCase();
+    return (rawLogs as IssuedLog[]).filter((log) => {
+      return (
+        (log.achievement_name?.toLowerCase() || "").includes(queryLower) ||
+        (log.user_name?.toLowerCase() || "").includes(queryLower) ||
+        (log.muid?.toLowerCase() || "").includes(queryLower) ||
+        (log.issued_by?.toLowerCase() || "").includes(queryLower)
+      );
+    });
+  }, [isUserSelected, rawLogs, globalSearch]);
+
   const isLoading = isUserSelected ? isAuditLoading : isGlobalLoading;
 
   // Stats calculation
@@ -98,11 +107,19 @@ export function AuditLogsTable() {
     ? auditLogs.length
     : (pagination?.total ?? 0);
   const issuedOrUniqueRecipientsCount = isUserSelected
-    ? auditLogs.filter((l) => l.action?.toLowerCase() === "issue").length
+    ? auditLogs.filter(
+        (l) =>
+          l.action?.toLowerCase() === "issued" ||
+          l.action?.toLowerCase() === "vc_issued",
+      ).length
     : new Set(globalLogs.map((l) => l.muid).filter(Boolean)).size;
 
   const revokedOrUniqueAchievementsCount = isUserSelected
-    ? auditLogs.filter((l) => l.action?.toLowerCase() === "revoke").length
+    ? auditLogs.filter(
+        (l) =>
+          l.action?.toLowerCase() === "revoked" ||
+          l.action?.toLowerCase() === "vc_failed",
+      ).length
     : new Set(globalLogs.map((l) => l.achievement_name).filter(Boolean)).size;
 
   const renderTimestamp = (ts: string | undefined) => {
@@ -331,8 +348,55 @@ export function AuditLogsTable() {
                 <TableRow className="bg-muted/30">
                   <TableHead className="w-16">Sl.no</TableHead>
                   <TableHead>Action</TableHead>
-                  <TableHead>Achievement</TableHead>
-                  <TableHead>Timestamp</TableHead>
+                  <TableHead
+                    className={
+                      !isUserSelected
+                        ? "cursor-pointer select-none hover:text-foreground"
+                        : ""
+                    }
+                    onClick={() => {
+                      if (isUserSelected) return;
+                      setSortBy("achievement_name");
+                      setSortOrder((prev) =>
+                        sortBy === "achievement_name" && prev === "asc"
+                          ? "desc"
+                          : "asc",
+                      );
+                      setPage(1);
+                    }}
+                  >
+                    Achievement
+                    {!isUserSelected && sortBy === "achievement_name" && (
+                      <span className="ml-1 text-xs">
+                        {sortOrder === "asc" ? "↑" : "↓"}
+                      </span>
+                    )}
+                  </TableHead>
+                  <TableHead
+                    className={
+                      !isUserSelected
+                        ? "cursor-pointer select-none hover:text-foreground"
+                        : ""
+                    }
+                    onClick={() => {
+                      if (isUserSelected) return;
+                      setSortBy("created_at");
+                      setSortOrder((prev) =>
+                        sortBy === "created_at" && prev === "asc"
+                          ? "desc"
+                          : "asc",
+                      );
+                      setPage(1);
+                    }}
+                  >
+                    Timestamp
+                    {!isUserSelected &&
+                      (sortBy === "created_at" || !sortBy) && (
+                        <span className="ml-1 text-xs">
+                          {sortOrder === "asc" ? "↑" : "↓"}
+                        </span>
+                      )}
+                  </TableHead>
                   <TableHead>Details</TableHead>
                 </TableRow>
               </TableHeader>
@@ -373,11 +437,19 @@ export function AuditLogsTable() {
                             <TableCell>
                               <Badge
                                 variant="outline"
-                                className={
-                                  auditLog.action?.toLowerCase() === "issue"
-                                    ? "bg-success/10 text-success border-success/20"
-                                    : "bg-destructive/10 text-destructive border-destructive/20"
-                                }
+                                className={(() => {
+                                  const act = auditLog.action?.toLowerCase();
+                                  if (act === "issued") {
+                                    return "bg-success/10 text-success border-success/20";
+                                  }
+                                  if (act === "vc_issued") {
+                                    return "bg-brand-blue/10 text-brand-blue border-brand-blue/20";
+                                  }
+                                  if (act === "vc_failed") {
+                                    return "bg-warning/10 text-warning border-warning/20";
+                                  }
+                                  return "bg-destructive/10 text-destructive border-destructive/20"; // revoked
+                                })()}
                               >
                                 {auditLog.action}
                               </Badge>

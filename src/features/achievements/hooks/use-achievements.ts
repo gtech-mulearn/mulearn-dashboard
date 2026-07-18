@@ -2,8 +2,12 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  fetchAchievementProgress,
   fetchAchievements,
+  fetchAllAchievementsForUser,
+  fetchEligibleAchievements,
   fetchRules,
+  fetchSingleRule,
   fetchUserAchievements,
   simulateForUser,
 } from "../api";
@@ -23,12 +27,24 @@ export const ACHIEVEMENT_KEYS = {
   auditLogs: (muid: string) =>
     [...ACHIEVEMENT_KEYS.all, "audit", muid] as const,
   issuedLogsAll: () => [...ACHIEVEMENT_KEYS.all, "issued-logs"] as const,
-  issuedLogs: (page: number, perPage: number, search?: string) =>
+  issuedLogs: (
+    page: number,
+    perPage: number,
+    search?: string,
+    sortBy?: string,
+    sortOrder?: string,
+  ) =>
     [
       ...ACHIEVEMENT_KEYS.all,
       "issued-logs",
-      { page, perPage, search },
+      { page, perPage, search, sortBy, sortOrder },
     ] as const,
+  eligible: () => [...ACHIEVEMENT_KEYS.all, "eligible"] as const,
+  progress: () => [...ACHIEVEMENT_KEYS.all, "progress"] as const,
+  allForUser: (userId: string) =>
+    [...ACHIEVEMENT_KEYS.all, "all-for-user", userId] as const,
+  singleRule: (ruleId: string) =>
+    [...ACHIEVEMENT_KEYS.all, "rule", ruleId] as const,
 } as const;
 
 // ==========================================
@@ -95,4 +111,65 @@ export function useUserAchievements(muid: string) {
 
 export function useAchievementQueryClient() {
   return useQueryClient();
+}
+
+// ==========================================
+// useAllAchievementsForUser
+// Returns ALL achievements with has_achievement: true/false per item.
+// Correct endpoint for Issue/Revoke panel — uses GET /list/?user_id=<uuid>
+// ==========================================
+
+export function useAllAchievementsForUser(userId: string) {
+  return useQuery({
+    queryKey: ACHIEVEMENT_KEYS.allForUser(userId),
+    queryFn: () => fetchAllAchievementsForUser(userId),
+    enabled: Boolean(userId),
+    staleTime: 1 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+// ==========================================
+// useSingleRule
+// Fetches full detail of a single rule (GET /rules/<rule_id>/)
+// ==========================================
+
+export function useSingleRule(ruleId: string | null) {
+  return useQuery({
+    queryKey: ACHIEVEMENT_KEYS.singleRule(ruleId ?? ""),
+    queryFn: () => fetchSingleRule(ruleId!),
+    enabled: Boolean(ruleId),
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+// ==========================================
+// useEligibleAchievements
+// ==========================================
+
+export function useEligibleAchievements() {
+  return useQuery({
+    queryKey: ACHIEVEMENT_KEYS.eligible(),
+    queryFn: fetchEligibleAchievements,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+// ==========================================
+// useAchievementProgress
+// ==========================================
+
+export function useAchievementProgress() {
+  return useQuery({
+    queryKey: ACHIEVEMENT_KEYS.progress(),
+    queryFn: fetchAchievementProgress,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
 }

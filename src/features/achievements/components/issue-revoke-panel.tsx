@@ -6,10 +6,8 @@ import {
   Search,
   Send,
   ShieldOff,
-  Trophy,
   X,
 } from "lucide-react";
-import Image from "next/image";
 import * as React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +21,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,9 +39,10 @@ import {
 import {
   ACHIEVEMENT_KEYS,
   useAchievementQueryClient,
-  useUserAchievements,
+  useAllAchievementsForUser,
 } from "../hooks/use-achievements";
 import type { UserAchievement } from "../schemas";
+import { AchievementIcon } from "./achievement-icon";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Action Dialog
@@ -48,6 +54,7 @@ interface ActionDialogProps {
   action: "issue" | "revoke" | null;
   achievement: UserAchievement | null;
   muid: string;
+  userId: string;
   onSuccess: () => void;
 }
 
@@ -57,6 +64,7 @@ function ActionDialog({
   action,
   achievement,
   muid,
+  userId,
   onSuccess,
 }: ActionDialogProps) {
   const [message, setMessage] = React.useState("");
@@ -78,7 +86,7 @@ function ActionDialog({
             setMessage("");
             onOpenChange(false);
             queryClient.invalidateQueries({
-              queryKey: ACHIEVEMENT_KEYS.userList(muid),
+              queryKey: ACHIEVEMENT_KEYS.allForUser(userId),
             });
             onSuccess();
           },
@@ -96,7 +104,7 @@ function ActionDialog({
             setMessage("");
             onOpenChange(false);
             queryClient.invalidateQueries({
-              queryKey: ACHIEVEMENT_KEYS.userList(muid),
+              queryKey: ACHIEVEMENT_KEYS.allForUser(userId),
             });
             onSuccess();
           },
@@ -202,36 +210,16 @@ function AchievementRow({
   onIssue,
   onRevoke,
 }: AchievementRowProps) {
-  const [hasError, setHasError] = React.useState(false);
-  const iconSrc = React.useMemo(() => {
-    const src = achievement.icon;
-    if (!src) return null;
-    if (src.startsWith("http")) return src;
-    const base = process.env.NEXT_PUBLIC_DJANGO_API_URL ?? "";
-    const sep = base.endsWith("/") || src.startsWith("/") ? "" : "/";
-    return `${base}${sep}${src}`;
-  }, [achievement.icon]);
-
   return (
     <div className="flex flex-col sm:flex-row sm:items-center gap-3 rounded-lg border p-3 hover:bg-muted/40 transition-colors">
       <div className="flex items-center gap-3 min-w-0 w-full">
-        {/* Icon */}
+        {/* Icon — use shared AchievementIcon which correctly handles /media/ prefix */}
         <div className="shrink-0">
-          {iconSrc && !hasError ? (
-            <Image
-              src={iconSrc}
-              alt={achievement.name}
-              width={40}
-              height={40}
-              className="rounded-md object-cover"
-              onError={() => setHasError(true)}
-              unoptimized
-            />
-          ) : (
-            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted">
-              <Trophy className="h-5 w-5 text-muted-foreground" />
-            </div>
-          )}
+          <AchievementIcon
+            imageUrl={achievement.icon_url ?? achievement.icon}
+            name={achievement.name}
+            size={40}
+          />
         </div>
 
         {/* Info */}
@@ -295,14 +283,17 @@ function getInitials(name: string): string {
 
 export function IssueRevokePanel() {
   const [selectedUser, setSelectedUser] = React.useState<{
+    id: string; // UUID — used with GET /list/?user_id=<uuid>
     muid: string;
     name: string;
     profile_pic?: string | null;
   } | null>(null);
+  const userId = selectedUser?.id ?? "";
   const muid = selectedUser?.muid ?? "";
 
+  // Use the correct endpoint: returns ALL achievements with has_achievement flag
   const { data: achievements = [], isLoading: isLoadingAchievements } =
-    useUserAchievements(muid);
+    useAllAchievementsForUser(userId);
 
   const [search, setSearch] = React.useState("");
   const [searchOpen, setSearchOpen] = React.useState(false);
@@ -322,21 +313,48 @@ export function IssueRevokePanel() {
   const [dialogAchievement, setDialogAchievement] =
     React.useState<UserAchievement | null>(null);
 
-  const { notOwned, owned, totalCount } = React.useMemo(() => {
+  const [selectedType, setSelectedType] = React.useState<string>("all");
+  const [selectedStatus, setSelectedStatus] = React.useState<string>("all");
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reset filters when user changes
+  React.useEffect(() => {
+    setSelectedType("all");
+    setSelectedStatus("all");
+    setSearch("");
+  }, [userId]);
+
+  const uniqueTypes = React.useMemo(() => {
+    const list = Array.isArray(achievements) ? achievements : [];
+    const typesSet = new Set<string>();
+    for (const a of list) {
+      if (a.type?.trim()) {
+        typesSet.add(a.type.trim());
+      }
+    }
+    return Array.from(typesSet).sort();
+  }, [achievements]);
+
+  const filteredAchievements = React.useMemo(() => {
     const q = search.trim().toLowerCase();
     const list = Array.isArray(achievements) ? achievements : [];
-    const filtered = list.filter(
-      (a) =>
+    return list.filter((a) => {
+      const matchesSearch =
         a.name.toLowerCase().includes(q) ||
         a.description?.toLowerCase().includes(q) ||
-        a.type?.toLowerCase().includes(q),
-    );
-    return {
-      notOwned: filtered.filter((a) => !a.has_achievement),
-      owned: filtered.filter((a) => a.has_achievement),
-      totalCount: filtered.length,
-    };
-  }, [achievements, search]);
+        a.type?.toLowerCase().includes(q);
+
+      const matchesType =
+        selectedType === "all" ||
+        a.type?.trim().toLowerCase() === selectedType.toLowerCase();
+
+      const matchesStatus =
+        selectedStatus === "all" ||
+        (selectedStatus === "issued" && a.has_achievement) ||
+        (selectedStatus === "unissued" && !a.has_achievement);
+
+      return matchesSearch && matchesType && matchesStatus;
+    });
+  }, [achievements, search, selectedType, selectedStatus]);
 
   const openDialog = (
     action: "issue" | "revoke",
@@ -398,6 +416,7 @@ export function IssueRevokePanel() {
                       onMouseDown={(e) => e.preventDefault()}
                       onClick={() => {
                         setSelectedUser({
+                          id: user.id,
                           muid: user.muid,
                           name: user.full_name,
                           profile_pic: user.profile_pic,
@@ -485,18 +504,48 @@ export function IssueRevokePanel() {
                 Achievements List
               </span>
               <span className="text-xs text-muted-foreground">
-                {totalCount} of {achievements?.length ?? 0}
+                {filteredAchievements.length} of {achievements?.length ?? 0}
               </span>
             </div>
 
-            {/* Search Filter */}
-            <Input
-              placeholder="Filter achievements by name or type..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="max-w-sm"
-              data-testid="achievement-filter-input"
-            />
+            {/* Filters (Search, Type, & Status Select) */}
+            <div className="flex flex-col sm:flex-row gap-3 max-w-2xl">
+              {/* Search Filter */}
+              <Input
+                placeholder="Filter achievements by name..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="flex-1"
+                data-testid="achievement-filter-input"
+              />
+
+              {/* Type Filter */}
+              <Select value={selectedType} onValueChange={setSelectedType}>
+                <SelectTrigger className="w-full sm:w-[150px] shrink-0">
+                  <SelectValue placeholder="All Types" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  {uniqueTypes.map((t) => (
+                    <SelectItem key={t} value={t}>
+                      {t}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Status Filter */}
+              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                <SelectTrigger className="w-full sm:w-[150px] shrink-0">
+                  <SelectValue placeholder="All Statuses" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="issued">Already Issued</SelectItem>
+                  <SelectItem value="unissued">Available to Issue</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
             {/* List */}
             <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
@@ -507,56 +556,22 @@ export function IssueRevokePanel() {
                     <Skeleton key={i} className="h-16 w-full rounded-lg" />
                   ))}
                 </div>
-              ) : totalCount === 0 ? (
+              ) : filteredAchievements.length === 0 ? (
                 <p className="text-sm text-muted-foreground py-8 text-center">
                   {search
                     ? "No achievements match your filter."
                     : "No achievements found."}
                 </p>
               ) : (
-                <div className="space-y-4">
-                  {/* Achievements user does not have */}
-                  {notOwned.length > 0 && (
-                    <div className="space-y-2">
-                      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        Available to Issue ({notOwned.length})
-                      </h3>
-                      {notOwned.map((achievement) => (
-                        <AchievementRow
-                          key={achievement.id}
-                          achievement={achievement}
-                          onIssue={(a) => openDialog("issue", a)}
-                        />
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Divider between groups */}
-                  {owned.length > 0 && notOwned.length > 0 && (
-                    <div className="py-2 flex items-center gap-4">
-                      <Separator className="flex-1" />
-                      <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest shrink-0">
-                        Already Issued
-                      </span>
-                      <Separator className="flex-1" />
-                    </div>
-                  )}
-
-                  {/* Achievements user already has */}
-                  {owned.length > 0 && (
-                    <div className="space-y-2">
-                      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        Issued Achievements ({owned.length})
-                      </h3>
-                      {owned.map((achievement) => (
-                        <AchievementRow
-                          key={achievement.id}
-                          achievement={achievement}
-                          onRevoke={(a) => openDialog("revoke", a)}
-                        />
-                      ))}
-                    </div>
-                  )}
+                <div className="space-y-2">
+                  {filteredAchievements.map((achievement) => (
+                    <AchievementRow
+                      key={achievement.id}
+                      achievement={achievement}
+                      onIssue={(a) => openDialog("issue", a)}
+                      onRevoke={(a) => openDialog("revoke", a)}
+                    />
+                  ))}
                 </div>
               )}
             </div>
@@ -571,6 +586,7 @@ export function IssueRevokePanel() {
         action={dialogAction}
         achievement={dialogAchievement}
         muid={muid}
+        userId={userId}
         onSuccess={() => {
           // Optionally reset state after success
         }}

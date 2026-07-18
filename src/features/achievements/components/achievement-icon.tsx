@@ -14,11 +14,24 @@ export function AchievementIcon({
   size = 40,
 }: AchievementIconProps) {
   const [hasError, setHasError] = React.useState(false);
+
+  // Reset error state when the image URL changes (e.g. switching rows)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: imageUrl triggers resetting the error state
+  React.useEffect(() => {
+    setHasError(false);
+  }, [imageUrl]);
+
   let src = imageUrl;
   if (src && !src.startsWith("http")) {
-    const base = process.env.NEXT_PUBLIC_DJANGO_API_URL ?? "";
-    const sep = base.endsWith("/") || src.startsWith("/") ? "" : "/";
-    src = `${base}${sep}${src}`;
+    // The backend stores files under Django's MEDIA_URL (typically /media/).
+    // Relative paths like "achievements/icons/uuid.jpg" must be prefixed with
+    // the API origin + /media/ to form a valid URL.
+    const base = (process.env.NEXT_PUBLIC_DJANGO_API_URL ?? "").replace(
+      /\/$/,
+      "",
+    );
+    const relativePath = src.startsWith("/") ? src : `/media/${src}`;
+    src = `${base}${relativePath}`;
   }
 
   if (src && !hasError) {

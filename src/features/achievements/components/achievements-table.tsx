@@ -102,9 +102,11 @@ export function AchievementsTable() {
 
   const customCellRender = (column: string, row: Record<string, unknown>) => {
     if (column === "icon") {
+      // Prefer icon_url (fully-resolved URL) over icon (relative path)
+      const imageUrl = (row.icon_url as string) || (row.icon as string);
       return (
         <AchievementIcon
-          imageUrl={row.icon as string}
+          imageUrl={imageUrl}
           name={row.name as string}
           size={36}
         />
@@ -217,8 +219,8 @@ export function AchievementsTable() {
         />
       </div>
 
-      <div className="w-full ">
-        <div className="w-full md:min-w-[800px]">
+      <div className="w-full overflow-x-auto">
+        <div className="min-w-[800px] w-full">
           <ReusableTable
             // biome-ignore lint/suspicious/noExplicitAny: third-party types
             rows={filteredAndSorted as any}

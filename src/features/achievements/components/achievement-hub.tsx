@@ -10,6 +10,7 @@ import {
   Upload,
 } from "lucide-react";
 import Link from "next/link";
+import { IssueVCDialogListener } from "./issue-vc-dialog-listener";
 
 const BASE = "/dashboard/management/manage-achievements";
 
@@ -62,6 +63,8 @@ const HUB_CARDS = [
 export function AchievementHub() {
   return (
     <div className="space-y-8" data-testid="achievement-hub">
+      {/* Global VC dialog listener — opens IssueVCDialog when a claim returns vc_pending:true */}
+      <IssueVCDialogListener />
       {/* Page header */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight">
