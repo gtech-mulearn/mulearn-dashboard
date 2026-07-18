@@ -43,12 +43,11 @@ export function RoleVerificationTable() {
   const pagination = data?.pagination;
 
   // Transform rows to match the Table Data type
-  const tableRows: Data[] = rows.map((row: RoleVerificationItem) => ({
+  const tableRows = rows.map((row: RoleVerificationItem) => ({
     ...row,
-    id: row.id,
     discord_id: row.discord_id || "N/A",
     mobile: row.mobile || "N/A",
-  }));
+  })) as unknown as Data[];
 
   const handleSort = (column: string) => {
     if (sort === column) {
@@ -92,10 +91,12 @@ export function RoleVerificationTable() {
         columnOrder={COLUMN_ORDER}
         id={["id"]}
         customActionRender={(row) => (
-          <RoleVerificationActions item={row as RoleVerificationItem} />
+          <RoleVerificationActions
+            item={row as unknown as RoleVerificationItem}
+          />
         )}
         customCellRender={(column, row) => {
-          const rowData = row as RoleVerificationItem;
+          const rowData = row as unknown as RoleVerificationItem;
           if (column === "verified") {
             return rowData.verified ? (
               <Badge variant="success" className="cursor-default">
