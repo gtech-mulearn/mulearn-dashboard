@@ -94,7 +94,7 @@ export function getLatestChangelogEntry(
     return null;
   }
 
-  const hash = createHash("sha256").update(body).digest("hex");
+  const hash = createHash("sha256").update(`${title}\n${body}`).digest("hex");
 
   return { title, body, hash };
 }

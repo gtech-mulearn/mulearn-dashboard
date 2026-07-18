@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -25,6 +26,7 @@ export function WhatsNewPopup({
   onSeen,
   onDismiss,
 }: WhatsNewPopupProps) {
+  const router = useRouter();
   const [dismissedHash, setDismissedHash] = useState<string | null>(null);
   const [isVisible, setIsVisible] = useState(Boolean(isOpen));
   const seenHashRef = useRef<string | null>(null);
@@ -79,7 +81,10 @@ export function WhatsNewPopup({
           <MarkdownRenderer content={content} className="space-y-3" />
         </div>
 
-        <div className="flex justify-end">
+        <div className="flex items-center justify-between gap-3">
+          <Button onClick={() => void handleReadMore()} variant="outline">
+            Read more
+          </Button>
           <Button onClick={() => void handleClose()} variant="default">
             Got it
           </Button>
@@ -94,5 +99,10 @@ export function WhatsNewPopup({
       setIsVisible(false);
       await onDismiss(entry.hash);
     }
+  }
+
+  async function handleReadMore() {
+    await handleClose();
+    router.push("/dashboard/changelog");
   }
 }

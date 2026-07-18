@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import ReactMarkdown, { type Components } from "react-markdown";
 import rehypeSanitize from "rehype-sanitize";
 import remarkGfm from "remark-gfm";
+import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
   title: "Changelog",
@@ -116,13 +117,10 @@ export default function ChangelogPage() {
           best it can be. Thanks everyone for your feedback! ❤️
         </p>
         <div className="flex flex-wrap items-center gap-3 mt-2">
-          <a
-            href="https://mulearn.org/donate"
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 font-medium transition-colors text-sm"
-          >
-            Give us some support!
+          <a href="https://mulearn.org/donate" target="_blank" rel="noreferrer">
+            <Button className="inline-flex items-center justify-center font-semibold">
+              Give us some support!
+            </Button>
           </a>
         </div>
       </div>
@@ -140,11 +138,10 @@ export default function ChangelogPage() {
 
       {/* Back to top button */}
       <div className="flex justify-end mt-20">
-        <a
-          href="#top"
-          className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 font-medium transition-colors text-sm"
-        >
-          Back to the top &uarr;
+        <a href="#top">
+          <Button className="inline-flex items-center justify-center font-semibold">
+            Back to the top &uarr;
+          </Button>
         </a>
       </div>
     </div>
