@@ -171,9 +171,13 @@ function LocationContent() {
 
   // ─── Dropdowns ─────────────────────────────────────────────────────────────
 
-  const needsCountry = open && activeTab !== "countries";
-  const needsState =
-    open && (activeTab === "zones" || activeTab === "districts");
+  const showCountryField =
+    activeTab === "states" || (editingItem && activeTab !== "countries");
+  const showStateField =
+    activeTab === "zones" || (editingItem && activeTab === "districts");
+
+  const needsCountry = open && activeTab === "states";
+  const needsState = open && activeTab === "zones";
   const needsZone = open && activeTab === "districts";
 
   const { data: countryList = [], isLoading: countryListLoading } =
@@ -238,10 +242,10 @@ function LocationContent() {
         if (activeTab === "states" && !countryId) {
           return;
         }
-        if (activeTab === "zones" && (!countryId || !stateId)) {
+        if (activeTab === "zones" && !stateId) {
           return;
         }
-        if (activeTab === "districts" && (!countryId || !stateId || !zoneId)) {
+        if (activeTab === "districts" && !zoneId) {
           return;
         }
 
@@ -509,7 +513,7 @@ function LocationContent() {
             </div>
 
             {/* Country */}
-            {activeTab !== "countries" && (
+            {showCountryField && (
               <div className="space-y-1">
                 <label
                   htmlFor="country"
@@ -556,7 +560,7 @@ function LocationContent() {
             )}
 
             {/* State */}
-            {(activeTab === "zones" || activeTab === "districts") && (
+            {showStateField && (
               <div className="space-y-1">
                 <label
                   htmlFor="state"
