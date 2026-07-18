@@ -1,4 +1,4 @@
-import { BulkIssuePanel } from "@/features/achievements/components";
+import { BulkIssuePanel } from "@/features/achievements";
 import { ROLES } from "@/lib/auth/roles";
 import { requireRole } from "@/lib/auth/server";
 

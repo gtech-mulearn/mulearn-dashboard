@@ -375,17 +375,15 @@ export function RoleVerificationActions({
                     Interest Groups
                   </h3>
                   <div className="flex flex-wrap gap-2">
-                    {Array.from(new Set(item.interest_groups)).map(
-                      (ig, idx) => (
-                        <Badge
-                          key={idx}
-                          variant="secondary"
-                          className="rounded-full px-3 py-1 font-semibold text-xs border border-border/40 hover:bg-muted/50 cursor-default"
-                        >
-                          {String(ig)}
-                        </Badge>
-                      ),
-                    )}
+                    {Array.from(new Set(item.interest_groups)).map((ig) => (
+                      <Badge
+                        key={String(ig)}
+                        variant="secondary"
+                        className="rounded-full px-3 py-1 font-semibold text-xs border border-border/40 hover:bg-muted/50 cursor-default"
+                      >
+                        {String(ig)}
+                      </Badge>
+                    ))}
                   </div>
                 </div>
               )}

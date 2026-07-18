@@ -1,4 +1,4 @@
-import { IssueRevokePanel } from "@/features/achievements/components";
+import { IssueRevokePanel } from "@/features/achievements";
 import { ROLES } from "@/lib/auth/roles";
 import { requireRole } from "@/lib/auth/server";
 

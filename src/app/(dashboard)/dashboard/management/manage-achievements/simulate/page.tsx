@@ -1,4 +1,4 @@
-import { SimulationPanel } from "@/features/achievements/components";
+import { SimulationPanel } from "@/features/achievements";
 import { ROLES } from "@/lib/auth/roles";
 import { requireRole } from "@/lib/auth/server";
 

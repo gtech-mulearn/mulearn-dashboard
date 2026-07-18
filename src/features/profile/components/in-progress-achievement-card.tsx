@@ -12,10 +12,7 @@
 import { Award, Lock } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import type {
-  Achievement,
-  EligibleAchievement,
-} from "@/features/achievements/schemas";
+import type { Achievement, EligibleAchievement } from "@/features/achievements";
 
 function resolveMediaUrl(url: string | null | undefined): string | null {
   if (!url) return null;

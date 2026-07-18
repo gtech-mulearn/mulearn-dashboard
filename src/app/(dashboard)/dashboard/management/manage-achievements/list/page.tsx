@@ -1,4 +1,4 @@
-import { AchievementsTable } from "@/features/achievements/components";
+import { AchievementsTable } from "@/features/achievements";
 import { ROLES } from "@/lib/auth/roles";
 import { requireRole } from "@/lib/auth/server";
 

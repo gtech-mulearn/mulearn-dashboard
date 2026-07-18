@@ -1,8 +1,5 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  AchievementAnalytics,
-  AuditLogsTable,
-} from "@/features/achievements/components";
+import { AchievementAnalytics, AuditLogsTable } from "@/features/achievements";
 import { ROLES } from "@/lib/auth/roles";
 import { requireRole } from "@/lib/auth/server";
 

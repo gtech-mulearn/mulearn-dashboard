@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { fetchAchievements } from "@/features/achievements/api/achievements.api";
+import { fetchAchievements } from "@/features/achievements";
 import { LearnerCard } from "@/features/company-jobs/components";
 import { useLearnerDiscovery } from "@/features/company-jobs/hooks";
 import type { LearnerDiscoveryParams } from "@/features/company-jobs/types";

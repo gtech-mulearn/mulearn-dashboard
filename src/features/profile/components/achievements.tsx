@@ -12,12 +12,12 @@
 import { Trophy } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
-import { IssueVCDialogListener } from "@/features/achievements/components/issue-vc-dialog-listener";
 import {
+  IssueVCDialogListener,
   useAchievementProgress,
   useAchievements,
   useEligibleAchievements,
-} from "@/features/achievements/hooks";
+} from "@/features/achievements";
 import { useUserAchievements } from "../hooks";
 import { AchievementCard } from "./achievement-card";
 import { EligibleAchievementCard } from "./eligible-achievement-card";
