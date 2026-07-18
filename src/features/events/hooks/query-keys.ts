@@ -54,8 +54,11 @@ export const eventKeys = {
   eventTypeScope: () => [...eventKeys.meta(), "event-type-scope"] as const,
   categories: () => [...eventKeys.meta(), "categories"] as const,
   igClusters: () => [...eventKeys.meta(), "ig-clusters"] as const,
-  collaborationTargets: (params: { search: string; type?: string }) =>
-    [...eventKeys.meta(), "collaboration-targets", params] as const,
+  collaborationTargets: (params: {
+    search: string;
+    type?: string;
+    campusId?: string;
+  }) => [...eventKeys.meta(), "collaboration-targets", params] as const,
   userSearch: (query: string) =>
     [...eventKeys.meta(), "user-search", query] as const,
 

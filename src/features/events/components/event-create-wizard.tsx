@@ -1140,6 +1140,9 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                       selectedName={selectedCampusIgName}
                       placeholder="Search campus IG"
                       campusContextLabel={creatorCampusName}
+                      campusId={
+                        organizerOptionsQuery.data?.campus_context?.id ?? null
+                      }
                       onChange={(id, name) => {
                         setValue("target_campus_ig_id", id || null, {
                           shouldValidate: true,

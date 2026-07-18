@@ -149,14 +149,17 @@ export function useIGClusters() {
 export function useCollaborationTargets(
   search: string,
   type?: CollaboratorType,
+  campusId?: string,
 ) {
   const debouncedSearch = useDebounce(search, 300);
   return useQuery({
     queryKey: eventKeys.collaborationTargets({
       search: debouncedSearch,
       type,
+      campusId,
     }),
-    queryFn: () => eventsApi.searchCollaborationTargets(debouncedSearch, type),
+    queryFn: () =>
+      eventsApi.searchCollaborationTargets(debouncedSearch, type, campusId),
     enabled: debouncedSearch.length >= 2,
   });
 }
