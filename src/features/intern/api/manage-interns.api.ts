@@ -22,7 +22,7 @@ function buildQueryString(params?: TInternQueryParams): string {
   if (!params) return "";
   const searchParams = new URLSearchParams();
   if (params.page !== undefined) {
-    searchParams.set("page", String(params.page));
+    searchParams.set("pageIndex", String(params.page));
   }
   if (params.perPage !== undefined) {
     searchParams.set("perPage", String(params.perPage));
