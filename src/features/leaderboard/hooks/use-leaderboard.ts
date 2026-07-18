@@ -16,6 +16,40 @@ import type {
 import type { Category, LeaderboardEntry, TimeFrame } from "../types";
 import { leaderboardKeys } from "./query-keys";
 
+export function transformStudentLeaderboardEntries(
+  data: StudentLeaderboardEntry[],
+): LeaderboardEntry[] {
+  const seenIds = new Set<string>();
+
+  return data
+    .map((item, index) => {
+      const isAnonymous = !item.full_name || item.full_name.trim() === "";
+      const id = item.muid
+        ? item.muid
+        : isAnonymous
+          ? `anon-${index}`
+          : `${item.full_name}-${item.institution || ""}`;
+
+      if (!isAnonymous && seenIds.has(id)) return null;
+      if (!isAnonymous) seenIds.add(id);
+
+      const entry: LeaderboardEntry = {
+        id,
+        rank: index + 1,
+        name: isAnonymous ? "" : item.full_name,
+        karma: item.total_karma,
+        link: item.muid ? `/profile/${item.muid}` : undefined,
+      };
+
+      if (item.profile_pic) {
+        entry.profile_pic = item.profile_pic;
+      }
+
+      return entry;
+    })
+    .filter((item): item is LeaderboardEntry => item !== null);
+}
+
 export function useLeaderboard(category: Category, timeframe: TimeFrame) {
   const monthly = timeframe === "monthly";
 
@@ -58,33 +92,9 @@ export function useLeaderboard(category: Category, timeframe: TimeFrame) {
       }
 
       // Default: students
-      return (data as StudentLeaderboardEntry[])
-        .map((item, index) => {
-          const isAnonymous = !item.full_name || item.full_name.trim() === "";
-          const id = item.muid
-            ? item.muid
-            : isAnonymous
-              ? `anon-${index}`
-              : `${item.full_name}-${item.institution || ""}-${item.total_karma}`;
-
-          if (!isAnonymous && item.muid && seenIds.has(id)) return null;
-          if (!isAnonymous && item.muid) seenIds.add(id);
-
-          const entry: LeaderboardEntry = {
-            id,
-            rank: index + 1,
-            name: isAnonymous ? "" : item.full_name,
-            karma: item.total_karma,
-            link: item.muid ? `/profile/${item.muid}` : undefined,
-          };
-
-          if (item.profile_pic) {
-            entry.profile_pic = item.profile_pic;
-          }
-
-          return entry;
-        })
-        .filter((item): item is LeaderboardEntry => item !== null);
+      return transformStudentLeaderboardEntries(
+        data as StudentLeaderboardEntry[],
+      );
     },
     retry: 2,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),

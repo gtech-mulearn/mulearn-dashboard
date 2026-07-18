@@ -24,7 +24,7 @@ export function LeaderboardCard({ entry }: LeaderboardCardProps) {
             {entry.name?.charAt(0)?.toUpperCase()}
           </AvatarFallback>
         </Avatar>
-        <span className="font-medium text-sm md:text-base text-foreground truncate transition-colors hover:text-primary">
+        <span className="font-medium text-sm md:text-base text-foreground truncate transition-colors group-hover:text-primary">
           {entry.name}
         </span>
       </div>
