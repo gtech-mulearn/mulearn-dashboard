@@ -1,4 +1,4 @@
-import { Award, Building2, GraduationCap, Users } from "lucide-react";
+import { Building2, Users } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import {

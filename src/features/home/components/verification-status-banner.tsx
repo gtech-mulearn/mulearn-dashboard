@@ -11,8 +11,7 @@
  * - Enabler: fetches the profile verification status.
  */
 
-import { AlertCircle, CheckCircle, Clock, X, XCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { AlertCircle, Clock, XCircle } from "lucide-react";
 import { useCompanyOnboardingStatus } from "@/features/auth/hooks";
 import { useUserProfile } from "@/features/auth/hooks/use-session";
 import { useMentorApplication } from "@/features/mentor/onboarding/hooks/use-onboarding";

@@ -7,7 +7,7 @@
  */
 "use client";
 
-import { ArrowUpRight, Hash } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { InterestGroup } from "../schemas/interest-groups.schema";
 

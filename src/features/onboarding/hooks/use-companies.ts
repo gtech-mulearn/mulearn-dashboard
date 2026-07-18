@@ -18,7 +18,7 @@ export function useCompanies() {
     queryKey: onboardingKeys.companies(),
     queryFn: async () => {
       const response = await fetchCompanies();
-      return response.response.companies;
+      return response.response.data;
     },
     staleTime: 10 * 60 * 1000, // Cache for 10 minutes
   });

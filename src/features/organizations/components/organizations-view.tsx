@@ -244,9 +244,9 @@ function OrganizationsContent() {
 
   return (
     <>
-      <Card className="overflow-visible border-0 bg-transparent shadow-none rounded-none">
+      <Card className="border-0 bg-transparent shadow-none rounded-none min-w-0">
         <CardHeader className="px-0 py-0 sm:px-0 sm:py-0">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="space-y-1.5">
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/6 px-3 py-1 text-xs font-semibold text-primary">
                 <Building className="size-3.5" />
@@ -259,20 +259,17 @@ function OrganizationsContent() {
                 Manage colleges, companies, communities, and schools.
               </p>
             </div>
-            <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="flex flex-wrap gap-2">
               <Button
                 variant="outline"
-                className="gap-1.5 w-full sm:w-auto"
+                className="gap-1.5"
                 onClick={downloadCsv}
                 disabled={isDownloading}
               >
                 <Download className="size-3.5" />
                 {isDownloading ? "Exporting..." : "Export CSV"}
               </Button>
-              <Button
-                className="gap-1.5 w-full sm:w-auto"
-                onClick={handleCreateOpen}
-              >
+              <Button className="gap-1.5" onClick={handleCreateOpen}>
                 <Plus className="size-3.5" />
                 Add {activeTab}
               </Button>
@@ -308,7 +305,7 @@ function OrganizationsContent() {
             })}
           </div>
 
-          {/* TableTop: search + per-page + CSV */}
+          {/* TableTop: search + per-page */}
           <TableTop
             onSearchText={handleSearch}
             onPerPageNumber={handlePerPage}
@@ -320,13 +317,11 @@ function OrganizationsContent() {
             searchPlaceholder={`Search ${activeTab.toLowerCase()}s…`}
             searchSize="md"
             searchPosition="right"
-            searchWrapperClassName="md:max-w-[680px]"
-            searchFieldWrapperClassName="lg:max-w-[380px]"
             searchInputClassName="h-10 text-sm"
           />
 
           {/* Table */}
-          <div className="w-full">
+          <div className="w-full overflow-x-auto">
             <div className="min-w-[600px]">
               <Table
                 rows={rows}

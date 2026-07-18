@@ -43,9 +43,9 @@ export function RoleVerificationTable() {
   const pagination = data?.pagination;
 
   // Transform rows to match the Table Data type
-  const tableRows: Data[] = rows.map((row: RoleVerificationItem) => ({
+  // biome-ignore lint/suspicious/noExplicitAny: tableRows must satisfy Data[] (Record<string, primitive>) which RoleVerificationItem is structurally compatible with after the spread
+  const tableRows: any[] = rows.map((row: RoleVerificationItem) => ({
     ...row,
-    id: row.id,
     discord_id: row.discord_id || "N/A",
     mobile: row.mobile || "N/A",
   }));

@@ -19,6 +19,7 @@ export const AchievementSchema = z.object({
   achievement_name: z.string(),
   description: z.string().nullable(),
   icon: z.string().nullable(),
+  icon_url: z.string().nullable().optional(),
   level_id: z.string().nullable(),
   tags: z.array(z.string()).default([]),
   template_id: z.string().nullable(),

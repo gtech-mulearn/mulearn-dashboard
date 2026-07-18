@@ -6,7 +6,6 @@ import {
   type CompanyVerificationListData,
   CompanyVerificationListResponseSchema,
   GenericMutationResponseSchema,
-  type VerificationActionFormValues,
 } from "../schemas";
 
 // ─── Types ────────────────────────────────────────────────────────────────────

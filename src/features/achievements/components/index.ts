@@ -1,10 +1,13 @@
+export { AchievementAnalytics } from "./achievement-analytics";
 export { AchievementFormDialog } from "./achievement-form-dialog";
 export { AchievementHub } from "./achievement-hub";
 export { AchievementIcon } from "./achievement-icon";
 export { AchievementsTable } from "./achievements-table";
 export { AuditLogsTable } from "./audit-logs-table";
 export { BulkIssueDialog } from "./bulk-issue-dialog";
+export { BulkIssuePanel } from "./bulk-issue-panel";
 export { IssueRevokePanel } from "./issue-revoke-panel";
-export { IssuedLogsTable } from "./issued-logs-table";
+export { IssueVCDialog } from "./issue-vc-dialog";
+export { IssueVCDialogListener } from "./issue-vc-dialog-listener";
 export { RulesTable } from "./rules-table";
 export { SimulationPanel } from "./simulation-panel";

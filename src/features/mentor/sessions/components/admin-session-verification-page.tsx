@@ -268,8 +268,8 @@ function SessionVerificationTable({
   }
 
   return (
-    <div className="w-full">
-      <div className="w-full md:min-w-[800px]">
+    <div className="w-full overflow-x-auto">
+      <div className="min-w-[800px] w-full">
         <ReusableTable
           rows={sessions as any}
           isLoading={isLoading}
