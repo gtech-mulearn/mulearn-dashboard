@@ -35,6 +35,12 @@ import { getApiResponseError } from "@/hooks/use-get-error";
 import { useEditMeeting } from "../hooks";
 import type { MeetingDetail } from "../schemas";
 import {
+  getMeetLinkErrorMessage,
+  isMeetLinkValidForPlatform,
+  type MeetingPlatform,
+  PLATFORM_LINK_PLACEHOLDERS,
+} from "../utils/meet-link-validation";
+import {
   getMeetTimeErrorMessage,
   getMinDateTimeLocalValue,
   isMeetTimeValid,
@@ -55,8 +61,15 @@ type Platform = (typeof PLATFORMS)[number];
  * the "1 minute in the future" check when the user hasn't changed the time.
  * This lets organisers fix a title/description on past or near-future meetings
  * without being blocked by the time-buffer validation (P1 fix).
+ *
+ * Similarly, we pass originalMeetPlace so the platform/link check is skipped
+ * when the link field hasn't changed — backward-compat for existing meetings
+ * created before BUG-015 was fixed (BUG-015).
  */
-function buildEditMeetingSchema(originalMeetTime: string) {
+function buildEditMeetingSchema(
+  originalMeetTime: string,
+  originalMeetPlace: string,
+) {
   return z
     .object({
       title: z.string().min(1, "Title is required").max(100),
@@ -83,6 +96,39 @@ function buildEditMeetingSchema(originalMeetTime: string) {
           code: "custom",
           path: ["meet_time"],
           message: getMeetTimeErrorMessage(),
+        });
+      }
+    })
+    .superRefine((data, ctx) => {
+      // BUG-015: For online meetings, validate that the link matches the
+      // selected platform.  Skip the check when meet_place hasn't changed
+      // from the original value — backward-compat for existing meetings
+      // created before this validation was added.
+      if (data.mode !== "online" || !data.platform) return;
+      if (data.meet_place === originalMeetPlace) return;
+
+      if (
+        !isMeetLinkValidForPlatform(
+          data.platform as
+            | "Zoom"
+            | "Google Meet"
+            | "Microsoft Teams"
+            | "Discord"
+            | "Other",
+          data.meet_place,
+        )
+      ) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["meet_place"],
+          message: getMeetLinkErrorMessage(
+            data.platform as
+              | "Zoom"
+              | "Google Meet"
+              | "Microsoft Teams"
+              | "Discord"
+              | "Other",
+          ),
         });
       }
     });
@@ -125,12 +171,17 @@ export function EditMeetingModal({
   // default value and as the baseline for the skip-validation check.
   const originalMeetTime = utcToLocalDateTimeInput(meeting.meet_time);
 
+  // Derive the original meet link — used as the baseline for the BUG-015
+  // platform/link skip-if-unchanged check in buildEditMeetingSchema.
+  const originalMeetPlace = meeting.meet_link || meeting.meet_place || "";
+
   // Rebuild the schema whenever the meeting changes so the originalMeetTime
-  // closure is always in sync with the currently-open meeting.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: schema depends on originalMeetTime derived from meeting
+  // and originalMeetPlace closures are always in sync with the currently-open
+  // meeting.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: schema depends on originalMeetTime/originalMeetPlace derived from meeting
   const EditMeetingFormSchema = useMemo(
-    () => buildEditMeetingSchema(originalMeetTime),
-    [meeting.meet_time], // eslint-disable-line react-hooks/exhaustive-deps
+    () => buildEditMeetingSchema(originalMeetTime, originalMeetPlace),
+    [meeting.meet_time, meeting.meet_link, meeting.meet_place], // eslint-disable-line react-hooks/exhaustive-deps
   );
 
   type EditMeetingFormData = z.infer<typeof EditMeetingFormSchema>;
@@ -158,6 +209,7 @@ export function EditMeetingModal({
   });
 
   const mode = watch("mode");
+  const platform = watch("platform");
 
   useEffect(() => {
     reset({
@@ -317,6 +369,13 @@ export function EditMeetingModal({
               </Label>
               <Input
                 id="meet_place"
+                placeholder={
+                  mode === "online" && platform
+                    ? (PLATFORM_LINK_PLACEHOLDERS[
+                        platform as MeetingPlatform
+                      ] ?? "https://...")
+                    : "https://..."
+                }
                 {...register("meet_place")}
                 className="rounded-xl border-border/40 shadow-sm"
               />

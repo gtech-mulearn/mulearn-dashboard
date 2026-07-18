@@ -8,6 +8,10 @@
 
 import { z } from "zod";
 import {
+  getMeetLinkErrorMessage,
+  isMeetLinkValidForPlatform,
+} from "../utils/meet-link-validation";
+import {
   getMeetTimeErrorMessage,
   isMeetTimeValid,
 } from "../utils/meet-time-validation";
@@ -157,6 +161,38 @@ export const CreateMeetingRequestSchema = z
         code: "custom",
         path: ["meet_time"],
         message: getMeetTimeErrorMessage(),
+      });
+    }
+  })
+  .superRefine((data, ctx) => {
+    // BUG-015: When mode is online and a platform is selected, the meet_link
+    // must belong to that platform's domain.  This mirrors the form-level
+    // superRefine in each modal component and acts as a second line of defence
+    // for any code path that builds a CreateMeetingRequest directly.
+    if (data.mode !== "online" || !data.platform) return;
+
+    if (
+      !isMeetLinkValidForPlatform(
+        data.platform as
+          | "Zoom"
+          | "Google Meet"
+          | "Microsoft Teams"
+          | "Discord"
+          | "Other",
+        data.meet_link,
+      )
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["meet_link"],
+        message: getMeetLinkErrorMessage(
+          data.platform as
+            | "Zoom"
+            | "Google Meet"
+            | "Microsoft Teams"
+            | "Discord"
+            | "Other",
+        ),
       });
     }
   });

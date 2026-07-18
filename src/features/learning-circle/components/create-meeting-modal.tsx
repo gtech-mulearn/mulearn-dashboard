@@ -34,6 +34,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import { useCreateMeeting } from "../hooks";
 import {
+  getMeetLinkErrorMessage,
+  isMeetLinkValidForPlatform,
+  type MeetingPlatform,
+  PLATFORM_LINK_PLACEHOLDERS,
+} from "../utils/meet-link-validation";
+import {
   getMeetTimeErrorMessage,
   getMinDateTimeLocalValue,
   isMeetTimeValid,
@@ -112,6 +118,36 @@ const CreateMeetingFormSchema = z
         });
       }
     }
+  })
+  .superRefine((data, ctx) => {
+    // BUG-015: For online meetings, the link must match the selected platform.
+    // meet_place holds the meeting link when mode === "online".
+    if (data.mode !== "online" || !data.platform) return;
+
+    if (
+      !isMeetLinkValidForPlatform(
+        data.platform as
+          | "Zoom"
+          | "Google Meet"
+          | "Microsoft Teams"
+          | "Discord"
+          | "Other",
+        data.meet_place,
+      )
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["meet_place"],
+        message: getMeetLinkErrorMessage(
+          data.platform as
+            | "Zoom"
+            | "Google Meet"
+            | "Microsoft Teams"
+            | "Discord"
+            | "Other",
+        ),
+      });
+    }
   });
 
 type CreateMeetingFormData = z.infer<typeof CreateMeetingFormSchema>;
@@ -171,6 +207,7 @@ export function CreateMeetingModal({
   });
 
   const mode = watch("mode");
+  const platform = watch("platform");
   const isRecurring = watch("is_recurring");
   const recurrenceType = watch("recurrence_type");
 
@@ -363,7 +400,13 @@ export function CreateMeetingModal({
                 </Label>
                 <Input
                   id="meet_place"
-                  placeholder="https://meet.google.com/..."
+                  placeholder={
+                    platform
+                      ? (PLATFORM_LINK_PLACEHOLDERS[
+                          platform as MeetingPlatform
+                        ] ?? "https://...")
+                      : "https://..."
+                  }
                   {...register("meet_place")}
                   className="rounded-xl border-border/40"
                 />
