@@ -125,10 +125,12 @@ export const UserForm = forwardRef<
     return resolveOptionValue(collegeOrg?.department, departments);
   }, [collegeOrg?.department, departments]);
 
-  // 6. Location (District) resolution
+  // 6. Location (District) resolution — search by the saved district name to
+  //    find the matching option (UUID + label) for pre-populating the combobox.
   const savedDistrictUuid = detail?.district ?? "";
+  const savedDistrictName = collegeOrg?.district ?? "";
   const { data: locationsList = [], isLoading: isLocationResolving } =
-    useResolveLocation();
+    useResolveLocation(savedDistrictName || undefined);
   const resolvedLocation = useMemo(() => {
     if (!savedDistrictUuid || locationsList.length === 0) return undefined;
     return locationsList.find((o) => o.value === savedDistrictUuid);
@@ -374,7 +376,6 @@ export const UserForm = forwardRef<
 
         <CollegeSection
           control={form.control}
-          setValue={form.setValue}
           isBusy={isBusy}
           countryId={countryId}
           stateId={stateId}

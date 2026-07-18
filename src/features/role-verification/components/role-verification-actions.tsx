@@ -45,7 +45,7 @@ function formatKey(key: string): string {
     .join(" ");
 }
 
-const renderRoleProfileValue = (key: string, value: any) => {
+const renderRoleProfileValue = (key: string, value: unknown) => {
   if (value === null || value === undefined || value === "") {
     return "N/A";
   }

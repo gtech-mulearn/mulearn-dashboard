@@ -43,11 +43,12 @@ export function RoleVerificationTable() {
   const pagination = data?.pagination;
 
   // Transform rows to match the Table Data type
-  const tableRows = rows.map((row: RoleVerificationItem) => ({
+  // biome-ignore lint/suspicious/noExplicitAny: tableRows must satisfy Data[] (Record<string, primitive>) which RoleVerificationItem is structurally compatible with after the spread
+  const tableRows: any[] = rows.map((row: RoleVerificationItem) => ({
     ...row,
     discord_id: row.discord_id || "N/A",
     mobile: row.mobile || "N/A",
-  })) as unknown as Data[];
+  }));
 
   const handleSort = (column: string) => {
     if (sort === column) {
@@ -91,12 +92,10 @@ export function RoleVerificationTable() {
         columnOrder={COLUMN_ORDER}
         id={["id"]}
         customActionRender={(row) => (
-          <RoleVerificationActions
-            item={row as unknown as RoleVerificationItem}
-          />
+          <RoleVerificationActions item={row as RoleVerificationItem} />
         )}
         customCellRender={(column, row) => {
-          const rowData = row as unknown as RoleVerificationItem;
+          const rowData = row as RoleVerificationItem;
           if (column === "verified") {
             return rowData.verified ? (
               <Badge variant="success" className="cursor-default">

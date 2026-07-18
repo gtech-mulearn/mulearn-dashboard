@@ -8,7 +8,7 @@
 
 "use client";
 
-import type { Control, UseFormSetValue } from "react-hook-form";
+import type { Control } from "react-hook-form";
 import {
   FormControl,
   FormField,
@@ -28,7 +28,6 @@ import type { ManageUserFormValues } from "../schemas";
 
 interface CollegeSectionProps {
   control: Control<ManageUserFormValues>;
-  setValue: UseFormSetValue<ManageUserFormValues>;
   isBusy: boolean;
   countryId: string;
   stateId: string;
