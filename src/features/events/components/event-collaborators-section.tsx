@@ -21,9 +21,7 @@ export function EventCollaboratorsSection({
         <div className="flex size-9 items-center justify-center rounded-xl bg-brand-blue/10">
           <Handshake className="size-4 text-brand-blue" />
         </div>
-        <h2 className="text-base font-bold text-foreground">
-          Partnering Organizations
-        </h2>
+        <h2 className="text-base font-bold text-foreground">Partners</h2>
       </div>
       <div className="px-5 pb-5 pt-0 space-y-3">
         {acceptedCollaborators.map((collab) => {
