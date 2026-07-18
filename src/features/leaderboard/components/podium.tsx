@@ -1,6 +1,23 @@
+import Link from "next/link";
 import { Trophy } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { PodiumProps } from "@/features/leaderboard";
+
+function CardWrapper({
+  href,
+  children,
+}: {
+  href?: string;
+  children: React.ReactNode;
+}) {
+  return href ? (
+    <Link href={href} className="group block">
+      {children}
+    </Link>
+  ) : (
+    <div className="group block">{children}</div>
+  );
+}
 
 function Medal({ rank }: { rank: number }) {
   const gradientId = `medal-grad-${rank}`;
@@ -190,98 +207,104 @@ export function Podium({ entries }: PodiumProps) {
       <div className="relative w-full max-w-2xl mx-auto flex items-end justify-center gap-4 md:gap-12 pt-6 pb-2 z-10">
         {/* 2nd Place */}
         {second && (
-          <div className="flex flex-col items-center text-center flex-1">
-            <div className="relative mb-4 group">
-              <div className="absolute inset-0 rounded-full bg-muted-foreground/5 dark:bg-muted-foreground/10 blur-md scale-110" />
-              <Avatar className="w-16 h-16 md:w-24 md:h-24 ring-4 ring-offset-2 ring-offset-background ring-muted-foreground/30 shadow-md relative z-10">
-                <AvatarImage
-                  src={second.profile_pic}
-                  alt={second.name}
-                  className="object-cover"
-                />
-                <AvatarFallback className="bg-muted text-muted-foreground font-bold text-base md:text-xl">
-                  {second.name?.charAt(0)?.toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              {/* Medal Overlay */}
-              <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 z-20">
-                <Medal rank={2} />
+          <CardWrapper href={second.link}>
+            <div className="flex flex-col items-center text-center flex-1">
+              <div className="relative mb-4 group">
+                <div className="absolute inset-0 rounded-full bg-muted-foreground/5 dark:bg-muted-foreground/10 blur-md scale-110" />
+                <Avatar className="w-16 h-16 md:w-24 md:h-24 ring-4 ring-offset-2 ring-offset-background ring-muted-foreground/30 shadow-md relative z-10">
+                  <AvatarImage
+                    src={second.profile_pic}
+                    alt={second.name}
+                    className="object-cover"
+                  />
+                  <AvatarFallback className="bg-muted text-muted-foreground font-bold text-base md:text-xl">
+                    {second.name?.charAt(0)?.toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                {/* Medal Overlay */}
+                <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 z-20">
+                  <Medal rank={2} />
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <h3 className="font-bold text-xs md:text-sm text-foreground leading-snug line-clamp-1 max-w-[100px] md:max-w-[150px]">
+                  {second.name}
+                </h3>
+                <p className="text-[10px] md:text-xs text-muted-foreground font-semibold mt-1">
+                  {second.karma.toLocaleString()} Karma
+                </p>
               </div>
             </div>
-
-            <div className="mt-4">
-              <h3 className="font-bold text-xs md:text-sm text-foreground leading-snug line-clamp-1 max-w-[100px] md:max-w-[150px]">
-                {second.name}
-              </h3>
-              <p className="text-[10px] md:text-xs text-muted-foreground font-semibold mt-1">
-                {second.karma.toLocaleString()} Karma
-              </p>
-            </div>
-          </div>
+          </CardWrapper>
         )}
 
         {/* 1st Place (Center) */}
         {first && (
-          <div className="flex flex-col items-center text-center flex-1 -translate-y-4 md:-translate-y-6">
-            <div className="relative mb-4 group">
-              <div className="absolute inset-0 rounded-full bg-warning/10 dark:bg-warning/20 blur-lg scale-120" />
-              <Avatar className="w-20 h-20 md:w-32 md:h-32 ring-4 ring-offset-2 ring-offset-background ring-warning shadow-lg relative z-10">
-                <AvatarImage
-                  src={first.profile_pic}
-                  alt={first.name}
-                  className="object-cover"
-                />
-                <AvatarFallback className="bg-muted text-muted-foreground font-bold text-xl md:text-3xl">
-                  {first.name?.charAt(0)?.toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              {/* Medal Overlay */}
-              <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 z-20">
-                <Medal rank={1} />
+          <CardWrapper href={first.link}>
+            <div className="flex flex-col items-center text-center flex-1 -translate-y-4 md:-translate-y-6">
+              <div className="relative mb-4 group">
+                <div className="absolute inset-0 rounded-full bg-warning/10 dark:bg-warning/20 blur-lg scale-120" />
+                <Avatar className="w-20 h-20 md:w-32 md:h-32 ring-4 ring-offset-2 ring-offset-background ring-warning shadow-lg relative z-10">
+                  <AvatarImage
+                    src={first.profile_pic}
+                    alt={first.name}
+                    className="object-cover"
+                  />
+                  <AvatarFallback className="bg-muted text-muted-foreground font-bold text-xl md:text-3xl">
+                    {first.name?.charAt(0)?.toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                {/* Medal Overlay */}
+                <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 z-20">
+                  <Medal rank={1} />
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <h3 className="font-extrabold text-sm md:text-base text-foreground leading-snug line-clamp-1 max-w-[120px] md:max-w-[180px]">
+                  {first.name}
+                </h3>
+                <p className="text-xs md:text-sm font-bold text-warning mt-1">
+                  {first.karma.toLocaleString()} Karma
+                </p>
               </div>
             </div>
-
-            <div className="mt-4">
-              <h3 className="font-extrabold text-sm md:text-base text-foreground leading-snug line-clamp-1 max-w-[120px] md:max-w-[180px]">
-                {first.name}
-              </h3>
-              <p className="text-xs md:text-sm font-bold text-warning mt-1">
-                {first.karma.toLocaleString()} Karma
-              </p>
-            </div>
-          </div>
+          </CardWrapper>
         )}
 
         {/* 3rd Place */}
         {third && (
-          <div className="flex flex-col items-center text-center flex-1">
-            <div className="relative mb-4 group">
-              <div className="absolute inset-0 rounded-full bg-chart-5/5 dark:bg-chart-5/10 blur-md scale-110" />
-              <Avatar className="w-16 h-16 md:w-24 md:h-24 ring-4 ring-offset-2 ring-offset-background ring-chart-5/40 shadow-md relative z-10">
-                <AvatarImage
-                  src={third.profile_pic}
-                  alt={third.name}
-                  className="object-cover"
-                />
-                <AvatarFallback className="bg-muted text-muted-foreground font-bold text-base md:text-xl">
-                  {third.name?.charAt(0)?.toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              {/* Medal Overlay */}
-              <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 z-20">
-                <Medal rank={3} />
+          <CardWrapper href={third.link}>
+            <div className="flex flex-col items-center text-center flex-1">
+              <div className="relative mb-4 group">
+                <div className="absolute inset-0 rounded-full bg-chart-5/5 dark:bg-chart-5/10 blur-md scale-110" />
+                <Avatar className="w-16 h-16 md:w-24 md:h-24 ring-4 ring-offset-2 ring-offset-background ring-chart-5/40 shadow-md relative z-10">
+                  <AvatarImage
+                    src={third.profile_pic}
+                    alt={third.name}
+                    className="object-cover"
+                  />
+                  <AvatarFallback className="bg-muted text-muted-foreground font-bold text-base md:text-xl">
+                    {third.name?.charAt(0)?.toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                {/* Medal Overlay */}
+                <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 z-20">
+                  <Medal rank={3} />
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <h3 className="font-bold text-xs md:text-sm text-foreground leading-snug line-clamp-1 max-w-[100px] md:max-w-[150px]">
+                  {third.name}
+                </h3>
+                <p className="text-[10px] md:text-xs text-muted-foreground font-semibold mt-1">
+                  {third.karma.toLocaleString()} Karma
+                </p>
               </div>
             </div>
-
-            <div className="mt-4">
-              <h3 className="font-bold text-xs md:text-sm text-foreground leading-snug line-clamp-1 max-w-[100px] md:max-w-[150px]">
-                {third.name}
-              </h3>
-              <p className="text-[10px] md:text-xs text-muted-foreground font-semibold mt-1">
-                {third.karma.toLocaleString()} Karma
-              </p>
-            </div>
-          </div>
+          </CardWrapper>
         )}
       </div>
     </div>

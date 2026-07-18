@@ -40,7 +40,7 @@ export function useLeaderboard(category: Category, timeframe: TimeFrame) {
       if (category === "campus") {
         return (data as CollegeLeaderboardEntry[])
           .map((item, index) => {
-            const id = item.code || `college-${index}`;
+            const id = item.id || item.code || `college-${index}`;
             if (seenIds.has(id)) return null;
             seenIds.add(id);
 
@@ -49,6 +49,7 @@ export function useLeaderboard(category: Category, timeframe: TimeFrame) {
               rank: index + 1,
               name: item.title || item.code,
               karma: item.total_karma,
+              link: item.id ? `/dashboard/campus/${item.id}` : undefined,
             };
 
             return entry;
@@ -60,18 +61,21 @@ export function useLeaderboard(category: Category, timeframe: TimeFrame) {
       return (data as StudentLeaderboardEntry[])
         .map((item, index) => {
           const isAnonymous = !item.full_name || item.full_name.trim() === "";
-          const id = isAnonymous
-            ? `anon-${index}`
-            : `${item.full_name}-${item.institution || ""}-${item.total_karma}`;
+          const id = item.muid
+            ? item.muid
+            : isAnonymous
+              ? `anon-${index}`
+              : `${item.full_name}-${item.institution || ""}-${item.total_karma}`;
 
-          if (!isAnonymous && seenIds.has(id)) return null;
-          if (!isAnonymous) seenIds.add(id);
+          if (!isAnonymous && item.muid && seenIds.has(id)) return null;
+          if (!isAnonymous && item.muid) seenIds.add(id);
 
           const entry: LeaderboardEntry = {
             id,
             rank: index + 1,
             name: isAnonymous ? "" : item.full_name,
             karma: item.total_karma,
+            link: item.muid ? `/profile/${item.muid}` : undefined,
           };
 
           if (item.profile_pic) {

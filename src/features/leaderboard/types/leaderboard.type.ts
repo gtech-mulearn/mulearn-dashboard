@@ -7,6 +7,7 @@ export interface LeaderboardEntry {
   name: string;
   profile_pic?: string;
   karma: number;
+  link?: string;
 }
 
 export type LeaderboardData = {

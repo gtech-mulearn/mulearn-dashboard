@@ -1,9 +1,10 @@
+import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { LeaderboardCardProps } from "@/features/leaderboard";
 
 export function LeaderboardCard({ entry }: LeaderboardCardProps) {
-  return (
-    <div className="flex items-center py-4 md:py-5 px-4 md:px-8 bg-card border-b border-border last:border-b-0 hover:bg-muted/40 transition-colors group">
+  const rowContent = (
+    <div className="flex items-center py-4 md:py-5 px-4 md:px-8 bg-card border-b border-border last:border-b-0 hover:bg-muted/40 transition-colors">
       {/* Rank */}
       <div className="w-10 md:w-14 flex-shrink-0">
         <span className="text-sm font-semibold text-muted-foreground">
@@ -23,7 +24,7 @@ export function LeaderboardCard({ entry }: LeaderboardCardProps) {
             {entry.name?.charAt(0)?.toUpperCase()}
           </AvatarFallback>
         </Avatar>
-        <span className="font-medium text-sm md:text-base text-foreground truncate group-hover:text-primary transition-colors">
+        <span className="font-medium text-sm md:text-base text-foreground truncate transition-colors hover:text-primary">
           {entry.name}
         </span>
       </div>
@@ -35,5 +36,13 @@ export function LeaderboardCard({ entry }: LeaderboardCardProps) {
         </span>
       </div>
     </div>
+  );
+
+  return entry.link ? (
+    <Link href={entry.link} className="block group">
+      {rowContent}
+    </Link>
+  ) : (
+    rowContent
   );
 }
