@@ -112,6 +112,7 @@ export function isMeetLinkValidForPlatform(
   if (!hostname) return false;
 
   const matcher = PLATFORM_DOMAIN_RULES[platform];
+  if (!matcher) return false;
   return matcher(hostname);
 }
 
