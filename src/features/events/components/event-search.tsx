@@ -27,6 +27,8 @@ interface EventSearchSelectProps {
   placeholder?: string;
   disabled?: boolean;
   campusContextLabel?: string | null;
+  /** Restricts campus_ig results to IGs with an active chapter at this campus. */
+  campusId?: string | null;
 }
 
 interface EventSearchInviteProps {
@@ -118,6 +120,7 @@ function SelectMode(props: EventSearchSelectProps) {
     placeholder,
     disabled,
     campusContextLabel,
+    campusId,
   } = props;
   const [query, setQuery] = useState("");
   const [internalSelectedName, setInternalSelectedName] = useState(
@@ -133,6 +136,7 @@ function SelectMode(props: EventSearchSelectProps) {
   const genericQuery = useCollaborationTargets(
     type === "campus_ig" || type === "company" ? query : "",
     type === "campus_ig" || type === "company" ? type : undefined,
+    type === "campus_ig" ? (campusId ?? undefined) : undefined,
   );
 
   const activeQuery =

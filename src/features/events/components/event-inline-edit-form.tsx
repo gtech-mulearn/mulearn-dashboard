@@ -560,6 +560,7 @@ export function EventInlineEditForm({
             value={watch("target_campus_ig_id") ?? null}
             selectedName={selectedCampusIgName}
             placeholder="Search campus IG"
+            campusId={event.scope_org?.id ?? null}
             onChange={(id, name) => {
               setValue("target_campus_ig_id", id || null, {
                 shouldValidate: true,

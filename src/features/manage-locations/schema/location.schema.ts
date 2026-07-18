@@ -103,15 +103,12 @@ export type CreateStateInput = z.infer<typeof CreateStateSchema>;
 
 export const CreateZoneSchema = z.object({
   label: z.string(),
-  country: z.string(),
   state: z.string(),
 });
 export type CreateZoneInput = z.infer<typeof CreateZoneSchema>;
 
 export const CreateDistrictSchema = z.object({
   label: z.string(),
-  country: z.string(),
-  state: z.string(),
   zone: z.string(),
 });
 export type CreateDistrictInput = z.infer<typeof CreateDistrictSchema>;

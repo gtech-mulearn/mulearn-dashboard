@@ -550,6 +550,7 @@ export const eventsApi = {
   searchCollaborationTargets: async (
     search: string,
     type?: "ig" | "campus" | "campus_ig" | "company",
+    campusId?: string,
   ): Promise<unknown> => {
     const searchParams = new URLSearchParams();
     if (search) {
@@ -557,6 +558,9 @@ export const eventsApi = {
     }
     if (type) {
       searchParams.set("type", type);
+    }
+    if (campusId) {
+      searchParams.set("campus_id", campusId);
     }
     return apiClient.get(
       `${endpoints.events.meta.collaborationTargets}?${searchParams.toString()}`,
