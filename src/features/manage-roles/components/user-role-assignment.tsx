@@ -84,13 +84,13 @@ function SingleTab({ role }: { role: Role }) {
   const isMentor = lowerTitle.includes("mentor");
 
   // Sync: Reset form fields when selectedUser or role changes
-  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional reactive reset; setters are stable; orgId read to conditionally clear
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional reactive reset when user/role changes
   useEffect(() => {
     setGuild("");
     setMentorTier("");
     setSelectedIgs([]);
-    orgId && setOrgId("");
-  }, [selectedUser?.id, role.id, orgId]);
+    setOrgId("");
+  }, [selectedUser?.id, role.id]);
 
   // Sync: Reset IG/org selections when mentorTier changes
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentional reactive reset — must re-run when mentorTier changes

@@ -226,21 +226,6 @@ export async function downloadBulkTemplate(): Promise<Blob> {
   );
 }
 
-// NOTE (API doc §11.3): POST /bulk-claim/ requires a *backend API key* (X-API-Key header),
-// NOT a user JWT. It also accepts optional { date_from, date_to } body params.
-// This function should only be called server-side / by cron infrastructure, not from the
-// user-facing dashboard. Calling it with a JWT will result in a 403.
-export async function bulkClaimAchievements(
-  dateFrom?: string,
-  dateTo?: string,
-): Promise<void> {
-  await apiClient.post(
-    endpoints.achievements.bulkClaim,
-    { date_from: dateFrom, date_to: dateTo },
-    GenericSuccessResponseSchema,
-  );
-}
-
 // ==========================================
 // Issued Logs
 // ==========================================
@@ -260,21 +245,17 @@ export async function fetchIssuedLogs(
     totalPages: number;
   };
 }> {
-  // API doc §9.2: params are page, page_size (snake_case), search, sort_by, sort_order
+  // The backend API expects camelCase parameters for pagination/sorting: pageIndex, perPage, sortBy, sortOrder.
   const query = new URLSearchParams({
     pageIndex: String(page),
-    page: String(page),
     perPage: String(perPage),
-    page_size: String(perPage),
   });
   if (search?.trim()) query.set("search", search.trim());
   if (sortBy) {
     query.set("sortBy", sortBy);
-    query.set("sort_by", sortBy);
   }
   if (sortOrder) {
     query.set("sortOrder", sortOrder);
-    query.set("sort_order", sortOrder);
   }
 
   const res = await apiClient.get(

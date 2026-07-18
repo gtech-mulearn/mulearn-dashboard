@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   activateRule,
-  bulkClaimAchievements,
   bulkIssueAchievements,
   claimAchievement,
   createAchievement,
@@ -327,31 +326,6 @@ export function useClaimAchievement() {
     onError: (error) => {
       toast.error(
         getApiResponseError(error, { fallback: "Failed to claim achievement" }),
-      );
-    },
-  });
-}
-
-// ==========================================
-// useBulkClaimAchievements
-// ==========================================
-
-export function useBulkClaimAchievements() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    // NOTE: /bulk-claim/ requires a backend API key, not a JWT (see achievements.api.ts).
-    // Pass optional date range to scope which users are processed.
-    mutationFn: (params?: { dateFrom?: string; dateTo?: string }) =>
-      bulkClaimAchievements(params?.dateFrom, params?.dateTo),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ACHIEVEMENT_KEYS.eligible() });
-      queryClient.invalidateQueries({ queryKey: ACHIEVEMENT_KEYS.progress() });
-      toast.success("Bulk claim processed successfully");
-    },
-    onError: (error) => {
-      toast.error(
-        getApiResponseError(error, { fallback: "Bulk claim failed" }),
       );
     },
   });

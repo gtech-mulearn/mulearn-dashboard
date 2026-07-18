@@ -1,6 +1,5 @@
 export {
   activateRule,
-  bulkClaimAchievements,
   bulkIssueAchievements,
   claimAchievement,
   createAchievement,

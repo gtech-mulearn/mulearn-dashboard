@@ -1,7 +1,6 @@
 export { useAuditLogs, useIssuedLogs } from "./use-achievement-logs";
 export {
   useActivateRule,
-  useBulkClaimAchievements,
   useBulkIssue,
   useClaimAchievement,
   useCreateAchievement,

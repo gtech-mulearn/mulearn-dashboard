@@ -1,6 +1,5 @@
 export {
   activateRule,
-  bulkClaimAchievements,
   bulkIssueAchievements,
   claimAchievement,
   createAchievement,
@@ -49,7 +48,6 @@ export {
   useActivateRule,
   useAllAchievementsForUser,
   useAuditLogs,
-  useBulkClaimAchievements,
   useBulkIssue,
   useClaimAchievement,
   useCreateAchievement,
