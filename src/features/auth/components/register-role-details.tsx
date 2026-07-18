@@ -167,11 +167,8 @@ const enablerDetailsSchema = z
 // Schema for Mentor
 const mentorDetailsSchema = z
   .object({
-    organizationType: z.enum(["College", "Company"]),
-    organization: z.string().min(1, "Please select your organization"),
+    organization: z.string().min(1, "Please select your company"),
     customOrganization: z.string().optional(),
-    department: z.string().optional(),
-    graduationYear: z.number().optional(),
   })
   .refine(
     (data) => {
@@ -184,38 +181,8 @@ const mentorDetailsSchema = z
       return true;
     },
     {
-      message: "Organization name must be at least 3 characters",
+      message: "Company name must be at least 3 characters",
       path: ["customOrganization"],
-    },
-  )
-  .refine(
-    (data) => {
-      // If College type is selected, department is required
-      if (data.organizationType === "College") {
-        return !!data.department && data.department.trim().length > 0;
-      }
-      return true;
-    },
-    {
-      message: "Please select your department",
-      path: ["department"],
-    },
-  )
-  .refine(
-    (data) => {
-      // If College type is selected, graduation year is required
-      if (data.organizationType === "College") {
-        return (
-          data.graduationYear &&
-          data.graduationYear >= 2020 &&
-          data.graduationYear <= 2040
-        );
-      }
-      return true;
-    },
-    {
-      message: "Year must be between 2020 and 2040",
-      path: ["graduationYear"],
     },
   );
 
@@ -360,11 +327,8 @@ export function RegisterRoleDetails({
     }
     if (role === "mentor") {
       return {
-        organizationType: "Company" as const,
         organization: "",
         customOrganization: "",
-        department: "",
-        graduationYear: undefined as number | undefined,
       };
     }
     return {
@@ -402,9 +366,6 @@ export function RegisterRoleDetails({
   // Track if "Others" is selected
   const [showCustomCollege, setShowCustomCollege] = useState(false);
   const [showCustomOrganization, setShowCustomOrganization] = useState(false);
-  const [mentorOrgType, setMentorOrgType] = useState<"College" | "Company">(
-    "Company",
-  );
   const [studentOrgType, setStudentOrgType] = useState<"College" | "Company">(
     "College",
   );
@@ -817,82 +778,26 @@ export function RegisterRoleDetails({
           {/* Mentor Fields */}
           {role === "mentor" && (
             <>
-              {/* Organization Type Selection */}
-              <FormField
-                control={form.control}
-                name="organizationType"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-medium">
-                      Organization Type
-                    </FormLabel>
-                    <FormControl>
-                      <div className="flex gap-4">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            field.onChange("College");
-                            setMentorOrgType("College");
-                          }}
-                          className={`flex-1 h-12 rounded-xl border-2 transition-all ${
-                            field.value === "College"
-                              ? "border-brand-blue bg-brand-blue/10 text-brand-blue"
-                              : "border-border bg-muted text-muted-foreground hover:border-border/80"
-                          }`}
-                          disabled={isLoading}
-                        >
-                          College
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            field.onChange("Company");
-                            setMentorOrgType("Company");
-                          }}
-                          className={`flex-1 h-12 rounded-xl border-2 transition-all ${
-                            field.value === "Company"
-                              ? "border-brand-blue bg-brand-blue/10 text-brand-blue"
-                              : "border-border bg-muted text-muted-foreground hover:border-border/80"
-                          }`}
-                          disabled={isLoading}
-                        >
-                          Company
-                        </button>
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Organization Selection */}
               <FormField
                 control={form.control}
                 name="organization"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-sm font-medium">
-                      {mentorOrgType === "College" ? "College" : "Organization"}
+                      Company
                     </FormLabel>
                     <FormControl>
                       <Combobox
-                        options={
-                          mentorOrgType === "College" ? colleges : companies
-                        }
+                        options={companies}
                         value={showCustomOrganization ? "others" : field.value}
                         onValueChange={(value) => {
                           field.onChange(value);
                           setShowCustomOrganization(false);
                           form.setValue("customOrganization", "");
                         }}
-                        placeholder={`Select your ${mentorOrgType === "College" ? "college" : "organization"}`}
-                        searchPlaceholder={`Search ${mentorOrgType === "College" ? "colleges" : "organizations"}...`}
-                        disabled={
-                          isLoading ||
-                          (mentorOrgType === "College"
-                            ? isLoadingColleges
-                            : isLoadingCompanies)
-                        }
+                        placeholder="Select your company"
+                        searchPlaceholder="Search companies..."
+                        disabled={isLoading || isLoadingCompanies}
                         onCreateNew={(searchTerm) => {
                           field.onChange("others");
                           form.setValue("customOrganization", searchTerm);
@@ -913,13 +818,11 @@ export function RegisterRoleDetails({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-medium">
-                        {mentorOrgType === "College"
-                          ? "College Name"
-                          : "Organization Name"}
+                        Company Name
                       </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder={`Enter your ${mentorOrgType === "College" ? "college" : "organization"} name`}
+                          placeholder="Enter your company name"
                           className="h-12 rounded-xl border-border bg-muted/50 px-4"
                           disabled={isLoading}
                           {...field}
@@ -929,65 +832,6 @@ export function RegisterRoleDetails({
                     </FormItem>
                   )}
                 />
-              )}
-
-              {/* Conditional Fields for College Type */}
-              {mentorOrgType === "College" && (
-                <>
-                  <FormField
-                    control={form.control}
-                    name="department"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm font-medium">
-                          Department
-                        </FormLabel>
-                        <FormControl>
-                          <Combobox
-                            options={departments}
-                            value={field.value || ""}
-                            onValueChange={field.onChange}
-                            placeholder="Select your department"
-                            searchPlaceholder="Search departments..."
-                            disabled={isLoading || isLoadingDepartments}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="graduationYear"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm font-medium">
-                          Graduation Year
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            placeholder="e.g., 2026"
-                            className="h-12 rounded-xl border-border bg-muted/50 px-4"
-                            disabled={isLoading}
-                            min={2020}
-                            max={2040}
-                            onChange={(e) =>
-                              field.onChange(
-                                e.target.value
-                                  ? parseInt(e.target.value, 10)
-                                  : undefined,
-                              )
-                            }
-                            value={field.value || ""}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </>
               )}
             </>
           )}
