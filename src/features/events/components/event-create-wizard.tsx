@@ -315,14 +315,25 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
 
   const scope = watch("scope");
 
-  // When the organizer is a campus and scope is "campus", lock target to the
-  // organizer's own campus — campus leads must not target a different campus.
+  // When the organiser IS the targeted entity, lock the target to it — an
+  // organiser must not aim a scoped event at somebody else's campus/IG.
   useEffect(() => {
-    if (selectedOrganiser?.type === "campus" && scope === "campus") {
+    if (!selectedOrganiser) return;
+    if (selectedOrganiser.type === "campus" && scope === "campus") {
       setValue("target_campus_id", selectedOrganiser.id, {
         shouldValidate: true,
       });
       setSelectedCampusName(selectedOrganiser.label);
+    }
+    if (selectedOrganiser.type === "global_ig" && scope === "ig") {
+      setValue("target_ig_id", selectedOrganiser.id, { shouldValidate: true });
+      setSelectedIgName(selectedOrganiser.label);
+    }
+    if (selectedOrganiser.type === "campus_ig" && scope === "campus_ig") {
+      setValue("target_campus_ig_id", selectedOrganiser.id, {
+        shouldValidate: true,
+      });
+      setSelectedCampusIgName(selectedOrganiser.label);
     }
   }, [selectedOrganiser, scope, setValue]);
 
@@ -1117,39 +1128,63 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                   ) : null}
 
                   {scope === "ig" ? (
-                    <EventSearch
-                      mode="select"
-                      type="ig"
-                      value={watch("target_ig_id") ?? null}
-                      selectedName={selectedIgName}
-                      placeholder="Search IG"
-                      onChange={(id, name) => {
-                        setValue("target_ig_id", id || null, {
-                          shouldValidate: true,
-                        });
-                        setSelectedIgName(name);
-                      }}
-                    />
+                    selectedOrganiser?.type === "global_ig" ? (
+                      <div className="space-y-1">
+                        <p className="text-xs text-muted-foreground">
+                          Target Interest Group
+                        </p>
+                        <div className="flex h-10 items-center rounded-xl border border-border bg-muted px-3 text-sm text-foreground">
+                          {selectedOrganiser.label}
+                        </div>
+                      </div>
+                    ) : (
+                      <EventSearch
+                        mode="select"
+                        type="ig"
+                        value={watch("target_ig_id") ?? null}
+                        selectedName={selectedIgName}
+                        placeholder="Search IG"
+                        onChange={(id, name) => {
+                          setValue("target_ig_id", id || null, {
+                            shouldValidate: true,
+                          });
+                          setSelectedIgName(name);
+                        }}
+                      />
+                    )
                   ) : null}
 
                   {scope === "campus_ig" ? (
-                    <EventSearch
-                      mode="select"
-                      type="campus_ig"
-                      value={watch("target_campus_ig_id") ?? null}
-                      selectedName={selectedCampusIgName}
-                      placeholder="Search campus IG"
-                      campusContextLabel={creatorCampusName}
-                      campusId={
-                        organizerOptionsQuery.data?.campus_context?.id ?? null
-                      }
-                      onChange={(id, name) => {
-                        setValue("target_campus_ig_id", id || null, {
-                          shouldValidate: true,
-                        });
-                        setSelectedCampusIgName(name);
-                      }}
-                    />
+                    selectedOrganiser?.type === "campus_ig" ? (
+                      <div className="space-y-1">
+                        <p className="text-xs text-muted-foreground">
+                          Target Campus IG
+                        </p>
+                        <div className="flex h-10 items-center rounded-xl border border-border bg-muted px-3 text-sm text-foreground">
+                          {creatorCampusName
+                            ? `${selectedOrganiser.label} · ${creatorCampusName}`
+                            : selectedOrganiser.label}
+                        </div>
+                      </div>
+                    ) : (
+                      <EventSearch
+                        mode="select"
+                        type="campus_ig"
+                        value={watch("target_campus_ig_id") ?? null}
+                        selectedName={selectedCampusIgName}
+                        placeholder="Search campus IG"
+                        campusContextLabel={creatorCampusName}
+                        campusId={
+                          organizerOptionsQuery.data?.campus_context?.id ?? null
+                        }
+                        onChange={(id, name) => {
+                          setValue("target_campus_ig_id", id || null, {
+                            shouldValidate: true,
+                          });
+                          setSelectedCampusIgName(name);
+                        }}
+                      />
+                    )
                   ) : null}
                 </section>
               ) : null}

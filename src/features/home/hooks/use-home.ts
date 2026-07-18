@@ -14,11 +14,9 @@ import {
   getLearnerHomeSummary,
   getLearnerStreak,
   getMentorHomeSummary,
-  getMentorIgRoles,
   getMentorOverview,
   getMentorSessions,
   getPublicJobsCount,
-  switchMentorPersona,
 } from "../api";
 import type { DashboardCalendarParams } from "../schemas";
 import { homeKeys } from "./query-keys";
@@ -85,38 +83,6 @@ export function useMentorSessions(status = "SCHEDULED") {
     queryFn: () => getMentorSessions(status),
     staleTime: 2 * 60 * 1000,
     retry: no403Retry,
-  });
-}
-
-export function useMentorIgRoles(enabled = true) {
-  return useQuery({
-    queryKey: homeKeys.mentorIgRoles(),
-    queryFn: getMentorIgRoles,
-    staleTime: HOME_STALE_TIME,
-    enabled,
-  });
-}
-
-export function useSwitchMentorPersona() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (roleLinkId: string) => switchMentorPersona(roleLinkId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: homeKeys.mentorOverview() });
-      queryClient.invalidateQueries({
-        queryKey: [...homeKeys.all, "mentor"],
-      });
-      queryClient.invalidateQueries({
-        queryKey: homeKeys.dashboardCalendarAll(),
-      });
-    },
-    onError: (error) => {
-      toast.error(
-        getApiResponseError(error, {
-          fallback: "Failed to switch mentor persona",
-        }),
-      );
-    },
   });
 }
 

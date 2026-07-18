@@ -12,7 +12,6 @@ export const homeKeys = {
   mentorOverview: () => [...homeKeys.all, "mentor", "overview"] as const,
   mentorSessions: (status?: string) =>
     [...homeKeys.all, "mentor", "sessions", status ?? "SCHEDULED"] as const,
-  mentorIgRoles: () => [...homeKeys.all, "mentor", "ig-roles"] as const,
   publicJobsCount: () => [...homeKeys.all, "public-jobs-count"] as const,
   mentorHomeSummary: () => [...homeKeys.all, "mentor", "home-summary"] as const,
   learnerHomeSummary: () =>

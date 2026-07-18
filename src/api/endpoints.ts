@@ -205,10 +205,6 @@ export const endpoints = {
     // ── Overview & Persona ──────────────────────────────────────────────────
     /** GET - Mentor overview (scopes + metrics) */
     overview: "/api/v1/dashboard/mentor/overview/",
-    /** GET - Mentor persona IG roles */
-    personaIgRoles: "/api/v1/dashboard/mentor/persona/ig-roles/",
-    /** POST - Switch mentor persona */
-    personaSwitch: "/api/v1/dashboard/mentor/persona/switch/",
 
     // ── #1 POST/PATCH  register/ ─────────────────────────────────────────────
     /** POST/PATCH - Submit or update a mentor application */
@@ -235,6 +231,21 @@ export const endpoints = {
     /** PATCH - Admin: approve or reject a mentor application */
     verify: (mentorId: string) =>
       `/api/v1/dashboard/mentor/verify/${mentorId}/`,
+
+    // ── §4 Mentor scope grants ───────────────────────────────────────────────
+    /** GET - List a mentor's scope grants (Admin / owning Company user) */
+    grants: (mentorId: string) =>
+      `/api/v1/dashboard/mentor/${mentorId}/grants/`,
+    /** DELETE - Revoke a single scope grant (Admin / owning Company user) */
+    grantRevoke: (mentorId: string, grantId: string) =>
+      `/api/v1/dashboard/mentor/${mentorId}/grants/${grantId}/`,
+
+    // ── §5 Admin bulk assignment ─────────────────────────────────────────────
+    /** POST - Bulk-assign users as mentors of one tier (Admin) */
+    adminAssign: "/api/v1/dashboard/mentor/admin/assign/",
+    /** DELETE - Revoke a user's mentor tier(s); ?mentor_tier= narrows to one */
+    adminRevoke: (muid: string) =>
+      `/api/v1/dashboard/mentor/admin/assign/${muid}/`,
 
     // ── #7 GET  public/profile/<mentor_id>/ ──────────────────────────────────
     /** GET - Public profile of an approved mentor (auth required) */

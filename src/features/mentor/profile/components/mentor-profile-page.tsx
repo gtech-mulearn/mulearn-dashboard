@@ -26,7 +26,7 @@ import {
 import { useUserProfile } from "@/features/profile";
 import { ShareProfileModal } from "@/features/profile/components/share-profile-modal";
 import { MentorEditProfileModal } from "./mentor-edit-profile-modal";
-import { deriveMentorType, MentorProfileHeader } from "./mentor-profile-header";
+import { MentorProfileHeader } from "./mentor-profile-header";
 import { MentorProfileSidebar } from "./mentor-profile-sidebar";
 import {
   type MentorProfileTab,
@@ -89,8 +89,6 @@ export function MentorProfilePage({
     );
   }
 
-  const mentorType = deriveMentorType(mentorProfile);
-
   const handleSaved = () => {
     refetchUser();
     refetchMentor();
@@ -103,6 +101,7 @@ export function MentorProfilePage({
         <MentorProfileHeader
           userProfile={userProfile}
           mentorProfile={mentorProfile}
+          scopes={overviewData?.scopes}
           onEdit={() => setShowEdit(true)}
           onShare={() => setShowShare(true)}
           onSwitchToLearner={onSwitchToLearner}
@@ -139,8 +138,8 @@ export function MentorProfilePage({
             {activeTab === "scopes" && (
               <ScopesTab
                 mentorProfile={mentorProfile}
-                mentorType={mentorType}
                 overview={overviewData}
+                onEditIgs={() => setShowEdit(true)}
               />
             )}
             {activeTab === "sessions" && (
