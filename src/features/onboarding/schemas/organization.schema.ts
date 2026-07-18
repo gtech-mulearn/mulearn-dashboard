@@ -56,8 +56,9 @@ export const CompanySchema = z
   })
   .passthrough();
 
+// Backend returns { companies: [...] } — same shape as colleges/departments.
 export const CompaniesResponseSchema = ApiResponseSchema(
-  z.object({ data: z.array(CompanySchema) }).passthrough(),
+  z.object({ companies: z.array(CompanySchema) }).passthrough(),
 );
 
 export const RoleSchema = z
