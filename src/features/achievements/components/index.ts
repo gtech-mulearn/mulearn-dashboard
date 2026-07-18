@@ -7,5 +7,6 @@ export { AuditLogsTable } from "./audit-logs-table";
 export { BulkIssueDialog } from "./bulk-issue-dialog";
 export { BulkIssuePanel } from "./bulk-issue-panel";
 export { IssueRevokePanel } from "./issue-revoke-panel";
+export { IssueVCDialog } from "./issue-vc-dialog";
 export { RulesTable } from "./rules-table";
 export { SimulationPanel } from "./simulation-panel";
