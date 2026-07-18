@@ -1,5 +1,3 @@
-"use client";
-
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { fetchAuditLogs, fetchIssuedLogs } from "../api";
 import { ACHIEVEMENT_KEYS } from "./use-achievements";
@@ -12,7 +10,7 @@ export function useAuditLogs(muid: string) {
   return useQuery({
     queryKey: ACHIEVEMENT_KEYS.auditLogs(muid),
     queryFn: () => fetchAuditLogs(muid),
-    enabled: Boolean(muid),
+    enabled: Boolean(muid.trim()),
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
@@ -23,10 +21,22 @@ export function useAuditLogs(muid: string) {
 // useIssuedLogs — server-paginated issued log
 // ==========================================
 
-export function useIssuedLogs(page: number, perPage: number, search?: string) {
+export function useIssuedLogs(
+  page: number,
+  perPage: number,
+  search?: string,
+  sortBy?: string,
+  sortOrder?: "asc" | "desc",
+) {
   return useQuery({
-    queryKey: ACHIEVEMENT_KEYS.issuedLogs(page, perPage, search),
-    queryFn: () => fetchIssuedLogs(page, perPage, search),
+    queryKey: ACHIEVEMENT_KEYS.issuedLogs(
+      page,
+      perPage,
+      search,
+      sortBy,
+      sortOrder,
+    ),
+    queryFn: () => fetchIssuedLogs(page, perPage, search, sortBy, sortOrder),
     placeholderData: keepPreviousData,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,

@@ -141,8 +141,20 @@ export function useCollegeData(districtId: string) {
   return useQuery({
     queryKey: manageUsersKeys.collegeData(districtId),
     queryFn: () => fetchCollegesAndDepartments(districtId),
+    enabled: Boolean(districtId),
     staleTime: 5 * 60 * 1000,
     gcTime: 20 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useResolveLocation(queryText?: string) {
+  return useQuery({
+    queryKey: manageUsersKeys.resolveLocation(queryText),
+    queryFn: () => searchLocations(queryText ?? "india"),
+    enabled: Boolean(queryText),
+    staleTime: 24 * 60 * 60 * 1000,
+    gcTime: 24 * 60 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
 }

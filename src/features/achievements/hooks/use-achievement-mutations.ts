@@ -4,15 +4,20 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
+  activateRule,
   bulkIssueAchievements,
+  claimAchievement,
   createAchievement,
   createRule,
   deactivateRule,
   deleteAchievement,
+  issueVC,
   manualIssue,
   revokeAchievement,
   updateAchievement,
+  updateRule,
 } from "../api";
+import type { CreateRuleRequest } from "../schemas";
 import { ACHIEVEMENT_KEYS } from "./use-achievements";
 
 // ==========================================
@@ -23,7 +28,8 @@ export function useCreateAchievement() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (formData: FormData) => createAchievement(formData),
+    mutationFn: (data: FormData | Record<string, unknown>) =>
+      createAchievement(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ACHIEVEMENT_KEYS.list() });
       toast.success("Achievement created successfully");
@@ -46,8 +52,13 @@ export function useUpdateAchievement() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, formData }: { id: string; formData: FormData }) =>
-      updateAchievement(id, formData),
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: FormData | Record<string, unknown>;
+    }) => updateAchievement(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ACHIEVEMENT_KEYS.list() });
       toast.success("Achievement updated successfully");
@@ -120,6 +131,33 @@ export function useCreateRule() {
 }
 
 // ==========================================
+// useUpdateRule
+// ==========================================
+
+export function useUpdateRule() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      ruleId,
+      data,
+    }: {
+      ruleId: string;
+      data: CreateRuleRequest;
+    }) => updateRule(ruleId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ACHIEVEMENT_KEYS.rules() });
+      toast.success("Rule updated successfully");
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to update rule" }),
+      );
+    },
+  });
+}
+
+// ==========================================
 // useDeactivateRule
 // ==========================================
 
@@ -135,6 +173,27 @@ export function useDeactivateRule() {
     onError: (error) => {
       toast.error(
         getApiResponseError(error, { fallback: "Failed to deactivate rule" }),
+      );
+    },
+  });
+}
+
+// ==========================================
+// useActivateRule
+// ==========================================
+
+export function useActivateRule() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (ruleId: string) => activateRule(ruleId), // Ensure activateRule is imported
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ACHIEVEMENT_KEYS.rules() });
+      toast.success("Rule activated");
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to activate rule" }),
       );
     },
   });
@@ -197,15 +256,103 @@ export function useBulkIssue() {
 
   return useMutation({
     mutationFn: (formData: FormData) => bulkIssueAchievements(formData),
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({
         queryKey: ACHIEVEMENT_KEYS.issuedLogsAll(),
       });
-      toast.success("Bulk issue processed successfully");
+      if (data.failed_count > 0) {
+        toast.warning(
+          `Bulk issue processed: ${data.success_count} succeeded, ${data.failed_count} failed.`,
+        );
+      } else {
+        toast.success(
+          `Successfully issued ${data.success_count} achievements!`,
+        );
+      }
     },
     onError: (error) => {
       toast.error(
         getApiResponseError(error, { fallback: "Bulk issue failed" }),
+      );
+    },
+  });
+}
+
+// ==========================================
+// useClaimAchievement
+// ==========================================
+
+/**
+ * After a successful claim with `vc_pending: true`, we need to open the
+ * IssueVCDialog. We do this by dispatching a custom DOM event so any mounted
+ * dialog listener can react without tight coupling.
+ */
+function dispatchVCPending(achievementId: string, achievementName?: string) {
+  window.dispatchEvent(
+    new CustomEvent("achievement:vc-pending", {
+      detail: { achievementId, achievementName },
+    }),
+  );
+}
+
+export function useClaimAchievement() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (achievementId: string) => claimAchievement(achievementId),
+    onSuccess: (data, achievementId) => {
+      // Invalidate relevant queries when a user claims an achievement
+      queryClient.invalidateQueries({ queryKey: ACHIEVEMENT_KEYS.eligible() });
+      queryClient.invalidateQueries({ queryKey: ACHIEVEMENT_KEYS.progress() });
+
+      if (data.vc_pending) {
+        // Show a toast with an action button to immediately open the VC dialog.
+        // The IssueVCDialog must be rendered somewhere in the tree and listen for
+        // the "achievement:vc-pending" custom event (see IssueVCDialogListener).
+        toast.success(
+          "Achievement claimed! A Verifiable Credential is available.",
+          {
+            duration: 10_000,
+            action: {
+              label: "Issue VC",
+              onClick: () => dispatchVCPending(achievementId),
+            },
+          },
+        );
+      } else {
+        toast.success("Achievement claimed successfully!");
+      }
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to claim achievement" }),
+      );
+    },
+  });
+}
+
+// ==========================================
+// useIssueVC
+// ==========================================
+
+export function useIssueVC() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      achievementId,
+      vcUrl,
+    }: {
+      achievementId: string;
+      vcUrl: string;
+    }) => issueVC(achievementId, vcUrl),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ACHIEVEMENT_KEYS.all });
+      toast.success("Verifiable Credential associated successfully!");
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to associate VC" }),
       );
     },
   });

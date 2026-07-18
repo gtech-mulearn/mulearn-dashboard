@@ -17,8 +17,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { EVENT_TYPE_OPTIONS } from "../constants/events.constants";
-import type { EventType } from "../types";
 
 interface ClusterOption {
   label: string;

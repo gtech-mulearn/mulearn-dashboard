@@ -1,7 +1,7 @@
 "use client";
 
 import { ShieldCheck } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { endpoints } from "@/api/endpoints";
 import { Blank } from "@/components/dashboard/table/Blank";
@@ -39,6 +39,13 @@ export default function ManageUsers() {
   const { downloadCsv, isDownloading } = useManageUsersCsvDownload(
     endpoints.manageUsers.csv,
   );
+
+  // Sync: Reset selectedId when edit modal is closed
+  useEffect(() => {
+    if (!isModalOpen) {
+      setSelectedId("");
+    }
+  }, [isModalOpen]);
 
   const { data, isLoading } = useManageUsersList({
     pageIndex: currentPage,

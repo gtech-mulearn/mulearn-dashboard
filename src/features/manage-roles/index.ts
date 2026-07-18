@@ -1,4 +1,7 @@
-export type { AssignUserRolePayload } from "./api/manage-roles.api";
+export type {
+  AssignUserRolePayload,
+  BulkAssignExtraPayload,
+} from "./api/manage-roles.api";
 export {
   assignUserRole,
   bulkAssignFromExcel,

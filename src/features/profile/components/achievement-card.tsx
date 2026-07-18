@@ -3,8 +3,10 @@
  *
  * 📍 src/features/profile/components/achievement-card.tsx
  *
- * Card displaying an achievement with pastel gradient.
- * Shows Issue VC or View button based on issuance status.
+ * Clean card matching the reference design:
+ *   – Large circular icon centered at top
+ *   – Title + description centred in the body
+ *   – Issue VC / View VC button pinned to the footer
  */
 
 "use client";
@@ -16,33 +18,23 @@ import { Button } from "@/components/ui/button";
 import type { UserAchievement } from "../schemas";
 import { IssueVCModal } from "./issue-vc-modal";
 
-// Pastel colors for random backgrounds
-const PASTEL_COLORS = [
-  "from-violet-100 to-purple-100",
-  "from-blue-100 to-indigo-100",
-  "from-emerald-100 to-teal-100",
-  "from-pink-100 to-rose-100",
-  "from-amber-100 to-orange-100",
-  "from-cyan-100 to-sky-100",
-];
-
-// Level images (adjust paths as needed)
-const LEVEL_IMAGES: Record<string, string> = {
-  "Level 1": "/images/levels/Level1.webp",
-  "Level 2": "/images/levels/Level2.webp",
-  "Level 3": "/images/levels/Level3.webp",
-  "Level 4": "/images/levels/Level4.webp",
-  "Level 5": "/images/levels/Level5.webp",
-  "Level 6": "/images/levels/Level6.webp",
-  "Level 7": "/images/levels/Level7.webp",
-};
-
-function getRandomColor(id: string): string {
-  // Use ID to get consistent color for the same card
-  const index =
-    id.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0) %
-    PASTEL_COLORS.length;
-  return PASTEL_COLORS[index];
+function resolveMediaUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  // Normalise to https so Next.js Image remotePatterns match correctly
+  const normalised = url.startsWith("http://")
+    ? url.replace("http://", "https://")
+    : url;
+  if (normalised.startsWith("https://")) return normalised;
+  if (normalised.startsWith("/images/") || normalised.startsWith("/assets/"))
+    return normalised;
+  const base = (process.env.NEXT_PUBLIC_DJANGO_API_URL ?? "").replace(
+    /\/$/,
+    "",
+  );
+  const relativePath = normalised.startsWith("/")
+    ? normalised
+    : `/media/${normalised}`;
+  return `${base}${relativePath}`;
 }
 
 interface AchievementCardProps {
@@ -65,104 +57,76 @@ export function AchievementCard({
   const [showModal, setShowModal] = useState(false);
 
   const { achievement: achievementData, is_issued, vc_url } = achievement;
-  const bgColor = getRandomColor(achievement.id);
-  // Check if this is a level-based achievement by checking if level_id exists
-  const isLevelBased = !!achievementData.level_id;
-  const levelImage =
-    LEVEL_IMAGES[achievementData.achievement_name] || LEVEL_IMAGES["Level 1"];
 
-  const handleButtonClick = () => {
-    setShowModal(true);
-  };
+  const iconUrl = achievementData.icon_url || achievementData.icon || "";
+  const resolvedImageSrc = resolveMediaUrl(iconUrl);
 
   return (
     <>
-      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-all hover:shadow-md">
-        {/* Card Header with Icon */}
-        <div
-          className={`flex h-32 items-center justify-center bg-linear-to-br ${bgColor} p-4`}
-        >
-          <div className="relative h-20 w-20 overflow-hidden rounded-full bg-card/80 p-2 shadow-lg">
-            {isLevelBased ? (
-              <Image
-                src={levelImage}
-                alt={achievementData.achievement_name}
-                fill
-                className="object-cover"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = "none";
-                }}
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center">
-                <Award className="h-10 w-10 text-warning" />
+      <div className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-0.5">
+        {/* ── Body ─────────────────────────────────────────────── */}
+        <div className="flex flex-1 flex-col items-center px-6 pt-9 pb-6">
+          {/* Circular icon */}
+          <div className="mb-5 h-36 w-36 shrink-0 overflow-hidden rounded-full border-2 border-border/60 bg-muted shadow-sm ring-4 ring-primary/5 transition-all duration-300 group-hover:ring-primary/15 group-hover:shadow-md">
+            {resolvedImageSrc ? (
+              <div className="relative h-full w-full">
+                <Image
+                  src={resolvedImageSrc}
+                  alt={achievementData.achievement_name}
+                  fill
+                  className="object-contain"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none";
+                  }}
+                />
               </div>
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-muted">
+                <Award className="h-12 w-12 text-muted-foreground/60" />
+              </div>
+            )}
+          </div>
+
+          {/* Title + description */}
+          <div className="flex w-full flex-col items-center gap-2">
+            <h2 className="text-center text-lg font-semibold leading-snug text-foreground line-clamp-2">
+              {achievementData.achievement_name}
+            </h2>
+            {achievementData.description && (
+              <p className="text-center text-sm text-muted-foreground line-clamp-3 leading-relaxed">
+                {achievementData.description}
+              </p>
             )}
           </div>
         </div>
 
-        {/* Card Body */}
-        <div className="p-4">
-          <h4 className="mb-1 text-center text-sm font-semibold text-foreground line-clamp-2">
-            {achievementData.achievement_name}
-          </h4>
-          {achievementData.description && (
-            <p className="mb-3 text-center text-xs text-muted-foreground line-clamp-2">
-              {achievementData.description}
-            </p>
-          )}
-
-          {/* Tags */}
-          {achievementData.tags.length > 0 && (
-            <div className="mb-3 flex flex-wrap justify-center gap-1">
-              {achievementData.tags.slice(0, 2).map((tag) => (
-                <span
-                  key={tag}
-                  className="rounded-full bg-brand-blue/10 px-2 py-0.5 text-xs text-brand-blue"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
-
-          {/* Action Button */}
-          {isOwnProfile && (
-            <div className="flex justify-center">
+        {/* ── Footer ───────────────────────────────────────────── */}
+        {(isOwnProfile || (!isOwnProfile && is_issued && vc_url)) && (
+          <div className="flex justify-center px-6 pb-6 pt-2">
+            {isOwnProfile ? (
               <Button
-                size="sm"
-                onClick={handleButtonClick}
+                onClick={() => setShowModal(true)}
                 aria-label={
                   is_issued
                     ? "View verifiable credential"
                     : "Issue verifiable credential"
                 }
-                variant={is_issued ? "default" : "default"}
-                className={
-                  is_issued
-                    ? "bg-success hover:bg-success/90 border-bg-success "
-                    : ""
-                }
+                className="h-10 w-full rounded-xl text-sm font-semibold bg-brand-blue text-primary-foreground hover:bg-brand-blue/90 shadow-xs border border-transparent transition-all duration-300"
               >
                 {is_issued ? "View VC" : "Issue VC"}
               </Button>
-            </div>
-          )}
-
-          {/* View-only for non-owners */}
-          {!isOwnProfile && is_issued && vc_url && (
-            <div className="flex justify-center">
+            ) : (
               <Button
-                size="sm"
                 variant="outline"
-                onClick={handleButtonClick}
+                onClick={() => setShowModal(true)}
                 aria-label="View credential"
+                className="h-10 w-full rounded-xl text-sm font-semibold"
               >
                 View Credential
               </Button>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* VC Modal */}

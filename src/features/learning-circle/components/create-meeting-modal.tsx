@@ -34,6 +34,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import { useCreateMeeting } from "../hooks";
 import {
+  getMeetLinkErrorMessage,
+  isMeetLinkValidForPlatform,
+  type MeetingPlatform,
+  PLATFORM_LINK_PLACEHOLDERS,
+} from "../utils/meet-link-validation";
+import {
   getMeetTimeErrorMessage,
   getMinDateTimeLocalValue,
   isMeetTimeValid,
@@ -56,7 +62,7 @@ const CreateMeetingFormSchema = z
     description: z.string().min(1, "Description is required").max(1000),
     mode: z.enum(["online", "offline"]),
     platform: z
-      .enum(["Zoom", "Google Meet", "Microsoft Teams", "Discord", "Other"])
+      .enum(["Zoom", "Google Meet", "Microsoft Teams", "Discord"])
       .optional()
       .nullable(),
     meet_place: z.string().min(1, "Meeting place/link is required").max(200),
@@ -111,6 +117,30 @@ const CreateMeetingFormSchema = z
           message: getMeetTimeErrorMessage(),
         });
       }
+    }
+  })
+  .superRefine((data, ctx) => {
+    // BUG-015: For online meetings, the link must match the selected platform.
+    // meet_place holds the meeting link when mode === "online".
+    if (data.mode !== "online" || !data.platform) return;
+
+    if (
+      !isMeetLinkValidForPlatform(
+        data.platform as "Zoom" | "Google Meet" | "Microsoft Teams" | "Discord",
+        data.meet_place,
+      )
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["meet_place"],
+        message: getMeetLinkErrorMessage(
+          data.platform as
+            | "Zoom"
+            | "Google Meet"
+            | "Microsoft Teams"
+            | "Discord",
+        ),
+      });
     }
   });
 
@@ -171,6 +201,7 @@ export function CreateMeetingModal({
   });
 
   const mode = watch("mode");
+  const platform = watch("platform");
   const isRecurring = watch("is_recurring");
   const recurrenceType = watch("recurrence_type");
 
@@ -310,8 +341,7 @@ export function CreateMeetingModal({
                             | "Zoom"
                             | "Google Meet"
                             | "Microsoft Teams"
-                            | "Discord"
-                            | "Other",
+                            | "Discord",
                         )
                       }
                     >
@@ -325,7 +355,6 @@ export function CreateMeetingModal({
                           Microsoft Teams
                         </SelectItem>
                         <SelectItem value="Discord">Discord</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
                       </SelectContent>
                     </Select>
                     {errors.platform && (
@@ -363,7 +392,13 @@ export function CreateMeetingModal({
                 </Label>
                 <Input
                   id="meet_place"
-                  placeholder="https://meet.google.com/..."
+                  placeholder={
+                    platform
+                      ? (PLATFORM_LINK_PLACEHOLDERS[
+                          platform as MeetingPlatform
+                        ] ?? "https://...")
+                      : "https://..."
+                  }
                   {...register("meet_place")}
                   className="rounded-xl border-border/40"
                 />
