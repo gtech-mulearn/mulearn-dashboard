@@ -11,6 +11,7 @@ export { CircleList } from "./circle-list";
 export { CreateCircleModal } from "./create-circle-modal";
 export { CreateMeetingModal } from "./create-meeting-modal";
 export { DeleteCircleButton } from "./delete-circle-button";
+export { DeleteMeetingButton } from "./delete-meeting-button";
 export { EditCircleModal } from "./edit-circle-modal";
 export { EditMeetingModal } from "./edit-meeting-modal";
 export { InviteLinkView } from "./invite-link-view";

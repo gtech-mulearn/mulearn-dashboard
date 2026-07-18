@@ -48,15 +48,15 @@ describe("meet-time-validation", () => {
   // ── MIN_BUFFER_MINUTES ───────────────────────────────────────────────────
 
   describe("MIN_BUFFER_MINUTES", () => {
-    it("is 15 (product decision 2026-07-17)", () => {
-      expect(MIN_BUFFER_MINUTES).toBe(15);
+    it("is 1 (product decision 2026-07-18)", () => {
+      expect(MIN_BUFFER_MINUTES).toBe(1);
     });
   });
 
   // ── getEarliestAllowedMs ─────────────────────────────────────────────────
 
   describe("getEarliestAllowedMs()", () => {
-    it("returns Date.now() + 15 minutes in milliseconds", () => {
+    it("returns Date.now() + 1 minute in milliseconds", () => {
       expect(getEarliestAllowedMs()).toBe(FIXED_NOW + BUFFER_MS);
     });
 
@@ -75,7 +75,7 @@ describe("meet-time-validation", () => {
       expect(isMeetTimeValid(isoAt(30 * 60_000))).toBe(true);
     });
 
-    it("returns true when meet_time is exactly at the 15-minute boundary", () => {
+    it("returns true when meet_time is exactly at the 1-minute boundary", () => {
       // meet_time === getEarliestAllowedMs()  →  >= check passes
       expect(isMeetTimeValid(isoAt(BUFFER_MS))).toBe(true);
     });
@@ -84,8 +84,8 @@ describe("meet-time-validation", () => {
       expect(isMeetTimeValid(isoAt(BUFFER_MS - 1))).toBe(false);
     });
 
-    it("returns false for a time 14 minutes from now (just under buffer)", () => {
-      expect(isMeetTimeValid(isoAt(14 * 60_000))).toBe(false);
+    it("returns false for a time 30 seconds from now (just under buffer)", () => {
+      expect(isMeetTimeValid(isoAt(30 * 1000))).toBe(false);
     });
 
     it("returns false for current time (0 offset)", () => {
@@ -116,9 +116,9 @@ describe("meet-time-validation", () => {
       expect(getMeetTimeErrorMessage()).toContain(String(MIN_BUFFER_MINUTES));
     });
 
-    it("returns the exact expected message string", () => {
+    it("returns the exact expected message string with proper grammar", () => {
       expect(getMeetTimeErrorMessage()).toBe(
-        `Meeting time must be at least ${MIN_BUFFER_MINUTES} minutes in the future`,
+        `Meeting time must be at least 1 minute in the future`,
       );
     });
   });
@@ -131,7 +131,7 @@ describe("meet-time-validation", () => {
       expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
     });
 
-    it("represents exactly now + 15 min shifted to local time", () => {
+    it("represents exactly now + 1 min shifted to local time", () => {
       // Compute the expected value independently using the same algorithm
       // so we verify the implementation without just re-implementing it.
       const earliestMs = FIXED_NOW + BUFFER_MS;

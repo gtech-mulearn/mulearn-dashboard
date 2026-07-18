@@ -52,7 +52,7 @@ type Platform = (typeof PLATFORMS)[number];
 /**
  * Build the edit-meeting schema. We pass in the original local datetime string
  * (as returned by utcToLocalDateTimeInput) so that the superRefine can skip
- * the "15 minutes in the future" check when the user hasn't changed the time.
+ * the "1 minute in the future" check when the user hasn't changed the time.
  * This lets organisers fix a title/description on past or near-future meetings
  * without being blocked by the time-buffer validation (P1 fix).
  */

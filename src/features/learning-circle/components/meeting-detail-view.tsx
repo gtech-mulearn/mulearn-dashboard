@@ -51,6 +51,7 @@ import {
   useRsvpMeeting,
 } from "../hooks";
 import { AttendeeReportView } from "./attendee-report-view";
+import { DeleteMeetingButton } from "./delete-meeting-button";
 import { EditMeetingModal } from "./edit-meeting-modal";
 import { JoinMeetingModal } from "./join-meeting-modal";
 import { MeetingReportForm } from "./meeting-report-form";
@@ -163,6 +164,16 @@ export function MeetingDetailView({
         (m) => m.muid === meeting.created_by_id && m.is_leader,
       ) || permissions.role === "owner"
     : false;
+
+  /**
+   * BUG-014: canDeleteThisMeeting covers owner, lead (via permissions.canDeleteMeeting)
+   * AND the meeting's direct creator (any role who originally created it).
+   * This is intentionally NOT restricted to !meeting.is_ended so that
+   * creators can clean up accidentally-created or past meetings.
+   */
+  const canDeleteThisMeeting =
+    permissions.canDeleteMeeting ||
+    (userInfo?.muid != null && userInfo.muid === meeting?.created_by_id);
 
   const currentUserAttendee = userInfo
     ? meeting?.attendees.find((a) => a.user_id === userInfo.muid)
@@ -315,9 +326,18 @@ export function MeetingDetailView({
                 size="icon"
                 onClick={() => setShowEditModal(true)}
                 title="Edit Meeting"
+                aria-label="Edit Meeting"
               >
                 <Edit2 className="h-4 w-4" />
               </Button>
+            )}
+            {canDeleteThisMeeting && (
+              <DeleteMeetingButton
+                meetingId={meetingId}
+                meetingTitle={meeting.title}
+                circleId={circleId}
+                isRecurring={meeting.is_recurring}
+              />
             )}
             {canRsvp && (
               <Button
