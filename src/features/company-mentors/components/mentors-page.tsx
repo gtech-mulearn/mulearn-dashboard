@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { CheckCircle2, Plus, ShieldCheck, XCircle } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,14 +11,44 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StateDisplay } from "@/components/ui/state-display";
-import { useCompanyMentorNominations } from "@/features/company-jobs/hooks/use-mentor-nominate";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  useCompanyMentorNominations,
+  useVerifyCompanyMentor,
+} from "@/features/company-jobs/hooks/use-mentor-nominate";
+import { MentorGrantsSheet } from "@/features/mentor/admin/components/mentor-grants-sheet";
 import { NominateMentorModal } from "./nominate-mentor-modal";
+
+interface NominationLike {
+  id: string;
+  user_name?: string | null;
+  user_email?: string | null;
+  org_name?: string | null;
+  status?: string | null;
+  reason?: string | null;
+  verification_note?: string | null;
+  mentor_tier?: string | null;
+  verified_at?: string | null;
+}
 
 export function MentorsPage() {
   const [isNominateModalOpen, setIsNominateModalOpen] = useState(false);
+  const [rejectFor, setRejectFor] = useState<NominationLike | null>(null);
+  const [rejectNote, setRejectNote] = useState("");
+  const [grantsFor, setGrantsFor] = useState<NominationLike | null>(null);
+
   const { data: nominations, isLoading, error } = useCompanyMentorNominations();
+  const verify = useVerifyCompanyMentor();
 
   if (isLoading) {
     return (
@@ -47,7 +77,12 @@ export function MentorsPage() {
     );
   }
 
-  const mentorsList = nominations || [];
+  const mentorsList = (nominations || []) as NominationLike[];
+
+  const closeReject = () => {
+    setRejectFor(null);
+    setRejectNote("");
+  };
 
   return (
     <div className="space-y-6">
@@ -57,8 +92,8 @@ export function MentorsPage() {
             Company Mentors
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Nominate and manage mentors from your organization to guide the
-            community.
+            Nominate mentors from your organization, approve their nominations,
+            and manage their scopes.
           </p>
         </div>
         <Button
@@ -86,7 +121,7 @@ export function MentorsPage() {
                   <div className="space-y-1">
                     <CardTitle
                       className="text-base line-clamp-1"
-                      title={mentor.user_name}
+                      title={mentor.user_name ?? undefined}
                     >
                       {mentor.user_name}
                     </CardTitle>
@@ -118,7 +153,7 @@ export function MentorsPage() {
                 {mentor.verification_note && (
                   <div className="text-xs bg-muted/50 p-2 rounded-md text-muted-foreground">
                     <span className="font-semibold text-foreground">
-                      Admin Note:{" "}
+                      Note:{" "}
                     </span>
                     {mentor.verification_note}
                   </div>
@@ -134,6 +169,48 @@ export function MentorsPage() {
                     </span>
                   )}
                 </div>
+
+                {/* §3.1: the company owner approves/rejects own nominations */}
+                {mentor.status === "PENDING" && (
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      className="flex-1 gap-1.5"
+                      disabled={verify.isPending}
+                      onClick={() =>
+                        verify.mutate({
+                          mentorId: mentor.id,
+                          status: "APPROVED",
+                        })
+                      }
+                    >
+                      <CheckCircle2 className="h-4 w-4" />
+                      Approve
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex-1 gap-1.5 text-destructive"
+                      disabled={verify.isPending}
+                      onClick={() => setRejectFor(mentor)}
+                    >
+                      <XCircle className="h-4 w-4" />
+                      Reject
+                    </Button>
+                  </div>
+                )}
+
+                {mentor.status === "APPROVED" && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1.5"
+                    onClick={() => setGrantsFor(mentor)}
+                  >
+                    <ShieldCheck className="h-4 w-4" />
+                    View scopes
+                  </Button>
+                )}
               </CardContent>
             </Card>
           ))}
@@ -143,6 +220,60 @@ export function MentorsPage() {
       <NominateMentorModal
         open={isNominateModalOpen}
         onOpenChange={setIsNominateModalOpen}
+      />
+
+      {/* Reject requires a reason the nominee will see (§3.1) */}
+      <Dialog
+        open={Boolean(rejectFor)}
+        onOpenChange={(o) => !o && closeReject()}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Reject nomination?</DialogTitle>
+            <DialogDescription>
+              Why is {rejectFor?.user_name}&apos;s nomination rejected? The
+              nominee sees this note.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            rows={3}
+            value={rejectNote}
+            onChange={(e) => setRejectNote(e.target.value)}
+            placeholder="Reason for rejection…"
+          />
+          <DialogFooter className="gap-2">
+            <Button type="button" variant="outline" onClick={closeReject}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={verify.isPending || !rejectNote.trim()}
+              onClick={() => {
+                if (!rejectFor) return;
+                verify.mutate(
+                  {
+                    mentorId: rejectFor.id,
+                    status: "REJECTED",
+                    verification_note: rejectNote.trim(),
+                  },
+                  { onSuccess: closeReject },
+                );
+              }}
+            >
+              {verify.isPending ? "Rejecting…" : "Reject nomination"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* §4.1: the owning company user may view/revoke this mentor's grants */}
+      <MentorGrantsSheet
+        mentorId={grantsFor?.id ?? ""}
+        mentorName={grantsFor?.user_name ?? ""}
+        employer={grantsFor?.org_name}
+        open={Boolean(grantsFor)}
+        onOpenChange={(v) => !v && setGrantsFor(null)}
       />
     </div>
   );

@@ -64,7 +64,10 @@ const MentorEditSchema = z.object({
   // with fewer than 3 skills — making "Save" do nothing. The onboarding form
   // keeps its own min(3) quality bar for new applicants.
   expertise: z.array(z.string()).optional(),
-  preferred_ig_ids: z.array(z.string()).optional(),
+  // §2.5: an approved mentor must always mentor at least one Interest Group
+  preferred_ig_ids: z
+    .array(z.string())
+    .min(1, "You must mentor at least one Interest Group"),
   org: z.string().optional(),
   profile_pic: z.instanceof(File).optional(),
 });
@@ -199,7 +202,11 @@ export function MentorEditProfileModal({
         });
       }
 
-      toast.success("Profile updated successfully!");
+      toast.success(
+        isIgsChanged
+          ? "IG scopes updated — changes are live immediately."
+          : "Profile updated successfully!",
+      );
       onOpenChange(false);
       onSaved?.();
     } catch {

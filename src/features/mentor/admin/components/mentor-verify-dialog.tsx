@@ -21,30 +21,27 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { useVerifyMentor } from "../hooks/use-mentor-verify";
 import type { MentorApplicationListItem } from "../schemas";
 
-// ─── Local form schemas ───────────────────────────────────────────────────────
-// Approve: doc payload = { status: "APPROVED" }  (mentor_tier is frontend-only UI)
-const ApproveSchema = z.object({
-  mentor_tier: z.string().optional(),
-});
+// ─── Local form schema ────────────────────────────────────────────────────────
 // Reject: doc payload = { status: "REJECTED", verification_note: "..." }
 const RejectSchema = z.object({
   verification_note: z.string().min(1, "Rejection note is required"),
 });
 
-type ApproveValues = z.infer<typeof ApproveSchema>;
 type RejectValues = z.infer<typeof RejectSchema>;
+
+// ─── What approval actually does, per the tier being approved (§3.1) ──────────
+const APPROVAL_OUTCOME: Record<string, string> = {
+  IG_MENTOR: "Approval activates their chosen Interest Groups immediately.",
+  COMPANY_MENTOR:
+    "Approval grants company-mentor authority and verifies their employment link.",
+  CAMPUS_MENTOR: "Approval grants campus-mentor authority for their campus.",
+  MENTOR: "Approval grants platform-wide mentor visibility.",
+};
 
 interface MentorVerifyDialogProps {
   mentor: MentorApplicationListItem | null;
@@ -76,19 +73,16 @@ export function MentorVerifyDialog({
 }: MentorVerifyDialogProps) {
   const { mutate: verify, isPending } = useVerifyMentor();
 
-  const approveForm = useForm<ApproveValues>({
-    resolver: zodResolver(ApproveSchema),
-    defaultValues: { mentor_tier: "IG_MENTOR" },
-  });
   const rejectForm = useForm<RejectValues>({
     resolver: zodResolver(RejectSchema),
     defaultValues: { verification_note: "" },
   });
+  const rejectNote = rejectForm.watch("verification_note");
 
   const isApprove = action === "approve";
 
   // ─── Approve → doc payload: { status: "APPROVED" } ─────────────────────────
-  function onApprove(_values: ApproveValues) {
+  function onApprove() {
     if (!mentor) return;
     verify(
       {
@@ -237,13 +231,21 @@ export function MentorVerifyDialog({
               </div>
             )}
 
-            {/* Current tier (if any) */}
+            {/* Current tier (if any) — the tier is fixed by the application/
+                nomination; approving approves exactly this tier (§3.1) */}
             {mentor.mentor_tier && (
-              <div className="flex items-center gap-2 text-sm">
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                  Current Tier:
-                </span>
-                <Badge variant="outline">{mentor.mentor_tier}</Badge>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    Applied Tier:
+                  </span>
+                  <Badge variant="outline">{mentor.mentor_tier}</Badge>
+                </div>
+                {isApprove && APPROVAL_OUTCOME[mentor.mentor_tier] ? (
+                  <p className="text-xs text-muted-foreground">
+                    {APPROVAL_OUTCOME[mentor.mentor_tier]}
+                  </p>
+                ) : null}
               </div>
             )}
 
@@ -264,60 +266,18 @@ export function MentorVerifyDialog({
         )}
 
         {isApprove ? (
-          <Form {...approveForm}>
-            <form
-              onSubmit={approveForm.handleSubmit(onApprove)}
-              className="space-y-4"
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
             >
-              {/* Tier select is UI-only (doc doesn't send tier in verify payload) */}
-              <FormField
-                control={approveForm.control}
-                name="mentor_tier"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Mentor Tier (informational)</FormLabel>
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select tier..." />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="IG_MENTOR">
-                          IG Mentor — mentors a specific Interest Group
-                        </SelectItem>
-                        <SelectItem value="MENTOR">
-                          Mentor — global sessions
-                        </SelectItem>
-                        <SelectItem value="COMPANY_MENTOR">
-                          Company Mentor
-                        </SelectItem>
-                        <SelectItem value="CAMPUS_MENTOR">
-                          Campus Mentor
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Tier is assigned automatically on approval.
-                    </p>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => onOpenChange(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isPending}>
-                  {isPending ? "Approving…" : "Approve"}
-                </Button>
-              </div>
-            </form>
-          </Form>
+              Cancel
+            </Button>
+            <Button type="button" disabled={isPending} onClick={onApprove}>
+              {isPending ? "Approving…" : "Approve"}
+            </Button>
+          </div>
         ) : (
           <Form {...rejectForm}>
             <form
@@ -337,6 +297,9 @@ export function MentorVerifyDialog({
                         {...field}
                       />
                     </FormControl>
+                    <p className="text-xs text-muted-foreground">
+                      The applicant will see this note.
+                    </p>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -352,7 +315,7 @@ export function MentorVerifyDialog({
                 <Button
                   type="submit"
                   variant="destructive"
-                  disabled={isPending}
+                  disabled={isPending || !rejectNote.trim()}
                 >
                   {isPending ? "Rejecting…" : "Reject"}
                 </Button>

@@ -250,29 +250,7 @@ export const PublicJobsResponseSchema = ApiResponseSchema(
   }),
 );
 
-// ============================================
-// Mentor Persona — IG Roles + Switch
-// ============================================
-
-export const MentorIgRoleSchema = z.object({
-  role_link_id: z.string(),
-  ig_id: z.string(),
-  ig_name: z.string(),
-  role: z.string(),
-  is_primary: z.boolean(),
-  is_verified: z.boolean(),
-  mentor_tier: z.string(),
-});
-
-export type MentorIgRole = z.infer<typeof MentorIgRoleSchema>;
-
-export const MentorIgRolesResponseSchema = ApiResponseSchema(
-  z.object({
-    ig_roles: z.array(MentorIgRoleSchema),
-  }),
-);
-
-// mentor/my-igs/ returns a simpler shape than the persona endpoint
+// mentor/my-igs/ simple shape
 export const MentorMyIgSchema = z.object({
   ig_id: z.string(),
   ig_name: z.string(),
@@ -282,20 +260,6 @@ export type MentorMyIg = z.infer<typeof MentorMyIgSchema>;
 
 export const MentorMyIgsResponseSchema = ApiResponseSchema(
   z.object({ igs: z.array(MentorMyIgSchema) }),
-);
-
-export const MentorPersonaSwitchResponseSchema = ApiResponseSchema(
-  z.object({
-    active_persona: z.string(),
-    active_role_link_id: z.string(),
-    active_ig_id: z.string(),
-    ig_name: z.string(),
-    is_verified: z.boolean(),
-    mentor_tier: z.string(),
-    profile_created: z.boolean().optional(),
-    last_persona_switched_at: z.string().optional(),
-    access: z.string().nullable().optional(),
-  }),
 );
 
 // ============================================

@@ -10,9 +10,7 @@ import {
   KarmaFeedResponseSchema,
   LearnerHomeSummaryResponseSchema,
   LearnerStreakResponseSchema,
-  MentorIgRolesResponseSchema,
   MentorOverviewResponseSchema,
-  MentorPersonaSwitchResponseSchema,
   MentorSessionsResponseSchema,
   PublicJobsResponseSchema,
 } from "../schemas";
@@ -65,27 +63,6 @@ export async function getMentorSessions(status = "SCHEDULED") {
     skipAuthRedirectOn403: true,
   });
   return response.response.data;
-}
-
-// ============================================
-// Mentor Persona — IG Roles + Switch
-// ============================================
-
-export async function getMentorIgRoles() {
-  const response = await apiClient.get(
-    endpoints.mentor.personaIgRoles,
-    MentorIgRolesResponseSchema,
-  );
-  return response.response.ig_roles;
-}
-
-export async function switchMentorPersona(roleLinkId: string) {
-  const response = await apiClient.post(
-    endpoints.mentor.personaSwitch,
-    { active_role_link_id: roleLinkId },
-    MentorPersonaSwitchResponseSchema,
-  );
-  return response.response;
 }
 
 // ============================================

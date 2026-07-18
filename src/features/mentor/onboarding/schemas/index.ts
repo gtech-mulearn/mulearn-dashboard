@@ -19,6 +19,7 @@ export const MentorApplicationSchema = z.object({
   status: z.enum(MENTOR_STATUSES).optional(),
   preferred_ig_ids: z.array(z.string()).optional().default([]),
   org: z.string().nullable().optional(),
+  company: z.string().nullable().optional(),
   verified_by: z.string().nullable().optional(),
   verified_at: z.string().nullable().optional(),
   verification_note: z.string().nullable().optional(),
