@@ -51,7 +51,6 @@ const PLATFORMS = [
   "Google Meet",
   "Microsoft Teams",
   "Discord",
-  "Other",
 ] as const;
 type Platform = (typeof PLATFORMS)[number];
 
