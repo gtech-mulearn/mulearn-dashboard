@@ -3,6 +3,7 @@ import Cookies from "js-cookie";
 const ACCESS_TOKEN_KEY = "accessToken";
 const REFRESH_TOKEN_KEY = "refreshToken";
 const IS_AUTHENTICATED_KEY = "isAuthenticated";
+const TEMP_TOKEN_KEY = "tempToken";
 
 const baseCookieOptions = {
   secure: process.env.NODE_ENV === "production",
@@ -26,11 +27,20 @@ export const authStore = {
     });
   },
 
+  setTempToken: async (tempToken: string) => {
+    Cookies.set(TEMP_TOKEN_KEY, tempToken, {
+      ...baseCookieOptions,
+      expires: 15 / (24 * 60), // 15 minutes (token lifetime)
+    });
+  },
+
   /** Access token for the Authorization header. undefined when logged out. */
   getAccessToken: () => Cookies.get(ACCESS_TOKEN_KEY),
 
   /** Refresh token used by the client-side refresh flow. */
   getRefreshToken: () => Cookies.get(REFRESH_TOKEN_KEY),
+
+  getTempToken: () => Cookies.get(TEMP_TOKEN_KEY),
 
   /**
    * Client-readable session flag. Stays set across short-lived access-token
@@ -43,5 +53,10 @@ export const authStore = {
     Cookies.remove(ACCESS_TOKEN_KEY, { path: "/" });
     Cookies.remove(REFRESH_TOKEN_KEY, { path: "/" });
     Cookies.remove(IS_AUTHENTICATED_KEY, { path: "/" });
+    Cookies.remove(TEMP_TOKEN_KEY, { path: "/" });
+  },
+
+  clearTempToken: async () => {
+    Cookies.remove(TEMP_TOKEN_KEY, { path: "/" });
   },
 };

@@ -5,6 +5,7 @@
  */
 
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { RegisterClient } from "./register-client";
 
 export const metadata: Metadata = {
@@ -25,12 +26,16 @@ export default async function RegisterPage({
   searchParams,
 }: RegisterPageProps) {
   const params = await searchParams;
+  const cookieStore = await cookies();
+  const tempToken = cookieStore.get("tempToken")?.value || null;
+
   return (
     <RegisterClient
       redirectUri={params.ruri}
       referralId={params.referral_id}
       email={params.email}
       fullName={params.fullName}
+      initialTempToken={tempToken}
     />
   );
 }

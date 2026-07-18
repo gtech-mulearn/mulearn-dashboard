@@ -38,56 +38,28 @@ export function EventsPageClient() {
     useEventTypeScope();
 
   // ── Cluster options ───────────────────────────────────────────────────────
-  const clusterList = useMemo(() => {
-    if (typeScopeData && Array.isArray(typeScopeData.event_scope)) {
-      return [
-        { label: "All", value: "all" },
-        ...typeScopeData.event_scope.map((scope) => ({
-          label: scope,
-          value: scope.toLowerCase(),
-        })),
-      ];
-    }
-    return [
+  const clusterList = useMemo(
+    () => [
       { label: "All", value: "all" },
-      { label: "Maker", value: "maker" },
-      { label: "Coder", value: "coder" },
-      { label: "Manager", value: "manager" },
-      { label: "Creative", value: "creative" },
-    ];
-  }, [typeScopeData]);
+      ...(typeScopeData?.event_scope ?? []).map((scope) => ({
+        label: scope.label,
+        value: scope.value,
+      })),
+    ],
+    [typeScopeData],
+  );
 
   // ── Event-type / category options ─────────────────────────────────────────
-  const eventTypeOptions = useMemo(() => {
-    const list =
-      typeScopeData && Array.isArray(typeScopeData.event_type)
-        ? typeScopeData.event_type
-        : [
-            "Hackathon",
-            "Workshop",
-            "Webinar",
-            "Seminar",
-            "Bootcamp",
-            "Meetup",
-            "Conference",
-            "Competition",
-            "Ideathon",
-            "Cultural event",
-            "Sports event",
-            "Community event",
-            "Expo",
-            "Networking event",
-            "Tech talk",
-            "Others",
-          ];
-    return [
+  const eventTypeOptions = useMemo(
+    () => [
       { label: "All Types", value: "all" },
-      ...list.map((type) => ({
-        label: type,
-        value: type,
+      ...(typeScopeData?.event_type ?? []).map((type) => ({
+        label: type.label,
+        value: type.value,
       })),
-    ];
-  }, [typeScopeData]);
+    ],
+    [typeScopeData],
+  );
 
   // ── Sort-order arrays ─────────────────────────────────────────────────────
   const categoryOrder = useMemo(

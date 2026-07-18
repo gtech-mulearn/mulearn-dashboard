@@ -27,9 +27,9 @@ export function IpBreakdown({ data }: IpBreakdownProps) {
   const total = entries.reduce((sum, [, value]) => sum + value, 0);
 
   return (
-    <div className="overflow-x-auto">
+    <div className="max-h-64 overflow-y-auto pr-1">
       <Table>
-        <TableHeader>
+        <TableHeader className="sticky top-0 bg-card z-10">
           <TableRow>
             <TableHead>IP Address</TableHead>
             <TableHead>Clicks</TableHead>
@@ -39,9 +39,9 @@ export function IpBreakdown({ data }: IpBreakdownProps) {
         <TableBody>
           {entries.map(([ip, count]) => (
             <TableRow key={ip}>
-              <TableCell className="font-mono text-sm">{ip}</TableCell>
-              <TableCell>{count}</TableCell>
-              <TableCell>
+              <TableCell className="font-mono text-sm py-2">{ip}</TableCell>
+              <TableCell className="py-2">{count}</TableCell>
+              <TableCell className="py-2">
                 <div className="flex items-center gap-2">
                   <div className="w-full bg-muted rounded-full h-2 max-w-xs">
                     <div
@@ -49,7 +49,7 @@ export function IpBreakdown({ data }: IpBreakdownProps) {
                       style={{ width: `${(count / total) * 100}%` }}
                     />
                   </div>
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-xs text-muted-foreground shrink-0 w-10 text-right">
                     {((count / total) * 100).toFixed(1)}%
                   </span>
                 </div>

@@ -14,10 +14,12 @@ export function resolveApprovalTier(status: string): ApprovalTier | null {
   return STATUS_TIER[status] ?? null;
 }
 
-const CAMPUS_LEAD_ROLES = [
+const CAMPUS_APPROVER_ROLES = [
   ROLES.CAMPUS_LEAD,
   ROLES.ZONAL_CAMPUS_LEAD,
   ROLES.DISTRICT_CAMPUS_LEAD,
+  ROLES.ENABLER,
+  ROLES.LEAD_ENABLER,
 ];
 
 /** Whether this viewer may act at the event's current approval stage. The
@@ -33,7 +35,7 @@ export function canApproveStatus(
   if (isStaff || roles.includes(ROLES.ADMIN)) return true;
   if (tier === "mentor") return roles.includes(ROLES.MENTOR);
   if (tier === "campus")
-    return CAMPUS_LEAD_ROLES.some((r) => roles.includes(r));
+    return CAMPUS_APPROVER_ROLES.some((r) => roles.includes(r));
   return false; // admin tier: only admin/is_staff (handled above)
 }
 

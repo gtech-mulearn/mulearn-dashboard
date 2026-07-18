@@ -193,30 +193,10 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
   const { data: typeScopeData, isLoading: typeScopeLoading } =
     useEventTypeScope();
 
-  const eventTypeSelectOptions = useMemo(() => {
-    const list = typeScopeData?.event_type || [
-      "Hackathon",
-      "Workshop",
-      "Webinar",
-      "Seminar",
-      "Bootcamp",
-      "Meetup",
-      "Conference",
-      "Competition",
-      "Ideathon",
-      "Cultural Event",
-      "Sports Event",
-      "Community Event",
-      "Expo",
-      "Networking Event",
-      "Tech Talk",
-      "Others",
-    ];
-    return list.map((type) => {
-      const val = type.trim().toLowerCase().replace(/\s+/g, "_");
-      return { label: type, value: val };
-    });
-  }, [typeScopeData]);
+  const eventTypeSelectOptions = useMemo(
+    () => typeScopeData?.event_type ?? [],
+    [typeScopeData],
+  );
 
   const creatorCampusName =
     organizerOptionsQuery.data?.campus_context?.title ?? null;
@@ -1160,6 +1140,9 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                       selectedName={selectedCampusIgName}
                       placeholder="Search campus IG"
                       campusContextLabel={creatorCampusName}
+                      campusId={
+                        organizerOptionsQuery.data?.campus_context?.id ?? null
+                      }
                       onChange={(id, name) => {
                         setValue("target_campus_ig_id", id || null, {
                           shouldValidate: true,

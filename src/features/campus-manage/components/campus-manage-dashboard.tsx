@@ -18,7 +18,6 @@ import {
   Loader2,
   MapPin,
   MessageSquare,
-  MoreHorizontal,
   MoreVertical,
   Pencil,
   Plus,
@@ -63,18 +62,14 @@ import {
   seriesGradient,
 } from "@/components/charts/chart-theme";
 import Pagination from "@/components/dashboard/table/pagination";
+import Table from "@/components/dashboard/table/Table";
+import THead from "@/components/dashboard/table/Thead";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Combobox } from "@/components/ui/combobox";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { MuidSearchInput } from "@/components/ui/muid-search-input";
 import {
@@ -91,14 +86,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatCard } from "@/components/ui/stat-card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import { chipColor } from "@/lib/chip-colors";
@@ -190,8 +178,8 @@ const SOCIAL_PLATFORMS = [
     id: "github",
     label: "GitHub",
     icon: Github,
-    color: "text-slate-800",
-    bg: "bg-slate-800/10",
+    color: "text-foreground",
+    bg: "bg-muted",
   },
   {
     id: "website",
@@ -208,6 +196,20 @@ const SOCIAL_PLATFORMS = [
     bg: "bg-warning/10",
   },
 ] as const;
+
+/**
+ * Authoritative hostname suffixes for each constrained platform.
+ * `website` and `other` are intentionally absent — they accept any URL.
+ */
+const SOCIAL_PLATFORM_DOMAINS: Partial<Record<string, readonly string[]>> = {
+  instagram: ["instagram.com"],
+  linkedin: ["linkedin.com"],
+  twitter: ["twitter.com", "x.com"],
+  facebook: ["facebook.com", "fb.com", "fb.me"],
+  youtube: ["youtube.com", "youtu.be"],
+  discord: ["discord.gg", "discord.com"],
+  github: ["github.com"],
+};
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -227,17 +229,22 @@ const formatDateRange = (start?: string, end?: string) => {
   return `${format(startDate, "MMM d")} - ${format(endDate, "MMM d, yyyy")}`;
 };
 
+/**
+ * Normalises raw user input (handle, slug, or full URL) into an absolute URL
+ * for the given platform. Must be declared before `validateSocialUrl` to avoid
+ * a Temporal Dead Zone (TDZ) crash at runtime.
+ */
 const normalizeSocialUrl = (platformId: string, input: string): string => {
   const value = input.trim();
   if (!value) return "";
 
   // If it already looks like a URL (starts with http:// or https://)
-  // return it unchanged to avoid double-wrapping like https://github.com/https://github.com/...
-  if (/^(f|ht)tps?:\/\//i.test(value)) {
+  // return it unchanged to avoid double-wrapping.
+  if (/^https?:\/\//i.test(value)) {
     return value;
   }
 
-  // Treat domain-like inputs without a scheme as URLs
+  // Treat domain-like inputs without a scheme as full URLs.
   if (
     /^[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+(?:\/|$)/.test(value) &&
     !value.startsWith("@")
@@ -245,34 +252,61 @@ const normalizeSocialUrl = (platformId: string, input: string): string => {
     return `https://${value}`;
   }
 
-  // Generate URL based on platform rules
+  // Generate URL based on platform rules.
   switch (platformId) {
     case "instagram":
       return `https://instagram.com/${value.replace(/^@/, "")}`;
     case "linkedin":
-      if (value.startsWith("in/")) {
+      if (value.startsWith("in/") || value.startsWith("company/")) {
         return `https://linkedin.com/${value}`;
       }
-      if (value.startsWith("company/")) {
-        return `https://linkedin.com/${value}`;
-      }
-      return `https://linkedin.com/in/${value}`;
+      return `https://linkedin.com/in/${value.replace(/^\//, "")}`;
     case "twitter":
-      return `https://twitter.com/${value.replace(/^@/, "")}`;
+      return `https://x.com/${value.replace(/^@/, "")}`;
     case "facebook":
-      return `https://facebook.com/${value}`;
+      return `https://facebook.com/${value.replace(/^\//, "")}`;
     case "youtube":
       return `https://youtube.com/${value.startsWith("@") ? value : `@${value}`}`;
     case "discord":
-      if (value.includes("discord.gg") || value.includes("discord.com")) {
-        return value;
-      }
       return `https://discord.gg/${value}`;
     case "github":
-      return `https://github.com/${value}`;
+      return `https://github.com/${value.replace(/^\//, "")}`;
     default:
       return value;
   }
+};
+
+/**
+ * Returns an error message when the normalised URL's domain does not belong
+ * to the selected platform, or `null` when the URL is valid / unconstrained.
+ */
+const validateSocialUrl = (
+  platformId: string,
+  rawInput: string,
+): string | null => {
+  const allowedDomains = SOCIAL_PLATFORM_DOMAINS[platformId];
+  // Platforms without a domain list (website, other) accept anything.
+  if (!allowedDomains) return null;
+
+  const normalized = normalizeSocialUrl(platformId, rawInput);
+  if (!normalized) return null;
+
+  try {
+    const { hostname } = new URL(normalized);
+    // Strip leading "www." for comparison.
+    const bare = hostname.replace(/^www\./, "");
+    const matches = allowedDomains.some(
+      (domain) => bare === domain || bare.endsWith(`.${domain}`),
+    );
+    if (!matches) {
+      const platformLabel =
+        SOCIAL_PLATFORMS.find((p) => p.id === platformId)?.label ?? platformId;
+      return `This URL doesn't look like a ${platformLabel} link. Please enter a valid ${platformLabel} URL.`;
+    }
+  } catch {
+    // Malformed URLs are handled separately by the existing syntactic check.
+  }
+  return null;
 };
 
 /** Derives a clean, human-readable display label from a full social URL. */
@@ -280,7 +314,7 @@ const getSocialDisplayLabel = (platformId: string, url: string): string => {
   if (!url) return "";
   try {
     const u = new URL(url);
-    // Strip leading/trailing slashes from the path
+    // Strip leading/trailing slashes from the path.
     const path = u.pathname.replace(/^\//, "").replace(/\/$/, "");
     switch (platformId) {
       case "instagram":
@@ -291,22 +325,25 @@ const getSocialDisplayLabel = (platformId: string, url: string): string => {
         // YouTube channels use @handle
         return path.startsWith("@") ? path : `@${path}`;
       case "linkedin":
-        // Strip the "in/" or "company/" prefix → show just the slug
+        // Strip the "in/" or "company/" prefix → show just the slug.
         return path.replace(/^(in|company)\//, "");
       case "github":
-        // Just the org/username, no leading slash
+        // Just the org/username, no leading slash.
         return path;
       case "facebook":
-        // Just the page name
+        // Just the page name.
         return path;
-      case "discord":
-        return path ? `discord.gg/${path}` : u.hostname;
+      case "discord": {
+        // Strip redundant "invite/" segment that discord.com URLs include.
+        const cleanPath = path.replace(/^invite\//, "");
+        return cleanPath ? `discord.gg/${cleanPath}` : u.hostname;
+      }
       default:
-        // For websites: show hostname + path (without trailing slash)
+        // For websites: show hostname + path (without trailing slash).
         return u.hostname + (path ? `/${path}` : "");
     }
   } catch {
-    // If URL parsing fails, return as-is
+    // If URL parsing fails, return as-is.
     return url;
   }
 };
@@ -450,7 +487,19 @@ function CompactStatCard({
   );
 }
 
-// ─── Main Dashboard ──────────────────────────────────────────────────────────
+const LEADERBOARD_COLUMNS = [
+  {
+    column: "rank",
+    Label: "Rank",
+    isSortable: false,
+    width: "w-24 text-center",
+  },
+  { column: "name", Label: "Student", isSortable: false },
+  { column: "karma", Label: "Karma", isSortable: false },
+  { column: "level", Label: "Level", isSortable: false },
+  { column: "cluster", Label: "Department / Cluster", isSortable: false },
+  { column: "alumni", Label: "Alumni Status", isSortable: false },
+];
 
 export function CampusManageDashboard() {
   const router = useRouter();
@@ -528,6 +577,7 @@ export function CampusManageDashboard() {
   // ─── Social presence state ──
   const [editingPlatform, setEditingPlatform] = useState<string | null>(null);
   const [socialValue, setSocialValue] = useState("");
+  const [socialUrlError, setSocialUrlError] = useState<string | null>(null);
   const [isAddingNewSocial, setIsAddingNewSocial] = useState(false);
 
   // ─── Derived data ────────────────────────────────────────────────────────
@@ -989,150 +1039,125 @@ export function CampusManageDashboard() {
 
             {isLeaderboardLoading ? (
               <Skeleton className="h-[500px] w-full rounded-2xl" />
-            ) : (
+            ) : leaderboard.length === 0 ? (
               <Card className="overflow-hidden border-border/60 shadow-md">
-                <CardContent className="p-0">
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader className="bg-muted/30">
-                        <TableRow className="hover:bg-transparent">
-                          <TableHead className="w-24 text-center">
-                            Rank
-                          </TableHead>
-                          <TableHead>Student</TableHead>
-                          <TableHead>Karma</TableHead>
-                          <TableHead>Level</TableHead>
-                          <TableHead>Department / Cluster</TableHead>
-                          <TableHead className="w-[50px]" />
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {leaderboard.map((student) => (
-                          <TableRow
-                            key={student.id}
-                            className="group transition-colors hover:bg-muted/50"
-                          >
-                            <TableCell className="text-center font-bold">
-                              <div
-                                className={`mx-auto flex h-9 w-9 items-center justify-center rounded-full text-xs font-black shadow-sm transition-all duration-300 ${
-                                  student.rank === 1
-                                    ? "bg-amber-100 text-amber-700 ring-2 ring-amber-500/30 dark:bg-amber-950/35 dark:text-amber-400 dark:ring-amber-500/20"
-                                    : student.rank === 2
-                                      ? "bg-slate-100 text-slate-700 ring-2 ring-slate-400/30 dark:bg-slate-800/80 dark:text-slate-300 dark:ring-slate-700/50"
-                                      : student.rank === 3
-                                        ? "bg-orange-100 text-orange-800 ring-2 ring-orange-400/30 dark:bg-orange-950/35 dark:text-orange-400 dark:ring-orange-500/20"
-                                        : "bg-background text-muted-foreground border border-border/50"
-                                }`}
-                              >
-                                #{student.rank}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex flex-col">
-                                <span className="text-sm font-semibold tracking-tight transition-colors group-hover:text-primary">
-                                  {student.name}
-                                </span>
-                                <span className="text-[11px] text-muted-foreground">
-                                  @{student.muid.split("@")[0]}
-                                </span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <span className="text-lg font-black tracking-tighter text-success">
-                                {student.karma.toLocaleString()}
-                              </span>
-                            </TableCell>
-                            <TableCell>
-                              <Badge
-                                className={`h-6 px-2.5 font-bold uppercase tracking-wider text-[10px] shadow-sm ${
-                                  student.level?.includes("7")
-                                    ? "bg-purple-600 hover:bg-purple-700"
-                                    : student.level?.includes("6")
-                                      ? "bg-brand-blue hover:bg-brand-blue/90"
-                                      : student.level?.includes("5")
-                                        ? "bg-primary hover:bg-primary/90 font-black"
-                                        : student.level?.includes("4")
-                                          ? "bg-teal-600 hover:bg-teal-700 font-black"
-                                          : "bg-slate-500/80 hover:bg-slate-500 font-black"
-                                }`}
-                              >
-                                {student.level}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="max-w-[200px] truncate text-xs text-muted-foreground">
-                              {student.cluster}
-                            </TableCell>
-                            <TableCell>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-7 w-7"
-                                    disabled={isChangingType}
-                                  >
-                                    <MoreHorizontal className="h-3.5 w-3.5" />
-                                    <span className="sr-only">
-                                      Student actions
-                                    </span>
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem
-                                    onClick={() => setPendingStudent(student)}
-                                  >
-                                    {student.alumni
-                                      ? "Mark as Active"
-                                      : "Mark as Alumni"}
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                        {leaderboard.length === 0 && (
-                          <TableRow>
-                            <TableCell
-                              colSpan={6}
-                              className="py-12 text-center text-muted-foreground"
-                            >
-                              <div className="flex flex-col items-center gap-2 opacity-50">
-                                <Users className="h-10 w-10" />
-                                <p className="text-sm">
-                                  No students found matching your filters.
-                                </p>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
-                  </div>
-                  <div className="p-4">
-                    <Pagination
-                      currentPage={leaderboardPage}
-                      totalPages={totalPages}
-                      handleNextClick={() => {
-                        const next = Math.min(leaderboardPage + 1, totalPages);
-                        setLeaderboardPage(next);
-                        setLeaderboardFilters((prev) => ({
-                          ...prev,
-                          page: next,
-                        }));
-                      }}
-                      handlePreviousClick={() => {
-                        const prev = Math.max(leaderboardPage - 1, 1);
-                        setLeaderboardPage(prev);
-                        setLeaderboardFilters((p) => ({ ...p, page: prev }));
-                      }}
-                      perPage={PAGE_SIZE}
-                      totalCount={
-                        leaderboardPagination?.count ?? leaderboard.length
-                      }
-                    />
+                <CardContent className="py-12 text-center text-muted-foreground bg-card">
+                  <div className="flex flex-col items-center gap-2 opacity-50">
+                    <Users className="h-10 w-10" />
+                    <p className="text-sm">No students found.</p>
                   </div>
                 </CardContent>
               </Card>
+            ) : (
+              <Table
+                rows={leaderboard as any}
+                isLoading={isLeaderboardLoading}
+                page={leaderboardPage}
+                perPage={PAGE_SIZE}
+                columnOrder={LEADERBOARD_COLUMNS}
+                customCellRender={(column, row) => {
+                  const student = row as unknown as CampusLeaderboardItem;
+                  switch (column) {
+                    case "rank":
+                      return (
+                        <div
+                          className={`mx-auto flex h-9 w-9 items-center justify-center rounded-full text-xs font-black shadow-sm transition-all duration-300 ${
+                            student.rank === 1
+                              ? "bg-chart-4/15 text-chart-4 ring-2 ring-chart-4/25"
+                              : student.rank === 2
+                                ? "bg-muted text-muted-foreground ring-2 ring-border"
+                                : student.rank === 3
+                                  ? "bg-warning/15 text-warning ring-2 ring-warning/25"
+                                  : "bg-background text-muted-foreground border border-border/50"
+                          }`}
+                        >
+                          #{student.rank}
+                        </div>
+                      );
+                    case "name":
+                      return (
+                        <div className="flex flex-col">
+                          <span className="text-sm font-semibold tracking-tight transition-colors group-hover:text-primary">
+                            {student.name}
+                          </span>
+                          <span className="text-[11px] text-muted-foreground">
+                            @{student.muid.split("@")[0]}
+                          </span>
+                        </div>
+                      );
+                    case "karma":
+                      return (
+                        <span className="text-lg font-black tracking-tighter text-success">
+                          {student.karma.toLocaleString()}
+                        </span>
+                      );
+                    case "level":
+                      return (
+                        <Badge
+                          className={`h-6 px-2.5 font-bold uppercase tracking-wider text-[10px] shadow-sm border-transparent ${
+                            student.level?.includes("7")
+                              ? "bg-brand-purple text-white hover:bg-brand-purple/90"
+                              : student.level?.includes("6")
+                                ? "bg-brand-blue text-white hover:bg-brand-blue/90"
+                                : student.level?.includes("5")
+                                  ? "bg-primary text-primary-foreground hover:bg-primary/90 font-black"
+                                  : student.level?.includes("4")
+                                    ? "bg-chart-3 text-white hover:bg-chart-3/90 font-black"
+                                    : "bg-muted text-muted-foreground hover:bg-muted/90 font-black"
+                          }`}
+                        >
+                          {student.level}
+                        </Badge>
+                      );
+                    case "cluster":
+                      return (
+                        <span className="max-w-[200px] truncate text-xs text-muted-foreground block">
+                          {student.cluster}
+                        </span>
+                      );
+                    case "alumni":
+                      return (
+                        <Switch
+                          checked={student.alumni}
+                          disabled={isChangingType}
+                          onCheckedChange={() => setPendingStudent(student)}
+                          aria-label={`Toggle alumni status for ${student.name}`}
+                        />
+                      );
+                    default:
+                      return null;
+                  }
+                }}
+              >
+                <THead
+                  columnOrder={LEADERBOARD_COLUMNS}
+                  onIconClick={() => {}}
+                  action={false}
+                />
+                <div>
+                  <Pagination
+                    currentPage={leaderboardPage}
+                    totalPages={totalPages}
+                    handleNextClick={() => {
+                      const next = Math.min(leaderboardPage + 1, totalPages);
+                      setLeaderboardPage(next);
+                      setLeaderboardFilters((prev) => ({
+                        ...prev,
+                        page: next,
+                      }));
+                    }}
+                    handlePreviousClick={() => {
+                      const prev = Math.max(leaderboardPage - 1, 1);
+                      setLeaderboardPage(prev);
+                      setLeaderboardFilters((p) => ({ ...p, page: prev }));
+                    }}
+                    perPage={PAGE_SIZE}
+                    totalCount={
+                      leaderboardPagination?.count ?? leaderboard.length
+                    }
+                  />
+                </div>
+              </Table>
             )}
           </section>
 
@@ -2017,88 +2042,116 @@ export function CampusManageDashboard() {
 
                             {isEditing ? (
                               /* Edit mode: inline input + save/cancel */
-                              <div className="flex min-w-0 flex-1 items-center gap-1 animate-in fade-in slide-in-from-right-2">
-                                <Input
-                                  value={socialValue}
-                                  onChange={(e) =>
-                                    setSocialValue(e.target.value)
-                                  }
-                                  placeholder={
-                                    platform.id === "website" ||
-                                    platform.id === "other"
-                                      ? `Full URL (https://...)`
-                                      : `Username or full URL`
-                                  }
-                                  className="h-8 min-w-0 text-[11px] font-medium"
-                                  autoFocus
-                                  onKeyDown={(e) => {
-                                    if (
-                                      e.key === "Enter" &&
-                                      socialValue.trim()
-                                    ) {
-                                      const normalizedUrl = normalizeSocialUrl(
-                                        platform.id,
-                                        socialValue,
-                                      );
-                                      upsertSocial(
-                                        {
-                                          platform: platform.id,
-                                          url: normalizedUrl,
-                                        },
-                                        {
-                                          onSuccess: () =>
-                                            setEditingPlatform(null),
-                                        },
-                                      );
-                                    }
-                                    if (e.key === "Escape")
-                                      setEditingPlatform(null);
-                                  }}
-                                />
-                                <div className="flex shrink-0 items-center gap-0.5">
-                                  <Button
-                                    size="icon"
-                                    variant="ghost"
-                                    className="h-7 w-7 text-success hover:bg-success/10"
-                                    disabled={
-                                      isUpsertingSocial || !socialValue.trim()
-                                    }
-                                    title="Save"
-                                    aria-label="Save"
-                                    onClick={() => {
-                                      const normalizedUrl = normalizeSocialUrl(
-                                        platform.id,
-                                        socialValue,
-                                      );
-                                      upsertSocial(
-                                        {
-                                          platform: platform.id,
-                                          url: normalizedUrl,
-                                        },
-                                        {
-                                          onSuccess: () =>
-                                            setEditingPlatform(null),
-                                        },
+                              <div className="flex min-w-0 flex-1 flex-col gap-1 animate-in fade-in slide-in-from-right-2">
+                                <div className="flex items-center gap-1">
+                                  <Input
+                                    value={socialValue}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      setSocialValue(val);
+                                      setSocialUrlError(
+                                        val.trim()
+                                          ? validateSocialUrl(platform.id, val)
+                                          : null,
                                       );
                                     }}
-                                  >
-                                    {isUpsertingSocial ? (
-                                      <Loader2 className="h-3 w-3 animate-spin" />
-                                    ) : (
-                                      <Plus className="h-3.5 w-3.5" />
+                                    placeholder={
+                                      platform.id === "website" ||
+                                      platform.id === "other"
+                                        ? `Full URL (https://...)`
+                                        : `Username or full URL`
+                                    }
+                                    className={cn(
+                                      "h-8 min-w-0 text-[11px] font-medium",
+                                      socialUrlError &&
+                                        "border-destructive focus-visible:ring-destructive/30",
                                     )}
-                                  </Button>
-                                  <Button
-                                    size="icon"
-                                    variant="ghost"
-                                    className="h-7 w-7 text-muted-foreground hover:bg-muted"
-                                    title="Cancel"
-                                    aria-label="Cancel"
-                                    onClick={() => setEditingPlatform(null)}
-                                  >
-                                    <X className="h-3.5 w-3.5" />
-                                  </Button>
+                                    autoFocus
+                                    onKeyDown={(e) => {
+                                      if (
+                                        e.key === "Enter" &&
+                                        socialValue.trim() &&
+                                        !socialUrlError
+                                      ) {
+                                        const normalizedUrl =
+                                          normalizeSocialUrl(
+                                            platform.id,
+                                            socialValue,
+                                          );
+                                        upsertSocial(
+                                          {
+                                            platform: platform.id,
+                                            url: normalizedUrl,
+                                          },
+                                          {
+                                            onSuccess: () =>
+                                              setEditingPlatform(null),
+                                          },
+                                        );
+                                      }
+                                      if (e.key === "Escape") {
+                                        setEditingPlatform(null);
+                                        setSocialUrlError(null);
+                                      }
+                                    }}
+                                  />
+                                  <div className="flex shrink-0 items-center gap-0.5">
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      className="h-7 w-7 text-success hover:bg-success/10"
+                                      disabled={
+                                        isUpsertingSocial ||
+                                        !socialValue.trim() ||
+                                        !!socialUrlError
+                                      }
+                                      title="Save"
+                                      aria-label="Save"
+                                      onClick={() => {
+                                        const normalizedUrl =
+                                          normalizeSocialUrl(
+                                            platform.id,
+                                            socialValue,
+                                          );
+                                        upsertSocial(
+                                          {
+                                            platform: platform.id,
+                                            url: normalizedUrl,
+                                          },
+                                          {
+                                            onSuccess: () =>
+                                              setEditingPlatform(null),
+                                          },
+                                        );
+                                      }}
+                                    >
+                                      {isUpsertingSocial ? (
+                                        <Loader2 className="h-3 w-3 animate-spin" />
+                                      ) : (
+                                        <Plus className="h-3.5 w-3.5" />
+                                      )}
+                                    </Button>
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      className="h-7 w-7 text-muted-foreground hover:bg-muted"
+                                      title="Cancel"
+                                      aria-label="Cancel"
+                                      onClick={() => {
+                                        setEditingPlatform(null);
+                                        setSocialUrlError(null);
+                                      }}
+                                    >
+                                      <X className="h-3.5 w-3.5" />
+                                    </Button>
+                                  </div>
                                 </div>
+                                {socialUrlError && (
+                                  <p className="flex items-center gap-1 text-[10px] font-semibold text-destructive animate-in fade-in slide-in-from-top-1">
+                                    <span aria-hidden="true">⚠</span>
+                                    {socialUrlError}
+                                  </p>
+                                )}
                               </div>
                             ) : (
                               /* View mode: platform label + display handle + edit/delete */
@@ -2125,9 +2178,18 @@ export function CampusManageDashboard() {
                                     title={`Edit ${platform.label}`}
                                     aria-label={`Edit ${platform.label}`}
                                     onClick={() => {
+                                      const prefillUrl = linkData?.url || "";
                                       setEditingPlatform(platform.id);
                                       // Pre-fill with the raw URL so the user can see it
-                                      setSocialValue(linkData?.url || "");
+                                      setSocialValue(prefillUrl);
+                                      // Validate the pre-filled value so the Save button is
+                                      // correctly disabled for previously-stored invalid URLs.
+                                      setSocialUrlError(
+                                        validateSocialUrl(
+                                          platform.id,
+                                          prefillUrl,
+                                        ),
+                                      );
                                     }}
                                   >
                                     <Pencil className="h-3.5 w-3.5" />
@@ -2181,6 +2243,7 @@ export function CampusManageDashboard() {
                           onValueChange={(val) => {
                             setEditingPlatform(val);
                             setSocialValue("");
+                            setSocialUrlError(null);
                             setIsAddingNewSocial(false);
                           }}
                         >

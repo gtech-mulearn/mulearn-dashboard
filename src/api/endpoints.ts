@@ -18,6 +18,8 @@ export const endpoints = {
     requestOTP: "/api/v1/auth/request-otp/",
     /** POST - Get new access token using refresh token */
     refreshToken: "/api/v1/auth/get-access-token/",
+    /** POST - Logout globally and invalidate refresh tokens */
+    logout: "/api/v1/auth/logout/",
     /** POST - Verify OTP token */
     verifyToken: "/api/v1/auth/token-verification/",
     /** GET - Get Google OAuth2 redirect URL */

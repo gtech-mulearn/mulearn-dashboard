@@ -36,7 +36,7 @@ export function MeetingCard({
   else if (meeting.is_rsvp) pillColor = "bg-warning";
 
   return (
-    <div className="w-full rounded-2xl bg-card p-5 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-border flex flex-col gap-3.5 transition-all hover:border-border">
+    <div className="group relative w-full rounded-2xl bg-card p-5 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-border flex flex-col gap-3.5 transition-all hover:border-primary/30 hover:shadow-sm">
       {/* ─── Status Pill ─── */}
       <div className="flex items-center justify-between">
         <div className={`h-1.5 w-10 rounded-full ${pillColor}`} />
@@ -53,7 +53,7 @@ export function MeetingCard({
         <CheckCircle2 className="h-4 w-4 shrink-0 text-muted-foreground mt-0.5" />
         <Link
           href={`/dashboard/learning-circle/${meeting.circle_id}/meeting/${meeting.id}`}
-          className="text-[14px] font-semibold text-foreground leading-snug hover:text-primary transition-colors line-clamp-2"
+          className="text-[14px] font-semibold text-foreground leading-snug group-hover:text-primary transition-colors line-clamp-2 before:absolute before:inset-0"
         >
           {meeting.title}
         </Link>
@@ -76,7 +76,7 @@ export function MeetingCard({
             type="button"
             onClick={() => onRsvp(meeting.id)}
             disabled={isRsvpLoading}
-            className="text-[11px] font-bold text-primary hover:text-primary/80 transition-colors uppercase tracking-wide bg-primary/10 px-2 py-1 rounded"
+            className="relative z-10 text-[11px] font-bold text-primary hover:text-primary/80 transition-colors uppercase tracking-wide bg-primary/10 px-2 py-1 rounded"
           >
             RSVP
           </button>

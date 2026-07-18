@@ -53,12 +53,12 @@ export function useGoogleCallback(code?: string, error?: string) {
     mutationFn: async ({ code: authCode }: { code: string }) => {
       const tokenData = await fetchGoogleCallback(authCode);
 
-      if (tokenData.isNewUser === true && tokenData.email) {
+      if (tokenData.isNewUser === true && tokenData.tempToken) {
+        await authStore.setTempToken(tokenData.tempToken);
+
         const params = new URLSearchParams();
-        params.set("email", tokenData.email);
-        if (tokenData.fullName) {
-          params.set("fullName", tokenData.fullName);
-        }
+        if (tokenData.email) params.set("email", tokenData.email);
+        if (tokenData.fullName) params.set("fullName", tokenData.fullName);
         router.replace(`/register?${params.toString()}`);
         return { isNewUser: true };
       }

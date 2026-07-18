@@ -27,9 +27,9 @@ export function SourceBreakdown({ data }: SourceBreakdownProps) {
   const total = entries.reduce((sum, [, value]) => sum + value, 0);
 
   return (
-    <div className="overflow-x-auto">
+    <div className="max-h-64 overflow-y-auto pr-1">
       <Table>
-        <TableHeader>
+        <TableHeader className="sticky top-0 bg-card z-10">
           <TableRow>
             <TableHead>Source</TableHead>
             <TableHead>Clicks</TableHead>
@@ -39,11 +39,11 @@ export function SourceBreakdown({ data }: SourceBreakdownProps) {
         <TableBody>
           {entries.map(([source, count]) => (
             <TableRow key={source}>
-              <TableCell className="font-medium">
+              <TableCell className="font-medium py-2">
                 {source && source !== "null" ? source : "Direct"}
               </TableCell>
-              <TableCell>{count}</TableCell>
-              <TableCell>
+              <TableCell className="py-2">{count}</TableCell>
+              <TableCell className="py-2">
                 <div className="flex items-center gap-2">
                   <div className="w-full bg-muted rounded-full h-2 max-w-xs">
                     <div
@@ -51,7 +51,7 @@ export function SourceBreakdown({ data }: SourceBreakdownProps) {
                       style={{ width: `${(count / total) * 100}%` }}
                     />
                   </div>
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-xs text-muted-foreground shrink-0 w-10 text-right">
                     {((count / total) * 100).toFixed(1)}%
                   </span>
                 </div>

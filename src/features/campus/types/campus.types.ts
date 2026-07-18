@@ -1,3 +1,9 @@
+export interface SocialLink {
+  id: string;
+  platform: string;
+  url: string;
+}
+
 export interface CampusInfo {
   college_name: string;
   campus_code: string;
@@ -7,6 +13,7 @@ export interface CampusInfo {
   total_members: number;
   active_members: number;
   rank: number;
+  social_links?: SocialLink[];
 }
 
 export interface WeeklyKarma {

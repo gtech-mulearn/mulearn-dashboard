@@ -1,6 +1,7 @@
 export const campusManageKeys = {
   all: ["campus-manage"] as const,
   overview: () => [...campusManageKeys.all, "overview"] as const,
+  leaderboards: () => [...campusManageKeys.all, "leaderboard"] as const,
   leaderboard: (
     orgId: string,
     page: number,
