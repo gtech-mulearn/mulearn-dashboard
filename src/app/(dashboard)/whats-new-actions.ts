@@ -11,6 +11,7 @@ const DISMISSAL_COOKIE_NAME = "mulearn-whats-new";
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
+  secure: true,
   sameSite: "lax" as const,
   path: "/",
   maxAge: 60 * 60 * 24 * 365,
