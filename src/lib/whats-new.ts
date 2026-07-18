@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 
 export interface ChangelogEntry {
@@ -69,10 +69,17 @@ function cleanChangelogBody(value: string) {
   return normalizeText(cleanedLines.join("\n"));
 }
 
-export function getLatestChangelogEntry(
+export async function getLatestChangelogEntry(
   content?: string | null,
-): ChangelogEntry | null {
-  const rawContent = content ?? readFileSync(changelogPath, "utf8");
+): Promise<ChangelogEntry | null> {
+  let rawContent: string;
+
+  try {
+    rawContent = content ?? (await readFile(changelogPath, "utf8"));
+  } catch {
+    return null;
+  }
+
   const normalizedContent = normalizeText(rawContent);
 
   if (!normalizedContent) {

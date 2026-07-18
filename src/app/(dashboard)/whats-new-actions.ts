@@ -9,6 +9,13 @@ import {
 
 const DISMISSAL_COOKIE_NAME = "mulearn-whats-new";
 
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  sameSite: "lax" as const,
+  path: "/",
+  maxAge: 60 * 60 * 24 * 365,
+};
+
 export async function getWhatsNewState(): Promise<WhatsNewState | null> {
   const cookieStore = await cookies();
   return parseWhatsNewState(
@@ -19,6 +26,14 @@ export async function getWhatsNewState(): Promise<WhatsNewState | null> {
 export async function markWhatsNewSeen(hash: string) {
   const cookieStore = await cookies();
 
+  const existing = parseWhatsNewState(
+    cookieStore.get(DISMISSAL_COOKIE_NAME)?.value ?? null,
+  );
+
+  if (existing && existing.status === "seen" && existing.hash === hash) {
+    return;
+  }
+
   cookieStore.set(
     DISMISSAL_COOKIE_NAME,
     serializeWhatsNewState({
@@ -26,12 +41,7 @@ export async function markWhatsNewSeen(hash: string) {
       status: "seen",
       updatedAt: new Date().toISOString(),
     }),
-    {
-      httpOnly: true,
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 365,
-    },
+    COOKIE_OPTIONS,
   );
 }
 
@@ -45,11 +55,6 @@ export async function dismissWhatsNew(hash: string) {
       status: "dismissed",
       updatedAt: new Date().toISOString(),
     }),
-    {
-      httpOnly: true,
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 365,
-    },
+    COOKIE_OPTIONS,
   );
 }
