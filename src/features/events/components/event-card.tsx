@@ -26,7 +26,6 @@ import { Badge } from "@/components/ui/badge";
 import { resolveEventTypeValue } from "../hooks";
 import type { EventListItem, OrganizerInfo } from "../types";
 import { EventStatusBadge } from "./event-status-badge";
-import { EventTypeBadge } from "./event-type-badge";
 import { InterestButton } from "./interest-button";
 
 const BADGE_CONFIG: Record<

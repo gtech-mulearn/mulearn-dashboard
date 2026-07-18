@@ -46,7 +46,6 @@ const fieldClassName =
 
 export function CollegeSection({
   control,
-  setValue,
   isBusy,
   countryId,
   stateId,

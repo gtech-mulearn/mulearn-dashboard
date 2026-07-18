@@ -13,7 +13,6 @@ import {
   fetchCompanyVerificationRequests,
   verifyCompany,
 } from "../api/manage-companies.api";
-import type { VerificationActionFormValues } from "../schemas";
 import { manageCompaniesKeys } from "./query-keys";
 
 // ─── Types ────────────────────────────────────────────────────────────────────

@@ -51,7 +51,7 @@ export const DepartmentsResponseSchema = ApiResponseSchema(
 
 export const CompanySchema = z
   .object({
-    id: z.union([z.string(), z.number()]).transform((v) => String(v)),
+    id: z.string(),
     title: z.string(),
   })
   .passthrough();

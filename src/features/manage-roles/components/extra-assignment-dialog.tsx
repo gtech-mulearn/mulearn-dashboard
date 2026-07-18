@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select";
 import { useInterestGroupsList } from "@/features/interest-groups";
 import { useGuilds } from "@/features/intern";
-import { useColleges, useCompanies } from "@/features/onboarding";
+import { useColleges } from "@/features/onboarding";
 import type { Role, RoleUser } from "../schemas";
 
 interface ExtraAssignmentDialogProps {
@@ -65,8 +65,6 @@ export function ExtraAssignmentDialog({
 
   // Queries for dynamic dropdowns (enabled conditionally based on role/tier)
   const { data: colleges = [], isLoading: isLoadingColleges } = useColleges();
-  const { data: companies = [], isLoading: isLoadingCompanies } =
-    useCompanies();
   const { data: igsResponse, isLoading: isLoadingIgs } =
     useInterestGroupsList();
   const { data: guilds = [], isLoading: isLoadingGuilds } = useGuilds();

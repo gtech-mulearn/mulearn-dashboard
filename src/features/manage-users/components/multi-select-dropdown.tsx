@@ -71,15 +71,23 @@ export function MultiSelectDropdown({
       {/* Wrapper — relative so the dropdown panel positions against it */}
       <div className="relative" ref={containerRef}>
         {/* Trigger button */}
-        <button
-          type="button"
+        <div
+          role="combobox"
           aria-haspopup="listbox"
           aria-expanded={isOpen}
+          tabIndex={0}
           onClick={() => {
             setIsOpen((prev) => !prev);
             if (isOpen) setSearch("");
           }}
-          className="flex min-h-11 w-full items-center justify-between gap-2 rounded-xl border border-border bg-muted/40 px-3 py-2 text-sm text-foreground transition-colors hover:bg-muted/50"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setIsOpen((prev) => !prev);
+              if (isOpen) setSearch("");
+            }
+          }}
+          className="flex min-h-11 w-full cursor-pointer items-center justify-between gap-2 rounded-xl border border-border bg-muted/40 px-3 py-2 text-sm text-foreground transition-colors hover:bg-muted/50"
         >
           <span className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 text-left">
             {selectedOptions.length > 0 ? (
@@ -118,7 +126,7 @@ export function MultiSelectDropdown({
               className={`size-4 text-muted-foreground transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
             />
           </span>
-        </button>
+        </div>
 
         {/* Inline dropdown panel — no Portal, renders in-place inside Dialog DOM */}
         {isOpen && (

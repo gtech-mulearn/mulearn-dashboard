@@ -366,7 +366,7 @@ export function TimesheetReviewsPageClient() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="flex flex-col gap-4">
         <div>
           <h2 className="text-4xl font-black tracking-tighter text-foreground uppercase flex items-center gap-3">
             <Trophy className="w-10 h-10 text-brand-blue" />
@@ -377,11 +377,9 @@ export function TimesheetReviewsPageClient() {
             interns.
           </p>
         </div>
-      </div>
 
-      <div className="space-y-6">
         {/* Switcher */}
-        <div className="flex items-center gap-1 p-1 w-fit h-12">
+        <div className="flex flex-wrap items-center gap-1 p-1 w-fit h-auto sm:h-12 shrink-0">
           <Button
             type="button"
             size="default"
@@ -392,7 +390,7 @@ export function TimesheetReviewsPageClient() {
               setSortBy(undefined);
               setSortOrder(undefined);
             }}
-            className="gap-1.5 text-xs uppercase tracking-[0.2em]"
+            className="gap-1.5 text-[10px] sm:text-xs uppercase tracking-[0.1em] sm:tracking-[0.2em] px-3 sm:px-4"
           >
             Daily Logs
           </Button>
@@ -406,12 +404,14 @@ export function TimesheetReviewsPageClient() {
               setSortBy(undefined);
               setSortOrder(undefined);
             }}
-            className="gap-1.5 text-xs uppercase tracking-[0.2em]"
+            className="gap-1.5 text-[10px] sm:text-xs uppercase tracking-[0.1em] sm:tracking-[0.2em] px-3 sm:px-4"
           >
             Weekly Reviews
           </Button>
         </div>
+      </div>
 
+      <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
           <div className="flex-1 max-w-xl">
             <div className="relative">
