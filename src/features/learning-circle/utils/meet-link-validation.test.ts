@@ -307,44 +307,6 @@ describe("isMeetLinkValidForPlatform()", () => {
       ).toBe(false);
     });
   });
-
-  // ── Other ────────────────────────────────────────────────────────────────
-
-  describe("Other", () => {
-    it("accepts any well-formed URL", () => {
-      expect(
-        isMeetLinkValidForPlatform(
-          "Other",
-          "https://example.com/meeting/12345",
-        ),
-      ).toBe(true);
-    });
-
-    it("accepts an http URL for 'Other'", () => {
-      expect(
-        isMeetLinkValidForPlatform(
-          "Other",
-          "http://mycompany.internal/meeting",
-        ),
-      ).toBe(true);
-    });
-
-    it("accepts a URL with a port number", () => {
-      expect(
-        isMeetLinkValidForPlatform("Other", "https://example.com:8080/meet"),
-      ).toBe(true);
-    });
-
-    it("rejects a plain non-URL string for 'Other'", () => {
-      expect(isMeetLinkValidForPlatform("Other", "not a url at all")).toBe(
-        false,
-      );
-    });
-
-    it("rejects an empty string for 'Other'", () => {
-      expect(isMeetLinkValidForPlatform("Other", "")).toBe(false);
-    });
-  });
 });
 
 // ─── getMeetLinkErrorMessage ─────────────────────────────────────────────────
@@ -357,7 +319,6 @@ describe("getMeetLinkErrorMessage()", () => {
       "Microsoft Teams",
     );
     expect(getMeetLinkErrorMessage("Discord")).toContain("Discord");
-    expect(getMeetLinkErrorMessage("Other")).toContain("Other");
   });
 
   it("mentions zoom.us in the Zoom error", () => {
@@ -400,7 +361,6 @@ describe("PLATFORM_DOMAIN_RULES", () => {
     "Google Meet",
     "Microsoft Teams",
     "Discord",
-    "Other",
   ];
 
   it("has a rule for every supported platform", () => {
