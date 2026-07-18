@@ -113,8 +113,7 @@ function buildEditMeetingSchema(
             | "Zoom"
             | "Google Meet"
             | "Microsoft Teams"
-            | "Discord"
-            | "Other",
+            | "Discord",
           data.meet_place,
         )
       ) {
@@ -126,8 +125,7 @@ function buildEditMeetingSchema(
               | "Zoom"
               | "Google Meet"
               | "Microsoft Teams"
-              | "Discord"
-              | "Other",
+              | "Discord",
           ),
         });
       }

@@ -37,8 +37,7 @@ export type MeetingPlatform =
   | "Zoom"
   | "Google Meet"
   | "Microsoft Teams"
-  | "Discord"
-  | "Other";
+  | "Discord";
 
 /**
  * Domain validation rule for a single platform.
@@ -58,7 +57,6 @@ type DomainMatcher = (hostname: string) => boolean;
  * │ Google Meet          │ meet.google.com                                  │
  * │ Microsoft Teams      │ teams.microsoft.com  OR  teams.live.com          │
  * │ Discord              │ discord.com  OR  discord.gg                      │
- * │ Other                │ any well-formed URL (scheme + host required)      │
  * └──────────────────────┴──────────────────────────────────────────────────┘
  */
 export const PLATFORM_DOMAIN_RULES: Record<MeetingPlatform, DomainMatcher> = {
@@ -67,9 +65,6 @@ export const PLATFORM_DOMAIN_RULES: Record<MeetingPlatform, DomainMatcher> = {
   "Microsoft Teams": (h) =>
     h === "teams.microsoft.com" || h === "teams.live.com",
   Discord: (h) => h === "discord.com" || h === "discord.gg",
-  // "Other" accepts any well-formed URL — no domain restriction.
-  // The fact that URL() didn't throw is validation enough.
-  Other: (_h) => true,
 };
 
 /**
@@ -81,7 +76,6 @@ export const PLATFORM_LINK_PLACEHOLDERS: Record<MeetingPlatform, string> = {
   "Google Meet": "https://meet.google.com/abc-defg-hij",
   "Microsoft Teams": "https://teams.microsoft.com/l/meetup-join/...",
   Discord: "https://discord.gg/abc123",
-  Other: "https://example.com/meeting",
 };
 
 /**
@@ -136,7 +130,6 @@ export function getMeetLinkErrorMessage(
     "Google Meet": "meet.google.com",
     "Microsoft Teams": "teams.microsoft.com or teams.live.com",
     Discord: "discord.com or discord.gg",
-    Other: "a valid URL (e.g. https://example.com/meeting)",
   };
 
   const expected = examples[platform];

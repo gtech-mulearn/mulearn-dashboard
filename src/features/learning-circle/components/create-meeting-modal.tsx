@@ -62,7 +62,7 @@ const CreateMeetingFormSchema = z
     description: z.string().min(1, "Description is required").max(1000),
     mode: z.enum(["online", "offline"]),
     platform: z
-      .enum(["Zoom", "Google Meet", "Microsoft Teams", "Discord", "Other"])
+      .enum(["Zoom", "Google Meet", "Microsoft Teams", "Discord"])
       .optional()
       .nullable(),
     meet_place: z.string().min(1, "Meeting place/link is required").max(200),
@@ -126,12 +126,7 @@ const CreateMeetingFormSchema = z
 
     if (
       !isMeetLinkValidForPlatform(
-        data.platform as
-          | "Zoom"
-          | "Google Meet"
-          | "Microsoft Teams"
-          | "Discord"
-          | "Other",
+        data.platform as "Zoom" | "Google Meet" | "Microsoft Teams" | "Discord",
         data.meet_place,
       )
     ) {
@@ -143,8 +138,7 @@ const CreateMeetingFormSchema = z
             | "Zoom"
             | "Google Meet"
             | "Microsoft Teams"
-            | "Discord"
-            | "Other",
+            | "Discord",
         ),
       });
     }
@@ -347,8 +341,7 @@ export function CreateMeetingModal({
                             | "Zoom"
                             | "Google Meet"
                             | "Microsoft Teams"
-                            | "Discord"
-                            | "Other",
+                            | "Discord",
                         )
                       }
                     >
@@ -362,7 +355,6 @@ export function CreateMeetingModal({
                           Microsoft Teams
                         </SelectItem>
                         <SelectItem value="Discord">Discord</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
                       </SelectContent>
                     </Select>
                     {errors.platform && (

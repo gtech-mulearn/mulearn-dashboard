@@ -173,12 +173,7 @@ export const CreateMeetingRequestSchema = z
 
     if (
       !isMeetLinkValidForPlatform(
-        data.platform as
-          | "Zoom"
-          | "Google Meet"
-          | "Microsoft Teams"
-          | "Discord"
-          | "Other",
+        data.platform as "Zoom" | "Google Meet" | "Microsoft Teams" | "Discord",
         data.meet_link,
       )
     ) {
@@ -190,8 +185,7 @@ export const CreateMeetingRequestSchema = z
             | "Zoom"
             | "Google Meet"
             | "Microsoft Teams"
-            | "Discord"
-            | "Other",
+            | "Discord",
         ),
       });
     }
