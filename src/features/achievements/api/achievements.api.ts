@@ -8,6 +8,7 @@ import type {
   IssuedLog,
   ManualIssueRequest,
   RevokeRequest,
+  RuleMutationResponseData,
   SimulationResult,
   UserAchievement,
 } from "../schemas";
@@ -16,11 +17,22 @@ import {
   AchievementRuleListResponseSchema,
   AchievementRuleResponseSchema,
   AuditLogListResponseSchema,
+  type BulkIssueResponseData,
+  BulkIssueResponseSchema,
+  type ClaimResponseData,
+  ClaimResponseSchema,
+  type DebugResponseData,
+  DebugResponseSchema,
+  type EligibleAchievement,
+  EligibleAchievementListResponseSchema,
   GenericSuccessResponseSchema,
   IssuedLogListResponseSchema,
+  RuleMutationResponseSchema,
   SimulationListResponseSchema,
   UserAchievementListResponseSchema,
 } from "../schemas";
+// Note: RuleMutationResponseSchema is only used for createRule (POST).
+// The PATCH endpoint returns a generic success envelope, not { rule_id, version }.
 
 // ==========================================
 // Achievement CRUD
@@ -35,13 +47,14 @@ export async function fetchAchievements(): Promise<Achievement[]> {
 }
 
 export async function createAchievement(
-  formData: FormData,
+  data: FormData | Record<string, unknown>,
 ): Promise<Achievement> {
+  const isFormData = data instanceof FormData;
   return apiClient.post<Achievement>(
     endpoints.achievements.create,
-    formData,
+    data,
     undefined,
-    { isFormData: true },
+    { isFormData },
   );
 }
 
@@ -79,11 +92,11 @@ export async function fetchRules(): Promise<AchievementRule[]> {
 
 export async function createRule(
   data: CreateRuleRequest,
-): Promise<AchievementRule> {
+): Promise<RuleMutationResponseData> {
   const res = await apiClient.post(
     endpoints.achievements.createRule,
     data,
-    AchievementRuleResponseSchema,
+    RuleMutationResponseSchema,
   );
   return res.response;
 }
@@ -91,13 +104,16 @@ export async function createRule(
 export async function updateRule(
   ruleId: string,
   data: CreateRuleRequest,
-): Promise<AchievementRule> {
-  const res = await apiClient.put(
+): Promise<void> {
+  // achievement_id is immutable — the backend rejects it with 400 if included.
+  // PATCH returns a generic success envelope (no rule_id/version), so we use
+  // GenericSuccessResponseSchema rather than RuleMutationResponseSchema.
+  const { achievement_id: _omit, ...patchBody } = data;
+  await apiClient.patch(
     endpoints.achievements.updateRule(ruleId),
-    data,
-    AchievementRuleResponseSchema,
+    patchBody,
+    GenericSuccessResponseSchema,
   );
-  return res.response;
 }
 
 export async function deactivateRule(ruleId: string): Promise<void> {
@@ -114,6 +130,20 @@ export async function activateRule(ruleId: string): Promise<void> {
     {},
     GenericSuccessResponseSchema,
   );
+}
+
+/**
+ * Fetch the full detail of a single rule (GET /rules/<rule_id>/).
+ * The endpoint is the same URL as PATCH updateRule but uses GET.
+ */
+export async function fetchSingleRule(
+  ruleId: string,
+): Promise<AchievementRule> {
+  const res = await apiClient.get(
+    endpoints.achievements.updateRule(ruleId),
+    AchievementRuleResponseSchema,
+  );
+  return res.response;
 }
 
 // ==========================================
@@ -133,11 +163,12 @@ export async function simulateForUser(
 export async function debugAchievement(
   muid: string,
   achievementId: string,
-): Promise<unknown> {
+): Promise<DebugResponseData> {
   const res = await apiClient.get(
     endpoints.achievements.debug(muid, achievementId),
+    DebugResponseSchema,
   );
-  return res;
+  return res.response;
 }
 
 // ==========================================
@@ -164,12 +195,26 @@ export async function revokeAchievement(data: RevokeRequest): Promise<void> {
 // Bulk Issue
 // ==========================================
 
-export async function bulkIssueAchievements(formData: FormData): Promise<void> {
-  await apiClient.post<unknown>(
+export async function bulkIssueAchievements(
+  formData: FormData,
+): Promise<BulkIssueResponseData> {
+  const res = await apiClient.post(
     endpoints.achievements.bulkIssue,
     formData,
-    undefined,
+    BulkIssueResponseSchema,
     { isFormData: true },
+  );
+  return res.response;
+}
+
+export async function issueVC(
+  achievementId: string,
+  vcUrl: string,
+): Promise<void> {
+  await apiClient.post(
+    endpoints.achievements.issueVC,
+    { achievement_id: achievementId, vc_url: vcUrl },
+    GenericSuccessResponseSchema,
   );
 }
 
@@ -181,6 +226,21 @@ export async function downloadBulkTemplate(): Promise<Blob> {
   );
 }
 
+// NOTE (API doc §11.3): POST /bulk-claim/ requires a *backend API key* (X-API-Key header),
+// NOT a user JWT. It also accepts optional { date_from, date_to } body params.
+// This function should only be called server-side / by cron infrastructure, not from the
+// user-facing dashboard. Calling it with a JWT will result in a 403.
+export async function bulkClaimAchievements(
+  dateFrom?: string,
+  dateTo?: string,
+): Promise<void> {
+  await apiClient.post(
+    endpoints.achievements.bulkClaim,
+    { date_from: dateFrom, date_to: dateTo },
+    GenericSuccessResponseSchema,
+  );
+}
+
 // ==========================================
 // Issued Logs
 // ==========================================
@@ -189,6 +249,8 @@ export async function fetchIssuedLogs(
   page: number,
   perPage: number,
   search?: string,
+  sortBy?: string,
+  sortOrder?: "asc" | "desc",
 ): Promise<{
   data: IssuedLog[];
   pagination: {
@@ -198,11 +260,22 @@ export async function fetchIssuedLogs(
     totalPages: number;
   };
 }> {
+  // API doc §9.2: params are page, page_size (snake_case), search, sort_by, sort_order
   const query = new URLSearchParams({
+    pageIndex: String(page),
     page: String(page),
     perPage: String(perPage),
+    page_size: String(perPage),
   });
   if (search?.trim()) query.set("search", search.trim());
+  if (sortBy) {
+    query.set("sortBy", sortBy);
+    query.set("sort_by", sortBy);
+  }
+  if (sortOrder) {
+    query.set("sortOrder", sortOrder);
+    query.set("sort_order", sortOrder);
+  }
 
   const res = await apiClient.get(
     `${endpoints.achievements.issuedLog}?${query.toString()}`,
@@ -258,12 +331,64 @@ export async function fetchAuditLogs(muid: string): Promise<AuditLog[]> {
 // User Specific Achievements List
 // ==========================================
 
+/** Fetches the log of achievements a user has claimed (GET /list/user/<muid>/) */
 export async function fetchUserAchievements(
   muid: string,
 ): Promise<UserAchievement[]> {
   const res = await apiClient.get(
-    endpoints.achievements.listByUser(muid),
+    endpoints.achievements.userAchievements(muid),
     UserAchievementListResponseSchema,
+  );
+  return res.response;
+}
+
+/**
+ * Fetches ALL achievements with a per-item `has_achievement` flag for a specific
+ * user (GET /list/?user_id=<uuid>). This is the correct endpoint for the
+ * Issue/Revoke panel — it returns every achievement so the UI knows what's
+ * available to issue vs. already issued.
+ */
+export async function fetchAllAchievementsForUser(
+  userId: string,
+): Promise<UserAchievement[]> {
+  const res = await apiClient.get(
+    endpoints.achievements.listByUser(userId),
+    UserAchievementListResponseSchema,
+  );
+  return res.response;
+}
+
+// ==========================================
+// User-Facing Achievements (Eligible, Progress, Claim)
+// ==========================================
+
+export async function fetchEligibleAchievements(): Promise<
+  EligibleAchievement[]
+> {
+  const res = await apiClient.get(
+    endpoints.achievements.eligible,
+    EligibleAchievementListResponseSchema,
+  );
+  return res.response;
+}
+
+export async function fetchAchievementProgress(): Promise<
+  EligibleAchievement[]
+> {
+  const res = await apiClient.get(
+    endpoints.achievements.progress,
+    EligibleAchievementListResponseSchema,
+  );
+  return res.response;
+}
+
+export async function claimAchievement(
+  achievementId: string,
+): Promise<ClaimResponseData> {
+  const res = await apiClient.post(
+    endpoints.achievements.claim(achievementId),
+    {},
+    ClaimResponseSchema,
   );
   return res.response;
 }

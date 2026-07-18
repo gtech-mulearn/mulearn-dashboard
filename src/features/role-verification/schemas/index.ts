@@ -1,6 +1,15 @@
 import { z } from "zod";
 import { ApiResponseSchema } from "@/lib/schemas/api-response";
 
+export const RoleVerificationOrganizationSchema = z.object({
+  org_id: z.string().uuid(),
+  org_title: z.string(),
+  org_type: z.string(),
+  department: z.string().nullable(),
+  graduation_year: z.string().nullable(),
+  verified: z.boolean(),
+});
+
 export const RoleVerificationItemSchema = z.object({
   id: z.string().uuid(),
   user_id: z.string().uuid(),
@@ -12,8 +21,20 @@ export const RoleVerificationItemSchema = z.object({
   role_title: z.string(),
   email: z.string(),
   mobile: z.string().nullable(),
+  gender: z.string().nullable().optional(),
+  dob: z.string().nullable().optional(),
+  joined: z.string().nullable().optional(),
+  district: z.string().nullable().optional(),
+  state: z.string().nullable().optional(),
+  country: z.string().nullable().optional(),
+  organizations: z.array(RoleVerificationOrganizationSchema).optional(),
+  interest_groups: z.array(z.any()).optional(),
+  role_profile: z.record(z.string(), z.any()).nullable().optional(),
 });
 
+export type RoleVerificationOrganization = z.infer<
+  typeof RoleVerificationOrganizationSchema
+>;
 export type RoleVerificationItem = z.infer<typeof RoleVerificationItemSchema>;
 
 export const PaginationSchema = z.object({

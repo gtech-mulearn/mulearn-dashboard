@@ -1,6 +1,20 @@
 import { z } from "zod";
 
 // ==========================================
+// Django API Response Wrappers
+// ==========================================
+
+export const DjangoResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
+  z.object({
+    hasError: z.boolean().optional(),
+    statusCode: z.number().optional(),
+    response: dataSchema,
+    message: z
+      .union([z.string(), z.record(z.string(), z.unknown())])
+      .optional(),
+  });
+
+// ==========================================
 // Achievement Schemas
 // ==========================================
 
@@ -9,6 +23,7 @@ export const AchievementSchema = z.object({
   name: z.string().min(1),
   description: z.string().nullable().optional(),
   icon: z.string().nullable().optional(),
+  icon_url: z.string().nullable().optional(), // fully-resolved URL returned by the API
   level_based: z.boolean().optional(),
   level_id: z.string().nullable().optional(),
   has_vc: z.boolean().optional(),
@@ -88,15 +103,39 @@ export const CreateRuleRequestSchema = z.object({
 
 export type CreateRuleRequest = z.infer<typeof CreateRuleRequestSchema>;
 
+export const RuleMutationResponseDataSchema = z.object({
+  rule_id: z.string(),
+  version: z.number(),
+});
+
+export type RuleMutationResponseData = z.infer<
+  typeof RuleMutationResponseDataSchema
+>;
+
+export const RuleMutationResponseSchema = DjangoResponseSchema(
+  RuleMutationResponseDataSchema,
+);
+
 // ==========================================
 // Simulation Schemas
 // ==========================================
 
 export const SimulationProgressSchema = z.object({
-  current: z.number().optional(),
-  required: z.number().optional(),
-  percentage: z.number().optional(),
-  milestone_type: z.string().optional(),
+  current: z.number().nullable().optional(),
+  required: z.number().nullable().optional(),
+  percentage: z.number().nullable().optional(),
+  // ig_karma rule
+  ig_id: z.string().nullable().optional(),
+  // skill rule
+  skill_id: z.string().nullable().optional(),
+  // streak rule
+  streak_type: z.string().nullable().optional(),
+  // milestone rule
+  milestone_type: z.string().nullable().optional(),
+  // event rule
+  event_name: z.string().nullable().optional(),
+  // task_completion rule
+  task_hashtag: z.string().nullable().optional(),
 });
 
 export type SimulationProgress = z.infer<typeof SimulationProgressSchema>;
@@ -105,9 +144,9 @@ export const SimulationResultSchema = z.object({
   achievement_id: z.string().uuid(),
   achievement_name: z.string(),
   eligible: z.boolean(),
-  progress: SimulationProgressSchema.optional().nullable(),
-  reason: z.string().optional(),
-  debug_info: z.record(z.string(), z.unknown()).optional(),
+  progress: SimulationProgressSchema.nullable().optional(),
+  reason: z.string().nullable().optional(),
+  debug_info: z.record(z.string(), z.unknown()).nullable().optional(),
 });
 
 export type SimulationResult = z.infer<typeof SimulationResultSchema>;
@@ -137,30 +176,17 @@ export type RevokeRequest = z.infer<typeof RevokeRequestSchema>;
 
 export const AuditLogSchema = z.object({
   id: z.string().optional(),
+  user: z.string().nullable().optional(), // UUID of the affected user (per §9.1)
   achievement_id: z.string().optional(),
   achievement_name: z.string().optional(),
   action: z.string().optional(),
-  rule_version: z.number().optional(),
+  rule_version: z.number().nullable().optional(),
   metadata: z.record(z.string(), z.unknown()).optional(),
   performed_by: z.string().nullable().optional(),
   created_at: z.string().optional(),
 });
 
 export type AuditLog = z.infer<typeof AuditLogSchema>;
-
-// ==========================================
-// Django API Response Wrappers
-// ==========================================
-
-export const DjangoResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
-  z.object({
-    hasError: z.boolean().optional(),
-    statusCode: z.number().optional(),
-    response: dataSchema,
-    message: z
-      .union([z.string(), z.record(z.string(), z.unknown())])
-      .optional(),
-  });
 
 // ==========================================
 // User Achievement (per-user list with has_achievement flag)
@@ -171,6 +197,7 @@ export const UserAchievementSchema = z.object({
   name: z.string().min(1),
   description: z.string().nullable().optional(),
   icon: z.string().nullable().optional(),
+  icon_url: z.string().nullable().optional(), // fully-resolved URL returned by the API
   level_based: z.boolean().optional(),
   level_id: z.string().nullable().optional(),
   has_vc: z.boolean().optional(),
@@ -247,6 +274,106 @@ export type PaginatedIssuedLog = z.infer<typeof PaginatedIssuedLogSchema>;
 export const IssuedLogListResponseSchema = DjangoResponseSchema(
   z.union([z.array(IssuedLogSchema), PaginatedIssuedLogSchema]),
 );
+
+// ==========================================
+// Eligible & Progress Schemas (User-Facing)
+// ==========================================
+
+export const EligibleAchievementSchema = SimulationResultSchema;
+
+export type EligibleAchievement = z.infer<typeof EligibleAchievementSchema>;
+
+export const EligibleAchievementListResponseSchema = DjangoResponseSchema(
+  z.array(EligibleAchievementSchema),
+);
+
+// ==========================================
+// Claim Schemas
+// ==========================================
+
+export const ClaimResponseDataSchema = z.object({
+  achievement_name: z.string(),
+  vc_pending: z.boolean().optional().default(false),
+});
+
+export type ClaimResponseData = z.infer<typeof ClaimResponseDataSchema>;
+
+export const ClaimResponseSchema = DjangoResponseSchema(
+  ClaimResponseDataSchema,
+);
+
+// ==========================================
+// Bulk Issue Response Schemas
+// ==========================================
+
+export const BulkIssueFailedRowSchema = z.object({
+  row: z.number(),
+  muid: z.string(),
+  reason: z.string(),
+});
+
+export const BulkIssueResponseDataSchema = z.object({
+  success_count: z.number(),
+  failed_count: z.number(),
+  failed_rows: z.array(BulkIssueFailedRowSchema).default([]),
+});
+
+export type BulkIssueResponseData = z.infer<typeof BulkIssueResponseDataSchema>;
+
+export const BulkIssueResponseSchema = DjangoResponseSchema(
+  BulkIssueResponseDataSchema,
+);
+
+// ==========================================
+// Debug Response Schemas
+// ==========================================
+
+export const IgKarmaDebugSchema = z.object({
+  ig_id: z.string(),
+  total_karma: z.number(),
+  task_count: z.number(),
+});
+
+export const StreakDebugSchema = z.object({
+  streak_type: z.string(),
+  current_streak: z.number(),
+  longest_streak: z.number(),
+});
+
+export const SkillProgressDebugSchema = z.object({
+  skill_id: z.string(),
+  completed_task_count: z.number(),
+  total_karma: z.number(),
+});
+
+export const DebugUserDataSchema = z.object({
+  ig_karma: z.array(IgKarmaDebugSchema).default([]),
+  streaks: z.array(StreakDebugSchema).default([]),
+  skill_progress: z.array(SkillProgressDebugSchema).default([]),
+});
+
+export const DebugResponseDataSchema = z.object({
+  evaluation: EligibleAchievementSchema,
+  user_data: DebugUserDataSchema,
+});
+
+export type DebugResponseData = z.infer<typeof DebugResponseDataSchema>;
+export type DebugUserData = z.infer<typeof DebugUserDataSchema>;
+
+export const DebugResponseSchema = DjangoResponseSchema(
+  DebugResponseDataSchema,
+);
+
+// ==========================================
+// Issue VC Schema
+// ==========================================
+
+export const IssueVCRequestSchema = z.object({
+  achievement_id: z.string().uuid("Must be a valid UUID"),
+  vc_url: z.string().url("Must be a valid URL"),
+});
+
+export type IssueVCRequest = z.infer<typeof IssueVCRequestSchema>;
 
 // ==========================================
 

@@ -666,6 +666,14 @@ export const endpoints = {
     bulkIssue: "/api/v1/dashboard/achievement/bulk-issue/",
     bulkIssueTemplate: "/api/v1/dashboard/achievement/bulk-issue/template/",
     issuedLog: "/api/v1/dashboard/achievement/issued-log/",
+    /** GET - List eligible achievements for current user */
+    eligible: "/api/v1/dashboard/achievement/eligible/",
+    /** GET - Check progress for all achievements */
+    progress: "/api/v1/dashboard/achievement/progress/",
+    /** POST - Claim a specific achievement */
+    claim: (id: string) => `/api/v1/dashboard/achievement/claim/${id}/`,
+    /** POST - Bulk claim achievements */
+    bulkClaim: "/api/v1/dashboard/achievement/bulk-claim/",
   },
 
   // ============================================
