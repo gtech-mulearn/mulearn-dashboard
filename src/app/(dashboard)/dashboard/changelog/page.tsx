@@ -117,11 +117,18 @@ export default function ChangelogPage() {
           best it can be. Thanks everyone for your feedback! ❤️
         </p>
         <div className="flex flex-wrap items-center gap-3 mt-2">
-          <a href="https://mulearn.org/donate" target="_blank" rel="noreferrer">
-            <Button className="inline-flex items-center justify-center font-semibold">
+          <Button
+            asChild
+            className="inline-flex items-center justify-center font-semibold"
+          >
+            <a
+              href="https://mulearn.org/donate"
+              target="_blank"
+              rel="noreferrer"
+            >
               Give us some support!
-            </Button>
-          </a>
+            </a>
+          </Button>
         </div>
       </div>
 
@@ -138,11 +145,12 @@ export default function ChangelogPage() {
 
       {/* Back to top button */}
       <div className="flex justify-end mt-20">
-        <a href="#top">
-          <Button className="inline-flex items-center justify-center font-semibold">
-            Back to the top &uarr;
-          </Button>
-        </a>
+        <Button
+          asChild
+          className="inline-flex items-center justify-center font-semibold"
+        >
+          <a href="#top">Back to the top &uarr;</a>
+        </Button>
       </div>
     </div>
   );
