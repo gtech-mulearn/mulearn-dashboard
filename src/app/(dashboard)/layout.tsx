@@ -12,15 +12,15 @@ import { UnauthorizedHandler } from "@/components/auth";
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import { AppTopbar } from "@/components/dashboard/app-topbar";
 import { DashboardSidebarProvider } from "@/components/dashboard/sidebar-provider";
-import { DashboardContent } from "@/components/layout/dashboard-content";
 import { WhatsNewPopup } from "@/components/dashboard/whats-new-popup";
+import { DashboardContent } from "@/components/layout/dashboard-content";
 import { getLatestChangelogEntry, shouldShowWhatsNew } from "@/lib/whats-new";
+import { OnboardingGuard } from "./onboarding-guard";
 import {
   dismissWhatsNew,
   getWhatsNewState,
   markWhatsNewSeen,
 } from "./whats-new-actions";
-import { OnboardingGuard } from "./onboarding-guard";
 
 interface DashboardLayoutProps {
   children: ReactNode;

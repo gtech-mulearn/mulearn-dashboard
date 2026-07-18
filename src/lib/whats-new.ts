@@ -1,6 +1,6 @@
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { createHash } from "node:crypto";
 
 export interface ChangelogEntry {
   title: string;
