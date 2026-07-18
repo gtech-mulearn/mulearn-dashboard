@@ -477,43 +477,46 @@ export function useDeleteMeeting() {
     mutationFn: (meetingId: string) => deleteMeeting(meetingId),
     onSuccess: (_, meetingId) => {
       /**
-       * BUG-014 (post-delete 400 race fix):
+       * BUG-014 (post-delete 400 race fix — revised):
        *
-       * DO NOT use invalidateQueries(learningCircleKeys.meetings()) here.
-       * That parent key is a prefix for *all* meeting queries, including
-       * meetingDetail, meetingReport, and attendeeReport for the now-deleted
-       * meeting. Invalidating them causes React Query to immediately refetch
-       * those endpoints, which return 400 "Meeting not found" because the
-       * record no longer exists.
-       *
-       * Instead:
-       *  1. removeQueries() for the deleted meeting's specific cache entries.
-       *     This evicts them from the cache and cancels any in-flight fetches
-       *     — no 400 errors.
-       *  2. invalidateQueries() only on the list-level keys so the circle's
-       *     meeting list and user's meeting list refresh correctly.
+       * Step 1: Surgically evict the deleted meeting's specific cache entries.
+       * removeQueries() removes them from the cache AND cancels any in-flight
+       * fetch, so React Query will never attempt to refetch a resource that no
+       * longer exists.
        */
-
-      // Evict the deleted meeting's individual cache entries.
-      // removeQueries() cancels any in-flight fetch and removes the entry from
-      // the cache entirely, so React Query will never attempt a refetch of a
-      // resource that no longer exists.
       queryClient.removeQueries({
         queryKey: learningCircleKeys.meetingDetail(meetingId),
+        exact: true,
       });
       queryClient.removeQueries({
         queryKey: learningCircleKeys.meetingReport(meetingId),
+        exact: true,
       });
       queryClient.removeQueries({
         queryKey: learningCircleKeys.attendeeReport(meetingId),
+        exact: true,
       });
 
-      // Now it is safe to invalidate the parent meetings key — the three
-      // deleted-meeting entries above are already gone, so the invalidation
-      // only causes the list-level queries (meetingsByCircle, meetingsUser,
-      // meetingsPublic) to refetch, which is exactly what we want.
+      /**
+       * Step 2: Invalidate only the list-level queries, NOT the parent
+       * meetings() prefix (which would cascade back down to the just-removed
+       * detail/report entries and re-register them as stale).
+       *
+       * We target meetingsByCircle (all circles), meetingsUser, and
+       * meetingsPublic individually using their shared "byCircle"/"user"/
+       * "public" subtree prefix so every cached circle's list refreshes.
+       */
       queryClient.invalidateQueries({
-        queryKey: learningCircleKeys.meetings(),
+        queryKey: [...learningCircleKeys.meetings(), "byCircle"],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: [...learningCircleKeys.meetings(), "user"],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: [...learningCircleKeys.meetings(), "public"],
+        exact: false,
       });
 
       toast.success("Meeting deleted successfully");
