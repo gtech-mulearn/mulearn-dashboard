@@ -59,3 +59,14 @@ export async function dismissWhatsNew(hash: string) {
     COOKIE_OPTIONS,
   );
 }
+
+export async function clearWhatsNewCookie() {
+  const cookieStore = await cookies();
+  cookieStore.delete({
+    name: DISMISSAL_COOKIE_NAME,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+  });
+}

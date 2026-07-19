@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { endpoints } from "@/api/endpoints";
 import { publicServerClient } from "@/api/server";
+import { clearWhatsNewCookie } from "@/app/(dashboard)/whats-new-actions";
 
 export async function POST() {
   const cookieStore = await cookies();
@@ -20,10 +21,23 @@ export async function POST() {
     }
   }
 
-  cookieStore.delete("accessToken");
-  cookieStore.delete("refreshToken");
-  cookieStore.delete("isAuthenticated");
-  cookieStore.delete("tempToken");
+  // Delete with the SAME attributes used when the cookies were set
+  // (path: "/", secure in prod, sameSite: strict). Omitting these lets the
+  // browser keep a stale cookie, so isAuthenticated lingers and the app
+  // re-shows auth/popup UI right after logout.
+  const cookieOptions = {
+    path: "/",
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict" as const,
+  };
+  cookieStore.delete({ name: "accessToken", ...cookieOptions });
+  cookieStore.delete({ name: "refreshToken", ...cookieOptions });
+  cookieStore.delete({ name: "isAuthenticated", ...cookieOptions });
+  cookieStore.delete({ name: "tempToken", ...cookieOptions });
+
+  // Drop the "What's New" dismissal cookie so the popup is not carried
+  // over to the next session after logging out.
+  await clearWhatsNewCookie();
 
   return NextResponse.json({ success: true });
 }
