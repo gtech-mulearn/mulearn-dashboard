@@ -91,8 +91,8 @@ describe("proxy public routes", () => {
 import { ROLES } from "./lib/auth/roles";
 
 describe("proxy jobs route policy", () => {
-  it("grants access to ADMIN, STUDENT, and COMPANY", () => {
-    [ROLES.ADMIN, ROLES.STUDENT, ROLES.COMPANY].forEach((role) => {
+  it("grants access to ADMIN and STUDENT", () => {
+    [ROLES.ADMIN, ROLES.STUDENT].forEach((role) => {
       const res = proxy(
         requestFor("/dashboard/jobs", {
           accessToken: makeToken({ expiry: FUTURE, roles: [role] }),
@@ -114,15 +114,17 @@ describe("proxy jobs route policy", () => {
     expect(res.headers.get("location")).toBeNull();
   });
 
-  it("blocks MENTOR", () => {
-    const res = proxy(
-      requestFor("/dashboard/jobs", {
-        accessToken: makeToken({ expiry: FUTURE, roles: [ROLES.MENTOR] }),
-        refreshToken: "r",
-      }),
-    );
-    const location = res.headers.get("location");
-    expect(location).toContain("/dashboard");
-    expect(location).toContain("unauthorized=true");
+  it("blocks MENTOR and COMPANY", () => {
+    [ROLES.MENTOR, ROLES.COMPANY].forEach((role) => {
+      const res = proxy(
+        requestFor("/dashboard/jobs", {
+          accessToken: makeToken({ expiry: FUTURE, roles: [role] }),
+          refreshToken: "r",
+        }),
+      );
+      const location = res.headers.get("location");
+      expect(location).toContain("/dashboard");
+      expect(location).toContain("unauthorized=true");
+    });
   });
 });
