@@ -153,7 +153,7 @@ function SingleTab({ role }: { role: Role }) {
   const handleAssign = () => {
     if (!selectedUser || !isExtraValid) return;
 
-    const extra: Record<string, any> = {};
+    const extra: BulkAssignExtraPayload = {};
     if (isIntern) {
       extra.guild = guild.trim();
     }

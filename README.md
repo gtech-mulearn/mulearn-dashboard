@@ -6,7 +6,7 @@ A modern, comprehensive dashboard and community management platform for the **μ
 
 ### Prerequisites
 
-- Node.js 20+
+- Node.js 22+
 - Bun
 
 ### Installation
@@ -25,7 +25,7 @@ A modern, comprehensive dashboard and community management platform for the **μ
    ```
 
 3. Setup environment variables:
-   Copy `.env.example` to `.env` and fill in the required values.
+   Copy `.env.example` to `.env.local` and fill in the required values.
 
 4. Run the development server:
 
@@ -39,7 +39,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## 🛠 Tech Stack
 
-- **Framework**: [Next.js 15](https://nextjs.org/) (App Router)
+- **Framework**: [Next.js 16](https://nextjs.org/) (App Router)
 - **Library**: [React 19](https://react.dev/)
 - **Styling**: [Tailwind CSS 4](https://tailwindcss.com/)
 - **State Management**: [Zustand](https://github.com/pmndrs/zustand)
@@ -95,6 +95,25 @@ bun run format    # Format the entire codebase
 ```bash
 bun run typecheck
 ```
+
+---
+
+## 🚢 Deployment
+
+Both environments deploy to Netlify via GitHub Actions — pushes to the branches below are the
+only way anything reaches a live site:
+
+| Environment | Branch | URL |
+|---|---|---|
+| Staging | `staging` | https://staging.app.mulearn.org |
+| Production | `master` | https://app.mulearn.org |
+
+On push, the matching workflow (`.github/workflows/staging-deploy.yml` /
+`production-deploy.yml`) runs lint and typecheck, then builds and deploys with
+`netlify deploy --build`. Pull requests run the same checks via `ci.yml` before merge.
+Builds on any other branch are cancelled by `scripts/netlify-ignore.sh`.
+
+Design detail: `docs/superpowers/specs/2026-07-19-netlify-cicd-design.md`.
 
 ---
 

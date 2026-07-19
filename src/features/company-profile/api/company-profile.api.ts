@@ -17,7 +17,7 @@ export async function updateCompanyProfile(
     // Strip out undefined/null/empty values to avoid validation errors
     const cleanedPayload = Object.fromEntries(
       Object.entries(allowedPayload).filter(
-        ([key, value]) => value !== undefined && value !== null && value !== "",
+        ([_, value]) => value !== undefined && value !== null && value !== "",
       ),
     );
     const res = await updateCompanyRegistration(

@@ -26,7 +26,8 @@ export function UserSearchCard({ user }: UserSearchCardProps) {
   const [imageError, setImageError] = useState(false);
   const firstLetter = user.full_name.charAt(0).toUpperCase();
   const uniqueIgs = Array.from(new Set(user.interest_groups || []));
-  const hasImage = Boolean(user.profile_pic) && !imageError;
+  const profilePic = user.profile_pic;
+  const hasImage = Boolean(profilePic) && !imageError;
 
   const pastel =
     PASTELS[
@@ -41,9 +42,9 @@ export function UserSearchCard({ user }: UserSearchCardProps) {
     >
       <Card className="relative aspect-[4/5] w-full gap-0 overflow-hidden rounded-[2rem] border-0 p-0 shadow-sm ring-1 ring-black/5 transition-all duration-500 group-hover:-translate-y-1.5 group-hover:shadow-2xl group-hover:shadow-black/25 motion-reduce:transform-none motion-reduce:transition-none">
         {/* Background: profile photo, or pastel fallback with a monogram */}
-        {hasImage ? (
+        {hasImage && profilePic ? (
           <Image
-            src={user.profile_pic!}
+            src={profilePic}
             alt={user.full_name}
             fill
             sizes="(max-width: 768px) 100vw, 320px"
@@ -100,9 +101,9 @@ export function UserSearchCard({ user }: UserSearchCardProps) {
           <div className="flex items-center justify-between gap-3 rounded-[1.4rem] border border-white/25 bg-black/5 p-2.5 shadow-lg ring-1 ring-black/5 backdrop-blur-xl">
             <div className="flex min-w-0 items-center gap-2.5 pl-1">
               <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full ring-1 ring-white/40">
-                {hasImage ? (
+                {hasImage && profilePic ? (
                   <Image
-                    src={user.profile_pic!}
+                    src={profilePic}
                     alt=""
                     fill
                     sizes="36px"

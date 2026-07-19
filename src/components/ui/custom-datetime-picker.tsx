@@ -3,6 +3,7 @@
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import * as React from "react";
+import type { DayButtonProps, MonthCaptionProps } from "react-day-picker";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -40,11 +41,7 @@ function CustomDayButton({
   modifiers,
   hasSelection,
   ...props
-}: {
-  day: any;
-  modifiers: any;
-  hasSelection?: boolean;
-} & React.ComponentProps<"button">) {
+}: DayButtonProps & { hasSelection?: boolean }) {
   const ref = React.useRef<HTMLButtonElement>(null);
   React.useEffect(() => {
     if (modifiers.focused) ref.current?.focus();
@@ -338,10 +335,15 @@ export function CustomDateTimePicker({
               showOutsideDays={false}
               className="text-foreground"
               components={{
-                DayButton: (props: any) => (
+                DayButton: (props: DayButtonProps) => (
                   <CustomDayButton {...props} hasSelection={!!date} />
                 ),
-                MonthCaption: (props: any) => {
+                MonthCaption: (
+                  props: MonthCaptionProps & {
+                    displayMonth?: Date;
+                    month?: Date;
+                  },
+                ) => {
                   const date =
                     props.calendarMonth?.date ||
                     props.displayMonth ||

@@ -1,9 +1,13 @@
 [build]
   command = "bun run build"
   publish = ".next"
+  # Exit 0 cancels the build; non-zero proceeds. Only CI-driven deploys and
+  # the master branch may build. File path must start with ./ (Netlify requirement).
+  ignore = "bash ./scripts/netlify-ignore.sh"
 
 [build.environment]
-  NODE_VERSION = "20"
+  NODE_VERSION = "22"
+  BUN_VERSION = "1.3.14"
 
 # Next.js runtime is auto-detected by Netlify.
 # The @netlify/plugin-nextjs plugin handles:

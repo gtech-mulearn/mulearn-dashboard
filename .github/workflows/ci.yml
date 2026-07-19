@@ -1,13 +1,12 @@
-# Named for the environment it deploys (staging), triggered by the staging branch.
-name: Staging - Deploy
+name: CI
 
 on:
-  push:
-    branches: [staging]
+  pull_request:
+    branches: [dev, staging, master]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   lint:
@@ -50,11 +49,9 @@ jobs:
       - name: Run typecheck
         run: bun run typecheck
 
-  deploy:
-    name: Deploy to Netlify (Staging)
-    needs: [lint, typecheck]
+  build:
+    name: Build
     runs-on: ubuntu-latest
-    environment: staging
     steps:
       - uses: actions/checkout@v4
 
@@ -69,22 +66,10 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Install Netlify CLI
-        run: bun install -g netlify-cli@26.2.0
-
-      # No standalone build job: netlify deploy --build runs the build itself
-      # and aborts the deploy if it fails. A separate build job would build
-      # everything twice for no additional safety.
-      - name: Deploy to Netlify
-        run: netlify deploy --build --prod
+      - name: Build
+        run: bun run build
         env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_STAGING_SITE_ID }}
+          # Repo-level vars (dev-backend values). PR builds verify
+          # compilability, not environment wiring.
           NEXT_PUBLIC_DJANGO_API_URL: ${{ vars.NEXT_PUBLIC_DJANGO_API_URL }}
           NEXT_PUBLIC_DISCORD_AUTH_URL: ${{ vars.NEXT_PUBLIC_DISCORD_AUTH_URL }}
-          NEXT_PUBLIC_CDN_URL: ${{ vars.NEXT_PUBLIC_CDN_URL }}
-          # Netlify's builders inject COMMIT_REF; Actions-driven builds must
-          # pass it explicitly or the version badge renders "dev".
-          COMMIT_REF: ${{ github.sha }}
-          # Bypass for scripts/netlify-ignore.sh, should the CLI evaluate it.
-          CI_DEPLOY: "true"

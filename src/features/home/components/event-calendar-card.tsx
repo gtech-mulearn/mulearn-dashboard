@@ -247,13 +247,7 @@ export function EventCalendarCard({
           const dayEvents = eventsByDate.get(dateKey) ?? [];
           const hasEvents = dayEvents.length > 0;
           const isCurrentMonth = isSameMonth(day, currentMonth);
-          const isSelected = isSameDay(day, selectedDate);
           const isToday = isSameDay(day, new Date());
-
-          // Pick the first event's type color for the circle
-          const eventColor = hasEvents
-            ? getEventBg(dayEvents[0].type ?? "other")
-            : "";
 
           return (
             <Button

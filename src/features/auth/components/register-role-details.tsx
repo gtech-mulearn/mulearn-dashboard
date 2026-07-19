@@ -258,8 +258,8 @@ export interface CompanyDetailsValues {
   cultureText?: string;
   techStack?: string[];
   perks?: string[];
-  testimonials?: any[];
-  gallery?: any[];
+  testimonials?: unknown[];
+  gallery?: unknown[];
 }
 
 interface RegisterRoleDetailsProps {

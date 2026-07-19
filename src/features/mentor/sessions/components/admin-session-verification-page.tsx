@@ -12,7 +12,7 @@ import {
 import { useState } from "react";
 import { Blank } from "@/components/dashboard/table/Blank";
 import Pagination from "@/components/dashboard/table/pagination";
-import ReusableTable from "@/components/dashboard/table/Table";
+import ReusableTable, { type Data } from "@/components/dashboard/table/Table";
 import THead from "@/components/dashboard/table/Thead";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -125,7 +125,8 @@ function SessionVerificationTable({
   totalCount: number;
   onPageChange: (page: number) => void;
 }) {
-  const customCellRender = (column: string, row: any) => {
+  const customCellRender = (column: string, rawRow: Data) => {
+    const row = rawRow as unknown as Session;
     if (column === "title") {
       return (
         <div className="flex flex-col gap-1">
@@ -183,7 +184,8 @@ function SessionVerificationTable({
     return null;
   };
 
-  const customActionRender = (row: any) => {
+  const customActionRender = (rawRow: Data) => {
+    const row = rawRow as unknown as Session;
     const status = row.status ?? "PENDING_APPROVAL";
     const isPending = status === "PENDING_APPROVAL";
     const isScheduled = status === "SCHEDULED";
@@ -196,7 +198,7 @@ function SessionVerificationTable({
               variant="ghost"
               size="icon"
               className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950/40 disabled:opacity-40"
-              onClick={() => onApprove(row as Session, "approve")}
+              onClick={() => onApprove(row, "approve")}
               disabled={!isPending}
               aria-label="Approve session"
             >
@@ -214,7 +216,7 @@ function SessionVerificationTable({
               variant="ghost"
               size="icon"
               className="h-8 w-8 text-destructive hover:bg-destructive/10 disabled:opacity-40"
-              onClick={() => onApprove(row as Session, "reject")}
+              onClick={() => onApprove(row, "reject")}
               disabled={!isPending}
               aria-label="Reject session"
             >
@@ -233,7 +235,7 @@ function SessionVerificationTable({
               variant="ghost"
               size="icon"
               className="h-8 w-8 text-destructive hover:bg-destructive/10 disabled:opacity-40"
-              onClick={() => onApprove(row as Session, "cancel")}
+              onClick={() => onApprove(row, "cancel")}
               disabled={!isScheduled}
               aria-label="Cancel or unpublish session"
             >
@@ -271,7 +273,7 @@ function SessionVerificationTable({
     <div className="w-full overflow-x-auto">
       <div className="min-w-[800px] w-full">
         <ReusableTable
-          rows={sessions as any}
+          rows={sessions as unknown as Data[]}
           isLoading={isLoading}
           page={page}
           perPage={PER_PAGE}
