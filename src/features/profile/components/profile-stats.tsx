@@ -16,20 +16,9 @@ interface ProfileStatsProps {
   monthDifference: number;
 }
 
-function formatNumber(num: number): string {
-  if (num >= 1000000) {
-    return `${(num / 1000000).toFixed(1)}M`;
-  }
-  if (num >= 1000) {
-    return `${(num / 1000).toFixed(1)}K`;
-  }
-  return num.toLocaleString();
-}
-
 export function ProfileStats({ profile, monthDifference }: ProfileStatsProps) {
   const karma = profile.karma ?? 0;
   const rank = profile.rank ?? 0;
-  const percentile = profile.percentile ? profile.percentile.toFixed(1) : "0";
   const level = profile.level ? profile.level.slice(3, 4) : "1";
 
   const avgKarma =
@@ -39,17 +28,18 @@ export function ProfileStats({ profile, monthDifference }: ProfileStatsProps) {
     <div className="grid gap-4 sm:grid-cols-3">
       <StatCard
         title="Total Karma"
-        value={formatNumber(karma)}
+        value={karma.toLocaleString()}
         accent="chart-4"
         icon={<Flame className="size-5" />}
-        trend={{ value: `+${formatNumber(avgKarma)}/month`, direction: "up" }}
+        description={`avg ${avgKarma.toLocaleString()}/month since joining`}
       />
+      {/* Percentile is intentionally not shown: the API's get_percentile mixes
+          Wallet and User counts and can return negative values ("Top -0.1%"). */}
       <StatCard
         title="Global Rank"
         value={`#${rank || "-"}`}
         accent="chart-1"
         icon={<Award className="size-5" />}
-        description={`Top ${percentile}%`}
       />
       <StatCard
         title="Current Level"
