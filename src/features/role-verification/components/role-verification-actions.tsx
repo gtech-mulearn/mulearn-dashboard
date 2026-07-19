@@ -74,7 +74,7 @@ const renderRoleProfileValue = (key: string, value: unknown) => {
   ) {
     try {
       const date = new Date(value);
-      if (!isNaN(date.getTime())) {
+      if (!Number.isNaN(date.getTime())) {
         return date.toLocaleString();
       }
     } catch {
@@ -272,46 +272,51 @@ export function RoleVerificationActions({
                   </div>
                 </div>
 
-                {item.role_profile &&
-                  Object.keys(item.role_profile).length > 0 && (
-                    <div className="mt-6 border-t pt-4">
-                      <h3 className="text-sm font-semibold mb-3">
-                        Role Profile Details
-                      </h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                        {Object.keys(item.role_profile)
-                          .filter((key) => key !== "description")
-                          .map((key) => {
-                            const val = item.role_profile![key];
-                            return (
-                              <div key={key}>
-                                <h4 className="text-sm font-medium text-muted-foreground mb-1">
-                                  {roleProfileFieldLabels[key] ||
-                                    formatKey(key)}
-                                </h4>
-                                <p className="text-sm font-medium break-all">
-                                  {renderRoleProfileValue(key, val)}
-                                </p>
-                              </div>
-                            );
-                          })}
-                        {item.role_profile.description !== undefined && (
-                          <div className="col-span-1 sm:col-span-2 md:col-span-3">
-                            <h4 className="text-sm font-medium text-muted-foreground mb-1">
-                              {roleProfileFieldLabels.description ||
-                                "Description"}
-                            </h4>
-                            <p className="text-sm font-medium break-words whitespace-pre-wrap bg-muted/30 p-3 rounded-md border border-border/20">
-                              {renderRoleProfileValue(
-                                "description",
-                                item.role_profile.description,
-                              )}
-                            </p>
-                          </div>
-                        )}
+                {(() => {
+                  const roleProfile = item.role_profile;
+                  return (
+                    roleProfile &&
+                    Object.keys(roleProfile).length > 0 && (
+                      <div className="mt-6 border-t pt-4">
+                        <h3 className="text-sm font-semibold mb-3">
+                          Role Profile Details
+                        </h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                          {Object.keys(roleProfile)
+                            .filter((key) => key !== "description")
+                            .map((key) => {
+                              const val = roleProfile[key];
+                              return (
+                                <div key={key}>
+                                  <h4 className="text-sm font-medium text-muted-foreground mb-1">
+                                    {roleProfileFieldLabels[key] ||
+                                      formatKey(key)}
+                                  </h4>
+                                  <p className="text-sm font-medium break-all">
+                                    {renderRoleProfileValue(key, val)}
+                                  </p>
+                                </div>
+                              );
+                            })}
+                          {roleProfile.description !== undefined && (
+                            <div className="col-span-1 sm:col-span-2 md:col-span-3">
+                              <h4 className="text-sm font-medium text-muted-foreground mb-1">
+                                {roleProfileFieldLabels.description ||
+                                  "Description"}
+                              </h4>
+                              <p className="text-sm font-medium break-words whitespace-pre-wrap bg-muted/30 p-3 rounded-md border border-border/20">
+                                {renderRoleProfileValue(
+                                  "description",
+                                  roleProfile.description,
+                                )}
+                              </p>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )
+                  );
+                })()}
               </div>
 
               {/* Organizations */}

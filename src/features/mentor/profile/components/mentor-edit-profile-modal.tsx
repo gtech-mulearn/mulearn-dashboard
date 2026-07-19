@@ -14,7 +14,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, X } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { type Resolver, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -54,6 +54,10 @@ import type {
 } from "@/features/mentor/onboarding/schemas";
 import { useUpdateProfile, useUpdateProfileImage } from "@/features/profile";
 import type { UserProfile } from "@/features/profile/schemas";
+import {
+  MAX_IMAGE_UPLOAD_LABEL,
+  validateImageFile,
+} from "@/lib/constants/upload";
 
 const MentorEditSchema = z.object({
   full_name: z.string().trim().min(1, "Name is required"),
@@ -64,7 +68,10 @@ const MentorEditSchema = z.object({
   // with fewer than 3 skills — making "Save" do nothing. The onboarding form
   // keeps its own min(3) quality bar for new applicants.
   expertise: z.array(z.string()).optional(),
-  preferred_ig_ids: z.array(z.string()).optional(),
+  // §2.5: an approved mentor must always mentor at least one Interest Group
+  preferred_ig_ids: z
+    .array(z.string())
+    .min(1, "You must mentor at least one Interest Group"),
   org: z.string().optional(),
   profile_pic: z.instanceof(File).optional(),
 });
@@ -102,7 +109,7 @@ export function MentorEditProfileModal({
   const igOptions = igList.map((ig) => ({ value: ig.id, label: ig.name }));
 
   const form = useForm<MentorEditValues>({
-    resolver: zodResolver(MentorEditSchema) as any,
+    resolver: zodResolver(MentorEditSchema) as Resolver<MentorEditValues>,
     defaultValues: {
       full_name: userProfile.full_name ?? "",
       about: mentorProfile.about ?? "",
@@ -149,6 +156,14 @@ export function MentorEditProfileModal({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    const error = validateImageFile(file);
+    if (error) {
+      toast.error(error);
+      e.target.value = "";
+      return;
+    }
+
     form.setValue("profile_pic", file, { shouldDirty: true });
     const url = URL.createObjectURL(file);
     setPreviewUrl(url);
@@ -199,11 +214,18 @@ export function MentorEditProfileModal({
         });
       }
 
-      toast.success("Profile updated successfully!");
+      toast.success(
+        isIgsChanged
+          ? "IG scopes updated — changes are live immediately."
+          : "Profile updated successfully!",
+      );
       onOpenChange(false);
-      onSaved?.();
     } catch {
       // Individual mutation hooks surface their own toasts
+    } finally {
+      // Re-sync even on partial failure: earlier steps may have persisted
+      // before a later one failed, and the parent must not show stale data.
+      onSaved?.();
     }
   };
 
@@ -220,7 +242,7 @@ export function MentorEditProfileModal({
 
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(handleSubmit as any)}
+            onSubmit={form.handleSubmit(handleSubmit)}
             className="flex flex-col min-h-0"
           >
             <div className="overflow-y-auto px-4 py-4 sm:px-6 space-y-5">
@@ -275,12 +297,15 @@ export function MentorEditProfileModal({
                       Remove
                     </Button>
                   )}
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {MAX_IMAGE_UPLOAD_LABEL} · PNG, JPG, GIF, WebP
+                  </p>
                 </div>
               </div>
 
               {/* Name */}
               <FormField
-                control={form.control as any}
+                control={form.control}
                 name="full_name"
                 render={({ field }) => (
                   <FormItem>
@@ -295,7 +320,7 @@ export function MentorEditProfileModal({
 
               {/* Bio */}
               <FormField
-                control={form.control as any}
+                control={form.control}
                 name="about"
                 render={({ field }) => (
                   <FormItem>

@@ -83,13 +83,13 @@ export async function fetchManageUserDetail(
     ManageUserDetailResponseSchema,
   );
 
-  const res = response.response as Record<string, any>;
+  const res = response.response as unknown as Record<string, unknown>;
   return {
-    ...(res as any),
+    ...res,
     message: res.message ?? "Success",
     intern_guild_created: res.intern_guild_created,
     mentor_profile_created: res.mentor_profile_created,
-  } as ManageUserDetail;
+  } as unknown as ManageUserDetail;
 }
 
 export async function updateManageUser(
@@ -258,11 +258,11 @@ export async function assignUserRole(payload: AssignRolePayload): Promise<{
     payload,
     AssignRoleResponseSchema,
   );
-  const res = response.response as Record<string, any>;
+  const res = response.response as unknown as Record<string, unknown>;
   return {
-    message: res.message ?? "Success",
-    intern_guild_created: res.intern_guild_created,
-    mentor_profile_created: res.mentor_profile_created,
+    message: (res.message as string | undefined) ?? "Success",
+    intern_guild_created: res.intern_guild_created as boolean | undefined,
+    mentor_profile_created: res.mentor_profile_created as boolean | undefined,
   };
 }
 

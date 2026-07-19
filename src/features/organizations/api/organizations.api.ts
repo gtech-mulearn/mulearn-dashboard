@@ -123,12 +123,15 @@ export async function fetchAffiliationDropdowns(): Promise<
 // ─── Location dropdowns (cascading) ──────────────────────────────────────────
 // Reuse existing location endpoints
 
-function mapToOptions(data: any): { value: string; label: string }[] {
-  const arr = Array.isArray(data) ? data : [];
-  return arr.map((item: any) => ({
-    value: String(item?.value || item?.id || item?.name || item?.title || ""),
-    label: String(item?.label || item?.title || item?.name || item?.id || ""),
-  }));
+function mapToOptions(data: unknown): { value: string; label: string }[] {
+  const arr: unknown[] = Array.isArray(data) ? data : [];
+  return arr.map((entry) => {
+    const item = entry as Record<string, unknown> | null | undefined;
+    return {
+      value: String(item?.value || item?.id || item?.name || item?.title || ""),
+      label: String(item?.label || item?.title || item?.name || item?.id || ""),
+    };
+  });
 }
 
 export async function fetchCountriesDropdown(): Promise<
@@ -151,7 +154,7 @@ export async function fetchDistrictsDropdown(
   if (!stateId) return [];
   const data = (await apiClient.post(endpoints.location.districts, {
     state: stateId,
-  })) as { districts: any[] };
+  })) as { districts: unknown };
   return mapToOptions(data.districts || data);
 }
 

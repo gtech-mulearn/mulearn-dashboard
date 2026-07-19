@@ -5,12 +5,13 @@ import { Trash2 } from "lucide-react";
 import { useState } from "react";
 import Modal from "@/components/dashboard/table/Modal";
 import Pagination from "@/components/dashboard/table/pagination";
-import Table from "@/components/dashboard/table/Table";
+import Table, { type Data } from "@/components/dashboard/table/Table";
 import TableTop from "@/components/dashboard/table/TableTop";
 import THead from "@/components/dashboard/table/Thead";
 import { Button } from "@/components/ui/button";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useDeleteIGRequest, useIGRequestsList } from "../hooks";
+import type { IGStatus } from "../schemas";
 import { IGRequestFormDialog } from "./ig-request-form-dialog";
 import { IGRequestStatusBadge } from "./ig-request-status-badge";
 
@@ -50,7 +51,7 @@ export function IGRequestsPage() {
   const { mutate: cancelRequest } = useDeleteIGRequest();
   const [cancelId, setCancelId] = useState<string | null>(null);
 
-  const rows = (data?.response?.data as any[]) || [];
+  const rows = (data?.response?.data as unknown as Data[]) || [];
   const hasAction = rows.some((row) => row.status === "requested");
 
   const handleSort = (column: string) => {
@@ -119,7 +120,7 @@ export function IGRequestsPage() {
           columnOrder={columnOrder}
           customCellRender={(column, row) => {
             if (column === "status") {
-              return <IGRequestStatusBadge status={row.status as any} />;
+              return <IGRequestStatusBadge status={row.status as IGStatus} />;
             }
             if (column === "created_at") {
               return (

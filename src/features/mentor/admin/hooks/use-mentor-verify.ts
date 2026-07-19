@@ -4,13 +4,18 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
+  assignMentors,
+  revokeMentorAssignment,
+} from "../api/mentor-assign.api";
+import {
   fetchMentorDetail,
   fetchMentorList,
   verifyMentor,
 } from "../api/mentor-verify.api";
-import type { VerifyActionValues } from "../schemas";
+import type { AssignMentorsPayload, VerifyActionValues } from "../schemas";
+import { mentorGrantKeys } from "./use-mentor-grants";
 
-const mentorVerifyKeys = {
+export const mentorVerifyKeys = {
   all: ["admin-mentor-list"] as const,
   list: (params: Record<string, unknown>) =>
     [...mentorVerifyKeys.all, "list", params] as const,
@@ -71,6 +76,45 @@ export function useVerifyMentor() {
         getApiResponseError(error, {
           fallback: "Failed to update verification",
         }),
+      );
+    },
+  });
+}
+
+// ─── §5.1 POST /admin/assign/ ─────────────────────────────────────────────────
+export function useAssignMentors() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: AssignMentorsPayload) => assignMentors(payload),
+    onSuccess: (assignedMuids) => {
+      void queryClient.invalidateQueries({ queryKey: mentorVerifyKeys.all });
+      void queryClient.invalidateQueries({ queryKey: mentorGrantKeys.all });
+      toast.success(`${assignedMuids.length} mentor(s) assigned.`);
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to assign mentors" }),
+      );
+    },
+  });
+}
+
+// ─── §5.2 DELETE /admin/assign/<muid>/ ────────────────────────────────────────
+export function useRevokeMentorAssignment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ muid, mentorTier }: { muid: string; mentorTier?: string }) =>
+      revokeMentorAssignment(muid, mentorTier),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: mentorVerifyKeys.all });
+      void queryClient.invalidateQueries({ queryKey: mentorGrantKeys.all });
+      toast.success(
+        "Tier revoked. Their profile, employment, and other tiers stay intact.",
+      );
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to revoke tier" }),
       );
     },
   });

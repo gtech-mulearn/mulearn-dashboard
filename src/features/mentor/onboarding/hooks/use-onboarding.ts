@@ -101,7 +101,7 @@ export function useUpdateMentorApplication() {
     mutationFn: (data: Partial<MentorProfileWrite>) =>
       updateMentorApplication(data),
     onSuccess: () => {
-      toast.success("Application updated.");
+      toast.success("Application updated. it's back in the review queue.");
       void queryClient.invalidateQueries({ queryKey: ONBOARDING_KEYS.all });
     },
     onError: (error) =>

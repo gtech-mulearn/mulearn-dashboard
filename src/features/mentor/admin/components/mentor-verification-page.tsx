@@ -1,9 +1,17 @@
 "use client";
 
-import { CheckCircle, Search, XCircle } from "lucide-react";
+import {
+  CheckCircle,
+  Search,
+  ShieldCheck,
+  ShieldOff,
+  UserPlus,
+  XCircle,
+} from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -21,8 +29,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useMentorList } from "../hooks/use-mentor-verify";
+import {
+  useMentorList,
+  useRevokeMentorAssignment,
+} from "../hooks/use-mentor-verify";
 import type { MentorApplicationListItem } from "../schemas";
+import { AssignMentorsDialog } from "./assign-mentors-dialog";
+import { MentorGrantsSheet } from "./mentor-grants-sheet";
 import { MentorVerifyDialog } from "./mentor-verify-dialog";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -66,6 +79,8 @@ function MentorTable({
   isLoading,
   showActions,
   onVerify,
+  onScopes,
+  onRevokeTier,
 }: {
   items: MentorApplicationListItem[] | undefined;
   isLoading: boolean;
@@ -74,6 +89,8 @@ function MentorTable({
     m: MentorApplicationListItem,
     action: "approve" | "reject",
   ) => void;
+  onScopes: (m: MentorApplicationListItem) => void;
+  onRevokeTier: (m: MentorApplicationListItem) => void;
 }) {
   if (isLoading) {
     return (
@@ -129,38 +146,66 @@ function MentorTable({
             </TableCell>
             {showActions && (
               <TableCell>
-                {isActionable(m) ? (
-                  <div className="flex items-center gap-1">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950"
-                          onClick={() => onVerify(m, "approve")}
-                        >
-                          <CheckCircle className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Approve</TooltipContent>
-                    </Tooltip>
+                <div className="flex items-center gap-1">
+                  {isActionable(m) && (
+                    <>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950"
+                            onClick={() => onVerify(m, "approve")}
+                          >
+                            <CheckCircle className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Approve</TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                            onClick={() => onVerify(m, "reject")}
+                          >
+                            <XCircle className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Reject</TooltipContent>
+                      </Tooltip>
+                    </>
+                  )}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => onScopes(m)}
+                      >
+                        <ShieldCheck className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Scopes</TooltipContent>
+                  </Tooltip>
+                  {resolveStatus(m) === "APPROVED" && m.muid && (
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                          onClick={() => onVerify(m, "reject")}
+                          onClick={() => onRevokeTier(m)}
                         >
-                          <XCircle className="h-4 w-4" />
+                          <ShieldOff className="h-4 w-4" />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent>Reject</TooltipContent>
+                      <TooltipContent>Revoke tier</TooltipContent>
                     </Tooltip>
-                  </div>
-                ) : (
-                  <span className="text-sm text-muted-foreground">—</span>
-                )}
+                  )}
+                </div>
               </TableCell>
             )}
           </TableRow>
@@ -178,6 +223,14 @@ export function MentorVerificationPage() {
     mentor: MentorApplicationListItem;
     action: "approve" | "reject";
   } | null>(null);
+  const [grantsFor, setGrantsFor] = useState<MentorApplicationListItem | null>(
+    null,
+  );
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [revokeFor, setRevokeFor] = useState<MentorApplicationListItem | null>(
+    null,
+  );
+  const revokeAssignment = useRevokeMentorAssignment();
 
   const { data: pending, isLoading: pendingLoading } = useMentorList({
     status: "PENDING",
@@ -197,14 +250,20 @@ export function MentorVerificationPage() {
               Review and approve mentor applications
             </p>
           </div>
-          <div className="relative w-64">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by name or email…"
-              className="pl-8"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+          <div className="flex items-center gap-2">
+            <div className="relative w-64">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by name or email…"
+                className="pl-8"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <Button className="gap-2" onClick={() => setAssignOpen(true)}>
+              <UserPlus className="h-4 w-4" />
+              Assign mentors
+            </Button>
           </div>
         </div>
 
@@ -227,6 +286,8 @@ export function MentorVerificationPage() {
               isLoading={pendingLoading}
               showActions
               onVerify={(m, action) => setVerifyState({ mentor: m, action })}
+              onScopes={setGrantsFor}
+              onRevokeTier={setRevokeFor}
             />
           </TabsContent>
 
@@ -236,6 +297,8 @@ export function MentorVerificationPage() {
               isLoading={allLoading}
               showActions
               onVerify={(m, action) => setVerifyState({ mentor: m, action })}
+              onScopes={setGrantsFor}
+              onRevokeTier={setRevokeFor}
             />
           </TabsContent>
         </Tabs>
@@ -245,6 +308,39 @@ export function MentorVerificationPage() {
           action={verifyState?.action ?? "approve"}
           open={!!verifyState}
           onOpenChange={(v) => !v && setVerifyState(null)}
+        />
+
+        <MentorGrantsSheet
+          mentorId={grantsFor?.id ?? ""}
+          mentorName={grantsFor ? getDisplayName(grantsFor) : ""}
+          mentorMuid={grantsFor?.muid}
+          open={Boolean(grantsFor)}
+          onOpenChange={(v) => !v && setGrantsFor(null)}
+        />
+
+        <AssignMentorsDialog open={assignOpen} onOpenChange={setAssignOpen} />
+
+        <ConfirmDialog
+          open={Boolean(revokeFor)}
+          onOpenChange={(v) => !v && setRevokeFor(null)}
+          title={
+            revokeFor
+              ? `Revoke ${revokeFor.mentor_tier ?? "mentor"} from ${getDisplayName(revokeFor)}?`
+              : "Revoke tier?"
+          }
+          description="Removes this tier and all of its scope grants. Their profile, employment, and any other mentor tiers stay intact."
+          confirmLabel="Revoke tier"
+          isPending={revokeAssignment.isPending}
+          onConfirm={() => {
+            if (!revokeFor?.muid) return;
+            revokeAssignment.mutate(
+              {
+                muid: revokeFor.muid,
+                mentorTier: revokeFor.mentor_tier ?? undefined,
+              },
+              { onSuccess: () => setRevokeFor(null) },
+            );
+          }}
         />
       </div>
     </TooltipProvider>

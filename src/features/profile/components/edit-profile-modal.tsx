@@ -35,6 +35,10 @@ import { Spinner } from "@/components/ui/spinner";
 import { MultiSelectDropdown } from "@/features/manage-users/components";
 import { useDepartments } from "@/features/settings";
 import {
+  MAX_IMAGE_UPLOAD_LABEL,
+  validateImageFile,
+} from "@/lib/constants/upload";
+import {
   useCommunities,
   useCountries,
   useDistricts,
@@ -391,11 +395,20 @@ export function EditProfileModal({
                   className="hidden"
                   onChange={(event) => {
                     const file = event.target.files?.[0];
+                    if (!file) return;
+
+                    const error = validateImageFile(file);
+                    if (error) {
+                      toast.error(error);
+                      event.target.value = "";
+                      return;
+                    }
+
                     form.setValue("profile_pic", file, { shouldDirty: true });
                   }}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Upload a profile image
+                  Upload a profile image · {MAX_IMAGE_UPLOAD_LABEL}
                 </p>
               </div>
 

@@ -138,7 +138,7 @@ export function useAllAchievementsForUser(userId: string) {
 export function useSingleRule(ruleId: string | null) {
   return useQuery({
     queryKey: ACHIEVEMENT_KEYS.singleRule(ruleId ?? ""),
-    queryFn: () => fetchSingleRule(ruleId!),
+    queryFn: () => fetchSingleRule(ruleId ?? ""),
     enabled: Boolean(ruleId),
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,

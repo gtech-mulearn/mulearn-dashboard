@@ -161,7 +161,7 @@ export function MarkdownEditor({
           });
         } else {
           // Continue with same prefix on next line
-          const insertion = "\n" + prefix;
+          const insertion = `\n${prefix}`;
           const newValue = text.slice(0, pos) + insertion + text.slice(pos);
           onChange(newValue);
           const newPos = pos + insertion.length;
@@ -186,7 +186,7 @@ export function MarkdownEditor({
         } else {
           // Continue with next sequential number
           const nextPrefix = `${num + 1}. `;
-          const insertion = "\n" + nextPrefix;
+          const insertion = `\n${nextPrefix}`;
           const newValue = text.slice(0, pos) + insertion + text.slice(pos);
           onChange(newValue);
           const newPos = pos + insertion.length;
@@ -234,7 +234,7 @@ export function MarkdownEditor({
             foundPrefix.type === "bullet"
               ? foundPrefix.prefix
               : `${foundPrefix.num + 1}. `;
-          const insertion = "\n" + nextPrefix;
+          const insertion = `\n${nextPrefix}`;
           const newValue = text.slice(0, pos) + insertion + text.slice(pos);
           onChange(newValue);
           const newPos = pos + insertion.length;

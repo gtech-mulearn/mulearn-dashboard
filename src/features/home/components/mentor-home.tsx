@@ -1,7 +1,13 @@
 "use client";
 
 import { format } from "date-fns";
-import { AlertTriangle, BookOpen, CalendarCheck2, Loader2 } from "lucide-react";
+import {
+  AlertTriangle,
+  BookOpen,
+  CalendarCheck2,
+  Clock,
+  Loader2,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -22,7 +28,6 @@ import {
   useMentorApplication,
   useMentorProfile,
 } from "@/features/mentor/onboarding/hooks/use-onboarding";
-import { useTaskIgDropdown } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
 import type { WeeklySchedule } from "@/features/mentor/types";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
@@ -76,7 +81,6 @@ export function MentorHome() {
     useAvailabilitySlots();
   const { mutate: saveSchedule, isPending: isSaving } =
     useCreateAvailabilitySlots();
-  const { data: igRoles } = useTaskIgDropdown();
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const { data: calendarData, isLoading: loadingCalendar } =
     useDashboardCalendar({
@@ -166,8 +170,36 @@ export function MentorHome() {
   // If scopes is empty the mentor is not yet verified
   const isVerified = (overview?.scopes.length ?? 0) > 0;
 
+  // Pending review: say exactly who acts next instead of a blank page.
   if (!isVerified) {
-    return null;
+    return (
+      <div className="mx-auto max-w-2xl py-8">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-amber-500" />
+              Application submitted
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm text-muted-foreground">
+            {application?.organization && (
+              <p>
+                Applying as{" "}
+                <span className="font-medium text-foreground">
+                  {application.organization}
+                </span>
+                .
+              </p>
+            )}
+            <p>
+              A platform admin reviews it next — you&apos;ll be notified once a
+              decision is made. You can keep using μLearn as a learner in the
+              meantime.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   // Map new MentorSession shape → OverviewSessionListItem shape expected by cards
@@ -224,10 +256,9 @@ export function MentorHome() {
 
   function handleSave() {
     if (hasOverlap) return; // guard: overlapping slots cannot be saved
-    const igId = igRoles?.[0]?.id;
 
     saveSchedule(
-      { schedule: localSchedule, igId },
+      { schedule: localSchedule },
       {
         onSuccess: () => {
           setSavedSchedule(localSchedule);

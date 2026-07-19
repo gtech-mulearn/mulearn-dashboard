@@ -43,7 +43,7 @@ source of truth. Reviews should hold new code to that existing regularity.
 | Icons | **lucide-react** | |
 | Charts | **recharts** (themed via `src/components/charts/chart-theme.tsx`) | |
 | Notifications | **sonner** (`toast`) | |
-| Error monitoring | **@sentry/nextjs** via `src/lib/error-handling` | |
+| Error monitoring | None — adapter seam in `src/lib/error-handling` (no remote adapter registered) | |
 | Env | **@t3-oss/env-nextjs** (`config/env.ts`) | Validated, typed env access. |
 | Tooling | **Biome** (format + lint), **Vitest** + Testing Library | |
 | Package manager | **Bun** | Node/npm are not supported (see CONTRIBUTING). |

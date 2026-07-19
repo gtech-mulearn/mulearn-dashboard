@@ -3,7 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const ReactQueryDevtools =
   process.env.NODE_ENV === "development"
@@ -42,20 +42,6 @@ interface ProvidersProps {
 
 export function Providers({ children }: ProvidersProps) {
   const [queryClient] = useState(makeQueryClient);
-
-  useEffect(() => {
-    if (process.env.NODE_ENV === "production") {
-      import("@/lib/error-handling/sentry-adapter").then(
-        ({ SentryAdapter }) => {
-          import("@/lib/error-handling/error-logging.service").then(
-            ({ errorLogger }) => {
-              errorLogger.registerAdapter(new SentryAdapter());
-            },
-          );
-        },
-      );
-    }
-  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

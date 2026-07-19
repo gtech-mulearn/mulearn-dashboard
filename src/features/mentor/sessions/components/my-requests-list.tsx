@@ -112,6 +112,16 @@ export function MyRequestsList() {
                 <Badge variant={getStatusColor(req.status ?? "Pending")}>
                   {req.status}
                 </Badge>
+                {req.status === "REJECTED" && (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Declined by the mentors.
+                  </p>
+                )}
+                {req.status === "SCHEDULED" && (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Approved! your session is live.
+                  </p>
+                )}
               </TableCell>
             </TableRow>
           ))}

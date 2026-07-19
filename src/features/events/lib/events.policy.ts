@@ -39,15 +39,17 @@ export function canApproveStatus(
   return false; // admin tier: only admin/is_staff (handled above)
 }
 
-/** The single organiser→allowed-scopes source of truth. Prevents offering a
- *  scope the organiser can't create (e.g. company/global mentor → Campus IG).
- *  Company organisers create global-audience events (no dedicated company
- *  scope option in the wizard). */
+/** The single organiser→allowed-scopes source of truth. Mirrors the permission
+ *  matrix in the events spec: every organiser may target its own entity, and
+ *  may also open the event to everyone (`global`). Escalating to a wider
+ *  audience is safe here because publishing still goes through the approval
+ *  chain. Company organisers only create global-audience events (there is no
+ *  dedicated company scope option in the wizard). */
 const ORGANISER_SCOPES: Record<OrganizerType, EventScope[]> = {
   admin: ["global", "campus", "ig", "campus_ig"],
-  global_ig: ["ig"],
-  campus: ["campus"],
-  campus_ig: ["campus_ig"],
+  global_ig: ["ig", "global"],
+  campus: ["campus", "global"],
+  campus_ig: ["campus_ig", "campus", "global"],
   company: ["global"],
 };
 

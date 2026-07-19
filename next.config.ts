@@ -1,4 +1,3 @@
-import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -36,6 +35,14 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "www.madhyamam.com",
+      },
+      {
+        protocol: "https",
+        hostname: "app.mulearn.org",
+      },
+      {
+        protocol: "https",
+        hostname: "staging.app.mulearn.org",
       },
     ],
   },
@@ -89,15 +96,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withSentryConfig(nextConfig, {
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
-  silent: !process.env.CI,
-  widenClientFileUpload: true,
-  webpack: {
-    automaticVercelMonitors: true,
-    treeshake: {
-      removeDebugLogging: true,
-    },
-  },
-});
+export default nextConfig;

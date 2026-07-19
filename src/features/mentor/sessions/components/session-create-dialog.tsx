@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 
-import { useForm } from "react-hook-form";
+import { type Resolver, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { CustomDateTimePicker } from "@/components/ui/custom-datetime-picker";
 import {
@@ -48,7 +48,7 @@ export function SessionCreateDialog({
   const { mutate: create, isPending } = useCreateSession();
 
   const form = useForm<SessionFormValues>({
-    resolver: zodResolver(SessionFormSchema) as any,
+    resolver: zodResolver(SessionFormSchema) as Resolver<SessionFormValues>,
     defaultValues: {
       title: "",
       description: "",
@@ -62,7 +62,7 @@ export function SessionCreateDialog({
       recurrence_type: "WEEKLY",
       recurrence_interval: 1,
       recurrence_end_date: "",
-    } as any,
+    },
   });
 
   const mode = form.watch("mode");
@@ -102,12 +102,12 @@ export function SessionCreateDialog({
         </DialogHeader>
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(onSubmit as any)}
+            onSubmit={form.handleSubmit(onSubmit)}
             className="flex flex-col min-h-0"
           >
             <div className="overflow-y-auto px-6 py-4 space-y-4">
               <FormField
-                control={form.control as any}
+                control={form.control}
                 name="title"
                 render={({ field }) => (
                   <FormItem>
@@ -121,7 +121,7 @@ export function SessionCreateDialog({
               />
 
               <FormField
-                control={form.control as any}
+                control={form.control}
                 name="description"
                 render={({ field }) => (
                   <FormItem>
@@ -140,7 +140,7 @@ export function SessionCreateDialog({
 
               {myIgs.length > 0 ? (
                 <FormField
-                  control={form.control as any}
+                  control={form.control}
                   name="ig_id"
                   render={({ field }) => (
                     <FormItem>
@@ -174,7 +174,7 @@ export function SessionCreateDialog({
               )}
 
               <FormField
-                control={form.control as any}
+                control={form.control}
                 name="starts_at"
                 render={({ field }) => (
                   <FormItem>
@@ -190,7 +190,7 @@ export function SessionCreateDialog({
                 )}
               />
               <FormField
-                control={form.control as any}
+                control={form.control}
                 name="ends_at"
                 render={({ field }) => (
                   <FormItem>
@@ -207,7 +207,7 @@ export function SessionCreateDialog({
               />
 
               <FormField
-                control={form.control as any}
+                control={form.control}
                 name="mode"
                 render={({ field }) => (
                   <FormItem>
@@ -231,7 +231,7 @@ export function SessionCreateDialog({
 
               {(mode === "ONLINE" || mode === "HYBRID") && (
                 <FormField
-                  control={form.control as any}
+                  control={form.control}
                   name="meeting_link"
                   render={({ field }) => (
                     <FormItem>
@@ -251,7 +251,7 @@ export function SessionCreateDialog({
 
               {(mode === "OFFLINE" || mode === "HYBRID") && (
                 <FormField
-                  control={form.control as any}
+                  control={form.control}
                   name="venue"
                   render={({ field }) => (
                     <FormItem>
