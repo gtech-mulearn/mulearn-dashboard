@@ -11,7 +11,7 @@
 import { useMemo, useState } from "react";
 import { StateDisplay } from "@/components/ui/state-display";
 import { SearchInput } from "@/features/search/components/SearchInput";
-import { PASTEL_CARD_GRADIENTS } from "@/lib/card-gradients";
+import { pickCardGradient } from "@/lib/card-gradients";
 import type { InterestGroup } from "../schemas/interest-groups.schema";
 import { InterestGroupCard } from "./interest-group-card";
 
@@ -67,11 +67,11 @@ export function InterestGroupsGrid({
 
       {!isLoading && filteredGroups.length > 0 && (
         <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {filteredGroups.map((group, index) => (
+          {filteredGroups.map((group) => (
             <InterestGroupCard
               key={group.id}
               group={group}
-              gradient={`bg-linear-to-br ${PASTEL_CARD_GRADIENTS[index % PASTEL_CARD_GRADIENTS.length]}`}
+              gradient={`bg-linear-to-br ${pickCardGradient(group.id)}`}
             />
           ))}
         </div>

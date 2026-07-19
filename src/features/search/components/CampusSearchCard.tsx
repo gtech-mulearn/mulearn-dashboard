@@ -24,7 +24,7 @@ export function CampusSearchCard({ campus }: CampusSearchCardProps) {
       <Card className="relative aspect-8/5 w-full gap-0 overflow-hidden rounded-[2rem] border-0 p-0 shadow-sm ring-1 ring-black/5 transition-all duration-500 group-hover:-translate-y-1.5 group-hover:shadow-2xl group-hover:shadow-black/25 motion-reduce:transform-none motion-reduce:transition-none">
         {/* Hero: vivid gradient with a large monogram watermark */}
         <div className={`absolute inset-0 bg-linear-to-br ${gradient}`}>
-          <span className="absolute -bottom-6 -right-2 select-none text-[12rem] font-black leading-none text-black/6">
+          <span className="absolute -bottom-6 -right-2 select-none text-[12rem] font-black leading-none text-foreground/6">
             {firstLetter}
           </span>
         </div>
@@ -36,13 +36,13 @@ export function CampusSearchCard({ campus }: CampusSearchCardProps) {
 
         {/* Top: title + rank badge */}
         <CardHeader className="absolute inset-x-0 top-0 z-10 flex flex-row items-start justify-between gap-3 p-4">
-          <CardTitle className="font-display line-clamp-2 text-2xl font-bold leading-tight text-slate-900 [text-wrap:balance]">
+          <CardTitle className="font-display line-clamp-2 text-2xl font-bold leading-tight text-foreground [text-wrap:balance]">
             {campus.title}
           </CardTitle>
           {campus.rank && (
-            <div className="flex shrink-0 items-center gap-1.5 rounded-full border border-white/60 bg-white/45 px-3 py-1 backdrop-blur-md transition-colors group-hover:border-white/80">
+            <div className="flex shrink-0 items-center gap-1.5 rounded-full border border-border/60 bg-background/60 px-3 py-1 backdrop-blur-md transition-colors group-hover:border-border">
               <Trophy className="h-3.5 w-3.5 text-amber-500" />
-              <span className="font-display text-sm font-bold text-slate-800">
+              <span className="font-display text-sm font-bold text-foreground">
                 #{campus.rank}
               </span>
             </div>
@@ -53,28 +53,28 @@ export function CampusSearchCard({ campus }: CampusSearchCardProps) {
         <CardFooter className="absolute inset-x-0 bottom-0 z-10 flex flex-col items-stretch gap-2.5 p-3">
           <div className="flex flex-wrap gap-1.5 px-1">
             {location && (
-              <span className="flex items-center gap-1.5 rounded-full border border-white/60 bg-white/45 px-2.5 py-1 text-[11px] font-semibold text-slate-700 backdrop-blur-md">
+              <span className="flex items-center gap-1.5 rounded-full border border-border/60 bg-background/60 px-2.5 py-1 text-[11px] font-semibold text-muted-foreground backdrop-blur-md">
                 <MapPin className="h-3 w-3" />
                 <span className="max-w-[160px] truncate">{location}</span>
               </span>
             )}
-            <span className="flex items-center gap-1.5 rounded-full border border-white/60 bg-white/45 px-2.5 py-1 text-[11px] font-semibold text-slate-700 backdrop-blur-md">
+            <span className="flex items-center gap-1.5 rounded-full border border-border/60 bg-background/60 px-2.5 py-1 text-[11px] font-semibold text-muted-foreground backdrop-blur-md">
               <Users className="h-3 w-3" />
               {campus.member_count.toLocaleString()} Members
             </span>
           </div>
 
-          <div className="flex items-center justify-between gap-3 rounded-[1.4rem] border border-white/60 bg-white/45 p-2.5 shadow-lg ring-1 ring-black/5 backdrop-blur-xl">
+          <div className="flex items-center justify-between gap-3 rounded-[1.4rem] border border-border/60 bg-background/60 p-2.5 shadow-lg ring-1 ring-black/5 backdrop-blur-xl">
             <div className="flex min-w-0 items-center gap-2.5 pl-1">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/70 text-sm font-black text-slate-800 ring-1 ring-white/60">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-background/70 text-sm font-black text-foreground ring-1 ring-border/60">
                 {firstLetter}
               </div>
-              <span className="truncate font-mono text-xs font-semibold tracking-wide text-slate-700">
+              <span className="truncate font-mono text-xs font-semibold tracking-wide text-muted-foreground">
                 {campus.code}
               </span>
             </div>
 
-            <div className="flex shrink-0 items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-sm font-semibold text-slate-900 shadow-sm transition-colors group-hover:bg-white/90">
+            <div className="flex shrink-0 items-center gap-1.5 rounded-full bg-background px-3.5 py-2 text-sm font-semibold text-foreground shadow-sm transition-colors group-hover:bg-background/90">
               View Campus
               <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 motion-reduce:transform-none" />
             </div>

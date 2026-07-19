@@ -30,19 +30,19 @@ export function InterestGroupCard({ group, gradient }: InterestGroupCardProps) {
       <div
         className={`absolute inset-0 ${gradient} transition-transform duration-700 group-hover:scale-105`}
       >
-        <span className="absolute -bottom-8 -right-2 select-none text-[8rem] font-black leading-none text-black/6">
+        <span className="absolute -bottom-8 -right-2 select-none text-[8rem] font-black leading-none text-foreground/6">
           {firstLetter}
         </span>
       </div>
 
       {/* Top: name + code badge */}
       <div className="absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-3 p-3.5">
-        <h3 className="font-display line-clamp-2 text-xl font-bold leading-tight text-slate-900 [text-wrap:balance]">
+        <h3 className="font-display line-clamp-2 text-xl font-bold leading-tight text-foreground [text-wrap:balance]">
           {group.name}
         </h3>
         {group.code && (
-          <div className="flex shrink-0 items-center gap-1 rounded-full border border-white/60 bg-white/45 px-2.5 py-1 backdrop-blur-md transition-colors group-hover:border-white/80">
-            <span className="font-display text-xs font-bold tracking-wide text-slate-800">
+          <div className="flex shrink-0 items-center gap-1 rounded-full border border-border/60 bg-background/60 px-2.5 py-1 backdrop-blur-md transition-colors group-hover:border-border">
+            <span className="font-display text-xs font-bold tracking-wide text-foreground">
               {group.code}
             </span>
           </div>
@@ -51,17 +51,17 @@ export function InterestGroupCard({ group, gradient }: InterestGroupCardProps) {
 
       {/* Bottom: glassmorphic detail bar */}
       <div className="absolute inset-x-0 bottom-0 z-10 p-3">
-        <div className="flex items-center justify-between gap-3 rounded-[1.25rem] border border-white/60 bg-white/45 p-2 shadow-lg ring-1 ring-black/5 backdrop-blur-xl">
+        <div className="flex items-center justify-between gap-3 rounded-[1.25rem] border border-border/60 bg-background/60 p-2 shadow-lg ring-1 ring-black/5 backdrop-blur-xl">
           <div className="flex min-w-0 items-center gap-2 pl-1">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/70 text-xs font-black text-slate-800 ring-1 ring-white/60">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-background/70 text-xs font-black text-foreground ring-1 ring-border/60">
               {firstLetter}
             </div>
-            <span className="truncate text-[11px] font-semibold uppercase tracking-wider text-slate-700">
+            <span className="truncate text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               {group.category}
             </span>
           </div>
 
-          <div className="flex shrink-0 items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-slate-900 shadow-sm transition-colors group-hover:bg-white/90">
+          <div className="flex shrink-0 items-center gap-1.5 rounded-full bg-background px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm transition-colors group-hover:bg-background/90">
             View Group
             <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 motion-reduce:transform-none" />
           </div>
