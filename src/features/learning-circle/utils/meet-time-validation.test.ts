@@ -148,8 +148,8 @@ describe("meet-time-validation", () => {
       const after = getMinDateTimeLocalValue();
 
       // Parse both values back to epoch ms (treating them as UTC for comparison)
-      const beforeMs = new Date(before + ":00Z").getTime();
-      const afterMs = new Date(after + ":00Z").getTime();
+      const beforeMs = new Date(`${before}:00Z`).getTime();
+      const afterMs = new Date(`${after}:00Z`).getTime();
 
       // Should differ by exactly 60 s (minute-precision strings, so ±1 min tolerance)
       expect(afterMs - beforeMs).toBeGreaterThanOrEqual(60_000 - 1000);

@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { type Resolver, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -72,10 +72,10 @@ export function ApproveSessionDialog({
   const config = ACTION_CONFIG[action];
 
   const form = useForm<ApproveFormValues>({
-    resolver: zodResolver(ApproveFormSchema) as any,
+    resolver: zodResolver(ApproveFormSchema) as Resolver<ApproveFormValues>,
     defaultValues: {
       apply_to_series: false,
-    } as any,
+    },
   });
 
   function onSubmit(values: ApproveFormValues) {
@@ -109,10 +109,7 @@ export function ApproveSessionDialog({
         </DialogHeader>
 
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit as any)}
-            className="space-y-4"
-          >
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             {session?.is_recurring && (
               <FormField
                 control={form.control}

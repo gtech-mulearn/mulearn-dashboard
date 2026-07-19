@@ -40,10 +40,10 @@ export function formatNumericRuleValue(
   rule_value: string,
 ): string | number {
   if (
-    KARMA_RULE_TYPES.includes(rule_type as any) ||
-    LEVEL_RULE_TYPES.includes(rule_type as any)
+    (KARMA_RULE_TYPES as readonly string[]).includes(rule_type) ||
+    (LEVEL_RULE_TYPES as readonly string[]).includes(rule_type)
   ) {
-    return isNaN(Number(rule_value)) ? "0" : parseInt(rule_value, 10);
+    return Number.isNaN(Number(rule_value)) ? "0" : parseInt(rule_value, 10);
   }
   return rule_value;
 }

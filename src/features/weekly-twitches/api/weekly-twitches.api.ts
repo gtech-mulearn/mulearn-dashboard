@@ -24,7 +24,7 @@ export interface ListParams {
 }
 
 function toOfficeHoursDate(dateStr: string): string {
-  if (!dateStr || !dateStr.includes("-")) return dateStr;
+  if (!dateStr?.includes("-")) return dateStr;
   const [year, month, day] = dateStr.split("-");
   return `${day}/${month}/${year}`;
 }

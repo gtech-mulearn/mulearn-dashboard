@@ -1,9 +1,9 @@
-# Named for the environment it deploys (staging), triggered by the staging branch.
-name: Staging - Deploy
+# Named for the environment it deploys (production), triggered by the master branch.
+name: Production - Deploy
 
 on:
   push:
-    branches: [staging]
+    branches: [master]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -51,10 +51,10 @@ jobs:
         run: bun run typecheck
 
   deploy:
-    name: Deploy to Netlify (Staging)
+    name: Deploy to Netlify (Production)
     needs: [lint, typecheck]
     runs-on: ubuntu-latest
-    environment: staging
+    environment: production
     steps:
       - uses: actions/checkout@v4
 
@@ -79,7 +79,7 @@ jobs:
         run: netlify deploy --build --prod
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_STAGING_SITE_ID }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_PRODUCTION_SITE_ID }}
           NEXT_PUBLIC_DJANGO_API_URL: ${{ vars.NEXT_PUBLIC_DJANGO_API_URL }}
           NEXT_PUBLIC_DISCORD_AUTH_URL: ${{ vars.NEXT_PUBLIC_DISCORD_AUTH_URL }}
           NEXT_PUBLIC_CDN_URL: ${{ vars.NEXT_PUBLIC_CDN_URL }}

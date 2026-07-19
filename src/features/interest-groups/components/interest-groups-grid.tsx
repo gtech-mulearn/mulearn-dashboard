@@ -11,6 +11,7 @@
 import { useMemo, useState } from "react";
 import { StateDisplay } from "@/components/ui/state-display";
 import { SearchInput } from "@/features/search/components/SearchInput";
+import { pickCardGradient } from "@/lib/card-gradients";
 import type { InterestGroup } from "../schemas/interest-groups.schema";
 import { InterestGroupCard } from "./interest-group-card";
 
@@ -18,17 +19,6 @@ type InterestGroupsGridProps = {
   groups: InterestGroup[];
   isLoading?: boolean;
 };
-
-const gradients = [
-  "bg-linear-to-br from-primary via-primary/80 to-primary/60",
-  "bg-linear-to-br from-chart-1 via-chart-2 to-chart-3",
-  "bg-linear-to-br from-chart-2 via-chart-3 to-chart-4",
-  "bg-linear-to-br from-chart-3 via-chart-4 to-chart-5",
-  "bg-linear-to-br from-chart-5 via-chart-1 to-chart-2",
-  "bg-linear-to-br from-chart-4 via-chart-5 to-chart-1",
-  "bg-linear-to-br from-primary/90 via-accent to-primary/70",
-  "bg-linear-to-br from-chart-1 via-primary to-chart-5",
-];
 
 export function InterestGroupsGrid({
   groups,
@@ -77,11 +67,11 @@ export function InterestGroupsGrid({
 
       {!isLoading && filteredGroups.length > 0 && (
         <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {filteredGroups.map((group, index) => (
+          {filteredGroups.map((group) => (
             <InterestGroupCard
               key={group.id}
               group={group}
-              gradient={gradients[index % gradients.length]}
+              gradient={`bg-linear-to-br ${pickCardGradient(group.id)}`}
             />
           ))}
         </div>

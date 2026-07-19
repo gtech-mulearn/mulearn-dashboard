@@ -11,8 +11,14 @@ export function useMentorOverview(enabled = true) {
       return response as MentorOverview;
     },
     enabled,
-    retry: (failureCount, error: any) => {
-      if (error?.status === 403) return false;
+    retry: (failureCount, error: unknown) => {
+      if (
+        error instanceof Error &&
+        "status" in error &&
+        (error as { status: number }).status === 403
+      ) {
+        return false;
+      }
       return failureCount < 3;
     },
     // Useful because it contains stats that might change, but maybe not constantly

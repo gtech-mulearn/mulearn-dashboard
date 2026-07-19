@@ -63,7 +63,7 @@ import {
   seriesGradient,
 } from "@/components/charts/chart-theme";
 import Pagination from "@/components/dashboard/table/pagination";
-import Table from "@/components/dashboard/table/Table";
+import Table, { type Data } from "@/components/dashboard/table/Table";
 import THead from "@/components/dashboard/table/Thead";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -86,7 +86,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { StatCard } from "@/components/ui/stat-card";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAssignCampusMentor } from "@/features/campus/hooks/campus.hooks";
@@ -463,6 +462,48 @@ function CampusDatePicker({
   );
 }
 
+/**
+ * A headline metric rendered inline inside the campus hero band.
+ *
+ * Deliberately not a Card: the hero already provides a gradient surface, and
+ * nesting a second surface inside it reads as clutter. Isolating the two
+ * primary metrics here is what gives them visual precedence over the compact
+ * secondary cards below.
+ */
+function HeroStat({
+  label,
+  value,
+  icon,
+  accentVar,
+}: {
+  label: string;
+  value: string | number;
+  icon: ReactNode;
+  accentVar: string;
+}) {
+  return (
+    <div className="flex items-center gap-2.5 min-w-0">
+      <span
+        className="flex size-9 shrink-0 items-center justify-center rounded-xl"
+        style={{
+          backgroundColor: `color-mix(in srgb, ${accentVar} 16%, var(--background))`,
+          color: accentVar,
+        }}
+      >
+        {icon}
+      </span>
+      <div className="min-w-0">
+        <dd className="font-display text-xl sm:text-2xl font-bold leading-none tracking-tight text-foreground">
+          {value}
+        </dd>
+        <dt className="mt-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground truncate">
+          {label}
+        </dt>
+      </div>
+    </div>
+  );
+}
+
 function CompactStatCard({
   title,
   value,
@@ -743,10 +784,13 @@ export function CampusManageDashboard() {
               subtitle="Campus details, karma, rank and member statistics"
             />
             {isOverviewLoading ? (
-              <div className="space-y-4">
-                <Skeleton className="h-36 w-full rounded-2xl" />
-                <div className="grid gap-4 md:grid-cols-4">
-                  {["s1", "s2", "s3", "s4", "s5", "s6", "s7"].map((id) => (
+              <div className="space-y-3">
+                {/* Mirrors the loaded layout: hero (now taller, it carries the
+                    two primary KPIs) + five compact cards. Keeping these in
+                    sync avoids a layout shift when the overview query lands. */}
+                <Skeleton className="h-48 w-full rounded-2xl" />
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                  {["s1", "s2", "s3", "s4", "s5"].map((id) => (
                     <Skeleton key={id} className="h-24 w-full rounded-2xl" />
                   ))}
                 </div>
@@ -765,7 +809,7 @@ export function CampusManageDashboard() {
                         "repeating-linear-gradient(0deg,transparent,transparent 24px,currentColor 24px,currentColor 25px),repeating-linear-gradient(90deg,transparent,transparent 24px,currentColor 24px,currentColor 25px)",
                     }}
                   />
-                  <div className="relative flex flex-col gap-5 px-4 py-6 sm:px-6 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="relative flex flex-col gap-4 px-4 py-5 sm:px-6 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-3 sm:gap-4 overflow-hidden">
                       <div className="flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl bg-gradient-to-br from-teal-500 to-sky-600 text-base sm:text-lg font-bold text-primary-foreground shadow-lg">
                         {(overview?.campusCode ?? overview?.collegeName ?? "C")
@@ -805,7 +849,7 @@ export function CampusManageDashboard() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="h-6 px-2 text-[10px]"
+                                className="h-7 px-2.5 text-xs"
                               >
                                 Transfer
                               </Button>
@@ -826,7 +870,7 @@ export function CampusManageDashboard() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="h-6 px-2 text-[10px]"
+                                className="h-7 px-2.5 text-xs"
                               >
                                 Transfer
                               </Button>
@@ -836,32 +880,31 @@ export function CampusManageDashboard() {
                       </div>
                     </div>
                   </div>
+
+                  {/* ── Primary KPIs, inline inside the band ──
+                      Rendered as plain stats rather than nested Cards: a card
+                      surface inside the gradient competes with the band itself.
+                      Isolating the two headline numbers here is what makes them
+                      read as primary against the five secondary cards below. */}
+                  <div className="relative border-t border-border/20 px-4 py-3 sm:px-6">
+                    <dl className="grid grid-cols-2 gap-3 sm:gap-6">
+                      <HeroStat
+                        label="Total Karma"
+                        value={(overview?.totalKarma ?? 0).toLocaleString()}
+                        icon={<Zap className="h-4 w-4" />}
+                        accentVar="var(--chart-3)"
+                      />
+                      <HeroStat
+                        label="Global Rank"
+                        value={overview?.rank ? `#${overview.rank}` : "-"}
+                        icon={<Trophy className="h-4 w-4" />}
+                        accentVar="var(--chart-4)"
+                      />
+                    </dl>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
-                  <div className="sm:col-span-1 md:col-span-2">
-                    <StatCard
-                      title="Total Karma"
-                      value={(overview?.totalKarma ?? 0).toLocaleString()}
-                      icon={<Zap className="h-4 w-4" />}
-                      accent="chart-3"
-                      gradient
-                      className="h-full"
-                    />
-                  </div>
-                  <div className="sm:col-span-1 md:col-span-2">
-                    <StatCard
-                      title="Global Rank"
-                      value={overview?.rank ? `#${overview.rank}` : "-"}
-                      icon={<Trophy className="h-4 w-4" />}
-                      accent="chart-4"
-                      gradient
-                      className="h-full"
-                    />
-                  </div>
-                </div>
-
-                <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
                   <CompactStatCard
                     title="7-Day Karma"
                     value={(overview?.karma7Day ?? 0).toLocaleString()}
@@ -1055,7 +1098,7 @@ export function CampusManageDashboard() {
               </Card>
             ) : (
               <Table
-                rows={leaderboard as any}
+                rows={leaderboard as unknown as Data[]}
                 isLoading={isLeaderboardLoading}
                 page={leaderboardPage}
                 perPage={PAGE_SIZE}

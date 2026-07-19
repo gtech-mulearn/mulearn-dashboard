@@ -4,6 +4,7 @@ import { ImageIcon, Upload, X } from "lucide-react";
 import Image from "next/image";
 import * as React from "react";
 import { toast } from "sonner";
+import { MAX_IMAGE_UPLOAD_MB } from "@/lib/constants/upload";
 import { Button } from "./button";
 
 interface ImageUploadProps {
@@ -18,7 +19,7 @@ export function ImageUpload({
   value,
   onChange,
   currentUrl,
-  maxSizeMB = 5,
+  maxSizeMB = MAX_IMAGE_UPLOAD_MB,
   disabled = false,
 }: ImageUploadProps) {
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(
@@ -45,7 +46,7 @@ export function ImageUpload({
       return;
     }
     if (file.size > maxSizeMB * 1024 * 1024) {
-      toast.error("File is too large. Maximum size is 5MB.");
+      toast.error(`File is too large. Maximum size is ${maxSizeMB}MB.`);
       return;
     }
     onChange(file);
