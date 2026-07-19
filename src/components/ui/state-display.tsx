@@ -66,6 +66,16 @@ export const STATE_ILLUSTRATIONS = {
     defaultDescription:
       "Great journeys are built together. New tasks will show up here as the community creates what's next.",
   },
+  // Temporary — the FIFA break block (Mon 20 Jul → Tue 21 Jul 2026, 10:00 IST).
+  // Delete this entry together with the gate in src/proxy.ts and src/app/break.
+  break: {
+    src: "/images/illustrations/fifa-break.webp",
+    width: 1456,
+    height: 1092,
+    defaultTitle: "BREAK THE ECHO CHAMBER. NOT THE HOLIDAY.",
+    defaultDescription:
+      "Kerala is celebrating football, and so are we. The μLearn dashboard will return on Tuesday. 💙",
+  },
 } as const satisfies Record<string, StateConfigEntry>;
 
 /** Type-safe union of supported states, inferred from the registry. */

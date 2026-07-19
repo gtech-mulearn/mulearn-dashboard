@@ -26,6 +26,83 @@ import { findRouteConfig } from "@/lib/auth/route-access";
 // no Node/edge-incompatible dependencies, so they bundle safely into the proxy.
 // Do NOT re-inline the map here — keep one source of truth.
 
+// ─── FIFA Break Block (TEMPORARY) ──────────────────────────
+// Kerala is celebrating football. The whole dashboard is dark until Tuesday
+// morning, with no bypass for anyone — see
+// docs/superpowers/specs/2026-07-20-fifa-break-block-design.md.
+//
+// The gate runs FIRST in `proxy()`, above every auth and RBAC branch, so no
+// route, redirect or role check can leak past it. It lifts itself by the clock:
+// once this instant passes the whole block becomes a dead branch and no deploy
+// is needed to unlock. Delete the gate, /app/break and the `break` variant in
+// state-display.tsx afterwards.
+//
+// Tue 21 Jul 2026, 10:00 IST == 04:30 UTC. Netlify's edge runs on UTC, so this
+// is compared against `Date.now()` directly — the IST offset is applied here,
+// once, and never recomputed at runtime.
+const BREAK_ENDS_AT = Date.UTC(2026, 6, 21, 4, 30);
+
+const BREAK_PAGE_PATH = "/break";
+
+/** Exactly what the break page needs to render. Everything else is blocked. */
+function isBreakPageAsset(pathname: string): boolean {
+  return (
+    pathname.startsWith("/_next/") ||
+    pathname.startsWith("/images/") ||
+    pathname === "/favicon.ico" ||
+    pathname === "/logo.webp" ||
+    pathname === "/logo-dark.webp"
+  );
+}
+
+function isBreakActive(): boolean {
+  return Date.now() < BREAK_ENDS_AT;
+}
+
+/**
+ * Serve the break page in place of the entire app.
+ *
+ * `/api/*` gets a JSON 503 rather than the page: a tab left open from before
+ * the block would otherwise receive HTML where it expects JSON and render a
+ * broken spinner instead of the message.
+ *
+ * Everything else is REWRITTEN, not redirected — the URL survives, so a tab
+ * parked on a deep route returns to the real page after the block lifts.
+ *
+ * `no-store` matters on both: without it Netlify's CDN keeps serving the break
+ * page after 10:00, which is the most likely way this outlives its welcome.
+ */
+function serveBreak(request: NextRequest): NextResponse {
+  const secondsLeft = Math.max(
+    1,
+    Math.ceil((BREAK_ENDS_AT - Date.now()) / 1000),
+  );
+
+  if (request.nextUrl.pathname.startsWith("/api")) {
+    return new NextResponse(
+      JSON.stringify({
+        hasError: true,
+        statusCode: 503,
+        message:
+          "μLearn is taking a break for the football. Back Tuesday 10 AM.",
+        response: {},
+      }),
+      {
+        status: 503,
+        headers: {
+          "content-type": "application/json",
+          "retry-after": String(secondsLeft),
+          "cache-control": "no-store",
+        },
+      },
+    );
+  }
+
+  const response = NextResponse.rewrite(new URL(BREAK_PAGE_PATH, request.url));
+  response.headers.set("cache-control", "no-store, must-revalidate");
+  return response;
+}
+
 // ─── Route Classification ──────────────────────────────────
 
 const AUTH_ROUTES = [
@@ -140,6 +217,13 @@ function extractRolesFromToken(token: string): string[] {
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // ── FIFA break block (TEMPORARY) ────────────────────────
+  // Must stay the first branch: everything below assumes the app is open.
+  if (isBreakActive() && !isBreakPageAsset(pathname)) {
+    return serveBreak(request);
+  }
+
   const isLoggedIn = isAuthenticated(request);
 
   // Skip static assets, API routes, and files with extensions
@@ -231,5 +315,13 @@ export const config = {
      * - public files (images, etc.)
      */
     "/((?!_next/static|_next/image|favicon.ico|.*\\..*|api).*)",
+    /*
+     * API routes are excluded above, so the proxy never sees them. The FIFA
+     * break gate needs them (to answer 503 instead of HTML), so they are added
+     * back explicitly. Outside the break window the early-return for `/api`
+     * in `proxy()` keeps behaviour byte-for-byte identical to before.
+     * TEMPORARY: drop this entry with the rest of the break block.
+     */
+    "/api/:path*",
   ],
 };
