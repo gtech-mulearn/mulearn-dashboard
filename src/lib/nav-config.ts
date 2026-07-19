@@ -195,7 +195,9 @@ export const NAV_ITEMS: readonly NavItem[] = [
     href: "/dashboard/jobs",
     icon: Briefcase,
     section: "main",
-    dynamicCheck: (roles) => !roles.includes(ROLES.MENTOR),
+    // Companies use the "Job Management" view instead of the community board.
+    dynamicCheck: (roles) =>
+      !roles.some((r) => r === ROLES.MENTOR || r === ROLES.COMPANY),
   },
   {
     id: "talent-pool",
