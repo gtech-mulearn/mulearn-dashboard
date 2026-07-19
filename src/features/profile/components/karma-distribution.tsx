@@ -27,6 +27,7 @@ const COLORS = [
 ];
 
 export function KarmaDistribution({ profile }: KarmaDistributionProps) {
+
   const { slices: distributionData, total } = useMemo(
     () => buildKarmaBreakdown(profile.karma ?? 0, profile.interest_groups),
     [profile.karma, profile.interest_groups],
