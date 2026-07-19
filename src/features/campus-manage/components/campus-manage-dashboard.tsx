@@ -772,11 +772,11 @@ export function CampusManageDashboard() {
   // ─── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="space-y-8">
-      <Card>
-        <CardHeader>
+      <Card className="border-0 shadow-none">
+        <CardHeader className="px-3 sm:px-4">
           <CardTitle className="text-2xl">Campus Dashboard</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-10">
+        <CardContent className="space-y-10 px-3 sm:px-4">
           {/* ── 1. Overview Stat Cards + Karma Trend ── */}
           <section>
             <SectionTitle
@@ -1227,7 +1227,7 @@ export function CampusManageDashboard() {
           </section>
 
           {/* ── Dashboard Content Area ── */}
-          <section className="px-3 py-4 sm:px-4 lg:px-6">
+          <section className="py-4">
             <div className="flex flex-col gap-6 xl:flex-row xl:items-start">
               {/* Main Column */}
               <div className="min-w-0 flex-1">
