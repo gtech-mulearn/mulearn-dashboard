@@ -10,6 +10,7 @@
 
 import { useMemo } from "react";
 import type { UserProfile } from "../schemas";
+import { buildKarmaBreakdown } from "../utils/karma.utils";
 
 interface KarmaDistributionProps {
   profile: UserProfile;
@@ -26,28 +27,11 @@ const COLORS = [
 ];
 
 export function KarmaDistribution({ profile }: KarmaDistributionProps) {
-  // Combine karma distribution and interest groups data
-  const distributionData = useMemo(
-    () =>
-      [
-        ...profile.karma_distribution.map((item) => ({
-          name: item.task_type,
-          value: item.karma,
-        })),
-        ...profile.interest_groups
-          .filter((ig) => ig.karma && ig.karma > 0)
-          .map((ig) => ({
-            name: ig.name,
-            value: ig.karma as number,
-          })),
-      ]
-        .filter((item) => item.value > 0)
-        .sort((a, b) => b.value - a.value)
-        .slice(0, 6), // Top 6 only
-    [profile],
-  );
 
-  const total = profile.karma ?? 0;
+  const { slices: distributionData, total } = useMemo(
+    () => buildKarmaBreakdown(profile.karma ?? 0, profile.interest_groups),
+    [profile.karma, profile.interest_groups],
+  );
 
   if (total === 0) {
     return (
