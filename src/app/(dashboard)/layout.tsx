@@ -12,14 +12,29 @@ import { UnauthorizedHandler } from "@/components/auth";
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import { AppTopbar } from "@/components/dashboard/app-topbar";
 import { DashboardSidebarProvider } from "@/components/dashboard/sidebar-provider";
+import { WhatsNewPopup } from "@/components/dashboard/whats-new-popup";
 import { DashboardContent } from "@/components/layout/dashboard-content";
+import { getLatestChangelogEntry, shouldShowWhatsNew } from "@/lib/whats-new";
 import { OnboardingGuard } from "./onboarding-guard";
+import {
+  dismissWhatsNew,
+  getWhatsNewState,
+  markWhatsNewSeen,
+} from "./whats-new-actions";
 
 interface DashboardLayoutProps {
   children: ReactNode;
 }
 
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
+export default async function DashboardLayout({
+  children,
+}: DashboardLayoutProps) {
+  const [entry, state] = await Promise.all([
+    getLatestChangelogEntry(),
+    getWhatsNewState(),
+  ]);
+  const shouldShow = shouldShowWhatsNew(entry, state);
+
   return (
     <OnboardingGuard>
       {/* Catches ?unauthorized=true from middleware RBAC redirects */}
@@ -31,6 +46,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <AppTopbar />
           <AppSidebar />
           <DashboardContent>{children}</DashboardContent>
+          <WhatsNewPopup
+            entry={entry}
+            isOpen={shouldShow}
+            onSeen={markWhatsNewSeen}
+            onDismiss={dismissWhatsNew}
+          />
         </main>
       </DashboardSidebarProvider>
     </OnboardingGuard>

@@ -341,14 +341,14 @@ export const NAV_ITEMS: readonly NavItem[] = [
     section: "management",
     roles: MANAGEMENT_ROLES,
   },
-  {
-    id: "event-report",
-    title: "Event Report",
-    href: "/dashboard/reports",
-    icon: LineChart,
-    section: "management",
-    roles: MANAGEMENT_ROLES,
-  },
+  // {
+  //   id: "event-report",
+  //   title: "Event Report",
+  //   href: "/dashboard/reports",
+  //   icon: LineChart,
+  //   section: "management",
+  //   roles: MANAGEMENT_ROLES,
+  // },
   {
     id: "manage-events",
     title: "Manage Events",
