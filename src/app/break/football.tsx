@@ -255,44 +255,67 @@ export function Football() {
 const BALL_R = 47;
 const CX = 50;
 /** White core the three blade tails curl around. */
-const CORE_R = 9;
+const CORE_R = 11;
 /** Clockwise twist from a blade's core tail to its rim head — the pinwheel. */
-const SWEEP_DEG = 82;
+const SWEEP_DEG = 55;
 /**
- * Angular half-width of the white channel between neighbouring blades. The
- * real ball is white-DOMINANT — undersize this and the drawing collapses into
- * a camera-shutter of colour.
+ * S-wave along each edge — the Trionda construction is literally "tetrahedron
+ * triangle sides become curves", and this sine is that curve.
  */
-const GAP_DEG = 13;
+const WAVE_DEG = 5;
+/**
+ * White channel half-width, by position along the blade: WIDE at the core and
+ * NARROW at the rim. This taper is what turns constant-width shutter blades
+ * into the ball's teardrop lobes — thin curling tails, bulbous heads.
+ */
+const GAP_CORE_DEG = 22;
+const GAP_RIM_DEG = 10;
 
-/** Point on the blade-boundary spiral anchored at `startDeg`, t ∈ [0,1]. */
-function spiralPoint(startDeg: number, t: number): [number, number] {
+function gapAt(t: number): number {
+  return GAP_CORE_DEG + (GAP_RIM_DEG - GAP_CORE_DEG) * t;
+}
+
+/**
+ * Point on a blade at fraction `t` ∈ [0,1] core→rim, `across` ∈ [0,1] spanning
+ * trailing edge → leading edge at that t.
+ */
+function bladePoint(
+  startDeg: number,
+  t: number,
+  across: number,
+): [number, number] {
+  const gap = gapAt(t);
+  const base = startDeg + gap + across * (120 - 2 * gap);
+  const deg = base + SWEEP_DEG * t + WAVE_DEG * Math.sin(2 * Math.PI * t);
   const r = CORE_R + (BALL_R - CORE_R) * t;
-  const a = ((startDeg + SWEEP_DEG * t) * Math.PI) / 180;
+  const a = (deg * Math.PI) / 180;
   return [CX + r * Math.sin(a), CX - r * Math.cos(a)];
 }
 
-/** The spiral sampled as a polyline path segment (t0 → t1, either direction). */
-function spiralLine(startDeg: number, t0: number, t1: number): string {
+/** A blade curve sampled as a polyline segment (t0 → t1, either direction). */
+function bladeLine(
+  startDeg: number,
+  across: number,
+  t0: number,
+  t1: number,
+): string {
   const steps = 26;
   const parts: string[] = [];
   for (let i = 0; i <= steps; i++) {
-    const [x, y] = spiralPoint(startDeg, t0 + ((t1 - t0) * i) / steps);
+    const [x, y] = bladePoint(startDeg, t0 + ((t1 - t0) * i) / steps, across);
     parts.push(`${i === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`);
   }
   return parts.join(" ");
 }
 
-/** Closed blade outline: spiral out, rim arc, spiral back, arc around the core. */
+/** Closed lobe: trailing edge out, rim arc, leading edge back, core arc home. */
 function bladePath(startDeg: number): string {
-  const edgeA = startDeg + GAP_DEG;
-  const edgeB = startDeg + 120 - GAP_DEG;
-  const [rimX, rimY] = spiralPoint(edgeB, 1);
-  const [coreX, coreY] = spiralPoint(edgeA, 0);
+  const [rimX, rimY] = bladePoint(startDeg, 1, 1);
+  const [coreX, coreY] = bladePoint(startDeg, 0, 0);
   return [
-    spiralLine(edgeA, 0, 1),
+    bladeLine(startDeg, 0, 0, 1),
     `A ${BALL_R} ${BALL_R} 0 0 1 ${rimX.toFixed(2)} ${rimY.toFixed(2)}`,
-    spiralLine(edgeB, 1, 0).replace(/^M/, "L"),
+    bladeLine(startDeg, 1, 1, 0).replace(/^M/, "L"),
     `A ${CORE_R} ${CORE_R} 0 0 0 ${coreX.toFixed(2)} ${coreY.toFixed(2)}`,
     "Z",
   ].join(" ");
@@ -306,20 +329,33 @@ const BLADES = [
   ...blade,
   d: bladePath(blade.deg),
   // Line-work inside the panel, echoing the real ball's embossed striping.
-  details: [0.32, 0.62].map((f) => ({
+  details: [0.35, 0.65].map((f) => ({
     f,
-    d: spiralLine(blade.deg + GAP_DEG + (120 - 2 * GAP_DEG) * f, 0.1, 0.95),
+    d: bladeLine(blade.deg, f, 0.12, 0.92),
   })),
   // Gradient runs along the blade: lit at the rim head, deep at the core tail.
-  gradFrom: spiralPoint(blade.deg + 60, 1),
-  gradTo: spiralPoint(blade.deg + GAP_DEG, 0),
+  gradFrom: bladePoint(blade.deg, 1, 0.5),
+  gradTo: bladePoint(blade.deg, 0, 0.5),
 }));
 
-/** Stitch grooves running down the middle of each white channel. */
-const SEAMS = [0, 120, 240].map((deg) => ({
-  deg,
-  d: spiralLine(deg, 0.05, 1),
-}));
+/**
+ * Stitch grooves along each white channel. The channel centreline is the
+ * un-gapped boundary itself — gap 0 puts `across` 0 and 1 in the same place.
+ */
+const SEAMS = [0, 120, 240].map((deg) => {
+  const steps = 26;
+  const parts: string[] = [];
+  for (let i = 0; i <= steps; i++) {
+    const t = 0.05 + (0.95 * i) / steps;
+    const d = deg + SWEEP_DEG * t + WAVE_DEG * Math.sin(2 * Math.PI * t);
+    const r = CORE_R + (BALL_R - CORE_R) * t;
+    const a = (d * Math.PI) / 180;
+    parts.push(
+      `${i === 0 ? "M" : "L"} ${(CX + r * Math.sin(a)).toFixed(2)} ${(CX - r * Math.cos(a)).toFixed(2)}`,
+    );
+  }
+  return { deg, d: parts.join(" ") };
+});
 
 function BallSvg() {
   return (
