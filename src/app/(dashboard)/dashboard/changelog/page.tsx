@@ -45,7 +45,7 @@ const components: Components = {
             </a>
             <span className="text-muted-foreground/30">•</span>
             <a
-              href="https://github.com/gtech-mulearn/mulearn-dashboard/commits/main"
+              href="https://github.com/gtech-mulearn/mulearn-dashboard/commits/master"
               target="_blank"
               rel="noreferrer"
               className="hover:text-foreground transition-colors"

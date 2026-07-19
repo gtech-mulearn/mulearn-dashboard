@@ -94,7 +94,9 @@ export function SessionEditSheet({
         description: currentSession.description ?? "",
         starts_at: utcIsoToLocalInput(currentSession.starts_at),
         ends_at: utcIsoToLocalInput(currentSession.ends_at),
-        mode: (currentSession.mode as any) || "ONLINE",
+        mode:
+          (currentSession.mode as "ONLINE" | "OFFLINE" | "HYBRID" | null) ||
+          "ONLINE",
         meeting_link: currentSession.meeting_link ?? "",
         venue: currentSession.venue ?? "",
       });

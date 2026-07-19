@@ -1,98 +1,172 @@
 # mulearn-dashboard
 
-## 4.9.0
+## 5.0.0
 
-### Minor Changes
+The μLearn Dashboard has been rebuilt from the ground up. This is a full rewrite — faster, more secure, and significantly broader in scope than before. It keeps everything the community already relies on (authentication, profiles, μJourney, interest groups, learning circles, leaderboards) while adding role-aware home pages, a dedicated Company portal, a complete Mentor portal, an Intern workspace, rebuilt task management, new analytics, and hardened security and performance under the hood.
 
-- [#136](https://github.com/gtech-mulearn/mulearn-dashboard/pull/136) [`d9bfd22`](https://github.com/awindsr/mulearn-dashboard/commit/d9bfd22dad87843b38e143f546c8a51df62a9d98) Thanks [@alvin-dennis](https://github.com/alvin-dennis)! - ## Task Management
+### Highlights
 
-  - Implemented full Task CRUD feature page
-  - Refactored task form for better type handling and form validation
-  - Enhanced error handling integration across task dialogs
-  - Added creation and editing functionality with form and dialog interfaces
-  - Added modal for task creation
-  - Updated documentation for task creation flows
+- **Role-aware home pages** — the dashboard now adapts to who you are, with a role selector to switch between the views available to you.
+- **Company portal (new)** — a full workspace for companies: job posting, applicant tracking, task and mentor nomination, IG requests, and analytics.
+- **Mentor portal (new)** — sessions, task requests, mentee management, and a verification workflow.
+- **Intern workspace (new)** — a dedicated space for interns and intern leads.
+- **Google Sign-In** — a new authentication option alongside email/MuID and OTP.
+- **Rebuilt task management, new analytics, Talent Pool, Projects, Weekly Twitches, and Event reporting.**
+- **Security & performance overhaul** — cookie-based auth, edge-level route protection, server rendering, and image optimization.
+- **Dark mode** and an **in-app changelog**.
 
-  ## Task Verification
+---
 
-  - Implemented Task Verification feature page
-  - Updated source filtering logic
-  - Refactored with improved API endpoints and event handling
-  - Added admin verification workflow
-  - Refactored verification API for better workflows
+### New Features
 
-  ## Task Type Management
+#### Google Sign-In
 
-  - Implemented Task Type Management feature page
-  - Enhanced type display and error handling
-  - Added task type management dialog
-  - Updated API with error handling improvements
+You can now sign in with Google OAuth, in addition to the existing email/MuID password login and OTP login.
 
-  ## Task Bulk Import
+#### A home page that knows who you are
 
-  - Implemented Task Bulk Import feature page
-  - Added batch task import functionality
-  - Added dedicated bulk import route
+Your dashboard home now adapts to your role, with a dedicated role selector to switch between the views available to you — no more one-size-fits-all landing page.
 
-  ## Misc
+- **Learners** — karma streak, quick-action shortcuts, upcoming learning circle meetings, followed interest groups, and a live karma feed.
+- **Students** — a focused summary of your activity and progress.
+- **Enablers** — a dedicated view with campus-relevant highlights.
+- **Mentors** — upcoming sessions, IG roles, a mentee overview, and your mentor application status (pending or verified).
+- **Companies** — talent pool, open job counts, and quick company stats.
+- **Campus Leads / Enablers** — campus circle health, member-funnel analytics, and recent campus activity, with a selector to switch between Student and Campus Lead views.
 
-  - Added API response and task-specific error handling hooks
-  - Updated route permissions for task management
+#### Company Branch — a portal built for companies
 
-## 4.8.0
+Companies now have their own dedicated section of the dashboard:
 
-### Minor Changes
+- **Job Management** — post openings with a step-by-step form, set eligibility rules, and track applicants through each hiring stage.
+- **Task Management** — create community tasks with karma points, submitted for admin approval.
+- **Mentor Management** — nominate mentors from the community for admin review.
+- **IG Requests** — submit interest group requests directly.
+- **Analytics & Performance** — a dedicated view of your company's engagement.
 
-- [#125](https://github.com/gtech-mulearn/mulearn-dashboard/pull/125) [`e116017`](https://github.com/awindsr/mulearn-dashboard/commit/e116017900651f2921dd899af0c95a979ad26f3b) Thanks [@vedhavk](https://github.com/vedhavk)! - **Company Branch** — a new suite of features connecting companies, learners, and admins.
+**For learners:** browse open roles from all verified companies, apply with a resume and cover letter, and track every application from **My Applications** — with search, filtering, and detailed job descriptions.
 
-  - **Manage Companies (Admin):** Review, verify, or reject company registration requests, with a detailed company profile view and approve/reject flow.
-  - **Jobs (Company):** Post and manage job openings through a guided multi-step form, set eligibility rules, and track applicants through hiring stages.
-  - **Tasks (Company):** Create and manage community tasks with karma points, submitted for admin approval.
-  - **Mentors (Company):** Nominate mentors from the community for admin review.
-  - **Jobs for Learners:** Browse open roles across all verified companies, apply with a resume and cover letter, and track application status from "My Applications."
+**For admins:** a new company management page to review, verify, or reject company registrations, with a full company profile view.
 
-## 4.7.0
+#### Full Mentor Portal
 
-### Minor Changes
+Mentors now have a complete, role-specific experience:
 
-- [#123](https://github.com/gtech-mulearn/mulearn-dashboard/pull/123) [`9c5f4bf`](https://github.com/awindsr/mulearn-dashboard/commit/9c5f4bf155668a5811de6483fa1abc9b178cbf21) Thanks [@Akshayvs-Tech](https://github.com/Akshayvs-Tech)! - ### Home Page
+- **Sessions** — create and manage mentoring sessions, add participants, copy session IDs, and delete sessions. Learners can browse, request, join, and track sessions, including joining online meetings.
+- **Task Requests** — create community tasks (pending admin approval), then edit or delete them at any time.
+- **Mentees** — see everyone who has joined your sessions, submit feedback for completed sessions, and manage your mentee list.
+- **Status banner** — your mentor application status (pending review / verified) appears right on your home page.
+- **All scopes active at once** — every scope a mentor holds (Company, Campus, and Interest Group) is live simultaneously, with per-scope grants managed by admins — no view-switching required.
 
-  - Added a status banner to display the mentor application status.
-  - Shows a pending status when the application is under review.
-  - Displays a verified badge once the application is approved by the admin.
+**For learners:** a dedicated Sessions page to browse and join mentor sessions using a session ID.
 
-  ### Session Page
+**For admins:** a Mentor Verification portal to search applications, review applicant profiles, and approve qualified mentors.
 
-  - Added functionality for mentors to create sessions using the **Create Session** button.
-  - Mentors can view all created sessions in a table.
-  - Added session actions including:
+#### Intern Dashboard
 
-    - Add participants
-    - Delete session
-    - Copy session ID (available when the session status is scheduled)
+A brand-new section for interns and intern leads — a dedicated space with tasks, timesheets, minutes, leave requests, a quest log, weekly reviews, and an intern leaderboard, plus a management counterpart for reviews and reporting.
 
-  ### Task Request Page
+#### Task Management — fully rebuilt
 
-  - Added functionality for mentors to create tasks.
-  - Newly created tasks are displayed with a pending status until admin approval.
-  - Once verified by the admin, the task status changes to approved.
-  - Added options to edit and delete tasks.
+The admin task-management experience has been completely overhauled:
 
-  ### Mentees Page
+- Create, edit, and delete tasks using clean dialog-based forms with proper validation.
+- Verify tasks submitted by mentors and companies, with improved filtering and workflow.
+- Manage task types from a dedicated dialog.
+- Bulk-import tasks in one go with the new batch import tool.
 
-  - Displays the list of mentees who have joined a session.
-  - Added a **Join Session** option where mentees can join using the session ID.
-  - Added view and feedback actions for each mentee.
-  - The feedback option allows mentors to submit feedback for the completed session.
+#### Talent Pool
 
-## 4.6.1
+Mentors and companies can now browse the Talent Pool — a curated view of learners across the community — completing a new recruitment loop with the jobs board.
 
-### Patch Changes
+#### Projects & Reports
 
-- [#116](https://github.com/gtech-mulearn/mulearn-dashboard/pull/116) [`acb27fc`](https://github.com/awindsr/mulearn-dashboard/commit/acb27fc7409784f1dd13a35d944dfde75e84c505) Thanks [@awindsr](https://github.com/awindsr)! - Fix campus role-route protection drift (Associates locked out of manage-interns),
+- **Project Showcase** — publish projects, browse community submissions, vote, comment, and discover new work.
+- **Reports** — a new admin reporting surface, plus an **Event Report Generator** that produces structured, exportable (PDF) event reports for standardized documentation and archiving.
 
-## 4.6.0
+#### Weekly Twitches Hub
 
-### Minor Changes
+A centralized space for recurring programs — Office Hours, Salt Mango Tree, and Inspiration Station Radio — with browsing, search, and filtering across completed and upcoming sessions.
 
-- [#113](https://github.com/gtech-mulearn/mulearn-dashboard/pull/113) [`261df88`](https://github.com/awindsr/mulearn-dashboard/commit/261df88559e3427139e0c07ce7b9a29e7c1a6879) Thanks [@awindsr](https://github.com/awindsr)! - Add semantic versioning, changelog page, and automated release workflow
+#### Zonal & District Dashboards
+
+- **Zonal Dashboard** — Zonal Administrators can monitor regional rankings, total members, and activity levels, and compare campuses within a zone.
+- **District Dashboard** — District Coordinators can monitor district rankings, member statistics, and participation metrics, and support campus activity across the district.
+
+#### Event Management (Admin)
+
+- Administrators and organizers can create, publish, draft, and manage the full event lifecycle — including invitations, pending approvals, search, filtering, and schedules.
+- The **Events Hub** (formerly Special Events) now supports event registration and participation tracking for users, in addition to browsing and viewing schedules.
+
+#### μVerse (coming soon)
+
+A dedicated space for an upcoming immersive dimension of μLearn — learning, collaboration, networking, and community engagement. Stay tuned.
+
+#### Quality-of-life additions
+
+- **Dark mode** — follows your system preference automatically, or toggle it manually.
+- **In-app changelog** — every future release will appear at `/dashboard/changelog`, so you never have to hunt for what's new.
+- **Learning Streak** — learner analytics now track an active learning streak alongside karma totals and rank.
+- **Member Funnel Analysis** — Campus Leads and Enablers can visualize the learner journey from registered users through onboarded, active, and Level 2+ learners to circle leads.
+
+---
+
+### Improvements
+
+#### μJourney (redesigned Learning Paths)
+
+The Learning Paths module has been reimagined as **μJourney** — a cleaner, faster experience for tracking learning progress and discovering new paths.
+
+#### Global search & filter
+
+Global search now covers **Projects** and **Events**, alongside the existing Interest Groups, Learning Circles, Learners, Mentors, and Campuses.
+
+#### Campus management
+
+Campus Leads gain direct management actions — managing Campus Leads and Enablers and downloading campus reports — on top of existing performance and karma insights. Campus-level analytics are reorganized under **Campus Lead Analytics**, now with an **Active Learning Circles** metric alongside Active Members, Campus Karma, and Campus Rank.
+
+#### Consolidated Learning Circles
+
+The two parallel Learning Circle implementations have been merged into a single, coherent module — fewer routes, consistent navigation, and properly nested meeting pages, with unit-tested meeting-link and meeting-time validation.
+
+#### Unified data layer & UI
+
+- **Faster, smarter data handling** — data is now cached, deduplicated, refreshed in the background, and updated optimistically for a snappier feel.
+- **Consistent tables and forms** — sorting, filtering, pagination, and validation now behave the same way across every admin screen.
+- **Accessible components** — dialogs, dropdowns, tabs, and selects ship with keyboard navigation, focus management, and ARIA semantics by default.
+
+---
+
+### Security
+
+Security has been substantially hardened in this release:
+
+- **Auth moved off `localStorage` to cookies** with `SameSite=Strict`, closing a class of cross-site request forgery vectors. The **refresh token is `HttpOnly`** and never exposed to page scripts.
+- **Edge-level route protection** — every page load is authorized at the edge before any application code reaches your browser, so unauthorized users no longer download or briefly render protected pages.
+- **Security headers on every request** — Content-Security-Policy, HSTS, `X-Frame-Options: DENY`, and related protections are now set platform-wide.
+- **Sanitized rich text** — Markdown rendering runs through a sanitizer, closing an XSS vector.
+- **Validated environment configuration** — required configuration is schema-validated at build time, so a misconfiguration fails the build instead of surfacing as a runtime error.
+- **Public vs. protected routes** — a small set of routes (interest group pages, public profiles, and other public surfaces) remain accessible without login; everything else requires authentication and role verification.
+
+---
+
+### Performance
+
+- **Server rendering** — pages that don't need interactivity are rendered on the server, so content appears faster with less JavaScript to download.
+- **Route-level code splitting** — each route loads only the code it needs.
+- **Image optimization** — images are automatically served as AVIF/WebP for significantly smaller files at the same quality.
+- **Smart caching** — data loads faster on repeat visits and refreshes automatically in the background.
+- **Lighter dependency footprint** — several large legacy dependencies were removed from the client bundle.
+
+> Performance baselines (Lighthouse / Core Web Vitals / bundle size) are being captured against production and will be published in a follow-up.
+
+---
+
+### Reliability
+
+The application now ships with error boundaries and illustrated empty/error states throughout, so a single failing component no longer takes down the page — users see a clear, recoverable state instead of a blank screen.
+
+Every deployment is also tagged to its exact commit (surfaced in the in-app version badge), so a reported issue can be traced back to the precise build that shipped it.
+
+---
+

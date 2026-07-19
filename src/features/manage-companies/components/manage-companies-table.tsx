@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import Pagination from "@/components/dashboard/table/pagination";
-import Table from "@/components/dashboard/table/Table";
+import Table, { type Data } from "@/components/dashboard/table/Table";
 import TableTop from "@/components/dashboard/table/TableTop";
 import THead from "@/components/dashboard/table/Thead";
 import { Badge } from "@/components/ui/badge";
@@ -366,7 +366,7 @@ export default function ManageCompaniesTable() {
           </div>
 
           <Table
-            rows={rows as any}
+            rows={rows as unknown as Data[]}
             isLoading={isLoading}
             page={currentPage}
             perPage={perPage}

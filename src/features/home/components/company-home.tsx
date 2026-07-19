@@ -19,7 +19,7 @@ export function CompanyHome() {
   const { data: userInfo } = useUserInfo();
   const isCompany = userInfo?.roles?.includes(ROLES.COMPANY) ?? false;
   const { data: companyStatus } = useCompanyOnboardingStatus(isCompany);
-  const { profile, isLoading: profileLoading } = useCompanyProfile();
+  const { isLoading: profileLoading } = useCompanyProfile();
   const { data: jobsData, isLoading: jobsLoading } = useJobs({ perPage: 100 });
   const { data: summary, isLoading: summaryLoading } = useCompanyHomeSummary();
   const [calendarMonth, setCalendarMonth] = useState(new Date());

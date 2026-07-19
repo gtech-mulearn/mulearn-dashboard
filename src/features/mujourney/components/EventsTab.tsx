@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StateDisplay } from "@/components/ui/state-display";
 import { LevelCard } from "@/features/mujourney/components/LevelCard";
-import type { UserLevelData } from "@/features/mujourney/schemas";
+import type { Task, UserLevelData } from "@/features/mujourney/schemas";
 import { usePublicTasks } from "@/features/tasks/hooks";
 import type { PublicTaskListParams } from "@/features/tasks/types/tasks.types";
 import { useDebounce } from "@/hooks/use-debounce";
@@ -54,7 +54,7 @@ export function EventsTab() {
   // ─── Group tasks by level ───────────────────────────────────────────
 
   const groupedLevels = useMemo(() => {
-    const map = new Map<string, any[]>();
+    const map = new Map<string, Task[]>();
 
     tasks.forEach((task) => {
       const levelNumber = task.level?.match(/\d+/)?.[0] ?? "1";

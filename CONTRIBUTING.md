@@ -14,6 +14,17 @@ Ensure you have [Bun](https://bun.sh) installed. Node/npm are not supported.
 
 ## Branching
 
+Long-lived branches and where they go:
+
+| Branch | Role | Deploys to |
+|---|---|---|
+| `dev` | Integration — all PRs target this | — |
+| `staging` | Pre-production verification | staging.app.mulearn.org |
+| `master` | Production | app.mulearn.org |
+
+Promotion flows `dev` → `staging` → `master`, each hop via pull request opened by a
+maintainer. **Never target `staging` or `master` from a feature branch.**
+
 Branch off from `dev` for all contributions. Use descriptive names:
 
 | Type | Pattern | Example |
@@ -23,7 +34,7 @@ Branch off from `dev` for all contributions. Use descriptive names:
 | Refactor | `refactor/<short-description>` | `refactor/auth-middleware` |
 | Chore | `chore/<short-description>` | `chore/update-deps` |
 
-All PRs must target `dev`, not `main`.
+All PRs must target `dev` — never `staging` or `master` directly.
 
 ## Commit Messages
 
@@ -67,7 +78,8 @@ Husky runs the following automatically on every commit — do not skip with `--n
 3. **TypeScript typecheck** — `tsc --noEmit` must pass
 4. **Forbidden pattern scan** — blocks `console.log`, `localStorage.setItem`, `sessionStorage.setItem`, `@ts-ignore`, and `@ts-expect-error`
 
-Fix any failures before pushing. The CI runs the same checks.
+Fix any failures before pushing. Every pull request runs `ci.yml` (lint, typecheck, and a
+production build) — all three checks must pass before merge.
 
 ## Changesets (Versioning & Changelog)
 

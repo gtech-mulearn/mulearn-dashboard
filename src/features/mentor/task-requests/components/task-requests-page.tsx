@@ -13,7 +13,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { type Resolver, useForm } from "react-hook-form";
 import { TaskDetailDialog } from "@/components/task-detail-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -104,7 +104,7 @@ const STATUS_CONFIG: Record<
   },
 };
 
-const EMPTY_ARRAY: any[] = [];
+const EMPTY_ARRAY: never[] = [];
 
 // ─── Task Form Dialog (Create + Edit) ─────────────────────────────────────────
 function TaskFormDialog({
@@ -134,7 +134,9 @@ function TaskFormDialog({
   const isPending = isCreating || isUpdating;
 
   const form = useForm<MentorTaskFormValues>({
-    resolver: zodResolver(MentorTaskFormSchema) as any,
+    resolver: zodResolver(
+      MentorTaskFormSchema,
+    ) as Resolver<MentorTaskFormValues>,
     defaultValues: {
       hashtag: "",
       title: "",
@@ -145,7 +147,7 @@ function TaskFormDialog({
       level: "",
       ig: "",
       skill_ids: [],
-    } as any,
+    },
   });
 
   // Reset form when opening in create mode
@@ -172,18 +174,17 @@ function TaskFormDialog({
       // "Web Development", "lvl3"). The dropdowns bind to UUIDs, so we must resolve
       // each name to its ID before resetting the form.
       const resolvedIg =
-        myIgs.find((ig: any) => ig.name === task.ig || ig.id === task.ig)?.id ??
+        myIgs.find((ig) => ig.name === task.ig || ig.id === task.ig)?.id ??
         task.ig ??
         "";
       const resolvedType =
-        taskTypes.find((t: any) => t.title === task.type || t.id === task.type)
+        taskTypes.find((t) => t.title === task.type || t.id === task.type)
           ?.id ??
         task.type ??
         "";
       const resolvedLevel =
-        levels.find(
-          (lvl: any) => lvl.name === task.level || lvl.id === task.level,
-        )?.id ??
+        levels.find((lvl) => lvl.name === task.level || lvl.id === task.level)
+          ?.id ??
         task.level ??
         "";
 
@@ -238,10 +239,7 @@ function TaskFormDialog({
         </DialogHeader>
 
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit as any)}
-            className="space-y-4"
-          >
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             {/* No assigned IGs — gate the form rather than show an empty dropdown */}
             {noIgs && (
               <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
@@ -255,7 +253,7 @@ function TaskFormDialog({
 
             {/* Title */}
             <FormField
-              control={form.control as any}
+              control={form.control}
               name="title"
               render={({ field }) => (
                 <FormItem>
@@ -270,7 +268,7 @@ function TaskFormDialog({
 
             {/* Hashtag */}
             <FormField
-              control={form.control as any}
+              control={form.control}
               name="hashtag"
               render={({ field }) => (
                 <FormItem>
@@ -298,7 +296,7 @@ function TaskFormDialog({
             {/* IG + Karma row */}
             <div className="grid grid-cols-2 gap-4">
               <FormField
-                control={form.control as any}
+                control={form.control}
                 name="ig"
                 render={({ field }) => (
                   <FormItem>
@@ -323,7 +321,7 @@ function TaskFormDialog({
               />
 
               <FormField
-                control={form.control as any}
+                control={form.control}
                 name="karma"
                 render={({ field }) => (
                   <FormItem>
@@ -350,7 +348,7 @@ function TaskFormDialog({
             {/* Type + Level row */}
             <div className="grid grid-cols-2 gap-4">
               <FormField
-                control={form.control as any}
+                control={form.control}
                 name="type"
                 render={({ field }) => (
                   <FormItem>
@@ -379,7 +377,7 @@ function TaskFormDialog({
               />
 
               <FormField
-                control={form.control as any}
+                control={form.control}
                 name="level"
                 render={({ field }) => (
                   <FormItem>
@@ -401,7 +399,7 @@ function TaskFormDialog({
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="none">None</SelectItem>
-                        {levels.map((lvl: any) => (
+                        {levels.map((lvl) => (
                           <SelectItem key={lvl.id} value={lvl.id}>
                             {lvl.name}
                           </SelectItem>
@@ -416,7 +414,7 @@ function TaskFormDialog({
 
             {/* Usage Count */}
             <FormField
-              control={form.control as any}
+              control={form.control}
               name="usage_count"
               render={({ field }) => (
                 <FormItem>
@@ -440,7 +438,7 @@ function TaskFormDialog({
 
             {/* Description */}
             <FormField
-              control={form.control as any}
+              control={form.control}
               name="description"
               render={({ field }) => (
                 <FormItem>

@@ -2,7 +2,6 @@
 
 import { ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
 import { endpoints } from "@/api/endpoints";
 import { Blank } from "@/components/dashboard/table/Blank";
 import Pagination from "@/components/dashboard/table/pagination";
@@ -25,7 +24,6 @@ import {
   useManageUsersList,
 } from "@/features/manage-users/hooks";
 import type { ManageUserListItem } from "@/features/manage-users/schemas";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import { UserForm } from "./user-form";
 
 export default function ManageUsers() {
@@ -81,16 +79,9 @@ export default function ManageUsers() {
     setSort((prev) => (prev === column ? `-${column}` : column));
   };
 
-  const handleDeleteRow = async (value: string | undefined) => {
+  const handleDeleteRow = (value: string | undefined) => {
     if (!value) return;
-    try {
-      await deleteMutation.mutateAsync(value);
-      toast.success("User deleted");
-    } catch (error) {
-      toast.error(
-        getApiResponseError(error, { fallback: "Failed to delete user" }),
-      );
-    }
+    deleteMutation.mutate(value);
   };
 
   const handleEditRow = (value: string | number | boolean) => {

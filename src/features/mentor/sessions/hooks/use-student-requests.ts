@@ -47,7 +47,7 @@ export function useCreateStudentRequest() {
       toast.success("Session request submitted successfully!");
       queryClient.invalidateQueries({ queryKey: STUDENT_REQUESTS_KEYS.my() });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast.error(
         getApiResponseError(error, {
           fallback: "Failed to submit session request",
@@ -81,7 +81,7 @@ export function useVerifyStudentRequest() {
       // refresh their own session list so it appears without a reload.
       queryClient.invalidateQueries({ queryKey: mentorKeys.sessions.all });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast.error(
         getApiResponseError(error, { fallback: "Failed to process request" }),
       );

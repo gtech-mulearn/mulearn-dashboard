@@ -110,7 +110,7 @@ export async function verifyStudentRequest(
 ): Promise<void> {
   await apiClient.patch(
     endpoints.mentor.studentSessionVerify(id),
-    toBackendPayload(data as any),
+    toBackendPayload(data),
     GenericResponseSchema,
     OPT,
   );

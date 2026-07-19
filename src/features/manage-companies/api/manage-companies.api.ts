@@ -45,7 +45,14 @@ export async function fetchCompanyVerificationRequests(
     CompanyVerificationListResponseSchema,
   );
 
-  return (response as any).response ?? response;
+  // The schema transforms { response: {...} } down to {...} on success, but the
+  // gateway's fallback path (schema validation failure) returns the raw,
+  // untransformed envelope instead — so `response` may actually be either shape
+  // at runtime despite the static type. Detect and unwrap that case defensively.
+  const maybeWrapped = response as unknown as {
+    response?: CompanyVerificationListData;
+  };
+  return maybeWrapped.response ?? response;
 }
 
 /**

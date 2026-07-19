@@ -69,7 +69,7 @@ export function useParticipantHistory() {
 export function useSessionParticipants(sessionId: string | null) {
   return useQuery({
     queryKey: menteeKeys.sessionParticipants(sessionId ?? ""),
-    queryFn: () => fetchSessionParticipants(sessionId!),
+    queryFn: () => fetchSessionParticipants(sessionId ?? ""),
     enabled: !!sessionId,
     retry: no403Retry,
   });
