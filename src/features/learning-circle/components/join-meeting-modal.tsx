@@ -48,16 +48,28 @@ export function JoinMeetingModal({
       e.preventDefault();
       if (code.length !== 6) return;
 
+      // Open a blank tab synchronously to bypass popup blockers
+      let newTab: Window | null = null;
+      if (meetLink) {
+        newTab = window.open("about:blank", "_blank");
+      }
+
       joinMeeting(
         { meetingId, data: { meet_code: code.toUpperCase() } },
         {
           onSuccess: () => {
             setCode("");
             onOpenChange(false);
-            if (meetLink) {
-              window.open(meetLink, "_blank", "noopener,noreferrer");
+            if (newTab && meetLink) {
+              newTab.opener = null;
+              newTab.location.href = meetLink;
             }
             onSuccess?.();
+          },
+          onError: () => {
+            if (newTab) {
+              newTab.close();
+            }
           },
         },
       );

@@ -16,6 +16,7 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
+  Download,
   Edit2,
   ExternalLink,
   Key,
@@ -31,6 +32,8 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { endpoints } from "@/api/endpoints";
+import { useCsvDownload } from "@/hooks/use-csv-download";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -134,6 +137,12 @@ export function MeetingDetailView({
   const [showJoinQr, setShowJoinQr] = useState(false);
   const [showLinkQr, setShowLinkQr] = useState(false);
 
+  const csvFilename = `meeting-attendees-${meetingId}-${format(new Date(), "yyyy-MM-dd")}.csv`;
+  const { downloadCsv, isDownloading } = useCsvDownload(
+    endpoints.learningCircle.meetingReportExport(meetingId),
+    csvFilename,
+  );
+
   const { data: rawMeeting, isLoading } = useMeetingDetail(meetingId);
   const { data: circle } = useCircleDetail(circleId);
   const { data: members } = useCircleMembers(circleId);
@@ -159,10 +168,20 @@ export function MeetingDetailView({
     members ?? undefined,
   );
 
-  const isCreator = meeting?.created_by_id
-    ? members?.members?.some(
-        (m) => m.muid === meeting.created_by_id && m.is_leader,
-      ) || permissions.role === "owner"
+  // Find the creator in the members list to resolve their muid (handles case where created_by_id is a UUID)
+  const creatorMember = meeting?.created_by_id
+    ? members?.members?.find(
+        (m) =>
+          m.id === meeting.created_by_id || m.muid === meeting.created_by_id,
+      )
+    : undefined;
+
+  // Fallback to meeting.created_by_id if not found, in case it's already an muid
+  const creatorMuid = creatorMember?.muid || meeting?.created_by_id;
+
+  const isCreator = creatorMuid
+    ? members?.members?.some((m) => m.muid === creatorMuid && m.is_leader) ||
+      permissions.role === "owner"
     : false;
 
   /**
@@ -173,7 +192,7 @@ export function MeetingDetailView({
    */
   const canDeleteThisMeeting =
     permissions.canDeleteMeeting ||
-    (userInfo?.muid != null && userInfo.muid === meeting?.created_by_id);
+    (userInfo?.muid != null && userInfo.muid === creatorMuid);
 
   const currentUserAttendee = userInfo
     ? meeting?.attendees.find((a) => a.user_id === userInfo.muid)
@@ -518,16 +537,31 @@ export function MeetingDetailView({
 
       {/* ─── Attendees ─── */}
       <div className="w-full rounded-2xl bg-card p-4 sm:p-6 lg:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-border flex flex-col">
-        <h3 className="text-[16px] font-bold text-foreground mb-6 flex items-center gap-2 flex-wrap">
-          Attendees{" "}
-          <span className="text-sm font-medium text-muted-foreground">
-            ({joinedAttendees.length} joined
-            {pendingJoinAttendees.length > 0
-              ? `, ${pendingJoinAttendees.length} not joined`
-              : ""}
-            )
-          </span>
-        </h3>
+        <div className="mb-6 flex items-center justify-between gap-3 flex-wrap">
+          <h3 className="text-[16px] font-bold text-foreground flex items-center gap-2 flex-wrap">
+            Attendees{" "}
+            <span className="text-sm font-medium text-muted-foreground">
+              ({joinedAttendees.length} joined
+              {pendingJoinAttendees.length > 0
+                ? `, ${pendingJoinAttendees.length} not joined`
+                : ""}
+              )
+            </span>
+          </h3>
+          {permissions.canSubmitReport && (
+            <button
+              type="button"
+              id="meeting-attendees-export-csv"
+              aria-label="Download attendees CSV"
+              onClick={downloadCsv}
+              disabled={isDownloading}
+              className="inline-flex items-center gap-2 rounded-xl border border-border bg-muted/50 px-3 py-1.5 text-[12px] font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Download className="h-3.5 w-3.5" />
+              {isDownloading ? "Downloading…" : "Download CSV"}
+            </button>
+          )}
+        </div>
 
         {meeting.attendees.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-2xl bg-muted py-10">
