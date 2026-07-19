@@ -21,6 +21,7 @@ import {
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { Textarea } from "@/components/ui/textarea";
 import { chipColor } from "@/lib/chip-colors";
+import { resolveMediaUrl } from "@/lib/utils";
 import {
   useCommentOnProject,
   useDeleteComment,
@@ -46,12 +47,6 @@ function generateGradient(seed: string): string {
   const hue1 = Math.abs(hash) % 360;
   const hue2 = (hue1 + 40) % 360;
   return `linear-gradient(135deg, hsl(${hue1}, 70%, 60%), hsl(${hue2}, 80%, 50%))`;
-}
-
-function resolveMediaUrl(url: string | null | undefined): string | null {
-  if (!url) return null;
-  if (url.startsWith("http")) return url;
-  return `${process.env.NEXT_PUBLIC_DJANGO_API_URL ?? ""}${url}`;
 }
 
 function generateHeroBg(seed: string): string {

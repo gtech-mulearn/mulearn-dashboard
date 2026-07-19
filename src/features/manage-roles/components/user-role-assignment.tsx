@@ -100,10 +100,19 @@ function SingleTab({ role }: { role: Role }) {
   }, [mentorTier]);
 
   // Queries for dynamic dropdowns (enabled conditionally based on role/tier)
-  const { data: colleges = [], isLoading: isLoadingColleges } = useColleges();
-  const { data: igsResponse, isLoading: isLoadingIgs } =
-    useInterestGroupsList();
-  const { data: guilds = [], isLoading: isLoadingGuilds } = useGuilds();
+  const { data: colleges = [], isLoading: isLoadingColleges } = useColleges({
+    enabled:
+      Boolean(selectedUser) && isMentor && mentorTier === "CAMPUS_MENTOR",
+  });
+  const { data: igsResponse, isLoading: isLoadingIgs } = useInterestGroupsList(
+    undefined,
+    {
+      enabled: Boolean(selectedUser) && isMentor && mentorTier === "IG_MENTOR",
+    },
+  );
+  const { data: guilds = [], isLoading: isLoadingGuilds } = useGuilds({
+    enabled: Boolean(selectedUser) && isIntern,
+  });
 
   // Map guilds to Combobox options format
   const guildOptions = useMemo(() => {
@@ -153,7 +162,7 @@ function SingleTab({ role }: { role: Role }) {
   const handleAssign = () => {
     if (!selectedUser || !isExtraValid) return;
 
-    const extra: Record<string, any> = {};
+    const extra: BulkAssignExtraPayload = {};
     if (isIntern) {
       extra.guild = guild.trim();
     }
@@ -438,10 +447,20 @@ function BulkAddTab({ role }: { role: Role }) {
   }, [mentorTier]);
 
   // Queries for dynamic dropdowns (enabled conditionally based on role/tier)
-  const { data: colleges = [], isLoading: isLoadingColleges } = useColleges();
-  const { data: igsResponse, isLoading: isLoadingIgs } =
-    useInterestGroupsList();
-  const { data: guilds = [], isLoading: isLoadingGuilds } = useGuilds();
+  const { data: colleges = [], isLoading: isLoadingColleges } = useColleges({
+    enabled:
+      selectedUsers.length > 0 && isMentor && mentorTier === "CAMPUS_MENTOR",
+  });
+  const { data: igsResponse, isLoading: isLoadingIgs } = useInterestGroupsList(
+    undefined,
+    {
+      enabled:
+        selectedUsers.length > 0 && isMentor && mentorTier === "IG_MENTOR",
+    },
+  );
+  const { data: guilds = [], isLoading: isLoadingGuilds } = useGuilds({
+    enabled: selectedUsers.length > 0 && isIntern,
+  });
 
   // Map guilds to Combobox options format
   const guildOptions = useMemo(() => {
