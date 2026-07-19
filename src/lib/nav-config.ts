@@ -15,6 +15,7 @@
 import type { LucideIcon } from "lucide-react";
 import {
   BookOpen,
+  Boxes,
   Briefcase,
   Calendar,
   CalendarDays,
@@ -228,7 +229,14 @@ export const NAV_ITEMS: readonly NavItem[] = [
     roles: [ROLES.MENTOR],
     dynamicCheck: (_, context) => !!context.isMentorVerified,
   },
-
+  {
+    id: "manage-interest-groups",
+    title: "Manage Interest Group",
+    href: "/dashboard/manage-interest-groups",
+    icon: Boxes,
+    section: "management",
+    roles: [ROLES.IG_LEAD],
+  },
   {
     id: "mentor-task-requests",
     title: "Task Requests",

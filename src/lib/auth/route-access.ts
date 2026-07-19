@@ -120,6 +120,9 @@ export const routeAccessMap: Record<string, RouteConfig> = {
   "/dashboard/management/manage-interest-groups": {
     roles: [ROLES.ADMIN],
   },
+  "/dashboard/manage-interest-groups": {
+    roles: [ROLES.ADMIN, ROLES.IG_LEAD],
+  },
   "/dashboard/management/manage-roles": {
     roles: [ROLES.ADMIN],
   },
