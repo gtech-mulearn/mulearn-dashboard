@@ -1,6 +1,8 @@
 name: Changeset check
 
-on: pull_request
+on:
+  pull_request:
+    branches: [dev, staging]
 
 permissions:
   contents: read
@@ -15,10 +17,10 @@ jobs:
 
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: 1.3.14
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
       - name: Check for changeset
-        run: bunx changeset status --since=origin/dev
+        run: bunx changeset status --since=origin/${{ github.base_ref }}
