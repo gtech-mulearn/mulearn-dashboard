@@ -48,10 +48,9 @@ export function BasicDetails({
       {/* Activity Heatmap */}
       <ActivityHeatmap userLog={userLog} isLoading={isLoading} />
 
-      {/* Karma Distribution */}
-      <div className="rounded-2xl bg-card p-6 shadow-sm">
+      {/* <div className="rounded-2xl bg-card p-6 shadow-sm">
         <KarmaDistribution profile={profile} />
-      </div>
+      </div> */}
     </div>
   );
 }
