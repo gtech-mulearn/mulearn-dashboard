@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { StateDisplay } from "@/components/ui/state-display";
+import { Football } from "./football";
 
 /**
  * FIFA Break Page
@@ -31,6 +32,7 @@ export default function BreakPage() {
   return (
     <main className="flex min-h-dvh items-center justify-center px-4">
       <StateDisplay variant="break" size="lg" />
+      <Football />
     </main>
   );
 }
