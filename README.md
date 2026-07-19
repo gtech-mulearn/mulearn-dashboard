@@ -8,7 +8,6 @@ A modern, comprehensive dashboard and community management platform for the **μ
 
 - Node.js 22+
 - Bun
-
 ### Installation
 
 1. Clone the repository:=
