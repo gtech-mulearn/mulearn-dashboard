@@ -31,7 +31,25 @@ export const metadata: Metadata = {
 export default function BreakPage() {
   return (
     <main className="flex min-h-dvh items-center justify-center px-4">
-      <StateDisplay variant="break" size="lg" />
+      {/* This is a full-page takeover, not an empty state tucked inside a
+          layout, so the copy is scaled up past StateDisplay's defaults. */}
+      <StateDisplay
+        variant="break"
+        size="lg"
+        title={
+          <span className="block font-display text-2xl leading-tight tracking-tight text-balance sm:text-4xl">
+            BREAK THE ECHO CHAMBER.
+            <br />
+            NOT THE HOLIDAY.
+          </span>
+        }
+        description={
+          <span className="block text-balance text-base sm:text-lg">
+            Kerala is celebrating football, and so are we. The μLearn dashboard
+            will return on Tuesday. 💙
+          </span>
+        }
+      />
       <Football />
     </main>
   );

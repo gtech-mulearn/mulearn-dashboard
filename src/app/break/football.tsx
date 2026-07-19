@@ -244,14 +244,20 @@ export function Football() {
  * the way the hexagon edges do on a real ball.
  */
 
-/** Centre pentagon: circumradius 17, one vertex pointing up. */
-const CENTRE_PENTAGON = "50,33 66.2,44.8 60,63.8 40,63.8 33.8,44.8";
+/**
+ * Centre pentagon: circumradius 14, one vertex pointing up. Kept well under a
+ * third of the ball's radius — sized up from here the black panels merge with
+ * the seams and the whole thing reads as a star rather than a football.
+ */
+const CENTRE_PENTAGON = "50,36 63.3,45.7 58.2,61.3 41.8,61.3 36.7,45.7";
 
 /**
- * A rim pentagon drawn at the top, centred at (50,0) — mostly outside the
- * circle — with one vertex pointing back down toward the middle.
+ * A rim pentagon drawn at the top, centred 52 units above the middle — mostly
+ * outside the circle — with one vertex pointing back down. Only the ~10 units
+ * below the rim survive the clip, which is the sliver a real panel shows as it
+ * curves away.
  */
-const RIM_PENTAGON = "50,17 33.8,5.3 40,-13.8 60,-13.8 66.2,5.3";
+const RIM_PENTAGON = "50,13 35.7,2.6 41.2,-14.1 58.8,-14.1 64.3,2.6";
 
 /** 36° puts a rim panel over an edge midpoint rather than a vertex. */
 const RIM_ANGLES = [36, 108, 180, 252, 324];
@@ -292,12 +298,15 @@ function BallSvg() {
           ))}
         </g>
 
-        <g stroke="#16191f" strokeWidth="3" strokeLinecap="round">
+        {/* Seams run from each centre-pentagon vertex to the rim, landing in
+            the gaps BETWEEN rim panels — the 36° offset is what puts them
+            there. Thin on purpose: heavier and they read as a star's arms. */}
+        <g stroke="#16191f" strokeWidth="1.8" strokeLinecap="round">
           {SEAM_ANGLES.map((deg) => (
             <line
               key={deg}
               x1="50"
-              y1="33"
+              y1="36"
               x2="50"
               y2="3"
               transform={`rotate(${deg} 50 50)`}
