@@ -30,27 +30,19 @@ export function InterestGroupCard({ group, gradient }: InterestGroupCardProps) {
       <div
         className={`absolute inset-0 ${gradient} transition-transform duration-700 group-hover:scale-105`}
       >
-        <span className="absolute -bottom-8 -right-2 select-none text-[8rem] font-black leading-none text-white/15 drop-shadow-sm">
+        <span className="absolute -bottom-8 -right-2 select-none text-[8rem] font-black leading-none text-foreground/6">
           {firstLetter}
         </span>
       </div>
 
-      {/* Soft light blob for depth */}
-      <div className="pointer-events-none absolute -left-10 -top-10 h-40 w-40 rounded-full bg-white/25 blur-3xl transition-all duration-700 group-hover:scale-150" />
-
-      {/* Legibility scrims */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-linear-to-b from-black/45 to-transparent" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-3/5 bg-linear-to-t from-black/70 via-black/25 to-transparent" />
-
       {/* Top: name + code badge */}
       <div className="absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-3 p-3.5">
-        <h3 className="font-display line-clamp-2 text-xl font-bold leading-tight text-white drop-shadow-md [text-wrap:balance]">
+        <h3 className="font-display line-clamp-2 text-xl font-bold leading-tight text-foreground [text-wrap:balance]">
           {group.name}
         </h3>
         {group.code && (
-          <div className="flex shrink-0 items-center gap-1 rounded-full border border-white/25 bg-white/15 px-2.5 py-1 backdrop-blur-md transition-colors group-hover:border-white/40">
-            {/* <Hash className="h-3 w-3 text-white/90" /> */}
-            <span className="font-display text-xs font-bold tracking-wide text-white">
+          <div className="flex shrink-0 items-center gap-1 rounded-full border border-border/60 bg-background/60 px-2.5 py-1 backdrop-blur-md transition-colors group-hover:border-border">
+            <span className="font-display text-xs font-bold tracking-wide text-foreground">
               {group.code}
             </span>
           </div>
@@ -59,17 +51,17 @@ export function InterestGroupCard({ group, gradient }: InterestGroupCardProps) {
 
       {/* Bottom: glassmorphic detail bar */}
       <div className="absolute inset-x-0 bottom-0 z-10 p-3">
-        <div className="flex items-center justify-between gap-3 rounded-[1.25rem] border border-white/25 bg-white/15 p-2 shadow-lg ring-1 ring-black/5 backdrop-blur-xl">
+        <div className="flex items-center justify-between gap-3 rounded-[1.25rem] border border-border/60 bg-background/60 p-2 shadow-lg ring-1 ring-black/5 backdrop-blur-xl">
           <div className="flex min-w-0 items-center gap-2 pl-1">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/20 text-xs font-black text-white ring-1 ring-white/40">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-background/70 text-xs font-black text-foreground ring-1 ring-border/60">
               {firstLetter}
             </div>
-            <span className="truncate text-[11px] font-semibold uppercase tracking-wider text-white">
+            <span className="truncate text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               {group.category}
             </span>
           </div>
 
-          <div className="flex shrink-0 items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-slate-900 shadow-sm transition-colors group-hover:bg-white/90">
+          <div className="flex shrink-0 items-center gap-1.5 rounded-full bg-background px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm transition-colors group-hover:bg-background/90">
             View Group
             <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 motion-reduce:transform-none" />
           </div>
