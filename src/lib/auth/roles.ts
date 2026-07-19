@@ -101,10 +101,11 @@ export const DISTRICT_ROLES = [
 
 /**
  * Roles that can view IG dashboards (static values only).
- * NOTE: Dynamic IG leads ("{igCode} IGLead") are NOT in this array.
- * Use `hasIgLeadRole(userRoles)` for dynamic checks.
+ * NOTE: Dynamic IG leads ("{igCode} IGLead") are NOT in this array — the
+ * static "IG Lead" role is a different string and does not match the
+ * `" IGLead"` suffix. Use `hasIgLeadRole(userRoles)` for dynamic checks.
  */
-export const IG_ROLES = [ROLES.ADMIN] as const;
+export const IG_ROLES = [ROLES.ADMIN, ROLES.IG_LEAD] as const;
 
 /** Roles with technical access (error logs, debugging tools) */
 export const TECH_ROLES = [ROLES.ADMIN, ROLES.TECH_TEAM] as const;

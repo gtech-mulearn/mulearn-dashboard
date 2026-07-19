@@ -72,8 +72,10 @@ export const routeAccessMap: Record<string, RouteConfig> = {
   },
 
   // ── Interest Group Dashboard ─────────────────────────────
+  // Kept in step with IG_ROLES in roles.ts, which gates the sidebar entry —
+  // a nav item the middleware then redirects away from is a dead link.
   "/dashboard/edit-ig": {
-    roles: [ROLES.ADMIN],
+    roles: [ROLES.ADMIN, ROLES.IG_LEAD],
     dynamicCheck: (roles) => roles.some((r) => r.endsWith(" IGLead")),
   },
 

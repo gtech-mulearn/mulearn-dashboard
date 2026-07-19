@@ -10,6 +10,7 @@
 import { Award, Flame, Zap } from "lucide-react";
 import { StatCard } from "@/components/ui/stat-card";
 import type { UserProfile } from "../schemas";
+import { getLevelMessage, parseLevelNumber } from "../utils/level.utils";
 
 interface ProfileStatsProps {
   profile: UserProfile;
@@ -19,7 +20,7 @@ interface ProfileStatsProps {
 export function ProfileStats({ profile, monthDifference }: ProfileStatsProps) {
   const karma = profile.karma ?? 0;
   const rank = profile.rank ?? 0;
-  const level = profile.level ? profile.level.slice(3, 4) : "1";
+  const level = parseLevelNumber(profile.level);
 
   const avgKarma =
     monthDifference > 0 ? Math.round(karma / monthDifference) : 0;
@@ -46,7 +47,7 @@ export function ProfileStats({ profile, monthDifference }: ProfileStatsProps) {
         value={`Level ${level}`}
         accent="chart-2"
         icon={<Zap className="size-5" />}
-        description={profile.level || "Beginner"}
+        description={getLevelMessage(profile.level)}
       />
     </div>
   );

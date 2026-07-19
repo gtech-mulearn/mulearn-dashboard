@@ -11,7 +11,7 @@
 import type { UserLogData, UserProfile } from "../schemas";
 import { ActivityHeatmap } from "./activity-heatmap";
 import { IGSelector } from "./ig-selector";
-import { KarmaDistribution } from "./karma-distribution";
+// import { KarmaDistribution } from "./karma-distribution";
 
 interface BasicDetailsProps {
   profile: UserProfile;
