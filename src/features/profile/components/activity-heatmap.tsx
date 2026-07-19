@@ -11,6 +11,11 @@
 
 import { useMemo } from "react";
 import type { UserLogData } from "../schemas";
+import {
+  buildHeatmapData,
+  CELL_PITCH,
+  toDateKey,
+} from "../utils/activity.utils";
 
 interface ActivityHeatmapProps {
   userLog?: UserLogData;
@@ -28,20 +33,6 @@ const COLORS = {
 };
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const MONTHS = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
 
 function getColorLevel(karma: number, maxKarma: number): string {
   if (karma === 0) return COLORS.empty;
@@ -52,68 +43,11 @@ function getColorLevel(karma: number, maxKarma: number): string {
   return COLORS.level4;
 }
 
-function formatDate(date: Date): string {
-  return date.toISOString().split("T")[0];
-}
-
 export function ActivityHeatmap({ userLog, isLoading }: ActivityHeatmapProps) {
-  // Process log data into a map of date -> karma
-  const { activityMap, maxKarma, weeks, totalKarma, monthLabels } =
+  const { activityMap, maxKarma, weeks, windowKarma, monthLabels, today } =
     useMemo(() => {
-      const map = new Map<string, number>();
-      let max = 1;
-      let total = 0;
-
-      // Aggregate karma by date
-      if (userLog) {
-        for (const entry of userLog) {
-          const date = entry.created_date.split("T")[0];
-          const existing = map.get(date) || 0;
-          map.set(date, existing + entry.karma);
-          max = Math.max(max, existing + entry.karma);
-          total += entry.karma;
-        }
-      }
-
-      // Generate last 52 weeks of dates
-      const today = new Date();
-      const startOfWeek = new Date(today);
-      startOfWeek.setDate(today.getDate() - today.getDay()); // Sunday
-
-      const weeksArray: Date[][] = [];
-      const monthLabelsMap: { month: string; weekIndex: number }[] = [];
-      let lastMonth = -1;
-
-      // Go back 52 weeks
-      for (let w = 52; w >= 0; w--) {
-        const weekDates: Date[] = [];
-        const weekStart = new Date(startOfWeek);
-        weekStart.setDate(startOfWeek.getDate() - w * 7);
-
-        for (let d = 0; d < 7; d++) {
-          const day = new Date(weekStart);
-          day.setDate(weekStart.getDate() + d);
-          weekDates.push(day);
-
-          // Track month labels
-          if (day.getMonth() !== lastMonth && d === 0) {
-            monthLabelsMap.push({
-              month: MONTHS[day.getMonth()],
-              weekIndex: 52 - w,
-            });
-            lastMonth = day.getMonth();
-          }
-        }
-        weeksArray.push(weekDates);
-      }
-
-      return {
-        activityMap: map,
-        maxKarma: max,
-        weeks: weeksArray,
-        totalKarma: total,
-        monthLabels: monthLabelsMap,
-      };
+      const now = new Date();
+      return { ...buildHeatmapData(userLog, now), today: now };
     }, [userLog]);
 
   if (isLoading) {
@@ -134,7 +68,7 @@ export function ActivityHeatmap({ userLog, isLoading }: ActivityHeatmapProps) {
             Activity Overview
           </h3>
           <p className="text-sm text-muted-foreground">
-            {totalKarma.toLocaleString()} karma earned this year
+            {windowKarma.toLocaleString()} karma earned in the last year
           </p>
         </div>
         {/* Legend */}
@@ -151,24 +85,26 @@ export function ActivityHeatmap({ userLog, isLoading }: ActivityHeatmapProps) {
 
       {/* Heatmap Grid */}
       <div className="overflow-x-auto">
-        {/* Month labels */}
-        <div className="mb-1 flex gap-[3px] pl-10">
+        {/* Month labels — absolutely positioned so each sits above its week
+            column; flex margins would compound and drift across the year. */}
+        <div
+          className="relative mb-1 ml-10 h-4"
+          style={{ width: weeks.length * CELL_PITCH }}
+        >
           {monthLabels.map(({ month, weekIndex }) => (
-            <div
+            <span
               key={`${month}-${weekIndex}`}
-              className="text-xs text-muted-foreground"
-              style={{
-                marginLeft: `${weekIndex * 15}px`,
-              }}
+              className="absolute top-0 text-xs text-muted-foreground"
+              style={{ left: weekIndex * CELL_PITCH }}
             >
               {month}
-            </div>
+            </span>
           ))}
         </div>
 
         <div className="flex">
           {/* Day labels */}
-          <div className="mr-2 flex flex-col gap-[3px]">
+          <div className="mr-2 flex w-8 flex-col gap-[3px]">
             {DAYS.map((day, i) => (
               <div
                 key={day}
@@ -183,13 +119,13 @@ export function ActivityHeatmap({ userLog, isLoading }: ActivityHeatmapProps) {
           <div className="flex gap-[3px]">
             {weeks.map((week) => (
               <div
-                key={`week-${formatDate(week[0])}`}
+                key={`week-${toDateKey(week[0])}`}
                 className="flex flex-col gap-[3px]"
               >
                 {week.map((day) => {
-                  const dateStr = formatDate(day);
+                  const dateStr = toDateKey(day);
                   const karma = activityMap.get(dateStr) || 0;
-                  const isFuture = day > new Date();
+                  const isFuture = day > today;
 
                   return (
                     <div
