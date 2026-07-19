@@ -47,10 +47,7 @@ export function KarmaDistribution({ profile }: KarmaDistributionProps) {
     [profile],
   );
 
-  const total = useMemo(
-    () => distributionData.reduce((sum, item) => sum + item.value, 0),
-    [distributionData],
-  );
+  const total = profile.karma ?? 0;
 
   if (total === 0) {
     return (
