@@ -13,11 +13,11 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  MIN_BUFFER_MINUTES,
   getEarliestAllowedMs,
   getMeetTimeErrorMessage,
   getMinDateTimeLocalValue,
   isMeetTimeValid,
+  MIN_BUFFER_MINUTES,
 } from "./meet-time-validation";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────

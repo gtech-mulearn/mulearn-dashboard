@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { Trophy } from "lucide-react";
+import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { PodiumProps } from "@/features/leaderboard";
 
