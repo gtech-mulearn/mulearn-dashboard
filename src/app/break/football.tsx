@@ -73,9 +73,11 @@ export function Football() {
   useEffect(() => {
     if (reducedMotion) return;
 
-    // Start resting on the floor, right of centre, out of the copy's way.
+    // Enter from above the viewport and drop in, right of centre so the
+    // landing bounces happen clear of the copy.
     const floor = () => window.innerHeight - BALL_SIZE - 24;
-    pos.current = { x: window.innerWidth * 0.72, y: floor() };
+    pos.current = { x: window.innerWidth * 0.72, y: -BALL_SIZE * 2 };
+    vel.current = { x: 0, y: 2 };
     draw();
 
     const step = () => {
@@ -110,7 +112,9 @@ export function Football() {
         v.y = Math.abs(v.y) < SETTLE_SPEED ? 0 : -v.y * RESTITUTION;
         v.x *= FLOOR_FRICTION;
       }
-      if (p.y <= 0) {
+      // Ceiling: only when moving up — the ball SPAWNS above the viewport
+      // (drop-in entrance), and clamping it there would kill the entrance.
+      if (p.y <= 0 && v.y < 0) {
         p.y = 0;
         v.y = -v.y * RESTITUTION;
       }
@@ -233,35 +237,89 @@ export function Football() {
 }
 
 /**
- * Classic 32-panel ball, drawn rather than shipped as an asset.
+ * Adidas Trionda — the 2026 World Cup ball — as a stylised drawing.
  *
- * The panel layout is the real one, not eyeballed: a pentagon at the centre,
- * and five more at the rim sitting on the centre pentagon's EDGE midpoints —
- * i.e. rotated 36° off its vertices, then every 72°. The rim pentagons are
- * positioned beyond the circle's radius and clipped by it, which is what gives
- * a flat drawing the look of panels curving over the horizon of a sphere. The
- * seams run radially out from the centre pentagon's vertices, filling the gaps
- * the way the hexagon edges do on a real ball.
+ * The real ball: white, with three curved blades pinwheeling around the
+ * centre, one per host nation — red for Canada, blue for the USA, green for
+ * Mexico — separated by white seam channels that taper as they spiral in.
+ *
+ * This is a stylisation, not a trace of the photograph, and the geometry is
+ * COMPUTED rather than hand-drawn: hand-tuned Bézier blades kept collapsing
+ * into a star or a pie chart. Each blade lives between two copies of one
+ * spiral (radius grows core→rim while the angle sweeps clockwise), rotated
+ * 120° apart and pulled in by an angular gap that becomes the white channel.
+ * The three-fold symmetry, the pinwheel motion and the tapering channels all
+ * fall out of that one parametric curve.
  */
 
+const BALL_R = 47;
+const CX = 50;
+/** White core the three blade tails curl around. */
+const CORE_R = 9;
+/** Clockwise twist from a blade's core tail to its rim head — the pinwheel. */
+const SWEEP_DEG = 82;
 /**
- * Centre pentagon: circumradius 14, one vertex pointing up. Kept well under a
- * third of the ball's radius — sized up from here the black panels merge with
- * the seams and the whole thing reads as a star rather than a football.
+ * Angular half-width of the white channel between neighbouring blades. The
+ * real ball is white-DOMINANT — undersize this and the drawing collapses into
+ * a camera-shutter of colour.
  */
-const CENTRE_PENTAGON = "50,36 63.3,45.7 58.2,61.3 41.8,61.3 36.7,45.7";
+const GAP_DEG = 13;
 
-/**
- * A rim pentagon drawn at the top, centred 52 units above the middle — mostly
- * outside the circle — with one vertex pointing back down. Only the ~10 units
- * below the rim survive the clip, which is the sliver a real panel shows as it
- * curves away.
- */
-const RIM_PENTAGON = "50,13 35.7,2.6 41.2,-14.1 58.8,-14.1 64.3,2.6";
+/** Point on the blade-boundary spiral anchored at `startDeg`, t ∈ [0,1]. */
+function spiralPoint(startDeg: number, t: number): [number, number] {
+  const r = CORE_R + (BALL_R - CORE_R) * t;
+  const a = ((startDeg + SWEEP_DEG * t) * Math.PI) / 180;
+  return [CX + r * Math.sin(a), CX - r * Math.cos(a)];
+}
 
-/** 36° puts a rim panel over an edge midpoint rather than a vertex. */
-const RIM_ANGLES = [36, 108, 180, 252, 324];
-const SEAM_ANGLES = [0, 72, 144, 216, 288];
+/** The spiral sampled as a polyline path segment (t0 → t1, either direction). */
+function spiralLine(startDeg: number, t0: number, t1: number): string {
+  const steps = 26;
+  const parts: string[] = [];
+  for (let i = 0; i <= steps; i++) {
+    const [x, y] = spiralPoint(startDeg, t0 + ((t1 - t0) * i) / steps);
+    parts.push(`${i === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`);
+  }
+  return parts.join(" ");
+}
+
+/** Closed blade outline: spiral out, rim arc, spiral back, arc around the core. */
+function bladePath(startDeg: number): string {
+  const edgeA = startDeg + GAP_DEG;
+  const edgeB = startDeg + 120 - GAP_DEG;
+  const [rimX, rimY] = spiralPoint(edgeB, 1);
+  const [coreX, coreY] = spiralPoint(edgeA, 0);
+  return [
+    spiralLine(edgeA, 0, 1),
+    `A ${BALL_R} ${BALL_R} 0 0 1 ${rimX.toFixed(2)} ${rimY.toFixed(2)}`,
+    spiralLine(edgeB, 1, 0).replace(/^M/, "L"),
+    `A ${CORE_R} ${CORE_R} 0 0 0 ${coreX.toFixed(2)} ${coreY.toFixed(2)}`,
+    "Z",
+  ].join(" ");
+}
+
+const BLADES = [
+  { deg: 0, id: "tri-red", from: "#E85045", to: "#A8221E" }, // Canada
+  { deg: 120, id: "tri-blue", from: "#41B9EA", to: "#1258BE" }, // USA
+  { deg: 240, id: "tri-green", from: "#16AC58", to: "#077038" }, // Mexico
+].map((blade) => ({
+  ...blade,
+  d: bladePath(blade.deg),
+  // Line-work inside the panel, echoing the real ball's embossed striping.
+  details: [0.32, 0.62].map((f) => ({
+    f,
+    d: spiralLine(blade.deg + GAP_DEG + (120 - 2 * GAP_DEG) * f, 0.1, 0.95),
+  })),
+  // Gradient runs along the blade: lit at the rim head, deep at the core tail.
+  gradFrom: spiralPoint(blade.deg + 60, 1),
+  gradTo: spiralPoint(blade.deg + GAP_DEG, 0),
+}));
+
+/** Stitch grooves running down the middle of each white channel. */
+const SEAMS = [0, 120, 240].map((deg) => ({
+  deg,
+  d: spiralLine(deg, 0.05, 1),
+}));
 
 function BallSvg() {
   return (
@@ -275,44 +333,76 @@ function BallSvg() {
         <clipPath id="ball-clip">
           <circle cx="50" cy="50" r="47" />
         </clipPath>
-        {/* Off-centre highlight reads as a light source, so the flat
-            drawing sits in the page as a solid object. */}
-        <radialGradient id="ball-shade" cx="34%" cy="28%" r="78%">
+        {/* Off-centre highlight reads as a light source, so the flat drawing
+            sits on the page as a sphere rather than a disc. */}
+        <radialGradient id="ball-shade" cx="34%" cy="26%" r="80%">
           <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="62%" stopColor="#f1f4f9" />
-          <stop offset="100%" stopColor="#c8d0dd" />
+          <stop offset="58%" stopColor="#f4f6fa" />
+          <stop offset="100%" stopColor="#c9d2df" />
         </radialGradient>
+        {/* Same light applied over the panels, so the colours darken toward
+            the lower-right edge with the rest of the ball. */}
+        <radialGradient id="ball-light" cx="34%" cy="26%" r="80%">
+          <stop offset="0%" stopColor="#fff" stopOpacity="0.3" />
+          <stop offset="55%" stopColor="#fff" stopOpacity="0" />
+          <stop offset="100%" stopColor="#0b1020" stopOpacity="0.26" />
+        </radialGradient>
+        {BLADES.map((blade) => (
+          <linearGradient
+            key={blade.id}
+            id={blade.id}
+            gradientUnits="userSpaceOnUse"
+            x1={blade.gradFrom[0]}
+            y1={blade.gradFrom[1]}
+            x2={blade.gradTo[0]}
+            y2={blade.gradTo[1]}
+          >
+            <stop offset="0%" stopColor={blade.from} />
+            <stop offset="100%" stopColor={blade.to} />
+          </linearGradient>
+        ))}
       </defs>
 
       <circle cx="50" cy="50" r="47" fill="url(#ball-shade)" />
 
       <g clipPath="url(#ball-clip)">
-        <g fill="#16191f">
-          <polygon points={CENTRE_PENTAGON} />
-          {RIM_ANGLES.map((deg) => (
-            <polygon
-              key={deg}
-              points={RIM_PENTAGON}
-              transform={`rotate(${deg} 50 50)`}
+        {BLADES.map((blade) => (
+          <g key={blade.deg}>
+            <path
+              d={blade.d}
+              fill={`url(#${blade.id})`}
+              stroke="#233043"
+              strokeOpacity="0.25"
+              strokeWidth="0.7"
             />
-          ))}
-        </g>
+            {blade.details.map((detail) => (
+              <path
+                key={detail.f}
+                d={detail.d}
+                fill="none"
+                stroke="#ffffff"
+                strokeOpacity="0.22"
+                strokeWidth="1"
+                strokeLinecap="round"
+              />
+            ))}
+          </g>
+        ))}
 
-        {/* Seams run from each centre-pentagon vertex to the rim, landing in
-            the gaps BETWEEN rim panels — the 36° offset is what puts them
-            there. Thin on purpose: heavier and they read as a star's arms. */}
-        <g stroke="#16191f" strokeWidth="1.8" strokeLinecap="round">
-          {SEAM_ANGLES.map((deg) => (
-            <line
-              key={deg}
-              x1="50"
-              y1="36"
-              x2="50"
-              y2="3"
-              transform={`rotate(${deg} 50 50)`}
-            />
-          ))}
-        </g>
+        {/* Stitch grooves down the middle of each white channel. */}
+        {SEAMS.map((seam) => (
+          <path
+            key={seam.deg}
+            d={seam.d}
+            fill="none"
+            stroke="#9aa6b8"
+            strokeOpacity="0.5"
+            strokeWidth="0.9"
+            strokeLinecap="round"
+          />
+        ))}
+
+        <circle cx="50" cy="50" r="47" fill="url(#ball-light)" />
       </g>
 
       <circle
@@ -320,8 +410,9 @@ function BallSvg() {
         cy="50"
         r="47"
         fill="none"
-        stroke="#16191f"
-        strokeWidth="2.5"
+        stroke="#2e3646"
+        strokeWidth="1.5"
+        opacity="0.8"
       />
     </svg>
   );
