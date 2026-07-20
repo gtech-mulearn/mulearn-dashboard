@@ -27,6 +27,7 @@ export {
   getMyPendingInvites,
   getPublicMeetings,
   getSentInvites,
+  getUserCircles,
   getUserMeetings,
   joinCircle,
   joinMeeting,

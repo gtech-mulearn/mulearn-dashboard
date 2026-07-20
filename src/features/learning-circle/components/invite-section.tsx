@@ -106,39 +106,78 @@ export function SentInvitesCard({ circleId }: InviteProps) {
         </div>
       ) : (
         <div className="space-y-2">
-          {sentInvites.map((invite) => (
-            <div
-              key={invite.id}
-              className="flex items-center justify-between rounded-lg border border-border bg-muted/50 px-3 py-2.5
-                transition-all duration-200 hover:border-border"
-            >
-              <div className="min-w-0 pr-3">
-                <p className="truncate text-[13px] font-semibold text-foreground">
-                  {invite.muid || invite.user || "Unknown"}
-                </p>
-                {invite.created_at && (
-                  <p className="text-[11px] text-muted-foreground">
-                    Sent {new Date(invite.created_at).toLocaleDateString()}
-                  </p>
-                )}
-              </div>
-              <span
-                className={`shrink-0 inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
-                  invite.is_accepted === true
-                    ? "bg-success/10 text-success"
-                    : invite.is_accepted === false
-                      ? "bg-destructive/10 text-destructive"
-                      : "bg-warning/10 text-warning"
-                }`}
+          {sentInvites.map((invite, index) => {
+            const inviteKey =
+              invite.id || invite.link_id || `sent-invite-${index}`;
+            const isAccepted =
+              invite.status?.toLowerCase() === "accepted" ||
+              invite.is_accepted === true ||
+              invite.is_accepted === "true" ||
+              invite.is_accepted === "Accepted" ||
+              invite.is_accepted === "accepted" ||
+              invite.is_accepted === 1 ||
+              invite.is_accepted === "1";
+            const isRejected =
+              invite.status?.toLowerCase() === "rejected" ||
+              invite.is_accepted === false ||
+              invite.is_accepted === "false" ||
+              invite.is_accepted === "Rejected" ||
+              invite.is_accepted === "rejected" ||
+              invite.is_accepted === 0 ||
+              invite.is_accepted === "0" ||
+              invite.is_accepted === -1 ||
+              invite.is_accepted === "-1";
+
+            let displayName = invite.full_name || "Unknown";
+            if (!invite.full_name) {
+              if (invite.muid) {
+                displayName = invite.muid;
+              } else if (invite.user) {
+                if (typeof invite.user === "object") {
+                  displayName =
+                    invite.user.full_name || invite.user.user_id || "Unknown";
+                } else {
+                  displayName = invite.user;
+                }
+              }
+            }
+
+            const inviteDate = invite.invited_at || invite.created_at;
+
+            return (
+              <div
+                key={String(inviteKey)}
+                className="flex items-center justify-between rounded-lg border border-border bg-muted/50 px-3 py-2.5
+                  transition-all duration-200 hover:border-border"
               >
-                {invite.is_accepted === true
-                  ? "Accepted"
-                  : invite.is_accepted === false
-                    ? "Rejected"
-                    : "Pending"}
-              </span>
-            </div>
-          ))}
+                <div className="min-w-0 pr-3">
+                  <p className="truncate text-[13px] font-semibold text-foreground">
+                    {displayName}
+                  </p>
+                  {inviteDate && (
+                    <p className="text-[11px] text-muted-foreground">
+                      Sent {new Date(inviteDate).toLocaleDateString()}
+                    </p>
+                  )}
+                </div>
+                <span
+                  className={`shrink-0 inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                    isAccepted
+                      ? "bg-success/10 text-success"
+                      : isRejected
+                        ? "bg-destructive/10 text-destructive"
+                        : "bg-warning/10 text-warning"
+                  }`}
+                >
+                  {isAccepted
+                    ? "Accepted"
+                    : isRejected
+                      ? "Rejected"
+                      : "Pending"}
+                </span>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

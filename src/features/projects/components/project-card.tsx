@@ -10,13 +10,6 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
-
-function resolveMediaUrl(url: string | null | undefined): string | null {
-  if (!url) return null;
-  if (url.startsWith("http")) return url;
-  return `${process.env.NEXT_PUBLIC_DJANGO_API_URL ?? ""}${url}`;
-}
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { getApiResponseError } from "@/hooks/use-get-error";
+import { resolveMediaUrl } from "@/lib/utils";
 import { useDeleteVote, useVoteProject } from "../hooks";
 import type { Project } from "../schemas";
 

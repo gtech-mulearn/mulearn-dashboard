@@ -4,7 +4,6 @@ import { useState } from "react";
 import { endpoints } from "@/api/endpoints";
 import { Blank } from "@/components/dashboard/table/Blank";
 import Pagination from "@/components/dashboard/table/pagination";
-import type { Data } from "@/components/dashboard/table/Table";
 import Table from "@/components/dashboard/table/Table";
 import TableTop from "@/components/dashboard/table/TableTop";
 import THead from "@/components/dashboard/table/Thead";
