@@ -12,45 +12,24 @@ import { ArrowRight, Mail, Search } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { StateDisplay } from "@/components/ui/state-display";
-import { useCircles, useMyPendingInvites, useUserCircles } from "../hooks";
+import { useActiveInvites, useCircles } from "../hooks";
 import { CircleCard } from "./circle-card";
 
 export function CircleList() {
   const { data: circles, isLoading } = useCircles();
-  const { data: invites } = useMyPendingInvites();
-  const { data: userCirclesData } = useUserCircles();
+  const { activeInvites, activeInvitesCount, joinedCircleIds } =
+    useActiveInvites();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-
-  const joinedCircleIds = useMemo(() => {
-    return new Set(userCirclesData?.map((c) => c.id) ?? []);
-  }, [userCirclesData]);
-
-  const activeInvitesCount = useMemo(() => {
-    if (!invites) return 0;
-    return invites.filter((inv) => {
-      if (!inv.circle_id) return true;
-      return !joinedCircleIds.has(inv.circle_id);
-    }).length;
-  }, [invites, joinedCircleIds]);
-
-  const pendingCirclesText = useMemo(() => {
-    if (!invites) return "";
-    const names = invites
-      .filter((inv) => {
-        if (!inv.circle_id) return true;
-        return !joinedCircleIds.has(inv.circle_id);
-      })
-      .map(
-        (inv) =>
-          inv.circle_name || inv.circle || inv.title || "Learning Circle",
-      )
-      .filter(Boolean);
-    if (names.length === 0) return "";
-    return names.join(", ");
-  }, [invites, joinedCircleIds]);
 
   const filteredCircles = useMemo(() => {
     if (!circles) return [];
@@ -142,14 +121,15 @@ export function CircleList() {
           />
         </div>
         <div className="w-full sm:w-48 shrink-0">
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="h-12 w-full rounded-xl border-[1.5px] border-border bg-card px-4 py-2.5 text-[13px] font-semibold text-foreground shadow-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/10 focus-visible:outline-none transition-all duration-200 cursor-pointer"
-          >
-            <option value="all">All Circles</option>
-            <option value="joined">My Circles</option>
-          </select>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="h-12 w-full rounded-xl border-[1.5px] border-border bg-card px-4 py-2.5 text-[13px] font-semibold text-foreground shadow-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/10 focus-visible:outline-none transition-all duration-200 cursor-pointer">
+              <SelectValue placeholder="Filter circles" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Circles</SelectItem>
+              <SelectItem value="joined">My Circles</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

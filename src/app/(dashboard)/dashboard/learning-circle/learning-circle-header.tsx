@@ -7,8 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import {
   CreateCircleModal,
-  useMyPendingInvites,
-  useUserCircles,
+  useActiveInvites,
 } from "@/features/learning-circle";
 import { useInterestGroupsList, useUserProfile } from "@/features/profile";
 
@@ -24,8 +23,7 @@ export function LearningCircleHeader() {
     isError: profileError,
   } = useUserProfile();
 
-  const { data: invites } = useMyPendingInvites();
-  const { data: userCirclesData } = useUserCircles();
+  const { activeInvitesCount } = useActiveInvites();
 
   const interestGroups =
     igData?.interestGroup?.map((ig) => ({ id: ig.id, name: ig.name })) ?? [];
@@ -34,18 +32,6 @@ export function LearningCircleHeader() {
     profile?.college_id && profile?.college_code
       ? [{ id: profile.college_id, title: profile.college_code }]
       : [];
-
-  const joinedCircleIds = useMemo(() => {
-    return new Set(userCirclesData?.map((c) => c.id) ?? []);
-  }, [userCirclesData]);
-
-  const activeInvitesCount = useMemo(() => {
-    if (!invites) return 0;
-    return invites.filter((inv) => {
-      if (!inv.circle_id) return true;
-      return !joinedCircleIds.has(inv.circle_id);
-    }).length;
-  }, [invites, joinedCircleIds]);
 
   const isFormDataLoading = igLoading || profileLoading;
   const hasError = igError || profileError;

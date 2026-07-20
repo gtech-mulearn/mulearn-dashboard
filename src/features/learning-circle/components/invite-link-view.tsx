@@ -121,10 +121,16 @@ export function InviteLinkView({ linkId }: InviteLinkViewProps) {
 
         {/* Body */}
         <div className="px-8 py-8">
-          {(invite.circle_name || invite.circle || invite.title) && (
+          {(invite.circle_name ||
+            invite.circle_title ||
+            invite.circle ||
+            invite.title) && (
             <div className="mb-6 text-center">
               <p className="text-[20px] font-extrabold text-foreground">
-                {invite.circle_name || invite.circle || invite.title}
+                {invite.circle_name ||
+                  invite.circle_title ||
+                  invite.circle ||
+                  invite.title}
               </p>
             </div>
           )}

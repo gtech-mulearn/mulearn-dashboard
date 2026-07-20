@@ -24,9 +24,8 @@ import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { useUserInfo } from "@/features/auth";
 import { getApiResponseError } from "@/hooks/use-get-error";
-import { ROLES } from "@/lib/auth/roles";
+import { usePermissions } from "@/hooks/use-permissions";
 import { eventsApi } from "../api";
 import {
   EVENT_CREATE_WIZARD_STEPS,
@@ -189,7 +188,7 @@ async function compressImageForUpload(
 export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
   const createEvent = useCreateEvent();
   const organizerOptionsQuery = useOrganizerOptions();
-  const { data: userInfo } = useUserInfo();
+  const { can } = usePermissions();
   const { data: clusterOptions, isLoading: clustersLoading } = useIGClusters();
   const { data: categoryOptions, isLoading: categoriesLoading } =
     useEventCategories();
@@ -294,14 +293,12 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
       });
     }
 
-    const isAdmin = userInfo?.roles?.includes(ROLES.ADMIN) ?? false;
+    const isAdmin = can("events:create_as_admin");
     if (data.can_create_as_admin && isAdmin) {
       list.push({ label: "Admin", type: "admin", id: "" });
     }
 
-    const isEnabler =
-      userInfo?.roles?.includes(ROLES.ENABLER) ||
-      userInfo?.roles?.includes(ROLES.LEAD_ENABLER);
+    const isEnabler = can("events:create_as_enabler");
 
     if (isEnabler && data.campus_context) {
       const alreadyHasCampus = list.some(
@@ -317,7 +314,7 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
     }
 
     return list;
-  }, [organizerOptionsQuery.data, userInfo]);
+  }, [organizerOptionsQuery.data, can]);
 
   const selectedOrganiser = organizerOptions.find(
     (item) => `${item.type}:${item.id}` === selectedOrganiserId,

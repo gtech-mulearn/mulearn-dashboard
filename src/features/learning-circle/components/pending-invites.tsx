@@ -3,37 +3,18 @@
 import { Check, ChevronLeft, Mail, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo } from "react";
 import { Spinner } from "@/components/ui/spinner";
-import {
-  useMyPendingInvites,
-  useRespondToInvite,
-  useUserCircles,
-} from "../hooks";
+import { useActiveInvites, useRespondToInvite } from "../hooks";
 
 export function PendingInvites() {
-  const { data: invites, isLoading: isInvitesLoading } = useMyPendingInvites();
-  const { data: userCirclesData, isLoading: isCirclesLoading } =
-    useUserCircles();
+  const { activeInvites, isLoading } = useActiveInvites();
   const respondToInvite = useRespondToInvite();
 
   const handleRespond = (id: string, isAccepted: boolean) => {
     respondToInvite.mutate({ id, action: isAccepted ? "accept" : "reject" });
   };
 
-  const joinedCircleIds = useMemo(() => {
-    return new Set(userCirclesData?.map((c) => c.id) ?? []);
-  }, [userCirclesData]);
-
-  const filteredInvites = useMemo(() => {
-    if (!invites) return [];
-    return invites.filter((invite) => {
-      if (!invite.circle_id) return true;
-      return !joinedCircleIds.has(invite.circle_id);
-    });
-  }, [invites, joinedCircleIds]);
-
-  const isLoading = isInvitesLoading || isCirclesLoading;
+  const filteredInvites = activeInvites;
 
   if (isLoading) {
     return (
@@ -120,8 +101,11 @@ export function PendingInvites() {
                   <div>
                     <p className="text-[14px] font-semibold text-foreground">
                       Learning Circle
-                      {invite.circle_name || invite.circle || invite.title
-                        ? ` - ${invite.circle_name || invite.circle || invite.title}`
+                      {invite.circle_name ||
+                      invite.circle_title ||
+                      invite.circle ||
+                      invite.title
+                        ? ` - ${invite.circle_name || invite.circle_title || invite.circle || invite.title}`
                         : ""}
                     </p>
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-muted-foreground">

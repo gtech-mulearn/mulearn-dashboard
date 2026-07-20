@@ -79,12 +79,7 @@ export async function getCircles(): Promise<LearningCircle[]> {
     endpoints.learningCircle.list,
     CircleListResponseSchema,
   );
-  return (response.response.data ?? []).map((circle: any) => ({
-    ...circle,
-    id: circle.id ? String(circle.id) : "",
-    ig: circle.ig ?? "",
-    title: circle.title ?? "",
-  }));
+  return response.response.data;
 }
 
 /** Get circle details */
@@ -476,27 +471,5 @@ export async function getUserCircles(): Promise<LearningCircle[]> {
     endpoints.learningCircle.userCircles,
     UserCircleListResponseSchema,
   );
-  console.log("[getUserCircles] Raw response from API:", response);
-
-  const rawList = Array.isArray(response)
-    ? response
-    : response && Array.isArray(response.response)
-      ? response.response
-      : [];
-  console.log("[getUserCircles] Extracted rawList:", rawList);
-
-  const mapped = rawList.map((item: any) => {
-    // Handle nested circle object if present: { circle: { id, title, ig } }
-    const c =
-      item.circle && typeof item.circle === "object" ? item.circle : item;
-    const idVal = c.id || item.circle_id || item.id;
-    return {
-      ...c,
-      id: idVal ? String(idVal) : "",
-      ig: c.ig ?? "",
-      title: c.title ?? c.name ?? "",
-    };
-  });
-  console.log("[getUserCircles] Normalized circles:", mapped);
-  return mapped;
+  return response.response;
 }

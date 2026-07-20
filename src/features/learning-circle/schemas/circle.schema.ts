@@ -33,25 +33,49 @@ export type UserBasic = z.infer<typeof UserBasicSchema>;
  * Circle list item - matches actual API response from /learningcircle/
  * Fields: id, ig, title, org, attendees
  */
-export const LearningCircleSchema = z.object({
-  id: z.union([z.string(), z.number()]).optional(),
-  circle_id: z.union([z.string(), z.number()]).optional(),
-  ig: z.string().nullable().optional(),
-  title: z.string().nullable().optional(),
-  org: z.string().nullable().optional(),
-  total_members: z.number().nullable().optional(),
-  attendees: z.array(z.unknown()).nullable().optional(),
-});
+export const LearningCircleSchema = z
+  .preprocess(
+    (val) => {
+      if (
+        val &&
+        typeof val === "object" &&
+        "circle" in val &&
+        val.circle &&
+        typeof val.circle === "object"
+      ) {
+        return {
+          ...(val.circle as object),
+          ...val,
+        };
+      }
+      return val;
+    },
+    z.object({
+      id: z.union([z.string(), z.number()]).optional(),
+      circle_id: z.union([z.string(), z.number()]).optional(),
+      ig: z.string().nullable().optional(),
+      title: z.string().nullable().optional(),
+      name: z.string().nullable().optional(),
+      org: z.string().nullable().optional(),
+      total_members: z.number().nullable().optional(),
+      attendees: z.array(z.unknown()).nullable().optional(),
+    }),
+  )
+  .transform((val) => {
+    const idVal = val.id ?? val.circle_id;
+    return {
+      id: idVal !== undefined ? String(idVal) : "",
+      circle_id:
+        val.circle_id !== undefined ? String(val.circle_id) : undefined,
+      ig: val.ig ?? "",
+      title: val.title ?? val.name ?? "",
+      org: val.org ?? null,
+      total_members: val.total_members ?? null,
+      attendees: val.attendees ?? null,
+    };
+  });
 
-export interface LearningCircle {
-  id: string;
-  circle_id?: string;
-  ig: string;
-  title: string;
-  org?: string | null;
-  total_members?: number | null;
-  attendees?: unknown[] | null;
-}
+export type LearningCircle = z.infer<typeof LearningCircleSchema>;
 
 /**
  * Circle detail - matches actual API response from /learningcircle/<id>/
@@ -167,6 +191,7 @@ export const InviteSchema = z.object({
   link_id: z.string().optional(),
   circle_id: z.string().optional(),
   circle_name: z.string().optional(),
+  circle_title: z.string().optional(),
   circle: z.string().optional(),
   title: z.string().optional(),
   user: z.union([z.string(), InviteUserSchema]).optional(),
