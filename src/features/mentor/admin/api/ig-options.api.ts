@@ -6,7 +6,7 @@ const IgListResponseSchema = z
   .object({
     response: z
       .object({
-        data: z.array(
+        interestGroup: z.array(
           z.object({ id: z.string(), name: z.string() }).passthrough(),
         ),
       })
@@ -26,5 +26,8 @@ export async function fetchIgOptions(): Promise<IgOption[]> {
     `${endpoints.dashboard.interestGroups}?${q}`,
     IgListResponseSchema,
   );
-  return res.response.data.map((ig) => ({ id: ig.id, name: ig.name }));
+  return res.response.interestGroup.map((ig) => ({
+    id: ig.id,
+    name: ig.name,
+  }));
 }

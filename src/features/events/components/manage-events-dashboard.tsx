@@ -209,38 +209,66 @@ export default function ManageEventsDashboard() {
           </>
         ) : (
           <>
-            <div className="rounded-2xl border border-border bg-card p-5 lc-card-shadow">
+            <button
+              type="button"
+              onClick={() => {
+                setStatusFilter("all");
+                setPage(1);
+              }}
+              className="rounded-2xl border border-border bg-card p-5 text-left lc-card-shadow transition-colors hover:bg-muted/50"
+            >
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 Total Events
               </p>
               <p className="mt-1 text-3xl font-bold text-foreground">
                 {totalCount}
               </p>
-            </div>
-            <div className="rounded-2xl border border-border bg-card p-5 lc-card-shadow">
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setStatusFilter("published");
+                setPage(1);
+              }}
+              className="rounded-2xl border border-border bg-card p-5 text-left lc-card-shadow transition-colors hover:bg-muted/50"
+            >
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 Published
               </p>
               <p className="mt-1 text-3xl font-bold text-foreground">
                 {publishedCount}
               </p>
-            </div>
-            <div className="rounded-2xl border border-border bg-card p-5 lc-card-shadow">
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setStatusFilter("pending_approval");
+                setPage(1);
+              }}
+              className="rounded-2xl border border-border bg-card p-5 text-left lc-card-shadow transition-colors hover:bg-muted/50"
+            >
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 Pending Approval
               </p>
               <p className="mt-1 text-3xl font-bold text-foreground">
                 {pendingApprovalCount}
               </p>
-            </div>
-            <div className="rounded-2xl border border-border bg-card p-5 lc-card-shadow">
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setStatusFilter("draft");
+                setPage(1);
+              }}
+              className="rounded-2xl border border-border bg-card p-5 text-left lc-card-shadow transition-colors hover:bg-muted/50"
+            >
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 Drafts
               </p>
               <p className="mt-1 text-3xl font-bold text-foreground">
                 {draftCount}
               </p>
-            </div>
+            </button>
           </>
         )}
       </div>
