@@ -41,5 +41,6 @@ export {
   useSubmitAttendeeReport,
   useSubmitMeetingReport,
   useTransferLead,
+  useUserCircles,
   useUserMeetings,
 } from "./use-learning-circle";

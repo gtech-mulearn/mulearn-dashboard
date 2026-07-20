@@ -39,6 +39,7 @@ import {
   getMyPendingInvites,
   getPublicMeetings,
   getSentInvites,
+  getUserCircles,
   getUserMeetings,
   joinCircle,
   joinMeeting,
@@ -94,6 +95,14 @@ export function useCircles() {
   return useQuery({
     queryKey: learningCircleKeys.circleList(),
     queryFn: getCircles,
+    staleTime: STALE_TIME,
+  });
+}
+
+export function useUserCircles() {
+  return useQuery({
+    queryKey: learningCircleKeys.userCircles(),
+    queryFn: getUserCircles,
     staleTime: STALE_TIME,
   });
 }
@@ -399,6 +408,9 @@ export function useRespondToInvite() {
       });
       queryClient.invalidateQueries({
         queryKey: learningCircleKeys.circleList(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.userCircles(),
       });
       toast.success("Invite response submitted");
     },

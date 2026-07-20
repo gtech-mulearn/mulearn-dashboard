@@ -1,8 +1,15 @@
 "use client";
 
 import { AlertTriangle } from "lucide-react";
+import Link from "next/link";
+import { useMemo } from "react";
+import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import { CreateCircleModal } from "@/features/learning-circle";
+import {
+  CreateCircleModal,
+  useMyPendingInvites,
+  useUserCircles,
+} from "@/features/learning-circle";
 import { useInterestGroupsList, useUserProfile } from "@/features/profile";
 
 export function LearningCircleHeader() {
@@ -17,6 +24,9 @@ export function LearningCircleHeader() {
     isError: profileError,
   } = useUserProfile();
 
+  const { data: invites } = useMyPendingInvites();
+  const { data: userCirclesData } = useUserCircles();
+
   const interestGroups =
     igData?.interestGroup?.map((ig) => ({ id: ig.id, name: ig.name })) ?? [];
 
@@ -24,6 +34,18 @@ export function LearningCircleHeader() {
     profile?.college_id && profile?.college_code
       ? [{ id: profile.college_id, title: profile.college_code }]
       : [];
+
+  const joinedCircleIds = useMemo(() => {
+    return new Set(userCirclesData?.map((c) => c.id) ?? []);
+  }, [userCirclesData]);
+
+  const activeInvitesCount = useMemo(() => {
+    if (!invites) return 0;
+    return invites.filter((inv) => {
+      if (!inv.circle_id) return true;
+      return !joinedCircleIds.has(inv.circle_id);
+    }).length;
+  }, [invites, joinedCircleIds]);
 
   const isFormDataLoading = igLoading || profileLoading;
   const hasError = igError || profileError;
@@ -56,9 +78,20 @@ export function LearningCircleHeader() {
   }
 
   return (
-    <CreateCircleModal
-      interestGroups={interestGroups}
-      organizations={userOrganization}
-    />
+    <div className="flex items-center gap-3">
+      <Button
+        variant="outline"
+        className="rounded-xl px-5 text-sm font-semibold border-border bg-card hover:bg-muted"
+        asChild
+      >
+        <Link href="/dashboard/learning-circle/invites">
+          Invites ({activeInvitesCount})
+        </Link>
+      </Button>
+      <CreateCircleModal
+        interestGroups={interestGroups}
+        organizations={userOrganization}
+      />
+    </div>
   );
 }

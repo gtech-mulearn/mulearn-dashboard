@@ -8,30 +8,70 @@
 
 "use client";
 
-import { Search } from "lucide-react";
+import { ArrowRight, Mail, Search } from "lucide-react";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { StateDisplay } from "@/components/ui/state-display";
-import { useCircles } from "../hooks";
+import { useCircles, useMyPendingInvites, useUserCircles } from "../hooks";
 import { CircleCard } from "./circle-card";
 
 export function CircleList() {
   const { data: circles, isLoading } = useCircles();
+  const { data: invites } = useMyPendingInvites();
+  const { data: userCirclesData } = useUserCircles();
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  const joinedCircleIds = useMemo(() => {
+    return new Set(userCirclesData?.map((c) => c.id) ?? []);
+  }, [userCirclesData]);
+
+  const activeInvitesCount = useMemo(() => {
+    if (!invites) return 0;
+    return invites.filter((inv) => {
+      if (!inv.circle_id) return true;
+      return !joinedCircleIds.has(inv.circle_id);
+    }).length;
+  }, [invites, joinedCircleIds]);
+
+  const pendingCirclesText = useMemo(() => {
+    if (!invites) return "";
+    const names = invites
+      .filter((inv) => {
+        if (!inv.circle_id) return true;
+        return !joinedCircleIds.has(inv.circle_id);
+      })
+      .map(
+        (inv) =>
+          inv.circle_name || inv.circle || inv.title || "Learning Circle",
+      )
+      .filter(Boolean);
+    if (names.length === 0) return "";
+    return names.join(", ");
+  }, [invites, joinedCircleIds]);
 
   const filteredCircles = useMemo(() => {
     if (!circles) return [];
-    if (!searchQuery.trim()) return circles;
+
+    let list = circles;
+    if (statusFilter === "joined") {
+      list = circles.filter(
+        (circle) => circle.id && joinedCircleIds.has(circle.id),
+      );
+    }
+
+    if (!searchQuery.trim()) return list;
 
     const query = searchQuery.toLowerCase();
-    return circles.filter(
+    return list.filter(
       (circle) =>
         circle.title.toLowerCase().includes(query) ||
         circle.ig.toLowerCase().includes(query) ||
         circle.org?.toLowerCase().includes(query),
     );
-  }, [circles, searchQuery]);
+  }, [circles, searchQuery, statusFilter, joinedCircleIds]);
 
   if (isLoading) {
     return (
@@ -60,19 +100,57 @@ export function CircleList() {
         fontFeatureSettings: "'cv02', 'cv03', 'cv04'",
       }}
     >
-      {/* Search */}
-      <div className="relative max-w-md">
-        <Search className="absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-muted-foreground" />
-        <Input
-          type="search"
-          placeholder="Search circles by name, topic, or organization…"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="h-12 rounded-xl border-[1.5px] border-border bg-card pl-11 pr-4 text-[14px] text-foreground shadow-none
-            placeholder:text-muted-foreground
-            focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/10 focus-visible:outline-none
-            transition-all duration-200"
-        />
+      {activeInvitesCount > 0 && (
+        <div className="flex items-center justify-between gap-4 rounded-2xl border border-primary/20 bg-primary/5 px-5 py-4 shadow-sm animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+              <Mail className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h4 className="text-[14px] font-bold text-foreground">
+                You have {activeInvitesCount} pending circle{" "}
+                {activeInvitesCount === 1 ? "invitation" : "invitations"}!
+              </h4>
+              <p className="text-[12px] font-medium text-muted-foreground">
+                Accept or reject invitations to join learning circles.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/dashboard/learning-circle/invites"
+            className="inline-flex items-center gap-1 rounded-xl bg-primary px-4 py-2 text-[12px] font-bold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md hover:scale-[1.02] active:scale-[0.98] shrink-0"
+          >
+            View Invitations
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+      )}
+
+      {/* Search & Filter */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder="Search circles by name, topic, or organization…"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="h-12 rounded-xl border-[1.5px] border-border bg-card pl-11 pr-4 text-[14px] text-foreground shadow-none
+              placeholder:text-muted-foreground
+              focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/10 focus-visible:outline-none
+              transition-all duration-200"
+          />
+        </div>
+        <div className="w-full sm:w-48 shrink-0">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="h-12 w-full rounded-xl border-[1.5px] border-border bg-card px-4 py-2.5 text-[13px] font-semibold text-foreground shadow-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/10 focus-visible:outline-none transition-all duration-200 cursor-pointer"
+          >
+            <option value="all">All Circles</option>
+            <option value="joined">My Circles</option>
+          </select>
+        </div>
       </div>
 
       {/* Empty State */}
