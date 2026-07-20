@@ -44,6 +44,7 @@ import {
   type SendInviteRequest,
   type TransferLeadRequest,
   type UserBasic,
+  UserCircleListResponseSchema,
 } from "../schemas";
 
 // ============================================
@@ -78,7 +79,12 @@ export async function getCircles(): Promise<LearningCircle[]> {
     endpoints.learningCircle.list,
     CircleListResponseSchema,
   );
-  return response.response.data;
+  return (response.response.data ?? []).map((circle: any) => ({
+    ...circle,
+    id: circle.id ? String(circle.id) : "",
+    ig: circle.ig ?? "",
+    title: circle.title ?? "",
+  }));
 }
 
 /** Get circle details */
@@ -227,13 +233,13 @@ export async function getMyPendingInvites(): Promise<Invite[]> {
   return response.response;
 }
 
-/** Accept or reject an invite (no link_id) */
+/** Accept or reject an invite */
 export async function respondToInvite(
   data: InviteResponseRequest & { id: string },
 ): Promise<void> {
   await apiClient.post(
-    endpoints.learningCircle.inviteStatus,
-    data,
+    endpoints.learningCircle.inviteStatusByLink(data.id),
+    { action: data.action },
     EmptyResponseSchema,
   );
 }
@@ -462,4 +468,35 @@ export async function deleteMeetingReport(meetingId: string): Promise<void> {
     endpoints.learningCircle.meetingReport(meetingId),
     EmptyResponseSchema,
   );
+}
+
+/** Get learning circles the current user has joined */
+export async function getUserCircles(): Promise<LearningCircle[]> {
+  const response = await apiClient.get(
+    endpoints.learningCircle.userCircles,
+    UserCircleListResponseSchema,
+  );
+  console.log("[getUserCircles] Raw response from API:", response);
+
+  const rawList = Array.isArray(response)
+    ? response
+    : response && Array.isArray(response.response)
+      ? response.response
+      : [];
+  console.log("[getUserCircles] Extracted rawList:", rawList);
+
+  const mapped = rawList.map((item: any) => {
+    // Handle nested circle object if present: { circle: { id, title, ig } }
+    const c =
+      item.circle && typeof item.circle === "object" ? item.circle : item;
+    const idVal = c.id || item.circle_id || item.id;
+    return {
+      ...c,
+      id: idVal ? String(idVal) : "",
+      ig: c.ig ?? "",
+      title: c.title ?? c.name ?? "",
+    };
+  });
+  console.log("[getUserCircles] Normalized circles:", mapped);
+  return mapped;
 }

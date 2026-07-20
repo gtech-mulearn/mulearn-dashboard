@@ -34,15 +34,24 @@ export type UserBasic = z.infer<typeof UserBasicSchema>;
  * Fields: id, ig, title, org, attendees
  */
 export const LearningCircleSchema = z.object({
-  id: z.string(),
-  ig: z.string(),
-  title: z.string(),
-  org: z.string().nullable(),
-  total_members: z.number().default(0),
-  attendees: z.array(z.unknown()).default([]),
+  id: z.union([z.string(), z.number()]).optional(),
+  circle_id: z.union([z.string(), z.number()]).optional(),
+  ig: z.string().nullable().optional(),
+  title: z.string().nullable().optional(),
+  org: z.string().nullable().optional(),
+  total_members: z.number().nullable().optional(),
+  attendees: z.array(z.unknown()).nullable().optional(),
 });
 
-export type LearningCircle = z.infer<typeof LearningCircleSchema>;
+export interface LearningCircle {
+  id: string;
+  circle_id?: string;
+  ig: string;
+  title: string;
+  org?: string | null;
+  total_members?: number | null;
+  attendees?: unknown[] | null;
+}
 
 /**
  * Circle detail - matches actual API response from /learningcircle/<id>/
@@ -136,7 +145,7 @@ export type SendInviteRequest = z.infer<typeof SendInviteRequestSchema>;
 
 /** Accept or reject an invitation */
 export const InviteResponseRequestSchema = z.object({
-  is_accepted: z.boolean(),
+  action: z.enum(["accept", "reject"]),
 });
 export type InviteResponseRequest = z.infer<typeof InviteResponseRequestSchema>;
 
@@ -144,16 +153,27 @@ export type InviteResponseRequest = z.infer<typeof InviteResponseRequestSchema>;
 // Invite Schemas
 // ============================================
 
+export const InviteUserSchema = z.object({
+  user_id: z.string().optional(),
+  full_name: z.string().optional(),
+  profile_pic: z.string().nullable().optional(),
+});
+
+export type InviteUser = z.infer<typeof InviteUserSchema>;
+
 /** Invite item returned by invite/sent and invite/status endpoints */
 export const InviteSchema = z.object({
-  id: z.string(),
+  id: z.union([z.string(), z.number()]).optional(),
+  link_id: z.string().optional(),
   circle_id: z.string().optional(),
   circle_name: z.string().optional(),
-  user: z.string().optional(),
+  circle: z.string().optional(),
+  title: z.string().optional(),
+  user: z.union([z.string(), InviteUserSchema]).optional(),
   muid: z.string().optional(),
-  invited_by: z.string().optional(),
-  is_accepted: z.boolean().nullable().optional(),
-  created_at: z.string().optional(),
+  invited_by: z.union([z.string(), InviteUserSchema]).optional(),
+  is_accepted: z.union([z.boolean(), z.string()]).nullable().optional(),
+  created_at: z.string().nullable().optional(),
 });
 
 export type Invite = z.infer<typeof InviteSchema>;
@@ -229,6 +249,10 @@ export const CircleListResponseSchema = ApiResponseSchema(
     data: z.array(LearningCircleSchema),
     pagination: PaginationSchema,
   }),
+);
+
+export const UserCircleListResponseSchema = ApiResponseSchema(
+  z.array(LearningCircleSchema),
 );
 
 export const CircleDetailResponseSchema = ApiResponseSchema(
