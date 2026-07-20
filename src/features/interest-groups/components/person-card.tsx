@@ -66,6 +66,7 @@ interface PersonCardProps {
 }
 
 export function PersonCard({
+  muid,
   full_name,
   name,
   email,
@@ -79,28 +80,42 @@ export function PersonCard({
   const socialLinks = buildSocialLinks(socials);
   const hasLinks = (email && true) || socialLinks.length > 0;
 
+  const avatar = profile_pic ? (
+    <Image
+      src={profile_pic}
+      alt={displayName}
+      width={48}
+      height={48}
+      className="h-12 w-12 shrink-0 rounded-full object-cover"
+    />
+  ) : (
+    <div
+      className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-linear-to-br ${avatarBgClass} text-lg font-bold ${accentClass} shadow-sm`}
+    >
+      {initial}
+    </div>
+  );
+
   return (
     <Card className="flex flex-col gap-4 p-5">
-      <div className="flex items-center gap-4">
-        {profile_pic ? (
-          <Image
-            src={profile_pic}
-            alt={displayName}
-            width={48}
-            height={48}
-            className="h-12 w-12 shrink-0 rounded-full object-cover"
-          />
-        ) : (
-          <div
-            className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-linear-to-br ${avatarBgClass} text-lg font-bold ${accentClass} shadow-sm`}
-          >
-            {initial}
+      {muid ? (
+        <Link
+          href={`/profile/${muid}`}
+          className="flex items-center gap-4 hover:opacity-80 transition-opacity"
+        >
+          {avatar}
+          <div className="min-w-0 flex-1">
+            <p className="font-bold text-foreground">{displayName}</p>
           </div>
-        )}
-        <div className="min-w-0 flex-1">
-          <p className="font-bold text-foreground">{displayName}</p>
+        </Link>
+      ) : (
+        <div className="flex items-center gap-4">
+          {avatar}
+          <div className="min-w-0 flex-1">
+            <p className="font-bold text-foreground">{displayName}</p>
+          </div>
         </div>
-      </div>
+      )}
       {hasLinks && (
         <div className="flex flex-wrap gap-2">
           {email && (

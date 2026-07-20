@@ -30,12 +30,15 @@ export function ConnectAccountsBanner() {
   }, []);
 
   const ALLOWED_ROUTES = ["/dashboard/profile", "/dashboard/mujourney"];
-  const isAllowedRoute = ALLOWED_ROUTES.includes(pathname);
+  const isCompanyRoute = pathname.startsWith("/dashboard/company");
+  const isAllowedRoute = ALLOWED_ROUTES.includes(pathname) && !isCompanyRoute;
   if (!mounted || !isAllowedRoute) return null;
   if (isConnectBannerDismissed) return null;
   if (user.isLoading) {
     return <Spinner className="h-8 w-8" />;
   }
+  const hasCompany = user.data?.company != null;
+  if (hasCompany) return null;
   const discordConnected = user.data?.exist_in_guild === true;
   const shouldShow = !discordConnected;
   if (!shouldShow) return null;

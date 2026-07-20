@@ -64,7 +64,9 @@ export function StepRequirements({ form }: StepRequirementsProps) {
           name="experience"
           render={({ field }) => (
             <FormItem className="sm:col-span-2">
-              <FormLabel>Experience Required</FormLabel>
+              <FormLabel>
+                Experience Required <span className="text-destructive">*</span>
+              </FormLabel>
               <FormControl>
                 <Input
                   {...field}
@@ -81,7 +83,9 @@ export function StepRequirements({ form }: StepRequirementsProps) {
           name="job_description"
           render={({ field }) => (
             <FormItem className="sm:col-span-2">
-              <FormLabel>Job Description</FormLabel>
+              <FormLabel>
+                Job Description <span className="text-destructive">*</span>
+              </FormLabel>
               <FormControl>
                 <MarkdownEditor
                   value={field.value}

@@ -8,6 +8,7 @@ import {
   Trash2,
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { toast } from "sonner";
 
 function resolveMediaUrl(url: string | null | undefined): string | null {
@@ -136,6 +137,9 @@ export function ProjectCard({
   const upvotes = votes.filter((v) => v.vote === "upvote").length;
   const commentCount = comments.length;
   const plainDescription = stripMarkdown(project.description);
+  const creatorMuid = project.members?.find(
+    (m) => m.user_id && m.user_id === project.created_by_id,
+  )?.muid;
 
   const userVote = currentUserId
     ? votes.find((v) => v.user_id === currentUserId && v.vote === "upvote")
@@ -274,7 +278,17 @@ export function ProjectCard({
 
             {/* Creator + time label (maps to the reference's top-right caption) */}
             <p className="max-w-[9rem] text-right text-[11px] font-medium leading-tight text-white/85">
-              {project.created_by?.trim() || "Unknown"}
+              {creatorMuid ? (
+                <Link
+                  href={`/dashboard/profile/${creatorMuid}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="hover:underline"
+                >
+                  {project.created_by?.trim() || "Unknown"}
+                </Link>
+              ) : (
+                project.created_by?.trim() || "Unknown"
+              )}
               {timeAgo(project.created_at) && (
                 <>
                   <br />

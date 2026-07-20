@@ -42,7 +42,9 @@ export function HeroCard({ name, ...statsProps }: HeroCardProps) {
               </Link>
             </Button>
             <Button asChild variant="outline">
-              <Link href="/dashboard/learning-circle">Explore groups</Link>
+              <Link href="/dashboard/learning-circle">
+                Explore learning circles
+              </Link>
             </Button>
           </div>
         </div>
