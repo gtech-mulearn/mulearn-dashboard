@@ -198,8 +198,10 @@ export function EventInlineEditForm({
       });
       hasRequiredError = true;
     }
-    if (!values.category) {
-      setError("category", {
+    // event_type is the required field; category is a nullable FK the API
+    // declares optional, and its lookup table has no event rows.
+    if (!values.event_type) {
+      setError("event_type", {
         type: "manual",
         message: "Please select an event type",
       });

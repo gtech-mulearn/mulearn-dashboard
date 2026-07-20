@@ -237,19 +237,27 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
     }
   }, [clusterOptions, watch, setValue]);
 
-  // Auto-select the "others" event type when categories load
+  // Default to "others", mirroring Event.event_type's server-side default.
+  // This must not depend on categoryOptions — that table is empty, which used
+  // to leave event_type unset and the form permanently invalid.
   useEffect(() => {
-    if (!watch("category") && categoryOptions && categoryOptions.length > 0) {
-      const othersCat =
-        categoryOptions.find((c) => {
-          if (typeof c.name !== "string") return false;
-          const catSlug = c.name.trim().toLowerCase().replace(/\s+/g, "_");
-          return catSlug === "others" || catSlug === "other";
-        }) || categoryOptions[0];
-      if (othersCat) {
-        setValue("category", othersCat.id, { shouldDirty: false });
-        setValue("event_type", "others", { shouldDirty: false });
-      }
+    if (!watch("event_type")) {
+      setValue("event_type", "others", { shouldDirty: false });
+    }
+  }, [watch, setValue]);
+
+  // Opportunistically mirror the choice onto the legacy category FK, for as
+  // long as those rows exist. Absence is fine: the API allows a null category.
+  useEffect(() => {
+    const eventType = watch("event_type");
+    if (!eventType || watch("category") || !categoryOptions?.length) return;
+
+    const matching = categoryOptions.find((c) => {
+      if (typeof c.name !== "string") return false;
+      return c.name.trim().toLowerCase().replace(/\s+/g, "_") === eventType;
+    });
+    if (matching) {
+      setValue("category", matching.id, { shouldDirty: false });
     }
   }, [categoryOptions, watch, setValue]);
 
@@ -378,7 +386,7 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
 
   const validateCurrentStep = async (): Promise<boolean> => {
     if (currentStep === 1) {
-      return trigger(["title", "description", "event_scope", "category"]);
+      return trigger(["title", "description", "event_scope", "event_type"]);
     }
 
     if (currentStep === 2) {
@@ -851,16 +859,11 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                     </p>
                     <Controller
                       control={control}
-                      name="category"
+                      name="event_type"
                       render={({ field }) => {
-                        const eventTypeValue = watch("event_type");
-                        const selectedType =
-                          eventTypeSelectOptions.find(
-                            (item) => item.value === eventTypeValue,
-                          ) ??
-                          eventTypeSelectOptions.find(
-                            (item) => item.value === "others",
-                          );
+                        const selectedType = eventTypeSelectOptions.find(
+                          (item) => item.value === field.value,
+                        );
 
                         const isLoadingOptions =
                           categoriesLoading || typeScopeLoading;
@@ -919,19 +922,20 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                                             ) ||
                                             categoryOptions?.[0];
 
+                                          // event_type is the field that counts:
+                                          // it maps to Event.EventType on the
+                                          // backend. category is a nullable FK
+                                          // to a lookup table that duplicates
+                                          // the same enum, so set it only if a
+                                          // matching row happens to exist.
+                                          field.onChange(item.value);
                                           if (matchingCat) {
                                             setValue(
                                               "category",
                                               matchingCat.id,
-                                              { shouldValidate: true },
+                                              { shouldDirty: true },
                                             );
-                                          } else {
-                                            clearErrors("category");
                                           }
-                                          setValue("event_type", item.value, {
-                                            shouldDirty: true,
-                                            shouldValidate: true,
-                                          });
                                         }}
                                         className="flex items-center justify-between rounded-md px-3 py-2"
                                       >
@@ -949,9 +953,9 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                         );
                       }}
                     />
-                    {errors.category?.message ? (
+                    {errors.event_type?.message ? (
                       <p className="text-xs text-destructive">
-                        {errors.category.message}
+                        {errors.event_type.message}
                       </p>
                     ) : null}
                   </div>

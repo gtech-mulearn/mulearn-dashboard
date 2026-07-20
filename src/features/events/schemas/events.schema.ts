@@ -14,8 +14,13 @@ const createEventBaseSchema = z.object({
   title: z.string().min(1, "Title is required").max(200, "Title too long"),
   description: z.string().min(1, "Description is required"),
   event_scope: z.string().min(1, "Please select a cluster"),
-  category: z.string().uuid("Please select an event type"),
-  event_type: z.string().optional(),
+  // event_type maps to Event.EventType, a TextChoices enum on the backend —
+  // that is the field that actually records what kind of event this is.
+  event_type: z.string().min(1, "Please select an event type"),
+  // category is a nullable FK to a lookup table duplicating the same enum.
+  // The API declares it {'required': False, 'allow_null': True}, and the
+  // table has no event rows, so requiring a uuid here blocked every submit.
+  category: z.string().uuid().optional().or(z.literal("")),
   scope: z.enum(["global", "campus", "ig", "campus_ig"]),
   start_datetime: z
     .string()

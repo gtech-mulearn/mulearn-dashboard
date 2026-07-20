@@ -49,6 +49,15 @@ const nextConfig: NextConfig = {
 
   async headers() {
     return [
+      // TEMPORARY (FIFA break block): the proxy rewrites every request to
+      // /break, but Next re-sets Cache-Control on the page response and wins
+      // over the header the proxy sets. Pinning it here is the only place the
+      // CDN is guaranteed to see no-store — without it Netlify can keep serving
+      // the break page after it lifts at 10:00 IST. Delete with the rest of it.
+      {
+        source: "/break",
+        headers: [{ key: "Cache-Control", value: "no-store, must-revalidate" }],
+      },
       {
         source: "/:path*",
         headers: [
