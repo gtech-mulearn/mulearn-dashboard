@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useUserInfo } from "@/features/auth";
+import { ROLES } from "@/lib/auth/roles";
 import { DiscordConnectDialog } from "@/features/connect";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/stores/ui-store";
@@ -37,6 +38,8 @@ export function ConnectAccountsBanner() {
   if (user.isLoading) {
     return <Spinner className="h-8 w-8" />;
   }
+  const isCompany = user.data?.roles?.includes(ROLES.COMPANY) ?? false;
+  if (isCompany) return null;
   const discordConnected = user.data?.exist_in_guild === true;
   const shouldShow = !discordConnected;
   if (!shouldShow) return null;
