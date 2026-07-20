@@ -240,7 +240,10 @@ export function MeetingDetailView({
   // A meeting occurrence is active only until it ends — being recurring does NOT
   // keep an ended occurrence active (RSVP/join/leave must close once it ends).
   const isActive = !meeting.is_ended;
-  const canRsvp = isActive && !hasAttendeeRecord && meeting.is_member;
+  // RSVP is only meaningful before the meeting starts; once it's live the
+  // only action is Join — hide RSVP to avoid confusion.
+  const canRsvp =
+    isActive && !meeting.is_started && !hasAttendeeRecord && meeting.is_member;
   const canCancelAttendance = hasAttendeeRecord && !hasJoined && isActive;
   const canLeave = hasJoined && isActive;
   const status = getStatus(meeting);
@@ -625,6 +628,7 @@ export function MeetingDetailView({
         open={showJoinModal}
         onOpenChange={setShowJoinModal}
         defaultCode={joinMeetCode || ""}
+        meetLink={meeting.meet_link ?? undefined}
       />
       {meeting?.meet_code && (
         <QrModal
@@ -656,12 +660,20 @@ export function MeetingDetailView({
               {hasJoined ? "Leave Meeting?" : "Cancel RSVP?"}
             </DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            {hasJoined
-              ? "You will be removed from the attendees list."
-              : "You will be removed from the RSVP list."}{" "}
-            You can RSVP again if you change your mind.
-          </p>
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              {hasJoined
+                ? "You will be removed from the attendees list. You can rejoin if the meeting is still active."
+                : "You will be removed from the RSVP list. You can RSVP again if you change your mind."}
+            </p>
+            {hasJoined && meeting?.meet_link && (
+              <p className="text-xs text-muted-foreground/70">
+                Note: This only updates your in-app participation status. If the
+                meeting is open in another browser tab, please close it
+                manually.
+              </p>
+            )}
+          </div>
           <div className="flex justify-end gap-3 pt-2">
             <Button
               variant="outline"
