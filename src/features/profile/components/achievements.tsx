@@ -234,96 +234,87 @@ export function Achievements({
         </div>
 
         {/* ── Earned Tab ─────────────────────────────────────── */}
-        {activeTab === "earned" && (
-          <>
-            {earnedCount === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-                  <Trophy className="h-8 w-8 text-muted-foreground" />
-                </div>
-                <p className="text-sm font-medium text-foreground">
-                  No achievements earned yet
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Complete tasks to earn your first achievement!
-                </p>
+        {activeTab === "earned" &&
+          (earnedCount === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+                <Trophy className="h-8 w-8 text-muted-foreground" />
               </div>
-            ) : (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {earnedAchievements?.map((ua) => (
-                  <AchievementCard
-                    key={ua.id}
-                    achievement={ua}
-                    muid={muid}
-                    userName={userName}
-                    userEmail={userEmail}
-                    isOwnProfile={true}
-                    onAchievementUpdate={handleEarnedUpdate}
-                  />
-                ))}
-              </div>
-            )}
-          </>
-        )}
+              <p className="text-sm font-medium text-foreground">
+                No achievements earned yet
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Complete tasks to earn your first achievement!
+              </p>
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {earnedAchievements?.map((ua) => (
+                <AchievementCard
+                  key={ua.id}
+                  achievement={ua}
+                  muid={muid}
+                  userName={userName}
+                  userEmail={userEmail}
+                  isOwnProfile={true}
+                  onAchievementUpdate={handleEarnedUpdate}
+                />
+              ))}
+            </div>
+          ))}
 
         {/* ── Eligible Tab ───────────────────────────────────── */}
-        {activeTab === "eligible" && (
-          <>
-            {eligibleCount === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-                  <Trophy className="h-8 w-8 text-muted-foreground" />
-                </div>
-                <p className="text-sm font-medium text-foreground">
-                  No achievements to claim right now
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Keep working on your tasks and check back later!
-                </p>
+        {activeTab === "eligible" &&
+          (eligibleCount === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+                <Trophy className="h-8 w-8 text-muted-foreground" />
               </div>
-            ) : (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {eligibleAchievements?.map((item) => (
-                  <EligibleAchievementCard
-                    key={item.achievement_id}
-                    item={item}
-                    meta={metaMap.get(item.achievement_id)}
-                    onClaimed={handleEarnedUpdate}
-                  />
-                ))}
-              </div>
-            )}
-          </>
-        )}
+              <p className="text-sm font-medium text-foreground">
+                No achievements to claim right now
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Keep working on your tasks and check back later!
+              </p>
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {eligibleAchievements?.map((item) => (
+                <EligibleAchievementCard
+                  key={item.achievement_id}
+                  item={item}
+                  meta={metaMap.get(item.achievement_id)}
+                  onClaimed={handleEarnedUpdate}
+                />
+              ))}
+            </div>
+          ))}
 
         {/* ── In Progress Tab ────────────────────────────────── */}
-        {activeTab === "in-progress" && (
-          <>
-            {inProgressCount === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-                  <Trophy className="h-8 w-8 text-muted-foreground" />
-                </div>
-                <p className="text-sm font-medium text-foreground">
-                  No achievements in progress
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Start working on tasks to see your progress here!
-                </p>
+        {activeTab === "in-progress" &&
+          (inProgressCount === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+                <Trophy className="h-8 w-8 text-muted-foreground" />
               </div>
-            ) : (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {inProgressAchievements.map((item) => (
-                  <InProgressAchievementCard
-                    key={item.achievement_id}
-                    item={item}
-                    meta={metaMap.get(item.achievement_id)}
-                  />
-                ))}
-              </div>
-            )}
-          </>
-        )}
+              <p className="text-sm font-medium text-foreground">
+                No achievements in progress
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Start working on tasks to see your progress here!
+              </p>
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {inProgressAchievements.map((item) => (
+                <InProgressAchievementCard
+                  key={item.achievement_id}
+                  item={item}
+                  meta={metaMap.get(item.achievement_id)}
+                />
+              ))}
+            </div>
+          ))}
       </div>
     </>
   );

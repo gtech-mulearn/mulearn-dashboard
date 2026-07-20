@@ -52,10 +52,7 @@ export const TaskFormSchema = z.object({
   usage_count: z.coerce.number().min(1, "Mention the number of uses"),
   active: z.boolean().default(true),
   variable_karma: z.boolean().default(false),
-  description: z
-    .string()
-    .max(100, "Too Long!")
-    .min(1, "A description is required"),
+  description: z.string().min(1, "A description is required"),
   channel_id: z.string().min(1, "Select a Channel"),
   type_id: z.string().min(1, "Select a Type"),
   level_id: z.string().nullable().optional(),
