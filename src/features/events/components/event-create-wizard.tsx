@@ -402,12 +402,14 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
     onClose();
   };
 
-  const validateCurrentStep = async (): Promise<boolean> => {
-    if (currentStep === 1) {
+  const validateStep = async (
+    stepIndex: number = currentStep,
+  ): Promise<boolean> => {
+    if (stepIndex === 1) {
       return trigger(["title", "description", "event_scope", "event_type"]);
     }
 
-    if (currentStep === 2) {
+    if (stepIndex === 2) {
       if (!selectedOrganiser) {
         setOrganiserError("Select an organiser before proceeding");
         return false;
@@ -425,7 +427,7 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
       return trigger(["scope"]);
     }
 
-    if (currentStep === 3) {
+    if (stepIndex === 3) {
       const fields: Array<keyof CreateEventSchema> = [
         "start_datetime",
         "end_datetime",
@@ -571,10 +573,15 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
       return;
     }
 
-    const isValid = await validateCurrentStep();
-    if (isValid) {
-      setCurrentStep(targetStep);
+    // Forward jump - validate sequentially
+    for (let step = currentStep; step < targetStep; step++) {
+      const isValid = await validateStep(step);
+      if (!isValid) {
+        setCurrentStep(step);
+        return;
+      }
     }
+    setCurrentStep(targetStep);
   };
 
   const addTag = () => {
@@ -1484,7 +1491,7 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                 {currentStep < 6 ? (
                   <Button
                     onClick={async () => {
-                      const ok = await validateCurrentStep();
+                      const ok = await validateStep();
                       if (!ok) return;
                       setCurrentStep((value) => Math.min(6, value + 1));
                     }}
