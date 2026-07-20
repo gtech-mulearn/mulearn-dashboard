@@ -4,14 +4,24 @@ import { Check, ChevronLeft, Mail, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Spinner } from "@/components/ui/spinner";
-import { useActiveInvites, useRespondToInvite } from "../hooks";
+import {
+  useActiveInvites,
+  useRespondToInvite,
+  useRespondToInviteByLink,
+} from "../hooks";
 
 export function PendingInvites() {
   const { activeInvites, isLoading } = useActiveInvites();
   const respondToInvite = useRespondToInvite();
+  const respondToInviteByLink = useRespondToInviteByLink();
 
-  const handleRespond = (id: string, isAccepted: boolean) => {
-    respondToInvite.mutate({ id, action: isAccepted ? "accept" : "reject" });
+  const handleRespond = (id: string, isLink: boolean, isAccepted: boolean) => {
+    const action = isAccepted ? "accept" : "reject";
+    if (isLink) {
+      respondToInviteByLink.mutate({ linkId: id, data: { action } });
+    } else {
+      respondToInvite.mutate({ id, action });
+    }
   };
 
   const filteredInvites = activeInvites;
@@ -75,6 +85,7 @@ export function PendingInvites() {
             const inviteKey =
               invite.id || invite.link_id || `pending-invite-${index}`;
             const targetId = invite.link_id || invite.id || "";
+            const isLink = !!invite.link_id;
             let inviterName = "";
             if (invite.invited_by) {
               if (typeof invite.invited_by === "object") {
@@ -132,8 +143,13 @@ export function PendingInvites() {
                     className="flex h-8 w-8 items-center justify-center rounded-lg text-destructive
                       transition-all duration-150 hover:bg-destructive/10 active:scale-95
                       disabled:opacity-40"
-                    onClick={() => handleRespond(String(targetId), false)}
-                    disabled={respondToInvite.isPending}
+                    onClick={() =>
+                      handleRespond(String(targetId), isLink, false)
+                    }
+                    disabled={
+                      respondToInvite.isPending ||
+                      respondToInviteByLink.isPending
+                    }
                     title="Reject"
                   >
                     <X className="h-4 w-4" />
@@ -143,8 +159,13 @@ export function PendingInvites() {
                     className="flex h-8 w-8 items-center justify-center rounded-lg text-success
                       transition-all duration-150 hover:bg-success/10 active:scale-95
                       disabled:opacity-40"
-                    onClick={() => handleRespond(String(targetId), true)}
-                    disabled={respondToInvite.isPending}
+                    onClick={() =>
+                      handleRespond(String(targetId), isLink, true)
+                    }
+                    disabled={
+                      respondToInvite.isPending ||
+                      respondToInviteByLink.isPending
+                    }
                     title="Accept"
                   >
                     <Check className="h-4 w-4" />

@@ -485,6 +485,9 @@ export function useRespondToInviteByLink() {
       queryClient.invalidateQueries({
         queryKey: learningCircleKeys.circleList(),
       });
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.userCircles(),
+      });
       toast.success("Invite response submitted");
     },
     onError: (error) => {

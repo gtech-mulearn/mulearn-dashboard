@@ -233,8 +233,8 @@ export async function respondToInvite(
   data: InviteResponseRequest & { id: string },
 ): Promise<void> {
   await apiClient.post(
-    endpoints.learningCircle.inviteStatusByLink(data.id),
-    { action: data.action },
+    endpoints.learningCircle.inviteStatus,
+    data,
     EmptyResponseSchema,
   );
 }

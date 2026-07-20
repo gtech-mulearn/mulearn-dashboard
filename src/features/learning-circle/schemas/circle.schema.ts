@@ -197,8 +197,16 @@ export const InviteSchema = z.object({
   user: z.union([z.string(), InviteUserSchema]).optional(),
   muid: z.string().optional(),
   invited_by: z.union([z.string(), InviteUserSchema]).optional(),
-  is_accepted: z.union([z.boolean(), z.string()]).nullable().optional(),
+  is_accepted: z
+    .union([z.boolean(), z.string(), z.number()])
+    .nullable()
+    .optional(),
   created_at: z.string().nullable().optional(),
+  status: z.string().optional(),
+  invited_at: z.string().nullable().optional(),
+  user_id: z.string().optional(),
+  full_name: z.string().optional(),
+  profile_pic: z.string().nullable().optional(),
 });
 
 export type Invite = z.infer<typeof InviteSchema>;

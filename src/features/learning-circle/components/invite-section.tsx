@@ -110,27 +110,39 @@ export function SentInvitesCard({ circleId }: InviteProps) {
             const inviteKey =
               invite.id || invite.link_id || `sent-invite-${index}`;
             const isAccepted =
+              invite.status?.toLowerCase() === "accepted" ||
               invite.is_accepted === true ||
               invite.is_accepted === "true" ||
               invite.is_accepted === "Accepted" ||
-              invite.is_accepted === "accepted";
+              invite.is_accepted === "accepted" ||
+              invite.is_accepted === 1 ||
+              invite.is_accepted === "1";
             const isRejected =
+              invite.status?.toLowerCase() === "rejected" ||
               invite.is_accepted === false ||
               invite.is_accepted === "false" ||
               invite.is_accepted === "Rejected" ||
-              invite.is_accepted === "rejected";
+              invite.is_accepted === "rejected" ||
+              invite.is_accepted === 0 ||
+              invite.is_accepted === "0" ||
+              invite.is_accepted === -1 ||
+              invite.is_accepted === "-1";
 
-            let displayName = "Unknown";
-            if (invite.muid) {
-              displayName = invite.muid;
-            } else if (invite.user) {
-              if (typeof invite.user === "object") {
-                displayName =
-                  invite.user.full_name || invite.user.user_id || "Unknown";
-              } else {
-                displayName = invite.user;
+            let displayName = invite.full_name || "Unknown";
+            if (!invite.full_name) {
+              if (invite.muid) {
+                displayName = invite.muid;
+              } else if (invite.user) {
+                if (typeof invite.user === "object") {
+                  displayName =
+                    invite.user.full_name || invite.user.user_id || "Unknown";
+                } else {
+                  displayName = invite.user;
+                }
               }
             }
+
+            const inviteDate = invite.invited_at || invite.created_at;
 
             return (
               <div
@@ -142,9 +154,9 @@ export function SentInvitesCard({ circleId }: InviteProps) {
                   <p className="truncate text-[13px] font-semibold text-foreground">
                     {displayName}
                   </p>
-                  {invite.created_at && (
+                  {inviteDate && (
                     <p className="text-[11px] text-muted-foreground">
-                      Sent {new Date(invite.created_at).toLocaleDateString()}
+                      Sent {new Date(inviteDate).toLocaleDateString()}
                     </p>
                   )}
                 </div>
