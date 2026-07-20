@@ -123,22 +123,65 @@ function updateSlot(
   patch: Partial<TimeSlot>,
 ): WeeklySchedule {
   const slots = getSlots(schedule, day);
-  let newSlot = { ...slots[idx], ...patch };
+  const newSlot = { ...slots[idx], ...patch };
+  const otherSlots = slots.filter((_, i) => i !== idx);
 
-  // Never reject/revert the user's edit. Keep start < end by nudging the OTHER
-  // field (calendar-style): moving start past end pushes end forward, and vice
-  // versa, so the value the user picked always sticks.
-  if (toMinutes(newSlot.start) >= toMinutes(newSlot.end)) {
-    if ("start" in patch) {
-      newSlot = { ...newSlot, end: addMinutes(newSlot.start, 60) };
-    } else {
-      newSlot = { ...newSlot, start: addMinutes(newSlot.end, -60) };
+  const startMins = toMinutes(newSlot.start);
+  let endMins = toMinutes(newSlot.end);
+
+  if (startMins === endMins) {
+    toast.error("Start and end time should be different", {
+      id: "same-time-toast",
+    });
+  }
+
+  // Ensure end is strictly after start without modifying the start time
+  if (startMins >= endMins) {
+    endMins = startMins + 60;
+    // Cap at 23:59 equivalent
+    if (endMins >= 24 * 60) {
+      endMins = 24 * 60 - 1;
     }
   }
 
-  // Overlaps are NOT reverted here — they're surfaced inline and block Save
-  // (see getOverlappingSlotIndices / scheduleHasOverlap). This lets the mentor
-  // freely rearrange slots and fix conflicts without losing their input.
+  // Prevent overlap: find the next slot that starts after or at our start time
+  const upcomingSlots = otherSlots
+    .filter((s) => toMinutes(s.start) >= startMins)
+    .sort((a, b) => toMinutes(a.start) - toMinutes(b.start));
+
+  const nextSlot = upcomingSlots[0];
+
+  let didClamp = false;
+
+  if (nextSlot) {
+    const nextStartMins = toMinutes(nextSlot.start);
+    // Clamp the end time so it doesn't cross into the next slot
+    if (endMins > nextStartMins) {
+      endMins = nextStartMins;
+      didClamp = true;
+      // If clamping makes end <= start (e.g. they share the same start time),
+      // allow a minimal 1-hour slot so it doesn't break, and the overlap error handles it.
+      if (endMins <= startMins) {
+        endMins = startMins + 60;
+      }
+    }
+  }
+
+  newSlot.start = fromMinutes(startMins);
+  newSlot.end = fromMinutes(endMins);
+
+  const currentlyOverlaps = otherSlots.some(
+    (s) =>
+      toMinutes(newSlot.start) < toMinutes(s.end) &&
+      toMinutes(newSlot.end) > toMinutes(s.start),
+  );
+
+  if (didClamp || currentlyOverlaps) {
+    toast.error("Meeting time should not overlap", { id: "overlap-toast" });
+  }
+
+  // Overlaps are NOT completely reverted if they start inside another slot —
+  // they're surfaced inline and block Save.
   const newSlots = slots.map((s, i) => (i === idx ? newSlot : s));
   const rest = schedule.filter((d) => d.day !== day);
   return [...rest, { day, slots: newSlots }];

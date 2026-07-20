@@ -10,6 +10,7 @@
 "use client";
 
 import { Activity, BookCheck, CalendarPlus } from "lucide-react";
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -81,27 +82,38 @@ export function ActivityTab() {
         ) : (
           <ul className="space-y-2">
             {items.map((item) => (
-              <li
-                key={item.id}
-                className="flex items-center gap-3 rounded-xl border border-border/50 bg-muted/30 px-4 py-3"
-              >
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
-                  <ActivityIcon type={item.activity_type} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{item.title}</p>
-                  {item.description && (
-                    <p className="truncate text-xs text-muted-foreground">
-                      {item.description}
-                    </p>
-                  )}
-                </div>
-                <div className="flex shrink-0 flex-col items-end gap-1">
-                  <ActivityBadge status={item.status} />
-                  <span className="text-[10px] text-muted-foreground">
-                    {formatRelativeDate(item.date)}
-                  </span>
-                </div>
+              <li key={item.id}>
+                <Link
+                  href={
+                    item.activity_type === "SESSION_CREATED"
+                      ? "/dashboard/mentor/sessions"
+                      : item.title.toLowerCase().includes("learning circle") ||
+                          item.description
+                            ?.toLowerCase()
+                            .includes("learning circle")
+                        ? "/dashboard/learning-circle"
+                        : "/dashboard/mentor/task-requests"
+                  }
+                  className="flex items-center gap-3 rounded-xl border border-border/50 bg-muted/30 px-4 py-3 hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
+                    <ActivityIcon type={item.activity_type} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{item.title}</p>
+                    {item.description && (
+                      <p className="truncate text-xs text-muted-foreground">
+                        {item.description}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex shrink-0 flex-col items-end gap-1">
+                    <ActivityBadge status={item.status} />
+                    <span className="text-[10px] text-muted-foreground">
+                      {formatRelativeDate(item.date)}
+                    </span>
+                  </div>
+                </Link>
               </li>
             ))}
           </ul>

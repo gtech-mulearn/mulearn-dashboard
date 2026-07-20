@@ -25,7 +25,7 @@ function getInitials(name: string) {
 
 export function AppTopbar() {
   const [mounted, setMounted] = useState(false);
-  const { data, isLoading } = useUserInfo();
+  const { data, isLoading, dataUpdatedAt } = useUserInfo();
   const { resolvedTheme } = useTheme();
 
   useEffect(() => {
@@ -43,7 +43,9 @@ export function AppTopbar() {
   const displayImage =
     isCompany && companyProfile?.logo
       ? companyProfile.logo
-      : (data?.profile_pic ?? undefined);
+      : data?.profile_pic
+        ? `${data.profile_pic}?v=${dataUpdatedAt}`
+        : undefined;
   const displaySubtitle = isCompany ? "Company" : (data?.muid ?? "");
 
   return (

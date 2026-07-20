@@ -157,7 +157,11 @@ export function MenteesPage({ title = "Mentees" }: { title?: string } = {}) {
                 ? STATUS_VARIANTS[mentee.last_attendance_status]
                 : null;
               return (
-                <TableRow key={mentee.user_id}>
+                <TableRow
+                  key={
+                    mentee.id || `${mentee.user_id}-${mentee.last_session_id}`
+                  }
+                >
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Avatar className="h-8 w-8">
