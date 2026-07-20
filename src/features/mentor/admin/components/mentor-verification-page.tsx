@@ -305,9 +305,9 @@ export function MentorVerificationPage() {
           <TabsList>
             <TabsTrigger value="pending">
               Pending
-              {pending && pending.data.length > 0 && (
+              {pending && pending.totalItems > 0 && (
                 <Badge variant="secondary" className="ml-2">
-                  {pending.data.length}
+                  {pending.totalItems}
                 </Badge>
               )}
             </TabsTrigger>

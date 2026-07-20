@@ -65,8 +65,8 @@ export async function clearWhatsNewCookie() {
   cookieStore.delete({
     name: DISMISSAL_COOKIE_NAME,
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
+    secure: COOKIE_OPTIONS.secure,
+    sameSite: COOKIE_OPTIONS.sameSite,
+    path: COOKIE_OPTIONS.path,
   });
 }
