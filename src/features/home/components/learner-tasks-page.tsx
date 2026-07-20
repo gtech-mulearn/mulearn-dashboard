@@ -274,7 +274,11 @@ export function LearnerTasksPage({ taskSource = "" }: LearnerTasksPageProps) {
             }
           />
         ) : (
-          <StateDisplay variant="no-tasks" />
+          <StateDisplay
+            variant="no-tasks"
+            title="No tasks available"
+            description="You have no tasks assigned at the moment. New community tasks will appear here as they become available."
+          />
         )
       ) : (
         <div className="space-y-10">

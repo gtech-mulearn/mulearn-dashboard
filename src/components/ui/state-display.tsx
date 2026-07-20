@@ -62,9 +62,9 @@ export const STATE_ILLUSTRATIONS = {
     src: "/images/illustrations/no-tasks.svg",
     width: 1536,
     height: 1024,
-    defaultTitle: "The path is still being built.",
+    defaultTitle: "No tasks available",
     defaultDescription:
-      "Great journeys are built together. New tasks will show up here as the community creates what's next.",
+      "There are currently no tasks listed in this view. New tasks will appear here once created.",
   },
 } as const satisfies Record<string, StateConfigEntry>;
 
