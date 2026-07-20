@@ -2,15 +2,15 @@
 
 import { format } from "date-fns";
 import {
-  AlertTriangle,
   BookOpen,
   CalendarCheck2,
   Clock,
   Loader2,
+  XCircle,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -121,25 +121,27 @@ export function MentorHome() {
   }
 
   if (onboardingState === "rejected") {
+    const rejectionReason =
+      application?.rejection_reason ?? application?.verification_note;
     return (
       <div className="mx-auto max-w-2xl space-y-4 py-8">
-        <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
-            <span className="font-semibold">
-              Your application was not approved.
-            </span>
-            {application?.verification_note && (
-              <span className="mt-1 block text-sm">
+        <div className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+          <div>
+            <p className="font-semibold">
+              Your mentor application was not approved.
+            </p>
+            {rejectionReason && (
+              <p className="mt-0.5 text-destructive/90">
                 <span className="font-medium">Reason: </span>
-                {application.verification_note}
-              </span>
+                {rejectionReason}
+              </p>
             )}
-            <span className="mt-2 block text-sm">
+            <p className="mt-1 text-destructive/80">
               Please review your details below and resubmit your application.
-            </span>
-          </AlertDescription>
-        </Alert>
+            </p>
+          </div>
+        </div>
         <MentorOnboardingForm existing={mentorProfile} isEdit isReapply />
       </div>
     );
@@ -171,6 +173,7 @@ export function MentorHome() {
   const isVerified = (overview?.scopes.length ?? 0) > 0;
 
   // Pending review: say exactly who acts next instead of a blank page.
+  // (Rejected applications already returned above with the rejection banner + reapply form.)
   if (!isVerified) {
     return (
       <div className="mx-auto max-w-2xl py-8">
