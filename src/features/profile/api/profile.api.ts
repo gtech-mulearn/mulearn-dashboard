@@ -217,14 +217,9 @@ export async function updateProfileImage(
   const rawData = await response.json().catch(() => null);
 
   if (!response.ok || rawData?.hasError) {
-    const message =
-      rawData?.message?.general?.[0] ?? "Failed to update profile image";
-    throw new ApiError(response.status, message, rawData);
-  }
-
-  const parsed = UpdateProfileImageResponseSchema.safeParse(rawData);
-  if (!parsed.success) {
-    throw new Error("Invalid API response");
+    throw new Error(
+      rawData?.message || "An error occurred while updating profile image.",
+    );
   }
 }
 
