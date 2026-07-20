@@ -79,7 +79,9 @@ export function IGRequestFormDialog() {
     }
   };
 
-  const goNext = async () => {
+  const goNext = async (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
     if (step === 0) {
       const ok = await form.trigger([...STEP1_FIELDS]);
       if (!ok) return;
@@ -87,9 +89,23 @@ export function IGRequestFormDialog() {
     setStep((s) => Math.min(STEPS.length - 1, s + 1));
   };
 
-  const goBack = () => setStep((s) => Math.max(0, s - 1));
+  const goBack = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    setStep((s) => Math.max(0, s - 1));
+  };
 
-  const onSubmit = (data: CreateIGRequestForm) => {
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (step < STEPS.length - 1) {
+      goNext();
+    } else {
+      form.handleSubmit(onFinalSubmit)(e);
+    }
+  };
+
+  const onFinalSubmit = (data: CreateIGRequestForm) => {
+    if (step !== STEPS.length - 1) return;
     createRequest(data, {
       onSuccess: () => {
         handleOpenChange(false);
@@ -127,7 +143,7 @@ export function IGRequestFormDialog() {
 
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(onSubmit)}
+            onSubmit={handleFormSubmit}
             className="flex flex-col flex-1 overflow-hidden"
           >
             <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-1 py-4">
@@ -397,6 +413,7 @@ export function IGRequestFormDialog() {
             {/* Footer */}
             <div className="flex items-center justify-between gap-2 border-t border-border px-1 pt-4">
               <Button
+                key={`btn-back-step-${step}`}
                 type="button"
                 variant="ghost"
                 onClick={goBack}
@@ -405,11 +422,19 @@ export function IGRequestFormDialog() {
                 Back
               </Button>
               {step < STEPS.length - 1 ? (
-                <Button type="button" onClick={goNext}>
+                <Button
+                  key={`btn-next-step-${step}`}
+                  type="button"
+                  onClick={goNext}
+                >
                   Next
                 </Button>
               ) : (
-                <Button type="submit" disabled={isPending}>
+                <Button
+                  key="btn-submit-request"
+                  type="submit"
+                  disabled={isPending}
+                >
                   {isPending ? "Submitting..." : "Submit Request"}
                 </Button>
               )}
