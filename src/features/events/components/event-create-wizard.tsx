@@ -24,7 +24,9 @@ import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { useUserInfo } from "@/features/auth";
 import { getApiResponseError } from "@/hooks/use-get-error";
+import { ROLES } from "@/lib/auth/roles";
 import { eventsApi } from "../api";
 import {
   EVENT_CREATE_WIZARD_STEPS,
@@ -187,6 +189,7 @@ async function compressImageForUpload(
 export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
   const createEvent = useCreateEvent();
   const organizerOptionsQuery = useOrganizerOptions();
+  const { data: userInfo } = useUserInfo();
   const { data: clusterOptions, isLoading: clustersLoading } = useIGClusters();
   const { data: categoryOptions, isLoading: categoriesLoading } =
     useEventCategories();
@@ -291,12 +294,30 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
       });
     }
 
-    if (data.can_create_as_admin) {
+    const isAdmin = userInfo?.roles?.includes(ROLES.ADMIN) ?? false;
+    if (data.can_create_as_admin && isAdmin) {
       list.push({ label: "Admin", type: "admin", id: "" });
     }
 
+    const isEnabler =
+      userInfo?.roles?.includes(ROLES.ENABLER) ||
+      userInfo?.roles?.includes(ROLES.LEAD_ENABLER);
+
+    if (isEnabler && data.campus_context) {
+      const alreadyHasCampus = list.some(
+        (c) => c.type === "campus" && c.id === data.campus_context?.id,
+      );
+      if (!alreadyHasCampus) {
+        list.push({
+          label: data.campus_context.title ?? "Campus",
+          type: "campus",
+          id: data.campus_context.id,
+        });
+      }
+    }
+
     return list;
-  }, [organizerOptionsQuery.data]);
+  }, [organizerOptionsQuery.data, userInfo]);
 
   const selectedOrganiser = organizerOptions.find(
     (item) => `${item.type}:${item.id}` === selectedOrganiserId,
@@ -545,6 +566,20 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
     return true;
   };
 
+  const handleStepClick = async (targetStep: number) => {
+    if (targetStep === currentStep) return;
+
+    if (targetStep < currentStep) {
+      setCurrentStep(targetStep);
+      return;
+    }
+
+    const isValid = await validateCurrentStep();
+    if (isValid) {
+      setCurrentStep(targetStep);
+    }
+  };
+
   const addTag = () => {
     const normalized = tagInput.trim().replace(/,$/, "").toLowerCase();
     if (!normalized) return;
@@ -696,28 +731,47 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
 
               return (
                 <Fragment key={label}>
-                  <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => handleStepClick(stepIndex)}
+                    className={`flex items-center gap-3 text-left focus:outline-none transition-all duration-200 ${
+                      isActive
+                        ? "cursor-default pointer-events-none"
+                        : "cursor-pointer hover:opacity-80"
+                    }`}
+                  >
                     {isActive ? (
                       <Button
+                        asChild
                         variant="default"
                         size="icon-sm"
-                        className="ring-2 ring-brand-blue ring-offset-2"
-                        disabled
+                        className="ring-2 ring-brand-blue ring-offset-2 pointer-events-none shrink-0"
                       >
-                        {stepIndex}
+                        <span className="flex items-center justify-center">
+                          {stepIndex}
+                        </span>
                       </Button>
                     ) : isCompleted ? (
                       <Button
+                        asChild
                         variant="default"
                         size="icon-sm"
-                        aria-label={`Go to step ${stepIndex}: ${label}`}
-                        onClick={() => setCurrentStep(stepIndex)}
+                        className="pointer-events-none shrink-0"
                       >
-                        <Check className="h-4 w-4" />
+                        <span className="flex items-center justify-center">
+                          <Check className="h-4 w-4" />
+                        </span>
                       </Button>
                     ) : (
-                      <Button variant="secondary" size="icon-sm" disabled>
-                        {stepIndex}
+                      <Button
+                        asChild
+                        variant="secondary"
+                        size="icon-sm"
+                        className="pointer-events-none shrink-0"
+                      >
+                        <span className="flex items-center justify-center">
+                          {stepIndex}
+                        </span>
                       </Button>
                     )}
                     <div className="min-w-0 pt-1">
@@ -727,7 +781,7 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                         {label}
                       </p>
                     </div>
-                  </div>
+                  </button>
                   {index < EVENT_CREATE_WIZARD_STEPS.length - 1 ? (
                     <div
                       className={`h-0.5 flex-1 self-center ${isCompleted ? "bg-primary" : "bg-border"}`}
