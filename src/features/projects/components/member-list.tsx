@@ -49,7 +49,12 @@ export function MemberList({ members, onRemove }: Props) {
             )}
           </div>
           {onRemove && (
-            <Button size="icon" variant="ghost" onClick={() => onRemove(m.id)}>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-6 w-6 text-foreground hover:bg-destructive/10 hover:text-destructive"
+              onClick={() => onRemove(m.id)}
+            >
               <X className="h-3 w-3" />
             </Button>
           )}
