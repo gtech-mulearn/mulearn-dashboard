@@ -203,9 +203,7 @@ export function CreateTaskModal({
                     }
                   }}
                   onBlur={() => {
-                    if (karma) {
-                      setKarmaError(validateKarmaValue(karma));
-                    }
+                    setKarmaError(validateKarmaValue(karma));
                   }}
                   disabled={isPending}
                   required
