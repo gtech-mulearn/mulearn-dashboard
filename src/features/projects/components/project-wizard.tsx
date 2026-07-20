@@ -286,9 +286,7 @@ export function ProjectWizard({
                         <Button
                           type="button"
                           size="icon-sm"
-                          onClick={() =>
-                            isCompleted && setCurrentStep(stepIndex)
-                          }
+                          onClick={() => setCurrentStep(stepIndex)}
                           variant={
                             isActive || isCompleted ? "default" : "secondary"
                           }

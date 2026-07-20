@@ -29,6 +29,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import Pagination from "@/components/dashboard/table/pagination";
 import {
   useMentorList,
   useRevokeMentorAssignment,
@@ -182,7 +183,7 @@ function MentorTable({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8"
+                        className="h-8 w-8 text-foreground hover:bg-muted"
                         onClick={() => onScopes(m)}
                       >
                         <ShieldCheck className="h-4 w-4" />
@@ -217,8 +218,12 @@ function MentorTable({
 
 // ─── Page Component ───────────────────────────────────────────────────────────
 
+const PER_PAGE = 10;
+
 export function MentorVerificationPage() {
   const [search, setSearch] = useState("");
+  const [pendingPage, setPendingPage] = useState(1);
+  const [allPage, setAllPage] = useState(1);
   const [verifyState, setVerifyState] = useState<{
     mentor: MentorApplicationListItem;
     action: "approve" | "reject";
@@ -235,9 +240,13 @@ export function MentorVerificationPage() {
   const { data: pending, isLoading: pendingLoading } = useMentorList({
     status: "PENDING",
     search: search || undefined,
+    page: pendingPage,
+    perPage: PER_PAGE,
   });
   const { data: all, isLoading: allLoading } = useMentorList({
     search: search || undefined,
+    page: allPage,
+    perPage: PER_PAGE,
   });
 
   return (
@@ -257,7 +266,11 @@ export function MentorVerificationPage() {
                 placeholder="Search by name or email…"
                 className="pl-8"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPendingPage(1);
+                  setAllPage(1);
+                }}
               />
             </div>
             <Button className="gap-2" onClick={() => setAssignOpen(true)}>
@@ -289,6 +302,19 @@ export function MentorVerificationPage() {
               onScopes={setGrantsFor}
               onRevokeTier={setRevokeFor}
             />
+            <div className="mt-4">
+              <Pagination
+                currentPage={pendingPage}
+                totalPages={pending?.totalPages ?? 1}
+                perPage={PER_PAGE}
+                totalCount={pending?.totalItems}
+                currentPageCount={pending?.data?.length}
+                handlePreviousClick={() =>
+                  setPendingPage(Math.max(1, pendingPage - 1))
+                }
+                handleNextClick={() => setPendingPage(pendingPage + 1)}
+              />
+            </div>
           </TabsContent>
 
           <TabsContent value="all" className="mt-4">
@@ -300,6 +326,17 @@ export function MentorVerificationPage() {
               onScopes={setGrantsFor}
               onRevokeTier={setRevokeFor}
             />
+            <div className="mt-4">
+              <Pagination
+                currentPage={allPage}
+                totalPages={all?.totalPages ?? 1}
+                perPage={PER_PAGE}
+                totalCount={all?.totalItems}
+                currentPageCount={all?.data?.length}
+                handlePreviousClick={() => setAllPage(Math.max(1, allPage - 1))}
+                handleNextClick={() => setAllPage(allPage + 1)}
+              />
+            </div>
           </TabsContent>
         </Tabs>
 
