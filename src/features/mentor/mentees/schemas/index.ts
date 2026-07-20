@@ -95,6 +95,7 @@ export const SessionParticipantListResponseSchema = z.object({
 // MENTEE-role participant, with an aggregated session count.
 
 export type MenteeView = {
+  id: string;
   user_id: string;
   user_full_name: string;
   mu_id: string | null;

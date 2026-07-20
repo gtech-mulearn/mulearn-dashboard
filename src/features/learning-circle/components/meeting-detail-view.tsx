@@ -25,6 +25,7 @@ import {
   QrCode,
   Radio,
   Repeat,
+  UserRound,
   Users,
   Video,
 } from "lucide-react";
@@ -168,13 +169,18 @@ export function MeetingDetailView({
     members ?? undefined,
   );
 
-  // Find the creator in the members list to resolve their muid (handles case where created_by_id is a UUID)
+  // Resolve the creator's display name:
+  // 1. Use `created_by` from the detail API response (name string) if present.
+  // 2. Fall back to looking them up in the members list by their UUID.
   const creatorMember = meeting?.created_by_id
     ? members?.members?.find(
         (m) =>
           m.id === meeting.created_by_id || m.muid === meeting.created_by_id,
       )
     : undefined;
+
+  const creatorName =
+    meeting?.created_by || creatorMember?.full_name || undefined;
 
   // Fallback to meeting.created_by_id if not found, in case it's already an muid
   const creatorMuid = creatorMember?.muid || meeting?.created_by_id;
@@ -492,6 +498,21 @@ export function MeetingDetailView({
               </span>
             )}
           </div>
+
+          {creatorName && (
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                <UserRound className="h-4 w-4" />
+                <span className="text-[13px] font-medium">Created by</span>
+              </div>
+              <span
+                className="text-[15px] font-semibold text-foreground truncate"
+                title={creatorName}
+              >
+                {creatorName}
+              </span>
+            </div>
+          )}
 
           {meeting.is_recurring && (
             <div className="flex flex-col">

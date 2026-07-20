@@ -28,27 +28,18 @@ export async function fetchMentees(): Promise<{
     { skipAuthRedirectOn403: true },
   );
 
-  const byUser = new Map<string, MenteeView>();
-  for (const item of res.response.data) {
-    // Only aggregate mentee-role participants
-    if (item.participant_role !== "MENTEE") continue;
+  const data: MenteeView[] = res.response.data
+    .filter((item) => item.participant_role === "MENTEE")
+    .map((item) => ({
+      id: item.id || `${item.user_id}-${item.session_id}`,
+      user_id: item.user_id,
+      user_full_name: item.user_full_name,
+      mu_id: item.mu_id ?? null,
+      session_count: 1, // Will always be 1 for a single session row
+      last_session_id: item.session_id,
+      last_attendance_status: item.attendance_status ?? null,
+    }));
 
-    const existing = byUser.get(item.user_id);
-    if (!existing) {
-      byUser.set(item.user_id, {
-        user_id: item.user_id,
-        user_full_name: item.user_full_name,
-        mu_id: item.mu_id ?? null,
-        session_count: 1,
-        last_session_id: item.session_id,
-        last_attendance_status: item.attendance_status ?? null,
-      });
-    } else {
-      existing.session_count += 1;
-    }
-  }
-
-  const data = Array.from(byUser.values());
   return { data, totalItems: data.length };
 }
 

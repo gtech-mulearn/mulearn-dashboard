@@ -117,6 +117,8 @@ export const MeetingDetailSchema = z.object({
   recurrence: z.number().nullable().optional(),
   meet_code: z.string().nullable(), // Only visible to creator
   created_by_id: z.string(),
+  /** Full name of the person who created this meeting. */
+  created_by: z.string().optional(),
   attendees: z.array(MeetingAttendeeSchema),
 });
 
