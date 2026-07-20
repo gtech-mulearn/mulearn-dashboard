@@ -52,7 +52,15 @@ export const TaskRequestFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
   hashtag: z.string().min(1, "Hashtag is required"),
   ig_id: z.string().min(1, "Select an Interest Group"),
-  karma: z.number().int().positive("Karma must be positive"),
+  karma: z.coerce
+    .number()
+    .int("Karma Points must be a whole number")
+    .positive("Karma Points must be a positive number")
+    .min(1, "Karma Points must be at least 1")
+    .max(
+      9999,
+      "Karma Points cannot exceed the maximum allowed value of 9,999.",
+    ),
   description: z.string().optional(),
 });
 export type TaskRequestFormValues = z.infer<typeof TaskRequestFormSchema>;

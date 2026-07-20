@@ -48,11 +48,33 @@ export function CreateTaskModal({
   const [title, setTitle] = useState("");
   const [hashtag, setHashtag] = useState("");
   const [karma, setKarma] = useState("");
+  const [karmaError, setKarmaError] = useState("");
   const [type, setType] = useState("");
   const [description, setDescription] = useState("");
 
+  const validateKarmaValue = (val: string): string => {
+    if (!val.trim()) {
+      return "Karma Points are required.";
+    }
+    const num = Number(val);
+    if (isNaN(num)) {
+      return "Karma Points must be a valid number.";
+    }
+    if (!Number.isInteger(num)) {
+      return "Karma Points must be a whole number.";
+    }
+    if (num <= 0) {
+      return "Karma Points must be a positive number.";
+    }
+    if (num > 9999) {
+      return "Karma Points cannot exceed the maximum allowed value of 9,999.";
+    }
+    return "";
+  };
+
   useEffect(() => {
     if (open) {
+      setKarmaError("");
       if (taskToEdit) {
         setTitle(taskToEdit.title || "");
         setHashtag(taskToEdit.hashtag || "");
@@ -81,6 +103,11 @@ export function CreateTaskModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const err = validateKarmaValue(karma);
+    if (err) {
+      setKarmaError(err);
+      return;
+    }
     if (!title.trim() || !hashtag.trim() || !karma || !description.trim())
       return;
 
@@ -165,13 +192,29 @@ export function CreateTaskModal({
                 <Input
                   id="task-karma"
                   type="number"
-                  min="0"
+                  min="1"
+                  max="9999"
                   placeholder="150"
                   value={karma}
-                  onChange={(e) => setKarma(e.target.value)}
+                  onChange={(e) => {
+                    setKarma(e.target.value);
+                    if (karmaError) {
+                      setKarmaError(validateKarmaValue(e.target.value));
+                    }
+                  }}
+                  onBlur={() => {
+                    if (karma) {
+                      setKarmaError(validateKarmaValue(karma));
+                    }
+                  }}
                   disabled={isPending}
                   required
                 />
+                {karmaError && (
+                  <p className="text-xs text-destructive font-medium mt-1">
+                    {karmaError}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 <label htmlFor="task-type" className="text-sm font-medium">
