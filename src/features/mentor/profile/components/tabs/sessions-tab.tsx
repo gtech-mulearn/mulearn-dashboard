@@ -73,26 +73,28 @@ export function SessionsTab({ sessions, isLoading }: SessionsTabProps) {
         ) : (
           <ul className="space-y-2">
             {sessions.slice(0, 6).map((session) => (
-              <li
-                key={session.id}
-                className="flex items-center justify-between gap-3 rounded-xl border border-border/50 bg-muted/30 px-4 py-3"
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">
-                    {session.title}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {session.starts_at
-                      ? formatDateTime(session.starts_at)
-                      : "—"}
-                  </p>
-                </div>
-                <Badge
-                  variant="secondary"
-                  className={`shrink-0 text-[10px] ${STATUS_COLORS[session.status] ?? ""}`}
+              <li key={session.id}>
+                <Link
+                  href="/dashboard/mentor/sessions"
+                  className="flex items-center justify-between gap-3 rounded-xl border border-border/50 bg-muted/30 px-4 py-3 hover:bg-muted/50 transition-colors"
                 >
-                  {session.status.replace("_", " ")}
-                </Badge>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">
+                      {session.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {session.starts_at
+                        ? formatDateTime(session.starts_at)
+                        : "—"}
+                    </p>
+                  </div>
+                  <Badge
+                    variant="secondary"
+                    className={`shrink-0 text-[10px] ${STATUS_COLORS[session.status] ?? ""}`}
+                  >
+                    {session.status.replace("_", " ")}
+                  </Badge>
+                </Link>
               </li>
             ))}
             {sessions.length > 6 && (
