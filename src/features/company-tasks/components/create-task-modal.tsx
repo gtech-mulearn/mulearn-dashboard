@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { CompanyTaskFormSchema } from "@/features/company-jobs/schemas/company-tasks.schema";
+import { CompanyTaskFormSchema } from "@/features/company-jobs";
 import {
   useCreateCompanyTask,
   useTaskTypes,
