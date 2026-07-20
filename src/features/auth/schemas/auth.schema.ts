@@ -126,6 +126,7 @@ export const UserInfoSchema = z.object({
   interested_in_work: z.boolean().optional(),
   interested_in_gig_work: z.boolean().optional(),
   is_verified: z.boolean().optional(),
+  company: z.unknown().nullable().optional(),
 });
 
 export const UserInfoResponseSchema = ApiResponseSchema(UserInfoSchema);
