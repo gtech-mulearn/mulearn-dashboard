@@ -87,7 +87,7 @@ export async function getLatestChangelogEntry(
   }
 
   const match = normalizedContent.match(
-    /##\s+([^\n]+)\n([\s\S]*?)(?=\n##\s+|$)/,
+    /##\s+(\d+\.\d+\.\d+[^\n]*)\n([\s\S]*?)(?=\n##\s+\d+\.\d+\.\d+|$)/,
   );
 
   if (!match) {

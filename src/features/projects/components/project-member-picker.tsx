@@ -26,6 +26,8 @@ export function ProjectMemberPicker({
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<z.infer<typeof UserMatchSchema>[]>([]);
   const [loading, setLoading] = useState(false);
+  const [externalOpen, setExternalOpen] = useState(false);
+  const [externalName, setExternalName] = useState("");
 
   useEffect(() => {
     if (query.trim().length < 2) {
@@ -108,6 +110,47 @@ export function ProjectMemberPicker({
           </li>
         )}
       </ul>
+
+      {externalOpen ? (
+        <div className="flex items-center gap-2 rounded-md border p-2">
+          <Input
+            autoFocus
+            value={externalName}
+            onChange={(e) => setExternalName(e.target.value)}
+            placeholder="External member name"
+          />
+          <Button
+            size="sm"
+            disabled={externalName.trim().length === 0}
+            onClick={() => {
+              onPickExternal(externalName.trim());
+              setExternalName("");
+              setExternalOpen(false);
+            }}
+          >
+            Add
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => {
+              setExternalOpen(false);
+              setExternalName("");
+            }}
+          >
+            Cancel
+          </Button>
+        </div>
+      ) : (
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          onClick={() => setExternalOpen(true)}
+        >
+          + Add external member
+        </Button>
+      )}
     </div>
   );
 }

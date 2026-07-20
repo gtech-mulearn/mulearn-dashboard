@@ -218,6 +218,7 @@ export function ProjectsTab({
           projectId={detailId}
           currentUserId={currentUserId}
           canEdit={detailCanEdit}
+          creatorMuid={ownerMuid}
           onEdit={() => {
             const p = projects?.find((proj) => proj.id === detailId);
             if (p) {

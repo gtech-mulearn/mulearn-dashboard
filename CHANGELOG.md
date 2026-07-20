@@ -28,7 +28,6 @@ You can now sign in with Google OAuth, in addition to the existing email/MuID pa
 Your dashboard home now adapts to your role, with a dedicated role selector to switch between the views available to you , no more one size fits all landing page.
 
 - **Learners** — karma streak, quick-action shortcuts, upcoming learning circle meetings, followed interest groups, and a live karma feed.
-- **Students** — a focused summary of your activity and progress.
 - **Enablers** — a dedicated view with campus relevant highlights.
 - **Mentors** — upcoming sessions, IG roles, a mentee overview, and your mentor application status (pending or verified).
 - **Companies** — talent pool, open job counts, and quick company stats.

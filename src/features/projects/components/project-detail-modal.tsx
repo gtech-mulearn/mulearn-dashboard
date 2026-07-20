@@ -36,6 +36,7 @@ interface Props {
   currentUserId: string | null;
   canEdit?: boolean;
   onEdit?: () => void;
+  creatorMuid?: string;
 }
 
 function generateGradient(seed: string): string {
@@ -82,6 +83,7 @@ export function ProjectDetailModal({
   currentUserId,
   canEdit = false,
   onEdit,
+  creatorMuid,
 }: Props) {
   const { data: project, isLoading } = useProject(open ? projectId : "");
   const vote = useVoteProject(projectId);
@@ -446,9 +448,21 @@ export function ProjectDetailModal({
                               {project.created_by.charAt(0).toUpperCase()}
                             </div>
                             <div className="min-w-0">
-                              <p className="text-[13px] font-bold leading-tight truncate text-foreground">
-                                {project.created_by}
-                              </p>
+                              {creatorMuid ? (
+                                <a
+                                  href={`/dashboard/profile/${creatorMuid}`}
+                                  target="_blank"
+                                  rel="noreferrer noopener"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="text-[13px] font-bold leading-tight truncate text-foreground hover:text-primary hover:underline underline-offset-2 block"
+                                >
+                                  {project.created_by}
+                                </a>
+                              ) : (
+                                <p className="text-[13px] font-bold leading-tight truncate text-foreground">
+                                  {project.created_by}
+                                </p>
+                              )}
                               <p className="text-[11px] text-muted-foreground truncate">
                                 Creator
                               </p>

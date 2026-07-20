@@ -105,13 +105,24 @@ export function ProjectFormModal({
                 control={form.control}
                 name="description"
                 render={({ field }) => (
-                  <MarkdownEditor
-                    value={field.value}
-                    onChange={field.onChange}
-                    placeholder="Describe your project using Markdown…"
-                    rows={8}
-                    error={form.formState.errors.description?.message}
-                  />
+                  <>
+                    <MarkdownEditor
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="Describe your project using Markdown…"
+                      rows={8}
+                      error={form.formState.errors.description?.message}
+                    />
+                    <p
+                      className={`text-xs ${
+                        field.value.trim().length < 50
+                          ? "text-muted-foreground"
+                          : "text-emerald-600"
+                      }`}
+                    >
+                      {field.value.trim().length}/50 characters minimum
+                    </p>
+                  </>
                 )}
               />
             </div>
@@ -167,10 +178,21 @@ export function ProjectFormModal({
                 control={form.control}
                 name="links"
                 render={({ field }) => (
-                  <ProjectLinksEditor
-                    value={field.value}
-                    onChange={field.onChange}
-                  />
+                  <>
+                    <ProjectLinksEditor
+                      value={field.value}
+                      onChange={field.onChange}
+                    />
+                    <p
+                      className={`text-xs ${
+                        field.value.length < 2
+                          ? "text-muted-foreground"
+                          : "text-emerald-600"
+                      }`}
+                    >
+                      {field.value.length}/2 links minimum
+                    </p>
+                  </>
                 )}
               />
             </div>
