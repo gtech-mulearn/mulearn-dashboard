@@ -37,7 +37,7 @@ interface Props {
   currentUserId: string | null;
   canEdit?: boolean;
   onEdit?: () => void;
-  creatorMuid?: string;
+  creatorMuid?: string | null;
 }
 
 function generateGradient(seed: string): string {
