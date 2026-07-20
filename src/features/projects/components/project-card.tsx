@@ -137,9 +137,7 @@ export function ProjectCard({
   const upvotes = votes.filter((v) => v.vote === "upvote").length;
   const commentCount = comments.length;
   const plainDescription = stripMarkdown(project.description);
-  const creatorMuid = project.members?.find(
-    (m) => m.user_id && m.user_id === project.created_by_id,
-  )?.muid;
+  const creatorMuid = project.created_by_muid;
 
   const userVote = currentUserId
     ? votes.find((v) => v.user_id === currentUserId && v.vote === "upvote")

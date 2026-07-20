@@ -71,6 +71,7 @@ export const ProjectSchema = z.object({
   comments: z.array(ProjectCommentSchema).default([]),
   created_by: z.string().nullable().optional(),
   created_by_id: z.string().nullable().optional(),
+  created_by_muid: z.string().nullable().optional(),
   updated_by: z.string().nullable().optional(),
   created_at: z.string(),
   updated_at: z.string(),
