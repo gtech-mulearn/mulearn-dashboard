@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { CompanyTaskFormSchema } from "@/features/company-jobs/schemas/company-tasks.schema";
 import {
   useCreateCompanyTask,
   useTaskTypes,
@@ -56,18 +57,12 @@ export function CreateTaskModal({
     if (!val.trim()) {
       return "Karma Points are required.";
     }
-    const num = Number(val);
-    if (isNaN(num)) {
+    if (Number.isNaN(Number(val))) {
       return "Karma Points must be a valid number.";
     }
-    if (!Number.isInteger(num)) {
-      return "Karma Points must be a whole number.";
-    }
-    if (num <= 0) {
-      return "Karma Points must be a positive number.";
-    }
-    if (num > 9999) {
-      return "Karma Points cannot exceed the maximum allowed value of 9,999.";
+    const result = CompanyTaskFormSchema.shape.karma.safeParse(val);
+    if (!result.success) {
+      return result.error.issues[0]?.message || "Karma Points are invalid.";
     }
     return "";
   };
