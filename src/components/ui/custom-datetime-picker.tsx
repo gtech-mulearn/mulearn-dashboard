@@ -324,7 +324,7 @@ export function CustomDateTimePicker({
         <div className="flex flex-col md:flex-row max-h-[85vh] overflow-y-auto overflow-x-hidden">
           <div
             className={cn(
-              "p-4 border-border",
+              "p-4 border-border flex flex-col",
               !hideTime && "border-b md:border-b-0 md:border-r",
             )}
           >
@@ -376,6 +376,15 @@ export function CustomDateTimePicker({
                 today: "",
               }}
             />
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              className="mt-3 w-full"
+              onClick={() => onChange(formatLocalISO(new Date()))}
+            >
+              Today
+            </Button>
           </div>
           {!hideTime && (
             <div className="flex items-center justify-center p-3 gap-2 bg-muted/50">
