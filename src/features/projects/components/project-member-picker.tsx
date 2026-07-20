@@ -84,6 +84,7 @@ export function ProjectMemberPicker({
               <p className="text-xs text-muted-foreground">{u.muid}</p>
             </div>
             <Button
+              type="button"
               size="sm"
               variant="outline"
               onClick={() => onPickLinked(u.muid, u.full_name)}
@@ -99,6 +100,7 @@ export function ProjectMemberPicker({
               as external contributor
             </p>
             <Button
+              type="button"
               size="sm"
               onClick={() => {
                 onPickExternal(trimmed);
@@ -120,6 +122,7 @@ export function ProjectMemberPicker({
             placeholder="External member name"
           />
           <Button
+            type="button"
             size="sm"
             disabled={externalName.trim().length === 0}
             onClick={() => {
@@ -131,6 +134,7 @@ export function ProjectMemberPicker({
             Add
           </Button>
           <Button
+            type="button"
             size="sm"
             variant="ghost"
             onClick={() => {

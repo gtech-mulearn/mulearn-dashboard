@@ -443,7 +443,7 @@ export function ProjectWizard({
                             className={`text-[12px] ${
                               field.value.trim().length < 50
                                 ? "text-muted-foreground"
-                                : "text-emerald-600"
+                                : "text-success"
                             }`}
                           >
                             {field.value.trim().length}/50 characters minimum
@@ -603,7 +603,7 @@ export function ProjectWizard({
                             className={`text-[12px] ${
                               field.value.length < 2
                                 ? "text-muted-foreground"
-                                : "text-emerald-600"
+                                : "text-success"
                             }`}
                           >
                             {field.value.length}/2 links minimum
