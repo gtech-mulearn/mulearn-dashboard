@@ -83,9 +83,14 @@ export function ProjectDetailModal({
   currentUserId,
   canEdit = false,
   onEdit,
-  creatorMuid,
+  creatorMuid: creatorMuidProp,
 }: Props) {
   const { data: project, isLoading } = useProject(open ? projectId : "");
+  const creatorMuid =
+    creatorMuidProp ??
+    project?.members.find(
+      (m) => m.user_id && m.user_id === project.created_by_id,
+    )?.muid;
   const vote = useVoteProject(projectId);
   const deleteVote = useDeleteVote(projectId);
   const comment = useCommentOnProject(projectId);

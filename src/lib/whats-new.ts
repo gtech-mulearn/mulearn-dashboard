@@ -34,7 +34,7 @@ function cleanChangelogBody(value: string) {
     const trimmed = line.trim();
 
     if (!trimmed) {
-      return [];
+      return [""];
     }
 
     if (
