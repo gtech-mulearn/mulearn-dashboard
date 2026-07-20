@@ -37,7 +37,7 @@ interface Props {
   currentUserId: string | null;
   canEdit?: boolean;
   onEdit?: () => void;
-  creatorMuid?: string;
+  creatorMuid?: string | null;
 }
 
 function generateGradient(seed: string): string {
@@ -81,11 +81,7 @@ export function ProjectDetailModal({
   creatorMuid: creatorMuidProp,
 }: Props) {
   const { data: project, isLoading } = useProject(open ? projectId : "");
-  const creatorMuid =
-    creatorMuidProp ??
-    project?.members.find(
-      (m) => m.user_id && m.user_id === project.created_by_id,
-    )?.muid;
+  const creatorMuid = creatorMuidProp ?? project?.created_by_muid;
   const vote = useVoteProject(projectId);
   const deleteVote = useDeleteVote(projectId);
   const comment = useCommentOnProject(projectId);
@@ -140,7 +136,18 @@ export function ProjectDetailModal({
                   )}
                   <span className="flex items-center gap-1.5 font-medium">
                     <User className="h-3.5 w-3.5" />
-                    {project.created_by}
+                    {creatorMuid ? (
+                      <a
+                        href={`/dashboard/profile/${creatorMuid}`}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="hover:text-primary hover:underline"
+                      >
+                        {project.created_by}
+                      </a>
+                    ) : (
+                      project.created_by
+                    )}
                   </span>
                   <span className="hidden sm:flex items-center gap-1.5">
                     <Calendar className="h-3.5 w-3.5" />
