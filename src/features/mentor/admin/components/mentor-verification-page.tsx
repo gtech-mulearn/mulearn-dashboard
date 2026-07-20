@@ -9,19 +9,15 @@ import {
   XCircle,
 } from "lucide-react";
 import { useState } from "react";
+import { DataTableErrorBoundary } from "@/components/dashboard/DataTableErrorBoundary";
+import Pagination from "@/components/dashboard/table/pagination";
+import type { Data } from "@/components/dashboard/table/Table";
+import Table from "@/components/dashboard/table/Table";
+import THead from "@/components/dashboard/table/Thead";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Tooltip,
@@ -74,6 +70,13 @@ function isActionable(m: MentorApplicationListItem): boolean {
 
 // ─── Table Component ──────────────────────────────────────────────────────────
 
+const columnOrder = [
+  { column: "name", Label: "Name", isSortable: false },
+  { column: "email", Label: "Email", isSortable: false },
+  { column: "status", Label: "Status", isSortable: false },
+  { column: "mentor_tier", Label: "Tier", isSortable: false },
+];
+
 function MentorTable({
   items,
   isLoading,
@@ -81,6 +84,10 @@ function MentorTable({
   onVerify,
   onScopes,
   onRevokeTier,
+  page,
+  totalPages,
+  totalCount,
+  onPageChange,
 }: {
   items: MentorApplicationListItem[] | undefined;
   isLoading: boolean;
@@ -91,18 +98,43 @@ function MentorTable({
   ) => void;
   onScopes: (m: MentorApplicationListItem) => void;
   onRevokeTier: (m: MentorApplicationListItem) => void;
+  page: number;
+  totalPages: number;
+  totalCount: number | undefined;
+  onPageChange: (page: number) => void;
 }) {
-  if (isLoading) {
-    return (
-      <div className="space-y-2">
-        {[1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-14 w-full" />
-        ))}
-      </div>
-    );
-  }
+  const rows: Data[] = (items ?? []).map((m) => ({
+    id: m.id,
+    name: getDisplayName(m),
+    muid: m.muid ?? "",
+    email: m.user_email ?? m.email ?? "—",
+    status: resolveStatus(m),
+    mentor_tier: m.mentor_tier ?? "",
+  }));
 
-  if (!items || items.length === 0) {
+  const customCellRender = (column: string, row: Data) => {
+    const m = items?.find((item) => item.id === row.id);
+    if (!m) return null;
+    if (column === "name") {
+      return (
+        <div>
+          <p className="font-medium">{getDisplayName(m)}</p>
+          {m.muid && <p className="text-xs text-muted-foreground">{m.muid}</p>}
+        </div>
+      );
+    }
+    if (column === "status") return getStatusBadge(m);
+    if (column === "mentor_tier") {
+      return m.mentor_tier ? (
+        <Badge variant="outline">{m.mentor_tier}</Badge>
+      ) : (
+        <span className="text-muted-foreground">—</span>
+      );
+    }
+    return null;
+  };
+
+  if (!isLoading && (!items || items.length === 0)) {
     return (
       <div className="flex min-h-[200px] flex-col items-center justify-center gap-2 text-muted-foreground">
         <CheckCircle className="h-8 w-8" />
@@ -112,113 +144,115 @@ function MentorTable({
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Name</TableHead>
-          <TableHead>Email</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Tier</TableHead>
-          {showActions && <TableHead>Actions</TableHead>}
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {items.map((m) => (
-          <TableRow key={m.id}>
-            <TableCell>
-              <p className="font-medium">{getDisplayName(m)}</p>
-              {m.muid && (
-                <p className="text-xs text-muted-foreground">{m.muid}</p>
-              )}
-            </TableCell>
-            <TableCell>
-              <p className="text-sm text-muted-foreground">
-                {m.user_email ?? m.email ?? "—"}
-              </p>
-            </TableCell>
-            <TableCell>{getStatusBadge(m)}</TableCell>
-            <TableCell>
-              {m.mentor_tier ? (
-                <Badge variant="outline">{m.mentor_tier}</Badge>
-              ) : (
-                <span className="text-muted-foreground">—</span>
-              )}
-            </TableCell>
-            {showActions && (
-              <TableCell>
-                <div className="flex items-center gap-1">
-                  {isActionable(m) && (
-                    <>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950"
-                            onClick={() => onVerify(m, "approve")}
-                          >
-                            <CheckCircle className="h-4 w-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Approve</TooltipContent>
-                      </Tooltip>
+    <DataTableErrorBoundary>
+      <Table
+        rows={rows}
+        isLoading={isLoading}
+        page={page}
+        perPage={PER_PAGE}
+        columnOrder={columnOrder}
+        id={showActions ? ["id"] : undefined}
+        customCellRender={customCellRender}
+        customActionRender={
+          showActions
+            ? (row) => {
+                const m = items?.find((item) => item.id === row.id);
+                if (!m) return null;
+                return (
+                  <>
+                    {isActionable(m) && (
+                      <>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950"
+                              onClick={() => onVerify(m, "approve")}
+                            >
+                              <CheckCircle className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Approve</TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                              onClick={() => onVerify(m, "reject")}
+                            >
+                              <XCircle className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Reject</TooltipContent>
+                        </Tooltip>
+                      </>
+                    )}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-foreground hover:bg-muted"
+                          onClick={() => onScopes(m)}
+                        >
+                          <ShieldCheck className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Scopes</TooltipContent>
+                    </Tooltip>
+                    {resolveStatus(m) === "APPROVED" && m.muid && (
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                            onClick={() => onVerify(m, "reject")}
+                            onClick={() => onRevokeTier(m)}
                           >
-                            <XCircle className="h-4 w-4" />
+                            <ShieldOff className="h-4 w-4" />
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>Reject</TooltipContent>
+                        <TooltipContent>Revoke tier</TooltipContent>
                       </Tooltip>
-                    </>
-                  )}
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => onScopes(m)}
-                      >
-                        <ShieldCheck className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Scopes</TooltipContent>
-                  </Tooltip>
-                  {resolveStatus(m) === "APPROVED" && m.muid && (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                          onClick={() => onRevokeTier(m)}
-                        >
-                          <ShieldOff className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Revoke tier</TooltipContent>
-                    </Tooltip>
-                  )}
-                </div>
-              </TableCell>
-            )}
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+                    )}
+                  </>
+                );
+              }
+            : undefined
+        }
+      >
+        <THead
+          columnOrder={columnOrder}
+          onIconClick={() => {}}
+          action={Boolean(showActions)}
+        />
+        <div className="p-4">
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            perPage={PER_PAGE}
+            totalCount={totalCount}
+            currentPageCount={items?.length}
+            handlePreviousClick={() => onPageChange(Math.max(1, page - 1))}
+            handleNextClick={() => onPageChange(page + 1)}
+          />
+        </div>
+      </Table>
+    </DataTableErrorBoundary>
   );
 }
 
 // ─── Page Component ───────────────────────────────────────────────────────────
 
+const PER_PAGE = 10;
+
 export function MentorVerificationPage() {
   const [search, setSearch] = useState("");
+  const [pendingPage, setPendingPage] = useState(1);
+  const [allPage, setAllPage] = useState(1);
   const [verifyState, setVerifyState] = useState<{
     mentor: MentorApplicationListItem;
     action: "approve" | "reject";
@@ -235,9 +269,13 @@ export function MentorVerificationPage() {
   const { data: pending, isLoading: pendingLoading } = useMentorList({
     status: "PENDING",
     search: search || undefined,
+    page: pendingPage,
+    perPage: PER_PAGE,
   });
   const { data: all, isLoading: allLoading } = useMentorList({
     search: search || undefined,
+    page: allPage,
+    perPage: PER_PAGE,
   });
 
   return (
@@ -257,7 +295,11 @@ export function MentorVerificationPage() {
                 placeholder="Search by name or email…"
                 className="pl-8"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPendingPage(1);
+                  setAllPage(1);
+                }}
               />
             </div>
             <Button className="gap-2" onClick={() => setAssignOpen(true)}>
@@ -271,9 +313,9 @@ export function MentorVerificationPage() {
           <TabsList>
             <TabsTrigger value="pending">
               Pending
-              {pending && pending.data.length > 0 && (
+              {pending && pending.totalItems > 0 && (
                 <Badge variant="secondary" className="ml-2">
-                  {pending.data.length}
+                  {pending.totalItems}
                 </Badge>
               )}
             </TabsTrigger>
@@ -288,6 +330,10 @@ export function MentorVerificationPage() {
               onVerify={(m, action) => setVerifyState({ mentor: m, action })}
               onScopes={setGrantsFor}
               onRevokeTier={setRevokeFor}
+              page={pendingPage}
+              totalPages={pending?.totalPages ?? 1}
+              totalCount={pending?.totalItems}
+              onPageChange={setPendingPage}
             />
           </TabsContent>
 
@@ -299,6 +345,10 @@ export function MentorVerificationPage() {
               onVerify={(m, action) => setVerifyState({ mentor: m, action })}
               onScopes={setGrantsFor}
               onRevokeTier={setRevokeFor}
+              page={allPage}
+              totalPages={all?.totalPages ?? 1}
+              totalCount={all?.totalItems}
+              onPageChange={setAllPage}
             />
           </TabsContent>
         </Tabs>

@@ -42,9 +42,7 @@ function dashboardEventToCalendarEvent(
     date: item.start,
     type: toEventType(item.category_name),
     location: item.venue_type ?? "",
-    link: item.slug
-      ? `/dashboard/events/${item.slug}`
-      : `/dashboard/events/${item.id}`,
+    link: `/dashboard/events/${item.id}`,
   };
 }
 

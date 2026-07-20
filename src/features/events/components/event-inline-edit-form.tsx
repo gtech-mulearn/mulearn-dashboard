@@ -70,6 +70,7 @@ export function EventInlineEditForm({
     watch,
     setValue,
     setError,
+    clearErrors,
     formState: { errors, isDirty },
   } = useForm<CreateEventSchema>({
     resolver: zodResolver(updateEventSchema) as Resolver<CreateEventSchema>,
@@ -197,8 +198,10 @@ export function EventInlineEditForm({
       });
       hasRequiredError = true;
     }
-    if (!values.category) {
-      setError("category", {
+    // event_type is the required field; category is a nullable FK the API
+    // declares optional, and its lookup table has no event rows.
+    if (!values.event_type) {
+      setError("event_type", {
         type: "manual",
         message: "Please select an event type",
       });
@@ -454,7 +457,11 @@ export function EventInlineEditForm({
                                     categoryOptions?.[0];
 
                                   if (matchingCat) {
-                                    field.onChange(matchingCat.id);
+                                    setValue("category", matchingCat.id, {
+                                      shouldValidate: true,
+                                    });
+                                  } else {
+                                    clearErrors("category");
                                   }
                                   setValue("event_type", item.value, {
                                     shouldDirty: true,

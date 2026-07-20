@@ -140,6 +140,7 @@ function extractRolesFromToken(token: string): string[] {
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
   const isLoggedIn = isAuthenticated(request);
 
   // Skip static assets, API routes, and files with extensions
