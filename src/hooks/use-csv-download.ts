@@ -13,6 +13,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { toast } from "sonner";
 import { apiClient } from "@/api/client";
 import { downloadBlob } from "@/lib/download";
 
@@ -39,6 +40,8 @@ export function useCsvDownload(
         responseType: "blob",
       });
       downloadBlob(blob, filename);
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to download CSV");
     } finally {
       setIsDownloading(false);
     }

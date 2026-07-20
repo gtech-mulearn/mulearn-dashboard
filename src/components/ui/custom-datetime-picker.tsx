@@ -92,6 +92,15 @@ function TimeWheel({
   const [isDragging, setIsDragging] = React.useState(false);
   const startY = React.useRef(0);
   const startScrollPos = React.useRef(0);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const preventScroll = (e: WheelEvent) => e.preventDefault();
+    el.addEventListener("wheel", preventScroll, { passive: false });
+    return () => el.removeEventListener("wheel", preventScroll);
+  }, []);
 
   // Sync when selectedValue changes externally
   React.useEffect(() => {
@@ -176,6 +185,7 @@ function TimeWheel({
 
   return (
     <div
+      ref={containerRef}
       className="h-[160px] w-12 relative overflow-hidden [perspective:1000px] cursor-grab active:cursor-grabbing touch-none"
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
