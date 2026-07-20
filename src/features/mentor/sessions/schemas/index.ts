@@ -26,13 +26,17 @@ export const ValidMeetingLinkSchema = z
       if (!val) return true;
       try {
         const hostname = new URL(val).hostname.toLowerCase();
+
+        const isAllowedDomain = (domain: string) =>
+          hostname === domain || hostname.endsWith(`.${domain}`);
+
         return (
-          hostname.endsWith("meet.google.com") ||
-          hostname.endsWith("zoom.us") ||
-          hostname.endsWith("zoom.com") ||
-          hostname.endsWith("teams.microsoft.com") ||
-          hostname.endsWith("discord.gg") ||
-          hostname.endsWith("discord.com")
+          isAllowedDomain("meet.google.com") ||
+          isAllowedDomain("zoom.us") ||
+          isAllowedDomain("zoom.com") ||
+          isAllowedDomain("teams.microsoft.com") ||
+          isAllowedDomain("discord.gg") ||
+          isAllowedDomain("discord.com")
         );
       } catch {
         return false;

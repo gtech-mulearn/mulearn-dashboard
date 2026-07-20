@@ -217,9 +217,12 @@ export async function updateProfileImage(
   const rawData = await response.json().catch(() => null);
 
   if (!response.ok || rawData?.hasError) {
-    throw new Error(
-      rawData?.message || "An error occurred while updating profile image.",
-    );
+    const errorMsg =
+      rawData?.message?.general?.[0] ??
+      (typeof rawData?.message === "string" ? rawData?.message : null) ??
+      "An error occurred while updating profile image.";
+
+    throw new ApiError(response.status || 400, errorMsg, rawData);
   }
 }
 

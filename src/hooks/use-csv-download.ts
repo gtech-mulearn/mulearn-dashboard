@@ -16,6 +16,7 @@ import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { apiClient } from "@/api/client";
 import { downloadBlob } from "@/lib/download";
+import { getApiResponseError } from "@/hooks/use-get-error";
 
 interface UseCsvDownloadReturn {
   /** Triggers the download. Rejects with an `ApiError` on failure. */
@@ -40,8 +41,10 @@ export function useCsvDownload(
         responseType: "blob",
       });
       downloadBlob(blob, filename);
-    } catch (error: any) {
-      toast.error(error?.message || "Failed to download CSV");
+    } catch (error) {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to download CSV" }),
+      );
     } finally {
       setIsDownloading(false);
     }
