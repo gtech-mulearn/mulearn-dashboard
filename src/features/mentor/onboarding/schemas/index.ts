@@ -96,11 +96,11 @@ export const MentorApplicationResponseSchema = ApiResponseSchema(
 // `expertise` is collected as chips (an array) in the UI; it is joined to a
 // comma-separated string at the API boundary (see MentorProfileWrite).
 export const OnboardingFormSchema = z.object({
-  about: z.string().min(50, "About must be at least 50 characters"),
+  about: z.string().trim().min(50, "About must be at least 50 characters"),
   expertise: z
     .array(z.string())
     .min(3, "Please add at least three areas of expertise"),
-  reason: z.string().min(30, "Reason must be at least 30 characters"),
+  reason: z.string().trim().min(30, "Reason must be at least 30 characters"),
   hours: z.number().min(0).optional(),
   preferred_ig_ids: z
     .array(z.string())
