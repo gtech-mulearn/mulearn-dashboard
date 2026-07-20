@@ -446,14 +446,16 @@ export function MeetingDetailView({
                 {isOnline ? "Platform" : "Location"}
               </span>
               {isOnline && meeting.meet_link && (
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon"
                   onClick={() => setShowLinkQr(true)}
-                  className="ml-1 text-muted-foreground hover:text-primary transition-colors"
+                  className="ml-1 h-6 w-6 text-muted-foreground hover:text-primary"
                   title="Show Link QR"
                 >
                   <QrCode className="h-3.5 w-3.5" />
-                </button>
+                </Button>
               )}
             </div>
             {isOnline && meeting.meet_link ? (
@@ -520,14 +522,16 @@ export function MeetingDetailView({
                   <p className="font-mono text-[16px] font-bold tracking-widest text-warning">
                     {meeting.meet_code}
                   </p>
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setShowJoinQr(true)}
-                    className="flex items-center gap-1 rounded-md bg-warning/10 px-2 py-1 text-[11px] font-semibold text-warning hover:bg-warning/20 transition-colors"
+                    className="flex items-center gap-1 rounded-md bg-warning/10 px-2 py-1 text-[11px] font-semibold text-warning hover:bg-warning/20"
                   >
                     <QrCode className="h-3.5 w-3.5" />
                     Share QR
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -549,17 +553,19 @@ export function MeetingDetailView({
             </span>
           </h3>
           {permissions.canSubmitReport && (
-            <button
+            <Button
               type="button"
               id="meeting-attendees-export-csv"
               aria-label="Download attendees CSV"
+              variant="outline"
+              size="sm"
               onClick={downloadCsv}
               disabled={isDownloading}
-              className="inline-flex items-center gap-2 rounded-xl border border-border bg-muted/50 px-3 py-1.5 text-[12px] font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-xl text-[12px]"
             >
               <Download className="h-3.5 w-3.5" />
               {isDownloading ? "Downloading…" : "Download CSV"}
-            </button>
+            </Button>
           )}
         </div>
 
