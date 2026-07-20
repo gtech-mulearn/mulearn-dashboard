@@ -21,10 +21,6 @@ export async function POST() {
     }
   }
 
-  // Delete with the SAME attributes used when the cookies were set
-  // (path: "/", secure in prod, sameSite: strict). Omitting these lets the
-  // browser keep a stale cookie, so isAuthenticated lingers and the app
-  // re-shows auth/popup UI right after logout.
   const cookieOptions = {
     path: "/",
     secure: process.env.NODE_ENV === "production",
@@ -35,8 +31,6 @@ export async function POST() {
   cookieStore.delete({ name: "isAuthenticated", ...cookieOptions });
   cookieStore.delete({ name: "tempToken", ...cookieOptions });
 
-  // Drop the "What's New" dismissal cookie so the popup is not carried
-  // over to the next session after logging out.
   await clearWhatsNewCookie();
 
   return NextResponse.json({ success: true });
