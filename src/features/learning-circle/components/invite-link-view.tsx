@@ -23,7 +23,10 @@ export function InviteLinkView({ linkId }: InviteLinkViewProps) {
   const respondToInvite = useRespondToInviteByLink();
 
   const handleRespond = (isAccepted: boolean) => {
-    respondToInvite.mutate({ linkId, data: { is_accepted: isAccepted } });
+    respondToInvite.mutate({
+      linkId,
+      data: { action: isAccepted ? "accept" : "reject" },
+    });
   };
 
   if (isLoading) {
@@ -81,6 +84,15 @@ export function InviteLinkView({ linkId }: InviteLinkViewProps) {
     );
   }
 
+  let inviterName = "";
+  if (invite.invited_by) {
+    if (typeof invite.invited_by === "object") {
+      inviterName = invite.invited_by.full_name || "Unknown";
+    } else {
+      inviterName = invite.invited_by;
+    }
+  }
+
   return (
     <div
       className="mx-auto max-w-md py-12"
@@ -109,23 +121,29 @@ export function InviteLinkView({ linkId }: InviteLinkViewProps) {
 
         {/* Body */}
         <div className="px-8 py-8">
-          {invite.circle_name && (
+          {(invite.circle_name ||
+            invite.circle_title ||
+            invite.circle ||
+            invite.title) && (
             <div className="mb-6 text-center">
               <p className="text-[20px] font-extrabold text-foreground">
-                {invite.circle_name}
+                {invite.circle_name ||
+                  invite.circle_title ||
+                  invite.circle ||
+                  invite.title}
               </p>
             </div>
           )}
 
-          {invite.invited_by && (
+          {inviterName && (
             <div className="mb-8 flex items-center justify-center gap-2">
               <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary">
-                {invite.invited_by.charAt(0)}
+                {inviterName.charAt(0)}
               </div>
               <p className="text-[13px] text-muted-foreground">
                 Invited by{" "}
                 <span className="font-semibold text-foreground">
-                  {invite.invited_by}
+                  {inviterName}
                 </span>
               </p>
             </div>

@@ -1,8 +1,14 @@
 "use client";
 
 import { AlertTriangle } from "lucide-react";
+import Link from "next/link";
+import { useMemo } from "react";
+import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import { CreateCircleModal } from "@/features/learning-circle";
+import {
+  CreateCircleModal,
+  useActiveInvites,
+} from "@/features/learning-circle";
 import { useInterestGroupsList, useUserProfile } from "@/features/profile";
 
 export function LearningCircleHeader() {
@@ -16,6 +22,8 @@ export function LearningCircleHeader() {
     isLoading: profileLoading,
     isError: profileError,
   } = useUserProfile();
+
+  const { activeInvitesCount } = useActiveInvites();
 
   const interestGroups =
     igData?.interestGroup?.map((ig) => ({ id: ig.id, name: ig.name })) ?? [];
@@ -56,9 +64,20 @@ export function LearningCircleHeader() {
   }
 
   return (
-    <CreateCircleModal
-      interestGroups={interestGroups}
-      organizations={userOrganization}
-    />
+    <div className="flex items-center gap-3">
+      <Button
+        variant="outline"
+        className="rounded-xl px-5 text-sm font-semibold border-border bg-card hover:bg-muted"
+        asChild
+      >
+        <Link href="/dashboard/learning-circle/invites">
+          Invites ({activeInvitesCount})
+        </Link>
+      </Button>
+      <CreateCircleModal
+        interestGroups={interestGroups}
+        organizations={userOrganization}
+      />
+    </div>
   );
 }
