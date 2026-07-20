@@ -1,25 +1,6 @@
 import { NextRequest } from "next/server";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { proxy } from "./proxy";
-
-/**
- * The FIFA break gate (see proxy.ts) short-circuits every request while it is
- * active, so the auth/RBAC suites below must run on a clock past its end. Each
- * test therefore starts at a fixed instant AFTER the break; the break's own
- * suite moves the clock back inside the window explicitly.
- * TEMPORARY: drop this stub when the break block is deleted.
- */
-const AFTER_BREAK = new Date("2026-07-21T05:00:00Z"); // 10:30 IST, block lifted
-const DURING_BREAK = new Date("2026-07-21T02:00:00Z"); // 07:30 IST, still dark
-
-beforeEach(() => {
-  vi.useFakeTimers();
-  vi.setSystemTime(AFTER_BREAK);
-});
-
-afterEach(() => {
-  vi.useRealTimers();
-});
 
 /**
  * Build a fake (unsigned) JWT whose payload carries the given claims. The proxy
@@ -104,75 +85,6 @@ describe("proxy public routes", () => {
     const res = proxy(requestFor("/dashboard/profile", {}));
     // Should redirect to login since it is protected
     expect(res.headers.get("location")).toContain("/login");
-  });
-});
-
-/** TEMPORARY: delete alongside the break gate in proxy.ts. */
-describe("proxy FIFA break block", () => {
-  const rewriteTarget = (res: Response) =>
-    res.headers.get("x-middleware-rewrite");
-
-  beforeEach(() => {
-    vi.setSystemTime(DURING_BREAK);
-  });
-
-  it("ends at Tue 21 Jul 2026, 10:00 IST", () => {
-    // 04:29 UTC is 09:59 IST — still blocked. 04:30 UTC is 10:00 — open.
-    vi.setSystemTime(new Date("2026-07-21T04:29:59Z"));
-    expect(rewriteTarget(proxy(requestFor("/dashboard", {})))).toContain(
-      "/break",
-    );
-
-    vi.setSystemTime(new Date("2026-07-21T04:30:00Z"));
-    expect(rewriteTarget(proxy(requestFor("/dashboard", {})))).toBeNull();
-  });
-
-  it("rewrites every page to /break, logged in or not", () => {
-    const paths = [
-      "/",
-      "/login",
-      "/register",
-      "/dashboard",
-      "/dashboard/jobs",
-      "/dashboard/mujourney/abc",
-      "/profile/some-company",
-      "/onboarding/interests",
-    ];
-    for (const path of paths) {
-      const res = proxy(
-        requestFor(path, {
-          accessToken: makeToken({ expiry: FUTURE, roles: [ROLES.ADMIN] }),
-          refreshToken: "r",
-        }),
-      );
-      expect(rewriteTarget(res), path).toContain("/break");
-      // Rewrite, not redirect — the visited URL must survive the block.
-      expect(res.headers.get("location"), path).toBeNull();
-    }
-  });
-
-  it("answers /api with a JSON 503 instead of the page's HTML", () => {
-    const res = proxy(requestFor("/api/auth/refresh", {}));
-    expect(res.status).toBe(503);
-    expect(res.headers.get("content-type")).toContain("application/json");
-    expect(Number(res.headers.get("retry-after"))).toBeGreaterThan(0);
-  });
-
-  it("never lets a blocked response be cached", () => {
-    expect(
-      proxy(requestFor("/dashboard", {})).headers.get("cache-control"),
-    ).toContain("no-store");
-    expect(
-      proxy(requestFor("/api/me", {})).headers.get("cache-control"),
-    ).toContain("no-store");
-  });
-
-  it("lets the break page's own assets through", () => {
-    for (const path of ["/_next/static/chunk.js", "/images/illustrations/x"]) {
-      const res = proxy(requestFor(path, {}));
-      expect(rewriteTarget(res), path).toBeNull();
-      expect(res.headers.get("location"), path).toBeNull();
-    }
   });
 });
 

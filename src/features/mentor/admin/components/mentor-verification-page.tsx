@@ -9,6 +9,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useState } from "react";
+import Pagination from "@/components/dashboard/table/pagination";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -29,7 +30,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import Pagination from "@/components/dashboard/table/pagination";
 import {
   useMentorList,
   useRevokeMentorAssignment,
@@ -82,6 +82,10 @@ function MentorTable({
   onVerify,
   onScopes,
   onRevokeTier,
+  page,
+  totalPages,
+  totalCount,
+  onPageChange,
 }: {
   items: MentorApplicationListItem[] | undefined;
   isLoading: boolean;
@@ -92,6 +96,10 @@ function MentorTable({
   ) => void;
   onScopes: (m: MentorApplicationListItem) => void;
   onRevokeTier: (m: MentorApplicationListItem) => void;
+  page: number;
+  totalPages: number;
+  totalCount: number | undefined;
+  onPageChange: (page: number) => void;
 }) {
   if (isLoading) {
     return (
@@ -113,106 +121,119 @@ function MentorTable({
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Name</TableHead>
-          <TableHead>Email</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Tier</TableHead>
-          {showActions && <TableHead>Actions</TableHead>}
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {items.map((m) => (
-          <TableRow key={m.id}>
-            <TableCell>
-              <p className="font-medium">{getDisplayName(m)}</p>
-              {m.muid && (
-                <p className="text-xs text-muted-foreground">{m.muid}</p>
-              )}
-            </TableCell>
-            <TableCell>
-              <p className="text-sm text-muted-foreground">
-                {m.user_email ?? m.email ?? "—"}
-              </p>
-            </TableCell>
-            <TableCell>{getStatusBadge(m)}</TableCell>
-            <TableCell>
-              {m.mentor_tier ? (
-                <Badge variant="outline">{m.mentor_tier}</Badge>
-              ) : (
-                <span className="text-muted-foreground">—</span>
-              )}
-            </TableCell>
-            {showActions && (
+    <>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Name</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Tier</TableHead>
+            {showActions && <TableHead>Actions</TableHead>}
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {items.map((m) => (
+            <TableRow key={m.id}>
               <TableCell>
-                <div className="flex items-center gap-1">
-                  {isActionable(m) && (
-                    <>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950"
-                            onClick={() => onVerify(m, "approve")}
-                          >
-                            <CheckCircle className="h-4 w-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Approve</TooltipContent>
-                      </Tooltip>
+                <p className="font-medium">{getDisplayName(m)}</p>
+                {m.muid && (
+                  <p className="text-xs text-muted-foreground">{m.muid}</p>
+                )}
+              </TableCell>
+              <TableCell>
+                <p className="text-sm text-muted-foreground">
+                  {m.user_email ?? m.email ?? "—"}
+                </p>
+              </TableCell>
+              <TableCell>{getStatusBadge(m)}</TableCell>
+              <TableCell>
+                {m.mentor_tier ? (
+                  <Badge variant="outline">{m.mentor_tier}</Badge>
+                ) : (
+                  <span className="text-muted-foreground">—</span>
+                )}
+              </TableCell>
+              {showActions && (
+                <TableCell>
+                  <div className="flex items-center gap-1">
+                    {isActionable(m) && (
+                      <>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950"
+                              onClick={() => onVerify(m, "approve")}
+                            >
+                              <CheckCircle className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Approve</TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                              onClick={() => onVerify(m, "reject")}
+                            >
+                              <XCircle className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Reject</TooltipContent>
+                        </Tooltip>
+                      </>
+                    )}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-foreground hover:bg-muted"
+                          onClick={() => onScopes(m)}
+                        >
+                          <ShieldCheck className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Scopes</TooltipContent>
+                    </Tooltip>
+                    {resolveStatus(m) === "APPROVED" && m.muid && (
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                            onClick={() => onVerify(m, "reject")}
+                            onClick={() => onRevokeTier(m)}
                           >
-                            <XCircle className="h-4 w-4" />
+                            <ShieldOff className="h-4 w-4" />
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>Reject</TooltipContent>
+                        <TooltipContent>Revoke tier</TooltipContent>
                       </Tooltip>
-                    </>
-                  )}
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-foreground hover:bg-muted"
-                        onClick={() => onScopes(m)}
-                      >
-                        <ShieldCheck className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Scopes</TooltipContent>
-                  </Tooltip>
-                  {resolveStatus(m) === "APPROVED" && m.muid && (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                          onClick={() => onRevokeTier(m)}
-                        >
-                          <ShieldOff className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Revoke tier</TooltipContent>
-                    </Tooltip>
-                  )}
-                </div>
-              </TableCell>
-            )}
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+                    )}
+                  </div>
+                </TableCell>
+              )}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      <div className="mt-4">
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          perPage={PER_PAGE}
+          totalCount={totalCount}
+          currentPageCount={items.length}
+          handlePreviousClick={() => onPageChange(Math.max(1, page - 1))}
+          handleNextClick={() => onPageChange(page + 1)}
+        />
+      </div>
+    </>
   );
 }
 
@@ -301,20 +322,11 @@ export function MentorVerificationPage() {
               onVerify={(m, action) => setVerifyState({ mentor: m, action })}
               onScopes={setGrantsFor}
               onRevokeTier={setRevokeFor}
+              page={pendingPage}
+              totalPages={pending?.totalPages ?? 1}
+              totalCount={pending?.totalItems}
+              onPageChange={setPendingPage}
             />
-            <div className="mt-4">
-              <Pagination
-                currentPage={pendingPage}
-                totalPages={pending?.totalPages ?? 1}
-                perPage={PER_PAGE}
-                totalCount={pending?.totalItems}
-                currentPageCount={pending?.data?.length}
-                handlePreviousClick={() =>
-                  setPendingPage(Math.max(1, pendingPage - 1))
-                }
-                handleNextClick={() => setPendingPage(pendingPage + 1)}
-              />
-            </div>
           </TabsContent>
 
           <TabsContent value="all" className="mt-4">
@@ -325,18 +337,11 @@ export function MentorVerificationPage() {
               onVerify={(m, action) => setVerifyState({ mentor: m, action })}
               onScopes={setGrantsFor}
               onRevokeTier={setRevokeFor}
+              page={allPage}
+              totalPages={all?.totalPages ?? 1}
+              totalCount={all?.totalItems}
+              onPageChange={setAllPage}
             />
-            <div className="mt-4">
-              <Pagination
-                currentPage={allPage}
-                totalPages={all?.totalPages ?? 1}
-                perPage={PER_PAGE}
-                totalCount={all?.totalItems}
-                currentPageCount={all?.data?.length}
-                handlePreviousClick={() => setAllPage(Math.max(1, allPage - 1))}
-                handleNextClick={() => setAllPage(allPage + 1)}
-              />
-            </div>
           </TabsContent>
         </Tabs>
 
