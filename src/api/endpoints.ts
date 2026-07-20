@@ -779,6 +779,9 @@ export const endpoints = {
     /** POST/GET/DELETE - Meeting report (organizer) */
     meetingReport: (id: string) =>
       `/api/v1/dashboard/learningcircle/meeting/report/${id}/`,
+    /** GET - Export meeting attendees as CSV (owner/lead only) */
+    meetingReportExport: (id: string) =>
+      `/api/v1/dashboard/learningcircle/meeting/report/export/${id}/`,
   },
 
   // ============================================

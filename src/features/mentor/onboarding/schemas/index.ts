@@ -55,6 +55,8 @@ function normaliseMentorStatus(raw: unknown): MentorStatusData {
         typeof obj.verification_note === "string"
           ? obj.verification_note
           : null,
+      rejection_reason:
+        typeof obj.rejection_reason === "string" ? obj.rejection_reason : null,
       mentor_id: typeof obj.mentor_id === "string" ? obj.mentor_id : null,
       organization:
         typeof obj.organization === "string" ? obj.organization : null,
@@ -65,6 +67,7 @@ function normaliseMentorStatus(raw: unknown): MentorStatusData {
   return {
     status: "PENDING",
     verification_note: null,
+    rejection_reason: null,
     mentor_id: null,
     organization: null,
   };
@@ -76,6 +79,7 @@ export const MentorStatusResponseSchema = ApiResponseSchema(
 export type MentorStatusData = {
   status: "PENDING" | "APPROVED" | "REJECTED";
   verification_note?: string | null;
+  rejection_reason?: string | null;
   mentor_id?: string | null;
   // Mentor's affiliated organization, shown in the mentor profile sidebar. Same
   // `GET /mentor/status/` response previously read via a separate `useMentorStatus`

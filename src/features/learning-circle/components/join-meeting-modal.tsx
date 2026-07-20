@@ -28,6 +28,8 @@ interface JoinMeetingModalProps {
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
   defaultCode?: string;
+  /** External meeting URL (Google Meet, Zoom, etc.) — opened in a new tab after join */
+  meetLink?: string;
 }
 
 export function JoinMeetingModal({
@@ -36,6 +38,7 @@ export function JoinMeetingModal({
   onOpenChange,
   onSuccess,
   defaultCode = "",
+  meetLink,
 }: JoinMeetingModalProps) {
   const [code, setCode] = useState(defaultCode);
   const { mutate: joinMeeting, isPending } = useJoinMeeting();
@@ -45,18 +48,33 @@ export function JoinMeetingModal({
       e.preventDefault();
       if (code.length !== 6) return;
 
+      // Open a blank tab synchronously to bypass popup blockers
+      let newTab: Window | null = null;
+      if (meetLink) {
+        newTab = window.open("about:blank", "_blank");
+      }
+
       joinMeeting(
         { meetingId, data: { meet_code: code.toUpperCase() } },
         {
           onSuccess: () => {
             setCode("");
             onOpenChange(false);
+            if (newTab && meetLink) {
+              newTab.opener = null;
+              newTab.location.href = meetLink;
+            }
             onSuccess?.();
+          },
+          onError: () => {
+            if (newTab) {
+              newTab.close();
+            }
           },
         },
       );
     },
-    [code, meetingId, joinMeeting, onOpenChange, onSuccess],
+    [code, meetingId, joinMeeting, onOpenChange, onSuccess, meetLink],
   );
 
   const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {

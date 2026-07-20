@@ -27,6 +27,9 @@ export function shouldShowMentorPendingBanner({
 }: MentorPendingBannerInput): boolean {
   // New doc shape: status string
   if (mentorApplication?.status === "APPROVED") return false;
+  // Rejected: the MentorHome page already shows the rejection banner — no need
+  // to also show the pending verification banner here.
+  if (mentorApplication?.status === "REJECTED") return false;
   // Legacy shape: boolean
   if (mentorApplication?.is_verified === true) return false;
   // No application yet
