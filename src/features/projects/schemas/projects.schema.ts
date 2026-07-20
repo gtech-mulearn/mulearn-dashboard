@@ -119,9 +119,9 @@ export type ProjectLinkFormValue = z.infer<typeof ProjectLinkFormSchema>;
 
 export const ProjectFormSchema = z.object({
   title: z.string().min(1, "Title is required").max(50),
-  description: z.string().min(1, "Description is required"),
+  description: z.string().min(50, "Description must be at least 50 characters"),
   status: ProjectStatusSchema,
-  links: z.array(ProjectLinkFormSchema),
+  links: z.array(ProjectLinkFormSchema).min(2, "At least 2 links are required"),
   skill_ids: z.array(z.string()),
 });
 export type ProjectFormValues = z.infer<typeof ProjectFormSchema>;

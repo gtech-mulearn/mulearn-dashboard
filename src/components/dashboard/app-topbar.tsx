@@ -52,7 +52,11 @@ export function AppTopbar() {
         <SidebarTrigger className="rounded-full w-9 h-9 text-muted-foreground" />
         <Link href="/dashboard" className="flex items-center">
           <Image
-            src={resolvedTheme === "dark" ? "/logo-dark.webp" : "/logo.webp"}
+            src={
+              mounted && resolvedTheme === "dark"
+                ? "/logo-dark.webp"
+                : "/logo.webp"
+            }
             alt="μLearn"
             width={100}
             height={32}

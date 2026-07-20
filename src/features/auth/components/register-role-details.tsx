@@ -448,14 +448,33 @@ export function RegisterRoleDetails({
     }
   };
 
+  // Fields collected on each step of the company stepper — validated with
+  // form.trigger before the user is allowed to advance.
+  const COMPANY_STEP_FIELDS: Record<number, (keyof CompanyDetailsValues)[]> = {
+    1: [
+      "companyName",
+      "logo",
+      "companyDescription",
+      "shortPitch",
+      "industrySector",
+      "companySize",
+    ],
+    2: ["email", "websiteLink", "linkedinUrl"],
+    3: ["location", "countryId", "stateId", "districtId"],
+    4: [
+      "legalName",
+      "registrationNumber",
+      "taxId",
+      "foundedYear",
+      "remotePolicy",
+      "cultureText",
+    ],
+  };
+
   const handleCompanyNext = async () => {
-    // Only companyName is required — validate it on step 1 before advancing
-    if (companyStep === 1) {
-      const valid = await form.trigger(
-        "companyName" as keyof RoleDetailsValues,
-      );
-      if (!valid) return;
-    }
+    const fields = COMPANY_STEP_FIELDS[companyStep];
+    const valid = await form.trigger(fields);
+    if (!valid) return;
     setCompanyStep((s) => Math.min(s + 1, 4));
   };
 
