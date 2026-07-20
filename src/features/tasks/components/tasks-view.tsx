@@ -245,12 +245,22 @@ export default function TasksView() {
         />
 
         {!isLoading && rows.length === 0 ? (
-          <StateDisplay
-            variant="no-tasks"
-            className="rounded-2xl border border-dashed my-4"
-            title="No tasks configured"
-            description="There are currently no tasks configured in the system. Use the 'Create Task' button above to set up a new task."
-          />
+          debouncedSearch ? (
+            <StateDisplay
+              variant="no-results"
+              size="sm"
+              className="rounded-2xl border border-dashed my-4"
+              title="No matching tasks"
+              description="No tasks match your search. Try a different keyword or clear the search."
+            />
+          ) : (
+            <StateDisplay
+              variant="no-tasks"
+              className="rounded-2xl border border-dashed my-4"
+              title="No tasks configured"
+              description="There are currently no tasks configured in the system. Use the 'Create Task' button above to set up a new task."
+            />
+          )
         ) : (
           <Table
             rows={rows}
