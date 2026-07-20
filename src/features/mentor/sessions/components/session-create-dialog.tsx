@@ -84,10 +84,14 @@ export function SessionCreateDialog({
   useEffect(() => {
     if (open) {
       const now = new Date();
-      const startsAt = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+      // Add 15 minutes to prevent stale form error on submit
+      const start = new Date(now.getTime() + 15 * 60000);
+      const startsAt = new Date(
+        start.getTime() - start.getTimezoneOffset() * 60000,
+      )
         .toISOString()
         .slice(0, 16);
-      const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
+      const oneHourLater = new Date(start.getTime() + 60 * 60 * 1000);
       const endsAt = new Date(
         oneHourLater.getTime() - oneHourLater.getTimezoneOffset() * 60000,
       )

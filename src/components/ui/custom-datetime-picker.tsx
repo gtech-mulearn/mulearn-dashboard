@@ -414,9 +414,17 @@ export function CustomDateTimePicker({
               variant="secondary"
               size="sm"
               className="mt-3 w-full"
+              disabled={
+                minDate
+                  ? new Date(new Date().setHours(0, 0, 0, 0)) <
+                    new Date(new Date(minDate).setHours(0, 0, 0, 0))
+                  : false
+              }
               onClick={() => {
                 const now = new Date();
-                setInternalDate(now);
+                setInternalDate(
+                  minDate && now < minDate ? new Date(minDate) : now,
+                );
               }}
             >
               Today
