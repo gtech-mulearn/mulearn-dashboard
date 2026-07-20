@@ -74,7 +74,7 @@ export function PendingInvites() {
           {filteredInvites.map((invite, index) => {
             const inviteKey =
               invite.id || invite.link_id || `pending-invite-${index}`;
-            const targetId = invite.id || invite.link_id || "";
+            const targetId = invite.link_id || invite.id || "";
             let inviterName = "";
             if (invite.invited_by) {
               if (typeof invite.invited_by === "object") {
