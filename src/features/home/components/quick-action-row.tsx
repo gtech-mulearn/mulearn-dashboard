@@ -1,11 +1,4 @@
-import {
-  Briefcase,
-  CalendarDays,
-  FolderKanban,
-  Search,
-  Users,
-  Zap,
-} from "lucide-react";
+import { CalendarDays, FolderKanban, Users, Zap } from "lucide-react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 
@@ -14,7 +7,10 @@ type QuickActionRowProps = {
   jobCount: number;
 };
 
-export function QuickActionRow({ circleCount, jobCount }: QuickActionRowProps) {
+export function QuickActionRow({
+  circleCount,
+  jobCount: _jobCount,
+}: QuickActionRowProps) {
   const actions = [
     {
       id: "mujourney",

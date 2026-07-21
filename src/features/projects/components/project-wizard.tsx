@@ -521,7 +521,7 @@ export function ProjectWizard({
                               key={img.image}
                               className="relative aspect-video rounded-lg overflow-hidden border bg-muted"
                             >
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              {/* biome-ignore lint/performance/noImgElement: remote screenshot URL, not eligible for next/image domains config */}
                               <img
                                 src={`${process.env.NEXT_PUBLIC_DJANGO_API_URL ?? ""}${img.image.startsWith("http") ? img.image.replace(/^https?:\/\/[^/]+/, "") : img.image}`}
                                 alt="Screenshot"
@@ -540,7 +540,7 @@ export function ProjectWizard({
                             key={`${file.name}-${file.lastModified}`}
                             className="relative aspect-video rounded-lg overflow-hidden border bg-muted group"
                           >
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            {/* biome-ignore lint/performance/noImgElement: local blob preview URL, not eligible for next/image */}
                             <img
                               src={URL.createObjectURL(file)}
                               alt={file.name}

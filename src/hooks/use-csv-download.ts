@@ -15,8 +15,8 @@
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { apiClient } from "@/api/client";
-import { downloadBlob } from "@/lib/download";
 import { getApiResponseError } from "@/hooks/use-get-error";
+import { downloadBlob } from "@/lib/download";
 
 interface UseCsvDownloadReturn {
   /** Triggers the download. Rejects with an `ApiError` on failure. */

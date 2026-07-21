@@ -395,7 +395,7 @@ export function EventInlineEditForm({
             <Controller
               control={control}
               name="category"
-              render={({ field }) => {
+              render={() => {
                 const eventTypeValue = watch("event_type");
                 const selectedType =
                   eventTypeSelectOptions.find(

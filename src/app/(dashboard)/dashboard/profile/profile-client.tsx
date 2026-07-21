@@ -16,7 +16,6 @@ import {
   useMentorProfile,
 } from "@/features/mentor/onboarding/hooks/use-onboarding";
 import { MentorProfilePage } from "@/features/mentor/profile";
-import { useUIStore } from "@/stores/ui-store";
 import {
   AccountSettingsModal,
   Achievements,
@@ -51,6 +50,7 @@ import {
   ChangeOrganizationRequestSchema,
 } from "@/features/settings";
 import { ROLES } from "@/lib/auth/roles";
+import { useUIStore } from "@/stores/ui-store";
 
 export function ProfilePageClient() {
   const [activeTab, setActiveTab] = useState<ProfileTab>("basic-details");

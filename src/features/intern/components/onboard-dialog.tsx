@@ -151,7 +151,7 @@ export function OnboardDialog({
     e.stopPropagation();
     setIsDragActive(false);
 
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+    if (e.dataTransfer.files?.[0]) {
       const file = e.dataTransfer.files[0];
       if (!file.name.endsWith(".xlsx")) {
         toast.error("Please upload a valid .xlsx file");
