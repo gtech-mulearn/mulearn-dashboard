@@ -224,7 +224,7 @@ export function BasicInfoSection({
       onToggleArrayField("roles", pendingRoleId, true);
       toast.success("Role assigned successfully");
     } catch {
-      toast.error("Failed to assign role");
+      // Handled by useAssignUserRole's onError toast.
     } finally {
       handleCancel();
     }

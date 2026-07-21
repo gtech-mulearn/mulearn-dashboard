@@ -92,10 +92,8 @@ export function useKarmaVoucherLogic() {
       if (!id) return;
       try {
         await deleteVoucher(id);
-      } catch (error) {
-        toast.error(
-          getApiResponseError(error, { fallback: "Failed to delete voucher" }),
-        );
+      } catch {
+        // Handled by useDeleteKarmaVoucher's onError toast.
       }
     },
     [deleteVoucher],

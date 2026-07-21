@@ -319,10 +319,9 @@ export const UserForm = forwardRef<
         id,
         payload,
       });
-      toast.success("User edited");
       closeModal();
     } catch {
-      toast.error("Failed to edit user");
+      // Handled by useUpdateManageUser's onError toast.
     }
   };
 

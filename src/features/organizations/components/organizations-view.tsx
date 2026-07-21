@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { toast } from "sonner";
 import { DataTableErrorBoundary } from "@/components/dashboard/DataTableErrorBoundary";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table from "@/components/dashboard/table/Table";
@@ -34,7 +33,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   useAffiliations,
   useCountriesDropdown,
@@ -459,8 +457,8 @@ function OrgFormDialog({
         await createMutation.mutateAsync(data);
       }
       handleOpenChange(false);
-    } catch (err) {
-      toast.error(getApiResponseError(err, { fallback: "Operation failed" }));
+    } catch {
+      // Handled by mutation hook's onError toast (useCreateOrg/useEditOrg)
     }
   };
 

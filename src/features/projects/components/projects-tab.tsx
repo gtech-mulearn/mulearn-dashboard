@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { StateDisplay } from "@/components/ui/state-display";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   useAddMember,
   useCreateProject,
@@ -85,8 +84,8 @@ export function ProjectsTab({
     try {
       await del.mutateAsync(pendingDelete.id);
       toast.success("Deleted");
-    } catch (e) {
-      toast.error(getApiResponseError(e, { fallback: "Delete failed" }));
+    } catch {
+      // Handled by useDeleteProject's onError toast.
     } finally {
       setPendingDelete(undefined);
     }
@@ -178,8 +177,8 @@ export function ProjectsTab({
                 try {
                   await addMember.mutateAsync({ muid: m });
                   toast.success("Member added");
-                } catch (e) {
-                  toast.error(getApiResponseError(e, { fallback: "Failed" }));
+                } catch {
+                  // Handled by useAddMember's onError toast.
                 }
               }
             : undefined
@@ -190,8 +189,8 @@ export function ProjectsTab({
                 try {
                   await addMember.mutateAsync({ external_name: name });
                   toast.success("External added");
-                } catch (e) {
-                  toast.error(getApiResponseError(e, { fallback: "Failed" }));
+                } catch {
+                  // Handled by useAddMember's onError toast.
                 }
               }
             : undefined
@@ -201,8 +200,8 @@ export function ProjectsTab({
             ? async (id) => {
                 try {
                   await removeMember.mutateAsync(id);
-                } catch (e) {
-                  toast.error(getApiResponseError(e, { fallback: "Failed" }));
+                } catch {
+                  // Handled by useRemoveMember's onError toast.
                 }
               }
             : undefined

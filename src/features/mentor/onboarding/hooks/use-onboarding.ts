@@ -125,6 +125,7 @@ export function useUpdateMentorProfile() {
       void queryClient.invalidateQueries({
         queryKey: mentorTaskKeys.igDropdown(),
       });
+      toast.success("Profile updated");
     },
     onError: (error) =>
       toast.error(

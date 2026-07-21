@@ -16,7 +16,6 @@ import {
   useShortUrlsList,
 } from "@/features/url-shortener/hooks/use-short-urls";
 import type { ShortUrlItem } from "@/features/url-shortener/schemas/shortener.schema";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import { UrlShortenerFormModal } from "./url-shortener-form-modal";
 
 const COLUMNS = [
@@ -76,10 +75,8 @@ export default function UrlShortenerView() {
     try {
       await deleteMutation.mutateAsync(value);
       toast.success("Short URL deleted");
-    } catch (error) {
-      toast.error(
-        getApiResponseError(error, { fallback: "Failed to delete short URL" }),
-      );
+    } catch {
+      // Error toast handled by useDeleteShortUrl's onError.
     }
   };
 

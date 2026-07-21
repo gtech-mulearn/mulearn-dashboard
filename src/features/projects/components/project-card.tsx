@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +17,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import { resolveMediaUrl } from "@/lib/utils";
 import { useDeleteVote, useVoteProject } from "../hooks";
 import type { Project } from "../schemas";
@@ -145,19 +143,9 @@ export function ProjectCard({
   const handleUpvote = () => {
     if (isPendingVote) return;
     if (hasUpvoted && userVote) {
-      removeVote.mutate(userVote.id, {
-        onError: (error) =>
-          toast.error(
-            getApiResponseError(error, { fallback: "Failed to remove vote" }),
-          ),
-      });
+      removeVote.mutate(userVote.id);
     } else {
-      vote.mutate("upvote", {
-        onError: (error) =>
-          toast.error(
-            getApiResponseError(error, { fallback: "Failed to upvote" }),
-          ),
-      });
+      vote.mutate("upvote");
     }
   };
 

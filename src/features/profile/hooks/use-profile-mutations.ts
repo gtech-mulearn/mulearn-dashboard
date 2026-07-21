@@ -106,7 +106,9 @@ export function useUpdatePreferences() {
  * Update profile image.
  * Invalidates both profile and user info caches.
  */
-export function useUpdateProfileImage() {
+export function useUpdateProfileImage(
+  options: { suppressErrorToast?: boolean } = {},
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -127,11 +129,13 @@ export function useUpdateProfileImage() {
       toast.success("Profile image updated");
     },
     onError: (error) => {
-      toast.error(
-        getApiResponseError(error, {
-          fallback: "Failed to update profile image",
-        }),
-      );
+      if (!options.suppressErrorToast) {
+        toast.error(
+          getApiResponseError(error, {
+            fallback: "Failed to update profile image",
+          }),
+        );
+      }
     },
   });
 }

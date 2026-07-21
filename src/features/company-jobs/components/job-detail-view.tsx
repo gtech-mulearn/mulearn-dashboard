@@ -24,7 +24,6 @@ import {
   Wallet,
 } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
@@ -72,19 +71,8 @@ export function JobDetailView({
 
   const handleToggleStatus = () => {
     const nextStatus = isClosed || isDraft ? "Active" : "Closed";
-    updateJob(
-      { jobId: job.id, payload: { status: nextStatus } },
-      {
-        onSuccess: () =>
-          toast.success(isClosed || isDraft ? "Job activated" : "Job closed"),
-        onError: () =>
-          toast.error(
-            isClosed || isDraft
-              ? "Failed to activate job"
-              : "Failed to close job",
-          ),
-      },
-    );
+    // Success/error toasts are handled by useUpdateJob's own onSuccess/onError.
+    updateJob({ jobId: job.id, payload: { status: nextStatus } });
   };
 
   const statusConfig =

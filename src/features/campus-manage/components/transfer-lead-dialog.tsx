@@ -17,7 +17,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { MuidSearchInput } from "@/components/ui/muid-search-input";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import type { UserResult } from "@/hooks/use-search";
 import { useTransferLeadRole } from "../hooks";
 
@@ -70,12 +69,8 @@ export function TransferLeadDialog({ trigger }: TransferLeadDialogProps) {
         form.reset();
         setSelectedUser(null);
       },
-      onError: (error) => {
-        toast.error(
-          getApiResponseError(error, {
-            fallback: "Failed to transfer campus lead role",
-          }),
-        );
+      onError: () => {
+        // Error toast handled by useTransferLeadRole's own onError.
         setConfirmOpen(false);
       },
     });

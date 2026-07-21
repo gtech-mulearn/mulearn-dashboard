@@ -18,7 +18,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { MuidSearchInput } from "@/components/ui/muid-search-input";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import type { UserResult } from "@/hooks/use-search";
 import { useTransferEnablerRole } from "../hooks";
 
@@ -71,12 +70,8 @@ export function TransferEnablerDialog({ trigger }: TransferEnablerDialogProps) {
         form.reset();
         setSelectedUser(null);
       },
-      onError: (error) => {
-        toast.error(
-          getApiResponseError(error, {
-            fallback: "Failed to transfer enabler role",
-          }),
-        );
+      onError: () => {
+        // Error toast handled by useTransferEnablerRole's own onError.
         setConfirmOpen(false);
       },
     });

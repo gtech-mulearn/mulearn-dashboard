@@ -238,14 +238,10 @@ export function useCreateEvent() {
   return useMutation({
     mutationFn: (body: EventWriteBody | FormData) => eventsApi.create(body),
     onSuccess: async () => {
-      toast.success("Event created");
       await queryClient.invalidateQueries({ queryKey: eventKeys.all });
     },
-    onError: (error) => {
-      toast.error(
-        getApiResponseError(error, { fallback: "Failed to create event" }),
-      );
-    },
+    // No toasts here — event-create-wizard.tsx owns the publish/draft-specific
+    // success and error messaging for this mutation.
   });
 }
 

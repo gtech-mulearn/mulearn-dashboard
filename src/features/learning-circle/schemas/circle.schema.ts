@@ -59,6 +59,8 @@ export const LearningCircleSchema = z
       org: z.string().nullable().optional(),
       total_members: z.number().nullable().optional(),
       attendees: z.array(z.unknown()).nullable().optional(),
+      is_joined: z.boolean().nullable().optional(),
+      is_creator: z.boolean().nullable().optional(),
     }),
   )
   .transform((val) => {
@@ -72,6 +74,8 @@ export const LearningCircleSchema = z
       org: val.org ?? null,
       total_members: val.total_members ?? null,
       attendees: val.attendees ?? null,
+      is_joined: val.is_joined ?? false,
+      is_creator: val.is_creator ?? false,
     };
   });
 
