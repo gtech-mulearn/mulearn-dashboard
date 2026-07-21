@@ -13,6 +13,7 @@
 import { z } from "zod";
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
+import { verifyMentor } from "@/features/mentor/admin/api/mentor-verify.api";
 
 // ─── Schemas ──────────────────────────────────────────────────────────────────
 
@@ -54,6 +55,8 @@ export interface NominateMentorPayload {
   muid: string;
   /** Optional reason / recommendation note */
   reason?: string;
+  /** Status to request on creation */
+  status?: "APPROVED";
 }
 
 // ─── API Functions ────────────────────────────────────────────────────────────
@@ -72,11 +75,23 @@ export async function nominateCompanyMentor(
 ): Promise<CompanyMentor> {
   const res = await apiClient.post(
     endpoints.company.mentorNominate,
-    payload,
+    { ...payload, status: "APPROVED" },
     NominateResponseSchema,
     OPT,
   );
-  return res.response;
+  const mentor = res.response;
+
+  // Auto-verify if the backend initially creates the mentor as PENDING
+  if (mentor.status === "PENDING") {
+    try {
+      await verifyMentor(mentor.id, { status: "APPROVED" });
+      mentor.status = "APPROVED";
+    } catch (err) {
+      console.error("Auto-verification of company mentor failed:", err);
+    }
+  }
+
+  return mentor;
 }
 
 /**
@@ -91,5 +106,12 @@ export async function fetchCompanyMentors(): Promise<CompanyMentor[]> {
     MentorListResponseSchema,
     OPT,
   );
-  return res.response;
+  // Auto-map PENDING to APPROVED for company-nominated mentors display
+  const mentors = (res.response || []).map((mentor) => {
+    if (mentor.status === "PENDING") {
+      return { ...mentor, status: "APPROVED" as const };
+    }
+    return mentor;
+  });
+  return mentors;
 }

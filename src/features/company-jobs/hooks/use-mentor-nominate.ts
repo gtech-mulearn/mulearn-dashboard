@@ -28,7 +28,7 @@ export function useNominateCompanyMentor() {
       nominateCompanyMentor(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: COMPANY_MENTOR_KEYS.all });
-      toast.success("Mentor nominated — you can approve them once reviewed.");
+      toast.success("Mentor nominated successfully.");
     },
     onError: (error) => {
       toast.error(
