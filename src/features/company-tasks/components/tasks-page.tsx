@@ -36,15 +36,36 @@ export function CompanyTasksPage() {
 
   const { mutate: deleteTask, isPending: isDeleting } = useDeleteCompanyTask();
 
-  const queryParams =
-    statusFilter === "all"
-      ? { page: 1, per_page: 50 }
-      : {
-          approval_status: statusFilter as "pending" | "rejected" | "approved",
-          page: 1,
-          per_page: 50,
-        };
-  const { data, isLoading, error } = useCompanyTasks(queryParams);
+  const {
+    data: approvedData,
+    isLoading: approvedLoading,
+    error: approvedError,
+  } = useCompanyTasks({
+    approval_status: "approved",
+    page: 1,
+    per_page: 100,
+  });
+  const {
+    data: pendingData,
+    isLoading: pendingLoading,
+    error: pendingError,
+  } = useCompanyTasks({
+    approval_status: "pending",
+    page: 1,
+    per_page: 100,
+  });
+  const {
+    data: rejectedData,
+    isLoading: rejectedLoading,
+    error: rejectedError,
+  } = useCompanyTasks({
+    approval_status: "rejected",
+    page: 1,
+    per_page: 100,
+  });
+
+  const isLoading = approvedLoading || pendingLoading || rejectedLoading;
+  const error = approvedError || pendingError || rejectedError;
 
   if (isLoading) {
     return (
@@ -73,16 +94,38 @@ export function CompanyTasksPage() {
     );
   }
 
-  const tasks: CompanyTask[] = Array.isArray(data)
-    ? data
-    : // biome-ignore lint/suspicious/noExplicitAny: API type
-      data?.data || (data as any)?.results || [];
+  // biome-ignore lint/suspicious/noExplicitAny: API helper
+  const getTasksArray = (res: any): CompanyTask[] => {
+    if (!res) return [];
+    if (Array.isArray(res)) return res;
+    return res.data || res.results || [];
+  };
 
-  // No need to locally filter anymore since the API does it, but we can leave it as a fallback.
+  const approvedTasks = getTasksArray(approvedData);
+  const pendingTasks = getTasksArray(pendingData);
+  const rejectedTasks = getTasksArray(rejectedData);
+
+  const tasks = [...approvedTasks, ...pendingTasks, ...rejectedTasks];
+
+  const normalizeStatus = (
+    status?: string,
+  ): "pending" | "approved" | "rejected" => {
+    if (!status) return "pending";
+    const lower = status.toLowerCase();
+    if (lower === "approved") return "approved";
+    if (lower === "rejected") return "rejected";
+    return "pending";
+  };
+
   const filteredTasks = tasks.filter((task: CompanyTask) => {
     if (statusFilter === "all") return true;
-    return task.approval_status === statusFilter;
+    return normalizeStatus(task.approval_status) === statusFilter;
   });
+
+  const allCount = tasks.length;
+  const approvedCount = approvedTasks.length;
+  const pendingCount = pendingTasks.length;
+  const rejectedCount = rejectedTasks.length;
 
   return (
     <div className="space-y-6">
@@ -110,11 +153,11 @@ export function CompanyTasksPage() {
         onValueChange={setStatusFilter}
         className="w-full"
       >
-        <TabsList className="grid w-full grid-cols-4 lg:w-[400px]">
-          <TabsTrigger value="all">All Tasks</TabsTrigger>
-          <TabsTrigger value="approved">Approved</TabsTrigger>
-          <TabsTrigger value="pending">Pending</TabsTrigger>
-          <TabsTrigger value="rejected">Rejected</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4 lg:w-[480px]">
+          <TabsTrigger value="all">All Tasks ({allCount})</TabsTrigger>
+          <TabsTrigger value="approved">Approved ({approvedCount})</TabsTrigger>
+          <TabsTrigger value="pending">Pending ({pendingCount})</TabsTrigger>
+          <TabsTrigger value="rejected">Rejected ({rejectedCount})</TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -154,15 +197,15 @@ export function CompanyTasksPage() {
                   <div className="flex items-center gap-2 shrink-0">
                     <Badge
                       variant={
-                        task.approval_status === "approved"
+                        normalizeStatus(task.approval_status) === "approved"
                           ? "default"
-                          : task.approval_status === "rejected"
+                          : normalizeStatus(task.approval_status) === "rejected"
                             ? "destructive"
                             : "secondary"
                       }
                       className="capitalize"
                     >
-                      {task.approval_status}
+                      {task.approval_status.toLowerCase()}
                     </Badge>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -184,7 +227,8 @@ export function CompanyTasksPage() {
                           <Edit2 className="mr-2 h-4 w-4" />
                           <span>Edit Task</span>
                         </DropdownMenuItem>
-                        {task.approval_status === "pending" && (
+                        {normalizeStatus(task.approval_status) ===
+                          "pending" && (
                           <DropdownMenuItem
                             onClick={() => {
                               if (
