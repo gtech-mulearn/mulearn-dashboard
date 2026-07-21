@@ -16,7 +16,6 @@ import { useCompanyOnboardingStatus } from "@/features/auth/hooks";
 import { useUserProfile } from "@/features/auth/hooks/use-session";
 import { useMentorApplication } from "@/features/mentor/onboarding/hooks/use-onboarding";
 import { ROLES } from "@/lib/auth/roles";
-import { useCompanyBannerStore } from "@/stores/company-banner-store";
 import { useMentorOverview } from "../hooks";
 import {
   shouldShowEnablerPendingBanner,
@@ -44,22 +43,6 @@ export function VerificationStatusBanner({
   const companyStatus = useCompanyOnboardingStatus(isCompany);
   const mentorApplication = useMentorApplication(isMentor);
   const mentorOverview = useMentorOverview(isMentor);
-
-  // Persisted dismiss state so the one-time "verified" banner shows only once
-  // per company instead of on every dashboard load. Keyed by company id.
-  const companyKey = String(
-    (companyStatus.data as { id?: string; company_id?: string } | undefined)
-      ?.id ??
-      (companyStatus.data as { company_id?: string } | undefined)?.company_id ??
-      "company",
-  );
-  const successDismissed = useCompanyBannerStore(
-    (s) => s.dismissedVerifiedBanner[companyKey] ?? false,
-  );
-  const dismissVerifiedBanner = useCompanyBannerStore(
-    (s) => s.dismissVerifiedBanner,
-  );
-  const handleDismissSuccess = () => dismissVerifiedBanner(companyKey);
 
   if (isCompany) {
     if (companyStatus.isLoading) return null;

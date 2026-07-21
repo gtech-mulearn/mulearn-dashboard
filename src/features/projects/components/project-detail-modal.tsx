@@ -102,7 +102,7 @@ export function ProjectDetailModal({
           <div className="flex items-center gap-4">
             {/* Logo */}
             {resolveMediaUrl(project?.logo) ? (
-              // eslint-disable-next-line @next/next/no-img-element
+              // biome-ignore lint/performance/noImgElement: remote logo URL, not eligible for next/image domains config
               <img
                 src={resolveMediaUrl(project?.logo) as string}
                 alt=""
@@ -244,7 +244,7 @@ export function ProjectDetailModal({
                             rel="noreferrer noopener"
                             className="group relative aspect-video rounded-xl overflow-hidden border bg-muted shadow-sm block"
                           >
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            {/* biome-ignore lint/performance/noImgElement: remote screenshot URL, not eligible for next/image domains config */}
                             <img
                               src={resolveMediaUrl(img.image) as string}
                               alt={`${project.title} screenshot`}
@@ -480,7 +480,7 @@ export function ProjectDetailModal({
                         {project.members.map((m) => (
                           <div key={m.id} className="flex items-center gap-3">
                             {m.is_linked && m.profile_pic ? (
-                              // eslint-disable-next-line @next/next/no-img-element
+                              // biome-ignore lint/performance/noImgElement: remote profile pic URL, not eligible for next/image domains config
                               <img
                                 src={resolveMediaUrl(m.profile_pic) as string}
                                 alt={m.full_name}

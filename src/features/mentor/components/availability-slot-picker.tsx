@@ -33,10 +33,6 @@ function fromMinutes(n: number): string {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
-function addMinutes(t: string, delta: number): string {
-  return fromMinutes(toMinutes(t) + delta);
-}
-
 // ─── Overlap detection (for inline validation, used by the parent too) ──────────
 
 /** Indices of slots that overlap at least one other slot on the same day. */

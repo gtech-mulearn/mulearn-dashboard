@@ -26,8 +26,7 @@ import { CircleCard } from "./circle-card";
 
 export function CircleList() {
   const { data: circles, isLoading } = useCircles();
-  const { activeInvites, activeInvitesCount, joinedCircleIds } =
-    useActiveInvites();
+  const { activeInvitesCount, joinedCircleIds } = useActiveInvites();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 

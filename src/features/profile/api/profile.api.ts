@@ -36,7 +36,6 @@ import {
   SocialsResponseSchema,
   StatesResponseSchema,
   type TogglePublicProfileRequest,
-  UpdateProfileImageResponseSchema,
   type UpdateProfileRequest,
   type UserAchievementsData,
   UserAchievementsResponseSchema,
