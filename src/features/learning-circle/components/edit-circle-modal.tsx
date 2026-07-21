@@ -12,7 +12,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Edit } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,7 +23,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import { useEditCircle } from "../hooks";
 import type { LearningCircleDetail } from "../schemas";
 
@@ -73,10 +71,8 @@ export function EditCircleModal({
     try {
       await editCircle.mutateAsync(data);
       onOpenChange(false);
-    } catch (error) {
-      toast.error(
-        getApiResponseError(error, { fallback: "Failed to save circle" }),
-      );
+    } catch {
+      // Handled by useEditCircle's onError toast.
     }
   };
 

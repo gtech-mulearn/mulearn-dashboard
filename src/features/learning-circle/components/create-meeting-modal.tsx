@@ -12,7 +12,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Calendar } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,7 +30,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import { useCreateMeeting } from "../hooks";
 import {
   getMeetLinkErrorMessage,
@@ -229,10 +227,8 @@ export function CreateMeetingModal({
       });
       reset();
       onOpenChange(false);
-    } catch (error) {
-      toast.error(
-        getApiResponseError(error, { fallback: "Failed to create meeting" }),
-      );
+    } catch {
+      // Handled by useCreateMeeting's onError toast.
     }
   };
 
