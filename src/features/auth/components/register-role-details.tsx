@@ -869,24 +869,42 @@ export function RegisterRoleDetails({
                       key={label}
                       className="flex items-center flex-1 last:flex-none"
                     >
-                      <div className="flex flex-col items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (stepNum === companyStep) return;
+                          if (stepNum > companyStep) {
+                            for (let s = companyStep; s < stepNum; s++) {
+                              const fields = COMPANY_STEP_FIELDS[s];
+                              const valid = await form.trigger(fields);
+                              if (!valid) return;
+                            }
+                          }
+                          setCompanyStep(stepNum);
+                        }}
+                        className="group flex flex-col items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg cursor-pointer text-center"
+                      >
                         <div
                           className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
                             isDone
                               ? "bg-primary text-primary-foreground"
                               : isActive
                                 ? "bg-primary text-primary-foreground ring-2 ring-primary/30"
-                                : "bg-muted text-muted-foreground"
+                                : "bg-muted text-muted-foreground group-hover:bg-muted/80"
                           }`}
                         >
                           {isDone ? "✓" : stepNum}
                         </div>
                         <span
-                          className={`text-[10px] whitespace-nowrap ${isActive ? "text-primary font-medium" : "text-muted-foreground"}`}
+                          className={`text-[10px] whitespace-nowrap transition-colors ${
+                            isActive
+                              ? "text-primary font-medium"
+                              : "text-muted-foreground group-hover:text-foreground"
+                          }`}
                         >
                           {label}
                         </span>
-                      </div>
+                      </button>
                       {i < COMPANY_STEPS.length - 1 && (
                         <div
                           className={`h-px flex-1 mx-1 mb-4 transition-colors ${isDone ? "bg-primary" : "bg-border"}`}
