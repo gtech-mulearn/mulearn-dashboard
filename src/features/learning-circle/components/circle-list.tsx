@@ -11,6 +11,7 @@
 import { ArrowRight, Mail, Search } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import Pagination from "@/components/dashboard/table/pagination";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -21,35 +22,49 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { StateDisplay } from "@/components/ui/state-display";
-import { useActiveInvites, useCircles } from "../hooks";
+import { useDebounce } from "@/hooks/use-debounce";
+import { useActiveInvites, useCircles, useUserCircles } from "../hooks";
 import { CircleCard } from "./circle-card";
 
 export function CircleList() {
-  const { data: circles, isLoading } = useCircles();
-  const { activeInvitesCount, joinedCircleIds } = useActiveInvites();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [page, setPage] = useState(1);
+  const debouncedSearch = useDebounce(searchQuery, 300);
+  const isJoinedView = statusFilter === "joined";
 
-  const filteredCircles = useMemo(() => {
-    if (!circles) return [];
+  const { activeInvitesCount } = useActiveInvites();
+  const { data: userCircles, isLoading: userCirclesLoading } = useUserCircles();
+  const { data, isLoading: circlesLoading } = useCircles(debouncedSearch, page);
 
-    let list = circles;
-    if (statusFilter === "joined") {
-      list = circles.filter(
-        (circle) => circle.id && joinedCircleIds.has(circle.id),
-      );
-    }
+  const circles = useMemo(() => data?.circles ?? [], [data]);
+  const pagination = data?.pagination;
 
-    if (!searchQuery.trim()) return list;
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setPage(1);
+  };
 
-    const query = searchQuery.toLowerCase();
-    return list.filter(
+  const handleFilterChange = (value: string) => {
+    setStatusFilter(value);
+    setPage(1);
+  };
+
+  const filteredJoinedCircles = useMemo(() => {
+    if (!userCircles) return [];
+    if (!debouncedSearch.trim()) return userCircles;
+
+    const query = debouncedSearch.toLowerCase();
+    return userCircles.filter(
       (circle) =>
         circle.title.toLowerCase().includes(query) ||
         circle.ig.toLowerCase().includes(query) ||
         circle.org?.toLowerCase().includes(query),
     );
-  }, [circles, searchQuery, statusFilter, joinedCircleIds]);
+  }, [userCircles, debouncedSearch]);
+
+  const filteredCircles = isJoinedView ? filteredJoinedCircles : circles;
+  const isLoading = isJoinedView ? userCirclesLoading : circlesLoading;
 
   if (isLoading) {
     return (
@@ -112,7 +127,7 @@ export function CircleList() {
             type="search"
             placeholder="Search circles by name, topic, or organization…"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             className="h-12 rounded-xl border-[1.5px] border-border bg-card pl-11 pr-4 text-[14px] text-foreground shadow-none
               placeholder:text-muted-foreground
               focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/10 focus-visible:outline-none
@@ -120,7 +135,7 @@ export function CircleList() {
           />
         </div>
         <div className="w-full sm:w-48 shrink-0">
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select value={statusFilter} onValueChange={handleFilterChange}>
             <SelectTrigger className="h-12 w-full rounded-xl border-[1.5px] border-border bg-card px-4 py-2.5 text-[13px] font-semibold text-foreground shadow-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/10 focus-visible:outline-none transition-all duration-200 cursor-pointer">
               <SelectValue placeholder="Filter circles" />
             </SelectTrigger>
@@ -155,10 +170,26 @@ export function CircleList() {
               className="mb-4 break-inside-avoid lc-slide-up"
               style={{ animationDelay: `${index * 40}ms` }}
             >
-              <CircleCard circle={circle} />
+              <CircleCard circle={circle} hideJoin={isJoinedView} />
             </div>
           ))}
         </div>
+      )}
+
+      {/* Pagination — server-paginated "All Circles" view only; "My Circles" is a
+          single unpaginated fetch of the user's own circles. */}
+      {!isJoinedView && pagination && pagination.totalPages > 1 && (
+        <Pagination
+          currentPage={page}
+          totalPages={pagination.totalPages}
+          perPage={12}
+          totalCount={pagination.count}
+          currentPageCount={circles.length}
+          handlePreviousClick={() => setPage((p) => Math.max(1, p - 1))}
+          handleNextClick={() =>
+            setPage((p) => Math.min(pagination.totalPages, p + 1))
+          }
+        />
       )}
     </div>
   );

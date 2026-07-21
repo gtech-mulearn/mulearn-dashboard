@@ -25,7 +25,8 @@ type LearningCirclesCardProps = {
 export function LearningCirclesCard({
   userInterestGroups,
 }: LearningCirclesCardProps) {
-  const { data: circles, isLoading } = useCircles();
+  const { data, isLoading } = useCircles();
+  const circles = data?.circles;
   const igNames = new Set(
     (userInterestGroups ?? []).map((ig) => ig.name.toLowerCase()),
   );
