@@ -117,6 +117,17 @@ The API layer is centralized and opinionated. Treat deviations as bugs.
   human-readable `fallback`. Do not swallow errors, do not `alert()`, do not invent a new
   error-display mechanism. `getApiResponseError` already understands `ApiError` and
   Django's `{ message: { general: [...] } }` / field-error envelope.
+- **HIGH — One toast per outcome; the hook owns it.** If a `useMutation` hook already
+  calls `toast.success`/`toast.error` in its own `onSuccess`/`onError`, the calling
+  component must not toast again for the same result — not via a `try/catch` around
+  `mutateAsync()` that also toasts, and not via its own `onSuccess`/`onError` passed to
+  `.mutate(vars, { ... })`. TanStack Query v5 fires hook-level and per-call callbacks
+  **both**, not one-or-the-other, so this reliably produces a duplicate toast on every
+  action. A `catch {}` used only for control flow / local state reset is fine. When a
+  caller genuinely needs a different message than the hook's default, the hook should
+  expose an explicit `suppressSuccessToast?`/`suppressErrorToast?` option (see
+  `useUpdateProfile` in `src/features/profile/hooks/use-profile-mutations.ts`) rather than
+  both layers toasting.
 - **HIGH — Don't re-handle auth/401.** Token expiry, refresh-retry, and logout redirect
   are handled inside `src/api/client.ts`. Feature code must not implement its own 401
   handling or token refresh. Use `skipAuthRedirectOn403: true` only when a 403 is a
@@ -332,6 +343,9 @@ policy/logic/utils and `proxy`).
     failure; missing loading or empty states on a new data view.
 14. A new dependency that duplicates existing capability (table, forms, validation, http,
     state).
+15. A mutation hook's `onSuccess`/`onError` toasts AND its caller also toasts for the same
+    result (via `try/catch` around `mutateAsync()`, or `onSuccess`/`onError` passed to
+    `.mutate()`) — produces a duplicate toast on every action. See rule in §4.
 
 ---
 
@@ -356,6 +370,8 @@ high-value comments over many small ones.
       `enabled` for dependencies.
 - [ ] Errors surface via `toast.error(getApiResponseError(error, { fallback }))`; loading
       and empty states exist.
+- [ ] No duplicate toast: if the mutation hook already toasts on success/error, the caller
+      doesn't toast again for the same outcome.
 
 **Auth & access**
 - [ ] Roles/permissions/routes use the single sources of truth; new protected routes are
