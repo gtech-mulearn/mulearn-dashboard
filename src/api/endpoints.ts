@@ -956,7 +956,8 @@ export const endpoints = {
       organizations: "/api/v1/dashboard/task/organization/",
       channels: "/api/v1/dashboard/task/channel/",
       types: "/api/v1/dashboard/task/task-types/",
-      events: "/api/v1/dashboard/task/events/",
+      /** GET - Linkable events for the task "Event" picker (id, title, start_datetime) */
+      events: "/api/v1/dashboard/events/meta/linkable-events/",
       skills: "/api/v1/dashboard/skill/dropdown/",
     },
 

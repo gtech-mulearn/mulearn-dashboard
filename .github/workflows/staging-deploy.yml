@@ -82,7 +82,6 @@ jobs:
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_STAGING_SITE_ID }}
           NEXT_PUBLIC_DJANGO_API_URL: ${{ vars.NEXT_PUBLIC_DJANGO_API_URL }}
           NEXT_PUBLIC_DISCORD_AUTH_URL: ${{ vars.NEXT_PUBLIC_DISCORD_AUTH_URL }}
-          NEXT_PUBLIC_CDN_URL: ${{ vars.NEXT_PUBLIC_CDN_URL }}
           # Netlify's builders inject COMMIT_REF; Actions-driven builds must
           # pass it explicitly or the version badge renders "dev".
           COMMIT_REF: ${{ github.sha }}
