@@ -39,7 +39,7 @@ export function MemberList({ members, onRemove }: Props) {
             )}
             {m.is_linked && m.muid ? (
               <Link
-                href={`/dashboard/profile/${m.muid}`}
+                href={`/profile/${m.muid}`}
                 target="_blank"
                 rel="noreferrer noopener"
                 className="hover:underline"
