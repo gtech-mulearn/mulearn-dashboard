@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 
 import { type Resolver, useForm } from "react-hook-form";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { CustomDateTimePicker } from "@/components/ui/custom-datetime-picker";
 import {
@@ -33,6 +34,16 @@ import { useTaskIgDropdown } from "@/features/mentor/tasks/hooks/use-mentor-task
 import { useCreateSession } from "../hooks/use-sessions";
 import { SessionFormSchema, type SessionFormValues } from "../schemas";
 
+const CreateSessionFormSchema = SessionFormSchema.superRefine((v, ctx) => {
+  if (new Date(v.starts_at) < new Date()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Start time cannot be in the past",
+      path: ["starts_at"],
+    });
+  }
+});
+
 interface SessionCreateDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -48,7 +59,9 @@ export function SessionCreateDialog({
   const { mutate: create, isPending } = useCreateSession();
 
   const form = useForm<SessionFormValues>({
-    resolver: zodResolver(SessionFormSchema) as Resolver<SessionFormValues>,
+    resolver: zodResolver(
+      CreateSessionFormSchema,
+    ) as Resolver<SessionFormValues>,
     defaultValues: {
       title: "",
       description: "",
@@ -66,14 +79,19 @@ export function SessionCreateDialog({
   });
 
   const mode = form.watch("mode");
+  const startsAt = form.watch("starts_at");
 
   useEffect(() => {
     if (open) {
       const now = new Date();
-      const startsAt = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+      // Add 15 minutes to prevent stale form error on submit
+      const start = new Date(now.getTime() + 15 * 60000);
+      const startsAt = new Date(
+        start.getTime() - start.getTimezoneOffset() * 60000,
+      )
         .toISOString()
         .slice(0, 16);
-      const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
+      const oneHourLater = new Date(start.getTime() + 60 * 60 * 1000);
       const endsAt = new Date(
         oneHourLater.getTime() - oneHourLater.getTimezoneOffset() * 60000,
       )
@@ -182,7 +200,12 @@ export function SessionCreateDialog({
                     <FormControl>
                       <CustomDateTimePicker
                         value={field.value}
-                        onChange={field.onChange}
+                        onChange={(val) => {
+                          field.onChange(val);
+                          form.trigger("starts_at");
+                          form.trigger("ends_at");
+                        }}
+                        minDate={new Date()}
                       />
                     </FormControl>
                     <FormMessage />
@@ -198,7 +221,11 @@ export function SessionCreateDialog({
                     <FormControl>
                       <CustomDateTimePicker
                         value={field.value}
-                        onChange={field.onChange}
+                        onChange={(val) => {
+                          field.onChange(val);
+                          form.trigger("ends_at");
+                        }}
+                        minDate={startsAt ? new Date(startsAt) : new Date()}
                       />
                     </FormControl>
                     <FormMessage />

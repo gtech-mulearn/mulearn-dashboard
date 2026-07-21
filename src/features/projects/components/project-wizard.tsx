@@ -139,6 +139,8 @@ export function ProjectWizard({
       }
       if (!values.description || values.description.trim().length === 0) {
         errors.push("Description is required");
+      } else if (values.description.trim().length < 50) {
+        errors.push("Description must be at least 50 characters");
       }
       // status always has a valid default ("published") via the Select —
       // no manual check needed; the Zod enum catches invalid values.
@@ -152,6 +154,9 @@ export function ProjectWizard({
       // Write the cleaned list back so submit doesn't send empty rows
       if (links.length !== values.links.length) {
         form.setValue("links", links, { shouldDirty: true });
+      }
+      if (links.length < 2) {
+        errors.push("At least 2 links are required");
       }
       // Validate remaining links
       for (let i = 0; i < links.length; i++) {
@@ -286,9 +291,7 @@ export function ProjectWizard({
                         <Button
                           type="button"
                           size="icon-sm"
-                          onClick={() =>
-                            isCompleted && setCurrentStep(stepIndex)
-                          }
+                          onClick={() => setCurrentStep(stepIndex)}
                           variant={
                             isActive || isCompleted ? "default" : "secondary"
                           }
@@ -428,13 +431,24 @@ export function ProjectWizard({
                       control={form.control}
                       name="description"
                       render={({ field }) => (
-                        <MarkdownEditor
-                          value={field.value}
-                          onChange={field.onChange}
-                          placeholder="Describe your project using Markdown…"
-                          rows={10}
-                          error={form.formState.errors.description?.message}
-                        />
+                        <>
+                          <MarkdownEditor
+                            value={field.value}
+                            onChange={field.onChange}
+                            placeholder="Describe your project using Markdown…"
+                            rows={10}
+                            error={form.formState.errors.description?.message}
+                          />
+                          <p
+                            className={`text-[12px] ${
+                              field.value.trim().length < 50
+                                ? "text-muted-foreground"
+                                : "text-success"
+                            }`}
+                          >
+                            {field.value.trim().length}/50 characters minimum
+                          </p>
+                        </>
                       )}
                     />
                   </div>
@@ -507,7 +521,7 @@ export function ProjectWizard({
                               key={img.image}
                               className="relative aspect-video rounded-lg overflow-hidden border bg-muted"
                             >
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              {/* biome-ignore lint/performance/noImgElement: remote screenshot URL, not eligible for next/image domains config */}
                               <img
                                 src={`${process.env.NEXT_PUBLIC_DJANGO_API_URL ?? ""}${img.image.startsWith("http") ? img.image.replace(/^https?:\/\/[^/]+/, "") : img.image}`}
                                 alt="Screenshot"
@@ -526,7 +540,7 @@ export function ProjectWizard({
                             key={`${file.name}-${file.lastModified}`}
                             className="relative aspect-video rounded-lg overflow-hidden border bg-muted group"
                           >
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            {/* biome-ignore lint/performance/noImgElement: local blob preview URL, not eligible for next/image */}
                             <img
                               src={URL.createObjectURL(file)}
                               alt={file.name}
@@ -573,15 +587,28 @@ export function ProjectWizard({
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-[13px] font-medium">Links</Label>
+                    <Label className="text-[13px] font-medium">
+                      Links <span className="text-destructive">*</span>
+                    </Label>
                     <Controller
                       control={form.control}
                       name="links"
                       render={({ field }) => (
-                        <ProjectLinksEditor
-                          value={field.value}
-                          onChange={field.onChange}
-                        />
+                        <>
+                          <ProjectLinksEditor
+                            value={field.value}
+                            onChange={field.onChange}
+                          />
+                          <p
+                            className={`text-[12px] ${
+                              field.value.length < 2
+                                ? "text-muted-foreground"
+                                : "text-success"
+                            }`}
+                          >
+                            {field.value.length}/2 links minimum
+                          </p>
+                        </>
                       )}
                     />
                   </div>

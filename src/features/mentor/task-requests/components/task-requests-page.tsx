@@ -580,6 +580,8 @@ function TasksTable({
         variant="no-tasks"
         size="sm"
         className="rounded-lg border border-dashed"
+        title="No task requests found"
+        description="There are currently no task requests in this status category."
       />
     );
   }

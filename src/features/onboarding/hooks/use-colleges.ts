@@ -13,7 +13,7 @@ import { onboardingKeys } from "./query-keys";
 /**
  * Hook for fetching list of colleges
  */
-export function useColleges() {
+export function useColleges(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: onboardingKeys.colleges(),
     queryFn: async () => {
@@ -21,5 +21,6 @@ export function useColleges() {
       return response.response.colleges;
     },
     staleTime: 10 * 60 * 1000, // Cache for 10 minutes
+    ...options,
   });
 }

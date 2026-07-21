@@ -159,6 +159,10 @@ export const PERMISSIONS = {
 
   // ── IG Requests ─────────────────────────────────────────
   "ig_requests:submit": [ROLES.COMPANY],
+
+  // ── Events Wizard ────────────────────────────────────────
+  "events:create_as_admin": [ROLES.ADMIN],
+  "events:create_as_enabler": [ROLES.ENABLER, ROLES.LEAD_ENABLER],
 } as const;
 
 // ─── Types ──────────────────────────────────────────────────

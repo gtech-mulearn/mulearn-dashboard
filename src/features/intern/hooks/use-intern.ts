@@ -320,10 +320,11 @@ export function useLeaderboardMe() {
   });
 }
 
-export function useGuilds() {
+export function useGuilds(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: internKeys.guilds(),
     queryFn: () => internApi.getGuilds(),
+    ...options,
   });
 }
 

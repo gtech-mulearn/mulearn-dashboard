@@ -36,7 +36,6 @@ import {
   SocialsResponseSchema,
   StatesResponseSchema,
   type TogglePublicProfileRequest,
-  UpdateProfileImageResponseSchema,
   type UpdateProfileRequest,
   type UserAchievementsData,
   UserAchievementsResponseSchema,
@@ -217,14 +216,12 @@ export async function updateProfileImage(
   const rawData = await response.json().catch(() => null);
 
   if (!response.ok || rawData?.hasError) {
-    const message =
-      rawData?.message?.general?.[0] ?? "Failed to update profile image";
-    throw new ApiError(response.status, message, rawData);
-  }
+    const errorMsg =
+      rawData?.message?.general?.[0] ??
+      (typeof rawData?.message === "string" ? rawData?.message : null) ??
+      "An error occurred while updating profile image.";
 
-  const parsed = UpdateProfileImageResponseSchema.safeParse(rawData);
-  if (!parsed.success) {
-    throw new Error("Invalid API response");
+    throw new ApiError(response.status || 400, errorMsg, rawData);
   }
 }
 

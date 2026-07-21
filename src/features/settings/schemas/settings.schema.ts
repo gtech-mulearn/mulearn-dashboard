@@ -6,6 +6,10 @@ export const ChangePasswordRequestSchema = z
     password: z.string().min(8, "Password must be at least 8 characters"),
     confirm_password: z.string().min(1, "Confirm password is required"),
   })
+  .refine((data) => data.current_password !== data.password, {
+    message: "The new password must be different from the current password.",
+    path: ["password"],
+  })
   .refine((data) => data.password === data.confirm_password, {
     message: "Passwords do not match",
     path: ["confirm_password"],

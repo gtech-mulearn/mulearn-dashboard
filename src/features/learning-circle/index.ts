@@ -61,6 +61,7 @@ export type { CirclePermissions, CircleRole } from "./hooks";
 // Hooks
 export {
   learningCircleKeys,
+  useActiveInvites,
   useApproveMember,
   useAttendeeReport,
   useCircleDetail,
@@ -93,6 +94,7 @@ export {
   useSubmitAttendeeReport,
   useSubmitMeetingReport,
   useTransferLead,
+  useUserCircles,
   useUserMeetings,
 } from "./hooks";
 

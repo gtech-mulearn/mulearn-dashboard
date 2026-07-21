@@ -24,6 +24,7 @@ interface CustomDateTimePickerProps {
   onChange: (value: string) => void;
   disabled?: boolean;
   hideTime?: boolean;
+  minDate?: Date;
 }
 
 const HOURS = Array.from({ length: 24 }, (_, i) =>
@@ -92,6 +93,15 @@ function TimeWheel({
   const [isDragging, setIsDragging] = React.useState(false);
   const startY = React.useRef(0);
   const startScrollPos = React.useRef(0);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const preventScroll = (e: WheelEvent) => e.preventDefault();
+    el.addEventListener("wheel", preventScroll, { passive: false });
+    return () => el.removeEventListener("wheel", preventScroll);
+  }, []);
 
   // Sync when selectedValue changes externally
   React.useEffect(() => {
@@ -176,6 +186,7 @@ function TimeWheel({
 
   return (
     <div
+      ref={containerRef}
       className="h-[160px] w-12 relative overflow-hidden [perspective:1000px] cursor-grab active:cursor-grabbing touch-none"
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
@@ -246,8 +257,20 @@ export function CustomDateTimePicker({
   onChange,
   disabled,
   hideTime = false,
+  minDate,
 }: CustomDateTimePickerProps) {
-  const date = value ? new Date(value) : undefined;
+  const [open, setOpen] = React.useState(false);
+  const [internalDate, setInternalDate] = React.useState<Date | undefined>(
+    value ? new Date(value) : undefined,
+  );
+
+  React.useEffect(() => {
+    if (open) {
+      setInternalDate(value ? new Date(value) : undefined);
+    }
+  }, [open, value]);
+
+  const date = internalDate;
 
   const formatLocalISO = (d: Date) => {
     const year = d.getFullYear();
@@ -264,24 +287,29 @@ export function CustomDateTimePicker({
     // Preserve existing time when changing date
     newDate.setHours(current.getHours());
     newDate.setMinutes(current.getMinutes());
-    onChange(formatLocalISO(newDate));
+    setInternalDate(newDate);
   };
 
   const handleHourChange = (hour: string) => {
-    if (!date) return;
-    const newDate = new Date(date);
+    const newDate = date ? new Date(date) : new Date();
     newDate.setHours(parseInt(hour, 10));
-    onChange(formatLocalISO(newDate));
+    setInternalDate(newDate);
   };
   const handleMinuteChange = (minute: string) => {
-    if (!date) return;
-    const newDate = new Date(date);
+    const newDate = date ? new Date(date) : new Date();
     newDate.setMinutes(parseInt(minute, 10));
-    onChange(formatLocalISO(newDate));
+    setInternalDate(newDate);
+  };
+
+  const handleOk = () => {
+    if (date) {
+      onChange(formatLocalISO(date));
+    }
+    setOpen(false);
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
           variant={"outline"}
@@ -324,7 +352,7 @@ export function CustomDateTimePicker({
         <div className="flex flex-col md:flex-row max-h-[85vh] overflow-y-auto overflow-x-hidden">
           <div
             className={cn(
-              "p-4 border-border",
+              "p-4 border-border flex flex-col",
               !hideTime && "border-b md:border-b-0 md:border-r",
             )}
           >
@@ -333,6 +361,11 @@ export function CustomDateTimePicker({
               selected={date}
               onSelect={handleDateSelect}
               showOutsideDays={false}
+              disabled={
+                minDate
+                  ? { before: new Date(new Date(minDate).setHours(0, 0, 0, 0)) }
+                  : undefined
+              }
               className="text-foreground"
               components={{
                 DayButton: (props: DayButtonProps) => (
@@ -376,6 +409,26 @@ export function CustomDateTimePicker({
                 today: "",
               }}
             />
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              className="mt-3 w-full"
+              disabled={
+                minDate
+                  ? new Date(new Date().setHours(0, 0, 0, 0)) <
+                    new Date(new Date(minDate).setHours(0, 0, 0, 0))
+                  : false
+              }
+              onClick={() => {
+                const now = new Date();
+                setInternalDate(
+                  minDate && now < minDate ? new Date(minDate) : now,
+                );
+              }}
+            >
+              Today
+            </Button>
           </div>
           {!hideTime && (
             <div className="flex items-center justify-center p-3 gap-2 bg-muted/50">
@@ -398,6 +451,11 @@ export function CustomDateTimePicker({
               />
             </div>
           )}
+        </div>
+        <div className="flex justify-end p-3 border-t border-border bg-muted/20">
+          <Button type="button" onClick={handleOk}>
+            OK
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

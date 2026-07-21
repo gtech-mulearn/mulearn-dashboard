@@ -17,6 +17,38 @@ export type ParticipantRole = (typeof PARTICIPANT_ROLES)[number];
 export const ATTENDANCE_STATUSES = ["INVITED", "ATTENDED", "ABSENT"] as const;
 export type AttendanceStatus = (typeof ATTENDANCE_STATUSES)[number];
 
+// ─── Shared Meeting Link Validation ───────────────────────────────────────────
+export const ValidMeetingLinkSchema = z
+  .string()
+  .url("Must be a valid URL")
+  .refine(
+    (val) => {
+      if (!val) return true;
+      try {
+        const hostname = new URL(val).hostname.toLowerCase();
+
+        const isAllowedDomain = (domain: string) =>
+          hostname === domain || hostname.endsWith(`.${domain}`);
+
+        return (
+          isAllowedDomain("meet.google.com") ||
+          isAllowedDomain("zoom.us") ||
+          isAllowedDomain("zoom.com") ||
+          isAllowedDomain("teams.microsoft.com") ||
+          isAllowedDomain("discord.gg") ||
+          isAllowedDomain("discord.com")
+        );
+      } catch {
+        return false;
+      }
+    },
+    {
+      message: "Only Google Meet, Zoom, Teams, or Discord links are allowed",
+    },
+  )
+  .optional()
+  .or(z.literal(""));
+
 // ─── SessionParticipant — matches doc response shape ─────────────────────────
 // Doc fields: id, session_id, user_id, user_full_name, mu_id, participant_role,
 //             attendance_status, progress_note, feedback, contributed_minutes, created_at
@@ -120,11 +152,7 @@ export const SessionFormBaseSchema = z.object({
   mode: z.enum(["ONLINE", "OFFLINE", "HYBRID"]),
   starts_at: z.string().min(1, "Start time is required"),
   ends_at: z.string().min(1, "End time is required"),
-  meeting_link: z
-    .string()
-    .url("Must be a valid URL")
-    .optional()
-    .or(z.literal("")),
+  meeting_link: ValidMeetingLinkSchema,
   venue: z.string().optional(),
   max_participants: z.number().min(1).optional(),
   is_recurring: z.boolean().optional().default(false),
@@ -298,11 +326,7 @@ export const StudentSessionRequestFormSchema = z
     mode: z.enum(["ONLINE", "OFFLINE", "HYBRID"]),
     starts_at: z.string().min(1, "Start time is required"),
     ends_at: z.string().min(1, "End time is required"),
-    meeting_link: z
-      .string()
-      .url("Must be a valid URL")
-      .optional()
-      .or(z.literal("")),
+    meeting_link: ValidMeetingLinkSchema,
     venue: z.string().optional(),
     max_participants: z.coerce.number().min(1).optional(),
   })
@@ -341,11 +365,7 @@ export const MentorVerifyRequestSchema = z
     starts_at: z.string().optional(),
     ends_at: z.string().optional(),
     mode: z.enum(["ONLINE", "OFFLINE", "HYBRID"]).optional(),
-    meeting_link: z
-      .string()
-      .url("Must be a valid URL")
-      .optional()
-      .or(z.literal("")),
+    meeting_link: ValidMeetingLinkSchema,
     venue: z.string().optional(),
   })
   .superRefine((v, ctx) => {

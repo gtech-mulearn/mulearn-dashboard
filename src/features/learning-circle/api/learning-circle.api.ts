@@ -44,6 +44,7 @@ import {
   type SendInviteRequest,
   type TransferLeadRequest,
   type UserBasic,
+  UserCircleListResponseSchema,
 } from "../schemas";
 
 // ============================================
@@ -227,7 +228,7 @@ export async function getMyPendingInvites(): Promise<Invite[]> {
   return response.response;
 }
 
-/** Accept or reject an invite (no link_id) */
+/** Accept or reject an invite */
 export async function respondToInvite(
   data: InviteResponseRequest & { id: string },
 ): Promise<void> {
@@ -462,4 +463,13 @@ export async function deleteMeetingReport(meetingId: string): Promise<void> {
     endpoints.learningCircle.meetingReport(meetingId),
     EmptyResponseSchema,
   );
+}
+
+/** Get learning circles the current user has joined */
+export async function getUserCircles(): Promise<LearningCircle[]> {
+  const response = await apiClient.get(
+    endpoints.learningCircle.userCircles,
+    UserCircleListResponseSchema,
+  );
+  return response.response;
 }

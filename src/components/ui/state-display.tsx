@@ -62,19 +62,9 @@ export const STATE_ILLUSTRATIONS = {
     src: "/images/illustrations/no-tasks.svg",
     width: 1536,
     height: 1024,
-    defaultTitle: "The path is still being built.",
+    defaultTitle: "No tasks available",
     defaultDescription:
-      "Great journeys are built together. New tasks will show up here as the community creates what's next.",
-  },
-  // Temporary — the FIFA break block (Mon 20 Jul → Tue 21 Jul 2026, 10:00 IST).
-  // Delete this entry together with the gate in src/proxy.ts and src/app/break.
-  break: {
-    src: "/images/illustrations/fifa-break.webp",
-    width: 1456,
-    height: 1092,
-    defaultTitle: "BREAK THE ECHO CHAMBER. NOT THE HOLIDAY.",
-    defaultDescription:
-      "Kerala is celebrating football, and so are we. The μLearn dashboard will return on Tuesday. 💙",
+      "There are currently no tasks listed in this view. New tasks will appear here once created.",
   },
 } as const satisfies Record<string, StateConfigEntry>;
 

@@ -21,6 +21,7 @@ import {
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { Textarea } from "@/components/ui/textarea";
 import { chipColor } from "@/lib/chip-colors";
+import { resolveMediaUrl } from "@/lib/utils";
 import {
   useCommentOnProject,
   useDeleteComment,
@@ -36,6 +37,7 @@ interface Props {
   currentUserId: string | null;
   canEdit?: boolean;
   onEdit?: () => void;
+  creatorMuid?: string | null;
 }
 
 function generateGradient(seed: string): string {
@@ -46,12 +48,6 @@ function generateGradient(seed: string): string {
   const hue1 = Math.abs(hash) % 360;
   const hue2 = (hue1 + 40) % 360;
   return `linear-gradient(135deg, hsl(${hue1}, 70%, 60%), hsl(${hue2}, 80%, 50%))`;
-}
-
-function resolveMediaUrl(url: string | null | undefined): string | null {
-  if (!url) return null;
-  if (url.startsWith("http")) return url;
-  return `${process.env.NEXT_PUBLIC_DJANGO_API_URL ?? ""}${url}`;
 }
 
 function generateHeroBg(seed: string): string {
@@ -82,8 +78,10 @@ export function ProjectDetailModal({
   currentUserId,
   canEdit = false,
   onEdit,
+  creatorMuid: creatorMuidProp,
 }: Props) {
   const { data: project, isLoading } = useProject(open ? projectId : "");
+  const creatorMuid = creatorMuidProp ?? project?.created_by_muid;
   const vote = useVoteProject(projectId);
   const deleteVote = useDeleteVote(projectId);
   const comment = useCommentOnProject(projectId);
@@ -104,7 +102,7 @@ export function ProjectDetailModal({
           <div className="flex items-center gap-4">
             {/* Logo */}
             {resolveMediaUrl(project?.logo) ? (
-              // eslint-disable-next-line @next/next/no-img-element
+              // biome-ignore lint/performance/noImgElement: remote logo URL, not eligible for next/image domains config
               <img
                 src={resolveMediaUrl(project?.logo) as string}
                 alt=""
@@ -138,7 +136,18 @@ export function ProjectDetailModal({
                   )}
                   <span className="flex items-center gap-1.5 font-medium">
                     <User className="h-3.5 w-3.5" />
-                    {project.created_by}
+                    {creatorMuid ? (
+                      <a
+                        href={`/dashboard/profile/${creatorMuid}`}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="hover:text-primary hover:underline"
+                      >
+                        {project.created_by}
+                      </a>
+                    ) : (
+                      project.created_by
+                    )}
                   </span>
                   <span className="hidden sm:flex items-center gap-1.5">
                     <Calendar className="h-3.5 w-3.5" />
@@ -235,7 +244,7 @@ export function ProjectDetailModal({
                             rel="noreferrer noopener"
                             className="group relative aspect-video rounded-xl overflow-hidden border bg-muted shadow-sm block"
                           >
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            {/* biome-ignore lint/performance/noImgElement: remote screenshot URL, not eligible for next/image domains config */}
                             <img
                               src={resolveMediaUrl(img.image) as string}
                               alt={`${project.title} screenshot`}
@@ -446,9 +455,21 @@ export function ProjectDetailModal({
                               {project.created_by.charAt(0).toUpperCase()}
                             </div>
                             <div className="min-w-0">
-                              <p className="text-[13px] font-bold leading-tight truncate text-foreground">
-                                {project.created_by}
-                              </p>
+                              {creatorMuid ? (
+                                <a
+                                  href={`/dashboard/profile/${creatorMuid}`}
+                                  target="_blank"
+                                  rel="noreferrer noopener"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="text-[13px] font-bold leading-tight truncate text-foreground hover:text-primary hover:underline underline-offset-2 block"
+                                >
+                                  {project.created_by}
+                                </a>
+                              ) : (
+                                <p className="text-[13px] font-bold leading-tight truncate text-foreground">
+                                  {project.created_by}
+                                </p>
+                              )}
                               <p className="text-[11px] text-muted-foreground truncate">
                                 Creator
                               </p>
@@ -459,7 +480,7 @@ export function ProjectDetailModal({
                         {project.members.map((m) => (
                           <div key={m.id} className="flex items-center gap-3">
                             {m.is_linked && m.profile_pic ? (
-                              // eslint-disable-next-line @next/next/no-img-element
+                              // biome-ignore lint/performance/noImgElement: remote profile pic URL, not eligible for next/image domains config
                               <img
                                 src={resolveMediaUrl(m.profile_pic) as string}
                                 alt={m.full_name}

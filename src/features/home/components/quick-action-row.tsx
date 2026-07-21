@@ -1,11 +1,4 @@
-import {
-  Briefcase,
-  CalendarDays,
-  FolderKanban,
-  Search,
-  Users,
-  Zap,
-} from "lucide-react";
+import { CalendarDays, FolderKanban, Users, Zap } from "lucide-react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 
@@ -14,7 +7,10 @@ type QuickActionRowProps = {
   jobCount: number;
 };
 
-export function QuickActionRow({ circleCount, jobCount }: QuickActionRowProps) {
+export function QuickActionRow({
+  circleCount,
+  jobCount: _jobCount,
+}: QuickActionRowProps) {
   const actions = [
     {
       id: "mujourney",
@@ -52,28 +48,28 @@ export function QuickActionRow({ circleCount, jobCount }: QuickActionRowProps) {
       iconBg: "bg-warning/10",
       iconColor: "text-warning",
     },
-    {
-      id: "jobs-board",
-      label: "Jobs Board",
-      sub: `${jobCount} new openings`,
-      href: "/dashboard/jobs",
-      icon: Briefcase,
-      iconBg: "bg-destructive/10",
-      iconColor: "text-destructive",
-    },
-    {
-      id: "find-mentors",
-      label: "Find Mentors",
-      sub: "Connect with experts",
-      href: "/dashboard/search/mentors",
-      icon: Search,
-      iconBg: "bg-brand-blue/10",
-      iconColor: "text-brand-blue",
-    },
+    // {
+    //   id: "jobs-board",
+    //   label: "Jobs Board",
+    //   sub: `${jobCount} new openings`,
+    //   href: "/dashboard/jobs",
+    //   icon: Briefcase,
+    //   iconBg: "bg-destructive/10",
+    //   iconColor: "text-destructive",
+    // },
+    // {
+    //   id: "find-mentors",
+    //   label: "Find Mentors",
+    //   sub: "Connect with experts",
+    //   href: "/dashboard/search/mentors",
+    //   icon: Search,
+    //   iconBg: "bg-brand-blue/10",
+    //   iconColor: "text-brand-blue",
+    // },
   ] as const;
 
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-6">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
       {actions.map(
         ({ id, label, sub, href, icon: Icon, iconBg, iconColor }) => (
           <Link key={id} href={href}>
