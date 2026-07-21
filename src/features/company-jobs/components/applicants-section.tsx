@@ -58,6 +58,19 @@ function ApplicantRowSkeleton() {
   );
 }
 
+function normalizeStatus(status: string): AppStatus {
+  if (!status) return "pending";
+  const lower = status.toLowerCase();
+  if (lower === "pending") return "pending";
+  if (lower === "in-review" || lower === "in_review" || lower === "in review")
+    return "in-review";
+  if (lower === "shortlisted") return "shortlisted";
+  if (lower === "interview") return "interview";
+  if (lower === "selected" || lower === "accepted") return "selected";
+  if (lower === "rejected") return "rejected";
+  return "pending";
+}
+
 export function ApplicantsSection({ jobId }: ApplicantsSectionProps) {
   const [statusFilter, setStatusFilter] = useState<FilterTab>("all");
   const [search, setSearch] = useState("");
@@ -66,21 +79,47 @@ export function ApplicantsSection({ jobId }: ApplicantsSectionProps) {
 
   // Filtered list (server-side filtered)
   const { data, isLoading, isError } = useJobApplicants(jobId, {
-    status: statusFilter === "all" ? undefined : statusFilter,
+    status:
+      statusFilter === "all"
+        ? undefined
+        : APP_STATUS_META[statusFilter as AppStatus]?.backendStatus ||
+          statusFilter,
     search: search || undefined,
     sortBy: sortBy,
     pageIndex: pageIndex,
   });
 
   // Unfiltered for counts
-  const { data: allData } = useJobApplicants(jobId);
+  const { data: allData } = useJobApplicants(jobId, { perPage: 100 });
 
-  const applicants = data?.applicants ?? [];
-  const allApplicants = allData?.applicants ?? [];
+  const rawApplicants = data?.applicants ?? [];
+  const allApplicants =
+    allData?.applicants ?? (rawApplicants.length > 0 ? rawApplicants : []);
 
+  // Filter applicants strictly by current status & search term
+  const displayedApplicants = (
+    rawApplicants.length > 0 ? rawApplicants : allApplicants
+  ).filter((a) => {
+    const norm = normalizeStatus(a.status);
+    if (statusFilter !== "all" && norm !== statusFilter) {
+      return false;
+    }
+    if (search.trim()) {
+      const q = search.toLowerCase().trim();
+      const nameMatch = a.applicant_name?.toLowerCase().includes(q);
+      const emailMatch = a.applicant_email?.toLowerCase().includes(q);
+      if (!nameMatch && !emailMatch) {
+        return false;
+      }
+    }
+    return true;
+  });
+
+  // Calculate exact counts per status from all applicants
   const countByStatus = allApplicants.reduce<Record<string, number>>(
     (acc, a) => {
-      acc[a.status] = (acc[a.status] ?? 0) + 1;
+      const key = normalizeStatus(a.status);
+      acc[key] = (acc[key] ?? 0) + 1;
       return acc;
     },
     {},
@@ -145,7 +184,7 @@ export function ApplicantsSection({ jobId }: ApplicantsSectionProps) {
       <div className="mt-4 flex flex-wrap gap-1.5">
         {FILTER_TABS.map(({ key, label }) => {
           const count =
-            key === "all" ? allApplicants.length : countByStatus[key];
+            key === "all" ? allApplicants.length : (countByStatus[key] ?? 0);
           const isActive = statusFilter === key;
 
           return (
@@ -164,11 +203,9 @@ export function ApplicantsSection({ jobId }: ApplicantsSectionProps) {
               }`}
             >
               {label}
-              {count !== undefined && count > 0 && (
-                <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-semibold leading-none">
-                  {count}
-                </span>
-              )}
+              <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-semibold leading-none">
+                {count}
+              </span>
             </Button>
           );
         })}
@@ -182,14 +219,14 @@ export function ApplicantsSection({ jobId }: ApplicantsSectionProps) {
           <p className="py-6 text-center text-sm text-muted-foreground">
             Failed to load applicants.
           </p>
-        ) : applicants.length === 0 ? (
+        ) : displayedApplicants.length === 0 ? (
           <p className="py-10 text-center text-sm text-muted-foreground">
             {statusFilter === "all"
               ? "No applicants yet."
               : `No ${APP_STATUS_META[statusFilter as AppStatus]?.label.toLowerCase()} applicants.`}
           </p>
         ) : (
-          applicants.map((a) => (
+          displayedApplicants.map((a) => (
             <ApplicantRow key={a.id} applicant={a} jobId={jobId} />
           ))
         )}
