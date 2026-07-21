@@ -3,7 +3,6 @@
 import { Map as MapIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { toast } from "sonner";
 import type { z } from "zod";
 import { DataTableErrorBoundary } from "@/components/dashboard/DataTableErrorBoundary";
 import { Blank } from "@/components/dashboard/table/Blank";
@@ -27,7 +26,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   useAddCountry,
   useAddDistrict,
@@ -277,8 +275,8 @@ function LocationContent() {
       setOpen(false);
       setEditingItem(null);
       reset({ label: "", country: "", state: "", zone: "" });
-    } catch (err) {
-      toast.error(getApiResponseError(err, { fallback: "Operation failed" }));
+    } catch {
+      // Handled by the entity-specific add/update mutation's onError toast.
     }
   };
 
