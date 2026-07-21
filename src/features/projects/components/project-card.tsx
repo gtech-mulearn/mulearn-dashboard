@@ -260,7 +260,7 @@ export function ProjectCard({
             <p className="max-w-[9rem] text-right text-[11px] font-medium leading-tight text-white/85">
               {creatorMuid ? (
                 <Link
-                  href={`/dashboard/profile/${creatorMuid}`}
+                  href={`/profile/${creatorMuid}`}
                   onClick={(e) => e.stopPropagation()}
                   className="hover:underline"
                 >

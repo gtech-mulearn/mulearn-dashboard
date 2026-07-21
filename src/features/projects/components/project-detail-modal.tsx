@@ -138,7 +138,7 @@ export function ProjectDetailModal({
                     <User className="h-3.5 w-3.5" />
                     {creatorMuid ? (
                       <a
-                        href={`/dashboard/profile/${creatorMuid}`}
+                        href={`/profile/${creatorMuid}`}
                         target="_blank"
                         rel="noreferrer noopener"
                         className="hover:text-primary hover:underline"
@@ -457,7 +457,7 @@ export function ProjectDetailModal({
                             <div className="min-w-0">
                               {creatorMuid ? (
                                 <a
-                                  href={`/dashboard/profile/${creatorMuid}`}
+                                  href={`/profile/${creatorMuid}`}
                                   target="_blank"
                                   rel="noreferrer noopener"
                                   onClick={(e) => e.stopPropagation()}
@@ -494,7 +494,7 @@ export function ProjectDetailModal({
                             <div className="min-w-0">
                               {m.is_linked && m.muid ? (
                                 <a
-                                  href={`/dashboard/profile/${m.muid}`}
+                                  href={`/profile/${m.muid}`}
                                   target="_blank"
                                   rel="noreferrer noopener"
                                   onClick={(e) => e.stopPropagation()}
