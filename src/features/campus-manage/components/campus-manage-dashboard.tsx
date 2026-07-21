@@ -121,6 +121,11 @@ import { TransferEnablerDialog } from "./transfer-enabler-dialog";
 import { TransferLeadDialog } from "./transfer-lead-dialog";
 
 const PAGE_SIZE = 10;
+
+// TEMP: hidden per request (2026-07-21) — flip back to `true` to restore.
+const SHOW_EXECOM_SECTION = false;
+const SHOW_CAMPUS_LEVEL = false;
+
 const CORE_CAMPUS_ROLES = [
   { label: "Campus Lead", value: "Campus Lead" },
   { label: "Lead Enabler", value: "Lead Enabler" },
@@ -823,9 +828,11 @@ export function CampusManageDashboard() {
                           <span className="inline-flex items-center rounded-lg bg-background/60 px-2 py-0.5 text-[10px] sm:text-xs font-semibold ring-1 ring-border/40">
                             {overview?.campusCode ?? "-"}
                           </span>
-                          <span className="inline-flex items-center rounded-lg bg-background/60 px-2 py-0.5 text-[10px] sm:text-xs font-semibold ring-1 ring-border/40">
-                            Lvl {overview?.campusLevel ?? "-"}
-                          </span>
+                          {SHOW_CAMPUS_LEVEL && (
+                            <span className="inline-flex items-center rounded-lg bg-background/60 px-2 py-0.5 text-[10px] sm:text-xs font-semibold ring-1 ring-border/40">
+                              Lvl {overview?.campusLevel ?? "-"}
+                            </span>
+                          )}
                           {overview?.campusZone && (
                             <span className="max-w-[80px] truncate inline-flex items-center rounded-lg bg-background/60 px-2 py-0.5 text-[10px] sm:text-xs font-semibold ring-1 ring-border/40">
                               {overview.campusZone}
@@ -1229,7 +1236,9 @@ export function CampusManageDashboard() {
                     {[
                       { value: "analytics", label: "Analytics" },
                       { value: "events", label: "Events" },
-                      { value: "execom", label: "Execom" },
+                      ...(SHOW_EXECOM_SECTION
+                        ? [{ value: "execom", label: "Execom" }]
+                        : []),
                       { value: "ig", label: "IG Chapters" },
                     ].map((tab) => (
                       <TabsTrigger
@@ -1756,180 +1765,183 @@ export function CampusManageDashboard() {
                   </TabsContent>
 
                   {/* ── Execom Tab ── */}
-                  <TabsContent
-                    value="execom"
-                    className="mt-0 animate-in fade-in slide-in-from-bottom-2"
-                  >
-                    <Card className="mb-6 border-border/60 shadow-sm">
-                      <CardHeader className="pb-3 text-center sm:text-left">
-                        <CardTitle className="text-xl font-bold tracking-tight">
-                          Manage Leadership Team
-                        </CardTitle>
-                        <p className="text-xs text-muted-foreground">
-                          Appoint members to the campus executive committee
-                        </p>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(180px,220px)_auto] lg:items-end">
-                          <div className="min-w-0">
-                            <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                              Search User
-                            </p>
-                            <MuidSearchInput
-                              value={
-                                selectedExecomUser
-                                  ? [selectedExecomUser.muid]
-                                  : []
-                              }
-                              onChange={() => setSelectedExecomUser(null)}
-                              onSelectUser={(user) =>
-                                setSelectedExecomUser({
-                                  muid: user.muid,
-                                  name: user.full_name,
-                                  profilePic: user.profile_pic ?? null,
-                                })
-                              }
-                              keepOpen
-                              selectedUser={selectedExecomUser}
-                              onClear={() => setSelectedExecomUser(null)}
-                              placeholder="Search by name or MUID"
-                              disabled={isAssigningExecomRole}
-                              searchOptions={{
-                                endpoint: endpoints.campusManage.execomSearch,
-                                queryParam: "q",
-                              }}
-                            />
-                          </div>
-                          <div>
-                            <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                              Role
-                            </p>
-                            <Combobox
-                              options={comboboxRoleOptions}
-                              value={selectedExecomRole}
-                              onValueChange={setSelectedExecomRole}
-                              placeholder="Select or type a role..."
-                              emptyText="No matching roles."
-                              disabled={isAssigningExecomRole}
-                              className="h-9 rounded-xl"
-                              onCreateNew={(term) => {
-                                setSelectedExecomRole(term);
-                              }}
-                              createNewText="Use custom role"
-                            />
-                          </div>
-                          <Button
-                            onClick={handleAddExecom}
-                            disabled={
-                              isAssigningExecomRole || !selectedExecomUser?.muid
-                            }
-                            className="h-11 rounded-xl px-6 font-bold shadow-lg shadow-primary/10 transition-all hover:shadow-primary/20 active:scale-[0.98] lg:self-end"
-                          >
-                            {isAssigningExecomRole ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <Plus className="h-4 w-4" />
-                            )}
-                            <span className="ml-2">Assign Role</span>
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <SectionTitle
-                      title="Current Execom Roster"
-                      subtitle="Our campus leadership team for this tenure"
-                    />
-
-                    {isExecomLoading ? (
-                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        {[1, 2, 3].map((i) => (
-                          <Skeleton
-                            key={i}
-                            className="h-28 w-full rounded-2xl"
-                          />
-                        ))}
-                      </div>
-                    ) : execom.length > 0 ? (
-                      <div
-                        className={`grid grid-cols-1 gap-4 md:grid-cols-2 ${
-                          execom.length > 2 ? "lg:grid-cols-3" : ""
-                        }`}
-                      >
-                        {execom.map((member) => (
-                          <div
-                            key={`${member.roleLinkId}-${member.muid}-${member.role}`}
-                            className="group relative flex items-center gap-4 rounded-2xl border border-border/60 bg-card p-4 transition-all duration-300 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5"
-                          >
-                            <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-border/40 bg-muted shadow-sm transition-transform group-hover:scale-105">
-                              {member.profilePic ? (
-                                <Image
-                                  src={member.profilePic}
-                                  alt={member.name}
-                                  width={64}
-                                  height={64}
-                                  className="h-full w-full object-cover"
-                                />
-                              ) : (
-                                <div className="flex h-full w-full items-center justify-center bg-primary/[0.03]">
-                                  <User className="h-8 w-8 text-primary/10" />
-                                </div>
-                              )}
-                            </div>
-
-                            <div className="min-w-0 flex-1 space-y-1.5 pr-8">
-                              <p className="truncate text-[15px] font-bold tracking-tight text-foreground">
-                                {member.name}
+                  {SHOW_EXECOM_SECTION && (
+                    <TabsContent
+                      value="execom"
+                      className="mt-0 animate-in fade-in slide-in-from-bottom-2"
+                    >
+                      <Card className="mb-6 border-border/60 shadow-sm">
+                        <CardHeader className="pb-3 text-center sm:text-left">
+                          <CardTitle className="text-xl font-bold tracking-tight">
+                            Manage Leadership Team
+                          </CardTitle>
+                          <p className="text-xs text-muted-foreground">
+                            Appoint members to the campus executive committee
+                          </p>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(180px,220px)_auto] lg:items-end">
+                            <div className="min-w-0">
+                              <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                                Search User
                               </p>
-                              <div className="flex flex-col gap-1">
-                                <p className="truncate font-mono text-[9px] font-semibold text-muted-foreground/60">
-                                  {member.muid}
-                                </p>
-                                <div className="mt-0.5 flex flex-wrap gap-1">
-                                  <Badge
-                                    variant="secondary"
-                                    className="rounded-lg px-2 py-0 text-[9px] font-black uppercase tracking-widest"
-                                  >
-                                    {comboboxRoleOptions.find(
-                                      (r) => r.id === member.role,
-                                    )?.title ||
-                                      (member.role === "member"
-                                        ? "Execom"
-                                        : member.role)}
-                                  </Badge>
-                                </div>
-                              </div>
+                              <MuidSearchInput
+                                value={
+                                  selectedExecomUser
+                                    ? [selectedExecomUser.muid]
+                                    : []
+                                }
+                                onChange={() => setSelectedExecomUser(null)}
+                                onSelectUser={(user) =>
+                                  setSelectedExecomUser({
+                                    muid: user.muid,
+                                    name: user.full_name,
+                                    profilePic: user.profile_pic ?? null,
+                                  })
+                                }
+                                keepOpen
+                                selectedUser={selectedExecomUser}
+                                onClear={() => setSelectedExecomUser(null)}
+                                placeholder="Search by name or MUID"
+                                disabled={isAssigningExecomRole}
+                                searchOptions={{
+                                  endpoint: endpoints.campusManage.execomSearch,
+                                  queryParam: "q",
+                                }}
+                              />
                             </div>
-
-                            {/* FIX: always at reduced opacity so keyboard users can see it */}
+                            <div>
+                              <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                                Role
+                              </p>
+                              <Combobox
+                                options={comboboxRoleOptions}
+                                value={selectedExecomRole}
+                                onValueChange={setSelectedExecomRole}
+                                placeholder="Select or type a role..."
+                                emptyText="No matching roles."
+                                disabled={isAssigningExecomRole}
+                                className="h-9 rounded-xl"
+                                onCreateNew={(term) => {
+                                  setSelectedExecomRole(term);
+                                }}
+                                createNewText="Use custom role"
+                              />
+                            </div>
                             <Button
-                              variant="ghost"
-                              size="icon"
-                              className="absolute right-3 top-3 h-7 w-7 rounded-full text-muted-foreground/60 hover:bg-destructive/10 hover:text-destructive transition-all opacity-60 focus-visible:opacity-100 group-hover:opacity-100"
-                              disabled={isRemoving}
-                              onClick={() => removeExecom(member.roleLinkId)}
-                              aria-label={`Remove ${member.name}`}
+                              onClick={handleAddExecom}
+                              disabled={
+                                isAssigningExecomRole ||
+                                !selectedExecomUser?.muid
+                              }
+                              className="h-11 rounded-xl px-6 font-bold shadow-lg shadow-primary/10 transition-all hover:shadow-primary/20 active:scale-[0.98] lg:self-end"
                             >
-                              {isRemoving ? (
-                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              {isAssigningExecomRole ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
                               ) : (
-                                <Trash2 className="h-3.5 w-3.5" />
+                                <Plus className="h-4 w-4" />
                               )}
+                              <span className="ml-2">Assign Role</span>
                             </Button>
                           </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <Card className="border-dashed py-12 text-center text-muted-foreground">
-                        <div className="flex flex-col items-center gap-3">
-                          <Users className="h-10 w-10 opacity-10" />
-                          <p className="text-sm font-medium">
-                            No execom members appointed yet
-                          </p>
-                        </div>
+                        </CardContent>
                       </Card>
-                    )}
-                  </TabsContent>
+
+                      <SectionTitle
+                        title="Current Execom Roster"
+                        subtitle="Our campus leadership team for this tenure"
+                      />
+
+                      {isExecomLoading ? (
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                          {[1, 2, 3].map((i) => (
+                            <Skeleton
+                              key={i}
+                              className="h-28 w-full rounded-2xl"
+                            />
+                          ))}
+                        </div>
+                      ) : execom.length > 0 ? (
+                        <div
+                          className={`grid grid-cols-1 gap-4 md:grid-cols-2 ${
+                            execom.length > 2 ? "lg:grid-cols-3" : ""
+                          }`}
+                        >
+                          {execom.map((member) => (
+                            <div
+                              key={`${member.roleLinkId}-${member.muid}-${member.role}`}
+                              className="group relative flex items-center gap-4 rounded-2xl border border-border/60 bg-card p-4 transition-all duration-300 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5"
+                            >
+                              <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-border/40 bg-muted shadow-sm transition-transform group-hover:scale-105">
+                                {member.profilePic ? (
+                                  <Image
+                                    src={member.profilePic}
+                                    alt={member.name}
+                                    width={64}
+                                    height={64}
+                                    className="h-full w-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="flex h-full w-full items-center justify-center bg-primary/[0.03]">
+                                    <User className="h-8 w-8 text-primary/10" />
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="min-w-0 flex-1 space-y-1.5 pr-8">
+                                <p className="truncate text-[15px] font-bold tracking-tight text-foreground">
+                                  {member.name}
+                                </p>
+                                <div className="flex flex-col gap-1">
+                                  <p className="truncate font-mono text-[9px] font-semibold text-muted-foreground/60">
+                                    {member.muid}
+                                  </p>
+                                  <div className="mt-0.5 flex flex-wrap gap-1">
+                                    <Badge
+                                      variant="secondary"
+                                      className="rounded-lg px-2 py-0 text-[9px] font-black uppercase tracking-widest"
+                                    >
+                                      {comboboxRoleOptions.find(
+                                        (r) => r.id === member.role,
+                                      )?.title ||
+                                        (member.role === "member"
+                                          ? "Execom"
+                                          : member.role)}
+                                    </Badge>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* FIX: always at reduced opacity so keyboard users can see it */}
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="absolute right-3 top-3 h-7 w-7 rounded-full text-muted-foreground/60 hover:bg-destructive/10 hover:text-destructive transition-all opacity-60 focus-visible:opacity-100 group-hover:opacity-100"
+                                disabled={isRemoving}
+                                onClick={() => removeExecom(member.roleLinkId)}
+                                aria-label={`Remove ${member.name}`}
+                              >
+                                {isRemoving ? (
+                                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                ) : (
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                )}
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <Card className="border-dashed py-12 text-center text-muted-foreground">
+                          <div className="flex flex-col items-center gap-3">
+                            <Users className="h-10 w-10 opacity-10" />
+                            <p className="text-sm font-medium">
+                              No execom members appointed yet
+                            </p>
+                          </div>
+                        </Card>
+                      )}
+                    </TabsContent>
+                  )}
 
                   {/* ── IG Chapters Tab ── */}
                   <TabsContent value="ig" className="mt-0 min-w-0">
