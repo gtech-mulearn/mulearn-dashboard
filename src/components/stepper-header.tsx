@@ -12,7 +12,7 @@
 
 import { Check } from "lucide-react";
 import { Fragment } from "react";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export interface StepperStep {
@@ -56,32 +56,32 @@ export function StepperHeader({
                 className="group flex cursor-pointer items-center gap-3 rounded-lg text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 {isActive ? (
-                  <Button
-                    type="button"
-                    variant="default"
-                    size="icon-sm"
-                    className="ring-2 ring-brand-blue ring-offset-2 pointer-events-none"
+                  <span
+                    className={cn(
+                      buttonVariants({ variant: "default", size: "icon-sm" }),
+                      "ring-2 ring-brand-blue ring-offset-2 pointer-events-none text-xs",
+                    )}
                   >
                     {index + 1}
-                  </Button>
+                  </span>
                 ) : isCompleted ? (
-                  <Button
-                    type="button"
-                    variant="default"
-                    size="icon-sm"
-                    className="pointer-events-none"
+                  <span
+                    className={cn(
+                      buttonVariants({ variant: "default", size: "icon-sm" }),
+                      "pointer-events-none text-xs",
+                    )}
                   >
                     <Check className="h-4 w-4" />
-                  </Button>
+                  </span>
                 ) : (
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="icon-sm"
-                    className="pointer-events-none group-hover:bg-muted/80"
+                  <span
+                    className={cn(
+                      buttonVariants({ variant: "secondary", size: "icon-sm" }),
+                      "pointer-events-none group-hover:bg-muted/80 text-xs",
+                    )}
                   >
                     {index + 1}
-                  </Button>
+                  </span>
                 )}
                 <div className="min-w-0 pt-1">
                   <p
