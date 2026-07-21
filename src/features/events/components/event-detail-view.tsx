@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { useEventDetail } from "../hooks";
 import type { EventDetailViewProps } from "../types";
 import { EventAboutSection } from "./event-about-section";
@@ -76,7 +77,12 @@ export function EventDetailView({
 
         <EventIdentityBar event={event} />
 
-        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div
+          className={cn(
+            "grid gap-5",
+            layout === "full" && "lg:grid-cols-[minmax(0,1fr)_360px]",
+          )}
+        >
           {/* Main Column */}
           <div className="space-y-5">
             <EventAboutSection description={event.description} />

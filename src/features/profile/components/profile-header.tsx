@@ -29,10 +29,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ImageCropDialog } from "@/components/ui/image-crop-dialog";
 import { COVER_PIC_MAX_BYTES } from "../api";
 import type { UserProfile } from "../schemas";
 
 const DEFAULT_COVER_SRC = "/images/profile-banner.webp";
+const PROFILE_COVER_ASPECT = 3 / 1;
+/** Roughly matches the mobile banner's rendered ratio (h-56 @ ~380px wide). */
+const PROFILE_COVER_MOBILE_PREVIEW_ASPECT = 380 / 224;
 
 interface ProfileHeaderProps {
   profile: UserProfile;
@@ -61,6 +65,7 @@ export function ProfileHeader({
   const [imageError, setImageError] = useState(false);
   const [coverError, setCoverError] = useState(false);
   const [coverVersion, setCoverVersion] = useState(0);
+  const [cropSourceUrl, setCropSourceUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const fileInputId = useId();
 
@@ -85,9 +90,7 @@ export function ProfileHeader({
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file || !onUploadCover) return;
@@ -101,8 +104,19 @@ export function ProfileHeader({
       return;
     }
 
+    setCropSourceUrl(URL.createObjectURL(file));
+  };
+
+  const closeCropDialog = () => {
+    if (cropSourceUrl) URL.revokeObjectURL(cropSourceUrl);
+    setCropSourceUrl(null);
+  };
+
+  const handleCropComplete = async (croppedFile: File) => {
+    closeCropDialog();
+    if (!onUploadCover) return;
     try {
-      await onUploadCover(file);
+      await onUploadCover(croppedFile);
       setCoverError(false);
       setCoverVersion((v) => v + 1);
     } catch {
@@ -323,6 +337,18 @@ export function ProfileHeader({
           </div>
         )}
       </div>
+
+      {cropSourceUrl ? (
+        <ImageCropDialog
+          open
+          imageSrc={cropSourceUrl}
+          aspect={PROFILE_COVER_ASPECT}
+          previewAspect={PROFILE_COVER_MOBILE_PREVIEW_ASPECT}
+          outputMaxSizeMB={COVER_PIC_MAX_BYTES / (1024 * 1024)}
+          onCropComplete={handleCropComplete}
+          onCancel={closeCropDialog}
+        />
+      ) : null}
     </div>
   );
 }

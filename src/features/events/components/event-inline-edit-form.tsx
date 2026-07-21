@@ -18,6 +18,9 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  EVENT_BANNER_IMAGE_ASPECT,
+  EVENT_BANNER_IMAGE_MOBILE_PREVIEW_ASPECT,
+  EVENT_COVER_IMAGE_ASPECT,
   EVENT_FORM_DEFAULT_VALUES,
   EVENT_SCOPE_OPTIONS,
 } from "../constants/events.constants";
@@ -630,6 +633,7 @@ export function EventInlineEditForm({
               value={coverImageFile}
               onChange={setCoverImageFile}
               currentUrl={event.cover_image}
+              aspectRatio={EVENT_COVER_IMAGE_ASPECT}
             />
           </div>
           <div className="space-y-2">
@@ -638,6 +642,8 @@ export function EventInlineEditForm({
               value={bannerImageFile}
               onChange={setBannerImageFile}
               currentUrl={event.banner_image}
+              aspectRatio={EVENT_BANNER_IMAGE_ASPECT}
+              previewAspect={EVENT_BANNER_IMAGE_MOBILE_PREVIEW_ASPECT}
             />
           </div>
         </div>
