@@ -15,7 +15,7 @@ export const authStore = {
   setTokens: async (accessToken: string, refreshToken: string) => {
     Cookies.set(ACCESS_TOKEN_KEY, accessToken, {
       ...baseCookieOptions,
-      expires: 1,
+      expires: 15 / (24 * 60), // 15 minutes (JWT lifetime)
     });
     Cookies.set(REFRESH_TOKEN_KEY, refreshToken, {
       ...baseCookieOptions,

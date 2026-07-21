@@ -1,7 +1,18 @@
 import { env } from "../../config/env";
 import { authStore } from "../lib/auth";
 
-export async function refreshAccessToken(): Promise<string | null> {
+let inFlight: Promise<string | null> | null = null;
+
+export function refreshAccessToken(): Promise<string | null> {
+  if (inFlight) return inFlight;
+
+  inFlight = doRefresh().finally(() => {
+    inFlight = null;
+  });
+  return inFlight;
+}
+
+async function doRefresh(): Promise<string | null> {
   const refreshToken = authStore.getRefreshToken();
   if (!refreshToken) return null;
 
