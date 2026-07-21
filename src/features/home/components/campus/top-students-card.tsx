@@ -105,7 +105,7 @@ export function TopStudentsCard({
                             levelStyle(student.level),
                           )}
                         >
-                          Lv {student.level}
+                          {student.level}
                         </span>
                       </td>
                       <td className="py-3 text-right font-bold text-warning">
