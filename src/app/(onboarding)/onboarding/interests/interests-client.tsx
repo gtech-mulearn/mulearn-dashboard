@@ -22,7 +22,6 @@ import {
   useSelectDomains,
   useSelectEndgoals,
 } from "@/features/onboarding";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import { getRoleHomePath } from "@/lib/auth";
 
 interface InterestsClientProps {
@@ -67,13 +66,9 @@ export function InterestsClient({ redirectUri, mode }: InterestsClientProps) {
       await queryClient.invalidateQueries({ queryKey: authKeys.userInfo() });
       toast.success("Pathways saved! Welcome to μLearn!");
       router.replace(getRedirectPath());
-    } catch (error) {
+    } catch {
+      // Handled by useSelectDomains's onError toast.
       setIsSubmitting(false);
-      toast.error(
-        getApiResponseError(error, {
-          fallback: "Failed to save pathways. Please try again.",
-        }),
-      );
     }
   };
 
@@ -88,13 +83,9 @@ export function InterestsClient({ redirectUri, mode }: InterestsClientProps) {
       await queryClient.invalidateQueries({ queryKey: authKeys.userInfo() });
       toast.success("Interests saved! Welcome to μLearn!");
       router.replace(getRedirectPath());
-    } catch (error) {
+    } catch {
+      // Handled by useSelectDomains/useSelectEndgoals's onError toasts.
       setIsSubmitting(false);
-      toast.error(
-        getApiResponseError(error, {
-          fallback: "Failed to save interests. Please try again.",
-        }),
-      );
     }
   };
 

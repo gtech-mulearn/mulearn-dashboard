@@ -12,7 +12,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Edit2 } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,7 +30,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import { useEditMeeting } from "../hooks";
 import type { MeetingDetail } from "../schemas";
 import {
@@ -235,10 +233,8 @@ export function EditMeetingModal({
         coord_y: meeting.coord_y,
       });
       onOpenChange(false);
-    } catch (error) {
-      toast.error(
-        getApiResponseError(error, { fallback: "Failed to save meeting" }),
-      );
+    } catch {
+      // Handled by useEditMeeting's onError toast.
     }
   };
 

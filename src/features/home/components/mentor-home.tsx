@@ -30,7 +30,6 @@ import {
   useMentorProfile,
 } from "@/features/mentor/onboarding/hooks/use-onboarding";
 import type { WeeklySchedule } from "@/features/mentor/types";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import { useDashboardCalendar, useMentorSessions } from "../hooks";
 import { flattenDashboardCalendar } from "../utils";
 import { EventCalendarCard } from "./event-calendar-card";
@@ -293,13 +292,6 @@ export function MentorHome() {
         onSuccess: () => {
           setSavedSchedule(localSchedule);
           toast.success("Availability updated");
-        },
-        onError: (error) => {
-          toast.error(
-            getApiResponseError(error, {
-              fallback: "Failed to save availability",
-            }),
-          );
         },
       },
     );

@@ -214,11 +214,6 @@ export function MentorEditProfileModal({
         });
       }
 
-      toast.success(
-        isIgsChanged
-          ? "IG scopes updated — changes are live immediately."
-          : "Profile updated successfully!",
-      );
       onOpenChange(false);
     } catch {
       // Individual mutation hooks surface their own toasts

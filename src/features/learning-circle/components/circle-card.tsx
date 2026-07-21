@@ -206,13 +206,23 @@ function StackedAvatars({ count }: { count: number }) {
 
 interface CircleCardProps {
   circle: LearningCircle;
+  /**
+   * Force-hide the Join button regardless of the circle's `is_joined` /
+   * `is_creator` flags. Use this when the card is rendered from a list that
+   * is *already* scoped to the current user's own circles (e.g. the "My
+   * Circles" filter, backed by the user-circles endpoint) — that endpoint
+   * doesn't reliably echo back `is_joined`/`is_creator` per item, so
+   * membership must be inferred from which list the card came from instead.
+   */
+  hideJoin?: boolean;
 }
 
-export function CircleCard({ circle }: CircleCardProps) {
+export function CircleCard({ circle, hideJoin = false }: CircleCardProps) {
   const theme = getTheme(circle.ig);
   const CategoryIcon = theme.icon;
   const joinCircle = useJoinCircle();
   const memberCount = circle.total_members || circle.attendees?.length || 0;
+  const canJoin = !hideJoin && !circle.is_joined && !circle.is_creator;
 
   const handleJoin = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -261,26 +271,28 @@ export function CircleCard({ circle }: CircleCardProps) {
               {circle.ig}
             </span>
 
-            <button
-              type="button"
-              onClick={handleJoin}
-              disabled={joinCircle.isPending}
-              className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full
-                bg-card/90 dark:bg-muted/40 dark:hover:bg-muted/60 dark:text-foreground
-                backdrop-blur-sm text-muted-foreground shadow-sm
-                border border-border/60
-                transition-all duration-200
-                hover:shadow-md hover:scale-110
-                active:scale-95 disabled:opacity-40"
-              title="Join circle"
-              aria-label="Join circle"
-            >
-              {joinCircle.isPending ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <Plus className="h-4 w-4" strokeWidth={2.5} />
-              )}
-            </button>
+            {canJoin && (
+              <button
+                type="button"
+                onClick={handleJoin}
+                disabled={joinCircle.isPending}
+                className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full
+                  bg-card/90 dark:bg-muted/40 dark:hover:bg-muted/60 dark:text-foreground
+                  backdrop-blur-sm text-muted-foreground shadow-sm
+                  border border-border/60
+                  transition-all duration-200
+                  hover:shadow-md hover:scale-110
+                  active:scale-95 disabled:opacity-40"
+                title="Join circle"
+                aria-label="Join circle"
+              >
+                {joinCircle.isPending ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Plus className="h-4 w-4" strokeWidth={2.5} />
+                )}
+              </button>
+            )}
           </div>
 
           {/* Circle name — large, bold */}

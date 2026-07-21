@@ -25,7 +25,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import type { UserResult } from "@/hooks/use-search";
 import { useIgCodes, useTransferIgRole } from "../hooks";
 
@@ -86,12 +85,8 @@ export function TransferIgRoleDialog({
           form.reset({ muid: "", igCode: defaultIgCode ?? "" });
           setSelectedUser(null);
         },
-        onError: (error) => {
-          toast.error(
-            getApiResponseError(error, {
-              fallback: "Failed to transfer IG lead role",
-            }),
-          );
+        onError: () => {
+          // Error toast handled by useTransferIgRole's onError.
           setConfirmOpen(false);
         },
       },

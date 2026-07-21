@@ -93,8 +93,12 @@ export function ProfilePageClient() {
 
   const updateProfileMutation = useUpdateProfile({ suppressErrorToast: true });
   const { data: editableProfile } = useEditableProfile();
-  const changeOrganizationMutation = useEditCollege();
-  const updateProfileImageMutation = useUpdateProfileImage();
+  const changeOrganizationMutation = useEditCollege({
+    suppressErrorToast: true,
+  });
+  const updateProfileImageMutation = useUpdateProfileImage({
+    suppressErrorToast: true,
+  });
   const uploadCoverPicMutation = useUploadCoverPic();
   const deleteCoverPicMutation = useDeleteCoverPic();
   const { data: userLog, isLoading: isLoadingLog } = useUserLog();

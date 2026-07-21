@@ -7,6 +7,6 @@ import { getApiResponseError } from "@/hooks/use-get-error";
 export function useTaskQueryErrorToast(error: unknown, fallback: string): void {
   useEffect(() => {
     if (!error) return;
-    toast.error(getApiResponseError(error, { fallback }));
+    toast.error(getApiResponseError(error, { fallback }), { id: fallback });
   }, [error, fallback]);
 }

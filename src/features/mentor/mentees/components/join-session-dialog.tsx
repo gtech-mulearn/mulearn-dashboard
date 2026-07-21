@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import { useJoinSession } from "../hooks/use-mentees";
 import type { JoinSessionParticipant } from "../schemas";
 
@@ -66,14 +65,6 @@ export function JoinSessionDialog({
       onSuccess: (participant) => {
         setJoined(participant);
         toast.success("Successfully joined the session!");
-      },
-      onError: (err) => {
-        toast.error(
-          getApiResponseError(err, {
-            fallback:
-              "Failed to join session. Please check the session ID and try again.",
-          }),
-        );
       },
     });
   }

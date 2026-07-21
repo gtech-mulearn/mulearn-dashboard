@@ -141,7 +141,7 @@ export default function DepartmentsView() {
       link.click();
       document.body.removeChild(link);
     } catch {
-      toast.error("Failed to export CSV");
+      // Handled by useDepartments' useOrgQueryErrorToast effect
     } finally {
       setIsCsvDownloading(false);
     }

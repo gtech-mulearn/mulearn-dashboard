@@ -21,7 +21,6 @@ import { Input } from "@/components/ui/input";
 import { MuidSearchInput } from "@/components/ui/muid-search-input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import type { UserResult } from "@/hooks/use-search";
 import { useDeleteIgChapter, useUpdateIgChapter } from "../hooks";
 import type { IgChapter } from "../types";
@@ -112,13 +111,7 @@ export function IgChapterEditDialog({
           toast.success("Chapter updated");
           setOpen(false);
         },
-        onError: (error) => {
-          toast.error(
-            getApiResponseError(error, {
-              fallback: "Failed to update chapter",
-            }),
-          );
-        },
+        // Error toast handled by useUpdateIgChapter's onError.
       },
     );
   };
@@ -130,12 +123,8 @@ export function IgChapterEditDialog({
         setOpen(false);
         setDeleteConfirmOpen(false);
       },
-      onError: (error) => {
-        toast.error(
-          getApiResponseError(error, {
-            fallback: "Failed to delete chapter",
-          }),
-        );
+      onError: () => {
+        // Error toast handled by useDeleteIgChapter's onError.
         setDeleteConfirmOpen(false);
       },
     });

@@ -38,6 +38,7 @@ import {
   MeetingListResponseSchema,
   type MeetingReportRequest,
   MeetingReportResponseSchema,
+  type Pagination,
   type PublicMeetingListResponse,
   PublicMeetingListResponseSchema,
   type RespondJoinRequest,
@@ -73,13 +74,25 @@ export async function getColleges(params?: {
 // Circle Management
 // ============================================
 
-/** Get all learning circles */
-export async function getCircles(): Promise<LearningCircle[]> {
-  const response = await apiClient.get(
-    endpoints.learningCircle.list,
-    CircleListResponseSchema,
-  );
-  return response.response.data;
+/** Get all learning circles (paginated) */
+export async function getCircles(params?: {
+  page?: number;
+  perPage?: number;
+  search?: string;
+}): Promise<{ circles: LearningCircle[]; pagination: Pagination }> {
+  const searchParams = new URLSearchParams();
+  if (params?.page) searchParams.set("pageIndex", String(params.page));
+  if (params?.perPage) searchParams.set("perPage", String(params.perPage));
+  if (params?.search) searchParams.set("search", params.search);
+
+  const url = searchParams.toString()
+    ? `${endpoints.learningCircle.list}?${searchParams}`
+    : endpoints.learningCircle.list;
+  const response = await apiClient.get(url, CircleListResponseSchema);
+  return {
+    circles: response.response.data,
+    pagination: response.response.pagination,
+  };
 }
 
 /** Get circle details */

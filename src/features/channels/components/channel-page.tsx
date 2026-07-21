@@ -18,7 +18,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   useAddChannel,
   useChannel,
@@ -92,10 +91,6 @@ function ChannelContent() {
         setOpenDelete(false);
         setDeleteTarget(null);
       },
-      onError: (error) =>
-        toast.error(
-          getApiResponseError(error, { fallback: "Failed to delete channel." }),
-        ),
     });
   }, [deleteMutation, deleteTarget]);
 
@@ -116,12 +111,6 @@ function ChannelContent() {
           toast.success("Channel created.");
           toggleCreateModal(false);
         },
-        onError: (error) =>
-          toast.error(
-            getApiResponseError(error, {
-              fallback: "Failed to create channel.",
-            }),
-          ),
       });
     },
     [addMutation, createForm, toggleCreateModal],
@@ -155,12 +144,6 @@ function ChannelContent() {
             toast.success("Channel updated.");
             toggleEditModal(false);
           },
-          onError: (error) =>
-            toast.error(
-              getApiResponseError(error, {
-                fallback: "Failed to update channel.",
-              }),
-            ),
         },
       );
     },

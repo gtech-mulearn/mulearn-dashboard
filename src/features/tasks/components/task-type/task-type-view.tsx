@@ -139,7 +139,7 @@ export default function TaskTypeView() {
       // Fetch up to 1000 items matching current search and sort
       const { data: allData } = await refetchCsv();
       if (!allData?.data) {
-        toast.error("No data available to export");
+        // Fetch failure is surfaced by useTaskQueryErrorToast inside useTaskTypes
         return;
       }
 
@@ -172,7 +172,7 @@ export default function TaskTypeView() {
       link.click();
       document.body.removeChild(link);
     } catch {
-      toast.error("Failed to export CSV");
+      // Handled by hook's query-error toast
     } finally {
       setIsCsvDownloading(false);
     }

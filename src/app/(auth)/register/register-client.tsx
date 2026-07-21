@@ -35,7 +35,6 @@ import {
   useRoles,
   useSelectOrganization,
 } from "@/features/onboarding";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import { authStore } from "@/lib/auth";
 
 interface RegisterClientProps {
@@ -159,12 +158,9 @@ export function RegisterClient({
 
       // ── Student / Mentor / Enabler: generic register endpoint ─
       await handleGenericSignup(values);
-    } catch (error) {
-      toast.error(
-        getApiResponseError(error, {
-          fallback: "Registration failed. Please try again.",
-        }),
-      );
+    } catch {
+      // Handled by useRegister/useCompanyRegister/useCreateOrganization/
+      // useSelectOrganization's own onError toasts.
     }
   };
 
@@ -266,6 +262,11 @@ export function RegisterClient({
     });
 
     // 3. Now authenticated — handle org linking for student / enabler
+    // Tracks whether a branch-specific success toast already fired below, so
+    // the shared "Account created successfully!" toast at the end doesn't
+    // duplicate it for the custom-org/college submission paths.
+    let orgSubmittedForReview = false;
+
     if (selectedRole === "student" || selectedRole === "enabler") {
       if (selectedRole === "student" && values.organizationType === "Company") {
         if (values.organization === "others" && values.customOrganization) {
@@ -274,6 +275,7 @@ export function RegisterClient({
             org_type: "Company",
           });
           toast.success("Organization submitted for review!");
+          orgSubmittedForReview = true;
         } else if (values.organization) {
           await selectOrganization.mutateAsync({
             organization: values.organization,
@@ -300,6 +302,7 @@ export function RegisterClient({
 
           await createOrganization.mutateAsync(payload);
           toast.success("College submitted for review!");
+          orgSubmittedForReview = true;
         } else if (values.college) {
           await selectOrganization.mutateAsync({
             organization: values.college,
@@ -330,6 +333,7 @@ export function RegisterClient({
 
         await createOrganization.mutateAsync(orgPayload);
         toast.success("Organization submitted for review!");
+        orgSubmittedForReview = true;
       } else if (values.organization) {
         await selectOrganization.mutateAsync({
           organization: values.organization,
@@ -340,7 +344,9 @@ export function RegisterClient({
       }
     }
 
-    toast.success("Account created successfully!");
+    if (!orgSubmittedForReview) {
+      toast.success("Account created successfully!");
+    }
 
     await authStore.clearTempToken();
 

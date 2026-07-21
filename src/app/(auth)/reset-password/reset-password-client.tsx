@@ -25,7 +25,6 @@ import {
   useResetPassword,
   useVerifyResetToken,
 } from "@/features/auth";
-import { getApiResponseError } from "@/hooks/use-get-error";
 
 interface ResetPasswordClientProps {
   token?: string;
@@ -102,12 +101,8 @@ export function ResetPasswordClient({ token }: ResetPasswordClientProps) {
       await resetPassword.mutateAsync({ token, password });
       setIsSuccess(true);
       toast.success("Password reset successfully!");
-    } catch (error) {
-      toast.error(
-        getApiResponseError(error, {
-          fallback: "Failed to reset password. Please try again.",
-        }),
-      );
+    } catch {
+      // Handled by useResetPassword's onError toast.
     }
   };
 

@@ -15,7 +15,6 @@ import {
   useDepartments,
   useSelectOrganization,
 } from "@/features/onboarding";
-import { getApiResponseError } from "@/hooks/use-get-error";
 
 interface OrganizationClientProps {
   redirectUri?: string;
@@ -50,12 +49,8 @@ export function OrganizationClient({ redirectUri }: OrganizationClientProps) {
         ? `/onboarding/interests?ruri=${redirectUri}`
         : "/onboarding/interests";
       router.push(nextPath);
-    } catch (error) {
-      toast.error(
-        getApiResponseError(error, {
-          fallback: "Failed to save organization. Please try again.",
-        }),
-      );
+    } catch {
+      // Handled by useSelectOrganization's onError toast.
     }
   };
 

@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import { useSubmitFeedback } from "../hooks/use-mentees";
 
 interface SessionFeedbackDialogProps {
@@ -41,13 +40,6 @@ export function SessionFeedbackDialog({
           toast.success("Feedback submitted successfully!");
           setFeedback("");
           onOpenChange(false);
-        },
-        onError: (error) => {
-          toast.error(
-            getApiResponseError(error, {
-              fallback: "Failed to submit feedback. Please try again.",
-            }),
-          );
         },
       },
     );

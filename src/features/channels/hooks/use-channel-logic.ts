@@ -1,7 +1,6 @@
 "use client";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import type {
   ChannelData,
   CreateChannelInput,
@@ -77,12 +76,6 @@ export function useChannelLogic() {
     (id: string) => {
       deleteMutation.mutate(id, {
         onSuccess: () => toast.success("Channel deleted."),
-        onError: (error) =>
-          toast.error(
-            getApiResponseError(error, {
-              fallback: "Failed to delete channel.",
-            }),
-          ),
       });
     },
     [deleteMutation],
@@ -102,12 +95,6 @@ export function useChannelLogic() {
           toast.success("Channel created.");
           toggleCreateModal(false);
         },
-        onError: (error) =>
-          toast.error(
-            getApiResponseError(error, {
-              fallback: "Failed to create channel.",
-            }),
-          ),
       });
     },
     [addMutation, createForm, toggleCreateModal],
@@ -132,12 +119,6 @@ export function useChannelLogic() {
           toast.success("Channel updated.");
           toggleEditModal(false);
         },
-        onError: (error) =>
-          toast.error(
-            getApiResponseError(error, {
-              fallback: "Failed to update channel.",
-            }),
-          ),
       });
     },
     [updateMutation, editForm, toggleEditModal],
