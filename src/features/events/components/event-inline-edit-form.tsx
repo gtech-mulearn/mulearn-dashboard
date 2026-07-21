@@ -174,7 +174,7 @@ export function EventInlineEditForm({
         event.organizer.company?.name ??
         "Company"
       );
-    return "MuLearn";
+    return "µLearn";
   }, [event.organizer]);
 
   const handleValidSubmit = async (values: CreateEventSchema) => {

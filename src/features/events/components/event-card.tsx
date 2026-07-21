@@ -67,7 +67,7 @@ interface EventCardProps {
 }
 
 function getOrganizerName(organizer: OrganizerInfo): string {
-  if (!organizer) return "MuLearn";
+  if (!organizer) return "µLearn";
 
   const type = organizer.type ?? organizer.organiser_type;
 
@@ -94,9 +94,9 @@ function getOrganizerName(organizer: OrganizerInfo): string {
     return companyInfo?.title ?? companyInfo?.name ?? "Company";
   }
   if (type === "admin") {
-    return "MuLearn";
+    return "µLearn";
   }
-  return "MuLearn";
+  return "µLearn";
 }
 
 export function EventCard({ event, isManageView, onView }: EventCardProps) {
@@ -168,7 +168,7 @@ export function EventCard({ event, isManageView, onView }: EventCardProps) {
         <div className="absolute inset-0 bg-foreground/35 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
         {/* Top-left stickers: event type + cluster */}
-        <div className="absolute left-3 top-3 z-30 flex flex-col gap-1.5">
+        <div className="absolute left-3 top-3 z-30 flex flex-col gap-1.5 pointer-events-none">
           {EventTypeIcon && eventTypeLabel && (
             <Badge className="bg-brand-blue/10 dark:bg-brand-blue/20 text-brand-blue border border-brand-blue/20 dark:border-brand-blue/30 hover:bg-brand-blue/20 font-semibold gap-1 text-[11px] px-2.5 py-0.5 rounded-full shadow-sm w-fit">
               <EventTypeIcon className="h-3 w-3 shrink-0" />
@@ -186,12 +186,12 @@ export function EventCard({ event, isManageView, onView }: EventCardProps) {
         </div>
 
         {isManageView ? (
-          <div className="absolute right-3 top-3 z-30">
+          <div className="absolute right-3 top-3 z-30 pointer-events-none">
             <EventStatusBadge status={event.status} />
           </div>
         ) : null}
 
-        <div className="absolute inset-x-0 bottom-0 z-30 p-4 text-primary-foreground">
+        <div className="absolute inset-x-0 bottom-0 z-30 p-4 text-primary-foreground pointer-events-none">
           <p className="text-[11px] opacity-80">{formattedDate}</p>
           <h3 className="mt-1 line-clamp-2 text-base font-semibold leading-tight">
             {event.title}
@@ -217,7 +217,7 @@ export function EventCard({ event, isManageView, onView }: EventCardProps) {
                 Event Ended
               </span>
             ) : (
-              <div className="relative z-40">
+              <div className="relative z-40 pointer-events-auto">
                 <InterestButton
                   eventId={event.id}
                   status={event.viewer_interest_status}
