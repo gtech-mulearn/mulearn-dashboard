@@ -59,6 +59,23 @@ export function IGRequestTable() {
     category: "coder",
     icon: "",
   });
+  // Guards the Approve/Reject/Cancel buttons against rapid double-clicks
+  // firing the status-update mutation (and its toast) twice.
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+
+  const handleUpdateStatus = async (
+    id: string,
+    newStatus: "active" | "requested" | "cancelled" | "rejected",
+  ) => {
+    setIsUpdatingStatus(true);
+    try {
+      await updateStatus(id, newStatus);
+    } catch {
+      // Error toast handled by the hook
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
 
   const handleSortChange = (column: string) => {
     setPage(1);
@@ -177,7 +194,8 @@ export function IGRequestTable() {
                 size="sm"
                 variant="outline"
                 className="h-8 px-2.5 text-primary border-primary/30 hover:bg-primary/10 hover:text-primary dark:text-primary dark:border-primary/40 dark:hover:bg-primary/15"
-                onClick={() => updateStatus(String(row.id), "active")}
+                onClick={() => handleUpdateStatus(String(row.id), "active")}
+                disabled={isUpdatingStatus}
               >
                 <Check className="size-4" />
               </Button>
@@ -191,7 +209,8 @@ export function IGRequestTable() {
                 size="sm"
                 variant="outline"
                 className="h-8 px-2.5 text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive dark:text-destructive dark:border-destructive/40 dark:hover:bg-destructive/15"
-                onClick={() => updateStatus(String(row.id), "rejected")}
+                onClick={() => handleUpdateStatus(String(row.id), "rejected")}
+                disabled={isUpdatingStatus}
               >
                 <X className="size-4" />
               </Button>
@@ -205,7 +224,8 @@ export function IGRequestTable() {
                 size="sm"
                 variant="outline"
                 className="h-8 px-2.5 text-muted-foreground border-border hover:bg-muted/40 hover:text-foreground"
-                onClick={() => updateStatus(String(row.id), "cancelled")}
+                onClick={() => handleUpdateStatus(String(row.id), "cancelled")}
+                disabled={isUpdatingStatus}
               >
                 <Ban className="size-4" />
               </Button>
