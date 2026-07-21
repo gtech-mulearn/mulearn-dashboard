@@ -56,14 +56,14 @@ export function EventDetailView({
     }
     if (type === "campus") return campus?.title ?? campus?.name ?? "Campus";
     if (type === "company") return company?.title ?? company?.name ?? "Company";
-    return "MuLearn";
+    return "µLearn";
   })();
 
   const organizerLogo =
     event.organizer.ig?.logo ??
     event.organizer.campus?.logo ??
     event.organizer.company?.logo ??
-    null;
+    "/images/mulearn-logo-small.jpg";
 
   return (
     <>
