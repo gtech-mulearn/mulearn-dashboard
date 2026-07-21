@@ -38,12 +38,15 @@ export const TaskListResponseSchema = ApiResponseSchema(
 export const TaskFormSchema = z.object({
   hashtag: z
     .string()
-    .min(2, "Too Short!")
-    .max(30, "Too Long!")
+    .max(75, "Max 75 characters")
     .refine((val) => val.startsWith("#"), {
       message: "Hashtag must start with '#'",
+    })
+    .refine((val) => val.replace(/^#/, "").trim().length > 0, {
+      message: "Hashtag is required",
     }),
-  title: z.string().min(2, "Too Short!").max(50, "Too Long!"),
+  // 75 is the task_list.title column width, not a UX choice
+  title: z.string().min(1, "Title is required").max(75, "Max 75 characters"),
   karma: z.coerce
     .number()
     .int("Karma Points must be a whole number")
