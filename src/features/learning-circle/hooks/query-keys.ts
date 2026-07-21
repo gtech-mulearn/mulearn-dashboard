@@ -16,7 +16,8 @@ export const learningCircleKeys = {
     [...learningCircleKeys.all, "colleges", params] as const,
 
   // Circle queries
-  circleList: () => [...learningCircleKeys.circles(), "list"] as const,
+  circleList: (params?: Record<string, unknown>) =>
+    [...learningCircleKeys.circles(), "list", params] as const,
   userCircles: () => [...learningCircleKeys.circles(), "user-circles"] as const,
   circleDetail: (id: string) =>
     [...learningCircleKeys.circles(), "detail", id] as const,
