@@ -89,7 +89,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAssignCampusMentor } from "@/features/campus/hooks/campus.hooks";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import { chipColor } from "@/lib/chip-colors";
 import { cn } from "@/lib/utils";
 import {
@@ -1065,12 +1064,6 @@ export function CampusManageDashboard() {
                       {
                         onSuccess: () =>
                           toast.success("Student details exported"),
-                        onError: (error) =>
-                          toast.error(
-                            getApiResponseError(error, {
-                              fallback: "Failed to export student details",
-                            }),
-                          ),
                       },
                     )
                   }
@@ -2421,12 +2414,8 @@ export function CampusManageDashboard() {
                 );
                 setPendingStudent(null);
               },
-              onError: (error) => {
-                toast.error(
-                  getApiResponseError(error, {
-                    fallback: "Failed to update student type",
-                  }),
-                );
+              onError: () => {
+                // Error toast handled by useChangeStudentType's own onError.
                 setPendingStudent(null);
               },
             },

@@ -26,7 +26,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import type { UserResult } from "@/hooks/use-search";
 import { useCreateIgChapter, useGlobalIgs } from "../hooks";
 
@@ -82,13 +81,7 @@ export function IgChapterFormDialog({ trigger }: IgChapterFormDialogProps) {
           form.reset();
           setSelectedUser(null);
         },
-        onError: (error) => {
-          toast.error(
-            getApiResponseError(error, {
-              fallback: "Failed to create IG chapter",
-            }),
-          );
-        },
+        // Error toast handled by useCreateIgChapter's onError.
       },
     );
   };
