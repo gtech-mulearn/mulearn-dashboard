@@ -235,7 +235,7 @@ export function useOrganizationData(districtId: string) {
   });
 }
 
-export function useEditCollege() {
+export function useEditCollege(options: { suppressErrorToast?: boolean } = {}) {
   return useMutation({
     mutationFn: ({
       organization,
@@ -245,9 +245,11 @@ export function useEditCollege() {
       department: string;
     }) => editCollege(organization, department),
     onError: (error) => {
-      toast.error(
-        getApiResponseError(error, { fallback: "Failed to update college" }),
-      );
+      if (!options.suppressErrorToast) {
+        toast.error(
+          getApiResponseError(error, { fallback: "Failed to update college" }),
+        );
+      }
     },
   });
 }
