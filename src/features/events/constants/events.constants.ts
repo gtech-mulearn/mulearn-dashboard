@@ -22,6 +22,13 @@ type LabelValueOption<T extends string> = {
   value: T;
 };
 
+/** Cover image crop target — matches the portrait poster ratio in event-card.tsx. */
+export const EVENT_COVER_IMAGE_ASPECT = 3 / 4;
+/** Banner image crop target — matches the desktop hero ratio in event-hero-banner.tsx. */
+export const EVENT_BANNER_IMAGE_ASPECT = 21 / 8;
+/** Banner's mobile hero ratio, used as the crop dialog's mobile-preview thumbnail. */
+export const EVENT_BANNER_IMAGE_MOBILE_PREVIEW_ASPECT = 16 / 9;
+
 export const EVENT_STATUS_MAP: Record<
   EventStatus,
   { label: string; className: string }

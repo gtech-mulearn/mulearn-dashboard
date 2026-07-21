@@ -6,6 +6,7 @@ import * as React from "react";
 import { toast } from "sonner";
 import { MAX_IMAGE_UPLOAD_MB } from "@/lib/constants/upload";
 import { Button } from "./button";
+import { ImageCropDialog } from "./image-crop-dialog";
 
 interface ImageUploadProps {
   value: File | null;
@@ -13,6 +14,11 @@ interface ImageUploadProps {
   currentUrl?: string | null;
   maxSizeMB?: number;
   disabled?: boolean;
+  /** When set, a picked file is cropped to this ratio before onChange fires. */
+  aspectRatio?: number;
+  cropShape?: "rect" | "round";
+  /** Optional secondary preview ratio shown in the crop dialog (e.g. mobile). */
+  previewAspect?: number;
 }
 
 export function ImageUpload({
@@ -21,12 +27,16 @@ export function ImageUpload({
   currentUrl,
   maxSizeMB = MAX_IMAGE_UPLOAD_MB,
   disabled = false,
+  aspectRatio,
+  cropShape,
+  previewAspect,
 }: ImageUploadProps) {
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(
     currentUrl ?? null,
   );
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = React.useState(false);
+  const [cropSourceUrl, setCropSourceUrl] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     if (value) {
@@ -49,7 +59,16 @@ export function ImageUpload({
       toast.error(`File is too large. Maximum size is ${maxSizeMB}MB.`);
       return;
     }
+    if (aspectRatio) {
+      setCropSourceUrl(URL.createObjectURL(file));
+      return;
+    }
     onChange(file);
+  };
+
+  const closeCropDialog = () => {
+    if (cropSourceUrl) URL.revokeObjectURL(cropSourceUrl);
+    setCropSourceUrl(null);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -150,6 +169,22 @@ export function ImageUpload({
           </div>
         </button>
       )}
+
+      {aspectRatio && cropSourceUrl ? (
+        <ImageCropDialog
+          open
+          imageSrc={cropSourceUrl}
+          aspect={aspectRatio}
+          cropShape={cropShape}
+          previewAspect={previewAspect}
+          outputMaxSizeMB={maxSizeMB}
+          onCropComplete={(file) => {
+            closeCropDialog();
+            onChange(file);
+          }}
+          onCancel={closeCropDialog}
+        />
+      ) : null}
     </div>
   );
 }

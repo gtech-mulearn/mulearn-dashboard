@@ -38,8 +38,8 @@ import { CoOwnersPanel } from "./co-owners-panel";
 import { CollaboratorsPanel } from "./collaborators-panel";
 import { EventAnalyticsPanel } from "./event-analytics-panel";
 import { EventDetailView } from "./event-detail-view";
+import { EventDetailsCard } from "./event-details-card";
 import { EventInlineEditForm } from "./event-inline-edit-form";
-import { EventReviewPanel } from "./event-review-panel";
 import { PublishFlowPanel } from "./publish-flow-panel";
 
 function HistoryLogEntry({ entry }: HistoryLogEntryProps) {
@@ -145,7 +145,8 @@ export function ManageEventDetailView({
   const [peopleTab, setPeopleTab] = useState<"co-owners" | "collaborators">(
     "co-owners",
   );
-  const [activeTab, setActiveTab] = useState<ManagePanelSectionValue>("review");
+  const [activeTab, setActiveTab] =
+    useState<ManagePanelSectionValue>("publishing");
   const [isEditing, setIsEditing] = useState(false);
   const [isEditSaveArmed, setIsEditSaveArmed] = useState(false);
   const [formIsDirty, setFormIsDirty] = useState(false);
@@ -257,14 +258,6 @@ export function ManageEventDetailView({
   };
 
   const renderPanelSection = (panel: ManagePanelSectionValue) => {
-    if (panel === "review") {
-      return (
-        <div className="pt-3">
-          <EventReviewPanel event={event} />
-        </div>
-      );
-    }
-
     if (panel === "publishing") {
       return (
         <div className="space-y-3 pt-3">
@@ -332,7 +325,7 @@ export function ManageEventDetailView({
                     variant="outline"
                     onClick={() => setPeoplePanelOpen((value) => !value)}
                   >
-                    {peoplePanelOpen ? "Hide People" : "People"}
+                    {peoplePanelOpen ? "Hide Collaborators" : "Collaborators"}
                   </Button>
                   <Button variant="outline" onClick={enterEditMode}>
                     <Pencil className="mr-2 h-4 w-4" /> Edit
@@ -422,13 +415,16 @@ export function ManageEventDetailView({
               onDirtyChange={setFormIsDirty}
             />
           ) : (
-            <EventDetailView
-              eventId={eventId}
-              initialEvent={event}
-              showInterestButton={false}
-              layout="content-only"
-              showVenue={false}
-            />
+            <>
+              <EventDetailView
+                eventId={eventId}
+                initialEvent={event}
+                showInterestButton={false}
+                layout="content-only"
+                showVenue={false}
+              />
+              <EventDetailsCard event={event} />
+            </>
           )}
         </div>
 
@@ -450,7 +446,7 @@ export function ManageEventDetailView({
                 setActiveTab(value as ManagePanelSectionValue)
               }
             >
-              <TabsList className="grid h-auto w-full grid-cols-3 rounded-none border-b border-border bg-muted p-0">
+              <TabsList className="grid h-auto w-full grid-cols-2 rounded-none border-b border-border bg-muted p-0">
                 {MANAGE_PANEL_SECTIONS.map((panel) => (
                   <TabsTrigger
                     key={panel.value}
@@ -539,7 +535,7 @@ export function ManageEventDetailView({
                   setActiveTab(value as ManagePanelSectionValue)
                 }
               >
-                <TabsList className="grid h-auto w-full grid-cols-3 rounded-none border-b border-border bg-muted p-0">
+                <TabsList className="grid h-auto w-full grid-cols-2 rounded-none border-b border-border bg-muted p-0">
                   {MANAGE_PANEL_SECTIONS.map((panel) => (
                     <TabsTrigger
                       key={panel.value}

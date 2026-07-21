@@ -11,10 +11,6 @@ export const EVENT_CREATE_WIZARD_STEPS = [
 
 export const MANAGE_PANEL_SECTIONS = [
   {
-    value: "review",
-    label: "Review",
-  },
-  {
     value: "publishing",
     label: "Publishing",
   },

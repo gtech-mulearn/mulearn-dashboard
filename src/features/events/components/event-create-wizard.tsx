@@ -28,6 +28,9 @@ import { getApiResponseError } from "@/hooks/use-get-error";
 import { usePermissions } from "@/hooks/use-permissions";
 import { eventsApi } from "../api";
 import {
+  EVENT_BANNER_IMAGE_ASPECT,
+  EVENT_BANNER_IMAGE_MOBILE_PREVIEW_ASPECT,
+  EVENT_COVER_IMAGE_ASPECT,
   EVENT_CREATE_WIZARD_STEPS,
   EVENT_FORM_DEFAULT_VALUES,
   EVENT_SCOPE_OPTIONS,
@@ -1311,6 +1314,7 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                       <ImageUpload
                         value={coverImageFile}
                         onChange={setCoverImageFile}
+                        aspectRatio={EVENT_COVER_IMAGE_ASPECT}
                       />
                     </div>
                     <div className="space-y-2">
@@ -1320,6 +1324,8 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                       <ImageUpload
                         value={bannerImageFile}
                         onChange={setBannerImageFile}
+                        aspectRatio={EVENT_BANNER_IMAGE_ASPECT}
+                        previewAspect={EVENT_BANNER_IMAGE_MOBILE_PREVIEW_ASPECT}
                       />
                     </div>
                   </div>
