@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -98,6 +99,9 @@ export function AccountSettingsModal({
       <DialogContent className="flex flex-col gap-0 p-0 sm:max-w-md">
         <DialogHeader className="shrink-0 px-6 pt-6 pb-4">
           <DialogTitle>Account Settings</DialogTitle>
+          <DialogDescription className="sr-only">
+            Manage your account credentials, security settings, and data.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="overflow-y-auto px-6 py-4 space-y-2">

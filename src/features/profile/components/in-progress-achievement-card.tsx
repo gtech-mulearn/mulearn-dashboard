@@ -13,25 +13,7 @@ import { Award, Lock } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import type { Achievement, EligibleAchievement } from "@/features/achievements";
-
-function resolveMediaUrl(url: string | null | undefined): string | null {
-  if (!url) return null;
-  // Normalise to https so Next.js Image remotePatterns match correctly
-  const normalised = url.startsWith("http://")
-    ? url.replace("http://", "https://")
-    : url;
-  if (normalised.startsWith("https://")) return normalised;
-  if (normalised.startsWith("/images/") || normalised.startsWith("/assets/"))
-    return normalised;
-  const base = (process.env.NEXT_PUBLIC_DJANGO_API_URL ?? "").replace(
-    /\/$/,
-    "",
-  );
-  const relativePath = normalised.startsWith("/")
-    ? normalised
-    : `/media/${normalised}`;
-  return `${base}${relativePath}`;
-}
+import { resolveMediaUrl } from "@/lib/utils";
 
 function ProgressBar({ value }: { value: number }) {
   const clamped = Math.min(100, Math.max(0, value));

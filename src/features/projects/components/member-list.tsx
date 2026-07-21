@@ -1,6 +1,7 @@
 "use client";
 import { X } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { ProjectMember } from "../schemas";
@@ -36,7 +37,18 @@ export function MemberList({ members, onRemove }: Props) {
                 {m.full_name.charAt(0)}
               </div>
             )}
-            <span>{m.full_name}</span>
+            {m.is_linked && m.muid ? (
+              <Link
+                href={`/dashboard/profile/${m.muid}`}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="hover:underline"
+              >
+                {m.full_name}
+              </Link>
+            ) : (
+              <span>{m.full_name}</span>
+            )}
             {m.is_linked ? (
               <span className="text-xs text-muted-foreground">({m.muid})</span>
             ) : (
@@ -49,7 +61,12 @@ export function MemberList({ members, onRemove }: Props) {
             )}
           </div>
           {onRemove && (
-            <Button size="icon" variant="ghost" onClick={() => onRemove(m.id)}>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-6 w-6 text-foreground hover:bg-destructive/10 hover:text-destructive"
+              onClick={() => onRemove(m.id)}
+            >
               <X className="h-3 w-3" />
             </Button>
           )}

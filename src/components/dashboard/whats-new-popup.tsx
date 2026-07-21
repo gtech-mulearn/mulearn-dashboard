@@ -64,12 +64,13 @@ export function WhatsNewPopup({
     <Dialog
       open={isVisible}
       onOpenChange={(open) => {
-        if (!open) {
-          void handleClose();
-        }
+        if (!open) void handleClose();
       }}
     >
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent
+        className="sm:max-w-xl"
+        onPointerDownOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>What&apos;s new</DialogTitle>
           <DialogDescription>

@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -103,6 +104,9 @@ export function ShareProfileModal({
             <Link2 className="h-5 w-5" />
             Share Profile
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            Share your profile link or QR code with others.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="overflow-y-auto px-6 pb-6 space-y-4">

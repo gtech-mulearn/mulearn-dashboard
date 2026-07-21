@@ -47,7 +47,9 @@ export function StepBasicInfo({ form }: StepBasicInfoProps) {
           name="title"
           render={({ field }) => (
             <FormItem className="sm:col-span-2">
-              <FormLabel>Job Title</FormLabel>
+              <FormLabel>
+                Job Title <span className="text-destructive">*</span>
+              </FormLabel>
               <FormControl>
                 <Input
                   {...field}
@@ -64,7 +66,9 @@ export function StepBasicInfo({ form }: StepBasicInfoProps) {
           name="job_type"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Job Type</FormLabel>
+              <FormLabel>
+                Job Type <span className="text-destructive">*</span>
+              </FormLabel>
               <Select value={field.value} onValueChange={field.onChange}>
                 <FormControl>
                   <SelectTrigger>
@@ -89,7 +93,9 @@ export function StepBasicInfo({ form }: StepBasicInfoProps) {
           name="location"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Location</FormLabel>
+              <FormLabel>
+                Location <span className="text-destructive">*</span>
+              </FormLabel>
               <FormControl>
                 <Input {...field} placeholder="e.g. Remote, Kochi, Bangalore" />
               </FormControl>
@@ -104,7 +110,9 @@ export function StepBasicInfo({ form }: StepBasicInfoProps) {
             name="salary_range"
             render={({ field }) => (
               <FormItem className="sm:col-span-2">
-                <FormLabel>Salary Range</FormLabel>
+                <FormLabel>
+                  Salary Range <span className="text-destructive">*</span>
+                </FormLabel>
                 <FormControl>
                   <Input {...field} placeholder="e.g. 12-18 LPA, ₹30K-50K/mo" />
                 </FormControl>

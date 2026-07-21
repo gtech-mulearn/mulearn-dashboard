@@ -46,16 +46,17 @@ export const TaskFormSchema = z.object({
   title: z.string().min(2, "Too Short!").max(50, "Too Long!"),
   karma: z.coerce
     .number()
-    .positive("Karma should be a positive value")
-    .min(10, "Needs to be at least 2 digits.")
-    .max(9999, "Should not exceed 4 digits"),
+    .int("Karma Points must be a whole number")
+    .positive("Karma Points must be a positive number")
+    .min(10, "Karma Points must be at least 10")
+    .max(
+      9999,
+      "Karma Points cannot exceed the maximum allowed value of 9,999.",
+    ),
   usage_count: z.coerce.number().min(1, "Mention the number of uses"),
   active: z.boolean().default(true),
   variable_karma: z.boolean().default(false),
-  description: z
-    .string()
-    .max(100, "Too Long!")
-    .min(1, "A description is required"),
+  description: z.string().min(1, "A description is required"),
   channel_id: z.string().min(1, "Select a Channel"),
   type_id: z.string().min(1, "Select a Type"),
   level_id: z.string().nullable().optional(),

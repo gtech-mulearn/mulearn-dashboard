@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -361,6 +362,9 @@ export function IssueVCModal({
       <DialogContent className="flex flex-col gap-0 p-0 sm:max-w-md">
         <DialogHeader className="shrink-0 px-6 pt-6 pb-4">
           <DialogTitle>{getTitle()}</DialogTitle>
+          <DialogDescription className="sr-only">
+            Issue or view Verifiable Credentials for achievements.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="overflow-y-auto px-6 py-4">{renderContent()}</div>

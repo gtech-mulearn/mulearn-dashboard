@@ -123,6 +123,8 @@ export function CompanyTasksPage() {
           <StateDisplay
             variant="no-tasks"
             className="rounded-2xl border border-dashed"
+            title="No company tasks created yet"
+            description="You haven't submitted any community tasks yet. Use the 'Create Task' button above to submit a task for admin review."
           />
         ) : (
           <StateDisplay

@@ -16,6 +16,7 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
+  Download,
   Edit2,
   ExternalLink,
   Key,
@@ -24,6 +25,7 @@ import {
   QrCode,
   Radio,
   Repeat,
+  UserRound,
   Users,
   Video,
 } from "lucide-react";
@@ -31,6 +33,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { endpoints } from "@/api/endpoints";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,6 +44,7 @@ import {
 } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
 import { useUserInfo } from "@/features/auth/hooks";
+import { useCsvDownload } from "@/hooks/use-csv-download";
 import {
   useCircleDetail,
   useCircleMeetings,
@@ -134,6 +138,12 @@ export function MeetingDetailView({
   const [showJoinQr, setShowJoinQr] = useState(false);
   const [showLinkQr, setShowLinkQr] = useState(false);
 
+  const csvFilename = `meeting-attendees-${meetingId}-${format(new Date(), "yyyy-MM-dd")}.csv`;
+  const { downloadCsv, isDownloading } = useCsvDownload(
+    endpoints.learningCircle.meetingReportExport(meetingId),
+    csvFilename,
+  );
+
   const { data: rawMeeting, isLoading } = useMeetingDetail(meetingId);
   const { data: circle } = useCircleDetail(circleId);
   const { data: members } = useCircleMembers(circleId);
@@ -159,10 +169,25 @@ export function MeetingDetailView({
     members ?? undefined,
   );
 
-  const isCreator = meeting?.created_by_id
-    ? members?.members?.some(
-        (m) => m.muid === meeting.created_by_id && m.is_leader,
-      ) || permissions.role === "owner"
+  // Resolve the creator's display name:
+  // 1. Use `created_by` from the detail API response (name string) if present.
+  // 2. Fall back to looking them up in the members list by their UUID.
+  const creatorMember = meeting?.created_by_id
+    ? members?.members?.find(
+        (m) =>
+          m.id === meeting.created_by_id || m.muid === meeting.created_by_id,
+      )
+    : undefined;
+
+  const creatorName =
+    meeting?.created_by || creatorMember?.full_name || undefined;
+
+  // Fallback to meeting.created_by_id if not found, in case it's already an muid
+  const creatorMuid = creatorMember?.muid || meeting?.created_by_id;
+
+  const isCreator = creatorMuid
+    ? members?.members?.some((m) => m.muid === creatorMuid && m.is_leader) ||
+      permissions.role === "owner"
     : false;
 
   /**
@@ -173,7 +198,7 @@ export function MeetingDetailView({
    */
   const canDeleteThisMeeting =
     permissions.canDeleteMeeting ||
-    (userInfo?.muid != null && userInfo.muid === meeting?.created_by_id);
+    (userInfo?.muid != null && userInfo.muid === creatorMuid);
 
   const currentUserAttendee = userInfo
     ? meeting?.attendees.find((a) => a.user_id === userInfo.muid)
@@ -240,7 +265,10 @@ export function MeetingDetailView({
   // A meeting occurrence is active only until it ends — being recurring does NOT
   // keep an ended occurrence active (RSVP/join/leave must close once it ends).
   const isActive = !meeting.is_ended;
-  const canRsvp = isActive && !hasAttendeeRecord && meeting.is_member;
+  // RSVP is only meaningful before the meeting starts; once it's live the
+  // only action is Join — hide RSVP to avoid confusion.
+  const canRsvp =
+    isActive && !meeting.is_started && !hasAttendeeRecord && meeting.is_member;
   const canCancelAttendance = hasAttendeeRecord && !hasJoined && isActive;
   const canLeave = hasJoined && isActive;
   const status = getStatus(meeting);
@@ -424,14 +452,16 @@ export function MeetingDetailView({
                 {isOnline ? "Platform" : "Location"}
               </span>
               {isOnline && meeting.meet_link && (
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon"
                   onClick={() => setShowLinkQr(true)}
-                  className="ml-1 text-muted-foreground hover:text-primary transition-colors"
+                  className="ml-1 h-6 w-6 text-muted-foreground hover:text-primary"
                   title="Show Link QR"
                 >
                   <QrCode className="h-3.5 w-3.5" />
-                </button>
+                </Button>
               )}
             </div>
             {isOnline && meeting.meet_link ? (
@@ -469,6 +499,21 @@ export function MeetingDetailView({
             )}
           </div>
 
+          {creatorName && (
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                <UserRound className="h-4 w-4" />
+                <span className="text-[13px] font-medium">Created by</span>
+              </div>
+              <span
+                className="text-[15px] font-semibold text-foreground truncate"
+                title={creatorName}
+              >
+                {creatorName}
+              </span>
+            </div>
+          )}
+
           {meeting.is_recurring && (
             <div className="flex flex-col">
               <div className="flex items-center gap-2 text-muted-foreground mb-1">
@@ -498,14 +543,16 @@ export function MeetingDetailView({
                   <p className="font-mono text-[16px] font-bold tracking-widest text-warning">
                     {meeting.meet_code}
                   </p>
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setShowJoinQr(true)}
-                    className="flex items-center gap-1 rounded-md bg-warning/10 px-2 py-1 text-[11px] font-semibold text-warning hover:bg-warning/20 transition-colors"
+                    className="flex items-center gap-1 rounded-md bg-warning/10 px-2 py-1 text-[11px] font-semibold text-warning hover:bg-warning/20"
                   >
                     <QrCode className="h-3.5 w-3.5" />
                     Share QR
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -515,16 +562,33 @@ export function MeetingDetailView({
 
       {/* ─── Attendees ─── */}
       <div className="w-full rounded-2xl bg-card p-4 sm:p-6 lg:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-border flex flex-col">
-        <h3 className="text-[16px] font-bold text-foreground mb-6 flex items-center gap-2 flex-wrap">
-          Attendees{" "}
-          <span className="text-sm font-medium text-muted-foreground">
-            ({joinedAttendees.length} joined
-            {pendingJoinAttendees.length > 0
-              ? `, ${pendingJoinAttendees.length} not joined`
-              : ""}
-            )
-          </span>
-        </h3>
+        <div className="mb-6 flex items-center justify-between gap-3 flex-wrap">
+          <h3 className="text-[16px] font-bold text-foreground flex items-center gap-2 flex-wrap">
+            Attendees{" "}
+            <span className="text-sm font-medium text-muted-foreground">
+              ({joinedAttendees.length} joined
+              {pendingJoinAttendees.length > 0
+                ? `, ${pendingJoinAttendees.length} not joined`
+                : ""}
+              )
+            </span>
+          </h3>
+          {permissions.canSubmitReport && (
+            <Button
+              type="button"
+              id="meeting-attendees-export-csv"
+              aria-label="Download attendees CSV"
+              variant="outline"
+              size="sm"
+              onClick={downloadCsv}
+              disabled={isDownloading}
+              className="rounded-xl text-[12px]"
+            >
+              <Download className="h-3.5 w-3.5" />
+              {isDownloading ? "Downloading…" : "Download CSV"}
+            </Button>
+          )}
+        </div>
 
         {meeting.attendees.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-2xl bg-muted py-10">
@@ -625,6 +689,7 @@ export function MeetingDetailView({
         open={showJoinModal}
         onOpenChange={setShowJoinModal}
         defaultCode={joinMeetCode || ""}
+        meetLink={meeting.meet_link ?? undefined}
       />
       {meeting?.meet_code && (
         <QrModal
@@ -656,12 +721,20 @@ export function MeetingDetailView({
               {hasJoined ? "Leave Meeting?" : "Cancel RSVP?"}
             </DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            {hasJoined
-              ? "You will be removed from the attendees list."
-              : "You will be removed from the RSVP list."}{" "}
-            You can RSVP again if you change your mind.
-          </p>
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              {hasJoined
+                ? "You will be removed from the attendees list. You can rejoin if the meeting is still active."
+                : "You will be removed from the RSVP list. You can RSVP again if you change your mind."}
+            </p>
+            {hasJoined && meeting?.meet_link && (
+              <p className="text-xs text-muted-foreground/70">
+                Note: This only updates your in-app participation status. If the
+                meeting is open in another browser tab, please close it
+                manually.
+              </p>
+            )}
+          </div>
           <div className="flex justify-end gap-3 pt-2">
             <Button
               variant="outline"

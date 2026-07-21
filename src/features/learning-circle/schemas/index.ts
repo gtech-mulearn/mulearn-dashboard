@@ -48,6 +48,7 @@ export {
   SendInviteRequestSchema,
   TransferLeadRequestSchema,
   UserBasicSchema,
+  UserCircleListResponseSchema,
 } from "./circle.schema";
 export type {
   AttendeeReportRequest,

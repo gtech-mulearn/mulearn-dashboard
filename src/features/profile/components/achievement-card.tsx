@@ -15,27 +15,9 @@ import { Award } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { resolveMediaUrl } from "@/lib/utils";
 import type { UserAchievement } from "../schemas";
 import { IssueVCModal } from "./issue-vc-modal";
-
-function resolveMediaUrl(url: string | null | undefined): string | null {
-  if (!url) return null;
-  // Normalise to https so Next.js Image remotePatterns match correctly
-  const normalised = url.startsWith("http://")
-    ? url.replace("http://", "https://")
-    : url;
-  if (normalised.startsWith("https://")) return normalised;
-  if (normalised.startsWith("/images/") || normalised.startsWith("/assets/"))
-    return normalised;
-  const base = (process.env.NEXT_PUBLIC_DJANGO_API_URL ?? "").replace(
-    /\/$/,
-    "",
-  );
-  const relativePath = normalised.startsWith("/")
-    ? normalised
-    : `/media/${normalised}`;
-  return `${base}${relativePath}`;
-}
 
 interface AchievementCardProps {
   achievement: UserAchievement;

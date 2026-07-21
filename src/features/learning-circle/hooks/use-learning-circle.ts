@@ -14,6 +14,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { toast } from "sonner";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
@@ -39,6 +40,7 @@ import {
   getMyPendingInvites,
   getPublicMeetings,
   getSentInvites,
+  getUserCircles,
   getUserMeetings,
   joinCircle,
   joinMeeting,
@@ -96,6 +98,49 @@ export function useCircles() {
     queryFn: getCircles,
     staleTime: STALE_TIME,
   });
+}
+
+export function useUserCircles() {
+  return useQuery({
+    queryKey: learningCircleKeys.userCircles(),
+    queryFn: getUserCircles,
+    staleTime: STALE_TIME,
+  });
+}
+
+export function useActiveInvites() {
+  const {
+    data: invites,
+    isLoading: invitesLoading,
+    error: invitesError,
+  } = useMyPendingInvites();
+  const {
+    data: userCircles,
+    isLoading: circlesLoading,
+    error: circlesError,
+  } = useUserCircles();
+
+  const joinedCircleIds = useMemo(() => {
+    return new Set(userCircles?.map((c) => c.id) ?? []);
+  }, [userCircles]);
+
+  const activeInvites = useMemo(() => {
+    if (!invites) return [];
+    return invites.filter((inv) => {
+      if (!inv.circle_id) return true;
+      return !joinedCircleIds.has(inv.circle_id);
+    });
+  }, [invites, joinedCircleIds]);
+
+  const activeInvitesCount = activeInvites.length;
+
+  return {
+    activeInvites,
+    activeInvitesCount,
+    joinedCircleIds,
+    isLoading: invitesLoading || circlesLoading,
+    isError: !!(invitesError || circlesError),
+  };
 }
 
 export function useCircleDetail(circleId: string) {
@@ -400,6 +445,9 @@ export function useRespondToInvite() {
       queryClient.invalidateQueries({
         queryKey: learningCircleKeys.circleList(),
       });
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.userCircles(),
+      });
       toast.success("Invite response submitted");
     },
     onError: (error) => {
@@ -436,6 +484,9 @@ export function useRespondToInviteByLink() {
       });
       queryClient.invalidateQueries({
         queryKey: learningCircleKeys.circleList(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: learningCircleKeys.userCircles(),
       });
       toast.success("Invite response submitted");
     },

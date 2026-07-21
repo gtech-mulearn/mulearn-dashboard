@@ -70,6 +70,7 @@ export function EventInlineEditForm({
     watch,
     setValue,
     setError,
+    clearErrors,
     formState: { errors, isDirty },
   } = useForm<CreateEventSchema>({
     resolver: zodResolver(updateEventSchema) as Resolver<CreateEventSchema>,
@@ -456,7 +457,11 @@ export function EventInlineEditForm({
                                     categoryOptions?.[0];
 
                                   if (matchingCat) {
-                                    field.onChange(matchingCat.id);
+                                    setValue("category", matchingCat.id, {
+                                      shouldValidate: true,
+                                    });
+                                  } else {
+                                    clearErrors("category");
                                   }
                                   setValue("event_type", item.value, {
                                     shouldDirty: true,

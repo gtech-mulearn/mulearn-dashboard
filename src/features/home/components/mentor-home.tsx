@@ -2,15 +2,15 @@
 
 import { format } from "date-fns";
 import {
-  AlertTriangle,
   BookOpen,
   CalendarCheck2,
   Clock,
   Loader2,
+  XCircle,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -21,6 +21,7 @@ import {
 import {
   useAvailabilitySlots,
   useCreateAvailabilitySlots,
+  useMentorOverview,
 } from "@/features/mentor/hooks";
 import { MentorOnboardingForm } from "@/features/mentor/onboarding/components/mentor-onboarding-form";
 import {
@@ -30,11 +31,7 @@ import {
 } from "@/features/mentor/onboarding/hooks/use-onboarding";
 import type { WeeklySchedule } from "@/features/mentor/types";
 import { getApiResponseError } from "@/hooks/use-get-error";
-import {
-  useDashboardCalendar,
-  useMentorOverview,
-  useMentorSessions,
-} from "../hooks";
+import { useDashboardCalendar, useMentorSessions } from "../hooks";
 import { flattenDashboardCalendar } from "../utils";
 import { EventCalendarCard } from "./event-calendar-card";
 import { MentorHeroCard } from "./mentor/mentor-hero-card";
@@ -121,25 +118,27 @@ export function MentorHome() {
   }
 
   if (onboardingState === "rejected") {
+    const rejectionReason =
+      application?.rejection_reason ?? application?.verification_note;
     return (
       <div className="mx-auto max-w-2xl space-y-4 py-8">
-        <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
-            <span className="font-semibold">
-              Your application was not approved.
-            </span>
-            {application?.verification_note && (
-              <span className="mt-1 block text-sm">
+        <div className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+          <div>
+            <p className="font-semibold">
+              Your mentor application was not approved.
+            </p>
+            {rejectionReason && (
+              <p className="mt-0.5 text-destructive/90">
                 <span className="font-medium">Reason: </span>
-                {application.verification_note}
-              </span>
+                {rejectionReason}
+              </p>
             )}
-            <span className="mt-2 block text-sm">
+            <p className="mt-1 text-destructive/80">
               Please review your details below and resubmit your application.
-            </span>
-          </AlertDescription>
-        </Alert>
+            </p>
+          </div>
+        </div>
         <MentorOnboardingForm existing={mentorProfile} isEdit isReapply />
       </div>
     );
@@ -171,6 +170,7 @@ export function MentorHome() {
   const isVerified = (overview?.scopes.length ?? 0) > 0;
 
   // Pending review: say exactly who acts next instead of a blank page.
+  // (Rejected applications already returned above with the rejection banner + reapply form.)
   if (!isVerified) {
     return (
       <div className="mx-auto max-w-2xl py-8">
@@ -222,11 +222,33 @@ export function MentorHome() {
     mapToOverviewSession,
   );
 
+  let sessionsCompleted = 0;
+  let activeLearners = 0;
+  let pendingReviews = 0;
+
+  if (overview?.scopes) {
+    for (const scope of overview.scopes) {
+      const m = scope.metrics || {};
+      sessionsCompleted += m.completed_sessions ?? 0;
+      activeLearners += m.active_learners ?? m.active_ig_learners ?? 0;
+      pendingReviews +=
+        m.pending_task_reviews ?? m.pending_appraisals ?? m.pending_tasks ?? 0;
+    }
+  }
+
   const statCards = [
     {
       key: "active_mentees",
-      label: "Unique Mentees",
-      value: 0,
+      label: "Active Mentees",
+      value: activeLearners,
+      delta: 0,
+      delta_type: "neutral" as const,
+      period: "all_time",
+    },
+    {
+      key: "volunteer_hours",
+      label: "Hours Mentored",
+      value: mentorProfile?.hours ?? 0,
       delta: 0,
       delta_type: "neutral" as const,
       period: "all_time",
@@ -234,7 +256,15 @@ export function MentorHome() {
     {
       key: "sessions_conducted",
       label: "Sessions Done",
-      value: upcomingSessions.length,
+      value: sessionsCompleted,
+      delta: 0,
+      delta_type: "neutral" as const,
+      period: "all_time",
+    },
+    {
+      key: "pending_task_approvals",
+      label: "Pending Approvals",
+      value: pendingReviews,
       delta: 0,
       delta_type: "neutral" as const,
       period: "all_time",

@@ -4,7 +4,12 @@ import { Check, Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
 import { useInterestGroupsList } from "../hooks";
 import type { InterestGroup, InterestGroupListItem } from "../schemas";
@@ -103,9 +108,9 @@ export function EditInterestGroupsModal({
           <DialogTitle className="text-base font-semibold tracking-tight">
             Your Interests
           </DialogTitle>
-          <p className="mt-0.5 text-sm text-muted-foreground">
+          <DialogDescription className="mt-0.5 text-sm text-muted-foreground">
             Choose up to 3 groups that match your goals
-          </p>
+          </DialogDescription>
 
           {/* Progress indicator */}
           {(() => {

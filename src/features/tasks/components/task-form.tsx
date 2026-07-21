@@ -447,7 +447,7 @@ export default function TaskForm({
 
       {/* Description Markdown Editor */}
       <div className="space-y-2">
-        <Label>Description * (max 100 characters)</Label>
+        <Label>Description *</Label>
         <Controller
           name="description"
           control={control}

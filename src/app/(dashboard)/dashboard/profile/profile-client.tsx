@@ -16,6 +16,7 @@ import {
   useMentorProfile,
 } from "@/features/mentor/onboarding/hooks/use-onboarding";
 import { MentorProfilePage } from "@/features/mentor/profile";
+import { useUIStore } from "@/stores/ui-store";
 import {
   AccountSettingsModal,
   Achievements,
@@ -54,8 +55,10 @@ import { ROLES } from "@/lib/auth/roles";
 export function ProfilePageClient() {
   const [activeTab, setActiveTab] = useState<ProfileTab>("basic-details");
   const [lastSavedDepartmentId, setLastSavedDepartmentId] = useState("");
-  // Toggle: true = show standard learner view even if user is a mentor
-  const [showLearnerView, setShowLearnerView] = useState(false);
+  // Persisted toggle: "learner" = show standard learner view even if user is a mentor.
+  // Stored in ui-store so it survives tab navigation and remounts.
+  const { profileViewMode, setProfileViewMode } = useUIStore();
+  const showLearnerView = profileViewMode === "learner";
 
   // Modal states
   const [showEditProfile, setShowEditProfile] = useState(false);
@@ -224,7 +227,9 @@ export function ProfilePageClient() {
   // Mentor users see the mentor profile by default, with a toggle to switch back
   if (isMentor && mentorProfile) {
     return (
-      <MentorProfilePage onSwitchToLearner={() => setShowLearnerView(true)} />
+      <MentorProfilePage
+        onSwitchToLearner={() => setProfileViewMode("learner")}
+      />
     );
   }
 
@@ -261,7 +266,7 @@ export function ProfilePageClient() {
           }
           onSwitchToMentor={
             profile?.roles.includes(ROLES.MENTOR) && isVerifiedMentor
-              ? () => setShowLearnerView(false)
+              ? () => setProfileViewMode("mentor")
               : undefined
           }
         />
