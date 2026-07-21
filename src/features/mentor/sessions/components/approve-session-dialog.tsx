@@ -2,7 +2,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { type Resolver, useForm } from "react-hook-form";
-import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -20,7 +19,6 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
-import { getApiResponseError } from "@/hooks/use-get-error";
 import { useApproveSession } from "../hooks/use-sessions";
 import type { Session } from "../schemas";
 
@@ -90,13 +88,6 @@ export function ApproveSessionDialog({
       },
       {
         onSuccess: () => onOpenChange(false),
-        onError: (error) => {
-          toast.error(
-            getApiResponseError(error, {
-              fallback: "Failed to update session status",
-            }),
-          );
-        },
       },
     );
   }
