@@ -2,14 +2,10 @@
 
 set -e
 
-echo "🎨 Formatting code with Biome..."
-bunx biome format --write .
-
-echo "🔍 Linting code with Biome (auto-fix)..."
-bunx biome lint --fix .
-
-# Re-stage files after auto-fix
-git add .
+echo "🎨 Formatting and linting staged files with Biome..."
+# lint-staged runs Biome against staged files only and re-stages what it fixes.
+# Do NOT use `git add .` here: it sweeps unrelated work into the commit.
+bunx lint-staged
 
 echo "🧠 Running TypeScript type check..."
 bun run typecheck
