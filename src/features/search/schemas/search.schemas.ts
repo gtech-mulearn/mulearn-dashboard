@@ -53,11 +53,20 @@ export const campusSearchResultSchema = z.object({
   id: z
     .union([z.string(), z.number(), z.null(), z.undefined()])
     .transform((val) => (val != null ? String(val) : "unknown")),
-  code: z.preprocess((val) => (val == null ? "" : String(val)), z.string()),
-  title: z.preprocess((val) => (val == null ? "" : String(val)), z.string()),
+  code: z.preprocess(
+    (val) => (val == null ? "" : String(val).trim()),
+    z.string(),
+  ),
+  title: z.preprocess(
+    (val) => (val == null ? "" : String(val).trim()),
+    z.string(),
+  ),
   zone: z.string().nullable().optional(),
   district: z.string().nullable().optional(),
-  member_count: z.preprocess((val) => {
+  affiliation: z.string().nullable().optional(),
+  state: z.string().nullable().optional(),
+  country: z.string().nullable().optional(),
+  user_count: z.preprocess((val) => {
     if (val === null || val === undefined) return 0;
     if (typeof val === "string") return parseInt(val, 10) || 0;
     if (typeof val === "number") return val;

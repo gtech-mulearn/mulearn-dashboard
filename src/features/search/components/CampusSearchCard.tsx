@@ -60,7 +60,7 @@ export function CampusSearchCard({ campus }: CampusSearchCardProps) {
             )}
             <span className="flex items-center gap-1.5 rounded-full border border-border/60 bg-background/60 px-2.5 py-1 text-[11px] font-semibold text-muted-foreground backdrop-blur-md">
               <Users className="h-3 w-3" />
-              {campus.member_count.toLocaleString()} Members
+              {campus.user_count.toLocaleString()} Members
             </span>
           </div>
 
