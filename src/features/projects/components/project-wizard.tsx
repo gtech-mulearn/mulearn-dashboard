@@ -33,6 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 import {
   type Project,
   ProjectFormSchema,
@@ -286,19 +287,25 @@ export function ProjectWizard({
 
                   return (
                     <Fragment key={label}>
-                      <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        aria-label={`Go to step ${stepIndex}: ${label}`}
+                        aria-current={isActive ? "step" : undefined}
+                        onClick={() => setCurrentStep(stepIndex)}
+                        className="group flex cursor-pointer items-center gap-3 rounded-lg text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
                         <Button
                           type="button"
                           size="icon-sm"
-                          onClick={() => setCurrentStep(stepIndex)}
                           variant={
                             isActive || isCompleted ? "default" : "secondary"
                           }
-                          className={
+                          className={cn(
+                            "pointer-events-none",
                             isActive
                               ? "ring-2 ring-brand-blue ring-offset-2"
-                              : undefined
-                          }
+                              : undefined,
+                          )}
                         >
                           {isCompleted ? (
                             <Check className="h-4 w-4" />
@@ -308,16 +315,17 @@ export function ProjectWizard({
                         </Button>
                         <div className="min-w-0 pt-1">
                           <p
-                            className={`text-xs whitespace-nowrap leading-none ${
+                            className={cn(
+                              "text-xs whitespace-nowrap leading-none transition-colors",
                               isActive
                                 ? "font-medium text-primary"
-                                : "text-muted-foreground"
-                            }`}
+                                : "text-muted-foreground group-hover:text-foreground",
+                            )}
                           >
                             {label}
                           </p>
                         </div>
-                      </div>
+                      </button>
                       {index < STEPS.length - 1 ? (
                         <div
                           className={`h-0.5 flex-1 self-center ${
