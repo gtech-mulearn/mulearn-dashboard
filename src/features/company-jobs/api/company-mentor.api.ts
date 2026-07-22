@@ -13,7 +13,6 @@
 import { z } from "zod";
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
-import { verifyMentor } from "@/features/mentor/admin/api/mentor-verify.api";
 
 // ─── Schemas ──────────────────────────────────────────────────────────────────
 
@@ -55,8 +54,6 @@ export interface NominateMentorPayload {
   muid: string;
   /** Optional reason / recommendation note */
   reason?: string;
-  /** Status to request on creation */
-  status?: "APPROVED";
 }
 
 // ─── API Functions ────────────────────────────────────────────────────────────
@@ -67,31 +64,18 @@ const OPT = { skipAuthRedirectOn403: true } as const;
  * POST /api/v1/dashboard/company/mentor/nominate/
  *
  * Nominate a platform user (by muid) as Company Mentor for the authenticated
- * company. Requires Company role and verified company profile.
- * The record enters PENDING state until an admin approves via PATCH /dashboard/mentor/verify/<mentor_id>/.
+ * company. The backend automatically approves company-nominated mentors.
  */
 export async function nominateCompanyMentor(
   payload: NominateMentorPayload,
 ): Promise<CompanyMentor> {
   const res = await apiClient.post(
     endpoints.company.mentorNominate,
-    { ...payload, status: "APPROVED" },
+    payload,
     NominateResponseSchema,
     OPT,
   );
-  const mentor = res.response;
-
-  // Auto-verify if the backend initially creates the mentor as PENDING
-  if (mentor.status === "PENDING") {
-    try {
-      await verifyMentor(mentor.id, { status: "APPROVED" });
-      mentor.status = "APPROVED";
-    } catch (err) {
-      console.error("Auto-verification of company mentor failed:", err);
-    }
-  }
-
-  return mentor;
+  return res.response;
 }
 
 /**
@@ -106,12 +90,5 @@ export async function fetchCompanyMentors(): Promise<CompanyMentor[]> {
     MentorListResponseSchema,
     OPT,
   );
-  // Auto-map PENDING to APPROVED for company-nominated mentors display
-  const mentors = (res.response || []).map((mentor) => {
-    if (mentor.status === "PENDING") {
-      return { ...mentor, status: "APPROVED" as const };
-    }
-    return mentor;
-  });
-  return mentors;
+  return res.response ?? [];
 }

@@ -36,6 +36,7 @@ export function CompanyTasksPage() {
 
   const { mutate: deleteTask, isPending: isDeleting } = useDeleteCompanyTask();
 
+  // Three status-filtered queries — pagination.count gives accurate per-status total
   const {
     data: approvedData,
     isLoading: approvedLoading,
@@ -43,7 +44,7 @@ export function CompanyTasksPage() {
   } = useCompanyTasks({
     approval_status: "approved",
     page: 1,
-    per_page: 100,
+    per_page: 50,
   });
   const {
     data: pendingData,
@@ -52,7 +53,7 @@ export function CompanyTasksPage() {
   } = useCompanyTasks({
     approval_status: "pending",
     page: 1,
-    per_page: 100,
+    per_page: 50,
   });
   const {
     data: rejectedData,
@@ -61,7 +62,7 @@ export function CompanyTasksPage() {
   } = useCompanyTasks({
     approval_status: "rejected",
     page: 1,
-    per_page: 100,
+    per_page: 50,
   });
 
   const isLoading = approvedLoading || pendingLoading || rejectedLoading;
@@ -122,10 +123,11 @@ export function CompanyTasksPage() {
     return normalizeStatus(task.approval_status) === statusFilter;
   });
 
-  const allCount = tasks.length;
-  const approvedCount = approvedTasks.length;
-  const pendingCount = pendingTasks.length;
-  const rejectedCount = rejectedTasks.length;
+  // Use backend-provided pagination.count for accurate totals (not array length)
+  const approvedCount = approvedData?.pagination?.count ?? approvedTasks.length;
+  const pendingCount = pendingData?.pagination?.count ?? pendingTasks.length;
+  const rejectedCount = rejectedData?.pagination?.count ?? rejectedTasks.length;
+  const allCount = approvedCount + pendingCount + rejectedCount;
 
   return (
     <div className="space-y-6">
@@ -161,7 +163,7 @@ export function CompanyTasksPage() {
         </TabsList>
       </Tabs>
 
-      {tasks.length === 0 || filteredTasks.length === 0 ? (
+      {allCount === 0 || filteredTasks.length === 0 ? (
         statusFilter === "all" ? (
           <StateDisplay
             variant="no-tasks"

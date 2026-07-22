@@ -38,8 +38,8 @@ export function useNominateCompanyMentor() {
   });
 }
 
-// §3.1: the owning company user may approve/reject their own COMPANY_MENTOR
-// nominations directly (same endpoint the admin verification flow uses).
+// Company owner can still approve/reject via the admin verify endpoint
+// (used for nominations from other flows where admin approval is required).
 export function useVerifyCompanyMentor() {
   const queryClient = useQueryClient();
 

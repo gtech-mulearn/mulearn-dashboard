@@ -77,45 +77,32 @@ export function ApplicantsSection({ jobId }: ApplicantsSectionProps) {
   const [pageIndex, setPageIndex] = useState(1);
   const [sortBy, setSortBy] = useState<string>("-karma");
 
-  // Filtered list (server-side filtered)
+  // Single paginated query for the active tab (server-side pagination + sort)
   const { data, isLoading, isError } = useJobApplicants(jobId, {
-    status:
-      statusFilter === "all"
-        ? undefined
-        : APP_STATUS_META[statusFilter as AppStatus]?.backendStatus ||
-          statusFilter,
-    search: search || undefined,
     sortBy: sortBy,
     pageIndex: pageIndex,
   });
 
-  // Unfiltered for counts
-  const { data: allData } = useJobApplicants(jobId, { perPage: 100 });
+  // All applicants from the current page for display + count purposes
+  const allApplicants = data?.applicants ?? [];
 
-  const rawApplicants = data?.applicants ?? [];
-  const allApplicants =
-    allData?.applicants ?? (rawApplicants.length > 0 ? rawApplicants : []);
+  // Use backend-provided total for the "All" count badge (accurate regardless of page size)
+  const totalCount = data?.pagination.count ?? allApplicants.length;
 
-  // Filter applicants strictly by current status & search term
-  const displayedApplicants = (
-    rawApplicants.length > 0 ? rawApplicants : allApplicants
-  ).filter((a) => {
+  // Client-side filter for display (backend status filter not supported on this endpoint)
+  const displayedApplicants = allApplicants.filter((a) => {
     const norm = normalizeStatus(a.status);
-    if (statusFilter !== "all" && norm !== statusFilter) {
-      return false;
-    }
+    if (statusFilter !== "all" && norm !== statusFilter) return false;
     if (search.trim()) {
       const q = search.toLowerCase().trim();
       const nameMatch = a.applicant_name?.toLowerCase().includes(q);
       const emailMatch = a.applicant_email?.toLowerCase().includes(q);
-      if (!nameMatch && !emailMatch) {
-        return false;
-      }
+      if (!nameMatch && !emailMatch) return false;
     }
     return true;
   });
 
-  // Calculate exact counts per status from all applicants
+  // Per-status counts from current page data
   const countByStatus = allApplicants.reduce<Record<string, number>>(
     (acc, a) => {
       const key = normalizeStatus(a.status);
@@ -131,9 +118,9 @@ export function ApplicantsSection({ jobId }: ApplicantsSectionProps) {
       <div className="flex items-center gap-2">
         <Users className="h-4 w-4 text-muted-foreground" />
         <h2 className="text-base font-semibold text-foreground">Applicants</h2>
-        {allApplicants.length > 0 && (
+        {totalCount > 0 && (
           <Badge variant="secondary" className="ml-1 text-xs">
-            {allApplicants.length}
+            {totalCount}
           </Badge>
         )}
       </div>
@@ -183,8 +170,7 @@ export function ApplicantsSection({ jobId }: ApplicantsSectionProps) {
       {/* Filter tabs */}
       <div className="mt-4 flex flex-wrap gap-1.5">
         {FILTER_TABS.map(({ key, label }) => {
-          const count =
-            key === "all" ? allApplicants.length : (countByStatus[key] ?? 0);
+          const count = key === "all" ? totalCount : (countByStatus[key] ?? 0);
           const isActive = statusFilter === key;
 
           return (
