@@ -134,7 +134,8 @@ export const NAV_ITEMS: readonly NavItem[] = [
     href: "/dashboard/learning-circle",
     icon: BookOpen,
     section: "main",
-    dynamicCheck: (roles) => !roles.some((r) => r === ROLES.COMPANY),
+    dynamicCheck: (roles) =>
+      !roles.some((r) => r === ROLES.COMPANY || r === ROLES.MENTOR),
   },
   {
     id: "search",

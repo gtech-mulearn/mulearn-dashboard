@@ -1,4 +1,5 @@
 import { CalendarClock } from "lucide-react";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -78,9 +79,10 @@ export function UpcomingSessionsCard({ sessions, isLoading }: Props) {
               const color = avatarColor(session.id);
               const status = session.status;
               return (
-                <div
+                <Link
+                  href={`/dashboard/mentor/sessions?session=${session.id}`}
                   key={session.id}
-                  className="flex items-center gap-3 border-b border-border py-3 last:border-b-0"
+                  className="flex items-center gap-3 border-b border-border py-3 px-2 -mx-2 rounded-xl transition-colors hover:bg-muted/50 last:border-b-0"
                 >
                   <div
                     className="flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-primary-foreground"
@@ -111,7 +113,7 @@ export function UpcomingSessionsCard({ sessions, isLoading }: Props) {
                   >
                     {status.charAt(0) + status.slice(1).toLowerCase()}
                   </span>
-                </div>
+                </Link>
               );
             })}
           </div>

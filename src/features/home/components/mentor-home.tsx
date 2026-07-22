@@ -9,6 +9,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ import {
   useCreateAvailabilitySlots,
   useMentorOverview,
 } from "@/features/mentor/hooks";
+import { useMentorTasks } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
 import { MentorOnboardingForm } from "@/features/mentor/onboarding/components/mentor-onboarding-form";
 import {
   deriveOnboardingState,
@@ -77,6 +79,14 @@ export function MentorHome() {
     useAvailabilitySlots();
   const { mutate: saveSchedule, isPending: isSaving } =
     useCreateAvailabilitySlots();
+
+  const {
+    data: mentorPendingTasksResult,
+    isLoading: mentorPendingTasksLoading,
+  } = useMentorTasks({
+    approval_status: "pending",
+  });
+  const mentorPendingTasksCount = mentorPendingTasksResult?.data?.length ?? 0;
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const { data: calendarData, isLoading: loadingCalendar } =
     useDashboardCalendar({
@@ -326,32 +336,39 @@ export function MentorHome() {
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         {/* Task Requests */}
-        <Card className="rounded-2xl border bg-card shadow-sm">
-          <CardHeader className="px-5 py-4">
-            <div className="flex flex-row items-center gap-2.5">
-              <div className="flex size-9 items-center justify-center rounded-xl bg-warning/10">
-                <BookOpen className="size-4 text-warning" />
-              </div>
-              <CardTitle className="text-base font-bold text-foreground">
-                Task Requests
-              </CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="px-5 pb-5 pt-0">
-            {overviewLoading ? (
-              <Skeleton className="h-12 w-full rounded-lg" />
-            ) : (
-              <div className="flex gap-4 text-sm">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-warning">—</p>
-                  <p className="text-[11px] text-muted-foreground uppercase tracking-wide">
-                    Pending
-                  </p>
+        <Link
+          href="/dashboard/mentor/task-requests?tab=pending"
+          className="block"
+        >
+          <Card className="h-full rounded-2xl border bg-card shadow-sm transition-colors hover:bg-muted/50 cursor-pointer">
+            <CardHeader className="px-5 py-4">
+              <div className="flex flex-row items-center gap-2.5">
+                <div className="flex size-9 items-center justify-center rounded-xl bg-warning/10">
+                  <BookOpen className="size-4 text-warning" />
                 </div>
+                <CardTitle className="text-base font-bold text-foreground">
+                  Task Requests
+                </CardTitle>
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardHeader>
+            <CardContent className="px-5 pb-5 pt-0">
+              {mentorPendingTasksLoading ? (
+                <Skeleton className="h-12 w-full rounded-lg" />
+              ) : (
+                <div className="flex gap-4 text-sm">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-warning">
+                      {mentorPendingTasksCount}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground uppercase tracking-wide">
+                      Pending
+                    </p>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </Link>
         <EventCalendarCard
           events={flattenDashboardCalendar(calendarData)}
           isLoading={loadingCalendar}
