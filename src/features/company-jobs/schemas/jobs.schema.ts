@@ -95,6 +95,11 @@ export const JobSchema = z.object({
       if (typeof v === "boolean") return v;
       return null;
     }),
+  applicant_count: z.number().optional().nullable(),
+  applications_count: z.number().optional().nullable(),
+  total_applicants: z.number().optional().nullable(),
+  applicantCount: z.number().optional().nullable(),
+  applicationsCount: z.number().optional().nullable(),
 });
 
 export const PaginationSchema = z
