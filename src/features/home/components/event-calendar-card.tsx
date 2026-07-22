@@ -286,40 +286,42 @@ export function EventCalendarCard({
               {format(selectedDate, "EEEE, MMM d")}
             </p>
             <div className="max-h-36 space-y-1.5 overflow-y-auto scrollbar-none">
-              {selectedDateEvents.map((event) => (
-                <div
-                  key={event.id}
-                  className="flex items-center gap-2.5 rounded-xl bg-card p-2.5 transition-all hover:-translate-y-0.5"
-                >
-                  <div
+              {selectedDateEvents.map((event) => {
+                const Wrapper = event.link ? "a" : "div";
+                return (
+                  <Wrapper
+                    key={event.id}
+                    href={event.link}
                     className={cn(
-                      "size-2 shrink-0 rounded-full",
-                      getEventBg(event.type ?? "other"),
+                      "group flex items-center gap-2.5 rounded-xl bg-card p-2.5 transition-all hover:-translate-y-0.5",
+                      event.link && "cursor-pointer hover:bg-accent/50",
                     )}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-xs font-medium text-foreground">
-                      {event.title}
-                    </p>
-                    {event.location && (
-                      <p className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                        <MapPin className="size-2.5" />
-                        {event.location}
+                  >
+                    <div
+                      className={cn(
+                        "size-2 shrink-0 rounded-full",
+                        getEventBg(event.type ?? "other"),
+                      )}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-xs font-medium text-foreground group-hover:text-primary transition-colors">
+                        {event.title}
                       </p>
+                      {event.location && (
+                        <p className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                          <MapPin className="size-2.5" />
+                          {event.location}
+                        </p>
+                      )}
+                    </div>
+                    {event.link && (
+                      <div className="shrink-0 text-primary transition-colors opacity-70 group-hover:opacity-100">
+                        <ExternalLink className="size-3.5" />
+                      </div>
                     )}
-                  </div>
-                  {event.link && (
-                    <a
-                      href={event.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="shrink-0 text-primary transition-colors hover:text-primary/80"
-                    >
-                      <ExternalLink className="size-3.5" />
-                    </a>
-                  )}
-                </div>
-              ))}
+                  </Wrapper>
+                );
+              })}
             </div>
           </div>
         ) : (
