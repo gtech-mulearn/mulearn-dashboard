@@ -72,23 +72,6 @@ import { learningCircleKeys } from "./query-keys";
 const STALE_TIME = 5 * 60 * 1000; // 5 minutes
 
 // ============================================
-// Form Dropdown Queries
-// ============================================
-
-export function useColleges(params?: {
-  page?: number;
-  perPage?: number;
-  search?: string;
-}) {
-  return useQuery({
-    queryKey: learningCircleKeys.colleges(params),
-    queryFn: () => getColleges(params),
-    placeholderData: keepPreviousData,
-    staleTime: STALE_TIME,
-  });
-}
-
-// ============================================
 // Circle Queries
 // ============================================
 

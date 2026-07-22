@@ -69,7 +69,6 @@ export {
   useCircleMembers,
   useCirclePermissions,
   useCircles,
-  useColleges,
   useCreateCircle,
   useCreateMeeting,
   useDeleteAttendeeReport,
