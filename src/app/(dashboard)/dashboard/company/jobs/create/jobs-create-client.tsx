@@ -28,58 +28,41 @@ export function CreateJobPageClient() {
     router.push("/dashboard/company/jobs");
   }, [router]);
 
-  const parseNumber = useCallback((val: string | number | undefined | null) => {
-    if (val === undefined || val === null || val === "") return undefined;
-    if (typeof val === "number") return val;
-    const clean = val.replace(/[^0-9.]/g, "");
-    const parsed = parseFloat(clean);
-    return Number.isNaN(parsed) ? undefined : parsed;
-  }, []);
-
   const handleSubmit = useCallback(
     async (values: JobFormValues, rules: JobRule[]) => {
       try {
-        const isGig = values.job_type === "Gig";
         const result = await createJobMutation.mutateAsync({
           title: values.title,
           experience: values.experience,
           job_description: values.job_description,
           location: values.location,
           job_type: values.job_type,
-          certificate_provided: values.certificate_provided ? "Yes" : "No",
+          salary_range: values.salary_range || undefined,
+          certificate_provided: values.certificate_provided ?? false,
+          duration_value:
+            values.duration_value != null
+              ? Number(values.duration_value)
+              : undefined,
+          duration_unit: values.duration_unit || undefined,
+          hourly_rate: values.hourly_rate || undefined,
+          stipend: values.stipend || undefined,
+          deliverables:
+            values.deliverables && values.deliverables.length > 0
+              ? values.deliverables
+              : undefined,
           rules: rules.map((r) => ({
             rule_type: r.rule_type,
             rule_value: r.rule_value,
           })),
-
-          // Distinguish Gig vs Other Jobs
-          ...(isGig
-            ? {
-                duration_value:
-                  values.duration_value != null
-                    ? Number(values.duration_value)
-                    : undefined,
-                duration_unit: values.duration_unit || undefined,
-                hourly_rate: parseNumber(values.hourly_rate),
-                deliverables:
-                  values.deliverables && values.deliverables.length > 0
-                    ? values.deliverables.join(", ")
-                    : undefined,
-                stipend: parseNumber(values.stipend),
-              }
-            : {
-                salary_range: values.salary_range,
-              }),
         });
 
         const jobId = result.id;
-
         router.push(`/dashboard/company/jobs/${jobId}`);
       } catch {
         // Error is handled by the mutation's onError handler
       }
     },
-    [createJobMutation, router, parseNumber],
+    [createJobMutation, router],
   );
 
   return (

@@ -41,11 +41,24 @@ export function StepRequirements({ form }: StepRequirementsProps) {
   const [hasOpenedGig, setHasOpenedGig] = useState(false);
 
   useEffect(() => {
-    if (jobType === "Gig" && !hasOpenedGig) {
+    const values = form.getValues();
+    const hasAdvancedValues =
+      !!values.certificate_provided ||
+      values.duration_value != null ||
+      !!values.duration_unit ||
+      (typeof values.hourly_rate === "string"
+        ? values.hourly_rate.trim().length > 0
+        : values.hourly_rate != null) ||
+      (typeof values.stipend === "string"
+        ? values.stipend.trim().length > 0
+        : values.stipend != null) ||
+      (values.deliverables && values.deliverables.length > 0);
+
+    if ((jobType === "Gig" || hasAdvancedValues) && !hasOpenedGig) {
       setShowAdvanced(true);
       setHasOpenedGig(true);
     }
-  }, [jobType, hasOpenedGig]);
+  }, [jobType, hasOpenedGig, form]);
 
   return (
     <div className="space-y-6">

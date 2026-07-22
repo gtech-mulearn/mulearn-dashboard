@@ -141,33 +141,10 @@ export function useJobStepper(
     }
   }, [currentStepIndex]);
 
-  const goToStep = useCallback(
-    async (index: number) => {
-      if (index < 0 || index >= JOB_STEPPER_STEPS.length) return;
-
-      // Can always go backwards without validation
-      if (index < currentStepIndex) {
-        setCurrentStepIndex(index);
-        return;
-      }
-
-      // Going forward: validate all intermediate steps
-      for (let i = currentStepIndex; i < index; i++) {
-        const stepId = JOB_STEPPER_STEPS[i].id;
-        const fields = STEP_FIELDS[stepId];
-        if (fields && fields.length > 0) {
-          const valid = await form.trigger(fields);
-          if (!valid) {
-            setCurrentStepIndex(i);
-            return;
-          }
-        }
-      }
-
-      setCurrentStepIndex(index);
-    },
-    [currentStepIndex, form, STEP_FIELDS],
-  );
+  const goToStep = useCallback(async (index: number) => {
+    if (index < 0 || index >= JOB_STEPPER_STEPS.length) return;
+    setCurrentStepIndex(index);
+  }, []);
 
   const getFormValues = useCallback(() => form.getValues(), [form]);
 

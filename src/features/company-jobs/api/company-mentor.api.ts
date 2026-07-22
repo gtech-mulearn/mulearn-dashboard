@@ -64,8 +64,7 @@ const OPT = { skipAuthRedirectOn403: true } as const;
  * POST /api/v1/dashboard/company/mentor/nominate/
  *
  * Nominate a platform user (by muid) as Company Mentor for the authenticated
- * company. Requires Company role and verified company profile.
- * The record enters PENDING state until an admin approves via PATCH /dashboard/mentor/verify/<mentor_id>/.
+ * company. The backend automatically approves company-nominated mentors.
  */
 export async function nominateCompanyMentor(
   payload: NominateMentorPayload,
@@ -91,5 +90,5 @@ export async function fetchCompanyMentors(): Promise<CompanyMentor[]> {
     MentorListResponseSchema,
     OPT,
   );
-  return res.response;
+  return res.response ?? [];
 }
