@@ -61,7 +61,7 @@ export function MentorsSearchClient() {
         <StateDisplay variant="no-results" />
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {mentors.map((mentor) => (
               <UserSearchCard key={mentor.muid || mentor.id} user={mentor} />
             ))}
