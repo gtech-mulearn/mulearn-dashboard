@@ -70,7 +70,7 @@ export const CreateIGRequestFormSchema = z.object({
   name: z.string().min(1, "Name is required").max(75),
   code: z.string().min(1, "Code is required").max(10),
   category: IGCategorySchema,
-  icon: z.string().min(1, "Icon is required").max(10),
+  icon: z.string().min(1, "Icon is required"),
   about: z.string().optional().or(z.literal("")),
   prerequisites: z.string().optional().or(z.literal("")),
   career_opportunities: z.string().optional().or(z.literal("")),
