@@ -189,6 +189,26 @@ export function useExecomRoles() {
   });
 }
 
+export function useCreateExecomRole() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (roleTitle: string) =>
+      campusManageApi.createExecomRole(roleTitle),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: campusManageKeys.execomRoles(),
+      });
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to create execom role",
+        }),
+      );
+    },
+  });
+}
+
 export function useTransferIgRole() {
   const queryClient = useQueryClient();
   return useMutation({

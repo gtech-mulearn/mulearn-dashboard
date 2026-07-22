@@ -71,6 +71,14 @@ import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Combobox } from "@/components/ui/combobox";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { MuidSearchInput } from "@/components/ui/muid-search-input";
 import {
@@ -97,10 +105,12 @@ import {
   useCampusLeaderboard,
   useCampusOverview,
   useChangeStudentType,
+  useCreateExecomRole,
   useDeleteSocialLink,
   useDownloadStudentCsv,
   useEventDistribution,
   useExecomMembers,
+  useExecomRoles,
   useIgChapters,
   useKarmaByCluster,
   useRemoveExecomMember,
@@ -122,8 +132,8 @@ import { TransferLeadDialog } from "./transfer-lead-dialog";
 
 const PAGE_SIZE = 10;
 
+const SHOW_EXECOM_SECTION = true;
 // TEMP: hidden per request (2026-07-21) — flip back to `true` to restore.
-const SHOW_EXECOM_SECTION = false;
 const SHOW_CAMPUS_LEVEL = false;
 
 const CORE_CAMPUS_ROLES = [
@@ -578,6 +588,8 @@ export function CampusManageDashboard() {
   } | null>(null);
   const [selectedExecomRole, setSelectedExecomRole] =
     useState<string>("Enabler");
+  const [isCreateRoleOpen, setIsCreateRoleOpen] = useState(false);
+  const [newRoleTitle, setNewRoleTitle] = useState("");
 
   // ─── Queries ────────────────────────────────────────────────────────────
   const { data: overview, isLoading: isOverviewLoading } = useCampusOverview();
@@ -599,6 +611,8 @@ export function CampusManageDashboard() {
 
   const { data: chapters = [], isLoading: isChaptersLoading } = useIgChapters();
 
+  const { data: execomRoles = [] } = useExecomRoles();
+
   const socialLinks = overview?.socialLinks;
 
   // ─── Mutations ───────────────────────────────────────────────────────────
@@ -609,6 +623,8 @@ export function CampusManageDashboard() {
   const { mutate: addExecom, isPending: isAdding } = useAddExecomMember();
   const { mutate: removeExecom, isPending: isRemoving } =
     useRemoveExecomMember();
+  const { mutate: createExecomRole, isPending: isCreatingRole } =
+    useCreateExecomRole();
   const { mutate: changeStudentType, isPending: isChangingType } =
     useChangeStudentType();
   const { mutate: downloadCsv, isPending: isDownloadingCsv } =
@@ -652,8 +668,17 @@ export function CampusManageDashboard() {
       }
     }
 
+    // Add custom roles created via the API (dedupe against core/IG roles above)
+    const knownIds = new Set(roles.map((r) => r.id.toLowerCase()));
+    for (const role of execomRoles) {
+      if (!knownIds.has(role.value.toLowerCase())) {
+        knownIds.add(role.value.toLowerCase());
+        roles.push({ id: role.value, title: role.label });
+      }
+    }
+
     return roles;
-  }, [chapters]);
+  }, [chapters, execomRoles]);
 
   // FIX: extracted from IIFE — computed above return
   const karmaTrend = overview?.trend ?? [];
@@ -769,6 +794,20 @@ export function CampusManageDashboard() {
         },
       },
     );
+  };
+
+  const handleCreateExecomRole = () => {
+    const title = newRoleTitle.trim();
+    if (!title) return;
+
+    createExecomRole(title, {
+      onSuccess: () => {
+        toast.success(`Role "${title}" created`);
+        setSelectedExecomRole(title);
+        setNewRoleTitle("");
+        setIsCreateRoleOpen(false);
+      },
+    });
   };
 
   const isAssigningExecomRole = isAdding;
@@ -1780,7 +1819,7 @@ export function CampusManageDashboard() {
                           </p>
                         </CardHeader>
                         <CardContent>
-                          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(180px,220px)_auto] lg:items-end">
+                          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,0.7fr)_minmax(160px,220px)_auto_auto] lg:items-end">
                             <div className="min-w-0">
                               <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                                 Search User
@@ -1829,12 +1868,21 @@ export function CampusManageDashboard() {
                               />
                             </div>
                             <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => setIsCreateRoleOpen(true)}
+                              className="w-full font-bold lg:w-auto lg:self-end"
+                            >
+                              <Plus className="h-4 w-4" />
+                              <span className="ml-2">Create Custom Role</span>
+                            </Button>
+                            <Button
                               onClick={handleAddExecom}
                               disabled={
                                 isAssigningExecomRole ||
                                 !selectedExecomUser?.muid
                               }
-                              className="h-11 rounded-xl px-6 font-bold shadow-lg shadow-primary/10 transition-all hover:shadow-primary/20 active:scale-[0.98] lg:self-end"
+                              className="font-boldlg:self-end"
                             >
                               {isAssigningExecomRole ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -1846,6 +1894,54 @@ export function CampusManageDashboard() {
                           </div>
                         </CardContent>
                       </Card>
+
+                      <Dialog
+                        open={isCreateRoleOpen}
+                        onOpenChange={(open) => {
+                          setIsCreateRoleOpen(open);
+                          if (!open) setNewRoleTitle("");
+                        }}
+                      >
+                        <DialogContent className="sm:max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>Create Custom Role</DialogTitle>
+                            <DialogDescription>
+                              Add a new execom role title. It'll be available to
+                              assign right after creation.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <Input
+                            value={newRoleTitle}
+                            onChange={(e) => setNewRoleTitle(e.target.value)}
+                            placeholder="e.g. Community Lead"
+                            disabled={isCreatingRole}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") handleCreateExecomRole();
+                            }}
+                          />
+                          <DialogFooter>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => setIsCreateRoleOpen(false)}
+                              disabled={isCreatingRole}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              type="button"
+                              onClick={handleCreateExecomRole}
+                              disabled={isCreatingRole || !newRoleTitle.trim()}
+                            >
+                              {isCreatingRole ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                "Create"
+                              )}
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
 
                       <SectionTitle
                         title="Current Execom Roster"
