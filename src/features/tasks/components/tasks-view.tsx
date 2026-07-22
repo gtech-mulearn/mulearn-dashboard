@@ -34,6 +34,7 @@ export default function TasksView() {
     perPage,
     search: debouncedSearch,
     sortBy: sort,
+    active: activeTab === "active" ? "true" : "false",
   });
 
   const deleteMutation = useDeleteTask();
