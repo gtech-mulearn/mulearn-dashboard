@@ -166,7 +166,7 @@ export function OrganizationForm({
                   placeholder="Search your college"
                   emptyText={
                     collegeSearch.trim().length < 2
-                      ? "Type at least 2 characters to search"
+                      ? "Type your college to search"
                       : "No colleges found."
                   }
                   disabled={isLoading}
@@ -211,7 +211,7 @@ export function OrganizationForm({
                     placeholder="Search your department"
                     emptyText={
                       departmentSearch.trim().length < 2
-                        ? "Type at least 2 characters to search"
+                        ? "Type your department to search"
                         : "No departments found."
                     }
                     disabled={isLoading}

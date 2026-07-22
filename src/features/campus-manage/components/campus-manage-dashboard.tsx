@@ -1889,7 +1889,7 @@ export function CampusManageDashboard() {
                                 isAssigningExecomRole ||
                                 !selectedExecomUser?.muid
                               }
-                              className="font-boldlg:self-end"
+                              className="font-bold lg:self-end"
                             >
                               {isAssigningExecomRole ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />

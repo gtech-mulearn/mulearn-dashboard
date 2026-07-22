@@ -363,7 +363,7 @@ function SingleTab({ role }: { role: Role }) {
                     searchPlaceholder="Search colleges..."
                     emptyText={
                       collegeSearch.trim().length < 2
-                        ? "Type at least 2 characters to search"
+                        ? "Type our college to search"
                         : "No colleges found."
                     }
                     disabled={assignMutation.isPending}
@@ -666,7 +666,7 @@ function BulkAddTab({ role }: { role: Role }) {
                     searchPlaceholder="Search colleges..."
                     emptyText={
                       collegeSearch.trim().length < 2
-                        ? "Type at least 2 characters to search"
+                        ? "Type your college to search"
                         : "No colleges found."
                     }
                     disabled={bulkAssign.isPending}

@@ -656,7 +656,7 @@ export function RegisterRoleDetails({
                             disabled={isLoading}
                             onSearchChange={onDepartmentSearchChange}
                             loading={isLoadingDepartments}
-                            emptyText="Type at least 2 characters to search"
+                            emptyText="Type your department to search"
                           />
                         </FormControl>
                         <FormMessage />
@@ -783,7 +783,7 @@ export function RegisterRoleDetails({
                         disabled={isLoading}
                         onSearchChange={onCollegeSearchChange}
                         loading={isLoadingColleges}
-                        emptyText="Type at least 2 characters to search"
+                        emptyText="Type your college to search"
                         onCreateNew={(searchTerm) => {
                           field.onChange("others");
                           form.setValue("customCollege", searchTerm);

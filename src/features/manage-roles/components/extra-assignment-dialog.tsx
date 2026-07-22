@@ -251,7 +251,7 @@ export function ExtraAssignmentDialog({
                     searchPlaceholder="Search colleges..."
                     emptyText={
                       collegeSearch.trim().length < 2
-                        ? "Type at least 2 characters to search"
+                        ? "Type your college to search"
                         : "No colleges found."
                     }
                     disabled={isPending}
