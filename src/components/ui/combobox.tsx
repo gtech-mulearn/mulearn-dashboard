@@ -107,9 +107,7 @@ export function Combobox({
             setSearch(newValue);
             onSearchChange?.(newValue);
             if (!open) setOpen(true);
-
-            // If user clears the input completely, clear the form value too
-            if (newValue === "" && value) {
+            if (value && newValue !== selectedOption?.title) {
               onValueChange("");
             }
           }}

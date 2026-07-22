@@ -1859,10 +1859,17 @@ export function CampusManageDashboard() {
                                 onValueChange={setSelectedExecomRole}
                                 placeholder="Select or type a role..."
                                 emptyText="No matching roles."
-                                disabled={isAssigningExecomRole}
+                                disabled={
+                                  isAssigningExecomRole || isCreatingRole
+                                }
                                 className="h-9 rounded-xl"
                                 onCreateNew={(term) => {
-                                  setSelectedExecomRole(term);
+                                  createExecomRole(term, {
+                                    onSuccess: () => {
+                                      toast.success(`Role "${term}" created`);
+                                      setSelectedExecomRole(term);
+                                    },
+                                  });
                                 }}
                                 createNewText="Use custom role"
                               />
