@@ -28,10 +28,10 @@ import {
   useRegister,
 } from "@/features/auth";
 import {
-  useColleges,
+  useCollegeSearch,
   useCompanies,
   useCreateOrganization,
-  useDepartments,
+  useDepartmentSearch,
   useRoles,
   useSelectOrganization,
 } from "@/features/onboarding";
@@ -104,8 +104,10 @@ export function RegisterClient({
   const selectOrganization = useSelectOrganization();
 
   // Reference data
-  const colleges = useColleges();
-  const departments = useDepartments();
+  const [collegeSearch, setCollegeSearch] = useState("");
+  const [departmentSearch, setDepartmentSearch] = useState("");
+  const colleges = useCollegeSearch(collegeSearch);
+  const departments = useDepartmentSearch(departmentSearch);
   const companies = useCompanies();
   const roles = useRoles(); // for resolving role title → DB UUID
 
@@ -406,9 +408,11 @@ export function RegisterClient({
         colleges={colleges.data ?? []}
         departments={departments.data ?? []}
         companies={companies.data ?? []}
-        isLoadingColleges={colleges.isLoading}
-        isLoadingDepartments={departments.isLoading}
+        isLoadingColleges={colleges.isFetching}
+        isLoadingDepartments={departments.isFetching}
         isLoadingCompanies={companies.isLoading}
+        onCollegeSearchChange={setCollegeSearch}
+        onDepartmentSearchChange={setDepartmentSearch}
       />
     );
   }

@@ -284,6 +284,8 @@ interface RegisterRoleDetailsProps {
   isLoadingColleges?: boolean;
   isLoadingDepartments?: boolean;
   isLoadingCompanies?: boolean;
+  onCollegeSearchChange?: (search: string) => void;
+  onDepartmentSearchChange?: (search: string) => void;
 }
 
 export function RegisterRoleDetails({
@@ -297,6 +299,8 @@ export function RegisterRoleDetails({
   isLoadingColleges = false,
   isLoadingDepartments = false,
   isLoadingCompanies = false,
+  onCollegeSearchChange,
+  onDepartmentSearchChange,
 }: RegisterRoleDetailsProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -579,7 +583,10 @@ export function RegisterRoleDetails({
                             }}
                             placeholder="Select your college"
                             searchPlaceholder="Search colleges..."
-                            disabled={isLoading || isLoadingColleges}
+                            disabled={isLoading}
+                            onSearchChange={onCollegeSearchChange}
+                            loading={isLoadingColleges}
+                            emptyText="Type your college to search"
                             onCreateNew={(searchTerm) => {
                               field.onChange("others");
                               form.setValue("customCollege", searchTerm);
@@ -631,7 +638,10 @@ export function RegisterRoleDetails({
                             onValueChange={field.onChange}
                             placeholder="Select your department"
                             searchPlaceholder="Search departments..."
-                            disabled={isLoading || isLoadingDepartments}
+                            disabled={isLoading}
+                            onSearchChange={onDepartmentSearchChange}
+                            loading={isLoadingDepartments}
+                            emptyText="Type at least 2 characters to search"
                           />
                         </FormControl>
                         <FormMessage />
@@ -755,7 +765,10 @@ export function RegisterRoleDetails({
                         }}
                         placeholder="Select your college"
                         searchPlaceholder="Search colleges..."
-                        disabled={isLoading || isLoadingColleges}
+                        disabled={isLoading}
+                        onSearchChange={onCollegeSearchChange}
+                        loading={isLoadingColleges}
+                        emptyText="Type at least 2 characters to search"
                         onCreateNew={(searchTerm) => {
                           field.onChange("others");
                           form.setValue("customCollege", searchTerm);

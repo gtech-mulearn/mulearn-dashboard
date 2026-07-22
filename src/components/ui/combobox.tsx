@@ -28,6 +28,9 @@ interface ComboboxProps {
   className?: string;
   onCreateNew?: (searchTerm: string) => void;
   createNewText?: string;
+  onSearchChange?: (search: string) => void;
+  selectedLabel?: string;
+  loading?: boolean;
 }
 
 export function Combobox({
@@ -41,20 +44,27 @@ export function Combobox({
   className,
   onCreateNew,
   createNewText = "Create new",
+  onSearchChange,
+  selectedLabel,
+  loading = false,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
   const containerRef = React.useRef<HTMLDivElement>(null);
 
-  const selectedOption = options.find((opt) => opt.id === value);
+  const isServerSearch = Boolean(onSearchChange);
+  const selectedOption =
+    options.find((opt) => opt.id === value) ??
+    (value && selectedLabel ? { id: value, title: selectedLabel } : undefined);
 
-  // Filter options based on search
+  // Filter options based on search (skipped when server-side search is used)
   const filteredOptions = React.useMemo(() => {
+    if (isServerSearch) return options;
     if (!search) return options;
     return options.filter((option) =>
       option.title.toLowerCase().includes(search.toLowerCase()),
     );
-  }, [options, search]);
+  }, [options, search, isServerSearch]);
 
   // Display value in input (handle custom values not in options)
   const displayValue = search || selectedOption?.title || value || "";
@@ -95,6 +105,7 @@ export function Combobox({
           onChange={(e) => {
             const newValue = e.target.value;
             setSearch(newValue);
+            onSearchChange?.(newValue);
             if (!open) setOpen(true);
 
             // If user clears the input completely, clear the form value too
@@ -123,7 +134,11 @@ export function Combobox({
       {open && (
         <div className="absolute z-50 mt-2 w-full rounded-xl border bg-popover shadow-md">
           <div className="max-h-75 overflow-y-auto">
-            {filteredOptions.length === 0 ? (
+            {loading ? (
+              <div className="py-4 text-center text-sm text-muted-foreground">
+                Searching...
+              </div>
+            ) : filteredOptions.length === 0 ? (
               <div className="p-1">
                 <div className="py-4 text-center text-sm text-muted-foreground">
                   {emptyText}
