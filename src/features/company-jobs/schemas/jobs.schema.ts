@@ -97,28 +97,38 @@ export const JobSchema = z.object({
     }),
 });
 
-export const PaginationSchema = z.object({
-  count: z
-    .number()
-    .nullish()
-    .transform((v) => v ?? 0),
-  totalPages: z
-    .number()
-    .nullish()
-    .transform((v) => v ?? 1),
-  isNext: z
-    .boolean()
-    .nullish()
-    .transform((v) => v ?? false),
-  isPrev: z
-    .boolean()
-    .nullish()
-    .transform((v) => v ?? false),
-  nextPage: z
-    .number()
-    .nullish()
-    .transform((v) => v ?? null),
-});
+export const PaginationSchema = z
+  .object({
+    count: z
+      .number()
+      .nullish()
+      .transform((v) => v ?? 0),
+    totalPages: z.number().nullish(),
+    total_pages: z.number().nullish(),
+    isNext: z.boolean().nullish(),
+    isPrev: z.boolean().nullish(),
+    nextPage: z.number().nullish(),
+    current_page: z.number().nullish(),
+    currentPage: z.number().nullish(),
+    next: z.string().nullable().optional(),
+    previous: z.string().nullable().optional(),
+  })
+  .passthrough()
+  .optional()
+  .transform((v) => {
+    const cp = v?.current_page ?? v?.currentPage ?? 1;
+    const tp = v?.totalPages ?? v?.total_pages ?? 1;
+    const hasNext = v?.isNext ?? (v?.next !== undefined ? !!v.next : cp < tp);
+    const hasPrev =
+      v?.isPrev ?? (v?.previous !== undefined ? !!v.previous : cp > 1);
+    return {
+      count: v?.count ?? 0,
+      totalPages: tp,
+      isNext: hasNext,
+      isPrev: hasPrev,
+      nextPage: v?.nextPage ?? (hasNext ? cp + 1 : null),
+    };
+  });
 
 // ─── API Response Wrapper ───────────────────────────────────
 
@@ -582,16 +592,43 @@ export const GenericResponseSchema = DjangoResponse(z.unknown());
 // ─── Company Profile Response ───────────────────────────────
 
 export const CompanyTestimonialSchema = z.object({
-  learner_name: z.string(),
-  role: z.string(),
-  quote: z.string(),
+  learner_name: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((v) => v ?? ""),
+  role: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((v) => v ?? ""),
+  quote: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((v) => v ?? ""),
 });
 
-export const CompanyGalleryItemSchema = z.object({
-  image_url: z.string(),
-  caption: z.string().optional(),
-  sort_order: z.number().optional(),
-});
+export const CompanyGalleryItemSchema = z.union([
+  z.string().transform((url) => ({
+    image_url: url,
+    caption: undefined,
+    sort_order: undefined,
+  })),
+  z.object({
+    image_url: z.string(),
+    caption: z
+      .string()
+      .optional()
+      .nullable()
+      .transform((v) => v ?? undefined),
+    sort_order: z
+      .number()
+      .optional()
+      .nullable()
+      .transform((v) => v ?? undefined),
+  }),
+]);
 
 export const CompanyProfileSchema = z.object({
   id: z.string(),
@@ -619,7 +656,12 @@ export const CompanyProfileSchema = z.object({
   updated_at: z.string().optional(),
   deleted_at: z.string().optional().nullable(),
   // Extended fields (new in backend — optional for backwards compat)
-  founded_year: z.number().nullable().optional(),
+  founded_year: z
+    .union([z.number(), z.string()])
+    .nullable()
+    .optional()
+    .transform((v) => (v != null && v !== "" ? Number(v) : null))
+    .default(null),
   remote_policy: z.string().nullable().optional(),
   culture_text: z.string().nullable().optional(),
   tech_stack: z
@@ -638,10 +680,26 @@ export const CompanyProfileSchema = z.object({
     .array(CompanyGalleryItemSchema)
     .nullish()
     .transform((v) => v ?? []),
-  hire_count: z.number().optional().default(0),
-  alumni_count: z.number().optional().default(0),
-  avg_karma_of_hires: z.number().optional().default(0),
-  campus_events_count: z.number().optional().default(0),
+  hire_count: z
+    .number()
+    .nullable()
+    .optional()
+    .transform((v) => v ?? 0),
+  alumni_count: z
+    .number()
+    .nullable()
+    .optional()
+    .transform((v) => v ?? 0),
+  avg_karma_of_hires: z
+    .number()
+    .nullable()
+    .optional()
+    .transform((v) => v ?? 0),
+  campus_events_count: z
+    .number()
+    .nullable()
+    .optional()
+    .transform((v) => v ?? 0),
 });
 
 export const CompanyProfileResponseSchema =

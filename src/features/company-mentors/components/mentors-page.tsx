@@ -92,8 +92,7 @@ export function MentorsPage() {
             Company Mentors
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Nominate mentors from your organization, approve their nominations,
-            and manage their scopes.
+            Nominate mentors from your organization and manage their scopes.
           </p>
         </div>
         <Button

@@ -1,9 +1,9 @@
 "use client";
 
-import { Check, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Fragment } from "react";
 import { FormProvider } from "react-hook-form";
+import { StepperHeader } from "@/components/stepper-header";
 import { Button } from "@/components/ui/button";
 import type { CompanyProfile } from "@/features/company-jobs/types";
 import { useUpdateCompanyProfile } from "../hooks/use-profile-edit";
@@ -66,59 +66,14 @@ export function ProfileStepper({ profile }: ProfileStepperProps) {
         }}
         className="flex flex-col"
       >
-        {/* ── Step indicator (desktop) ── */}
-        <div className="mx-auto hidden w-full items-center gap-4 pb-6 sm:flex">
-          {PROFILE_STEPPER_STEPS.map((step, index) => {
-            const isActive = index === currentStepIndex;
-            const isCompleted = index < currentStepIndex;
-
-            return (
-              <Fragment key={step.id}>
-                <div className="flex items-center gap-3">
-                  <Button
-                    type="button"
-                    variant={isActive || isCompleted ? "default" : "outline"}
-                    disabled={!isCompleted}
-                    onClick={() => isCompleted && goToStep(index)}
-                    className={`h-8 w-8 rounded-full p-0 text-sm font-semibold ${
-                      isActive ? "ring-2 ring-brand-blue ring-offset-2" : ""
-                    }`}
-                    aria-label={step.label}
-                  >
-                    {isCompleted ? <Check className="h-4 w-4" /> : index + 1}
-                  </Button>
-                  <div className="min-w-0 pt-1">
-                    <p
-                      className={`whitespace-nowrap text-xs leading-none ${isActive ? "font-medium text-primary" : "text-muted-foreground"}`}
-                    >
-                      {step.label}
-                    </p>
-                  </div>
-                </div>
-                {index < PROFILE_STEPPER_STEPS.length - 1 ? (
-                  <div
-                    className={`h-0.5 flex-1 self-center ${isCompleted ? "bg-primary" : "bg-border"}`}
-                  />
-                ) : null}
-              </Fragment>
-            );
-          })}
-        </div>
-
-        {/* ── Step indicator (mobile) ── */}
-        <div className="pb-4 sm:hidden">
-          <p className="text-sm font-medium text-foreground">
-            Step {currentStepIndex + 1} of {PROFILE_STEPPER_STEPS.length} —{" "}
-            {PROFILE_STEPPER_STEPS[currentStepIndex]?.label}
-          </p>
-          <div className="mt-2 h-1 w-full rounded-full bg-border">
-            <div
-              className="h-1 rounded-full bg-primary transition-all"
-              style={{
-                width: `${((currentStepIndex + 1) / PROFILE_STEPPER_STEPS.length) * 100}%`,
-              }}
-            />
-          </div>
+        {/* ── Step indicator ── */}
+        <div className="pb-6">
+          <StepperHeader
+            steps={PROFILE_STEPPER_STEPS}
+            currentStepIndex={currentStepIndex}
+            onStepClick={goToStep}
+            ariaLabel="Company profile edit progress"
+          />
         </div>
 
         {/* ── Step content ── */}
