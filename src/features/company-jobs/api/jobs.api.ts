@@ -326,13 +326,23 @@ export async function fetchJobApplicants(
     sortBy?: string;
     pageIndex?: number;
     perPage?: number;
+    page?: number;
+    per_page?: number;
   },
 ): Promise<JobApplicantsResponse> {
   const query = new URLSearchParams();
 
   if (params?.status) query.set("status", params.status);
-  if (params?.pageIndex) query.set("pageIndex", String(params.pageIndex));
-  if (params?.perPage) query.set("perPage", String(params.perPage));
+  const p = params?.pageIndex ?? params?.page;
+  if (p !== undefined) {
+    query.set("pageIndex", String(p));
+    query.set("page", String(p));
+  }
+  const pp = params?.perPage ?? params?.per_page;
+  if (pp !== undefined) {
+    query.set("perPage", String(pp));
+    query.set("per_page", String(pp));
+  }
   if (params?.search?.trim()) query.set("search", params.search.trim());
   if (params?.sortBy) query.set("sortBy", params.sortBy);
 

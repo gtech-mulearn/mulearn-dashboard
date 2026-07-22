@@ -97,28 +97,38 @@ export const JobSchema = z.object({
     }),
 });
 
-export const PaginationSchema = z.object({
-  count: z
-    .number()
-    .nullish()
-    .transform((v) => v ?? 0),
-  totalPages: z
-    .number()
-    .nullish()
-    .transform((v) => v ?? 1),
-  isNext: z
-    .boolean()
-    .nullish()
-    .transform((v) => v ?? false),
-  isPrev: z
-    .boolean()
-    .nullish()
-    .transform((v) => v ?? false),
-  nextPage: z
-    .number()
-    .nullish()
-    .transform((v) => v ?? null),
-});
+export const PaginationSchema = z
+  .object({
+    count: z
+      .number()
+      .nullish()
+      .transform((v) => v ?? 0),
+    totalPages: z.number().nullish(),
+    total_pages: z.number().nullish(),
+    isNext: z.boolean().nullish(),
+    isPrev: z.boolean().nullish(),
+    nextPage: z.number().nullish(),
+    current_page: z.number().nullish(),
+    currentPage: z.number().nullish(),
+    next: z.string().nullable().optional(),
+    previous: z.string().nullable().optional(),
+  })
+  .passthrough()
+  .optional()
+  .transform((v) => {
+    const cp = v?.current_page ?? v?.currentPage ?? 1;
+    const tp = v?.totalPages ?? v?.total_pages ?? 1;
+    const hasNext = v?.isNext ?? (v?.next !== undefined ? !!v.next : cp < tp);
+    const hasPrev =
+      v?.isPrev ?? (v?.previous !== undefined ? !!v.previous : cp > 1);
+    return {
+      count: v?.count ?? 0,
+      totalPages: tp,
+      isNext: hasNext,
+      isPrev: hasPrev,
+      nextPage: v?.nextPage ?? (hasNext ? cp + 1 : null),
+    };
+  });
 
 // ─── API Response Wrapper ───────────────────────────────────
 

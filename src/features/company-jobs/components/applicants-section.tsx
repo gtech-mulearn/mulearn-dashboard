@@ -77,22 +77,55 @@ export function ApplicantsSection({ jobId }: ApplicantsSectionProps) {
   const [pageIndex, setPageIndex] = useState(1);
   const [sortBy, setSortBy] = useState<string>("-karma");
 
-  // Single paginated query for the active tab (server-side pagination + sort)
+  const currentBackendStatus =
+    statusFilter === "all"
+      ? undefined
+      : APP_STATUS_META[statusFilter as AppStatus]?.backendStatus ||
+        statusFilter;
+
+  // Server-side paginated query for the active status tab & page
   const { data, isLoading, isError } = useJobApplicants(jobId, {
+    status: currentBackendStatus,
+    search: search || undefined,
     sortBy: sortBy,
     pageIndex: pageIndex,
   });
 
-  // All applicants from the current page for display + count purposes
-  const allApplicants = data?.applicants ?? [];
+  // Queries for backend-provided per-status tab counts (perPage: 1)
+  const { data: allCountData } = useJobApplicants(jobId, { perPage: 1 });
+  const { data: pendingCountData } = useJobApplicants(jobId, {
+    status: APP_STATUS_META.pending.backendStatus,
+    perPage: 1,
+  });
+  const { data: inReviewCountData } = useJobApplicants(jobId, {
+    status: APP_STATUS_META["in-review"].backendStatus,
+    perPage: 1,
+  });
+  const { data: shortlistedCountData } = useJobApplicants(jobId, {
+    status: APP_STATUS_META.shortlisted.backendStatus,
+    perPage: 1,
+  });
+  const { data: interviewCountData } = useJobApplicants(jobId, {
+    status: APP_STATUS_META.interview.backendStatus,
+    perPage: 1,
+  });
+  const { data: selectedCountData } = useJobApplicants(jobId, {
+    status: APP_STATUS_META.selected.backendStatus,
+    perPage: 1,
+  });
+  const { data: rejectedCountData } = useJobApplicants(jobId, {
+    status: APP_STATUS_META.rejected.backendStatus,
+    perPage: 1,
+  });
 
-  // Use backend-provided total for the "All" count badge (accurate regardless of page size)
-  const totalCount = data?.pagination.count ?? allApplicants.length;
+  const rawApplicants = data?.applicants ?? [];
 
-  // Client-side filter for display (backend status filter not supported on this endpoint)
-  const displayedApplicants = allApplicants.filter((a) => {
-    const norm = normalizeStatus(a.status);
-    if (statusFilter !== "all" && norm !== statusFilter) return false;
+  // Client-side filter fallback (guarantees non-matching applicants are excluded if backend ignores status parameter)
+  const displayedApplicants = rawApplicants.filter((a) => {
+    if (statusFilter !== "all") {
+      const norm = normalizeStatus(a.status);
+      if (norm !== statusFilter) return false;
+    }
     if (search.trim()) {
       const q = search.toLowerCase().trim();
       const nameMatch = a.applicant_name?.toLowerCase().includes(q);
@@ -102,8 +135,8 @@ export function ApplicantsSection({ jobId }: ApplicantsSectionProps) {
     return true;
   });
 
-  // Per-status counts from current page data
-  const countByStatus = allApplicants.reduce<Record<string, number>>(
+  // Local status counts fallback
+  const localCountByStatus = rawApplicants.reduce<Record<string, number>>(
     (acc, a) => {
       const key = normalizeStatus(a.status);
       acc[key] = (acc[key] ?? 0) + 1;
@@ -112,15 +145,57 @@ export function ApplicantsSection({ jobId }: ApplicantsSectionProps) {
     {},
   );
 
+  const totalAllCount =
+    allCountData?.pagination.count ??
+    data?.pagination.count ??
+    rawApplicants.length;
+
+  const pendingCnt = pendingCountData?.pagination.count;
+  const inReviewCnt = inReviewCountData?.pagination.count;
+  const shortlistedCnt = shortlistedCountData?.pagination.count;
+  const interviewCnt = interviewCountData?.pagination.count;
+  const selectedCnt = selectedCountData?.pagination.count;
+  const rejectedCnt = rejectedCountData?.pagination.count;
+
+  const backendSupportsStatusCounts =
+    (pendingCnt !== undefined && pendingCnt !== totalAllCount) ||
+    (inReviewCnt !== undefined && inReviewCnt !== totalAllCount) ||
+    (shortlistedCnt !== undefined && shortlistedCnt !== totalAllCount) ||
+    (interviewCnt !== undefined && interviewCnt !== totalAllCount) ||
+    (selectedCnt !== undefined && selectedCnt !== totalAllCount) ||
+    (rejectedCnt !== undefined && rejectedCnt !== totalAllCount);
+
+  const tabCounts: Record<FilterTab, number> = {
+    all: totalAllCount,
+    pending: backendSupportsStatusCounts
+      ? (pendingCnt ?? 0)
+      : (localCountByStatus.pending ?? 0),
+    "in-review": backendSupportsStatusCounts
+      ? (inReviewCnt ?? 0)
+      : (localCountByStatus["in-review"] ?? 0),
+    shortlisted: backendSupportsStatusCounts
+      ? (shortlistedCnt ?? 0)
+      : (localCountByStatus.shortlisted ?? 0),
+    interview: backendSupportsStatusCounts
+      ? (interviewCnt ?? 0)
+      : (localCountByStatus.interview ?? 0),
+    selected: backendSupportsStatusCounts
+      ? (selectedCnt ?? 0)
+      : (localCountByStatus.selected ?? 0),
+    rejected: backendSupportsStatusCounts
+      ? (rejectedCnt ?? 0)
+      : (localCountByStatus.rejected ?? 0),
+  };
+
   return (
     <div className="rounded-xl border border-border bg-card p-6">
       {/* Header */}
       <div className="flex items-center gap-2">
         <Users className="h-4 w-4 text-muted-foreground" />
         <h2 className="text-base font-semibold text-foreground">Applicants</h2>
-        {totalCount > 0 && (
+        {tabCounts.all > 0 && (
           <Badge variant="secondary" className="ml-1 text-xs">
-            {totalCount}
+            {tabCounts.all}
           </Badge>
         )}
       </div>
@@ -170,7 +245,7 @@ export function ApplicantsSection({ jobId }: ApplicantsSectionProps) {
       {/* Filter tabs */}
       <div className="mt-4 flex flex-wrap gap-1.5">
         {FILTER_TABS.map(({ key, label }) => {
-          const count = key === "all" ? totalCount : (countByStatus[key] ?? 0);
+          const count = tabCounts[key];
           const isActive = statusFilter === key;
 
           return (
@@ -217,7 +292,7 @@ export function ApplicantsSection({ jobId }: ApplicantsSectionProps) {
           ))
         )}
 
-        {/* Pagination */}
+        {/* Pagination Controls */}
         {!isLoading &&
           !isError &&
           data?.pagination.totalPages &&

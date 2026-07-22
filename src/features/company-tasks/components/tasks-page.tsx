@@ -32,41 +32,45 @@ export function CompanyTasksPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<CompanyTask | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [page, setPage] = useState<number>(1);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
   const { mutate: deleteTask, isPending: isDeleting } = useDeleteCompanyTask();
 
-  // Three status-filtered queries — pagination.count gives accurate per-status total
-  const {
-    data: approvedData,
-    isLoading: approvedLoading,
-    error: approvedError,
-  } = useCompanyTasks({
+  // Queries for tab counts (using per_page: 1 to get exact backend pagination count)
+  const { data: allCountData } = useCompanyTasks({
+    page: 1,
+    per_page: 1,
+  });
+  const { data: approvedCountData } = useCompanyTasks({
     approval_status: "approved",
     page: 1,
-    per_page: 50,
+    per_page: 1,
   });
-  const {
-    data: pendingData,
-    isLoading: pendingLoading,
-    error: pendingError,
-  } = useCompanyTasks({
+  const { data: pendingCountData } = useCompanyTasks({
     approval_status: "pending",
     page: 1,
-    per_page: 50,
+    per_page: 1,
   });
-  const {
-    data: rejectedData,
-    isLoading: rejectedLoading,
-    error: rejectedError,
-  } = useCompanyTasks({
+  const { data: rejectedCountData } = useCompanyTasks({
     approval_status: "rejected",
     page: 1,
-    per_page: 50,
+    per_page: 1,
   });
 
-  const isLoading = approvedLoading || pendingLoading || rejectedLoading;
-  const error = approvedError || pendingError || rejectedError;
+  // Active query for currently selected status tab & page
+  const {
+    data: displayData,
+    isLoading,
+    error,
+  } = useCompanyTasks({
+    approval_status:
+      statusFilter === "all"
+        ? undefined
+        : (statusFilter as "approved" | "pending" | "rejected"),
+    page: page,
+    per_page: 10,
+  });
 
   if (isLoading) {
     return (
@@ -102,11 +106,8 @@ export function CompanyTasksPage() {
     return res.data || res.results || [];
   };
 
-  const approvedTasks = getTasksArray(approvedData);
-  const pendingTasks = getTasksArray(pendingData);
-  const rejectedTasks = getTasksArray(rejectedData);
-
-  const tasks = [...approvedTasks, ...pendingTasks, ...rejectedTasks];
+  const tasks = getTasksArray(displayData);
+  const pagination = displayData?.pagination;
 
   const normalizeStatus = (
     status?: string,
@@ -118,16 +119,20 @@ export function CompanyTasksPage() {
     return "pending";
   };
 
-  const filteredTasks = tasks.filter((task: CompanyTask) => {
-    if (statusFilter === "all") return true;
-    return normalizeStatus(task.approval_status) === statusFilter;
-  });
+  // Tab counts directly from backend pagination.count
+  const allCount = allCountData?.pagination?.count ?? 0;
+  const approvedCount = approvedCountData?.pagination?.count ?? 0;
+  const pendingCount = pendingCountData?.pagination?.count ?? 0;
+  const rejectedCount = rejectedCountData?.pagination?.count ?? 0;
 
-  // Use backend-provided pagination.count for accurate totals (not array length)
-  const approvedCount = approvedData?.pagination?.count ?? approvedTasks.length;
-  const pendingCount = pendingData?.pagination?.count ?? pendingTasks.length;
-  const rejectedCount = rejectedData?.pagination?.count ?? rejectedTasks.length;
-  const allCount = approvedCount + pendingCount + rejectedCount;
+  const currentTabCount =
+    statusFilter === "all"
+      ? allCount
+      : statusFilter === "approved"
+        ? approvedCount
+        : statusFilter === "pending"
+          ? pendingCount
+          : rejectedCount;
 
   return (
     <div className="space-y-6">
@@ -152,7 +157,10 @@ export function CompanyTasksPage() {
       <Tabs
         defaultValue="all"
         value={statusFilter}
-        onValueChange={setStatusFilter}
+        onValueChange={(val) => {
+          setStatusFilter(val);
+          setPage(1);
+        }}
         className="w-full"
       >
         <TabsList className="grid w-full grid-cols-4 lg:w-[480px]">
@@ -163,7 +171,7 @@ export function CompanyTasksPage() {
         </TabsList>
       </Tabs>
 
-      {allCount === 0 || filteredTasks.length === 0 ? (
+      {tasks.length === 0 || currentTabCount === 0 ? (
         statusFilter === "all" ? (
           <StateDisplay
             variant="no-tasks"
@@ -180,111 +188,141 @@ export function CompanyTasksPage() {
           />
         )
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {filteredTasks.map((task: CompanyTask) => (
-            <Card key={task.id} className="flex flex-col h-full">
-              <CardHeader className="pb-3">
-                <div className="flex justify-between items-start gap-4">
-                  <div className="space-y-1">
-                    <CardTitle
-                      className="text-base line-clamp-1"
-                      title={task.title}
-                    >
-                      {task.title}
-                    </CardTitle>
-                    <CardDescription className="text-xs font-medium text-primary">
-                      {task.hashtag}
-                    </CardDescription>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Badge
-                      variant={
-                        normalizeStatus(task.approval_status) === "approved"
-                          ? "default"
-                          : normalizeStatus(task.approval_status) === "rejected"
-                            ? "destructive"
-                            : "secondary"
-                      }
-                      className="capitalize"
-                    >
-                      {task.approval_status.toLowerCase()}
-                    </Badge>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="h-8 w-8 p-0 shrink-0"
-                        >
-                          <span className="sr-only">Open menu</span>
-                          <MoreVertical className="h-4 w-4 text-muted-foreground" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onClick={() => {
-                            setTaskToEdit(task);
-                            setIsCreateModalOpen(true);
-                          }}
-                        >
-                          <Edit2 className="mr-2 h-4 w-4" />
-                          <span>Edit Task</span>
-                        </DropdownMenuItem>
-                        {normalizeStatus(task.approval_status) ===
-                          "pending" && (
+        <>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {tasks.map((task: CompanyTask) => (
+              <Card key={task.id} className="flex flex-col h-full">
+                <CardHeader className="pb-3">
+                  <div className="flex justify-between items-start gap-4">
+                    <div className="space-y-1">
+                      <CardTitle
+                        className="text-base line-clamp-1"
+                        title={task.title}
+                      >
+                        {task.title}
+                      </CardTitle>
+                      <CardDescription className="text-xs font-medium text-primary">
+                        {task.hashtag}
+                      </CardDescription>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Badge
+                        variant={
+                          normalizeStatus(task.approval_status) === "approved"
+                            ? "default"
+                            : normalizeStatus(task.approval_status) ===
+                                "rejected"
+                              ? "destructive"
+                              : "secondary"
+                        }
+                        className="capitalize"
+                      >
+                        {task.approval_status.toLowerCase()}
+                      </Badge>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="h-8 w-8 p-0 shrink-0"
+                          >
+                            <span className="sr-only">Open menu</span>
+                            <MoreVertical className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
                           <DropdownMenuItem
                             onClick={() => {
-                              if (
-                                window.confirm(
-                                  "Are you sure you want to delete this task?",
-                                )
-                              ) {
-                                deleteTask(task.id);
-                              }
+                              setTaskToEdit(task);
+                              setIsCreateModalOpen(true);
                             }}
-                            disabled={isDeleting}
-                            className="text-destructive focus:bg-destructive/10 focus:text-destructive"
                           >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            <span>Delete Task</span>
+                            <Edit2 className="mr-2 h-4 w-4" />
+                            <span>Edit Task</span>
                           </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                          {normalizeStatus(task.approval_status) ===
+                            "pending" && (
+                            <DropdownMenuItem
+                              onClick={() => {
+                                if (
+                                  window.confirm(
+                                    "Are you sure you want to delete this task?",
+                                  )
+                                ) {
+                                  deleteTask(task.id);
+                                }
+                              }}
+                              disabled={isDeleting}
+                              className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              <span>Delete Task</span>
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent className="flex-1 flex flex-col justify-between space-y-4">
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  {task.description}
-                </p>
-                <div className="flex flex-wrap items-center gap-2 mt-auto pt-4 border-t border-border/50">
-                  <Badge variant="outline" className="text-xs">
-                    Karma: {task.karma}
-                  </Badge>
-                  <Badge variant="outline" className="text-xs">
-                    {task.type}
-                  </Badge>
-                  {task.active && (
-                    <Badge
-                      variant="outline"
-                      className="text-xs bg-green-500/10 text-green-600 border-green-500/20"
-                    >
-                      Active
+                </CardHeader>
+                <CardContent className="flex-1 flex flex-col justify-between space-y-4">
+                  <p className="text-sm text-muted-foreground line-clamp-2">
+                    {task.description}
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2 mt-auto pt-4 border-t border-border/50">
+                    <Badge variant="outline" className="text-xs">
+                      Karma: {task.karma}
                     </Badge>
-                  )}
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="ml-auto h-7 text-xs"
-                    onClick={() => setSelectedTaskId(task.id)}
-                  >
-                    View Details
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                    <Badge variant="outline" className="text-xs">
+                      {task.type}
+                    </Badge>
+                    {task.active && (
+                      <Badge
+                        variant="outline"
+                        className="text-xs bg-green-500/10 text-green-600 border-green-500/20"
+                      >
+                        Active
+                      </Badge>
+                    )}
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="ml-auto h-7 text-xs"
+                      onClick={() => setSelectedTaskId(task.id)}
+                    >
+                      View Details
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Pagination Controls */}
+          {pagination && pagination.total_pages > 1 && (
+            <div className="flex justify-between items-center mt-6">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="h-8 text-xs"
+              >
+                Previous
+              </Button>
+              <span className="text-xs text-muted-foreground">
+                Page {page} of {pagination.total_pages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => p + 1)}
+                disabled={page >= pagination.total_pages || !pagination.next}
+                className="h-8 text-xs"
+              >
+                Next
+              </Button>
+            </div>
+          )}
+        </>
       )}
 
       <CreateTaskModal
