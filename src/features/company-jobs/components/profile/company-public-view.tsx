@@ -54,6 +54,7 @@ export function CompanyPublicView({
     location: null,
     company_size: null,
     linkedin_url: null,
+    founded_year: null,
     created_at: userProfile?.joined,
     tech_stack: [],
     perks: [],

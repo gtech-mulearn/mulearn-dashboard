@@ -12,7 +12,7 @@
 
 import { Check } from "lucide-react";
 import { Fragment } from "react";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export interface StepperStep {
@@ -48,47 +48,58 @@ export function StepperHeader({
 
           return (
             <Fragment key={step.id}>
-              <div className="flex items-center gap-3">
+              <button
+                type="button"
+                aria-label={`Go to step ${index + 1}: ${step.label}`}
+                aria-current={isActive ? "step" : undefined}
+                onClick={() => onStepClick(index)}
+                className="group flex cursor-pointer items-center gap-3 rounded-lg text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
                 {isActive ? (
-                  <Button
-                    variant="default"
-                    size="icon-sm"
-                    className="ring-2 ring-brand-blue ring-offset-2"
-                    disabled
+                  <span
+                    className={cn(
+                      buttonVariants({ variant: "default", size: "icon-sm" }),
+                      "ring-2 ring-brand-blue ring-offset-2 pointer-events-none text-xs",
+                    )}
                   >
                     {index + 1}
-                  </Button>
+                  </span>
                 ) : isCompleted ? (
-                  <Button
-                    variant="default"
-                    size="icon-sm"
-                    aria-label={`Go to step ${index + 1}: ${step.label}`}
-                    onClick={() => onStepClick(index)}
+                  <span
+                    className={cn(
+                      buttonVariants({ variant: "default", size: "icon-sm" }),
+                      "pointer-events-none text-xs",
+                    )}
                   >
                     <Check className="h-4 w-4" />
-                  </Button>
+                  </span>
                 ) : (
-                  <Button variant="secondary" size="icon-sm" disabled>
+                  <span
+                    className={cn(
+                      buttonVariants({ variant: "secondary", size: "icon-sm" }),
+                      "pointer-events-none group-hover:bg-muted/80 text-xs",
+                    )}
+                  >
                     {index + 1}
-                  </Button>
+                  </span>
                 )}
                 <div className="min-w-0 pt-1">
                   <p
                     className={cn(
-                      "text-xs whitespace-nowrap leading-none",
+                      "text-xs whitespace-nowrap leading-none transition-colors",
                       isActive
                         ? "font-medium text-foreground"
-                        : "text-muted-foreground",
+                        : "text-muted-foreground group-hover:text-foreground",
                     )}
                   >
                     {step.label}
                   </p>
                 </div>
-              </div>
+              </button>
               {index < steps.length - 1 ? (
                 <div
                   className={cn(
-                    "h-0.5 flex-1 self-center",
+                    "h-0.5 flex-1 self-center transition-colors",
                     isCompleted ? "bg-primary" : "bg-border",
                   )}
                 />
@@ -98,13 +109,39 @@ export function StepperHeader({
         })}
       </div>
 
-      {/* Mobile: step text + progress bar */}
-      <div className="w-full sm:hidden">
+      {/* Mobile: step text + interactive step chips + progress bar */}
+      <div className="w-full space-y-2 sm:hidden">
         <p className="text-sm font-medium text-foreground">
           Step {currentStepIndex + 1} of {steps.length}
           {current ? ` - ${current.label}` : ""}
         </p>
-        <div className="mt-2 h-1 w-full rounded-full bg-border">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+          {steps.map((step, index) => {
+            const isActive = index === currentStepIndex;
+            const isCompleted = index < currentStepIndex;
+
+            return (
+              <button
+                key={step.id}
+                type="button"
+                onClick={() => onStepClick(index)}
+                aria-label={`Go to step ${index + 1}: ${step.label}`}
+                className={cn(
+                  "flex items-center gap-1 shrink-0 rounded-full px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer",
+                  isActive
+                    ? "bg-primary text-primary-foreground font-semibold"
+                    : isCompleted
+                      ? "bg-primary/10 text-primary hover:bg-primary/20"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80",
+                )}
+              >
+                {isCompleted ? <Check className="h-3 w-3" /> : index + 1}
+                <span>{step.label}</span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="h-1 w-full rounded-full bg-border">
           <div
             className="h-1 rounded-full bg-primary transition-all"
             style={{

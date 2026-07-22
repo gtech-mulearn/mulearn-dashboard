@@ -190,7 +190,7 @@ export function JobDetailView({
             </p>
             <div className="mt-1 flex items-center gap-1.5 text-sm text-foreground">
               <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
-              {job.location}
+              {job.location || "Not specified"}
             </div>
           </div>
           <div>
@@ -199,65 +199,60 @@ export function JobDetailView({
             </p>
             <div className="mt-1 flex items-center gap-1.5 text-sm text-foreground">
               <Wallet className="h-3.5 w-3.5 text-muted-foreground" />
-              {job.salary_range}
+              {job.salary_range || "Not specified"}
             </div>
           </div>
-
-          {job.experience && (
-            <div>
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Experience
-              </p>
-              <div className="mt-1 flex items-center gap-1.5 text-sm text-foreground">
-                <Timer className="h-3.5 w-3.5 text-muted-foreground" />
-                {job.experience}
-              </div>
+          <div>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              Experience
+            </p>
+            <div className="mt-1 flex items-center gap-1.5 text-sm text-foreground">
+              <Timer className="h-3.5 w-3.5 text-muted-foreground" />
+              {job.experience || "Not specified"}
             </div>
-          )}
-          {job.duration_value != null && job.duration_unit && (
-            <div>
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Duration
-              </p>
-              <div className="mt-1 flex items-center gap-1.5 text-sm text-foreground">
-                <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                {job.duration_value} {job.duration_unit}
-              </div>
+          </div>
+          <div>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              Duration
+            </p>
+            <div className="mt-1 flex items-center gap-1.5 text-sm text-foreground">
+              <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+              {job.duration_value != null && job.duration_unit
+                ? `${job.duration_value} ${job.duration_unit}`
+                : job.duration_value != null
+                  ? String(job.duration_value)
+                  : job.duration_unit || "Not specified"}
             </div>
-          )}
-          {job.hourly_rate && (
-            <div>
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Hourly Rate
-              </p>
-              <div className="mt-1 flex items-center gap-1.5 text-sm text-foreground">
-                <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />₹
-                {job.hourly_rate}/hr
-              </div>
+          </div>
+          <div>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              Hourly Rate
+            </p>
+            <div className="mt-1 flex items-center gap-1.5 text-sm text-foreground">
+              <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
+              {job.hourly_rate || "Not specified"}
             </div>
-          )}
-          {job.stipend && (
-            <div>
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Stipend
-              </p>
-              <div className="mt-1 flex items-center gap-1.5 text-sm text-foreground">
-                <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
-                {job.stipend}
-              </div>
+          </div>
+          <div>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              Stipend
+            </p>
+            <div className="mt-1 flex items-center gap-1.5 text-sm text-foreground">
+              <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
+              {job.stipend || "Not specified"}
             </div>
-          )}
-          {job.certificate_provided && (
-            <div>
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Certificate
-              </p>
-              <div className="mt-1 flex items-center gap-1.5 text-sm text-foreground">
-                <Award className="h-3.5 w-3.5 text-muted-foreground" />
-                Certificate Provided
-              </div>
+          </div>
+          <div>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              Certificate
+            </p>
+            <div className="mt-1 flex items-center gap-1.5 text-sm text-foreground">
+              <Award className="h-3.5 w-3.5 text-muted-foreground" />
+              {job.certificate_provided
+                ? "Certificate Provided"
+                : "Not Provided"}
             </div>
-          )}
+          </div>
         </div>
       </div>
 
@@ -277,19 +272,33 @@ export function JobDetailView({
       )}
 
       {/* Deliverables */}
-      {job.deliverables &&
-        (() => {
-          const items = Array.isArray(job.deliverables)
-            ? job.deliverables
-            : typeof job.deliverables === "string" && job.deliverables
-              ? [job.deliverables]
-              : [];
-          return items.length > 0 ? (
-            <div className="rounded-xl border border-border bg-card p-6">
-              <h2 className="text-base font-semibold text-foreground">
-                Deliverables
-              </h2>
-              <div className="mt-3 flex flex-wrap gap-2">
+      <div className="rounded-xl border border-border bg-card p-6">
+        <h2 className="text-base font-semibold text-foreground">
+          Deliverables
+        </h2>
+        <div className="mt-3">
+          {(() => {
+            const items = Array.isArray(job.deliverables)
+              ? job.deliverables
+              : typeof job.deliverables === "string" &&
+                  job.deliverables.trim().length > 0
+                ? (() => {
+                    const trimmed = job.deliverables.trim();
+                    if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+                      try {
+                        const parsed = JSON.parse(trimmed);
+                        if (Array.isArray(parsed))
+                          return parsed.map(String).filter(Boolean);
+                      } catch {}
+                    }
+                    return trimmed
+                      .split(",")
+                      .map((s) => s.trim())
+                      .filter(Boolean);
+                  })()
+                : [];
+            return items.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
                 {items.map((d) => (
                   <Badge
                     key={d}
@@ -301,9 +310,12 @@ export function JobDetailView({
                   </Badge>
                 ))}
               </div>
-            </div>
-          ) : null;
-        })()}
+            ) : (
+              <p className="text-sm text-muted-foreground">Not specified</p>
+            );
+          })()}
+        </div>
+      </div>
 
       {/* Eligibility Rules */}
       <div className="rounded-xl border border-border bg-card p-6">

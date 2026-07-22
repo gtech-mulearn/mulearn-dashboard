@@ -33,18 +33,9 @@ export function EditJobPageClient({ jobId }: EditJobPageClientProps) {
     router.push(`/dashboard/company/jobs/${jobId}`);
   }, [router, jobId]);
 
-  const parseNumber = useCallback((val: string | number | undefined | null) => {
-    if (val === undefined || val === null || val === "") return undefined;
-    if (typeof val === "number") return val;
-    const clean = val.replace(/[^0-9.]/g, "");
-    const parsed = parseFloat(clean);
-    return Number.isNaN(parsed) ? undefined : parsed;
-  }, []);
-
   const handleSubmit = useCallback(
     async (values: JobFormValues, _rules: JobRule[]) => {
       try {
-        const isGig = values.job_type === "Gig";
         await updateJobMutation.mutateAsync({
           jobId,
           payload: {
@@ -53,30 +44,19 @@ export function EditJobPageClient({ jobId }: EditJobPageClientProps) {
             job_description: values.job_description,
             location: values.location,
             job_type: values.job_type,
-            certificate_provided: values.certificate_provided ? "Yes" : "No",
-            ...(isGig
-              ? {
-                  duration_value:
-                    values.duration_value != null
-                      ? Number(values.duration_value)
-                      : null,
-                  duration_unit: values.duration_unit || null,
-                  hourly_rate: parseNumber(values.hourly_rate) ?? null,
-                  deliverables:
-                    values.deliverables && values.deliverables.length > 0
-                      ? values.deliverables.join(", ")
-                      : null,
-                  stipend: parseNumber(values.stipend) ?? null,
-                  salary_range: null,
-                }
-              : {
-                  salary_range: values.salary_range,
-                  duration_value: null,
-                  duration_unit: null,
-                  hourly_rate: null,
-                  deliverables: null,
-                  stipend: null,
-                }),
+            salary_range: values.salary_range || null,
+            certificate_provided: values.certificate_provided ?? false,
+            duration_value:
+              values.duration_value != null
+                ? Number(values.duration_value)
+                : null,
+            duration_unit: values.duration_unit || null,
+            hourly_rate: values.hourly_rate || null,
+            stipend: values.stipend || null,
+            deliverables:
+              values.deliverables && values.deliverables.length > 0
+                ? values.deliverables
+                : null,
           },
         });
 
@@ -85,7 +65,7 @@ export function EditJobPageClient({ jobId }: EditJobPageClientProps) {
         // Error handled by mutation's onError
       }
     },
-    [jobId, updateJobMutation, router, parseNumber],
+    [jobId, updateJobMutation, router],
   );
 
   return (

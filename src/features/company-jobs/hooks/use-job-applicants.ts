@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import { fetchJobApplicants, updateApplicantStatus } from "../api";
+import type { JobApplicantsResponse } from "../types";
 
 export const JOB_APPLICANTS_KEYS = {
   all: ["job-applicants"] as const,
@@ -49,7 +50,27 @@ export function useUpdateApplicantStatus() {
       status: string;
       rejection_reason?: string;
     }) => updateApplicantStatus(appId, { status, rejection_reason }),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
+      // Optimistically update query cache
+      queryClient.setQueriesData<JobApplicantsResponse>(
+        { queryKey: JOB_APPLICANTS_KEYS.all },
+        (old) => {
+          if (!old?.applicants) return old;
+          return {
+            ...old,
+            applicants: old.applicants.map((a) =>
+              a.id === variables.appId
+                ? {
+                    ...a,
+                    status: variables.status,
+                    rejection_reason:
+                      variables.rejection_reason ?? a.rejection_reason,
+                  }
+                : a,
+            ),
+          };
+        },
+      );
       // Invalidate specific job applicants query
       queryClient.invalidateQueries({ queryKey: JOB_APPLICANTS_KEYS.all });
     },

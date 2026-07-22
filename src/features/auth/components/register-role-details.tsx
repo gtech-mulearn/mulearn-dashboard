@@ -478,6 +478,21 @@ export function RegisterRoleDetails({
     setCompanyStep((s) => Math.min(s + 1, 4));
   };
 
+  const handleStepClick = async (targetStep: number) => {
+    if (targetStep === companyStep) return;
+    if (targetStep > companyStep) {
+      for (let s = companyStep; s < targetStep; s++) {
+        const fieldsToValidate = COMPANY_STEP_FIELDS[s];
+        const validStep = await form.trigger(fieldsToValidate);
+        if (!validStep) {
+          setCompanyStep(s);
+          return;
+        }
+      }
+    }
+    setCompanyStep(targetStep);
+  };
+
   return (
     <div className="w-full space-y-6">
       {/* Back button */}
@@ -869,7 +884,13 @@ export function RegisterRoleDetails({
                       key={label}
                       className="flex items-center flex-1 last:flex-none"
                     >
-                      <div className="flex flex-col items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => handleStepClick(stepNum)}
+                        className="flex flex-col items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-lg p-1"
+                        aria-label={`Go to step ${stepNum}: ${label}`}
+                        aria-current={isActive ? "step" : undefined}
+                      >
                         <div
                           className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
                             isDone
@@ -886,7 +907,7 @@ export function RegisterRoleDetails({
                         >
                           {label}
                         </span>
-                      </div>
+                      </button>
                       {i < COMPANY_STEPS.length - 1 && (
                         <div
                           className={`h-px flex-1 mx-1 mb-4 transition-colors ${isDone ? "bg-primary" : "bg-border"}`}

@@ -52,21 +52,10 @@ export function StepBasicInfo() {
           )}
         </div>
 
-        {!isResubmitting ? (
-          <div className="space-y-1 sm:col-span-2">
-            <p className="text-sm font-medium text-foreground">Slug</p>
-            <Input
-              {...register("slug")}
-              disabled
-              className="rounded-xl border-border bg-background/50 text-muted-foreground"
-              placeholder="e.g. acme-corporation"
-            />
-            <p className="text-xs text-muted-foreground">
-              URL-friendly identifier (cannot be changed)
-            </p>
-          </div>
-        ) : (
+        {isResubmitting ? (
           <input type="hidden" {...register("slug")} value="dummy-slug" />
+        ) : (
+          <input type="hidden" {...register("slug")} />
         )}
 
         <div className="space-y-1 sm:col-span-2">
