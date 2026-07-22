@@ -97,24 +97,6 @@ export function useProfileStepper(profile: CompanyProfile) {
    */
   async function goToStep(index: number): Promise<void> {
     if (index < 0 || index >= PROFILE_STEPPER_STEPS.length) return;
-
-    if (index <= currentStepIndex) {
-      setCurrentStepIndex(index);
-      return;
-    }
-
-    // Validate all steps between current and target
-    for (let i = currentStepIndex; i < index; i++) {
-      const fields = STEP_FIELDS[i];
-      if (fields && fields.length > 0) {
-        const valid = await form.trigger(fields);
-        if (!valid) {
-          setCurrentStepIndex(i);
-          return;
-        }
-      }
-    }
-
     setCurrentStepIndex(index);
   }
 

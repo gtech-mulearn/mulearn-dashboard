@@ -25,10 +25,13 @@ const STATUS_STYLES: Record<string, string> = {
 function JobRow({ job }: { job: Job }) {
   const statusStyle = STATUS_STYLES[job.status] ?? STATUS_STYLES.Draft;
   return (
-    <div className="flex items-center justify-between border-b border-border py-3.5 last:border-b-0">
+    <Link
+      href={`/dashboard/company/jobs/${job.id}`}
+      className="group flex cursor-pointer items-center justify-between rounded-lg border-b border-border px-2 -mx-2 py-3.5 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 last:border-b-0"
+    >
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <p className="truncate text-sm font-semibold text-foreground">
+          <p className="truncate text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
             {job.title}
           </p>
           <span
@@ -63,7 +66,7 @@ function JobRow({ job }: { job: Job }) {
           applicants
         </p>
       </div>
-    </div>
+    </Link>
   );
 }
 

@@ -263,21 +263,42 @@ export function JobDetailModal({
           {/* Deliverables */}
           {job.deliverables && (
             <Section title="Deliverables">
-              {Array.isArray(job.deliverables) ? (
-                <ul className="space-y-1.5">
-                  {job.deliverables.map((d) => (
-                    <li key={d} className="flex items-start gap-2 text-sm">
-                      <Package className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
-                      <span>{d}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <div className="flex items-start gap-2 text-sm">
-                  <Package className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
-                  <span>{job.deliverables}</span>
-                </div>
-              )}
+              {(() => {
+                const items = Array.isArray(job.deliverables)
+                  ? job.deliverables
+                  : typeof job.deliverables === "string" &&
+                      job.deliverables.trim().length > 0
+                    ? (() => {
+                        const trimmed = job.deliverables.trim();
+                        if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+                          try {
+                            const parsed = JSON.parse(trimmed);
+                            if (Array.isArray(parsed))
+                              return parsed.map(String).filter(Boolean);
+                          } catch {}
+                        }
+                        return trimmed
+                          .split(",")
+                          .map((s) => s.trim())
+                          .filter(Boolean);
+                      })()
+                    : [];
+                return items.length > 0 ? (
+                  <ul className="space-y-1.5">
+                    {items.map((d) => (
+                      <li key={d} className="flex items-start gap-2 text-sm">
+                        <Package className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+                        <span>{d}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="flex items-start gap-2 text-sm">
+                    <Package className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+                    <span>Not specified</span>
+                  </div>
+                );
+              })()}
             </Section>
           )}
 

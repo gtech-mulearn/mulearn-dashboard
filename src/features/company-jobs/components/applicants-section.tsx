@@ -58,33 +58,134 @@ function ApplicantRowSkeleton() {
   );
 }
 
+function normalizeStatus(status: string): AppStatus {
+  if (!status) return "pending";
+  const lower = status.toLowerCase();
+  if (lower === "pending") return "pending";
+  if (lower === "in-review" || lower === "in_review" || lower === "in review")
+    return "in-review";
+  if (lower === "shortlisted") return "shortlisted";
+  if (lower === "interview") return "interview";
+  if (lower === "selected" || lower === "accepted") return "selected";
+  if (lower === "rejected") return "rejected";
+  return "pending";
+}
+
 export function ApplicantsSection({ jobId }: ApplicantsSectionProps) {
   const [statusFilter, setStatusFilter] = useState<FilterTab>("all");
   const [search, setSearch] = useState("");
   const [pageIndex, setPageIndex] = useState(1);
   const [sortBy, setSortBy] = useState<string>("-karma");
 
-  // Filtered list (server-side filtered)
+  const currentBackendStatus =
+    statusFilter === "all"
+      ? undefined
+      : APP_STATUS_META[statusFilter as AppStatus]?.backendStatus ||
+        statusFilter;
+
+  // Server-side paginated query for the active status tab & page
   const { data, isLoading, isError } = useJobApplicants(jobId, {
-    status: statusFilter === "all" ? undefined : statusFilter,
+    status: currentBackendStatus,
     search: search || undefined,
     sortBy: sortBy,
     pageIndex: pageIndex,
   });
 
-  // Unfiltered for counts
-  const { data: allData } = useJobApplicants(jobId);
+  // Queries for backend-provided per-status tab counts (perPage: 1)
+  const { data: allCountData } = useJobApplicants(jobId, { perPage: 1 });
+  const { data: pendingCountData } = useJobApplicants(jobId, {
+    status: APP_STATUS_META.pending.backendStatus,
+    perPage: 1,
+  });
+  const { data: inReviewCountData } = useJobApplicants(jobId, {
+    status: APP_STATUS_META["in-review"].backendStatus,
+    perPage: 1,
+  });
+  const { data: shortlistedCountData } = useJobApplicants(jobId, {
+    status: APP_STATUS_META.shortlisted.backendStatus,
+    perPage: 1,
+  });
+  const { data: interviewCountData } = useJobApplicants(jobId, {
+    status: APP_STATUS_META.interview.backendStatus,
+    perPage: 1,
+  });
+  const { data: selectedCountData } = useJobApplicants(jobId, {
+    status: APP_STATUS_META.selected.backendStatus,
+    perPage: 1,
+  });
+  const { data: rejectedCountData } = useJobApplicants(jobId, {
+    status: APP_STATUS_META.rejected.backendStatus,
+    perPage: 1,
+  });
 
-  const applicants = data?.applicants ?? [];
-  const allApplicants = allData?.applicants ?? [];
+  const rawApplicants = data?.applicants ?? [];
 
-  const countByStatus = allApplicants.reduce<Record<string, number>>(
+  // Client-side filter fallback (guarantees non-matching applicants are excluded if backend ignores status parameter)
+  const displayedApplicants = rawApplicants.filter((a) => {
+    if (statusFilter !== "all") {
+      const norm = normalizeStatus(a.status);
+      if (norm !== statusFilter) return false;
+    }
+    if (search.trim()) {
+      const q = search.toLowerCase().trim();
+      const nameMatch = a.applicant_name?.toLowerCase().includes(q);
+      const emailMatch = a.applicant_email?.toLowerCase().includes(q);
+      if (!nameMatch && !emailMatch) return false;
+    }
+    return true;
+  });
+
+  // Local status counts fallback
+  const localCountByStatus = rawApplicants.reduce<Record<string, number>>(
     (acc, a) => {
-      acc[a.status] = (acc[a.status] ?? 0) + 1;
+      const key = normalizeStatus(a.status);
+      acc[key] = (acc[key] ?? 0) + 1;
       return acc;
     },
     {},
   );
+
+  const totalAllCount =
+    allCountData?.pagination.count ??
+    data?.pagination.count ??
+    rawApplicants.length;
+
+  const pendingCnt = pendingCountData?.pagination.count;
+  const inReviewCnt = inReviewCountData?.pagination.count;
+  const shortlistedCnt = shortlistedCountData?.pagination.count;
+  const interviewCnt = interviewCountData?.pagination.count;
+  const selectedCnt = selectedCountData?.pagination.count;
+  const rejectedCnt = rejectedCountData?.pagination.count;
+
+  const backendSupportsStatusCounts =
+    (pendingCnt !== undefined && pendingCnt !== totalAllCount) ||
+    (inReviewCnt !== undefined && inReviewCnt !== totalAllCount) ||
+    (shortlistedCnt !== undefined && shortlistedCnt !== totalAllCount) ||
+    (interviewCnt !== undefined && interviewCnt !== totalAllCount) ||
+    (selectedCnt !== undefined && selectedCnt !== totalAllCount) ||
+    (rejectedCnt !== undefined && rejectedCnt !== totalAllCount);
+
+  const tabCounts: Record<FilterTab, number> = {
+    all: totalAllCount,
+    pending: backendSupportsStatusCounts
+      ? (pendingCnt ?? 0)
+      : (localCountByStatus.pending ?? 0),
+    "in-review": backendSupportsStatusCounts
+      ? (inReviewCnt ?? 0)
+      : (localCountByStatus["in-review"] ?? 0),
+    shortlisted: backendSupportsStatusCounts
+      ? (shortlistedCnt ?? 0)
+      : (localCountByStatus.shortlisted ?? 0),
+    interview: backendSupportsStatusCounts
+      ? (interviewCnt ?? 0)
+      : (localCountByStatus.interview ?? 0),
+    selected: backendSupportsStatusCounts
+      ? (selectedCnt ?? 0)
+      : (localCountByStatus.selected ?? 0),
+    rejected: backendSupportsStatusCounts
+      ? (rejectedCnt ?? 0)
+      : (localCountByStatus.rejected ?? 0),
+  };
 
   return (
     <div className="rounded-xl border border-border bg-card p-6">
@@ -92,9 +193,9 @@ export function ApplicantsSection({ jobId }: ApplicantsSectionProps) {
       <div className="flex items-center gap-2">
         <Users className="h-4 w-4 text-muted-foreground" />
         <h2 className="text-base font-semibold text-foreground">Applicants</h2>
-        {allApplicants.length > 0 && (
+        {tabCounts.all > 0 && (
           <Badge variant="secondary" className="ml-1 text-xs">
-            {allApplicants.length}
+            {tabCounts.all}
           </Badge>
         )}
       </div>
@@ -144,8 +245,7 @@ export function ApplicantsSection({ jobId }: ApplicantsSectionProps) {
       {/* Filter tabs */}
       <div className="mt-4 flex flex-wrap gap-1.5">
         {FILTER_TABS.map(({ key, label }) => {
-          const count =
-            key === "all" ? allApplicants.length : countByStatus[key];
+          const count = tabCounts[key];
           const isActive = statusFilter === key;
 
           return (
@@ -164,11 +264,9 @@ export function ApplicantsSection({ jobId }: ApplicantsSectionProps) {
               }`}
             >
               {label}
-              {count !== undefined && count > 0 && (
-                <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-semibold leading-none">
-                  {count}
-                </span>
-              )}
+              <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-semibold leading-none">
+                {count}
+              </span>
             </Button>
           );
         })}
@@ -182,19 +280,19 @@ export function ApplicantsSection({ jobId }: ApplicantsSectionProps) {
           <p className="py-6 text-center text-sm text-muted-foreground">
             Failed to load applicants.
           </p>
-        ) : applicants.length === 0 ? (
+        ) : displayedApplicants.length === 0 ? (
           <p className="py-10 text-center text-sm text-muted-foreground">
             {statusFilter === "all"
               ? "No applicants yet."
               : `No ${APP_STATUS_META[statusFilter as AppStatus]?.label.toLowerCase()} applicants.`}
           </p>
         ) : (
-          applicants.map((a) => (
+          displayedApplicants.map((a) => (
             <ApplicantRow key={a.id} applicant={a} jobId={jobId} />
           ))
         )}
 
-        {/* Pagination */}
+        {/* Pagination Controls */}
         {!isLoading &&
           !isError &&
           data?.pagination.totalPages &&

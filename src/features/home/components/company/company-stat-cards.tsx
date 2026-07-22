@@ -33,7 +33,7 @@ export function CompanyStatCards({ quickStats, isLoading, isVerified }: Props) {
       icon: Users,
       accent: "chart-3" as const,
       value: quickStats?.hired.toString() ?? "—",
-      description: "via muLearn",
+      description: "\u00A0",
     },
   ];
 
@@ -57,7 +57,7 @@ export function CompanyStatCards({ quickStats, isLoading, isVerified }: Props) {
         return (
           <div
             key={card.key}
-            className={`relative ${!isVerified ? "pointer-events-none opacity-70" : ""}`}
+            className={`relative h-full ${!isVerified ? "pointer-events-none opacity-70" : ""}`}
           >
             {!isVerified && (
               <span className="absolute right-3 top-3 z-10 inline-flex items-center rounded-md bg-muted px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -66,6 +66,7 @@ export function CompanyStatCards({ quickStats, isLoading, isVerified }: Props) {
               </span>
             )}
             <StatCard
+              className="h-full"
               title={card.label}
               value={!isVerified ? "—" : card.value}
               icon={<Icon className="size-5" />}
