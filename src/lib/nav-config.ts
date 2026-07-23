@@ -247,6 +247,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: Users,
     section: "management",
     roles: [ROLES.MENTOR],
+    dynamicCheck: (_, context) => !!context.isMentorVerified,
   },
   {
     id: "company-jobs",
