@@ -7,8 +7,8 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useDebounce } from "@/hooks/use-debounce";
 import { searchDepartments } from "@/features/settings";
+import { useDebounce } from "@/hooks/use-debounce";
 import { settingsKeys } from "./query-key";
 
 /**

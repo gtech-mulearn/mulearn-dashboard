@@ -11,7 +11,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { Fragment, type ChangeEvent, useState } from "react";
+import { type ChangeEvent, Fragment, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
