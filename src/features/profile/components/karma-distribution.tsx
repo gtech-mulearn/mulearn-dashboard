@@ -3,36 +3,63 @@
  *
  * 📍 src/features/profile/components/karma-distribution.tsx
  *
- * Clean horizontal bar chart showing karma breakdown.
+ * Donut chart of karma broken down straight from the API's split fields —
+ * no derived buckets, just what `org_ig_karma_split`, `event_karma_split`,
+ * `intern_karma`, and `general_enablement_karma` already report.
+ *
+ * Layout: chart left / legend right on desktop, chart above legend on
+ * mobile. Total karma sits fixed in the donut's center. On desktop only,
+ * hovering either the ring or a legend row brightens that slice — mobile
+ * gets no touch interaction, just a static readable chart + legend.
  */
 
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Cell, Pie, PieChart } from "recharts";
+import { seriesColor } from "@/components/charts/chart-theme";
 import type { UserProfile } from "../schemas";
-import { buildKarmaBreakdown } from "../utils/karma.utils";
 
 interface KarmaDistributionProps {
   profile: UserProfile;
 }
 
-// TODO: karma distribution chart segment colors are a meaningful categorical palette — leave as-is
-const COLORS = [
-  { bg: "bg-blue-100", bar: "bg-blue-500", text: "text-blue-700" },
-  { bg: "bg-emerald-100", bar: "bg-emerald-500", text: "text-emerald-700" },
-  { bg: "bg-amber-100", bar: "bg-amber-500", text: "text-amber-700" },
-  { bg: "bg-rose-100", bar: "bg-rose-500", text: "text-rose-700" },
-  { bg: "bg-violet-100", bar: "bg-violet-500", text: "text-violet-700" },
-  { bg: "bg-cyan-100", bar: "bg-cyan-500", text: "text-cyan-700" },
-];
+/** Desktop-only: matches (hover: hover) and (pointer: fine), so touch devices never get hover/click affordances. */
+function useIsDesktop() {
+  const [isDesktop, setIsDesktop] = useState(false);
+  useEffect(() => {
+    const mql = window.matchMedia("(hover: hover) and (pointer: fine)");
+    setIsDesktop(mql.matches);
+    const onChange = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
+  return isDesktop;
+}
 
 export function KarmaDistribution({ profile }: KarmaDistributionProps) {
-  const { slices: distributionData, total } = useMemo(
-    () => buildKarmaBreakdown(profile.karma ?? 0, profile.interest_groups),
-    [profile.karma, profile.interest_groups],
-  );
+  const isDesktop = useIsDesktop();
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
-  if (total === 0) {
+  const chartData = useMemo(() => {
+    const slices = [
+      ...profile.org_ig_karma_split.map((ig) => ({
+        name: ig.ig_name,
+        value: ig.karma,
+      })),
+      ...profile.event_karma_split.map((event) => ({
+        name: event.event_name ?? "Event Task",
+        value: event.karma,
+      })),
+      { name: "Intern Task", value: profile.intern_karma },
+      { name: "General Enablement", value: profile.general_enablement_karma },
+    ];
+    return slices
+      .filter((slice) => slice.value > 0)
+      .sort((a, b) => b.value - a.value);
+  }, [profile]);
+
+  if (chartData.length === 0) {
     return (
       <div className="text-center">
         <h3 className="mb-4 text-sm font-semibold text-muted-foreground uppercase tracking-wide">
@@ -46,46 +73,116 @@ export function KarmaDistribution({ profile }: KarmaDistributionProps) {
     );
   }
 
+  const total = chartData.reduce((sum, slice) => sum + slice.value, 0);
+  const active = activeIndex != null ? chartData[activeIndex] : null;
+  const activePercent = active
+    ? Math.round((active.value / total) * 100)
+    : null;
+
+  const desktopHoverProps = isDesktop
+    ? {
+        onMouseEnter: (_: unknown, index: number) => setActiveIndex(index),
+        onMouseLeave: () => setActiveIndex(null),
+      }
+    : {};
+
   return (
     <div>
       <h3 className="mb-4 text-sm font-semibold text-muted-foreground uppercase tracking-wide">
         Karma Distribution
       </h3>
 
-      <div className="space-y-3">
-        {distributionData.map((item, index) => {
-          const percentage = Math.round((item.value / total) * 100);
-          const color = COLORS[index % COLORS.length];
+      <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:justify-center sm:gap-8">
+        {/* Chart */}
+        <div
+          className={`relative h-52 w-52 shrink-0 ${isDesktop ? "" : "touch-none"}`}
+        >
+          <PieChart responsive style={{ width: "100%", height: "100%" }}>
+            <Pie
+              data={chartData}
+              cx="50%"
+              cy="50%"
+              innerRadius="60%"
+              outerRadius="90%"
+              paddingAngle={2}
+              dataKey="value"
+              nameKey="name"
+              isAnimationActive={false}
+              {...desktopHoverProps}
+            >
+              {chartData.map((entry, index) => {
+                const dimmed = activeIndex != null && activeIndex !== index;
+                return (
+                  <Cell
+                    key={`cell-${entry.name}`}
+                    fill={seriesColor(index)}
+                    stroke="var(--card)"
+                    strokeWidth={2}
+                    opacity={dimmed ? 0.35 : 1}
+                    style={{
+                      filter:
+                        isDesktop && activeIndex === index
+                          ? "brightness(1.2)"
+                          : undefined,
+                      transition: "opacity 150ms ease, filter 150ms ease",
+                      cursor: isDesktop ? "pointer" : "default",
+                    }}
+                  />
+                );
+              })}
+            </Pie>
+          </PieChart>
 
-          return (
-            <div key={item.name} className="space-y-1.5">
-              <div className="flex items-center justify-between text-sm">
-                <span className="font-medium text-foreground truncate max-w-[60%]">
-                  {item.name}
+          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+            {active ? (
+              <>
+                <span className="max-w-[6rem] truncate text-sm font-bold text-foreground">
+                  {active.name}
                 </span>
-                <span className={`font-semibold ${color.text}`}>
-                  {item.value.toLocaleString()}
+                <span className="text-xs text-muted-foreground">
+                  {active.value.toLocaleString()} · {activePercent}%
                 </span>
-              </div>
-              <div className="h-2 overflow-hidden rounded-full bg-muted">
-                <div
-                  className={`h-full rounded-full ${color.bar} transition-all duration-500`}
-                  style={{ width: `${percentage}%` }}
+              </>
+            ) : (
+              <>
+                <span className="text-xl font-bold text-foreground">
+                  {total.toLocaleString()}
+                </span>
+                <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                  Total Karma
+                </span>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Legend */}
+        <ul className="w-full min-w-0 space-y-1 sm:max-w-[13rem] max-h-40 overflow-y-auto sm:max-h-none sm:overflow-visible">
+          {chartData.map((entry, index) => (
+            <li key={entry.name}>
+              <button
+                type="button"
+                disabled={!isDesktop}
+                onMouseEnter={() => isDesktop && setActiveIndex(index)}
+                onMouseLeave={() => isDesktop && setActiveIndex(null)}
+                className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors ${
+                  isDesktop ? "hover:bg-muted" : ""
+                } ${activeIndex === index ? "bg-muted" : ""}`}
+              >
+                <span
+                  className="size-2.5 shrink-0 rounded-full"
+                  style={{ backgroundColor: seriesColor(index) }}
                 />
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Total */}
-      <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
-        <span className="text-sm font-medium text-muted-foreground">
-          Total Karma
-        </span>
-        <span className="text-lg font-bold text-foreground">
-          {total.toLocaleString()}
-        </span>
+                <span className="min-w-0 flex-1 truncate text-foreground">
+                  {entry.name}
+                </span>
+                <span className="shrink-0 font-semibold text-muted-foreground">
+                  {entry.value.toLocaleString()}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );
