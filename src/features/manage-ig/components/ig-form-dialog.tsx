@@ -217,7 +217,7 @@ export function InterestGroupFormDialog({
   const [mentorMuids, setMentorMuids] = useState<string[]>([]);
   const [topBlogs, setTopBlogs] = useState<BlogEntry[]>([]);
   const [peopleToFollow, setPeopleToFollow] = useState<PersonEntry[]>([]);
-  const [iconPreviewError, setIconPreviewError] = useState(false);
+  const [erroredIconUrl, setErroredIconUrl] = useState<string | null>(null);
 
   const {
     control,
@@ -512,15 +512,14 @@ export function InterestGroupFormDialog({
                       <div className="flex items-center gap-3">
                         {watchedIcon &&
                         /^(https?:\/\/|\/)/.test(watchedIcon) &&
-                        !iconPreviewError ? (
+                        erroredIconUrl !== watchedIcon ? (
                           <Image
                             key={watchedIcon}
                             src={watchedIcon}
                             alt=""
                             width={40}
                             height={40}
-                            onError={() => setIconPreviewError(true)}
-                            onLoad={() => setIconPreviewError(false)}
+                            onError={() => setErroredIconUrl(watchedIcon)}
                             className="h-10 w-10 shrink-0 rounded-lg border border-border object-cover"
                           />
                         ) : null}
