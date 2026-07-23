@@ -5,7 +5,7 @@ import { Pencil } from "lucide-react";
 import { useMemo, useState } from "react";
 import { updateInterestGroups } from "@/features/profile/api/profile.api";
 import { EditInterestGroupsModal } from "@/features/profile/components/edit-interest-groups-modal";
-import { usePublicTasks } from "@/features/tasks/hooks";
+import { useAllPublicTasks } from "@/features/tasks/hooks";
 import { mujourneyKeys } from "../hooks/query-keys";
 import type {
   GetUserLevelsResponse,
@@ -15,8 +15,6 @@ import type {
   UserLevelData,
 } from "../schemas/mujourney.schemas";
 import { LevelCard } from "./LevelCard";
-
-const FETCH_ALL_SIZE = 500;
 
 interface BecomeExpertTabProps {
   filter?: string;
@@ -73,26 +71,37 @@ export function BecomeExpertTab({
     level: { unit: "level", count: 1 } as { unit: string; count: number },
   }));
 
-  const { data: mentorData } = usePublicTasks({
-    pageIndex: 1,
-    perPage: FETCH_ALL_SIZE,
+  // The user's own completion state, keyed by hashtag, so mentor tasks
+  // merged in below (from the public catalog, which carries no per-user
+  // completion) can be reconciled against what the user has actually done.
+  const completionByHashtag = useMemo(() => {
+    const map = new Map<string, boolean>();
+    (levelsData?.response ?? []).forEach((level: UserLevelData) => {
+      (level.tasks || []).forEach((task: Task) => {
+        if (task.hashtag) map.set(task.hashtag, Boolean(task.completed));
+      });
+    });
+    return map;
+  }, [levelsData]);
+
+  const { data: mentorData } = useAllPublicTasks({
     task_source: "ig_mentor",
   });
 
   const mentorTasks = useMemo<Task[]>(() => {
-    return (mentorData?.data ?? []).map((task) => ({
+    return (mentorData ?? []).map((task) => ({
       task_name: task.title,
       task_description: task.description ?? "",
       karma: task.karma,
       hashtag: task.hashtag,
-      completed: false,
+      completed: completionByHashtag.get(task.hashtag) ?? false,
       active: task.active,
       discord_link: task.discord_link,
       level: task.level,
       interest_group: task.ig ? { id: task.ig, name: task.ig } : undefined,
       submission_channel: task.channel ? { name: task.channel } : undefined,
     }));
-  }, [mentorData]);
+  }, [mentorData, completionByHashtag]);
 
   const expertLevels = useMemo(() => {
     const map = new Map<string, UserLevelData>();

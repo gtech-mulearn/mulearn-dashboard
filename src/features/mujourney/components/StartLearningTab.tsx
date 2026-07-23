@@ -10,12 +10,9 @@
 
 import { useMemo } from "react";
 import { StateDisplay } from "@/components/ui/state-display";
-import { usePublicTasks } from "@/features/tasks/hooks";
+import { useAllPublicTasks } from "@/features/tasks/hooks";
 import type { GetUserLevelsResponse, Task, UserLevelData } from "../schemas";
 import { LevelCard } from "./LevelCard";
-
-// Large enough to pull the full company/campus task set in one call for client-side merge
-const FETCH_ALL_SIZE = 500;
 
 interface StartLearningTabProps {
   filter?: string;
@@ -32,33 +29,41 @@ export function StartLearningTab({
 }: StartLearningTabProps) {
   const data = levelsData;
   const levels = data?.response ?? [];
-  const { data: companyData } = usePublicTasks({
-    pageIndex: 1,
-    perPage: FETCH_ALL_SIZE,
-    task_source: "company",
-  });
-  const { data: campusData } = usePublicTasks({
-    pageIndex: 1,
-    perPage: FETCH_ALL_SIZE,
+
+  // The user's own completion state, keyed by hashtag, so tasks merged in
+  // below from the public catalog (which carries no per-user completion)
+  // can be reconciled against what the user has actually completed.
+  const completionByHashtag = useMemo(() => {
+    const map = new Map<string, boolean>();
+    levels.forEach((level: UserLevelData) => {
+      (level.tasks || []).forEach((task: Task) => {
+        if (task.hashtag) map.set(task.hashtag, Boolean(task.completed));
+      });
+    });
+    return map;
+  }, [levels]);
+
+  const { data: companyData } = useAllPublicTasks({ task_source: "company" });
+  const { data: campusData } = useAllPublicTasks({
     task_source: "campus_mentor",
   });
 
   const generalTasks = useMemo<Task[]>(() => {
-    const raw = [...(companyData?.data ?? []), ...(campusData?.data ?? [])];
+    const raw = [...(companyData ?? []), ...(campusData ?? [])];
     return raw.map((task) => ({
       task_id: task.id,
       task_name: task.title,
       task_description: task.description ?? "",
       karma: task.karma,
       hashtag: task.hashtag,
-      completed: false,
+      completed: completionByHashtag.get(task.hashtag) ?? false,
       active: task.active,
       discord_link: task.discord_link,
       level: task.level,
       interest_group: task.ig ? { name: task.ig } : undefined,
       submission_channel: task.channel ? { name: task.channel } : undefined,
     }));
-  }, [companyData, campusData]);
+  }, [companyData, campusData, completionByHashtag]);
 
   // Filter out tasks with #cl- (expert/Interest Group) or #evn (event) hashtags
   // Start Learning Tab: EXCLUDE tasks containing #cl- or starting with #evn

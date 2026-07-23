@@ -5,7 +5,8 @@
  *
  * 📍 src/features/mujourney/components/EventsTab.tsx
  *
- * Shows event-based tasks — filtered client-side to hashtags starting with #evn
+ * Shows event-based tasks — either linked to an event (event/event_id set)
+ * or using the #evn hashtag convention — paginated client-side.
  */
 
 import { Calendar, Search, X } from "lucide-react";
@@ -15,14 +16,12 @@ import { Input } from "@/components/ui/input";
 import { StateDisplay } from "@/components/ui/state-display";
 import { LevelCard } from "@/features/mujourney/components/LevelCard";
 import type { Task, UserLevelData } from "@/features/mujourney/schemas";
-import { usePublicTasks } from "@/features/tasks/hooks";
-import type { PublicTaskListParams } from "@/features/tasks/types/tasks.types";
+import { useAllPublicTasks } from "@/features/tasks/hooks";
 import { useDebounce } from "@/hooks/use-debounce";
 
 // ─── Component ─────────────────────────────────────────────────────────
 
 const PAGE_SIZE = 20;
-const FETCH_ALL_SIZE = 500;
 
 export function EventsTab() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -30,16 +29,9 @@ export function EventsTab() {
 
   const debouncedSearch = useDebounce(searchInput, 400);
 
-  // Fetch the full task set; event tasks are filtered + paginated client-side below
-  const queryParams: PublicTaskListParams = {
-    pageIndex: 1,
-    perPage: FETCH_ALL_SIZE,
+  const { data: allTasks = [], isLoading } = useAllPublicTasks({
     search: debouncedSearch,
-  };
-
-  const { data, isLoading } = usePublicTasks(queryParams);
-
-  const allTasks = data?.data ?? [];
+  });
 
   const clearSearch = () => {
     setSearchInput("");
@@ -52,7 +44,13 @@ export function EventsTab() {
   };
 
   const eventTasks = useMemo(
-    () => allTasks.filter((task) => (task.hashtag || "").startsWith("#evn")),
+    () =>
+      allTasks.filter(
+        (task) =>
+          (task.hashtag || "").startsWith("#evn") ||
+          Boolean(task.event) ||
+          Boolean(task.event_id),
+      ),
     [allTasks],
   );
 

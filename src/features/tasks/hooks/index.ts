@@ -6,6 +6,7 @@ export {
 } from "./use-task-types";
 export { usePendingTasks, useReviewTask } from "./use-task-verification";
 export {
+  useAllPublicTasks,
   useCreateTask,
   useDeleteTask,
   useDownloadTasksCsv,
