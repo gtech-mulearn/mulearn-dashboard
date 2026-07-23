@@ -164,27 +164,25 @@ export function LeaderboardPageClient() {
       (item) => item.status !== "INACTIVE",
     );
     const item = activePodium[index];
-    const isCurrentUser = item
-      ? isCurrentLeaderboardUser(item, leaderboardIdentity)
-      : false;
+    if (!item) return null;
+
+    const isCurrentUser = isCurrentLeaderboardUser(item, leaderboardIdentity);
 
     return {
-      id: item?.user_id || "",
-      rank: item?.rank || index + 1,
-      name: isCurrentUser ? "You" : item?.full_name || "N/A",
-      points: item?.score || 0,
-      avatar: item?.full_name
+      id: item.user_id || "",
+      rank: item.rank || index + 1,
+      name: isCurrentUser ? "You" : item.full_name || "N/A",
+      points: item.score || 0,
+      avatar: item.full_name
         ? item.full_name
             .split(" ")
             .map((n) => n[0])
             .join("")
         : "??",
       profilePic: isCurrentUser
-        ? (profile?.profile_pic ?? userInfo?.profile_pic ?? item?.profile_pic)
-        : item?.profile_pic,
-      link: item?.muid
-        ? `/profile/${encodeURIComponent(item.muid)}`
-        : undefined,
+        ? (profile?.profile_pic ?? userInfo?.profile_pic ?? item.profile_pic)
+        : item.profile_pic,
+      link: item.muid ? `/profile/${encodeURIComponent(item.muid)}` : undefined,
     };
   };
 
@@ -297,6 +295,8 @@ export function LeaderboardPageClient() {
     isCenter?: boolean,
     ringColor?: string,
   ) => {
+    if (!user) return null;
+
     const cardContent = (
       <div
         className={`flex flex-col items-center text-center flex-1 ${
