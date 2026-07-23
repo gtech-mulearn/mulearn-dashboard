@@ -32,7 +32,6 @@ import {
   getCircleMeetings,
   getCircleMembers,
   getCircles,
-  getColleges,
   getInviteByLink,
   getJoinRequests,
   getMeetingDetail,

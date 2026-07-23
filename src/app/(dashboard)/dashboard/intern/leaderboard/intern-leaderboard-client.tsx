@@ -400,9 +400,8 @@ export function LeaderboardPageClient() {
             stroke="currentColor"
             strokeWidth="0.5"
             opacity="0.2"
-            role="img"
+            aria-hidden="true"
           >
-            <title>Decorative background waves left</title>
             <circle cx="10" cy="90" r="30" />
             <circle cx="10" cy="90" r="40" />
             <circle cx="10" cy="90" r="50" />
@@ -419,9 +418,8 @@ export function LeaderboardPageClient() {
             stroke="currentColor"
             strokeWidth="0.5"
             opacity="0.2"
-            role="img"
+            aria-hidden="true"
           >
-            <title>Decorative background waves right</title>
             <circle cx="90" cy="10" r="30" />
             <circle cx="90" cy="10" r="40" />
             <circle cx="90" cy="10" r="50" />
