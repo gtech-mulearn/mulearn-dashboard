@@ -32,8 +32,8 @@ export function StartLearningTab({
   // Response is directly an array of levels
   const levels = data?.response ?? [];
 
-  // Filter out tasks with #cl- hashtags (expert/Interest Group tasks)
-  // Start Learning Tab: EXCLUDE tasks containing #cl- in their hashtag
+  // Filter out tasks with #cl- (expert/Interest Group) or #evn (event) hashtags
+  // Start Learning Tab: EXCLUDE tasks containing #cl- or starting with #evn
   const foundationLevels = useMemo(
     () =>
       levels
@@ -41,7 +41,8 @@ export function StartLearningTab({
           ...level,
           tasks: (level.tasks || []).filter((task: Task) => {
             const hashtag = task.hashtag || "";
-            const isFoundationTask = !hashtag.includes("#cl-");
+            const isFoundationTask =
+              !hashtag.includes("#cl-") && !hashtag.startsWith("#evn");
 
             // Apply completion filter
             if (filter === "completed") {

@@ -5,7 +5,7 @@
  *
  * 📍 src/features/mujourney/components/EventsTab.tsx
  *
- * Shows event-based tasks — pre-filtered to is_event_task=true
+ * Shows event-based tasks — filtered client-side to hashtags starting with #evn
  */
 
 import { Calendar, Search, X } from "lucide-react";
@@ -21,25 +21,25 @@ import { useDebounce } from "@/hooks/use-debounce";
 
 // ─── Component ─────────────────────────────────────────────────────────
 
+const PAGE_SIZE = 20;
+const FETCH_ALL_SIZE = 500;
+
 export function EventsTab() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchInput, setSearchInput] = useState("");
 
   const debouncedSearch = useDebounce(searchInput, 400);
 
-  // Always filter to event tasks only
+  // Fetch the full task set; event tasks are filtered + paginated client-side below
   const queryParams: PublicTaskListParams = {
-    pageIndex: currentPage,
-    perPage: 20,
+    pageIndex: 1,
+    perPage: FETCH_ALL_SIZE,
     search: debouncedSearch,
-    is_event_task: true,
   };
 
   const { data, isLoading } = usePublicTasks(queryParams);
 
-  const tasks = data?.data ?? [];
-  const pagination = data?.pagination;
-  const totalPages = pagination?.totalPages ?? 1;
+  const allTasks = data?.data ?? [];
 
   const clearSearch = () => {
     setSearchInput("");
@@ -51,12 +51,23 @@ export function EventsTab() {
     setCurrentPage(1);
   };
 
+  const eventTasks = useMemo(
+    () => allTasks.filter((task) => (task.hashtag || "").startsWith("#evn")),
+    [allTasks],
+  );
+
+  const totalPages = Math.max(1, Math.ceil(eventTasks.length / PAGE_SIZE));
+  const pageTasks = eventTasks.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
+
   // ─── Group tasks by level ───────────────────────────────────────────
 
   const groupedLevels = useMemo(() => {
     const map = new Map<string, Task[]>();
 
-    tasks.forEach((task) => {
+    pageTasks.forEach((task) => {
       const levelNumber = task.level?.match(/\d+/)?.[0] ?? "1";
       const levelKey = `Lvl ${levelNumber}`;
 
@@ -93,7 +104,7 @@ export function EventsTab() {
     });
 
     return levels;
-  }, [tasks]);
+  }, [pageTasks]);
 
   // ─── Render ────────────────────────────────────────────────────────
 
