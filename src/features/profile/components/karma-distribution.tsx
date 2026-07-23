@@ -16,7 +16,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Cell, Pie, PieChart } from "recharts";
+import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 import { CHART_SERIES } from "@/components/charts/chart-theme";
 import type { UserProfile } from "../schemas";
 
@@ -108,41 +108,43 @@ export function KarmaDistribution({ profile }: KarmaDistributionProps) {
         <div
           className={`relative h-52 w-52 shrink-0 ${isDesktop ? "" : "touch-none"}`}
         >
-          <PieChart responsive style={{ width: "100%", height: "100%" }}>
-            <Pie
-              data={chartData}
-              cx="50%"
-              cy="50%"
-              innerRadius="60%"
-              outerRadius="90%"
-              paddingAngle={2}
-              dataKey="value"
-              nameKey="name"
-              isAnimationActive={false}
-              {...desktopHoverProps}
-            >
-              {chartData.map((entry, index) => {
-                const dimmed = activeIndex != null && activeIndex !== index;
-                return (
-                  <Cell
-                    key={`cell-${entry.name}`}
-                    fill={sliceColor(index)}
-                    stroke="var(--card)"
-                    strokeWidth={2}
-                    opacity={dimmed ? 0.35 : 1}
-                    style={{
-                      filter:
-                        isDesktop && activeIndex === index
-                          ? "brightness(1.2)"
-                          : undefined,
-                      transition: "opacity 150ms ease, filter 150ms ease",
-                      cursor: isDesktop ? "pointer" : "default",
-                    }}
-                  />
-                );
-              })}
-            </Pie>
-          </PieChart>
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={chartData}
+                cx="50%"
+                cy="50%"
+                innerRadius="60%"
+                outerRadius="90%"
+                paddingAngle={2}
+                dataKey="value"
+                nameKey="name"
+                isAnimationActive={false}
+                {...desktopHoverProps}
+              >
+                {chartData.map((entry, index) => {
+                  const dimmed = activeIndex != null && activeIndex !== index;
+                  return (
+                    <Cell
+                      key={`cell-${entry.name}`}
+                      fill={sliceColor(index)}
+                      stroke="var(--card)"
+                      strokeWidth={2}
+                      opacity={dimmed ? 0.35 : 1}
+                      style={{
+                        filter:
+                          isDesktop && activeIndex === index
+                            ? "brightness(1.2)"
+                            : undefined,
+                        transition: "opacity 150ms ease, filter 150ms ease",
+                        cursor: isDesktop ? "pointer" : "default",
+                      }}
+                    />
+                  );
+                })}
+              </Pie>
+            </PieChart>
+          </ResponsiveContainer>
 
           <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
             {active ? (
