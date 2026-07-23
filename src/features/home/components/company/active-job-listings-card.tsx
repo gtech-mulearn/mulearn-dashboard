@@ -12,9 +12,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useJobApplicants } from "@/features/company-jobs/hooks/use-job-applicants";
-import { useJobs } from "@/features/company-jobs/hooks/use-jobs";
-import type { Job } from "@/features/company-jobs/types";
+import { type Job, useJobApplicants, useJobs } from "@/features/company-jobs";
 import { cn } from "@/lib/utils";
 
 const STATUS_STYLES: Record<string, string> = {
@@ -25,16 +23,26 @@ const STATUS_STYLES: Record<string, string> = {
 
 function JobRow({ job }: { job: Job }) {
   const statusStyle = STATUS_STYLES[job.status] ?? STATUS_STYLES.Draft;
-  const { data: applicantData } = useJobApplicants(job.id, { perPage: 1 });
 
-  const applicantCount =
+  const embeddedCount =
     job.applicant_count ??
     job.applications_count ??
     job.total_applicants ??
     job.applicantCount ??
-    job.applicationsCount ??
-    applicantData?.pagination.count ??
-    0;
+    job.applicationsCount;
+
+  const hasEmbeddedCount =
+    embeddedCount !== undefined && embeddedCount !== null;
+
+  const { data: applicantData } = useJobApplicants(
+    job.id,
+    { perPage: 1 },
+    { enabled: !hasEmbeddedCount },
+  );
+
+  const applicantCount = hasEmbeddedCount
+    ? embeddedCount
+    : (applicantData?.pagination.count ?? 0);
 
   return (
     <Link
