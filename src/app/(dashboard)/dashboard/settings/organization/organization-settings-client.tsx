@@ -1,29 +1,26 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import {
   type ChangeOrganizationFormValues,
   ChangeOrganizationRequestSchema,
   useChangeOrganization,
-  useColleges,
-  useDepartments,
+  useCollegeSearch,
+  useDepartmentSearch,
 } from "@/features/settings";
 
 export function ChangeOrganizationPageClient() {
   const changeOrganizationMutation = useChangeOrganization();
-  const collegesQuery = useColleges();
-  const departmentsQuery = useDepartments();
+  const [collegeSearch, setCollegeSearch] = useState("");
+  const [departmentSearch, setDepartmentSearch] = useState("");
+  const collegeSearchQuery = useCollegeSearch(collegeSearch);
+  const departmentSearchQuery = useDepartmentSearch(departmentSearch);
 
   const {
     control,
@@ -35,6 +32,7 @@ export function ChangeOrganizationPageClient() {
     defaultValues: {
       organization: "",
       department: "",
+      graduation_year: undefined as unknown as number,
     },
   });
 
@@ -43,8 +41,8 @@ export function ChangeOrganizationPageClient() {
     if (!res.hasError) reset();
   }
 
-  const colleges = collegesQuery.data ?? [];
-  const departments = departmentsQuery.data ?? [];
+  const colleges = collegeSearchQuery.data ?? [];
+  const departments = departmentSearchQuery.data ?? [];
 
   const isLoading = changeOrganizationMutation.isPending;
 
@@ -63,30 +61,19 @@ export function ChangeOrganizationPageClient() {
               control={control}
               name="organization"
               render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger className="w-full border-primary text-primary focus:ring-primary">
-                    <SelectValue placeholder="Select organization" />
-                  </SelectTrigger>
-
-                  <SelectContent
-                    position="popper"
-                    side="bottom"
-                    sideOffset={8}
-                    align="center"
-                    avoidCollisions
-                    className="max-h-72 max-w-[calc(100vw-80px)] overflow-y-auto"
-                  >
-                    {colleges.map((college) => (
-                      <SelectItem
-                        key={college.id}
-                        value={college.id}
-                        className="text-primary focus:bg-primary/10 focus:text-primary"
-                      >
-                        {college.title}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Combobox
+                  options={colleges}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  onSearchChange={setCollegeSearch}
+                  loading={collegeSearchQuery.isFetching}
+                  placeholder="Search organization"
+                  emptyText={
+                    collegeSearch.trim().length < 2
+                      ? "Type your college to search"
+                      : "No organizations found."
+                  }
+                />
               )}
             />
             {errors.organization?.message && (
@@ -100,30 +87,19 @@ export function ChangeOrganizationPageClient() {
               control={control}
               name="department"
               render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger className="w-full border-primary text-primary focus:ring-primary">
-                    <SelectValue placeholder="Select department" />
-                  </SelectTrigger>
-
-                  <SelectContent
-                    position="popper"
-                    side="bottom"
-                    sideOffset={8}
-                    align="center"
-                    avoidCollisions
-                    className="max-h-72 max-w-[calc(100vw-80px)] overflow-y-auto"
-                  >
-                    {departments.map((dept) => (
-                      <SelectItem
-                        key={dept.id}
-                        value={dept.id}
-                        className="max-h-72 text-primary focus:bg-primary/10 focus:text-primary"
-                      >
-                        {dept.title}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Combobox
+                  options={departments}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  onSearchChange={setDepartmentSearch}
+                  loading={departmentSearchQuery.isFetching}
+                  placeholder="Search department"
+                  emptyText={
+                    departmentSearch.trim().length < 2
+                      ? "Type your department to search"
+                      : "No departments found."
+                  }
+                />
               )}
             />
             {errors.department?.message && (
@@ -133,12 +109,29 @@ export function ChangeOrganizationPageClient() {
             )}
           </div>
           <div className="space-y-2">
-            <Input
-              type="text"
-              placeholder="Graduation Year"
-              className="pr-10"
-              required
+            <Controller
+              control={control}
+              name="graduation_year"
+              render={({ field }) => (
+                <Input
+                  type="number"
+                  placeholder="Graduation Year"
+                  className="pr-10"
+                  value={field.value ?? ""}
+                  onChange={(e) =>
+                    field.onChange(
+                      e.target.value ? Number(e.target.value) : undefined,
+                    )
+                  }
+                  required
+                />
+              )}
             />
+            {errors.graduation_year?.message && (
+              <p className="text-sm text-destructive">
+                {errors.graduation_year.message}
+              </p>
+            )}
           </div>
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading && <Spinner className="mr-2 h-4 w-4" />}

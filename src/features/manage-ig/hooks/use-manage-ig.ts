@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
+import { igKeys } from "@/features/interest-groups";
 import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   createInterestGroup as apiCreateIG,
@@ -50,9 +51,10 @@ export function useInterestGroupsAdmin() {
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: InterestGroupUpdate }) =>
       apiUpdateIG(id, data),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       toast.success("Interest Group updated successfully");
       queryClient.invalidateQueries({ queryKey: ["admin-interest-groups"] });
+      queryClient.invalidateQueries({ queryKey: igKeys.detail(variables.id) });
     },
     onError: (error) => {
       toast.error(
@@ -71,9 +73,10 @@ export function useInterestGroupsAdmin() {
       id: string;
       data: Partial<InterestGroupUpdate>;
     }) => apiPartialUpdateIG(id, data),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       toast.success("Interest Group partially updated");
       queryClient.invalidateQueries({ queryKey: ["admin-interest-groups"] });
+      queryClient.invalidateQueries({ queryKey: igKeys.detail(variables.id) });
     },
     onError: (error) => {
       toast.error(

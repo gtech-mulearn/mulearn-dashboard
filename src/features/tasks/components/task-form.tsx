@@ -46,6 +46,7 @@ export default function TaskForm({
     control,
     setValue,
     watch,
+    trigger,
     formState: { errors },
     // biome-ignore lint/suspicious/noExplicitAny: API type
   } = useForm<z.input<typeof TaskFormSchema>, any, TaskFormValues>({
@@ -73,6 +74,7 @@ export default function TaskForm({
   });
 
   const hashtagValue = watch("hashtag");
+  const eventValue = watch("event");
   const _bonusKarmaValue = watch("bonus_karma");
 
   // Ensure hashtag starts with '#'
@@ -81,6 +83,11 @@ export default function TaskForm({
       setValue("hashtag", `#${hashtagValue}`);
     }
   }, [hashtagValue, setValue]);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: eventValue drives revalidation but isn't read in the body
+  useEffect(() => {
+    if (hashtagValue) trigger("hashtag");
+  }, [eventValue, trigger, hashtagValue]);
 
   // Show bonus fields if bonus_karma is set or bonus_time exists
   useEffect(() => {

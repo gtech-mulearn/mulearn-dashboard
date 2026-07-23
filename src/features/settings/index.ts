@@ -1,14 +1,14 @@
 export {
   changeOrganization,
   changePassword,
-  getColleges,
-  getDepartments,
+  searchColleges,
+  searchDepartments,
 } from "./api";
 export {
   useChangeOrganization,
   useChangePassword,
-  useColleges,
-  useDepartments,
+  useCollegeSearch,
+  useDepartmentSearch,
 } from "./hooks";
 export type {
   ChangeOrganizationFormValues,
@@ -23,8 +23,8 @@ export {
   ChangeOrganizationResponseSchema,
   ChangePasswordRequestSchema,
   ChangePasswordResponseSchema,
-  CollegeResponseSchema,
   CollegeSchema,
-  DepartmentResponseSchema,
+  CollegeSearchResponseSchema,
   DepartmentSchema,
+  DepartmentSearchResponseSchema,
 } from "./schemas";
