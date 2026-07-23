@@ -1,4 +1,4 @@
 export { useChangeOrganization } from "./use-change-organization";
 export { useChangePassword } from "./use-change-password";
-export { useColleges } from "./use-college";
-export { useDepartments } from "./use-department";
+export { useCollegeSearch } from "./use-college-search";
+export { useDepartmentSearch } from "./use-department-search";

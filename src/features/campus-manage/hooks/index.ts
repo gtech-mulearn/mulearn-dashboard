@@ -5,6 +5,7 @@ export {
   useCampusLeaderboard,
   useCampusOverview,
   useChangeStudentType,
+  useCreateExecomRole,
   useCreateIgChapter,
   useDeleteIgChapter,
   useDeleteSocialLink,

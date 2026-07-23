@@ -1,9 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronDown } from "lucide-react";
 import { useState } from "react";
-import { LearnerTasksPage } from "@/features/home/components/learner-tasks-page";
 import {
   BecomeExpertTab,
   EventsTab,
@@ -14,18 +12,6 @@ import {
   useStartLearning,
 } from "@/features/mujourney";
 import type { GetUserLevelsResponse } from "@/features/mujourney/schemas";
-import type { PublicTaskListParams } from "@/features/tasks/types/tasks.types";
-
-// ─── Others tab source options ──────────────────────────────────────────────
-
-type OthersSource = PublicTaskListParams["task_source"] | "";
-
-const OTHERS_SOURCE_OPTIONS: { label: string; value: OthersSource }[] = [
-  { label: "All Tasks", value: "" },
-  { label: "Company Tasks", value: "company" },
-  { label: "Campus Tasks", value: "campus_mentor" },
-  { label: "Mentor Tasks", value: "ig_mentor" },
-];
 
 // ─── Props ──────────────────────────────────────────────────────────────────
 
@@ -42,7 +28,6 @@ export function MuJourneyDashboard({
 }: MuJourneyDashboardProps) {
   const [activeTab, setActiveTab] = useState("start-learning");
   const [filter, setFilter] = useState("all");
-  const [othersSource, setOthersSource] = useState<OthersSource>("");
 
   const {
     data: levelsData,
@@ -60,7 +45,6 @@ export function MuJourneyDashboard({
     { id: "start-learning", label: "Start Journey" },
     { id: "become-expert", label: "Become Expert" },
     { id: "events", label: "Events" },
-    { id: "others", label: "Others" },
   ];
 
   return (
@@ -106,30 +90,6 @@ export function MuJourneyDashboard({
                 Incomplete
               </option>
             </select>
-          </div>
-        )}
-
-        {/* Others source dropdown — shown only on Others tab */}
-        {activeTab === "others" && (
-          <div className="flex items-center gap-3">
-            <span className="text-base font-medium text-foreground">Show:</span>
-            <div className="relative">
-              <select
-                id="others-source"
-                value={othersSource}
-                onChange={(e) =>
-                  setOthersSource(e.target.value as OthersSource)
-                }
-                className="appearance-none pl-4 pr-9 py-2.5 border border-border rounded-lg bg-card text-base font-medium text-card-foreground cursor-pointer hover:border-ring transition-colors outline-none focus:ring-2 focus:ring-ring"
-              >
-                {OTHERS_SOURCE_OPTIONS.map((opt) => (
-                  <option key={opt.value || "__all__"} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            </div>
           </div>
         )}
       </div>
@@ -182,18 +142,6 @@ export function MuJourneyDashboard({
               transition={{ duration: 0.3 }}
             >
               <EventsTab />
-            </motion.div>
-          )}
-
-          {activeTab === "others" && (
-            <motion.div
-              key="others"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <LearnerTasksPage key={othersSource} taskSource={othersSource} />
             </motion.div>
           )}
         </AnimatePresence>

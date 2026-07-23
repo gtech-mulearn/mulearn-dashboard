@@ -17,8 +17,8 @@ import {
   ChangeOrganizationResponseSchema,
   type ChangePasswordResponse,
   ChangePasswordResponseSchema,
-  CollegeResponseSchema,
-  DepartmentResponseSchema,
+  CollegeSearchResponseSchema,
+  DepartmentSearchResponseSchema,
 } from "@/features/settings";
 
 export async function changePassword(payload: {
@@ -39,6 +39,7 @@ export async function changePassword(payload: {
 export async function changeOrganization(payload: {
   organization: string;
   department: string;
+  graduation_year?: number;
 }): Promise<ChangeOrganizationResponse> {
   const endpoint = endpoints.onboarding.selectOrganization;
 
@@ -51,13 +52,18 @@ export async function changeOrganization(payload: {
   return res;
 }
 
-export function getColleges() {
-  return apiClient.get(endpoints.onboarding.colleges, CollegeResponseSchema);
+export function searchColleges(search: string) {
+  const query = new URLSearchParams({ search, perPage: "20" });
+  return apiClient.get(
+    `${endpoints.search.colleges}?${query}`,
+    CollegeSearchResponseSchema,
+  );
 }
 
-export function getDepartments() {
+export function searchDepartments(search: string) {
+  const query = new URLSearchParams({ search, perPage: "20" });
   return apiClient.get(
-    endpoints.onboarding.departments,
-    DepartmentResponseSchema,
+    `${endpoints.onboarding.departments}?${query}`,
+    DepartmentSearchResponseSchema,
   );
 }

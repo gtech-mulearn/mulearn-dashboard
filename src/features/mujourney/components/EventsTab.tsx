@@ -5,7 +5,8 @@
  *
  * 📍 src/features/mujourney/components/EventsTab.tsx
  *
- * Shows event-based tasks — pre-filtered to is_event_task=true
+ * Shows event-based tasks — either linked to an event (event/event_id set)
+ * or using the #evn hashtag convention — paginated client-side.
  */
 
 import { Calendar, Search, X } from "lucide-react";
@@ -15,11 +16,12 @@ import { Input } from "@/components/ui/input";
 import { StateDisplay } from "@/components/ui/state-display";
 import { LevelCard } from "@/features/mujourney/components/LevelCard";
 import type { Task, UserLevelData } from "@/features/mujourney/schemas";
-import { usePublicTasks } from "@/features/tasks/hooks";
-import type { PublicTaskListParams } from "@/features/tasks/types/tasks.types";
+import { useAllPublicTasks } from "@/features/tasks/hooks";
 import { useDebounce } from "@/hooks/use-debounce";
 
 // ─── Component ─────────────────────────────────────────────────────────
+
+const PAGE_SIZE = 20;
 
 export function EventsTab() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -27,19 +29,9 @@ export function EventsTab() {
 
   const debouncedSearch = useDebounce(searchInput, 400);
 
-  // Always filter to event tasks only
-  const queryParams: PublicTaskListParams = {
-    pageIndex: currentPage,
-    perPage: 20,
+  const { data: allTasks = [], isLoading } = useAllPublicTasks({
     search: debouncedSearch,
-    is_event_task: true,
-  };
-
-  const { data, isLoading } = usePublicTasks(queryParams);
-
-  const tasks = data?.data ?? [];
-  const pagination = data?.pagination;
-  const totalPages = pagination?.totalPages ?? 1;
+  });
 
   const clearSearch = () => {
     setSearchInput("");
@@ -51,12 +43,29 @@ export function EventsTab() {
     setCurrentPage(1);
   };
 
+  const eventTasks = useMemo(
+    () =>
+      allTasks.filter(
+        (task) =>
+          (task.hashtag || "").startsWith("#evn") ||
+          Boolean(task.event) ||
+          Boolean(task.event_id),
+      ),
+    [allTasks],
+  );
+
+  const totalPages = Math.max(1, Math.ceil(eventTasks.length / PAGE_SIZE));
+  const pageTasks = eventTasks.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
+
   // ─── Group tasks by level ───────────────────────────────────────────
 
   const groupedLevels = useMemo(() => {
     const map = new Map<string, Task[]>();
 
-    tasks.forEach((task) => {
+    pageTasks.forEach((task) => {
       const levelNumber = task.level?.match(/\d+/)?.[0] ?? "1";
       const levelKey = `Lvl ${levelNumber}`;
 
@@ -93,7 +102,7 @@ export function EventsTab() {
     });
 
     return levels;
-  }, [tasks]);
+  }, [pageTasks]);
 
   // ─── Render ────────────────────────────────────────────────────────
 

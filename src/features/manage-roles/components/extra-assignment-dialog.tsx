@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select";
 import { useInterestGroupsList } from "@/features/interest-groups";
 import { useGuilds } from "@/features/intern";
-import { useColleges } from "@/features/onboarding";
+import { useCollegeSearch } from "@/features/onboarding";
 import type { BulkAssignExtraPayload } from "../api/manage-roles.api";
 import type { Role, RoleUser } from "../schemas";
 
@@ -59,11 +59,11 @@ export function ExtraAssignmentDialog({
   const [mentorTier, setMentorTier] = React.useState("");
   const [selectedIgs, setSelectedIgs] = React.useState<string[]>([]);
   const [orgId, setOrgId] = React.useState("");
+  const [collegeSearch, setCollegeSearch] = React.useState("");
 
   // Queries for dynamic dropdowns (enabled conditionally based on role/tier)
-  const { data: colleges = [], isLoading: isLoadingColleges } = useColleges({
-    enabled: open && isMentor && mentorTier === "CAMPUS_MENTOR",
-  });
+  const { data: colleges = [], isFetching: isLoadingColleges } =
+    useCollegeSearch(collegeSearch);
   const { data: igsResponse, isLoading: isLoadingIgs } = useInterestGroupsList(
     undefined,
     {
@@ -89,6 +89,7 @@ export function ExtraAssignmentDialog({
     setMentorTier("");
     setSelectedIgs([]);
     setOrgId("");
+    setCollegeSearch("");
   }, [open, role?.id]);
 
   // Sync: reset sub-fields when mentor tier changes
@@ -96,6 +97,7 @@ export function ExtraAssignmentDialog({
   React.useEffect(() => {
     setSelectedIgs([]);
     setOrgId("");
+    setCollegeSearch("");
   }, [mentorTier]);
 
   // Map IGs to MultiSelect options format
@@ -243,14 +245,16 @@ export function ExtraAssignmentDialog({
                     options={colleges}
                     value={orgId}
                     onValueChange={setOrgId}
-                    placeholder={
-                      isLoadingColleges
-                        ? "Loading colleges..."
-                        : "Search college..."
-                    }
+                    onSearchChange={setCollegeSearch}
+                    loading={isLoadingColleges}
+                    placeholder="Search college..."
                     searchPlaceholder="Search colleges..."
-                    emptyText="No colleges found."
-                    disabled={isPending || isLoadingColleges}
+                    emptyText={
+                      collegeSearch.trim().length < 2
+                        ? "Type your college to search"
+                        : "No colleges found."
+                    }
+                    disabled={isPending}
                   />
                 </div>
               )}
