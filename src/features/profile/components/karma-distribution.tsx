@@ -17,12 +17,23 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Cell, Pie, PieChart } from "recharts";
-import { seriesColor } from "@/components/charts/chart-theme";
+import { CHART_SERIES } from "@/components/charts/chart-theme";
 import type { UserProfile } from "../schemas";
 
 interface KarmaDistributionProps {
   profile: UserProfile;
 }
+
+/**
+ * The shared --chart-1..5 tokens only give 5 distinct hues, but this chart
+ * commonly has 6 slices (up to 5 IGs collapsed + event/intern/general). Add
+ * --success as a 6th, already-themed color not otherwise used in charts.
+ */
+const SLICE_COLORS = [...CHART_SERIES.map((c) => c.token), "var(--success)"];
+const sliceColor = (index: number) =>
+  SLICE_COLORS[
+    ((index % SLICE_COLORS.length) + SLICE_COLORS.length) % SLICE_COLORS.length
+  ];
 
 /** Desktop-only: matches (hover: hover) and (pointer: fine), so touch devices never get hover/click affordances. */
 function useIsDesktop() {
@@ -115,7 +126,7 @@ export function KarmaDistribution({ profile }: KarmaDistributionProps) {
                 return (
                   <Cell
                     key={`cell-${entry.name}`}
-                    fill={seriesColor(index)}
+                    fill={sliceColor(index)}
                     stroke="var(--card)"
                     strokeWidth={2}
                     opacity={dimmed ? 0.35 : 1}
@@ -171,7 +182,7 @@ export function KarmaDistribution({ profile }: KarmaDistributionProps) {
               >
                 <span
                   className="size-2.5 shrink-0 rounded-full"
-                  style={{ backgroundColor: seriesColor(index) }}
+                  style={{ backgroundColor: sliceColor(index) }}
                 />
                 <span className="min-w-0 flex-1 truncate text-foreground">
                   {entry.name}
