@@ -1026,6 +1026,7 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                     <div className="flex gap-2">
                       <Input
                         value={tagInput}
+                        maxLength={30}
                         onChange={(e) => setTagInput(e.target.value)}
                         onKeyDown={(e) => {
                           if (e.key === "Enter" || e.key === ",") {

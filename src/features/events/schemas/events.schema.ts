@@ -98,7 +98,9 @@ const createEventBaseSchema = z.object({
     .nullable()
     .optional()
     .transform((v) => (v === "" ? null : v)),
-  tags: z.array(z.string()).optional(),
+  tags: z
+    .array(z.string().max(30, "Tag must be 30 characters or fewer"))
+    .optional(),
   is_featured: z.boolean().optional(),
 });
 
