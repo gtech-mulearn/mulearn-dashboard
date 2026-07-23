@@ -12,7 +12,10 @@ export const venueTypeSchema = z.enum(["physical", "online", "hybrid"]);
 // the Zod restriction: ".partial() cannot be used on object schemas containing refinements"
 const createEventBaseSchema = z.object({
   title: z.string().min(1, "Title is required").max(200, "Title too long"),
-  description: z.string().min(1, "Description is required"),
+  description: z
+    .string()
+    .min(1, "Description is required")
+    .max(5000, "Description must be 5000 characters or fewer"),
   event_scope: z.string().min(1, "Please select a cluster"),
   // event_type maps to Event.EventType, a TextChoices enum on the backend —
   // that is the field that actually records what kind of event this is.

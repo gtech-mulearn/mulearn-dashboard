@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Check, Loader2, Lock, Plus, Trash2 } from "lucide-react";
+import Image from "next/image";
 import { Fragment, useEffect, useState } from "react";
 import { type Control, Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -216,6 +217,7 @@ export function InterestGroupFormDialog({
   const [mentorMuids, setMentorMuids] = useState<string[]>([]);
   const [topBlogs, setTopBlogs] = useState<BlogEntry[]>([]);
   const [peopleToFollow, setPeopleToFollow] = useState<PersonEntry[]>([]);
+  const [iconPreviewError, setIconPreviewError] = useState(false);
 
   const {
     control,
@@ -228,6 +230,8 @@ export function InterestGroupFormDialog({
     resolver: zodResolver(InterestGroupCreateSchema),
     defaultValues: DEFAULT_VALUES,
   });
+
+  const watchedIcon = watch("icon");
 
   useEffect(() => {
     if (!isOpen) return;
@@ -505,11 +509,27 @@ export function InterestGroupFormDialog({
                       <p className="text-sm font-medium text-foreground">
                         Icon URL <span className="text-destructive">*</span>
                       </p>
-                      <Input
-                        className="rounded-xl border-border bg-background"
-                        placeholder="https://example.com/icon.png"
-                        {...register("icon")}
-                      />
+                      <div className="flex items-center gap-3">
+                        {watchedIcon &&
+                        /^(https?:\/\/|\/)/.test(watchedIcon) &&
+                        !iconPreviewError ? (
+                          <Image
+                            key={watchedIcon}
+                            src={watchedIcon}
+                            alt=""
+                            width={40}
+                            height={40}
+                            onError={() => setIconPreviewError(true)}
+                            onLoad={() => setIconPreviewError(false)}
+                            className="h-10 w-10 shrink-0 rounded-lg border border-border object-cover"
+                          />
+                        ) : null}
+                        <Input
+                          className="rounded-xl border-border bg-background"
+                          placeholder="https://example.com/icon.png"
+                          {...register("icon")}
+                        />
+                      </div>
                       {errors.icon?.message ? (
                         <p className="text-xs text-destructive">
                           {errors.icon.message}

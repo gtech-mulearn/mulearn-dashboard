@@ -19,6 +19,7 @@ import {
   Twitter,
   Users,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -41,6 +42,7 @@ export function InterestGroupDetailClient() {
   const { data: userInfo } = useUserInfo();
   const isIGLead = hasIgLeadRole(userInfo?.roles ?? []);
   const [editOpen, setEditOpen] = useState(false);
+  const [iconError, setIconError] = useState(false);
 
   if (isLoading) {
     return (
@@ -103,6 +105,26 @@ export function InterestGroupDetailClient() {
     group.office_hours ||
     group.resource;
 
+  function IGIcon({ src }: { src?: string | null }) {
+    const [hasError, setHasError] = useState(false);
+    const isValidSrc = !!src && /^(https?:\/\/|\/)/.test(src);
+
+    if (!isValidSrc || hasError) {
+      return <BookOpen className="h-4 w-4" />;
+    }
+
+    return (
+      <Image
+        src={src}
+        alt=""
+        width={36}
+        height={36}
+        className="h-full w-full object-cover"
+        onError={() => setHasError(true)}
+      />
+    );
+  }
+
   return (
     <div className="w-full space-y-8 py-6 sm:py-8">
       {/* Back */}
@@ -137,6 +159,9 @@ export function InterestGroupDetailClient() {
         <div className="relative z-10 flex flex-col gap-6 md:gap-8 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-4 sm:space-y-6 max-w-3xl">
             <div className="flex flex-wrap items-center gap-3">
+              {group.icon && !iconError && (
+                <IGIcon key={group.id} src={group.icon} />
+              )}
               {group.category && (
                 <div className="inline-flex items-center rounded-full bg-card/20 px-3 py-1 text-xs font-semibold uppercase tracking-wider backdrop-blur-md border border-card/10">
                   {group.category}

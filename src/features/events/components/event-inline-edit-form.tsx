@@ -318,6 +318,7 @@ export function EventInlineEditForm({
           </label>
           <Textarea
             id="inline_description"
+            maxLength={5000}
             className="rounded-xl border-border bg-background text-foreground"
             {...register("description")}
           />

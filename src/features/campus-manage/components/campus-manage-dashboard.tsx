@@ -544,13 +544,27 @@ function CompactStatCard({
   );
 }
 
+function ChapterIcon({ src }: { src?: string | null }) {
+  const [hasError, setHasError] = useState(false);
+  const isValidSrc = !!src && /^(https?:\/\/|\/)/.test(src);
+
+  if (!isValidSrc || hasError) {
+    return <BookOpen className="h-4 w-4" />;
+  }
+
+  return (
+    <Image
+      src={src}
+      alt=""
+      width={36}
+      height={36}
+      className="h-full w-full object-cover"
+      onError={() => setHasError(true)}
+    />
+  );
+}
+
 const LEADERBOARD_COLUMNS = [
-  {
-    column: "rank",
-    Label: "Rank",
-    isSortable: false,
-    width: "w-24 text-center",
-  },
   { column: "name", Label: "Student", isSortable: false },
   { column: "karma", Label: "Karma", isSortable: false },
   { column: "level", Label: "Level", isSortable: false },
@@ -1185,7 +1199,7 @@ export function CampusManageDashboard() {
                             {student.name}
                           </span>
                           <span className="text-[11px] text-muted-foreground">
-                            @{student.muid.split("@")[0]}
+                            @{student.muid}
                           </span>
                         </div>
                       );
@@ -2074,8 +2088,11 @@ export function CampusManageDashboard() {
                             <CardHeader className="pb-3 border-b border-border/40">
                               <div className="flex items-start justify-between gap-2">
                                 <div className="flex items-center gap-3 min-w-0">
-                                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/5 text-primary">
-                                    <BookOpen className="h-4 w-4" />
+                                  <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-primary/5 text-primary">
+                                    <ChapterIcon
+                                      key={chapter.id}
+                                      src={chapter.icon || chapter.iconLink}
+                                    />
                                   </div>
                                   <div className="min-w-0 space-y-0.5">
                                     <CardTitle className="truncate text-sm font-bold leading-tight text-foreground">

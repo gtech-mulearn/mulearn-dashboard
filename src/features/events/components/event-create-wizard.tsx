@@ -838,6 +838,7 @@ export function EventCreateWizard({ open, onClose }: EventCreateWizardProps) {
                     </p>
                     <Textarea
                       rows={4}
+                      maxLength={5000}
                       className="rounded-xl border-border bg-background"
                       {...register("description")}
                     />
