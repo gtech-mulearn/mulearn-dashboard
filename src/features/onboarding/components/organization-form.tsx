@@ -11,6 +11,7 @@
 
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
+import { Combobox } from "@/components/ui/combobox";
 import { OptionCard } from "@/components/ui/option-card";
 import { ProgressArrow } from "@/components/ui/progress-arrow";
 import {
@@ -30,6 +31,10 @@ interface OrganizationFormProps {
   isLoadingColleges?: boolean;
   isLoadingDepartments?: boolean;
   isLoadingCompanies?: boolean;
+  /** Server-side college search — called on every keystroke in the college Combobox. */
+  onCollegeSearchChange?: (search: string) => void;
+  /** Server-side department search — called on every keystroke in the department Combobox. */
+  onDepartmentSearchChange?: (search: string) => void;
   onSubmit: (values: {
     organization: string;
     department?: string;
@@ -49,6 +54,8 @@ export function OrganizationForm({
   isLoadingColleges,
   isLoadingDepartments,
   isLoadingCompanies,
+  onCollegeSearchChange,
+  onDepartmentSearchChange,
   onSubmit,
   onBack,
   isLoading,
@@ -60,6 +67,8 @@ export function OrganizationForm({
   const [organization, setOrganization] = useState("");
   const [department, setDepartment] = useState("");
   const [graduationYear, setGraduationYear] = useState("");
+  const [collegeSearch, setCollegeSearch] = useState("");
+  const [departmentSearch, setDepartmentSearch] = useState("");
 
   const currentYear = new Date().getFullYear();
   const graduationYears = Array.from({ length: 6 }, (_, i) => currentYear + i);
@@ -144,30 +153,43 @@ export function OrganizationForm({
               <span className="block text-sm font-semibold text-foreground">
                 {userType === "student" ? "College" : "Company"}
               </span>
-              <Select
-                value={organization}
-                onValueChange={setOrganization}
-                disabled={isLoading || isLoadingColleges || isLoadingCompanies}
-              >
-                <SelectTrigger className="w-full h-12 rounded-xl border-border bg-muted/50 px-4">
-                  <SelectValue
-                    placeholder={`Select your ${userType === "student" ? "college" : "company"}`}
-                  />
-                </SelectTrigger>
-                <SelectContent className="max-h-[300px]">
-                  {userType === "student"
-                    ? colleges.map((college) => (
-                        <SelectItem key={college.id} value={college.id}>
-                          {college.title}
-                        </SelectItem>
-                      ))
-                    : companies.map((company) => (
-                        <SelectItem key={company.id} value={company.id}>
-                          {company.title}
-                        </SelectItem>
-                      ))}
-                </SelectContent>
-              </Select>
+              {userType === "student" ? (
+                <Combobox
+                  options={colleges}
+                  value={organization}
+                  onValueChange={setOrganization}
+                  onSearchChange={(value) => {
+                    setCollegeSearch(value);
+                    onCollegeSearchChange?.(value);
+                  }}
+                  loading={isLoadingColleges}
+                  placeholder="Search your college"
+                  emptyText={
+                    collegeSearch.trim().length < 2
+                      ? "Type your college to search"
+                      : "No colleges found."
+                  }
+                  disabled={isLoading}
+                  className="h-12 rounded-xl border-border bg-muted/50 px-4"
+                />
+              ) : (
+                <Select
+                  value={organization}
+                  onValueChange={setOrganization}
+                  disabled={isLoading || isLoadingCompanies}
+                >
+                  <SelectTrigger className="w-full h-12 rounded-xl border-border bg-muted/50 px-4">
+                    <SelectValue placeholder="Select your company" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[300px]">
+                    {companies.map((company) => (
+                      <SelectItem key={company.id} value={company.id}>
+                        {company.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
 
             {/* Additional fields for students */}
@@ -177,22 +199,24 @@ export function OrganizationForm({
                   <span className="block text-sm font-semibold text-foreground">
                     Department
                   </span>
-                  <Select
+                  <Combobox
+                    options={departments}
                     value={department}
                     onValueChange={setDepartment}
-                    disabled={isLoading || isLoadingDepartments}
-                  >
-                    <SelectTrigger className="w-full h-12 rounded-xl border-border bg-muted/50 px-4">
-                      <SelectValue placeholder="Select your department" />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-[300px]">
-                      {departments.map((dept) => (
-                        <SelectItem key={dept.id} value={dept.id}>
-                          {dept.title}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    onSearchChange={(value) => {
+                      setDepartmentSearch(value);
+                      onDepartmentSearchChange?.(value);
+                    }}
+                    loading={isLoadingDepartments}
+                    placeholder="Search your department"
+                    emptyText={
+                      departmentSearch.trim().length < 2
+                        ? "Type your department to search"
+                        : "No departments found."
+                    }
+                    disabled={isLoading}
+                    className="h-12 rounded-xl border-border bg-muted/50 px-4"
+                  />
                 </div>
 
                 <div className="space-y-2">

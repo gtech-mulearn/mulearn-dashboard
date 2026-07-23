@@ -1,6 +1,6 @@
 export {
   changeOrganization,
   changePassword,
-  getColleges,
-  getDepartments,
+  searchColleges,
+  searchDepartments,
 } from "./settings.api";

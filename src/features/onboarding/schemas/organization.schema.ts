@@ -38,6 +38,10 @@ export const CollegesResponseSchema = ApiResponseSchema(
   z.object({ colleges: z.array(CollegeSchema) }).passthrough(),
 );
 
+export const CollegeSearchResponseSchema = ApiResponseSchema(
+  z.object({ data: z.array(CollegeSchema) }).passthrough(),
+);
+
 export const DepartmentSchema = z
   .object({
     id: z.string(),

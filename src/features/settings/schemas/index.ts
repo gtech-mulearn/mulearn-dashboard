@@ -11,8 +11,8 @@ export {
   ChangeOrganizationResponseSchema,
   ChangePasswordRequestSchema,
   ChangePasswordResponseSchema,
-  CollegeResponseSchema,
   CollegeSchema,
-  DepartmentResponseSchema,
+  CollegeSearchResponseSchema,
   DepartmentSchema,
+  DepartmentSearchResponseSchema,
 } from "./settings.schema";

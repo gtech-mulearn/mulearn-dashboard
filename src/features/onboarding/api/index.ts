@@ -13,6 +13,8 @@ export {
   fetchDistricts,
   fetchRoles,
   fetchStates,
+  searchColleges,
+  searchDepartments,
   selectDomains,
   selectEndgoals,
   selectOrganization,

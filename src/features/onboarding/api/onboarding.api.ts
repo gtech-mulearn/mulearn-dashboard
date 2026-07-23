@@ -9,6 +9,7 @@
 import { apiClient } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import {
+  CollegeSearchResponseSchema,
   CollegesResponseSchema,
   CompaniesResponseSchema,
   CountriesResponseSchema,
@@ -36,11 +37,33 @@ export function fetchColleges() {
 }
 
 /**
+ * Server-side search of colleges by name
+ */
+export function searchColleges(search: string) {
+  const query = new URLSearchParams({ search, perPage: "20" });
+  return apiClient.get(
+    `${endpoints.search.colleges}?${query}`,
+    CollegeSearchResponseSchema,
+  );
+}
+
+/**
  * Fetch list of departments
  */
 export function fetchDepartments() {
   return apiClient.get(
     endpoints.onboarding.departments,
+    DepartmentsResponseSchema,
+  );
+}
+
+/**
+ * Server-side search of departments by name
+ */
+export function searchDepartments(search: string) {
+  const query = new URLSearchParams({ search, perPage: "20" });
+  return apiClient.get(
+    `${endpoints.onboarding.departments}?${query}`,
     DepartmentsResponseSchema,
   );
 }

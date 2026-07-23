@@ -24,6 +24,7 @@ export {
   type College,
   CollegeSchema,
   type CollegesResponse,
+  CollegeSearchResponseSchema,
   CollegesResponseSchema,
   type CompaniesResponse,
   CompaniesResponseSchema,

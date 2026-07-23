@@ -31,44 +31,58 @@ export const CollegeSchema = z.object({
   title: z.string(),
 });
 
-export const CollegeResponseSchema = z.object({
-  hasError: z.boolean().optional(),
-  statusCode: z.number(),
-  message: z
-    .object({
-      general: z.array(z.string()).optional(),
-    })
-    .optional(),
-  response: z.object({
-    colleges: z.array(CollegeSchema),
-  }),
-});
-
 export type College = z.infer<typeof CollegeSchema>;
+
+export const CollegeSearchResponseSchema = z
+  .object({
+    hasError: z.boolean().optional(),
+    statusCode: z.number(),
+    message: z
+      .object({
+        general: z.array(z.string()).optional(),
+      })
+      .optional(),
+    response: z
+      .object({
+        data: z.array(CollegeSchema),
+      })
+      .loose(),
+  })
+  .loose();
 
 export const DepartmentSchema = z.object({
   id: z.string(),
   title: z.string(),
 });
 
-export const DepartmentResponseSchema = z.object({
-  hasError: z.boolean().optional(),
-  statusCode: z.number(),
-  message: z
-    .object({
-      general: z.array(z.string()).optional(),
-    })
-    .optional(),
-  response: z.object({
-    departments: z.array(DepartmentSchema),
-  }),
-});
-
 export type Department = z.infer<typeof DepartmentSchema>;
+
+export const DepartmentSearchResponseSchema = z
+  .object({
+    hasError: z.boolean().optional(),
+    statusCode: z.number(),
+    message: z
+      .object({
+        general: z.array(z.string()).optional(),
+      })
+      .optional(),
+    response: z
+      .object({
+        departments: z.array(DepartmentSchema),
+      })
+      .loose(),
+  })
+  .loose();
 
 export const ChangeOrganizationRequestSchema = z.object({
   department: z.string().min(1, "Department is required"),
   organization: z.string().min(1, "Organization is required"),
+  graduation_year: z
+    .number()
+    .int()
+    .min(1900, "Enter a valid graduation year")
+    .max(2100, "Enter a valid graduation year")
+    .optional(),
 });
 
 export const ChangeOrganizationResponseSchema = z.object({

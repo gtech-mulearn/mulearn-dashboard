@@ -5,9 +5,9 @@
  */
 
 export { onboardingKeys } from "./query-keys";
-export { useColleges } from "./use-colleges";
+export { useCollegeSearch } from "./use-college-search";
 export { useCompanies } from "./use-companies";
-export { useDepartments } from "./use-departments";
+export { useDepartmentSearch } from "./use-department-search";
 export { useCountries, useDistricts, useStates } from "./use-location";
 export { useRoles } from "./use-roles";
 export { useSelectDomains, useSelectEndgoals } from "./use-select-interests";
