@@ -12,6 +12,7 @@ import Loader from "@/app/loading";
 import { usePublicCompanyProfile } from "@/features/company-jobs";
 import { CompanyPublicView } from "@/features/company-jobs/components";
 import {
+  Achievements,
   Badges,
   BasicDetails,
   KarmaHistory,
@@ -115,20 +116,29 @@ export function PublicProfilePageClient({
     !!viewer?.muid && !!profile?.muid && viewer.muid === profile.muid;
 
   return (
-    <div className="space-y-6">
+    <div className="w-full max-w-full space-y-6 overflow-x-hidden">
       {/* Profile Header */}
-      <ProfileHeader profile={profile} isOwnProfile={isOwnProfile} />
+      <div className="w-full max-w-full overflow-hidden">
+        <ProfileHeader profile={profile} isOwnProfile={isOwnProfile} />
+      </div>
 
       {/* Stats */}
-      <ProfileStats profile={profile} monthDifference={monthDifference} />
+      <div className="w-full max-w-full">
+        <ProfileStats profile={profile} monthDifference={monthDifference} />
+      </div>
 
       {/* Main Content */}
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid w-full max-w-full gap-4 sm:gap-6 lg:grid-cols-3">
+        {/* Right: Sidebar */}
+        <div className="w-full max-w-full overflow-x-hidden lg:order-2 lg:col-span-1">
+          <ProfileSidebar profile={profile} isOwnProfile={isOwnProfile} />
+        </div>
+
         {/* Left: Tabs and Content */}
-        <div className="space-y-4 lg:col-span-2">
+        <div className="w-full max-w-full space-y-4 overflow-x-hidden lg:order-1 lg:col-span-2">
           <ProfileTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
-          <div className="min-h-[400px]">
+          <div className="w-full max-w-full min-h-[400px] overflow-x-hidden">
             {activeTab === "basic-details" && (
               <BasicDetails
                 profile={profile}
@@ -148,12 +158,11 @@ export function PublicProfilePageClient({
               />
             )}
             {activeTab === "achievements" && (
-              <div className="rounded-xl bg-muted p-8 text-center text-muted-foreground">
-                <p className="font-medium">Achievements Coming Soon</p>
-                <p className="mt-1 text-sm">
-                  This feature is under development.
-                </p>
-              </div>
+              <Achievements
+                muid={profile.muid}
+                userName={profile.full_name}
+                isOwnProfile={isOwnProfile}
+              />
             )}
             {activeTab === "badges" && (
               <Badges muid={muid} isOwnProfile={isOwnProfile} />
@@ -167,11 +176,6 @@ export function PublicProfilePageClient({
               />
             )}
           </div>
-        </div>
-
-        {/* Right: Sidebar (without settings for public profiles) */}
-        <div className="lg:col-span-1">
-          <ProfileSidebar profile={profile} isOwnProfile={isOwnProfile} />
         </div>
       </div>
     </div>

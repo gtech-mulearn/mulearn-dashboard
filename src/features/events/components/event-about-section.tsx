@@ -26,7 +26,7 @@ export function EventAboutSection({ description }: EventAboutSectionProps) {
       </div>
       <div className="relative px-5 pb-5 pt-0">
         <p
-          className={`whitespace-pre-wrap text-sm leading-7 text-muted-foreground ${!isExpanded ? "line-clamp-7" : ""}`}
+          className={`whitespace-pre-wrap break-words text-sm leading-7 text-muted-foreground ${!isExpanded ? "line-clamp-7" : ""}`}
         >
           {description}
         </p>

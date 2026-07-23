@@ -1,7 +1,8 @@
 "use client";
 
 import { ArrowUpDown, Trophy } from "lucide-react";
-import { useState } from "react";
+import Link from "next/link";
+import { useMemo, useState } from "react";
 import Pagination from "@/components/dashboard/table/pagination";
 import Table, { type Data } from "@/components/dashboard/table/Table";
 import TableTop from "@/components/dashboard/table/TableTop";
@@ -16,6 +17,119 @@ import {
   useLeaderboardMe,
 } from "@/features/intern";
 
+function Medal({ rank }: { rank: number }) {
+  const gradientId = `intern-medal-grad-${rank}`;
+
+  const getGradientStops = () => {
+    if (rank === 1) {
+      return (
+        <>
+          <stop offset="0%" stopColor="var(--warning)" />
+          <stop
+            offset="100%"
+            stopColor="color-mix(in srgb, var(--warning) 60%, var(--foreground))"
+          />
+        </>
+      );
+    }
+    if (rank === 2) {
+      return (
+        <>
+          <stop
+            offset="0%"
+            stopColor="color-mix(in srgb, var(--foreground) 40%, var(--background))"
+          />
+          <stop
+            offset="100%"
+            stopColor="color-mix(in srgb, var(--foreground) 10%, var(--background))"
+          />
+        </>
+      );
+    }
+    return (
+      <>
+        <stop offset="0%" stopColor="var(--chart-5)" />
+        <stop
+          offset="100%"
+          stopColor="color-mix(in srgb, var(--chart-5) 60%, var(--foreground))"
+        />
+      </>
+    );
+  };
+
+  return (
+    <svg
+      className="w-10 h-10 md:w-14 md:h-14 drop-shadow-md relative z-25"
+      viewBox="0 0 64 64"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      role="img"
+    >
+      <title>Medal for rank {rank}</title>
+      <defs>
+        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+          {getGradientStops()}
+        </linearGradient>
+      </defs>
+
+      <path
+        d="M22 30L14 54L25 50L32 30"
+        fill="var(--destructive)"
+        opacity="0.95"
+      />
+      <path
+        d="M42 30L50 54L39 50L32 30"
+        fill="var(--brand-blue)"
+        opacity="0.95"
+      />
+      <path
+        d="M18 30L14 54L18 52.5L22 30"
+        fill="color-mix(in srgb, var(--destructive) 40%, var(--background))"
+        opacity="0.6"
+      />
+      <path
+        d="M46 30L50 54L46 52.5L42 30"
+        fill="color-mix(in srgb, var(--brand-blue) 40%, var(--background))"
+        opacity="0.6"
+      />
+      <circle
+        cx="32"
+        cy="30"
+        r="17"
+        fill="color-mix(in srgb, var(--foreground) 15%, transparent)"
+      />
+      <circle
+        cx="32"
+        cy="30"
+        r="15"
+        fill={`url(#${gradientId})`}
+        stroke="var(--background)"
+        strokeWidth="2.5"
+      />
+      <circle
+        cx="32"
+        cy="30"
+        r="11"
+        stroke="var(--background)"
+        strokeWidth="1"
+        strokeDasharray="2 1.5"
+        opacity="0.5"
+      />
+      <text
+        x="32"
+        y="35"
+        textAnchor="middle"
+        fill="var(--primary)"
+        fontSize="14"
+        fontWeight="900"
+        fontFamily="sans-serif"
+      >
+        {rank}
+      </text>
+    </svg>
+  );
+}
+
 export function LeaderboardPageClient() {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
@@ -24,10 +138,13 @@ export function LeaderboardPageClient() {
   const { data: userInfo } = useUserInfo();
   const { data: profile } = useUserProfile();
   const { data: meRank } = useLeaderboardMe();
-  const leaderboardIdentity = {
-    profileId: profile?.id,
-    muids: [profile?.muid, userInfo?.muid],
-  };
+  const leaderboardIdentity = useMemo(
+    () => ({
+      profileId: profile?.id,
+      muids: [profile?.muid, userInfo?.muid],
+    }),
+    [profile?.id, profile?.muid, userInfo?.muid],
+  );
 
   // Absolute top 3 for the podium
   const { data: podiumData, isLoading: isPodiumLoading } = useLeaderboard({
@@ -42,14 +159,6 @@ export function LeaderboardPageClient() {
     search: searchText || undefined,
   });
 
-  if (isPodiumLoading || isBoardLoading) {
-    return (
-      <div className="flex h-[80vh] items-center justify-center">
-        <Spinner className="w-8 h-8 text-primary" />
-      </div>
-    );
-  }
-
   const getPodiumUser = (index: number) => {
     const activePodium = (podiumData?.data || []).filter(
       (item) => item.status !== "INACTIVE",
@@ -60,8 +169,9 @@ export function LeaderboardPageClient() {
       : false;
 
     return {
+      id: item?.user_id || "",
+      rank: item?.rank || index + 1,
       name: isCurrentUser ? "You" : item?.full_name || "N/A",
-      actualName: item?.full_name || "N/A",
       points: item?.score || 0,
       avatar: item?.full_name
         ? item.full_name
@@ -72,12 +182,23 @@ export function LeaderboardPageClient() {
       profilePic: isCurrentUser
         ? (profile?.profile_pic ?? userInfo?.profile_pic ?? item?.profile_pic)
         : item?.profile_pic,
+      link: item?.muid
+        ? `/profile/${encodeURIComponent(item.muid)}`
+        : undefined,
     };
   };
 
   const top1 = getPodiumUser(0);
   const top2 = getPodiumUser(1);
   const top3 = getPodiumUser(2);
+
+  if (isPodiumLoading || isBoardLoading) {
+    return (
+      <div className="flex h-[80vh] items-center justify-center">
+        <Spinner className="w-8 h-8 text-primary" />
+      </div>
+    );
+  }
 
   const listRows = (boardData?.data || [])
     .filter((item) => item.status !== "INACTIVE")
@@ -170,6 +291,90 @@ export function LeaderboardPageClient() {
 
   const others = searchText ? listRows : listRows.filter((row) => row.rank > 3);
 
+  const renderPodiumCard = (
+    user: ReturnType<typeof getPodiumUser>,
+    rank: number,
+    isCenter?: boolean,
+    ringColor?: string,
+  ) => {
+    const cardContent = (
+      <div
+        className={`flex flex-col items-center text-center flex-1 ${
+          isCenter ? "-translate-y-4 md:-translate-y-6" : ""
+        }`}
+      >
+        <div className="relative mb-4 group">
+          <div
+            className={`absolute inset-0 rounded-full blur-md scale-110 ${
+              rank === 1
+                ? "bg-warning/10 dark:bg-warning/20 blur-lg scale-120"
+                : rank === 2
+                  ? "bg-muted-foreground/5 dark:bg-muted-foreground/10"
+                  : "bg-chart-5/5 dark:bg-chart-5/10"
+            }`}
+          />
+          <Avatar
+            className={`${
+              isCenter
+                ? "w-20 h-20 md:w-32 md:h-32"
+                : "w-16 h-16 md:w-24 md:h-24"
+            } ring-4 ring-offset-2 ring-offset-background ${ringColor} shadow-md relative z-10`}
+          >
+            <AvatarImage
+              src={user.profilePic || undefined}
+              alt={user.name}
+              className="object-cover"
+            />
+            <AvatarFallback
+              className={`bg-muted text-muted-foreground font-bold ${
+                isCenter ? "text-xl md:text-3xl" : "text-base md:text-xl"
+              }`}
+            >
+              {user.avatar}
+            </AvatarFallback>
+          </Avatar>
+          <div
+            className={`absolute ${
+              isCenter ? "-bottom-4" : "-bottom-3"
+            } left-1/2 -translate-x-1/2 z-20`}
+          >
+            <Medal rank={rank} />
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <h3
+            className={`${
+              isCenter
+                ? "font-extrabold text-sm md:text-base max-w-[120px] md:max-w-[180px]"
+                : "font-bold text-xs md:text-sm max-w-[100px] md:max-w-[150px]"
+            } text-foreground leading-snug`}
+          >
+            {user.name}
+          </h3>
+          <p
+            className={`${
+              isCenter
+                ? "text-xs md:text-sm font-bold text-warning"
+                : "text-[10px] md:text-xs text-muted-foreground font-semibold"
+            } mt-1`}
+          >
+            {user.points.toLocaleString()} Points
+          </p>
+        </div>
+      </div>
+    );
+
+    if (user.link) {
+      return (
+        <Link href={user.link} className="group block flex-1">
+          {cardContent}
+        </Link>
+      );
+    }
+    return <div className="group block flex-1">{cardContent}</div>;
+  };
+
   return (
     <div className="space-y-8 max-w-7xl mx-auto w-full">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -185,114 +390,65 @@ export function LeaderboardPageClient() {
       </div>
 
       {/* Podium Section */}
-      <div className="relative flex flex-col md:flex-row items-end justify-center gap-4 md:gap-8 pt-20 pb-12">
-        {/* Rank 2 */}
-        <div className="flex flex-col items-center w-full md:w-64 z-10">
-          <div className="relative mb-4">
-            <Avatar className="w-24 h-24 border-4 border-slate-400 shadow-[0_0_20px_rgba(148,163,184,0.3)]">
-              <AvatarImage
-                src={top2.profilePic || undefined}
-                alt={top2.actualName}
-                className="object-cover"
-              />
-              <AvatarFallback className="bg-slate-800 text-slate-200 text-xl font-bold">
-                {top2.avatar}
-              </AvatarFallback>
-            </Avatar>
-            <div className="absolute -top-2 -right-2 bg-slate-400 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border-2 border-background">
-              2
-            </div>
-          </div>
-          <h3 className="text-xl font-bold text-foreground mb-1">
-            {top2.name}
-          </h3>
-          <div className="bg-card/80 backdrop-blur-sm border border-border/50 rounded-xl p-6 w-full text-center shadow-xl flex flex-col items-center gap-3 h-52 justify-center transform transition-transform hover:scale-105">
-            <div className="p-2 bg-slate-400/10 rounded-lg">
-              <Trophy className="w-6 h-6 text-slate-400" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                Score
-              </p>
-              <div className="text-3xl font-black text-foreground">
-                {top2.points.toLocaleString()}
-              </div>
-            </div>
-          </div>
+      <div className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-muted/30 via-card to-background p-6 md:p-10 shadow-sm flex flex-col items-center">
+        {/* Background Topo Lines */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl opacity-10 dark:opacity-20">
+          <svg
+            className="absolute -left-10 -bottom-10 w-72 h-72 md:w-96 md:h-96 text-muted-foreground"
+            viewBox="0 0 100 100"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="0.5"
+            opacity="0.2"
+            role="img"
+          >
+            <title>Decorative background waves left</title>
+            <circle cx="10" cy="90" r="30" />
+            <circle cx="10" cy="90" r="40" />
+            <circle cx="10" cy="90" r="50" />
+            <circle cx="10" cy="90" r="60" />
+            <circle cx="10" cy="90" r="70" />
+            <circle cx="10" cy="90" r="80" />
+            <circle cx="10" cy="90" r="90" />
+            <circle cx="10" cy="90" r="100" />
+          </svg>
+          <svg
+            className="absolute -right-10 -top-10 w-72 h-72 md:w-96 md:h-96 text-muted-foreground"
+            viewBox="0 0 100 100"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="0.5"
+            opacity="0.2"
+            role="img"
+          >
+            <title>Decorative background waves right</title>
+            <circle cx="90" cy="10" r="30" />
+            <circle cx="90" cy="10" r="40" />
+            <circle cx="90" cy="10" r="50" />
+            <circle cx="90" cy="10" r="60" />
+            <circle cx="90" cy="10" r="70" />
+            <circle cx="90" cy="10" r="80" />
+            <circle cx="90" cy="10" r="90" />
+            <circle cx="90" cy="10" r="100" />
+          </svg>
         </div>
 
-        {/* Rank 1 */}
-        <div className="flex flex-col items-center w-full md:w-72 z-20 -mt-8 md:-mt-12">
-          <div className="relative mb-6">
-            <div className="absolute -top-10 left-1/2 -translate-x-1/2 text-4xl animate-bounce">
-              👑
-            </div>
-            <Avatar className="w-32 h-32 border-4 border-warning shadow-[0_0_30px_rgba(255,141,12,0.4)] ring-4 ring-warning/20">
-              <AvatarImage
-                src={top1.profilePic || undefined}
-                alt={top1.actualName}
-                className="object-cover"
-              />
-              <AvatarFallback className="bg-warning/20 text-warning text-2xl font-bold">
-                {top1.avatar}
-              </AvatarFallback>
-            </Avatar>
-            <div className="absolute -top-2 -right-2 bg-warning text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg border-2 border-background shadow-lg">
-              1
-            </div>
-          </div>
-          <h3 className="text-2xl font-extrabold text-foreground mb-1">
-            {top1.name}
-          </h3>
-          <div className="bg-gradient-to-b from-card to-warning/5 backdrop-blur-sm border-2 border-warning/30 rounded-2xl p-8 w-full text-center shadow-[0_20px_50px_rgba(255,141,12,0.15)] flex flex-col items-center gap-4 h-72 justify-center relative overflow-hidden group">
-            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-warning to-transparent opacity-50" />
-            <div className="p-3 bg-warning/10 rounded-xl group-hover:scale-110 transition-transform">
-              <Trophy className="w-8 h-8 text-warning" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-[10px] font-black uppercase tracking-widest text-warning">
-                Score
-              </p>
-              <div className="text-4xl font-black text-foreground tabular-nums">
-                {top1.points.toLocaleString()}
-              </div>
-            </div>
-          </div>
+        {/* Top 3 Badge */}
+        <div className="relative z-10 flex items-center gap-1.5 px-4 py-1.5 bg-success/15 dark:bg-success/25 border border-success/30 text-success rounded-full text-xs font-black tracking-wider uppercase mb-8 md:mb-12 shadow-xs">
+          <Trophy className="w-3.5 h-3.5" />
+          <span>Top 3 Interns</span>
         </div>
 
-        {/* Rank 3 */}
-        <div className="flex flex-col items-center w-full md:w-64 z-10">
-          <div className="relative mb-4">
-            <Avatar className="w-24 h-24 border-4 border-amber-700/50 shadow-[0_0_20px_rgba(180,83,9,0.2)]">
-              <AvatarImage
-                src={top3.profilePic || undefined}
-                alt={top3.actualName}
-                className="object-cover"
-              />
-              <AvatarFallback className="bg-amber-900/20 text-amber-700 text-xl font-bold">
-                {top3.avatar}
-              </AvatarFallback>
-            </Avatar>
-            <div className="absolute -top-2 -right-2 bg-amber-700/80 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border-2 border-background">
-              3
-            </div>
-          </div>
-          <h3 className="text-xl font-bold text-foreground mb-1">
-            {top3.name}
-          </h3>
-          <div className="bg-card/80 backdrop-blur-sm border border-border/50 rounded-xl p-6 w-full text-center shadow-xl flex flex-col items-center gap-3 h-48 justify-center transform transition-transform hover:scale-105">
-            <div className="p-2 bg-amber-700/10 rounded-lg">
-              <Trophy className="w-6 h-6 text-amber-700" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-[10px] font-black uppercase tracking-widest text-amber-700">
-                Score
-              </p>
-              <div className="text-3xl font-black text-foreground">
-                {top3.points.toLocaleString()}
-              </div>
-            </div>
-          </div>
+        {/* Podium grid */}
+        <div className="relative w-full max-w-2xl mx-auto flex items-end justify-center gap-4 md:gap-12 pt-6 pb-2 z-10">
+          {/* 2nd Place */}
+          {top2 && renderPodiumCard(top2, 2, false, "ring-muted-foreground/30")}
+
+          {/* 1st Place (Center) */}
+          {top1 && renderPodiumCard(top1, 1, true, "ring-warning")}
+
+          {/* 3rd Place */}
+          {top3 && renderPodiumCard(top3, 3, false, "ring-chart-5/40")}
         </div>
       </div>
 
