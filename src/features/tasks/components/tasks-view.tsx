@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { StateDisplay } from "@/components/ui/state-display";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useDeleteTask, useDownloadTasksCsv, useTasks } from "../hooks";
 import type { Task } from "../schemas/tasks.schema";
@@ -20,6 +21,7 @@ import { TaskFormDialog } from "./task-form-dialog";
 
 export default function TasksView() {
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState<"active" | "inactive">("active");
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(20);
   const [searchInput, setSearchInput] = useState("");
@@ -32,6 +34,7 @@ export default function TasksView() {
     perPage,
     search: debouncedSearch,
     sortBy: sort,
+    active: activeTab === "active" ? "true" : "false",
   });
 
   const deleteMutation = useDeleteTask();
@@ -42,88 +45,96 @@ export default function TasksView() {
   const [editId, setEditId] = useState<string | null>(null);
 
   const columns = [
-    { column: "title", Label: "Title", isSortable: true, width: "w-48" },
-    { column: "hashtag", Label: "Hashtag", isSortable: true, width: "w-32" },
-    { column: "org", Label: "Organization", isSortable: true, width: "w-40" },
-    { column: "active", Label: "Active", isSortable: true, width: "w-28" },
-    { column: "karma", Label: "Karma", isSortable: true, width: "w-24" },
+    { column: "title", Label: "Title", isSortable: true, width: "w-[12%]" },
+    { column: "hashtag", Label: "Hashtag", isSortable: true, width: "w-[8%]" },
+    { column: "org", Label: "Organization", isSortable: true, width: "w-[8%]" },
+    { column: "active", Label: "Status", isSortable: false, width: "w-[6%]" },
+    { column: "karma", Label: "Karma", isSortable: true, width: "w-[5%]" },
     {
       column: "usage_count",
       Label: "Usage Count",
       isSortable: true,
-      width: "w-28",
+      width: "w-[6%]",
     },
     {
       column: "variable_karma",
       Label: "Variable Karma",
       isSortable: true,
-      width: "w-32",
+      width: "w-[7%]",
     },
-    { column: "ig", Label: "Interest Group", isSortable: true, width: "w-40" },
-    { column: "level", Label: "Level", isSortable: true, width: "w-32" },
-    { column: "channel", Label: "Channel", isSortable: true, width: "w-40" },
-    { column: "event", Label: "Event", isSortable: true, width: "w-40" },
+    {
+      column: "ig",
+      Label: "Interest Group",
+      isSortable: true,
+      width: "w-[8%]",
+    },
+    { column: "level", Label: "Level", isSortable: true, width: "w-[6%]" },
+    { column: "channel", Label: "Channel", isSortable: true, width: "w-[8%]" },
+    { column: "event", Label: "Event", isSortable: true, width: "w-[8%]" },
     {
       column: "bonus_time",
       Label: "Bonus time",
       isSortable: true,
-      width: "w-40",
+      width: "w-[7%]",
     },
     {
       column: "bonus_karma",
       Label: "Bonus karma",
       isSortable: true,
-      width: "w-28",
+      width: "w-[6%]",
     },
     {
       column: "updated_by",
       Label: "Updated By",
       isSortable: true,
-      width: "w-36",
+      width: "w-[7%]",
     },
     {
       column: "updated_at",
       Label: "Updated On",
       isSortable: true,
-      width: "w-36",
+      width: "w-[7%]",
     },
     {
       column: "created_by",
       Label: "Created By",
       isSortable: true,
-      width: "w-36",
+      width: "w-[7%]",
     },
     {
       column: "created_at",
       Label: "Created On",
       isSortable: true,
-      width: "w-36",
+      width: "w-[7%]",
     },
   ];
 
   const rows = useMemo(() => {
     if (!data?.data) return [];
-    return data.data.map((item: Task) => ({
-      id: String(item.id),
-      title: item.title,
-      hashtag: item.hashtag,
-      org: item.org || "—",
-      active: item.active,
-      karma: item.karma,
-      usage_count: item.usage_count,
-      variable_karma: item.variable_karma,
-      ig: item.ig || "—",
-      level: item.level || "—",
-      channel: item.channel || "—",
-      event: item.event || "—",
-      bonus_time: item.bonus_time || "—",
-      bonus_karma: item.bonus_karma,
-      updated_by: item.updated_by || "—",
-      updated_at: item.updated_at || "—",
-      created_by: item.created_by || "—",
-      created_at: item.created_at || "—",
-    }));
-  }, [data]);
+    const isTargetActive = activeTab === "active";
+    return data.data
+      .filter((item: Task) => item.active === isTargetActive)
+      .map((item: Task) => ({
+        id: String(item.id),
+        title: item.title,
+        hashtag: item.hashtag,
+        org: item.org || "—",
+        active: item.active,
+        karma: item.karma,
+        usage_count: item.usage_count,
+        variable_karma: item.variable_karma,
+        ig: item.ig || "—",
+        level: item.level || "—",
+        channel: item.channel || "—",
+        event: item.event || "—",
+        bonus_time: item.bonus_time || "—",
+        bonus_karma: item.bonus_karma,
+        updated_by: item.updated_by || "—",
+        updated_at: item.updated_at || "—",
+        created_by: item.created_by || "—",
+        created_at: item.created_at || "—",
+      }));
+  }, [data, activeTab]);
 
   const totalPages = data?.pagination?.totalPages ?? 0;
   const totalCount = data?.pagination?.count ?? 0;
@@ -222,88 +233,125 @@ export default function TasksView() {
       </CardHeader>
 
       <CardContent className="space-y-6 px-0">
-        <TableTop
-          onSearchText={(val) => {
+        <Tabs
+          value={activeTab}
+          onValueChange={(val) => {
             setCurrentPage(1);
-            setSearchInput(val);
+            setActiveTab(val as "active" | "inactive");
           }}
-          onPerPageNumber={(val) => {
-            setCurrentPage(1);
-            setPerPage(val);
-          }}
-          perPage={perPage}
-          perPageOptions={[10, 20, 50]}
-          CSV="true"
-          onCsvDownload={handleCsvDownload}
-          isCsvDownloading={downloadCsvMutation.isPending}
-          searchPlaceholder="Search tasks..."
-          searchSize="md"
-          searchPosition="right"
-          searchWrapperClassName="md:max-w-[680px]"
-          searchFieldWrapperClassName="lg:max-w-[380px]"
-          searchInputClassName="h-10 text-sm"
-        />
+          className="w-full"
+        >
+          <TabsList className="h-10 p-1 bg-muted border border-border/60 w-fit max-w-full">
+            <TabsTrigger
+              value="active"
+              className="h-full px-4 text-xs font-semibold data-[state=active]:bg-background data-[state=active]:text-foreground"
+            >
+              Active Tasks
+            </TabsTrigger>
+            <TabsTrigger
+              value="inactive"
+              className="h-full px-4 text-xs font-semibold data-[state=active]:bg-background data-[state=active]:text-foreground"
+            >
+              Inactive Tasks
+            </TabsTrigger>
+          </TabsList>
 
-        {!isLoading && rows.length === 0 ? (
-          debouncedSearch ? (
-            <StateDisplay
-              variant="no-results"
-              size="sm"
-              className="rounded-2xl border border-dashed my-4"
-              title="No matching tasks"
-              description="No tasks match your search. Try a different keyword or clear the search."
-            />
-          ) : (
-            <StateDisplay
-              variant="no-tasks"
-              className="rounded-2xl border border-dashed my-4"
-              title="No tasks configured"
-              description="There are currently no tasks configured in the system. Use the 'Create Task' button above to set up a new task."
-            />
-          )
-        ) : (
-          <Table
-            rows={rows}
-            isLoading={isLoading}
-            customCellRender={(column, row) => {
-              if (column !== "active") return null;
-
-              return row.active === true ? (
-                <span className="text-green-600 font-semibold">Active</span>
-              ) : (
-                <span className="text-muted-foreground">Inactive</span>
-              );
-            }}
-            page={currentPage}
-            perPage={perPage}
-            columnOrder={columns}
-            id={["id"]}
-            customActionRender={renderActions}
+          <TabsContent
+            value={activeTab}
+            className="mt-4 space-y-6 w-full max-w-full"
           >
-            <THead
-              columnOrder={columns}
-              onIconClick={handleSortChange}
-              action={true}
+            <TableTop
+              onSearchText={(val) => {
+                setCurrentPage(1);
+                setSearchInput(val);
+              }}
+              onPerPageNumber={(val) => {
+                setCurrentPage(1);
+                setPerPage(val);
+              }}
+              perPage={perPage}
+              perPageOptions={[10, 20, 50]}
+              CSV="true"
+              onCsvDownload={handleCsvDownload}
+              isCsvDownloading={downloadCsvMutation.isPending}
+              searchPlaceholder="Search tasks..."
+              searchSize="md"
+              searchPosition="left"
+              searchWrapperClassName="w-full"
+              searchFieldWrapperClassName="w-full sm:w-auto"
+              searchInputClassName="h-10 text-sm"
             />
 
-            {!isLoading && (
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                handleNextClick={() =>
-                  setCurrentPage((p) => Math.min(p + 1, totalPages || 1))
-                }
-                handlePreviousClick={() =>
-                  setCurrentPage((p) => Math.max(p - 1, 1))
-                }
-                perPage={perPage}
-                totalCount={totalCount}
-              />
-            )}
+            {!isLoading && rows.length === 0 ? (
+              debouncedSearch ? (
+                <StateDisplay
+                  variant="no-results"
+                  size="sm"
+                  className="rounded-2xl border border-dashed my-4"
+                  title="No matching tasks"
+                  description="No tasks match your search. Try a different keyword or clear the search."
+                />
+              ) : (
+                <StateDisplay
+                  variant="no-tasks"
+                  className="rounded-2xl border border-dashed my-4"
+                  title={
+                    activeTab === "active"
+                      ? "No active tasks configured"
+                      : "No inactive tasks configured"
+                  }
+                  description={
+                    activeTab === "active"
+                      ? "There are currently no active tasks configured in the system. Use the 'Create Task' button above to set up a new task."
+                      : "There are currently no inactive tasks configured in the system."
+                  }
+                />
+              )
+            ) : (
+              <Table
+                rows={rows}
+                isLoading={isLoading}
+                customCellRender={(column, row) => {
+                  if (column !== "active") return null;
 
-            <Blank />
-          </Table>
-        )}
+                  return row.active === true ? (
+                    <span className="text-green-600 font-semibold">Active</span>
+                  ) : (
+                    <span className="text-muted-foreground">Inactive</span>
+                  );
+                }}
+                page={currentPage}
+                perPage={perPage}
+                columnOrder={columns}
+                id={["id"]}
+                customActionRender={renderActions}
+              >
+                <THead
+                  columnOrder={columns}
+                  onIconClick={handleSortChange}
+                  action={true}
+                />
+
+                {!isLoading && (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    handleNextClick={() =>
+                      setCurrentPage((p) => Math.min(p + 1, totalPages || 1))
+                    }
+                    handlePreviousClick={() =>
+                      setCurrentPage((p) => Math.max(p - 1, 1))
+                    }
+                    perPage={perPage}
+                    totalCount={totalCount}
+                  />
+                )}
+
+                <Blank />
+              </Table>
+            )}
+          </TabsContent>
+        </Tabs>
       </CardContent>
 
       {/* Delete Confirmation Modal */}

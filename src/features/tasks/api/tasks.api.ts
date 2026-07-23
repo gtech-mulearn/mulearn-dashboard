@@ -32,6 +32,9 @@ export async function fetchTasks(
   if (params.sortBy?.trim()) {
     query.set("sortBy", params.sortBy.trim());
   }
+  if (params.active) {
+    query.set("active", params.active);
+  }
 
   const response = await apiClient.get(
     `${endpoints.admin.tasks.base}?${query.toString()}`,
