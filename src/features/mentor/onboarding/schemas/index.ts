@@ -87,9 +87,17 @@ export type MentorStatusData = {
   organization?: string | null;
 };
 
-// ─── GET/PATCH /profile/ and POST/PATCH /register/ response wrapper ───────────
+// ─── GET/PATCH /profile/ response wrapper ────────────────────────────────────
 export const MentorApplicationResponseSchema = ApiResponseSchema(
   MentorApplicationSchema,
+);
+
+// ─── POST/PATCH /register/ response wrapper ─────────────────────────────────
+// Registration mutations return a success acknowledgement, not a mentor profile.
+// Keep the envelope validation while allowing the backend's acknowledgement body
+// to evolve independently from the profile representation.
+export const MentorApplicationMutationResponseSchema = ApiResponseSchema(
+  z.unknown(),
 );
 
 // ─── Form values for POST/PATCH /register/ ───────────────────────────────────

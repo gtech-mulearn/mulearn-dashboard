@@ -367,6 +367,7 @@ export function MentorEditProfileModal({
                     })
                   }
                   placeholder="Select IGs you want to mentor in..."
+                  maxSelections={5}
                 />
                 <p className="text-[0.8rem] text-muted-foreground">
                   Changes to your Interest Groups apply immediately.
@@ -376,7 +377,7 @@ export function MentorEditProfileModal({
               {/* Affiliation */}
               <div className="space-y-2">
                 <div className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Company / Campus Affiliation
+                  Company Affiliation
                 </div>
                 <TooltipProvider>
                   <Tooltip>

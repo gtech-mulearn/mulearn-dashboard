@@ -8,8 +8,8 @@ import {
   Loader2,
   XCircle,
 } from "lucide-react";
-import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -24,13 +24,13 @@ import {
   useCreateAvailabilitySlots,
   useMentorOverview,
 } from "@/features/mentor/hooks";
-import { useMentorTasks } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
 import { MentorOnboardingForm } from "@/features/mentor/onboarding/components/mentor-onboarding-form";
 import {
   deriveOnboardingState,
   useMentorApplication,
   useMentorProfile,
 } from "@/features/mentor/onboarding/hooks/use-onboarding";
+import { useMentorTasks } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
 import type { WeeklySchedule } from "@/features/mentor/types";
 import { useDashboardCalendar, useMentorSessions } from "../hooks";
 import { flattenDashboardCalendar } from "../utils";
@@ -181,6 +181,9 @@ export function MentorHome() {
   // Pending review: say exactly who acts next instead of a blank page.
   // (Rejected applications already returned above with the rejection banner + reapply form.)
   if (!isVerified) {
+    const companyName = application?.organization?.trim();
+    const mentorRole = companyName ? "Company Mentor" : "IG Mentor";
+
     return (
       <div className="mx-auto max-w-2xl py-8">
         <Card>
@@ -191,15 +194,20 @@ export function MentorHome() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm text-muted-foreground">
-            {application?.organization && (
-              <p>
-                Applying as{" "}
-                <span className="font-medium text-foreground">
-                  {application.organization}
-                </span>
-                .
-              </p>
-            )}
+            <p>
+              Applying as{" "}
+              <span className="font-medium text-foreground">{mentorRole}</span>
+              {companyName && (
+                <>
+                  {" "}
+                  on behalf of{" "}
+                  <span className="font-medium text-foreground">
+                    {companyName}
+                  </span>
+                </>
+              )}
+              .
+            </p>
             <p>
               A platform admin reviews it next — you&apos;ll be notified once a
               decision is made. You can keep using μLearn as a learner in the

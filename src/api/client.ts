@@ -66,6 +66,8 @@ interface RequestOptions<T> {
   isFormData?: boolean;
   /** When true, a 403 throws ApiError instead of the auth flow. */
   skipAuthRedirectOn403?: boolean;
+  /** Statuses that represent an expected UI state and should not be logged. */
+  expectedErrorStatuses?: readonly number[];
   /** When true, a Zod parse failure throws instead of returning raw. */
   strictSchema?: boolean;
 }
@@ -75,6 +77,7 @@ type ClientOptions = {
   responseType?: "json" | "blob";
   isFormData?: boolean;
   skipAuthRedirectOn403?: boolean;
+  expectedErrorStatuses?: readonly number[];
   strictSchema?: boolean;
 };
 
@@ -208,7 +211,10 @@ async function request<T>(
       extractDjangoMessage(rawData) ??
       "Something went wrong. Please try again.";
     const error = new ApiError(res.status, backendMsg, rawData);
-    if (process.env.NODE_ENV === "development") {
+    if (
+      process.env.NODE_ENV === "development" &&
+      !options.expectedErrorStatuses?.includes(res.status)
+    ) {
       console.error(
         `[API Client] Business error: [Status ${res.status}] ${endpoint}\nMessage: ${backendMsg}`,
         rawData,
@@ -222,7 +228,10 @@ async function request<T>(
       extractDjangoMessage(rawData) ??
       "Something went wrong. Please try again.";
     const error = new ApiError(res.status, backendMsg, rawData);
-    if (process.env.NODE_ENV === "development") {
+    if (
+      process.env.NODE_ENV === "development" &&
+      !options.expectedErrorStatuses?.includes(res.status)
+    ) {
       console.error(
         `[API Client] HTTP error: [Status ${res.status}] ${endpoint}\nMessage: ${backendMsg}`,
         rawData,

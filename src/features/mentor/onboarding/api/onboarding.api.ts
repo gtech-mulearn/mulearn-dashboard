@@ -3,6 +3,7 @@ import { endpoints } from "@/api/endpoints";
 import type { MentorProfileWrite } from "../schemas";
 import {
   type MentorApplication,
+  MentorApplicationMutationResponseSchema,
   MentorApplicationResponseSchema,
   type MentorStatusData,
   MentorStatusResponseSchema,
@@ -14,7 +15,12 @@ export async function getMentorApplicationStatus(): Promise<MentorStatusData> {
   const res = await apiClient.get(
     endpoints.mentor.status,
     MentorStatusResponseSchema,
-    { skipAuthRedirectOn403: true },
+    {
+      skipAuthRedirectOn403: true,
+      // The backend represents an absent application as 400. The onboarding
+      // hook intentionally maps that response to the "not applied" state.
+      expectedErrorStatuses: [400],
+    },
   );
   return res.response;
 }
@@ -23,28 +29,26 @@ export async function getMentorApplicationStatus(): Promise<MentorStatusData> {
 // Submit a new mentor application.
 export async function submitMentorApplication(
   data: MentorProfileWrite,
-): Promise<MentorApplication> {
-  const res = await apiClient.post(
+): Promise<void> {
+  await apiClient.post(
     endpoints.mentor.register,
     data,
-    MentorApplicationResponseSchema,
+    MentorApplicationMutationResponseSchema,
     { skipAuthRedirectOn403: true },
   );
-  return res.response;
 }
 
 // ─── PATCH /register/ ─────────────────────────────────────────────────────────
 // Update a PENDING or REJECTED application (re-submits rejected ones as PENDING).
 export async function updateMentorApplication(
   data: Partial<MentorProfileWrite>,
-): Promise<MentorApplication> {
-  const res = await apiClient.patch(
+): Promise<void> {
+  await apiClient.patch(
     endpoints.mentor.register,
     data,
-    MentorApplicationResponseSchema,
+    MentorApplicationMutationResponseSchema,
     { skipAuthRedirectOn403: true },
   );
-  return res.response;
 }
 
 // ─── GET /profile/ ────────────────────────────────────────────────────────────

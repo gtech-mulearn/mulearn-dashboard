@@ -2,6 +2,7 @@
 
 import { Check, ChevronDown, X } from "lucide-react";
 import * as React from "react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Badge } from "./badge";
 
@@ -17,6 +18,8 @@ interface MultiSelectProps {
   placeholder?: string;
   disabled?: boolean;
   className?: string;
+  maxSelections?: number;
+  minSelections?: number;
 }
 
 export function MultiSelect({
@@ -26,6 +29,8 @@ export function MultiSelect({
   placeholder = "Select options...",
   disabled = false,
   className,
+  maxSelections,
+  minSelections,
 }: MultiSelectProps) {
   const [open, setOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
@@ -42,6 +47,14 @@ export function MultiSelect({
     if (value.includes(optValue)) {
       onChange(value.filter((v) => v !== optValue));
     } else {
+      if (maxSelections !== undefined && value.length >= maxSelections) {
+        toast.error(
+          `You can select a maximum of ${maxSelections} Interest Group${
+            maxSelections === 1 ? "" : "s"
+          }.`,
+        );
+        return;
+      }
       onChange([...value, optValue]);
     }
   };
@@ -91,19 +104,26 @@ export function MultiSelect({
         {selectedLabels.length === 0 ? (
           <span className="text-muted-foreground flex-1">{placeholder}</span>
         ) : (
-          selectedLabels.map((o) => (
-            <Badge key={o.value} variant="secondary" className="gap-1 pr-1">
-              {o.label}
-              <button
-                type="button"
-                aria-label={`Remove ${o.label}`}
-                onClick={(e) => remove(o.value, e)}
-                className="rounded-sm opacity-60 hover:opacity-100 cursor-pointer"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </Badge>
-          ))
+          <>
+            {selectedLabels.map((o) => (
+              <Badge key={o.value} variant="secondary" className="gap-1 pr-1">
+                {o.label}
+                <button
+                  type="button"
+                  aria-label={`Remove ${o.label}`}
+                  onClick={(e) => remove(o.value, e)}
+                  className="rounded-sm opacity-60 hover:opacity-100 cursor-pointer"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            ))}
+            {maxSelections !== undefined && (
+              <span className="ml-auto text-xs text-muted-foreground whitespace-nowrap">
+                {value.length}/{maxSelections}
+              </span>
+            )}
+          </>
         )}
         <ChevronDown
           className={cn(
@@ -131,15 +151,22 @@ export function MultiSelect({
             ) : (
               filtered.map((o) => {
                 const selected = value.includes(o.value);
+                const atMax =
+                  maxSelections !== undefined &&
+                  value.length >= maxSelections &&
+                  !selected;
                 return (
                   <button
                     key={o.value}
                     type="button"
                     onClick={() => toggle(o.value)}
+                    disabled={atMax}
                     className={cn(
                       "flex w-full items-center gap-2 rounded-sm px-3 py-2 text-sm outline-none transition-colors",
                       "hover:bg-accent hover:text-accent-foreground",
                       selected && "bg-accent/50",
+                      atMax &&
+                        "opacity-40 cursor-not-allowed hover:bg-transparent hover:text-current",
                     )}
                   >
                     <Check
