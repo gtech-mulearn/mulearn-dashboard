@@ -50,6 +50,40 @@ export const usePublicTasks = (
   return query;
 };
 
+export const useAllPublicTasks = (
+  params: Omit<PublicTaskListParams, "pageIndex" | "perPage">,
+  options?: { enabled?: boolean; perPage?: number },
+) => {
+  const perPage = options?.perPage ?? 100;
+
+  const query = useQuery({
+    queryKey: ["public-tasks-all", params, perPage],
+    queryFn: async () => {
+      const first = await fetchPublicTasks({
+        ...params,
+        pageIndex: 1,
+        perPage,
+      });
+      const totalPages = first.pagination.totalPages || 1;
+
+      if (totalPages <= 1) return first.data;
+
+      const rest = await Promise.all(
+        Array.from({ length: totalPages - 1 }, (_, i) =>
+          fetchPublicTasks({ ...params, pageIndex: i + 2, perPage }),
+        ),
+      );
+
+      return [first.data, ...rest.map((page) => page.data)].flat();
+    },
+    placeholderData: (prev) => prev,
+    enabled: options?.enabled,
+  });
+
+  useTaskQueryErrorToast(query.error, "Failed to load public tasks.");
+  return query;
+};
+
 export const useTaskDetail = (id: string, options?: { enabled?: boolean }) => {
   const query = useQuery({
     queryKey: ["task", id],

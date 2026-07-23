@@ -35,47 +35,57 @@ export const TaskListResponseSchema = ApiResponseSchema(
 );
 
 // Form / Creation Input Schema
-export const TaskFormSchema = z.object({
-  hashtag: z
-    .string()
-    .max(75, "Max 75 characters")
-    .refine((val) => val.startsWith("#"), {
-      message: "Hashtag must start with '#'",
-    })
-    .refine((val) => val.replace(/^#/, "").trim().length > 0, {
-      message: "Hashtag is required",
-    }),
-  // 75 is the task_list.title column width, not a UX choice
-  title: z.string().min(1, "Title is required").max(75, "Max 75 characters"),
-  karma: z.coerce
-    .number()
-    .int("Karma Points must be a whole number")
-    .positive("Karma Points must be a positive number")
-    .min(10, "Karma Points must be at least 10")
-    .max(
-      9999,
-      "Karma Points cannot exceed the maximum allowed value of 9,999.",
-    ),
-  usage_count: z.coerce.number().min(1, "Mention the number of uses"),
-  active: z.boolean().default(true),
-  variable_karma: z.boolean().default(false),
-  description: z.string().min(1, "A description is required"),
-  channel_id: z.string().min(1, "Select a Channel"),
-  type_id: z.string().min(1, "Select a Type"),
-  level_id: z.string().nullable().optional(),
-  ig_id: z.string().nullable().optional(),
-  organization_id: z.string().nullable().optional(),
-  discord_link: z
-    .string()
-    .url("Invalid URL")
-    .or(z.string().length(0))
-    .nullable()
-    .optional(),
-  event: z.string().nullable().optional(),
-  bonus_time: z.string().nullable().optional(),
-  bonus_karma: z.coerce.number().default(0),
-  skill_ids: z.array(z.string()).default([]),
-});
+export const TaskFormSchema = z
+  .object({
+    hashtag: z
+      .string()
+      .max(75, "Max 75 characters")
+      .refine((val) => val.startsWith("#"), {
+        message: "Hashtag must start with '#'",
+      })
+      .refine((val) => val.replace(/^#/, "").trim().length > 0, {
+        message: "Hashtag is required",
+      }),
+    // 75 is the task_list.title column width, not a UX choice
+    title: z.string().min(1, "Title is required").max(75, "Max 75 characters"),
+    karma: z.coerce
+      .number()
+      .int("Karma Points must be a whole number")
+      .positive("Karma Points must be a positive number")
+      .min(10, "Karma Points must be at least 10")
+      .max(
+        9999,
+        "Karma Points cannot exceed the maximum allowed value of 9,999.",
+      ),
+    usage_count: z.coerce.number().min(1, "Mention the number of uses"),
+    active: z.boolean().default(true),
+    variable_karma: z.boolean().default(false),
+    description: z.string().min(1, "A description is required"),
+    channel_id: z.string().min(1, "Select a Channel"),
+    type_id: z.string().min(1, "Select a Type"),
+    level_id: z.string().nullable().optional(),
+    ig_id: z.string().nullable().optional(),
+    organization_id: z.string().nullable().optional(),
+    discord_link: z
+      .string()
+      .url("Invalid URL")
+      .or(z.string().length(0))
+      .nullable()
+      .optional(),
+    event: z.string().nullable().optional(),
+    bonus_time: z.string().nullable().optional(),
+    bonus_karma: z.coerce.number().default(0),
+    skill_ids: z.array(z.string()).default([]),
+  })
+  .superRefine((data, ctx) => {
+    if (data.event && !data.hashtag.startsWith("#evn")) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["hashtag"],
+        message: "Hashtag must start with '#evn' when an event is selected",
+      });
+    }
+  });
 
 export type TaskFormValues = z.infer<typeof TaskFormSchema>;
 

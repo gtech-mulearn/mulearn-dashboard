@@ -10,6 +10,7 @@
 
 import { useMemo } from "react";
 import { StateDisplay } from "@/components/ui/state-display";
+import { useAllPublicTasks } from "@/features/tasks/hooks";
 import type { GetUserLevelsResponse, Task, UserLevelData } from "../schemas";
 import { LevelCard } from "./LevelCard";
 
@@ -26,35 +27,84 @@ export function StartLearningTab({
   isLoading,
   error,
 }: StartLearningTabProps) {
-  // Data comes from parent
   const data = levelsData;
-
-  // Response is directly an array of levels
   const levels = data?.response ?? [];
 
-  // Filter out tasks with #cl- hashtags (expert/Interest Group tasks)
-  // Start Learning Tab: EXCLUDE tasks containing #cl- in their hashtag
-  const foundationLevels = useMemo(
-    () =>
-      levels
-        .map((level: UserLevelData) => ({
-          ...level,
-          tasks: (level.tasks || []).filter((task: Task) => {
-            const hashtag = task.hashtag || "";
-            const isFoundationTask = !hashtag.includes("#cl-");
+  // The user's own completion state, keyed by hashtag, so tasks merged in
+  // below from the public catalog (which carries no per-user completion)
+  // can be reconciled against what the user has actually completed.
+  const completionByHashtag = useMemo(() => {
+    const map = new Map<string, boolean>();
+    levels.forEach((level: UserLevelData) => {
+      (level.tasks || []).forEach((task: Task) => {
+        if (task.hashtag) map.set(task.hashtag, Boolean(task.completed));
+      });
+    });
+    return map;
+  }, [levels]);
 
-            // Apply completion filter
-            if (filter === "completed") {
-              return isFoundationTask && task.completed;
-            } else if (filter === "incomplete") {
-              return isFoundationTask && !task.completed;
-            }
-            return isFoundationTask;
-          }),
-        }))
-        .filter((level: UserLevelData) => (level.tasks || []).length > 0), // Remove empty levels
-    [levels, filter],
-  );
+  const { data: companyData } = useAllPublicTasks({ task_source: "company" });
+  const { data: campusData } = useAllPublicTasks({
+    task_source: "campus_mentor",
+  });
+
+  const generalTasks = useMemo<Task[]>(() => {
+    const raw = [...(companyData ?? []), ...(campusData ?? [])];
+    return raw.map((task) => ({
+      task_id: task.id,
+      task_name: task.title,
+      task_description: task.description ?? "",
+      karma: task.karma,
+      hashtag: task.hashtag,
+      completed: completionByHashtag.get(task.hashtag) ?? false,
+      active: task.active,
+      discord_link: task.discord_link,
+      level: task.level,
+      interest_group: task.ig ? { name: task.ig } : undefined,
+      submission_channel: task.channel ? { name: task.channel } : undefined,
+    }));
+  }, [companyData, campusData, completionByHashtag]);
+
+  // Filter out tasks with #cl- (expert/Interest Group) or #evn (event) hashtags
+  // Start Learning Tab: EXCLUDE tasks containing #cl- or starting with #evn
+  const foundationLevels = useMemo(() => {
+    const map = new Map<string, UserLevelData>();
+
+    const addTask = (task: Task, levelHint?: string | null) => {
+      const hashtag = task.hashtag || "";
+      const isFoundationTask =
+        !hashtag.includes("#cl-") && !hashtag.startsWith("#evn");
+      if (!isFoundationTask) return;
+
+      if (filter === "completed" && !task.completed) return;
+      if (filter === "incomplete" && task.completed) return;
+
+      const levelNumber = (levelHint || "").match(/\d+/)?.[0] ?? "1";
+      const levelKey = `Lvl ${levelNumber}`;
+
+      const existing = map.get(levelKey);
+      if (existing) {
+        existing.tasks = [...(existing.tasks || []), task];
+      } else {
+        map.set(levelKey, { name: levelKey, karma: 0, tasks: [task] });
+      }
+    };
+
+    levels.forEach((level: UserLevelData) => {
+      (level.tasks || []).forEach((task: Task) => {
+        addTask(task, level.name);
+      });
+    });
+    generalTasks.forEach((task) => {
+      addTask(task, (task as { level?: string | null }).level);
+    });
+
+    return Array.from(map.values()).sort((a, b) => {
+      const numA = parseInt(a.name.match(/\d+/)?.[0] ?? "0", 10);
+      const numB = parseInt(b.name.match(/\d+/)?.[0] ?? "0", 10);
+      return numA - numB;
+    });
+  }, [levels, filter, generalTasks]);
 
   if (isLoading) {
     return (
@@ -80,7 +130,7 @@ export function StartLearningTab({
     );
   }
 
-  if (!data?.response) {
+  if (!data?.response && generalTasks.length === 0) {
     return <StateDisplay variant="no-tasks" />;
   }
 
