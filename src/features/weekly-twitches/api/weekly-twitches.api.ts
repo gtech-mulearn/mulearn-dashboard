@@ -70,10 +70,13 @@ function buildOfficeHoursFormData(
   const fd = new FormData();
   if (payload.title !== undefined) fd.append("title", payload.title);
   if (payload.date) fd.append("date", toOfficeHoursDate(payload.date));
-  if (payload.performer) fd.append("performer", payload.performer);
-  if (payload.designation) fd.append("designation", payload.designation);
-  if (payload.description) fd.append("description", payload.description);
-  if (payload.link) fd.append("link", payload.link);
+  if (payload.performer !== undefined)
+    fd.append("performer", payload.performer);
+  if (payload.designation !== undefined)
+    fd.append("designation", payload.designation);
+  if (payload.description !== undefined)
+    fd.append("description", payload.description);
+  if (payload.link !== undefined) fd.append("link", payload.link);
   for (const ig of payload.interest_groups ?? []) {
     fd.append("interest_groups", ig);
   }
