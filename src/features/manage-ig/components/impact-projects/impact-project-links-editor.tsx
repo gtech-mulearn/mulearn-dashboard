@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { ImpactProjectLink } from "../../schemas";
 
+const MAX_LINKS = 5;
+
 interface ImpactProjectLinksEditorProps {
   value: ImpactProjectLink[];
   onChange: (value: ImpactProjectLink[]) => void;
@@ -14,7 +16,12 @@ export function ImpactProjectLinksEditor({
   value,
   onChange,
 }: ImpactProjectLinksEditorProps) {
-  const addLink = () => onChange([...value, { label: "", url: "" }]);
+  const canAddLink = value.length < MAX_LINKS;
+
+  const addLink = () => {
+    if (!canAddLink) return;
+    onChange([...value, { label: "", url: "" }]);
+  };
 
   const updateLink = (index: number, patch: Partial<ImpactProjectLink>) => {
     onChange(value.map((l, i) => (i === index ? { ...l, ...patch } : l)));
@@ -27,12 +34,18 @@ export function ImpactProjectLinksEditor({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-foreground">Links</p>
+        <p className="text-sm font-medium text-foreground">
+          Links{" "}
+          <span className="text-xs font-normal text-muted-foreground">
+            ({value.length}/{MAX_LINKS})
+          </span>
+        </p>
         <Button
           type="button"
           size="sm"
           variant="default"
           onClick={addLink}
+          disabled={!canAddLink}
           aria-label="Add link"
           className="gap-1"
         >

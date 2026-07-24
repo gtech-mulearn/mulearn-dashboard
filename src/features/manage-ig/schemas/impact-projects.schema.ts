@@ -24,7 +24,10 @@ export const ImpactProjectSchema = z.object({
   image: z.string().nullable().optional(),
   description: z.string().min(50, "Description must be at least 50 characters"),
   team: z.array(ImpactProjectTeamMemberSchema).default([]),
-  links: z.array(ImpactProjectLinkSchema).default([]),
+  links: z
+    .array(ImpactProjectLinkSchema)
+    .max(5, "Maximum 5 links allowed")
+    .default([]),
   created_by: z.string().optional(),
   updated_by: z.string().optional(),
   created_at: z.string().optional(),
@@ -35,7 +38,10 @@ export const ImpactProjectCreateSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(50, "Description must be at least 50 characters"),
   team: z.array(ImpactProjectTeamMemberInputSchema).optional(),
-  links: z.array(ImpactProjectLinkSchema).optional(),
+  links: z
+    .array(ImpactProjectLinkSchema)
+    .max(5, "Maximum 5 links allowed")
+    .optional(),
 });
 
 export const ImpactProjectUpdateSchema = z.object({
@@ -45,7 +51,10 @@ export const ImpactProjectUpdateSchema = z.object({
     .min(50, "Description must be at least 50 characters")
     .optional(),
   team: z.array(ImpactProjectTeamMemberInputSchema).optional(),
-  links: z.array(ImpactProjectLinkSchema).optional(),
+  links: z
+    .array(ImpactProjectLinkSchema)
+    .max(5, "Maximum 5 links allowed")
+    .optional(),
 });
 
 export type ImpactProjectTeamMember = z.infer<
