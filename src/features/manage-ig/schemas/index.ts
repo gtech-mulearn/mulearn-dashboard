@@ -14,3 +14,23 @@ export {
   InterestGroupSchema,
   InterestGroupUpdateSchema,
 } from "./manage-ig.schema";
+
+export type {
+  ImpactProject,
+  ImpactProjectCreate,
+  ImpactProjectLink,
+  ImpactProjectTeamMember,
+  ImpactProjectTeamMemberInput,
+  ImpactProjectUpdate,
+} from "./impact-projects.schema";
+export {
+  ImpactProjectCreateSchema,
+  ImpactProjectImageResponseSchema,
+  ImpactProjectLinkSchema,
+  ImpactProjectResponseSchema,
+  ImpactProjectSchema,
+  ImpactProjectsListResponseSchema,
+  ImpactProjectTeamMemberInputSchema,
+  ImpactProjectTeamMemberSchema,
+  ImpactProjectUpdateSchema,
+} from "./impact-projects.schema";

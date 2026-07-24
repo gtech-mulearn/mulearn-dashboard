@@ -28,6 +28,7 @@ import { useInterestGroupDetail } from "@/features/interest-groups";
 import { PersonCard } from "@/features/interest-groups/components/person-card";
 import type { InterestGroup } from "../schemas";
 import { InterestGroupFormDialog } from "./ig-form-dialog";
+import { ImpactProjectsSection } from "./impact-projects/impact-projects-section";
 
 export function IGDetail() {
   const router = useRouter();
@@ -461,12 +462,15 @@ export function IGDetail() {
                 </div>
               </div>
             )}
+
             <div className="rounded-3xl bg-linear-to-br from-muted/50 to-muted/10 p-6 border border-border/50 text-center">
               <p className="text-sm font-medium text-muted-foreground">
                 Need help or have questions? Reach out to the leads or join the
                 think tank channel.
               </p>
             </div>
+
+            <ImpactProjectsSection igId={group.id} canManage />
           </div>
         </div>
       </div>

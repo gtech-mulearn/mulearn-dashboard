@@ -1,13 +1,18 @@
 export {
+  createImpactProject,
   createInterestGroup,
+  deleteImpactProject,
   deleteInterestGroup,
   exportIgCSV,
   getAdminInterestGroups,
   getIgRequests,
+  getImpactProjects,
   partialUpdateInterestGroup,
   submitIgRequest,
   updateIgRequestStatus,
+  updateImpactProject,
   updateInterestGroup,
+  uploadImpactProjectImage,
 } from "./api";
 
 export {
@@ -15,14 +20,32 @@ export {
   IGDetail,
   IGDetailPanel,
   IGRequestTable,
+  ImpactProjectCard,
+  ImpactProjectFormDialog,
+  ImpactProjectLinksEditor,
+  ImpactProjectTeamPicker,
+  ImpactProjectsSection,
   InterestGroupCard,
   InterestGroupFormDialog,
   InterestGroupsGrid,
   ManageIGTable,
 } from "./components";
+export type { TeamMemberEntry } from "./components";
 
-export { useIGRequests, useInterestGroupsAdmin } from "./hooks";
+export {
+  impactProjectsKeys,
+  useIGRequests,
+  useImpactProjectMutations,
+  useImpactProjects,
+  useInterestGroupsAdmin,
+} from "./hooks";
 export type {
+  ImpactProject,
+  ImpactProjectCreate,
+  ImpactProjectLink,
+  ImpactProjectTeamMember,
+  ImpactProjectTeamMemberInput,
+  ImpactProjectUpdate,
   InterestGroup,
   InterestGroupCreate,
   InterestGroupListResponse,
@@ -31,6 +54,15 @@ export type {
   InterestGroupUpdate,
 } from "./schemas";
 export {
+  ImpactProjectCreateSchema,
+  ImpactProjectImageResponseSchema,
+  ImpactProjectLinkSchema,
+  ImpactProjectResponseSchema,
+  ImpactProjectSchema,
+  ImpactProjectsListResponseSchema,
+  ImpactProjectTeamMemberInputSchema,
+  ImpactProjectTeamMemberSchema,
+  ImpactProjectUpdateSchema,
   InterestGroupCreateSchema,
   InterestGroupListResponseSchema,
   InterestGroupRequestListResponseSchema,

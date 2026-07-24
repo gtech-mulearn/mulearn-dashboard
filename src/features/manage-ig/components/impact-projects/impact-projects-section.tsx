@@ -1,0 +1,122 @@
+"use client";
+
+import { Loader2, Plus, Rocket } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useImpactProjectMutations } from "../../hooks/use-impact-project-mutations";
+import { useImpactProjects } from "../../hooks/use-impact-projects";
+import type { ImpactProject } from "../../schemas";
+import { ImpactProjectCard } from "./impact-project-card";
+import { ImpactProjectFormDialog } from "./impact-project-form-dialog";
+
+interface ImpactProjectsSectionProps {
+  igId: string;
+  canManage?: boolean;
+}
+
+export function ImpactProjectsSection({
+  igId,
+  canManage = false,
+}: ImpactProjectsSectionProps) {
+  const { data: projects, isLoading } = useImpactProjects(igId);
+  const { deleteImpactProject, isDeleting } = useImpactProjectMutations(igId);
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<ImpactProject | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<ImpactProject | null>(
+    null,
+  );
+
+  const openCreate = () => {
+    setEditing(null);
+    setDialogOpen(true);
+  };
+
+  const openEdit = (project: ImpactProject) => {
+    setEditing(project);
+    setDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!pendingDelete) return;
+    await deleteImpactProject(pendingDelete.id);
+    setPendingDelete(null);
+  };
+
+  return (
+    <div className="overflow-hidden rounded-3xl border border-border/50 bg-card shadow-sm">
+      <div className="flex items-center justify-between border-b border-border/50 bg-muted/30 px-4 sm:px-6 py-3 sm:py-4">
+        <h3 className="text-base sm:text-lg font-bold text-foreground">
+          Impact Projects
+        </h3>
+        {canManage && (
+          <Button
+            type="button"
+            size="sm"
+            variant="default"
+            onClick={openCreate}
+            aria-label="Add impact project"
+            className="gap-1"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Add
+          </Button>
+        )}
+      </div>
+
+      <div className="max-h-[420px] overflow-y-auto p-4 sm:p-6">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : projects && projects.length > 0 ? (
+          <div className="space-y-3">
+            {projects.map((project) => (
+              <ImpactProjectCard
+                key={project.id}
+                project={project}
+                canManage={canManage}
+                onEdit={() => openEdit(project)}
+                onDelete={() => setPendingDelete(project)}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-3 py-6 text-center">
+            <div className="rounded-full bg-muted p-3">
+              <Rocket className="h-5 w-5 text-muted-foreground" />
+            </div>
+            <p className="text-sm font-medium text-foreground">
+              No impact projects yet
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {canManage
+                ? "Showcase what this community has built."
+                : "Check back soon to see what this community has built."}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {canManage && (
+        <ImpactProjectFormDialog
+          igId={igId}
+          isOpen={dialogOpen}
+          onClose={() => setDialogOpen(false)}
+          project={editing}
+        />
+      )}
+
+      <ConfirmDialog
+        open={!!pendingDelete}
+        onOpenChange={(open) => !open && setPendingDelete(null)}
+        title="Delete impact project?"
+        description={`This will permanently remove "${pendingDelete?.title}". This cannot be undone.`}
+        confirmLabel="Delete"
+        isPending={isDeleting}
+        onConfirm={confirmDelete}
+      />
+    </div>
+  );
+}
