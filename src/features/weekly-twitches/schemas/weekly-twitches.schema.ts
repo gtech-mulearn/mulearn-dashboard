@@ -59,11 +59,6 @@ export const OfficeHoursWriteSchema = z.object({
   description: z.string().optional(),
   link: z.string().url("Must be a valid URL").optional().or(z.literal("")),
   interest_groups: z.array(z.string()).optional(),
-  poster_thumbnail: z
-    .string()
-    .url("Must be a valid URL")
-    .optional()
-    .or(z.literal("")),
 });
 
 // ─── Campus Content (Salt Mango Tree + Inspiration Station) ───

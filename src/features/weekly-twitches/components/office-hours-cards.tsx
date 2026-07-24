@@ -13,7 +13,7 @@ import {
 import { useOfficeHoursList } from "../hooks";
 import type { OfficeHoursItem } from "../schemas";
 import { MediaCard, MediaCardSkeleton } from "./media-card";
-import { OfficeHoursDetailSheet } from "./media-detail-sheet";
+import { OfficeHoursDetailDialog } from "./office-hours-detail-dialog";
 
 const SKELETONS = Array.from({ length: 6 }, (_, i) => `skeleton-${i}`);
 
@@ -109,8 +109,8 @@ export function OfficeHoursCards() {
         handleNextClick={() => setPage((p) => p + 1)}
       />
 
-      {/* Detail sheet */}
-      <OfficeHoursDetailSheet
+      {/* Detail dialog */}
+      <OfficeHoursDetailDialog
         item={sheetItem}
         onClose={() => setSheetItem(null)}
       />

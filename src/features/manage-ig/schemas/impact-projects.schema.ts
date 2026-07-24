@@ -19,6 +19,24 @@ export const ImpactProjectLinkSchema = z.object({
   url: z.string().url("Must be a valid URL"),
 });
 
+const uniqueLinkUrls = (
+  links: ImpactProjectLink[] | undefined,
+  ctx: z.RefinementCtx,
+) => {
+  if (!links) return;
+  const seen = new Set<string>();
+  links.forEach((link, index) => {
+    if (seen.has(link.url)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Link URL must be unique",
+        path: [index, "url"],
+      });
+    }
+    seen.add(link.url);
+  });
+};
+
 export const ImpactProjectSchema = z.object({
   id: z.string().uuid(),
   ig_id: z.string(),
@@ -43,7 +61,8 @@ export const ImpactProjectCreateSchema = z.object({
       MAX_IMPACT_PROJECT_LINKS,
       `Maximum ${MAX_IMPACT_PROJECT_LINKS} links allowed`,
     )
-    .optional(),
+    .optional()
+    .superRefine(uniqueLinkUrls),
 });
 
 export const ImpactProjectUpdateSchema = z.object({
@@ -59,7 +78,8 @@ export const ImpactProjectUpdateSchema = z.object({
       MAX_IMPACT_PROJECT_LINKS,
       `Maximum ${MAX_IMPACT_PROJECT_LINKS} links allowed`,
     )
-    .optional(),
+    .optional()
+    .superRefine(uniqueLinkUrls),
 });
 
 export type ImpactProjectTeamMember = z.infer<
