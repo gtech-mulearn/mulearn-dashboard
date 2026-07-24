@@ -66,49 +66,57 @@ export function EventDetailView({
     event.organizer.company?.logo ??
     "/images/mulearn-logo-small.jpg";
 
-  return (
-    <>
-      <div className="mx-auto w-full max-w-7xl space-y-5 pb-24 lg:pb-6 lc-fade-in">
-        <EventHeroBanner
-          event={event}
-          organizerName={organizerName}
-          organizerLogo={organizerLogo}
-        />
+  const innerContent = (
+    <div className="mx-auto w-full max-w-7xl space-y-5 pb-24 lg:pb-6 lc-fade-in overflow-x-hidden">
+      <EventHeroBanner
+        event={event}
+        organizerName={organizerName}
+        organizerLogo={organizerLogo}
+      />
 
-        <EventIdentityBar event={event} />
+      <EventIdentityBar event={event} />
 
-        <div
-          className={cn(
-            "grid gap-5",
-            layout === "full" && "lg:grid-cols-[minmax(0,1fr)_360px]",
-          )}
-        >
-          {/* Main Column */}
-          <div className="space-y-5">
-            <EventAboutSection description={event.description} />
-            <EventTasksSection tasks={event.linked_tasks} />
-            {showVenue && <EventVenueSection venue={event.venue} />}
-            <EventCollaboratorsSection collaborators={event.collaborators} />
-          </div>
-
-          {/* Sticky Sidebar */}
-          {layout === "full" && (
-            <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
-              <EventRegistrationCard
-                event={event}
-                showInterestButton={showInterestButton}
-              />
-              <EventOrganizerCard
-                event={event}
-                organizerName={organizerName}
-                organizerLogo={organizerLogo}
-              />
-            </aside>
-          )}
+      <div
+        className={cn(
+          "grid gap-5 w-full max-w-full overflow-x-hidden",
+          layout === "full" && "lg:grid-cols-[minmax(0,1fr)_360px]",
+        )}
+      >
+        {/* Main Column */}
+        <div className="min-w-0 w-full max-w-full space-y-5 overflow-x-hidden">
+          <EventAboutSection description={event.description} />
+          <EventTasksSection tasks={event.linked_tasks} />
+          {showVenue && <EventVenueSection venue={event.venue} />}
+          <EventCollaboratorsSection collaborators={event.collaborators} />
         </div>
+
+        {/* Sticky Sidebar */}
+        {layout === "full" && (
+          <aside className="min-w-0 w-full max-w-full space-y-4 overflow-x-hidden lg:sticky lg:top-6 lg:self-start">
+            <EventRegistrationCard
+              event={event}
+              showInterestButton={showInterestButton}
+            />
+            <EventOrganizerCard
+              event={event}
+              organizerName={organizerName}
+              organizerLogo={organizerLogo}
+            />
+          </aside>
+        )}
       </div>
 
       {layout === "full" && <EventMobileBar event={event} />}
-    </>
+    </div>
   );
+
+  if (layout === "full") {
+    return (
+      <div className="w-full max-w-full overflow-x-hidden bg-background rounded-2xl shadow-sm p-4 min-h-[calc(100vh-6rem)]">
+        {innerContent}
+      </div>
+    );
+  }
+
+  return innerContent;
 }
