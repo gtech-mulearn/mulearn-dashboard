@@ -20,7 +20,7 @@ export function ImpactProjectsSection({
   igId,
   canManage = false,
 }: ImpactProjectsSectionProps) {
-  const { data: projects, isLoading } = useImpactProjects(igId);
+  const { data: projects, isLoading, isError } = useImpactProjects(igId);
   const { deleteImpactProject, isDeleting } = useImpactProjectMutations(igId);
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -75,6 +75,18 @@ export function ImpactProjectsSection({
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : isError ? (
+          <div className="flex flex-col items-center gap-3 py-6 text-center">
+            <div className="rounded-full bg-destructive/10 p-3">
+              <Rocket className="h-5 w-5 text-destructive" />
+            </div>
+            <p className="text-sm font-medium text-foreground">
+              Couldn't load impact projects
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Something went wrong. Please try again later.
+            </p>
           </div>
         ) : projects && projects.length > 0 ? (
           <div className="space-y-3">
