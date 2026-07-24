@@ -95,6 +95,11 @@ export const JobSchema = z.object({
       if (typeof v === "boolean") return v;
       return null;
     }),
+  applicant_count: z.number().optional().nullable(),
+  applications_count: z.number().optional().nullable(),
+  total_applicants: z.number().optional().nullable(),
+  applicantCount: z.number().optional().nullable(),
+  applicationsCount: z.number().optional().nullable(),
 });
 
 export const PaginationSchema = z
@@ -154,48 +159,22 @@ export const JobsListDataSchema = z
       .transform((v) => v ?? ""),
     data: z.array(JobSchema).nullish(),
     jobs: z.array(JobSchema).nullish(),
-    pagination: z
-      .object({
-        count: z
-          .number()
-          .nullish()
-          .transform((v) => v ?? 0),
-        total_pages: z
-          .number()
-          .nullish()
-          .transform((v) => v ?? 1),
-        current_page: z
-          .number()
-          .nullish()
-          .transform((v) => v ?? 1),
-        per_page: z
-          .number()
-          .nullish()
-          .transform((v) => v ?? 10),
-        next: z.string().nullable().optional(),
-        previous: z.string().nullable().optional(),
-      })
-      .passthrough()
-      .optional()
-      .transform((v) => ({
-        count: v?.count ?? 0,
-        totalPages: v?.total_pages ?? 1,
-        isNext: !!v?.next,
-        isPrev: !!v?.previous,
-        nextPage: v?.next ? (v.current_page ?? 1) + 1 : null,
-      })),
+    pagination: PaginationSchema.nullish().transform(
+      (v) =>
+        v ?? {
+          count: 0,
+          totalPages: 1,
+          isNext: false,
+          isPrev: false,
+          nextPage: null,
+        },
+    ),
   })
   .transform((val) => ({
     company_id: val.company_id,
     company_name: val.company_name,
     jobs: val.jobs ?? val.data ?? [],
-    pagination: val.pagination ?? {
-      count: 0,
-      totalPages: 1,
-      isNext: false,
-      isPrev: false,
-      nextPage: null,
-    },
+    pagination: val.pagination,
   }));
 
 export const JobsListResponseSchema = DjangoResponse(JobsListDataSchema);
