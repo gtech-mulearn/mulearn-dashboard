@@ -363,7 +363,7 @@ function SingleTab({ role }: { role: Role }) {
                     searchPlaceholder="Search colleges..."
                     emptyText={
                       collegeSearch.trim().length < 2
-                        ? "Type our college to search"
+                        ? "Type your college to search"
                         : "No colleges found."
                     }
                     disabled={assignMutation.isPending}
