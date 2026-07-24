@@ -1196,14 +1196,13 @@ export function CampusManageDashboard() {
                     case "name":
                       return (
                         <div className="flex flex-col">
-                          <span className="text-sm font-semibold tracking-tight transition-colors group-hover:text-primary">
-                            {student.name}
-                          </span>
                           <Link
-                            href={`/dashboard/mujourney/${student.muid}`}
-                            className="inline-flex w-fit items-center gap-1 text-[11px] text-muted-foreground hover:text-primary hover:underline underline-offset-2"
+                            href={`/profile/${student.muid}`}
+                            className="inline-flex w-fit items-center gap-1"
                           >
-                            @{student.muid}
+                            <span className="text-sm font-semibold tracking-tight transition-colors group-hover:text-primary">
+                              {student.name}
+                            </span>
                             <ExternalLink className="h-3 w-3" />
                           </Link>
                         </div>
