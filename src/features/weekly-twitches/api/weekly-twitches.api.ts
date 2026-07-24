@@ -63,16 +63,45 @@ export async function fetchOfficeHoursDetail(
   return res.response;
 }
 
+function buildOfficeHoursFormData(
+  payload: Partial<OfficeHoursWrite>,
+  posterFile?: File | null,
+): FormData {
+  const fd = new FormData();
+  if (payload.title !== undefined) fd.append("title", payload.title);
+  if (payload.date) fd.append("date", toOfficeHoursDate(payload.date));
+  if (payload.performer) fd.append("performer", payload.performer);
+  if (payload.designation) fd.append("designation", payload.designation);
+  if (payload.description) fd.append("description", payload.description);
+  if (payload.link) fd.append("link", payload.link);
+  for (const ig of payload.interest_groups ?? []) {
+    fd.append("interest_groups", ig);
+  }
+  if (posterFile) {
+    fd.append("poster_thumbnail", posterFile);
+  }
+  return fd;
+}
+
 export async function createOfficeHours(
   payload: OfficeHoursWrite,
+  posterFile?: File | null,
 ): Promise<void> {
+  if (posterFile) {
+    await apiClient.post(
+      endpoints.weeklyTwitches.officeHours.create,
+      buildOfficeHoursFormData(payload, posterFile),
+      MutationResponseSchema,
+      { isFormData: true },
+    );
+    return;
+  }
   await apiClient.post(
     endpoints.weeklyTwitches.officeHours.create,
     {
       ...payload,
       date: toOfficeHoursDate(payload.date),
       link: payload.link || undefined,
-      poster_thumbnail: payload.poster_thumbnail || undefined,
       performer: payload.performer || undefined,
       designation: payload.designation || undefined,
     },
@@ -83,14 +112,23 @@ export async function createOfficeHours(
 export async function updateOfficeHours(
   id: string,
   payload: Partial<OfficeHoursWrite>,
+  posterFile?: File | null,
 ): Promise<void> {
+  if (posterFile) {
+    await apiClient.patch(
+      endpoints.weeklyTwitches.officeHours.update(id),
+      buildOfficeHoursFormData(payload, posterFile),
+      MutationResponseSchema,
+      { isFormData: true },
+    );
+    return;
+  }
   await apiClient.patch(
     endpoints.weeklyTwitches.officeHours.update(id),
     {
       ...payload,
       ...(payload.date ? { date: toOfficeHoursDate(payload.date) } : {}),
       link: payload.link || undefined,
-      poster_thumbnail: payload.poster_thumbnail || undefined,
       performer: payload.performer || undefined,
       designation: payload.designation || undefined,
     },

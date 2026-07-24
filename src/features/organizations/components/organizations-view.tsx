@@ -400,6 +400,7 @@ function OrgFormDialog({
     watch,
     reset,
     setValue,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<OrgFormValues>({
     resolver: zodResolver(OrgFormSchema),
@@ -451,21 +452,36 @@ function OrgFormDialog({
   // and not the matching *_uuid — resolve the select value by label once the
   // relevant dropdown list has loaded.
   useEffect(() => {
-    if (!open || !org || org.country_uuid || !org.country || !countries.length)
+    if (
+      !open ||
+      !org ||
+      org.country_uuid ||
+      !org.country ||
+      !countries.length ||
+      getValues("country")
+    )
       return;
     const match = countries.find(
       (c) => c.label.trim().toLowerCase() === org.country?.trim().toLowerCase(),
     );
     if (match) setValue("country", match.value);
-  }, [open, org, countries, setValue]);
+  }, [open, org, countries, setValue, getValues]);
 
   useEffect(() => {
-    if (!open || !org || org.state_uuid || !org.state || !states.length) return;
+    if (
+      !open ||
+      !org ||
+      org.state_uuid ||
+      !org.state ||
+      !states.length ||
+      getValues("state")
+    )
+      return;
     const match = states.find(
       (s) => s.label.trim().toLowerCase() === org.state?.trim().toLowerCase(),
     );
     if (match) setValue("state", match.value);
-  }, [open, org, states, setValue]);
+  }, [open, org, states, setValue, getValues]);
 
   useEffect(() => {
     if (
@@ -473,7 +489,8 @@ function OrgFormDialog({
       !org ||
       org.district_uuid ||
       !org.district ||
-      !districts.length
+      !districts.length ||
+      getValues("district")
     )
       return;
     const match = districts.find(
@@ -481,7 +498,7 @@ function OrgFormDialog({
         d.label.trim().toLowerCase() === org.district?.trim().toLowerCase(),
     );
     if (match) setValue("district", match.value);
-  }, [open, org, districts, setValue]);
+  }, [open, org, districts, setValue, getValues]);
 
   useEffect(() => {
     if (
@@ -489,7 +506,8 @@ function OrgFormDialog({
       !org ||
       org.affiliation_uuid ||
       !org.affiliation ||
-      !affiliations.length
+      !affiliations.length ||
+      getValues("affiliation")
     )
       return;
     const match = affiliations.find(
@@ -497,7 +515,7 @@ function OrgFormDialog({
         a.title.trim().toLowerCase() === org.affiliation?.trim().toLowerCase(),
     );
     if (match) setValue("affiliation", match.id);
-  }, [open, org, affiliations, setValue]);
+  }, [open, org, affiliations, setValue, getValues]);
 
   // ─── Mutations ───────────────────────────────────────────────────────────
   const createMutation = useCreateOrg();

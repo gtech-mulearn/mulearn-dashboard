@@ -30,11 +30,11 @@ export {
 // Components
 export {
   CampusContentCards,
-  CampusContentDetailSheet,
+  CampusContentDetailDialog,
   MediaCard,
   MediaCardSkeleton,
   OfficeHoursCards,
-  OfficeHoursDetailSheet,
+  OfficeHoursDetailDialog,
   WeeklyTwitchesView,
   WeeklyTwitchesViewer,
 } from "./components";

@@ -17,6 +17,24 @@ export const ImpactProjectLinkSchema = z.object({
   url: z.string().url("Must be a valid URL"),
 });
 
+const uniqueLinkUrls = (
+  links: ImpactProjectLink[] | undefined,
+  ctx: z.RefinementCtx,
+) => {
+  if (!links) return;
+  const seen = new Set<string>();
+  links.forEach((link, index) => {
+    if (seen.has(link.url)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Link URL must be unique",
+        path: [index, "url"],
+      });
+    }
+    seen.add(link.url);
+  });
+};
+
 export const ImpactProjectSchema = z.object({
   id: z.string().uuid(),
   ig_id: z.string(),
@@ -35,7 +53,10 @@ export const ImpactProjectCreateSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(50, "Description must be at least 50 characters"),
   team: z.array(ImpactProjectTeamMemberInputSchema).optional(),
-  links: z.array(ImpactProjectLinkSchema).optional(),
+  links: z
+    .array(ImpactProjectLinkSchema)
+    .optional()
+    .superRefine(uniqueLinkUrls),
 });
 
 export const ImpactProjectUpdateSchema = z.object({
@@ -45,7 +66,10 @@ export const ImpactProjectUpdateSchema = z.object({
     .min(50, "Description must be at least 50 characters")
     .optional(),
   team: z.array(ImpactProjectTeamMemberInputSchema).optional(),
-  links: z.array(ImpactProjectLinkSchema).optional(),
+  links: z
+    .array(ImpactProjectLinkSchema)
+    .optional()
+    .superRefine(uniqueLinkUrls),
 });
 
 export type ImpactProjectTeamMember = z.infer<

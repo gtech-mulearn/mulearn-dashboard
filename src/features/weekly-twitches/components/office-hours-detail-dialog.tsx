@@ -1,6 +1,7 @@
 "use client";
 
 import { ExternalLink } from "lucide-react";
+import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -49,6 +50,17 @@ export function OfficeHoursDetailDialog({ item, onClose }: Props) {
         </DialogHeader>
 
         <div className="flex flex-col gap-5 overflow-y-auto p-1 pb-4">
+          {item.poster_thumbnail && (
+            <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl bg-muted">
+              <Image
+                src={item.poster_thumbnail}
+                alt={item.title}
+                fill
+                className="object-cover"
+              />
+            </div>
+          )}
+
           <Field label="Title">{item.title}</Field>
 
           <div className="grid gap-4 sm:grid-cols-2">
@@ -102,20 +114,6 @@ export function OfficeHoursDetailDialog({ item, onClose }: Props) {
               "—"
             )}
           </Field>
-
-          {item.poster_thumbnail && (
-            <Field label="Poster Thumbnail">
-              <a
-                href={item.poster_thumbnail}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-primary hover:underline break-all"
-              >
-                <ExternalLink className="h-3 w-3 shrink-0" />
-                {item.poster_thumbnail}
-              </a>
-            </Field>
-          )}
         </div>
       </DialogContent>
     </Dialog>
