@@ -19,7 +19,7 @@ export async function getImpactProjects(
     endpoints.impactProjects.list(igId),
     ImpactProjectsListResponseSchema,
   );
-  return response.response.impactProjects;
+  return response.response.data;
 }
 
 export async function createImpactProject(

@@ -3,6 +3,7 @@ import { z } from "zod";
 export const ImpactProjectTeamMemberSchema = z.object({
   muid: z.string(),
   name: z.string(),
+  avatar: z.string().nullable().optional(),
   is_lead: z.boolean(),
 });
 
@@ -68,7 +69,16 @@ const EnvelopeSchema = z.object({
 
 export const ImpactProjectsListResponseSchema = EnvelopeSchema.extend({
   response: z.object({
-    impactProjects: z.array(ImpactProjectSchema),
+    data: z.array(ImpactProjectSchema).default([]),
+    pagination: z
+      .object({
+        count: z.number(),
+        totalPages: z.number(),
+        isNext: z.boolean(),
+        isPrev: z.boolean(),
+        nextPage: z.number().nullable(),
+      })
+      .optional(),
   }),
 });
 

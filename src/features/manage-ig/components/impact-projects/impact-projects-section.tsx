@@ -9,6 +9,7 @@ import { useImpactProjects } from "../../hooks/use-impact-projects";
 import type { ImpactProject } from "../../schemas";
 import { ImpactProjectCard } from "./impact-project-card";
 import { ImpactProjectFormDialog } from "./impact-project-form-dialog";
+import { ImpactProjectViewDialog } from "./impact-project-view-dialog";
 
 interface ImpactProjectsSectionProps {
   igId: string;
@@ -24,6 +25,7 @@ export function ImpactProjectsSection({
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<ImpactProject | null>(null);
+  const [viewing, setViewing] = useState<ImpactProject | null>(null);
   const [pendingDelete, setPendingDelete] = useState<ImpactProject | null>(
     null,
   );
@@ -65,7 +67,7 @@ export function ImpactProjectsSection({
         )}
       </div>
 
-      <div className="max-h-[420px] overflow-y-auto p-4 sm:p-6">
+      <div className="max-h-[248px] sm:max-h-[264px] overflow-y-auto p-4 sm:p-6">
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -76,9 +78,7 @@ export function ImpactProjectsSection({
               <ImpactProjectCard
                 key={project.id}
                 project={project}
-                canManage={canManage}
-                onEdit={() => openEdit(project)}
-                onDelete={() => setPendingDelete(project)}
+                onView={() => setViewing(project)}
               />
             ))}
           </div>
@@ -98,6 +98,20 @@ export function ImpactProjectsSection({
           </div>
         )}
       </div>
+
+      <ImpactProjectViewDialog
+        project={viewing}
+        canManage={canManage}
+        onClose={() => setViewing(null)}
+        onEdit={(project) => {
+          setViewing(null);
+          openEdit(project);
+        }}
+        onDelete={(project) => {
+          setViewing(null);
+          setPendingDelete(project);
+        }}
+      />
 
       {canManage && (
         <ImpactProjectFormDialog
