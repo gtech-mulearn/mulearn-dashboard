@@ -25,6 +25,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { useInterestGroupDetail } from "@/features/interest-groups";
+import { ImpactProjectsSection } from "@/features/manage-ig";
 import { PersonCard } from "./person-card";
 
 function IGIcon({ src }: { src?: string | null }) {
@@ -481,29 +482,7 @@ export function InterestGroupDetailClient() {
               </p>
             </div>
 
-            {/* Join Requests — coming soon */}
-            <div className="overflow-hidden rounded-3xl border border-border/50 bg-card shadow-sm">
-              <div className="border-b border-border/50 bg-muted/30 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
-                <h3 className="text-base sm:text-lg font-bold text-foreground">
-                  Join Requests
-                </h3>
-                <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
-                  Soon
-                </span>
-              </div>
-              <div className="flex flex-col items-center gap-3 p-6 text-center">
-                <div className="rounded-full bg-muted p-3">
-                  <Users className="h-5 w-5 text-muted-foreground" />
-                </div>
-                <p className="text-sm font-medium text-foreground">
-                  Member join requests
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Review and approve membership requests from your community.
-                  This feature is coming soon.
-                </p>
-              </div>
-            </div>
+            <ImpactProjectsSection igId={group.id} />
           </div>
         </div>
       </div>

@@ -1837,7 +1837,7 @@ export function CampusManageDashboard() {
                           </p>
                         </CardHeader>
                         <CardContent>
-                          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,0.7fr)_minmax(160px,220px)_auto_auto] lg:items-end">
+                          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(220px,0.7fr)_minmax(160px,220px)_auto_auto] lg:items-end">
                             <div className="min-w-0">
                               <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                                 Search User
