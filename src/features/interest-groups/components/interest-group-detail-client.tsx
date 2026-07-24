@@ -25,11 +25,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { useInterestGroupDetail } from "@/features/interest-groups";
-import {
-  ImpactProjectsSection,
-  InterestGroupFormDialog,
-} from "@/features/manage-ig";
-import { hasIgLeadRole } from "@/lib/auth/roles";
+import { ImpactProjectsSection } from "@/features/manage-ig";
 import { PersonCard } from "./person-card";
 
 function IGIcon({ src }: { src?: string | null }) {
