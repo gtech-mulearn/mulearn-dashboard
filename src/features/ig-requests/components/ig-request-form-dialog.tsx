@@ -225,10 +225,7 @@ export function IGRequestFormDialog() {
                       <FormItem>
                         <FormLabel>Icon *</FormLabel>
                         <FormControl>
-                          <Input
-                            placeholder="Emoji or short string"
-                            {...field}
-                          />
+                          <Input {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
