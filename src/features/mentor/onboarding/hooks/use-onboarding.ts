@@ -8,6 +8,7 @@ import { getApiResponseError } from "@/hooks/use-get-error";
 import {
   getMentorApplicationStatus,
   getMentorProfile,
+  requestMentorCompanyChange,
   submitMentorApplication,
   updateMentorApplication,
   updateMentorProfile,
@@ -130,6 +131,24 @@ export function useUpdateMentorProfile() {
     onError: (error) =>
       toast.error(
         getApiResponseError(error, { fallback: "Failed to update profile" }),
+      ),
+  });
+}
+
+// ─── POST /change-company/ ───────────────────────────────────────────────────
+export function useRequestMentorCompanyChange() {
+  return useMutation({
+    mutationFn: (payload: { company_id: string; reason: string }) =>
+      requestMentorCompanyChange(payload),
+    onSuccess: () =>
+      toast.success(
+        "Company change request submitted. Pending admin approval.",
+      ),
+    onError: (error) =>
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to submit company change request",
+        }),
       ),
   });
 }

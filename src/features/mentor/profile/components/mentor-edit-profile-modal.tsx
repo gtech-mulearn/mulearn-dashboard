@@ -37,17 +37,23 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { MultiSelect } from "@/components/ui/multi-select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 import { TagInput } from "@/components/ui/tag-input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+
 import { useInterestGroupsList } from "@/features/home/hooks";
-import { useMentorOverview } from "@/features/mentor/hooks";
-import { useUpdateMentorProfile } from "@/features/mentor/onboarding/hooks/use-onboarding";
+import { useCompanies } from "@/features/onboarding/hooks";
+import {
+  useRequestMentorCompanyChange,
+  useUpdateMentorProfile,
+} from "@/features/mentor/onboarding/hooks/use-onboarding";
 import type {
   MentorApplication,
   MentorProfileWrite,
@@ -96,14 +102,19 @@ export function MentorEditProfileModal({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
+  const [selectedCompanyId, setSelectedCompanyId] = useState("");
+  const [changeReason, setChangeReason] = useState("");
+
   const updateProfileMutation = useUpdateProfile();
   const updateProfileImageMutation = useUpdateProfileImage();
   const updateMentorProfileMutation = useUpdateMentorProfile();
+  const companyChangeMutation = useRequestMentorCompanyChange();
 
   const isPending =
     updateProfileMutation.isPending ||
     updateProfileImageMutation.isPending ||
-    updateMentorProfileMutation.isPending;
+    updateMentorProfileMutation.isPending ||
+    companyChangeMutation.isPending;
 
   const { data: igList = [] } = useInterestGroupsList();
   const igOptions = igList.map((ig) => ({ value: ig.id, label: ig.name }));
@@ -142,6 +153,9 @@ export function MentorEditProfileModal({
         profile_pic: undefined,
       });
       setPreviewUrl(null);
+      // Reset company-change form on each open
+      setSelectedCompanyId("");
+      setChangeReason("");
     }
   }, [
     open,
@@ -169,14 +183,18 @@ export function MentorEditProfileModal({
     setPreviewUrl(url);
   };
 
-  // Resolve the org's display name (the profile only carries the org UUID).
-  const { data: overview } = useMentorOverview();
-  const orgName = overview?.scopes?.find(
-    (s) =>
-      s.scope_type === "COMPANY_MENTOR" || s.scope_type === "CAMPUS_MENTOR",
-  )?.scope_name;
+  // Companies list for the change-company select
+  const { data: companiesList = [] } = useCompanies();
 
   const handleSubmit = async (values: MentorEditValues) => {
+    // Validate company change before attempting any other mutations
+    if (selectedCompanyId && changeReason.trim().length < 10) {
+      toast.error(
+        "Please provide a reason (at least 10 characters) for the company change.",
+      );
+      return;
+    }
+
     // IG selection is open to every tier (org and IG scopes coexist). The
     // backend enforces "keep at least one scope" — surfaced via the mutation's
     // error toast — so no tier-specific block is needed here.
@@ -211,6 +229,14 @@ export function MentorEditProfileModal({
         await updateProfileImageMutation.mutateAsync({
           profilePic: values.profile_pic,
           userId: userProfile.id,
+        });
+      }
+
+      // 4. Submit company change request if selected
+      if (selectedCompanyId) {
+        await companyChangeMutation.mutateAsync({
+          company_id: selectedCompanyId,
+          reason: changeReason.trim(),
         });
       }
 
@@ -376,26 +402,58 @@ export function MentorEditProfileModal({
 
               {/* Affiliation */}
               <div className="space-y-2">
-                <div className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                <div className="text-sm font-medium leading-none">
                   Company Affiliation
                 </div>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div>
-                        <Input
-                          value={orgName ?? form.watch("org") ?? ""}
-                          placeholder="Affiliation"
-                          disabled
-                          className="cursor-not-allowed"
-                        />
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Affiliation editing coming soon.</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+
+                {/* Inline change form — always visible */}
+                <div className="space-y-4 pt-2">
+                  {/* Company select */}
+                  <div className="space-y-1">
+                    <label
+                      htmlFor="company-select"
+                      className="text-xs font-medium text-foreground"
+                    >
+                      New Company
+                    </label>
+                    <Select
+                      value={selectedCompanyId}
+                      onValueChange={(val) => setSelectedCompanyId(val)}
+                    >
+                      <SelectTrigger id="company-select" className="w-full">
+                        <SelectValue placeholder="Select a company…" />
+                      </SelectTrigger>
+                      <SelectContent
+                        position="popper"
+                        className="max-h-[300px]"
+                      >
+                        {companiesList.map((c) => (
+                          <SelectItem key={c.id} value={c.id}>
+                            {c.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Reason textarea */}
+                  <div className="space-y-1">
+                    <label
+                      htmlFor="company-reason"
+                      className="text-xs font-medium text-foreground"
+                    >
+                      Reason <span className="text-destructive">*</span>
+                    </label>
+                    <Textarea
+                      id="company-reason"
+                      placeholder="Why are you changing your company affiliation?"
+                      rows={3}
+                      className="resize-none text-sm"
+                      value={changeReason}
+                      onChange={(e) => setChangeReason(e.target.value)}
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* Read-only: Tier */}

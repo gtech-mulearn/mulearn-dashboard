@@ -75,3 +75,17 @@ export async function updateMentorProfile(
   );
   return res.response;
 }
+
+// ── POST /change-company/ ─────────────────────────────────────────────────────
+// Submit a company affiliation change request (pending admin approval).
+export async function requestMentorCompanyChange(payload: {
+  company_id: string;
+  reason: string;
+}): Promise<void> {
+  await apiClient.post(
+    endpoints.mentor.changeCompany,
+    payload,
+    MentorApplicationMutationResponseSchema,
+    { skipAuthRedirectOn403: true },
+  );
+}
