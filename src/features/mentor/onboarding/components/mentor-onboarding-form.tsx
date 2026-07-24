@@ -186,6 +186,7 @@ export function MentorOnboardingForm({
                       value={field.value}
                       onChange={field.onChange}
                       placeholder="Select IGs you want to mentor in..."
+                      maxSelections={5}
                     />
                   </FormControl>
                   {field.value.length > 0 && (

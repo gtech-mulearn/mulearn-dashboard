@@ -355,6 +355,10 @@ export const endpoints = {
     // ── Activity feed ────────────────────────────────────────────────────
     /** GET - Merged timeline: sessions created + task submissions appraised */
     activity: "/api/v1/dashboard/mentor/activity/",
+
+    // ── Company affiliation change ────────────────────────────────────────
+    /** POST - Request a company affiliation change (pending admin approval) */
+    changeCompany: "/api/v1/dashboard/mentor/change-company/",
   },
 
   // ============================================

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { type Resolver, useForm } from "react-hook-form";
+import { useSearchParams } from "next/navigation";
 import { TaskDetailDialog } from "@/components/task-detail-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -732,6 +733,9 @@ export function TaskRequestsPage() {
 
   const pendingCount = pendingResult?.data?.length ?? 0;
 
+  const searchParams = useSearchParams();
+  const defaultTab = searchParams.get("tab") ?? "all";
+
   return (
     <TooltipProvider delayDuration={200}>
       <div className="space-y-6">
@@ -750,7 +754,7 @@ export function TaskRequestsPage() {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="all">
+        <Tabs defaultValue={defaultTab}>
           <TabsList>
             <TabsTrigger value="all">All Tasks</TabsTrigger>
             <TabsTrigger value="pending">

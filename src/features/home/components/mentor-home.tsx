@@ -8,6 +8,7 @@ import {
   Loader2,
   XCircle,
 } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -29,6 +30,7 @@ import {
   useMentorApplication,
   useMentorProfile,
 } from "@/features/mentor/onboarding/hooks/use-onboarding";
+import { useMentorTasks } from "@/features/mentor/tasks/hooks/use-mentor-tasks";
 import type { WeeklySchedule } from "@/features/mentor/types";
 import { useDashboardCalendar, useMentorSessions } from "../hooks";
 import { flattenDashboardCalendar } from "../utils";
@@ -77,6 +79,14 @@ export function MentorHome() {
     useAvailabilitySlots();
   const { mutate: saveSchedule, isPending: isSaving } =
     useCreateAvailabilitySlots();
+
+  const {
+    data: mentorPendingTasksResult,
+    isLoading: mentorPendingTasksLoading,
+  } = useMentorTasks({
+    approval_status: "pending",
+  });
+  const mentorPendingTasksCount = mentorPendingTasksResult?.data?.length ?? 0;
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const { data: calendarData, isLoading: loadingCalendar } =
     useDashboardCalendar({
@@ -171,6 +181,9 @@ export function MentorHome() {
   // Pending review: say exactly who acts next instead of a blank page.
   // (Rejected applications already returned above with the rejection banner + reapply form.)
   if (!isVerified) {
+    const companyName = application?.organization?.trim();
+    const mentorRole = companyName ? "Company Mentor" : "IG Mentor";
+
     return (
       <div className="mx-auto max-w-2xl py-8">
         <Card>
@@ -181,15 +194,20 @@ export function MentorHome() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm text-muted-foreground">
-            {application?.organization && (
-              <p>
-                Applying as{" "}
-                <span className="font-medium text-foreground">
-                  {application.organization}
-                </span>
-                .
-              </p>
-            )}
+            <p>
+              Applying as{" "}
+              <span className="font-medium text-foreground">{mentorRole}</span>
+              {companyName && (
+                <>
+                  {" "}
+                  on behalf of{" "}
+                  <span className="font-medium text-foreground">
+                    {companyName}
+                  </span>
+                </>
+              )}
+              .
+            </p>
             <p>
               A platform admin reviews it next — you&apos;ll be notified once a
               decision is made. You can keep using μLearn as a learner in the
@@ -326,32 +344,39 @@ export function MentorHome() {
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         {/* Task Requests */}
-        <Card className="rounded-2xl border bg-card shadow-sm">
-          <CardHeader className="px-5 py-4">
-            <div className="flex flex-row items-center gap-2.5">
-              <div className="flex size-9 items-center justify-center rounded-xl bg-warning/10">
-                <BookOpen className="size-4 text-warning" />
-              </div>
-              <CardTitle className="text-base font-bold text-foreground">
-                Task Requests
-              </CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="px-5 pb-5 pt-0">
-            {overviewLoading ? (
-              <Skeleton className="h-12 w-full rounded-lg" />
-            ) : (
-              <div className="flex gap-4 text-sm">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-warning">—</p>
-                  <p className="text-[11px] text-muted-foreground uppercase tracking-wide">
-                    Pending
-                  </p>
+        <Link
+          href="/dashboard/mentor/task-requests?tab=pending"
+          className="block"
+        >
+          <Card className="h-full rounded-2xl border bg-card shadow-sm transition-colors hover:bg-muted/50 cursor-pointer">
+            <CardHeader className="px-5 py-4">
+              <div className="flex flex-row items-center gap-2.5">
+                <div className="flex size-9 items-center justify-center rounded-xl bg-warning/10">
+                  <BookOpen className="size-4 text-warning" />
                 </div>
+                <CardTitle className="text-base font-bold text-foreground">
+                  Task Requests
+                </CardTitle>
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardHeader>
+            <CardContent className="px-5 pb-5 pt-0">
+              {mentorPendingTasksLoading ? (
+                <Skeleton className="h-12 w-full rounded-lg" />
+              ) : (
+                <div className="flex gap-4 text-sm">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-warning">
+                      {mentorPendingTasksCount}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground uppercase tracking-wide">
+                      Pending
+                    </p>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </Link>
         <EventCalendarCard
           events={flattenDashboardCalendar(calendarData)}
           isLoading={loadingCalendar}
