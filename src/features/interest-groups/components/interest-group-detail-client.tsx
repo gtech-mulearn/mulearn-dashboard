@@ -14,21 +14,39 @@ import {
   Clock,
   ExternalLink,
   FileText,
-  Pencil,
   Sparkles,
   Twitter,
   Users,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
-import { useUserInfo } from "@/features/auth";
 import { useInterestGroupDetail } from "@/features/interest-groups";
-import { InterestGroupFormDialog } from "@/features/manage-ig";
-import { hasIgLeadRole } from "@/lib/auth/roles";
+import { ImpactProjectsSection } from "@/features/manage-ig";
 import { PersonCard } from "./person-card";
+
+function IGIcon({ src }: { src?: string | null }) {
+  const [hasError, setHasError] = useState(false);
+  const isValidSrc = !!src && /^(https?:\/\/|\/)/.test(src);
+
+  if (!isValidSrc || hasError) {
+    return <BookOpen className="h-4 w-4" />;
+  }
+
+  return (
+    <Image
+      src={src}
+      alt=""
+      width={36}
+      height={36}
+      className="h-full w-full object-cover"
+      onError={() => setHasError(true)}
+    />
+  );
+}
 
 export function InterestGroupDetailClient() {
   const router = useRouter();
@@ -37,10 +55,6 @@ export function InterestGroupDetailClient() {
 
   const { data, isLoading, error } = useInterestGroupDetail(id || "");
   const group = data?.response?.interestGroup;
-
-  const { data: userInfo } = useUserInfo();
-  const isIGLead = hasIgLeadRole(userInfo?.roles ?? []);
-  const [editOpen, setEditOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -120,23 +134,10 @@ export function InterestGroupDetailClient() {
       <div className="relative overflow-hidden rounded-[2rem] bg-linear-to-br from-primary/90 via-primary to-primary/80 p-6 sm:p-8 md:p-12 text-primary-foreground shadow-xl shadow-primary/10">
         <div className="absolute -right-20 -top-20 h-64 w-64 sm:h-80 sm:w-80 md:h-96 md:w-96 rounded-full bg-card/10 blur-3xl" />
         <div className="absolute -left-20 -bottom-20 h-64 w-64 sm:h-80 sm:w-80 md:h-96 md:w-96 rounded-full bg-foreground/10 blur-3xl" />
-
-        {isIGLead && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="absolute right-4 top-4 z-20 backdrop-blur-md"
-            onClick={() => setEditOpen(true)}
-            aria-label="Edit interest group"
-          >
-            <Pencil className="h-3 w-3" />
-            Edit
-          </Button>
-        )}
-
         <div className="relative z-10 flex flex-col gap-6 md:gap-8 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-4 sm:space-y-6 max-w-3xl">
             <div className="flex flex-wrap items-center gap-3">
+              {group.icon && <IGIcon key={group.id} src={group.icon} />}
               {group.category && (
                 <div className="inline-flex items-center rounded-full bg-card/20 px-3 py-1 text-xs font-semibold uppercase tracking-wider backdrop-blur-md border border-card/10">
                   {group.category}
@@ -481,43 +482,10 @@ export function InterestGroupDetailClient() {
               </p>
             </div>
 
-            {/* Join Requests — coming soon */}
-            <div className="overflow-hidden rounded-3xl border border-border/50 bg-card shadow-sm">
-              <div className="border-b border-border/50 bg-muted/30 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
-                <h3 className="text-base sm:text-lg font-bold text-foreground">
-                  Join Requests
-                </h3>
-                <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
-                  Soon
-                </span>
-              </div>
-              <div className="flex flex-col items-center gap-3 p-6 text-center">
-                <div className="rounded-full bg-muted p-3">
-                  <Users className="h-5 w-5 text-muted-foreground" />
-                </div>
-                <p className="text-sm font-medium text-foreground">
-                  Member join requests
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Review and approve membership requests from your community.
-                  This feature is coming soon.
-                </p>
-              </div>
-            </div>
+            <ImpactProjectsSection igId={group.id} />
           </div>
         </div>
       </div>
-
-      {/* IG Lead Edit Dialog */}
-      {isIGLead && group && (
-        <InterestGroupFormDialog
-          isOpen={editOpen}
-          onClose={() => setEditOpen(false)}
-          // biome-ignore lint/suspicious/noExplicitAny: detail shape is a superset of the form type
-          initialData={group as any}
-          isIGLead
-        />
-      )}
     </div>
   );
 }

@@ -622,6 +622,21 @@ export const endpoints = {
   },
 
   // ============================================
+  // Impact Projects Endpoints
+  // Base: /api/v1/dashboard/ig/<ig_id>/impact-projects/
+  // ============================================
+  impactProjects: {
+    /** GET - List impact projects for an IG | POST - Create one */
+    list: (igId: string) => `/api/v1/dashboard/ig/${igId}/impact-projects/`,
+    /** PATCH - Update | DELETE - Remove */
+    detail: (igId: string, projectId: string) =>
+      `/api/v1/dashboard/ig/${igId}/impact-projects/${projectId}/`,
+    /** POST - Upload/replace project image (multipart, field: image) */
+    image: (igId: string, projectId: string) =>
+      `/api/v1/dashboard/ig/${igId}/impact-projects/${projectId}/image/`,
+  },
+
+  // ============================================
   // College Endpoints
   // ============================================
   college: {

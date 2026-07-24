@@ -11,8 +11,7 @@
 import type { UserLogData, UserProfile } from "../schemas";
 import { ActivityHeatmap } from "./activity-heatmap";
 import { IGSelector } from "./ig-selector";
-
-// import { KarmaDistribution } from "./karma-distribution";
+import { KarmaDistribution } from "./karma-distribution";
 
 interface BasicDetailsProps {
   profile: UserProfile;
@@ -49,9 +48,9 @@ export function BasicDetails({
       {/* Activity Heatmap */}
       <ActivityHeatmap userLog={userLog} isLoading={isLoading} />
 
-      {/* <div className="rounded-2xl bg-card p-6 shadow-sm">
+      <div className="rounded-2xl bg-card p-6 shadow-sm">
         <KarmaDistribution profile={profile} />
-      </div> */}
+      </div>
     </div>
   );
 }

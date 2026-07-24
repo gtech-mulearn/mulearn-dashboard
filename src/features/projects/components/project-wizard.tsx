@@ -11,7 +11,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { Fragment, useState } from "react";
+import { type ChangeEvent, Fragment, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  MAX_IMAGE_UPLOAD_LABEL,
+  validateImageFile,
+} from "@/lib/constants/upload";
 import { cn } from "@/lib/utils";
 import {
   type Project,
@@ -108,6 +112,34 @@ export function ProjectWizard({
   const [_createdProject, setCreatedProject] = useState<Project | null>(null);
 
   const totalSteps = STEPS.length;
+
+  const handleLogoChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    const error = validateImageFile(file);
+    if (error) {
+      toast.error(error);
+      return;
+    }
+    setLogo(file);
+  };
+
+  const handleImagesChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    e.target.value = "";
+    if (files.length === 0) return;
+    const valid: File[] = [];
+    for (const file of files) {
+      const error = validateImageFile(file);
+      if (error) {
+        toast.error(`${file.name}: ${error}`);
+        continue;
+      }
+      valid.push(file);
+    }
+    if (valid.length > 0) setImages(valid);
+  };
 
   const linkedMemberMuids = members
     .filter((m) => m.is_linked && m.muid)
@@ -504,12 +536,12 @@ export function ProjectWizard({
                       type="file"
                       accept="image/*"
                       className="rounded-xl"
-                      onChange={(e) => setLogo(e.target.files?.[0])}
+                      onChange={handleLogoChange}
                     />
                     <p className="text-[12px] text-muted-foreground">
                       {logo
                         ? `Selected: ${logo.name}`
-                        : "Square image recommended (PNG, JPG)"}
+                        : `Square image recommended · ${MAX_IMAGE_UPLOAD_LABEL} · JPG, PNG, WebP`}
                     </p>
                   </div>
 
@@ -579,16 +611,14 @@ export function ProjectWizard({
                           ? `${images.length} selected — click to replace`
                           : project?.images?.length
                             ? `${project.images.length} existing — upload new to replace all`
-                            : "Add screenshots (PNG, JPG · multiple allowed)"}
+                            : `Add screenshots · ${MAX_IMAGE_UPLOAD_LABEL} each · JPG, PNG, WebP · multiple allowed`}
                       </span>
                       <input
                         type="file"
                         accept="image/*"
                         multiple
                         className="sr-only"
-                        onChange={(e) =>
-                          setImages(Array.from(e.target.files ?? []))
-                        }
+                        onChange={handleImagesChange}
                       />
                     </label>
                   </div>
