@@ -9,7 +9,7 @@ import {
   Plus,
   Users2,
 } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { DataTableErrorBoundary } from "@/components/dashboard/DataTableErrorBoundary";
 import Pagination from "@/components/dashboard/table/pagination";
@@ -417,11 +417,9 @@ function OrgFormDialog({
   const selectedOrgType = watch("org_type");
   const selectedState = watch("state");
 
-  // Reset form when dialog opens/closes
-  const handleOpenChange = (val: boolean) => {
-    if (!val) {
-      reset();
-    } else {
+  // Reset form values whenever dialog opens (org may have changed)
+  useEffect(() => {
+    if (open) {
       reset({
         title: org?.title ?? "",
         code: org?.code ?? "",
@@ -432,6 +430,10 @@ function OrgFormDialog({
         affiliation: org?.affiliation_uuid ?? null,
       });
     }
+  }, [open, org, defaultOrgType, reset]);
+
+  const handleOpenChange = (val: boolean) => {
+    if (!val) reset();
     onOpenChange(val);
   };
 
@@ -444,6 +446,58 @@ function OrgFormDialog({
     useDistrictsDropdown(selectedState, open);
   const { data: affiliations = [], isLoading: affiliationsLoading } =
     useAffiliations(open && selectedOrgType === "College");
+
+  // Fallback: some rows only carry the name (country/state/district/affiliation)
+  // and not the matching *_uuid — resolve the select value by label once the
+  // relevant dropdown list has loaded.
+  useEffect(() => {
+    if (!open || !org || org.country_uuid || !org.country || !countries.length)
+      return;
+    const match = countries.find(
+      (c) => c.label.trim().toLowerCase() === org.country?.trim().toLowerCase(),
+    );
+    if (match) setValue("country", match.value);
+  }, [open, org, countries, setValue]);
+
+  useEffect(() => {
+    if (!open || !org || org.state_uuid || !org.state || !states.length) return;
+    const match = states.find(
+      (s) => s.label.trim().toLowerCase() === org.state?.trim().toLowerCase(),
+    );
+    if (match) setValue("state", match.value);
+  }, [open, org, states, setValue]);
+
+  useEffect(() => {
+    if (
+      !open ||
+      !org ||
+      org.district_uuid ||
+      !org.district ||
+      !districts.length
+    )
+      return;
+    const match = districts.find(
+      (d) =>
+        d.label.trim().toLowerCase() === org.district?.trim().toLowerCase(),
+    );
+    if (match) setValue("district", match.value);
+  }, [open, org, districts, setValue]);
+
+  useEffect(() => {
+    if (
+      !open ||
+      !org ||
+      org.affiliation_uuid ||
+      !org.affiliation ||
+      !affiliations.length
+    )
+      return;
+    const match = affiliations.find(
+      (a) =>
+        a.title.trim().toLowerCase() === org.affiliation?.trim().toLowerCase(),
+    );
+    if (match) setValue("affiliation", match.id);
+  }, [open, org, affiliations, setValue]);
 
   // ─── Mutations ───────────────────────────────────────────────────────────
   const createMutation = useCreateOrg();

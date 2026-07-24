@@ -87,13 +87,19 @@ export const UserForm = forwardRef<
     });
   }, [detail]);
 
-  // 2. Resolve Country ID
+  // Raw org-linked ids (already UUIDs from the backend) — used to drive the
+  // fetch cascade directly so a failed/late label match never stalls it.
+  const rawCountryId = collegeOrg?.country ?? "";
+  const rawStateId = collegeOrg?.state ?? "";
+  const rawDistrictId = collegeOrg?.district ?? "";
+
+  // 2. Resolve Country ID (for display only)
   const resolvedCountryId = useMemo(() => {
     return resolveOptionValue(collegeOrg?.country, meta?.countries ?? []);
   }, [collegeOrg?.country, meta?.countries]);
 
-  // Use resolved initial country before form is ready/initialized, watched value after
-  const activeCountryId = isInitialized ? countryId : resolvedCountryId;
+  // Use raw initial country before form is ready/initialized, watched value after
+  const activeCountryId = isInitialized ? countryId : rawCountryId;
 
   // 3. Fetch & Resolve States
   const { data: states = [], isLoading: isStatesLoading } =
@@ -102,7 +108,7 @@ export const UserForm = forwardRef<
     return resolveOptionValue(collegeOrg?.state, states);
   }, [collegeOrg?.state, states]);
 
-  const activeStateId = isInitialized ? stateId : resolvedStateId;
+  const activeStateId = isInitialized ? stateId : rawStateId;
 
   // 4. Fetch & Resolve Districts
   const { data: districts = [], isLoading: isDistrictsLoading } =
@@ -111,7 +117,7 @@ export const UserForm = forwardRef<
     return resolveOptionValue(collegeOrg?.district, districts);
   }, [collegeOrg?.district, districts]);
 
-  const activeDistrictId = isInitialized ? districtId : resolvedDistrictId;
+  const activeDistrictId = isInitialized ? districtId : rawDistrictId;
 
   // 5. Fetch & Resolve Colleges and Departments
   const { data: collegeData, isLoading: isCollegeDataLoading } =
@@ -158,21 +164,23 @@ export const UserForm = forwardRef<
     const basicReady = !isDetailLoading && !isMetaLoading;
     if (!basicReady) return false;
 
-    // If there is country/state/district saved info, wait until their option lists are loaded
-    if (resolvedCountryId && isStatesLoading) return false;
-    if (resolvedStateId && isDistrictsLoading) return false;
-    if (resolvedDistrictId && isCollegeDataLoading) return false;
+    // If there is country/state/district saved info, wait until their option lists are loaded.
+    // Gate on the raw org ids (not the matched/resolved ones) so a failed match
+    // never short-circuits the cascade and leaves college/department unfetched.
+    if (rawCountryId && isStatesLoading) return false;
+    if (rawStateId && isDistrictsLoading) return false;
+    if (rawDistrictId && isCollegeDataLoading) return false;
     if (savedDistrictUuid && isLocationResolving) return false;
 
     return true;
   }, [
     isDetailLoading,
     isMetaLoading,
-    resolvedCountryId,
+    rawCountryId,
     isStatesLoading,
-    resolvedStateId,
+    rawStateId,
     isDistrictsLoading,
-    resolvedDistrictId,
+    rawDistrictId,
     isCollegeDataLoading,
     savedDistrictUuid,
     isLocationResolving,
