@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+export const MAX_IMPACT_PROJECT_LINKS = 5;
+
 export const ImpactProjectTeamMemberSchema = z.object({
   muid: z.string(),
   name: z.string(),
@@ -24,10 +26,7 @@ export const ImpactProjectSchema = z.object({
   image: z.string().nullable().optional(),
   description: z.string().min(50, "Description must be at least 50 characters"),
   team: z.array(ImpactProjectTeamMemberSchema).default([]),
-  links: z
-    .array(ImpactProjectLinkSchema)
-    .max(5, "Maximum 5 links allowed")
-    .default([]),
+  links: z.array(ImpactProjectLinkSchema).default([]),
   created_by: z.string().optional(),
   updated_by: z.string().optional(),
   created_at: z.string().optional(),
@@ -40,7 +39,10 @@ export const ImpactProjectCreateSchema = z.object({
   team: z.array(ImpactProjectTeamMemberInputSchema).optional(),
   links: z
     .array(ImpactProjectLinkSchema)
-    .max(5, "Maximum 5 links allowed")
+    .max(
+      MAX_IMPACT_PROJECT_LINKS,
+      `Maximum ${MAX_IMPACT_PROJECT_LINKS} links allowed`,
+    )
     .optional(),
 });
 
@@ -53,7 +55,10 @@ export const ImpactProjectUpdateSchema = z.object({
   team: z.array(ImpactProjectTeamMemberInputSchema).optional(),
   links: z
     .array(ImpactProjectLinkSchema)
-    .max(5, "Maximum 5 links allowed")
+    .max(
+      MAX_IMPACT_PROJECT_LINKS,
+      `Maximum ${MAX_IMPACT_PROJECT_LINKS} links allowed`,
+    )
     .optional(),
 });
 

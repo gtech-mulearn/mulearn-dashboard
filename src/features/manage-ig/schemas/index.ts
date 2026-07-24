@@ -33,4 +33,5 @@ export {
   ImpactProjectTeamMemberInputSchema,
   ImpactProjectTeamMemberSchema,
   ImpactProjectUpdateSchema,
+  MAX_IMPACT_PROJECT_LINKS,
 } from "./impact-projects.schema";
