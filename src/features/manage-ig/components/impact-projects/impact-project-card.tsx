@@ -61,9 +61,10 @@ export function ImpactProjectCard({ project, onView }: ImpactProjectCardProps) {
               {project.team.length === 1 ? "member" : "members"}
             </span>
           )}
-          {project.links.slice(0, 2).map((link) => (
+          {project.links.slice(0, 2).map((link, i) => (
             <a
-              key={link.url}
+              // biome-ignore lint/suspicious/noArrayIndexKey: read-only preview, list never reorders
+              key={i}
               href={link.url}
               target="_blank"
               rel="noopener noreferrer"

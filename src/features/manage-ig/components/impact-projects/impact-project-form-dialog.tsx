@@ -152,21 +152,27 @@ export function ImpactProjectFormDialog({
       links,
     };
 
+    let projectId = project?.id;
     try {
-      let projectId = project?.id;
       if (project) {
         await updateImpactProject(project.id, payload);
       } else {
         const created = await createImpactProject(payload);
         projectId = created.id;
       }
-      if (imageFile && projectId) {
-        await uploadImpactProjectImage(projectId, imageFile);
-      }
-      onClose();
     } catch {
       // Error surfaced via mutation onError toast
+      return;
     }
+
+    if (imageFile && projectId) {
+      try {
+        await uploadImpactProjectImage(projectId, imageFile);
+      } catch {
+        // Error surfaced via mutation onError toast; project already saved
+      }
+    }
+    onClose();
   };
 
   return (

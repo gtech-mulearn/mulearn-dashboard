@@ -42,8 +42,12 @@ export function ImpactProjectsSection({
 
   const confirmDelete = async () => {
     if (!pendingDelete) return;
-    await deleteImpactProject(pendingDelete.id);
-    setPendingDelete(null);
+    try {
+      await deleteImpactProject(pendingDelete.id);
+      setPendingDelete(null);
+    } catch {
+      // error surfaced via mutation onError toast
+    }
   };
 
   return (
