@@ -318,6 +318,7 @@ export function EventInlineEditForm({
           </label>
           <Textarea
             id="inline_description"
+            maxLength={5000}
             className="rounded-xl border-border bg-background text-foreground"
             {...register("description")}
           />
@@ -732,6 +733,7 @@ export function EventInlineEditForm({
               className="rounded-xl border-border bg-background text-foreground"
               value={tagInput}
               placeholder="Add a tag"
+              maxLength={30}
               onChange={(e) => setTagInput(e.target.value)}
             />
             <Button
@@ -763,6 +765,7 @@ export function EventInlineEditForm({
                 {tag}
                 <Button
                   variant="ghost"
+                  className="h-5 w-5 text-foreground hover:text-destructive"
                   aria-label={`Remove tag ${tag}`}
                   size="icon"
                   type="button"
