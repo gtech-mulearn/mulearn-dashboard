@@ -14,7 +14,6 @@ import {
   Clock,
   ExternalLink,
   FileText,
-  Pencil,
   Sparkles,
   Twitter,
   Users,
@@ -25,10 +24,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
-import { useUserInfo } from "@/features/auth";
 import { useInterestGroupDetail } from "@/features/interest-groups";
-import { InterestGroupFormDialog } from "@/features/manage-ig";
-import { hasIgLeadRole } from "@/lib/auth/roles";
 import { PersonCard } from "./person-card";
 
 function IGIcon({ src }: { src?: string | null }) {
@@ -58,10 +54,6 @@ export function InterestGroupDetailClient() {
 
   const { data, isLoading, error } = useInterestGroupDetail(id || "");
   const group = data?.response?.interestGroup;
-
-  const { data: userInfo } = useUserInfo();
-  const isIGLead = hasIgLeadRole(userInfo?.roles ?? []);
-  const [editOpen, setEditOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -141,20 +133,6 @@ export function InterestGroupDetailClient() {
       <div className="relative overflow-hidden rounded-[2rem] bg-linear-to-br from-primary/90 via-primary to-primary/80 p-6 sm:p-8 md:p-12 text-primary-foreground shadow-xl shadow-primary/10">
         <div className="absolute -right-20 -top-20 h-64 w-64 sm:h-80 sm:w-80 md:h-96 md:w-96 rounded-full bg-card/10 blur-3xl" />
         <div className="absolute -left-20 -bottom-20 h-64 w-64 sm:h-80 sm:w-80 md:h-96 md:w-96 rounded-full bg-foreground/10 blur-3xl" />
-
-        {isIGLead && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="absolute right-4 top-4 z-20 backdrop-blur-md"
-            onClick={() => setEditOpen(true)}
-            aria-label="Edit interest group"
-          >
-            <Pencil className="h-3 w-3" />
-            Edit
-          </Button>
-        )}
-
         <div className="relative z-10 flex flex-col gap-6 md:gap-8 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-4 sm:space-y-6 max-w-3xl">
             <div className="flex flex-wrap items-center gap-3">
@@ -529,17 +507,6 @@ export function InterestGroupDetailClient() {
           </div>
         </div>
       </div>
-
-      {/* IG Lead Edit Dialog */}
-      {isIGLead && group && (
-        <InterestGroupFormDialog
-          isOpen={editOpen}
-          onClose={() => setEditOpen(false)}
-          // biome-ignore lint/suspicious/noExplicitAny: detail shape is a superset of the form type
-          initialData={group as any}
-          isIGLead
-        />
-      )}
     </div>
   );
 }
