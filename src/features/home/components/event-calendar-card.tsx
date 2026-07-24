@@ -17,7 +17,6 @@ import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { CalendarEvent } from "../schemas";
-import Link from "next/link";
 
 // ─── Day abbreviations ─────────────────────────────────────────────────────
 
@@ -310,14 +309,14 @@ export function EventCalendarCard({
                     )}
                   </div>
                   {event.link && (
-                    <Link
+                    <a
                       href={event.link}
-                      target="_self"
+                      target="_blank"
                       rel="noopener noreferrer"
                       className="shrink-0 text-primary transition-colors hover:text-primary/80"
                     >
                       <ExternalLink className="size-3.5" />
-                    </Link>
+                    </a>
                   )}
                 </div>
               ))}

@@ -65,9 +65,15 @@ export function KarmaDistribution({ profile }: KarmaDistributionProps) {
       { name: "Intern Task", value: profile.intern_karma },
       { name: "General Enablement", value: profile.general_enablement_karma },
     ];
+    const seen = new Map<string, number>();
     return slices
       .filter((slice) => slice.value > 0)
-      .sort((a, b) => b.value - a.value);
+      .sort((a, b) => b.value - a.value)
+      .map((slice) => {
+        const count = seen.get(slice.name) ?? 0;
+        seen.set(slice.name, count + 1);
+        return { ...slice, id: `${slice.name}-${count}` };
+      });
   }, [profile]);
 
   if (chartData.length === 0) {
@@ -126,7 +132,7 @@ export function KarmaDistribution({ profile }: KarmaDistributionProps) {
                   const dimmed = activeIndex != null && activeIndex !== index;
                   return (
                     <Cell
-                      key={`cell-${entry.name}`}
+                      key={entry.id}
                       fill={sliceColor(index)}
                       stroke="var(--card)"
                       strokeWidth={2}
@@ -172,7 +178,7 @@ export function KarmaDistribution({ profile }: KarmaDistributionProps) {
         {/* Legend */}
         <ul className="w-full min-w-0 space-y-1 sm:max-w-[13rem] max-h-40 overflow-y-auto sm:max-h-none sm:overflow-visible">
           {chartData.map((entry, index) => (
-            <li key={entry.name}>
+            <li key={entry.id}>
               <button
                 type="button"
                 disabled={!isDesktop}
