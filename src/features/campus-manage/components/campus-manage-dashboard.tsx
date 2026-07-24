@@ -34,6 +34,7 @@ import {
   Zap,
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useMemo, useState } from "react";
 import {
@@ -1198,9 +1199,13 @@ export function CampusManageDashboard() {
                           <span className="text-sm font-semibold tracking-tight transition-colors group-hover:text-primary">
                             {student.name}
                           </span>
-                          <span className="text-[11px] text-muted-foreground">
+                          <Link
+                            href={`/dashboard/mujourney/${student.muid}`}
+                            className="inline-flex w-fit items-center gap-1 text-[11px] text-muted-foreground hover:text-primary hover:underline underline-offset-2"
+                          >
                             @{student.muid}
-                          </span>
+                            <ExternalLink className="h-3 w-3" />
+                          </Link>
                         </div>
                       );
                     case "karma":
