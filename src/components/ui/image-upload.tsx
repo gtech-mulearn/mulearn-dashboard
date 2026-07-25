@@ -116,16 +116,6 @@ export function ImageUpload({
               >
                 Change
               </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="destructive"
-                onClick={handleRemove}
-                aria-label="Remove image"
-                data-testid="image-upload-remove"
-              >
-                <X className="h-4 w-4" />
-              </Button>
             </div>
           )}
         </div>

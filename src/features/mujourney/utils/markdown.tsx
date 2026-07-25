@@ -126,23 +126,18 @@ export function MarkdownRenderer({
               {children}
             </a>
           ),
-          // Code
-          code: ({
-            inline,
-            children,
-          }: {
-            inline?: boolean;
-            children?: React.ReactNode;
-          }) =>
-            inline ? (
-              <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono">
-                {children}
-              </code>
-            ) : (
-              <code className="block bg-muted p-3 rounded text-sm font-mono overflow-x-auto mb-3">
-                {children}
-              </code>
-            ),
+          // Fenced code blocks — box styling lives on <pre>
+          pre: ({ children }) => (
+            <pre className="bg-muted p-3 rounded text-sm font-mono overflow-x-auto mb-3">
+              {children}
+            </pre>
+          ),
+          // Inline & block code text
+          code: ({ children }) => (
+            <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono">
+              {children}
+            </code>
+          ),
           // Strong (bold)
           strong: ({ children }) => (
             <strong className="font-bold">{children}</strong>

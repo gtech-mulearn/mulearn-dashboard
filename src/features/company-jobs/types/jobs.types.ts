@@ -52,6 +52,11 @@ export interface Job {
   deliverables?: string[] | string | null;
   stipend?: string | null;
   certificate_provided?: boolean | null;
+  applicant_count?: number | null;
+  applications_count?: number | null;
+  total_applicants?: number | null;
+  applicantCount?: number | null;
+  applicationsCount?: number | null;
 }
 
 export interface Pagination {

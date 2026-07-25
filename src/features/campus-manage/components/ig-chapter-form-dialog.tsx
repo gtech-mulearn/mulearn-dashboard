@@ -16,7 +16,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { MuidSearchInput } from "@/components/ui/muid-search-input";
 import {
   Select,
@@ -32,7 +31,6 @@ import { useCreateIgChapter, useGlobalIgs } from "../hooks";
 const schema = z.object({
   ig: z.string().min(1, "Select an interest group"),
   description: z.string().optional(),
-  icon_link: z.string().url("Must be a valid URL").optional().or(z.literal("")),
   lead: z.string().optional(),
 });
 type FormValues = z.infer<typeof schema>;
@@ -53,7 +51,7 @@ export function IgChapterFormDialog({ trigger }: IgChapterFormDialogProps) {
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { ig: "", description: "", icon_link: "", lead: "" },
+    defaultValues: { ig: "", description: "", lead: "" },
   });
 
   const handleSelectUser = (user: UserResult) => {
@@ -71,7 +69,6 @@ export function IgChapterFormDialog({ trigger }: IgChapterFormDialogProps) {
       {
         ig: values.ig,
         description: values.description || undefined,
-        icon_link: values.icon_link || undefined,
         lead: values.lead || undefined,
       },
       {
@@ -136,24 +133,6 @@ export function IgChapterFormDialog({ trigger }: IgChapterFormDialogProps) {
               placeholder="Brief description of this chapter..."
               rows={3}
             />
-          </div>
-          <div className="space-y-1.5">
-            <label
-              htmlFor="chapter-form-icon-link"
-              className="text-sm font-medium"
-            >
-              Icon Link (optional)
-            </label>
-            <Input
-              id="chapter-form-icon-link"
-              {...form.register("icon_link")}
-              placeholder="https://..."
-            />
-            {form.formState.errors.icon_link && (
-              <p className="text-xs text-destructive">
-                {form.formState.errors.icon_link.message}
-              </p>
-            )}
           </div>
           <div className="space-y-1.5">
             <p className="text-sm font-medium">Lead (optional)</p>

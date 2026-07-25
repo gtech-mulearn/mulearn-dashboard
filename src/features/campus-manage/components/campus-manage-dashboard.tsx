@@ -34,6 +34,7 @@ import {
   Zap,
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useMemo, useState } from "react";
 import {
@@ -97,6 +98,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAssignCampusMentor } from "@/features/campus/hooks/campus.hooks";
+import { IGIcon } from "@/features/interest-groups";
 import { chipColor } from "@/lib/chip-colors";
 import { cn } from "@/lib/utils";
 import {
@@ -545,12 +547,6 @@ function CompactStatCard({
 }
 
 const LEADERBOARD_COLUMNS = [
-  {
-    column: "rank",
-    Label: "Rank",
-    isSortable: false,
-    width: "w-24 text-center",
-  },
   { column: "name", Label: "Student", isSortable: false },
   { column: "karma", Label: "Karma", isSortable: false },
   { column: "level", Label: "Level", isSortable: false },
@@ -1181,12 +1177,15 @@ export function CampusManageDashboard() {
                     case "name":
                       return (
                         <div className="flex flex-col">
-                          <span className="text-sm font-semibold tracking-tight transition-colors group-hover:text-primary">
-                            {student.name}
-                          </span>
-                          <span className="text-[11px] text-muted-foreground">
-                            @{student.muid.split("@")[0]}
-                          </span>
+                          <Link
+                            href={`/profile/${student.muid}`}
+                            className="inline-flex w-fit items-center gap-1"
+                          >
+                            <span className="text-sm font-semibold tracking-tight transition-colors group-hover:text-primary">
+                              {student.name}
+                            </span>
+                            <ExternalLink className="h-3 w-3" />
+                          </Link>
                         </div>
                       );
                     case "karma":
@@ -1819,7 +1818,7 @@ export function CampusManageDashboard() {
                           </p>
                         </CardHeader>
                         <CardContent>
-                          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,0.7fr)_minmax(160px,220px)_auto_auto] lg:items-end">
+                          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(220px,0.7fr)_minmax(160px,220px)_auto_auto] lg:items-end">
                             <div className="min-w-0">
                               <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                                 Search User
@@ -2074,9 +2073,16 @@ export function CampusManageDashboard() {
                             <CardHeader className="pb-3 border-b border-border/40">
                               <div className="flex items-start justify-between gap-2">
                                 <div className="flex items-center gap-3 min-w-0">
-                                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/5 text-primary">
-                                    <BookOpen className="h-4 w-4" />
-                                  </div>
+                                  <IGIcon
+                                    key={chapter.id}
+                                    src={
+                                      chapter.igIconImage ??
+                                      chapter.icon ??
+                                      chapter.iconLink
+                                    }
+                                    size={36}
+                                    className="rounded-xl border-0 bg-primary/5 text-primary"
+                                  />
                                   <div className="min-w-0 space-y-0.5">
                                     <CardTitle className="truncate text-sm font-bold leading-tight text-foreground">
                                       {chapter.name}

@@ -8,7 +8,7 @@
  * If ops raises `client_max_body_size`, change MAX_IMAGE_UPLOAD_MB here — it is
  * the single source of truth for every image upload in the app.
  */
-export const MAX_IMAGE_UPLOAD_MB = 1;
+export const MAX_IMAGE_UPLOAD_MB = 5;
 
 const MAX_IMAGE_UPLOAD_BYTES = MAX_IMAGE_UPLOAD_MB * 1024 * 1024;
 

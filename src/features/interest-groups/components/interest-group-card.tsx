@@ -8,7 +8,9 @@
 "use client";
 
 import { ArrowUpRight } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import type { InterestGroup } from "../schemas/interest-groups.schema";
 
 type InterestGroupCardProps = {
@@ -19,6 +21,7 @@ type InterestGroupCardProps = {
 export function InterestGroupCard({ group, gradient }: InterestGroupCardProps) {
   const router = useRouter();
   const firstLetter = group.name.charAt(0).toUpperCase();
+  const [iconErrored, setIconErrored] = useState(false);
 
   return (
     <button
@@ -53,8 +56,19 @@ export function InterestGroupCard({ group, gradient }: InterestGroupCardProps) {
       <div className="absolute inset-x-0 bottom-0 z-10 p-3">
         <div className="flex items-center justify-between gap-3 rounded-[1.25rem] border border-border/60 bg-background/60 p-2 shadow-lg ring-1 ring-black/5 backdrop-blur-xl">
           <div className="flex min-w-0 items-center gap-2 pl-1">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-background/70 text-xs font-black text-foreground ring-1 ring-border/60">
-              {firstLetter}
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-background/70 text-xs font-black text-foreground ring-1 ring-border/60">
+              {group.icon_image && !iconErrored ? (
+                <Image
+                  src={group.icon_image}
+                  alt=""
+                  width={32}
+                  height={32}
+                  className="h-full w-full object-cover"
+                  onError={() => setIconErrored(true)}
+                />
+              ) : (
+                firstLetter
+              )}
             </div>
             <span className="truncate text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               {group.category}

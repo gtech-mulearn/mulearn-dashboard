@@ -4,6 +4,8 @@ import { Plus, Trash2, XCircle } from "lucide-react";
 import { useCallback, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MuidSearchInput } from "@/components/ui/muid-search-input";
@@ -24,6 +26,11 @@ import {
 import { TagInput } from "@/components/ui/tag-input";
 import { Textarea } from "@/components/ui/textarea";
 import type { InterestGroupDetail } from "@/features/interest-groups/schemas";
+import {
+  IG_COVER_IMAGE_ASPECT,
+  IG_ICON_IMAGE_ASPECT,
+  IG_IMAGE_MAX_MB,
+} from "../constants/ig-images.constants";
 import { useEditInterestGroup } from "../hooks/use-edit-interest-group";
 
 // ─── Types ──────────────────────────────────────────────────
@@ -48,7 +55,10 @@ interface PersonToFollow {
 
 /** Extract muid strings from the various API shapes */
 function toMuidArray(
-  raw: InterestGroupDetail["leads"] | InterestGroupDetail["mentors"],
+  raw:
+    | InterestGroupDetail["leads"]
+    | InterestGroupDetail["mentors"]
+    | InterestGroupDetail["thinktank"],
 ): string[] {
   if (!raw) return [];
   if (Array.isArray(raw)) {
@@ -79,17 +89,33 @@ export function EditInterestGroupForm({
   group,
   onSuccess,
 }: EditInterestGroupFormProps) {
-  const { editInterestGroup, isPending } = useEditInterestGroup();
+  const {
+    editInterestGroup,
+    isPending,
+    uploadCoverImage,
+    removeCoverImage,
+    uploadIconImage,
+    removeIconImage,
+    isRemovingCoverImage,
+    isRemovingIconImage,
+    isUploadingCoverImage,
+    isUploadingIconImage,
+  } = useEditInterestGroup();
 
   // ── Simple text fields ─────────────────────────────────
   const [name, setName] = useState(group.name || "");
   const [about, setAbout] = useState(group.about || "");
   const [resource, setResource] = useState(group.resource || "");
   const [officeHours, setOfficeHours] = useState(group.office_hours || "");
-  const [thinktank, setThinktank] = useState(group.thinktank || "");
-  const [icon, setIcon] = useState(group.icon || "");
   const [code, setCode] = useState(group.code || "");
   const [category, setCategory] = useState(group.category || "others");
+
+  // ── Cover / icon images — replaced/removed via standalone endpoints,
+  // never sent as part of the PATCH payload below ──────────
+  const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
+  const [iconImageFile, setIconImageFile] = useState<File | null>(null);
+  const [coverImageUrl, setCoverImageUrl] = useState(group.cover_image ?? null);
+  const [iconImageUrl, setIconImageUrl] = useState(group.icon_image ?? null);
 
   // ── Array (tag) fields ─────────────────────────────────
   const [prerequisites, setPrerequisites] = useState<string[]>(
@@ -105,9 +131,12 @@ export function EditInterestGroupForm({
     group.people_to_follow || [],
   );
 
-  // Leads & Mentors — plain arrays of muid strings
+  // Leads, Mentors & Think Tank — plain arrays of muid strings
   const [leads, setLeads] = useState<string[]>(toMuidArray(group.leads));
   const [mentors, setMentors] = useState<string[]>(toMuidArray(group.mentors));
+  const [thinktank, setThinktank] = useState<string[]>(
+    toMuidArray(group.thinktank),
+  );
 
   // ── Helpers for complex arrays ─────────────────────────
 
@@ -161,9 +190,6 @@ export function EditInterestGroupForm({
       payload.resource = resource || null;
     if (officeHours !== (group.office_hours || ""))
       payload.office_hours = officeHours || null;
-    if (thinktank !== (group.thinktank || ""))
-      payload.thinktank = thinktank || null;
-    if (icon !== (group.icon || "")) payload.icon = icon;
     if (code !== (group.code || "")) payload.code = code;
     if (category !== (group.category || "others")) payload.category = category;
 
@@ -197,13 +223,63 @@ export function EditInterestGroupForm({
         mentors.length > 0 ? mentors.map((m) => ({ muid: m })) : [];
     }
 
-    if (Object.keys(payload).length === 0) {
-      onSuccess?.();
-      return;
+    const origThinktankMuids = toMuidArray(group.thinktank);
+    if (JSON.stringify(thinktank) !== JSON.stringify(origThinktankMuids)) {
+      payload.thinktank =
+        thinktank.length > 0 ? thinktank.map((m) => ({ muid: m })) : [];
     }
 
-    await editInterestGroup({ id: group.id, data: payload });
+    // Run the metadata PATCH and the standalone image uploads independently —
+    // a failure in one must not stop the others from firing (each mutation
+    // already reports its own error toast).
+    const tasks: Promise<void>[] = [];
+
+    if (Object.keys(payload).length > 0) {
+      tasks.push(
+        editInterestGroup({ id: group.id, data: payload }).catch(() => {}),
+      );
+    }
+    if (coverImageFile) {
+      tasks.push(
+        uploadCoverImage(group.id, coverImageFile)
+          .then((url) => {
+            setCoverImageUrl(url ? `${url}?v=${Date.now()}` : url);
+            setCoverImageFile(null);
+          })
+          .catch(() => {}),
+      );
+    }
+    if (iconImageFile) {
+      tasks.push(
+        uploadIconImage(group.id, iconImageFile)
+          .then((url) => {
+            setIconImageUrl(url ? `${url}?v=${Date.now()}` : url);
+            setIconImageFile(null);
+          })
+          .catch(() => {}),
+      );
+    }
+
+    await Promise.all(tasks);
+
     onSuccess?.();
+  };
+
+  const [removeImageTarget, setRemoveImageTarget] = useState<
+    "cover" | "icon" | null
+  >(null);
+
+  const confirmRemoveImage = async () => {
+    if (removeImageTarget === "cover") {
+      await removeCoverImage(group.id);
+      setCoverImageUrl(null);
+      setCoverImageFile(null);
+    } else if (removeImageTarget === "icon") {
+      await removeIconImage(group.id);
+      setIconImageUrl(null);
+      setIconImageFile(null);
+    }
+    setRemoveImageTarget(null);
   };
 
   return (
@@ -260,13 +336,52 @@ export function EditInterestGroupForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="ig-icon">Icon URL</Label>
-            <Input
-              id="ig-icon"
-              value={icon}
-              onChange={(e) => setIcon(e.target.value)}
-              placeholder="https://..."
+            <Label>Cover image</Label>
+            <ImageUpload
+              value={coverImageFile}
+              onChange={setCoverImageFile}
+              currentUrl={coverImageUrl}
+              maxSizeMB={IG_IMAGE_MAX_MB}
+              aspectRatio={IG_COVER_IMAGE_ASPECT}
+              disabled={isRemovingCoverImage}
             />
+            {coverImageUrl && !coverImageFile ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-destructive hover:text-destructive"
+                onClick={() => setRemoveImageTarget("cover")}
+                disabled={isRemovingCoverImage}
+              >
+                {isRemovingCoverImage ? "Removing…" : "Remove cover image"}
+              </Button>
+            ) : null}
+          </div>
+
+          <div className="space-y-2">
+            <Label>Icon image</Label>
+            <ImageUpload
+              value={iconImageFile}
+              onChange={setIconImageFile}
+              currentUrl={iconImageUrl}
+              maxSizeMB={IG_IMAGE_MAX_MB}
+              aspectRatio={IG_ICON_IMAGE_ASPECT}
+              cropShape="round"
+              disabled={isRemovingIconImage}
+            />
+            {iconImageUrl && !iconImageFile ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-destructive hover:text-destructive"
+                onClick={() => setRemoveImageTarget("icon")}
+                disabled={isRemovingIconImage}
+              >
+                {isRemovingIconImage ? "Removing…" : "Remove icon image"}
+              </Button>
+            ) : null}
           </div>
 
           <div className="space-y-2">
@@ -313,16 +428,6 @@ export function EditInterestGroupForm({
               value={officeHours}
               onChange={(e) => setOfficeHours(e.target.value)}
               placeholder="e.g. Mon & Wed 4-5 PM"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="ig-thinktank">Think Tank</Label>
-            <Input
-              id="ig-thinktank"
-              value={thinktank}
-              onChange={(e) => setThinktank(e.target.value)}
-              placeholder="e.g. #web-thinktank"
             />
           </div>
         </fieldset>
@@ -473,6 +578,18 @@ export function EditInterestGroupForm({
             placeholder="Search users by muid…"
           />
         </fieldset>
+
+        {/* ── Think Tank (MUID only) ── */}
+        <fieldset className="space-y-4">
+          <legend className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+            Think Tank
+          </legend>
+          <MuidSearchInput
+            value={thinktank}
+            onChange={setThinktank}
+            placeholder="Search users by muid…"
+          />
+        </fieldset>
       </div>
 
       <SheetFooter className="border-t border-border/50 pt-4">
@@ -483,12 +600,36 @@ export function EditInterestGroupForm({
         </SheetClose>
         <Button
           type="submit"
-          disabled={isPending}
-          aria-label={isPending ? "Saving changes" : "Save changes"}
+          disabled={isPending || isUploadingCoverImage || isUploadingIconImage}
+          aria-label={
+            isPending || isUploadingCoverImage || isUploadingIconImage
+              ? "Saving changes"
+              : "Save changes"
+          }
         >
-          {isPending ? "Saving…" : "Save Changes"}
+          {isPending || isUploadingCoverImage || isUploadingIconImage
+            ? "Saving…"
+            : "Save Changes"}
         </Button>
       </SheetFooter>
+
+      <ConfirmDialog
+        open={removeImageTarget !== null}
+        onOpenChange={(open) => !open && setRemoveImageTarget(null)}
+        title={
+          removeImageTarget === "cover"
+            ? "Remove cover image?"
+            : "Remove icon image?"
+        }
+        description={`This will remove the interest group's ${removeImageTarget} image.`}
+        confirmLabel="Remove"
+        isPending={
+          removeImageTarget === "cover"
+            ? isRemovingCoverImage
+            : isRemovingIconImage
+        }
+        onConfirm={confirmRemoveImage}
+      />
     </form>
   );
 }

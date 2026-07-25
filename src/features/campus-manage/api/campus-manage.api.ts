@@ -627,7 +627,14 @@ export const campusManageApi = {
   },
 
   async getGlobalIgs(): Promise<
-    Array<{ id: string; name: string; code: string; icon: string }>
+    Array<{
+      id: string;
+      name: string;
+      code: string;
+      icon: string;
+      coverImage: string | null;
+      iconImage: string | null;
+    }>
   > {
     const raw = await apiClient.get<unknown>(endpoints.interestGroups.list());
     // Backend returns { interestGroup: [...] } which pickNestedArray doesn't check,
@@ -647,6 +654,9 @@ export const campusManageApi = {
           name: safeToString(row.name),
           code: safeToString(row.code),
           icon: safeToString(row.icon),
+          coverImage:
+            typeof row.cover_image === "string" ? row.cover_image : null,
+          iconImage: typeof row.icon_image === "string" ? row.icon_image : null,
         };
       })
       .filter((ig) => ig.id && ig.name);
@@ -686,6 +696,10 @@ export const campusManageApi = {
         code: safeToString(row.ig_code ?? ig.code),
         icon: safeToString(row.ig_icon ?? ig.icon),
         iconLink: row.icon_link ? safeToString(row.icon_link) : undefined,
+        igCoverImage:
+          typeof row.ig_cover_image === "string" ? row.ig_cover_image : null,
+        igIconImage:
+          typeof row.ig_icon_image === "string" ? row.ig_icon_image : null,
         leadId: safeToString(row.lead_id ?? lead.id),
         lead: safeToString(
           row.lead_name ?? lead.full_name ?? row.lead,

@@ -92,9 +92,42 @@ export const InterestGroupSchema = z.object({
     ])
     .nullable()
     .optional(),
-  thinktank: z.string().nullable().optional(),
+  // Muid-based list, same shape as leads/mentors.
+  thinktank: z
+    .union([
+      z.array(
+        z.object({
+          full_name: z.string().optional().nullable(),
+          muid: z.string().optional().nullable(),
+          profile_pic: z.string().url().optional().nullable(),
+          socials: z
+            .object({
+              github: z.string().optional().nullable(),
+              facebook: z.string().optional().nullable(),
+              instagram: z.string().optional().nullable(),
+              linkedin: z.string().optional().nullable(),
+              dribble: z.string().optional().nullable(),
+              behance: z.string().optional().nullable(),
+              stackoverflow: z.string().optional().nullable(),
+              medium: z.string().optional().nullable(),
+              hackerrank: z.string().optional().nullable(),
+            })
+            .optional()
+            .nullable(),
+        }),
+      ),
+      z.array(z.string()),
+      z.string(),
+    ])
+    .nullable()
+    .optional(),
   office_hours: z.string().nullable().optional(),
-  icon: z.string().min(1, "Icon is required"),
+  /** Legacy emoji/short-code icon. Read-only — no longer settable via Create/Update. */
+  icon: z.string().nullable().optional(),
+  /** Read-only, populated by the server once an image has been uploaded. */
+  cover_image: z.string().nullable().optional(),
+  /** Read-only, populated by the server once an image has been uploaded. */
+  icon_image: z.string().nullable().optional(),
   code: z.string().min(1, "Code is required"),
   category: z.enum([
     "maker",
@@ -123,6 +156,11 @@ export const InterestGroupCreateSchema = InterestGroupSchema.omit({
   created_by: true,
   created_at: true,
   status: true,
+  // Images are never part of the JSON body — they travel as separate
+  // multipart file fields (see manage-ig.api.ts createInterestGroup).
+  icon: true,
+  cover_image: true,
+  icon_image: true,
 });
 
 export const InterestGroupUpdateSchema = InterestGroupCreateSchema.partial();
@@ -188,3 +226,47 @@ export const InterestGroupRequestListResponseSchema = z.object({
 export type InterestGroupRequestListResponse = z.infer<
   typeof InterestGroupRequestListResponseSchema
 >["response"];
+
+// ============================================
+// Create response (POST /ig/) — now returns the created object, including
+// cover_image/icon_image if they were attached to the request.
+// ============================================
+
+export const InterestGroupCreateResponseSchema = z.object({
+  hasError: z.boolean(),
+  statusCode: z.number(),
+  message: z.object({
+    general: z.array(z.string()),
+  }),
+  response: z.object({
+    interestGroup: InterestGroupSchema,
+  }),
+});
+
+export type InterestGroupCreateResponse = z.infer<
+  typeof InterestGroupCreateResponseSchema
+>["response"];
+
+// ============================================
+// Cover / icon image upload responses
+// ============================================
+
+const ImageEnvelopeSchema = z.object({
+  hasError: z.boolean(),
+  statusCode: z.number(),
+  message: z.object({
+    general: z.array(z.string()),
+  }),
+});
+
+export const IgCoverImageResponseSchema = ImageEnvelopeSchema.extend({
+  response: z.object({
+    cover_image: z.string().nullable(),
+  }),
+});
+
+export const IgIconImageResponseSchema = ImageEnvelopeSchema.extend({
+  response: z.object({
+    icon_image: z.string().nullable(),
+  }),
+});

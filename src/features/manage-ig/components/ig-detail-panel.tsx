@@ -173,6 +173,20 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
           } => Boolean(mentor?.full_name || mentor?.muid),
         )
     : [];
+  const thinktank = Array.isArray(ig.thinktank)
+    ? ig.thinktank
+        .map((person) =>
+          typeof person === "string" ? { full_name: person } : person,
+        )
+        .filter(
+          (
+            person,
+          ): person is {
+            full_name?: string | null;
+            muid?: string | null;
+          } => Boolean(person?.full_name || person?.muid),
+        )
+    : [];
 
   const hasAbout = Boolean(ig.about);
   const hasPrerequisites = prerequisites.length > 0;
@@ -181,7 +195,8 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
   const hasPeopleToFollow = peopleToFollow.length > 0;
   const hasLeads = leads.length > 0;
   const hasMentors = mentors.length > 0;
-  const hasLinks = Boolean(ig.thinktank || ig.office_hours || ig.resource);
+  const hasThinktank = thinktank.length > 0;
+  const hasLinks = Boolean(ig.office_hours || ig.resource);
   const hasAnyDetails =
     hasAbout ||
     hasPrerequisites ||
@@ -190,6 +205,7 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
     hasPeopleToFollow ||
     hasLeads ||
     hasMentors ||
+    hasThinktank ||
     hasLinks;
 
   return (
@@ -317,6 +333,60 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
             </DetailSection>
           )}
 
+          {/* Quick Links */}
+          {hasLinks && (
+            <>
+              <Separator />
+              <div className="space-y-3">
+                {ig.resource && (
+                  <DetailSection icon={LinkIcon} label="Resources">
+                    <a
+                      href={ig.resource}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline max-w-full"
+                    >
+                      <ExternalLink className="size-3.5 shrink-0" />
+                      <span>{ig.resource}</span>
+                    </a>
+                  </DetailSection>
+                )}
+                {ig.office_hours && (
+                  <DetailSection icon={Clock} label="Office Hours">
+                    <p className="text-sm text-foreground/90">
+                      {ig.office_hours}
+                    </p>
+                  </DetailSection>
+                )}
+              </div>
+            </>
+          )}
+
+          {hasThinktank && <Separator />}
+
+          {/* Think Tank */}
+          {hasThinktank && (
+            <DetailSection icon={Lightbulb} label="Think Tank">
+              <div className="space-y-1.5">
+                {thinktank.map((person, i) => (
+                  <div
+                    key={person.muid || person.full_name || i}
+                    className="text-sm flex flex-col"
+                  >
+                    <span className="font-medium text-foreground">
+                      {person.full_name || person.muid || "Think Tank Member"}
+                    </span>
+                    {person.muid && (
+                      <span className="text-muted-foreground text-xs">
+                        MUID: {person.muid}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </DetailSection>
+          )}
+
           {(hasLeads || hasMentors) && <Separator />}
 
           {/* Leads & Mentors */}
@@ -325,9 +395,9 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
               {hasLeads && (
                 <DetailSection icon={UserCheck} label="Leads">
                   <div className="space-y-1.5">
-                    {leads.map((lead) => (
+                    {leads.map((lead, i) => (
                       <div
-                        key={lead.muid || lead.full_name || Math.random()}
+                        key={lead.muid || lead.full_name || i}
                         className="text-sm flex flex-col"
                       >
                         <span className="font-medium text-foreground">
@@ -346,9 +416,9 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
               {hasMentors && (
                 <DetailSection icon={Users} label="Mentors">
                   <div className="space-y-1.5">
-                    {mentors.map((mentor) => (
+                    {mentors.map((mentor, i) => (
                       <div
-                        key={mentor.muid || mentor.full_name || Math.random()}
+                        key={mentor.muid || mentor.full_name || i}
                         className="text-sm"
                       >
                         <span className="font-medium text-foreground">
@@ -365,40 +435,6 @@ export function IGDetailPanel({ isOpen, onClose, ig, onEdit }: Props) {
                 </DetailSection>
               )}
             </div>
-          )}
-
-          {/* Links */}
-          {hasLinks && (
-            <>
-              <Separator />
-              <div className="space-y-3">
-                {ig.resource && (
-                  <DetailSection icon={LinkIcon} label="Resources">
-                    <a
-                      href={ig.resource}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline max-w-full"
-                    >
-                      <ExternalLink className="size-3.5 shrink-0" />
-                      <span>{ig.resource}</span>
-                    </a>
-                  </DetailSection>
-                )}
-                {ig.thinktank && (
-                  <DetailSection icon={Lightbulb} label="Thinktank">
-                    <p className="text-sm text-foreground/90">{ig.thinktank}</p>
-                  </DetailSection>
-                )}
-                {ig.office_hours && (
-                  <DetailSection icon={Clock} label="Office Hours">
-                    <p className="text-sm text-foreground/90">
-                      {ig.office_hours}
-                    </p>
-                  </DetailSection>
-                )}
-              </div>
-            </>
           )}
 
           <Separator />

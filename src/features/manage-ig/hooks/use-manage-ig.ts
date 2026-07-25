@@ -10,10 +10,16 @@ import {
   deleteInterestGroup as apiDeleteIG,
   exportIgCSV as apiExportCSV,
   partialUpdateInterestGroup as apiPartialUpdateIG,
+  removeIgCoverImage as apiRemoveIgCoverImage,
+  removeIgIconImage as apiRemoveIgIconImage,
   updateInterestGroup as apiUpdateIG,
+  uploadIgCoverImage as apiUploadIgCoverImage,
+  uploadIgIconImage as apiUploadIgIconImage,
   getAdminInterestGroups,
 } from "../api/manage-ig.api";
 import type { InterestGroupUpdate } from "../schemas";
+
+type IgImagesInput = { coverImage?: File | null; iconImage?: File | null };
 
 export function useInterestGroupsAdmin() {
   const queryClient = useQueryClient();
@@ -34,7 +40,13 @@ export function useInterestGroupsAdmin() {
   });
 
   const createMutation = useMutation({
-    mutationFn: apiCreateIG,
+    mutationFn: ({
+      data,
+      images,
+    }: {
+      data: Parameters<typeof apiCreateIG>[0];
+      images?: IgImagesInput;
+    }) => apiCreateIG(data, images),
     onSuccess: () => {
       toast.success("Interest Group created successfully");
       queryClient.invalidateQueries({ queryKey: ["admin-interest-groups"] });
@@ -102,6 +114,70 @@ export function useInterestGroupsAdmin() {
     },
   });
 
+  const uploadCoverImageMutation = useMutation({
+    mutationFn: ({ id, file }: { id: string; file: File; silent?: boolean }) =>
+      apiUploadIgCoverImage(id, file),
+    onSuccess: (_, variables) => {
+      if (!variables.silent) toast.success("Cover image updated");
+      queryClient.invalidateQueries({ queryKey: ["admin-interest-groups"] });
+      queryClient.invalidateQueries({ queryKey: igKeys.detail(variables.id) });
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to upload cover image",
+        }),
+      );
+    },
+  });
+
+  const removeCoverImageMutation = useMutation({
+    mutationFn: ({ id }: { id: string; silent?: boolean }) =>
+      apiRemoveIgCoverImage(id),
+    onSuccess: (_, variables) => {
+      if (!variables.silent) toast.success("Cover image removed");
+      queryClient.invalidateQueries({ queryKey: ["admin-interest-groups"] });
+      queryClient.invalidateQueries({ queryKey: igKeys.detail(variables.id) });
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, {
+          fallback: "Failed to remove cover image",
+        }),
+      );
+    },
+  });
+
+  const uploadIconImageMutation = useMutation({
+    mutationFn: ({ id, file }: { id: string; file: File; silent?: boolean }) =>
+      apiUploadIgIconImage(id, file),
+    onSuccess: (_, variables) => {
+      if (!variables.silent) toast.success("Icon image updated");
+      queryClient.invalidateQueries({ queryKey: ["admin-interest-groups"] });
+      queryClient.invalidateQueries({ queryKey: igKeys.detail(variables.id) });
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to upload icon image" }),
+      );
+    },
+  });
+
+  const removeIconImageMutation = useMutation({
+    mutationFn: ({ id }: { id: string; silent?: boolean }) =>
+      apiRemoveIgIconImage(id),
+    onSuccess: (_, variables) => {
+      if (!variables.silent) toast.success("Icon image removed");
+      queryClient.invalidateQueries({ queryKey: ["admin-interest-groups"] });
+      queryClient.invalidateQueries({ queryKey: igKeys.detail(variables.id) });
+    },
+    onError: (error) => {
+      toast.error(
+        getApiResponseError(error, { fallback: "Failed to remove icon image" }),
+      );
+    },
+  });
+
   const exportCSV = async () => {
     try {
       const blob = await apiExportCSV();
@@ -133,7 +209,10 @@ export function useInterestGroupsAdmin() {
     setPerPage,
     setSearch,
     setSortBy,
-    createInterestGroup: createMutation.mutateAsync,
+    createInterestGroup: (
+      data: Parameters<typeof apiCreateIG>[0],
+      images?: IgImagesInput,
+    ) => createMutation.mutateAsync({ data, images }),
     updateInterestGroup: (id: string, data: InterestGroupUpdate) =>
       updateMutation.mutateAsync({ id, data }),
     partialUpdateInterestGroup: (
@@ -141,6 +220,18 @@ export function useInterestGroupsAdmin() {
       data: Partial<InterestGroupUpdate>,
     ) => partialUpdateMutation.mutateAsync({ id, data }),
     deleteInterestGroup: deleteMutation.mutateAsync,
+    uploadCoverImage: (id: string, file: File, opts?: { silent?: boolean }) =>
+      uploadCoverImageMutation.mutateAsync({ id, file, silent: opts?.silent }),
+    removeCoverImage: (id: string, opts?: { silent?: boolean }) =>
+      removeCoverImageMutation.mutateAsync({ id, silent: opts?.silent }),
+    uploadIconImage: (id: string, file: File, opts?: { silent?: boolean }) =>
+      uploadIconImageMutation.mutateAsync({ id, file, silent: opts?.silent }),
+    removeIconImage: (id: string, opts?: { silent?: boolean }) =>
+      removeIconImageMutation.mutateAsync({ id, silent: opts?.silent }),
+    isUploadingCoverImage: uploadCoverImageMutation.isPending,
+    isRemovingCoverImage: removeCoverImageMutation.isPending,
+    isUploadingIconImage: uploadIconImageMutation.isPending,
+    isRemovingIconImage: removeIconImageMutation.isPending,
     exportCSV,
     refresh: refetch,
   };

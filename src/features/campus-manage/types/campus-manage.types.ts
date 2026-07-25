@@ -105,6 +105,10 @@ export interface IgChapter {
   code?: string;
   icon?: string;
   iconLink?: string;
+  /** InterestGroup.cover_image, mapped from the API's `ig_cover_image`. */
+  igCoverImage?: string | null;
+  /** InterestGroup.icon_image, mapped from the API's `ig_icon_image`. */
+  igIconImage?: string | null;
   leadId?: string;
   lead: string;
   membersCount: number;

@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { Textarea } from "@/components/ui/textarea";
@@ -36,7 +37,6 @@ const DEFAULTS: OfficeHoursWrite = {
   description: "",
   link: "",
   interest_groups: [],
-  poster_thumbnail: "",
 };
 
 function isoToInputDate(isoDate: string): string {
@@ -51,6 +51,7 @@ function isoToInputDate(isoDate: string): string {
 export function OfficeHoursForm({ isOpen, onClose, initialData }: Props) {
   const { create, update } = useOfficeHoursMutations();
   const { data: igListData } = useInterestGroupsList();
+  const [posterFile, setPosterFile] = useState<File | null>(null);
   const igOptions = (igListData?.response?.interestGroup ?? []).map((ig) => ({
     value: ig.code ?? ig.id,
     label: ig.name,
@@ -69,6 +70,7 @@ export function OfficeHoursForm({ isOpen, onClose, initialData }: Props) {
 
   useEffect(() => {
     if (!isOpen) return;
+    setPosterFile(null);
     if (initialData) {
       reset({
         title: initialData.title,
@@ -78,7 +80,6 @@ export function OfficeHoursForm({ isOpen, onClose, initialData }: Props) {
         description: initialData.description ?? "",
         link: initialData.link ?? "",
         interest_groups: initialData.interest_groups ?? [],
-        poster_thumbnail: initialData.poster_thumbnail ?? "",
       });
     } else {
       reset(DEFAULTS);
@@ -87,9 +88,13 @@ export function OfficeHoursForm({ isOpen, onClose, initialData }: Props) {
 
   const onSubmit = async (values: OfficeHoursWrite) => {
     if (initialData) {
-      await update.mutateAsync({ id: initialData.id, data: values });
+      await update.mutateAsync({
+        id: initialData.id,
+        data: values,
+        posterFile,
+      });
     } else {
-      await create.mutateAsync(values);
+      await create.mutateAsync({ data: values, posterFile });
     }
     onClose();
   };
@@ -212,18 +217,14 @@ export function OfficeHoursForm({ isOpen, onClose, initialData }: Props) {
 
           <div className="space-y-1">
             <p className="text-sm font-medium text-foreground">
-              Poster Thumbnail URL
+              Poster Thumbnail
             </p>
-            <Input
-              className="rounded-xl border-border bg-background"
-              placeholder="https://cdn.example.com/poster.jpg"
-              {...register("poster_thumbnail")}
+            <ImageUpload
+              value={posterFile}
+              onChange={setPosterFile}
+              currentUrl={initialData?.poster_thumbnail}
+              maxSizeMB={5}
             />
-            {errors.poster_thumbnail && (
-              <p className="text-xs text-destructive">
-                {errors.poster_thumbnail.message}
-              </p>
-            )}
           </div>
 
           <div className="flex items-center justify-end gap-2 border-t border-border pt-4">

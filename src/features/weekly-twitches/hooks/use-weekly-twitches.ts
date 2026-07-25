@@ -45,7 +45,13 @@ export function useOfficeHoursMutations() {
     qc.invalidateQueries({ queryKey: weeklyTwitchesKeys.officeHours() });
 
   const create = useMutation({
-    mutationFn: (payload: OfficeHoursWrite) => createOfficeHours(payload),
+    mutationFn: ({
+      data,
+      posterFile,
+    }: {
+      data: OfficeHoursWrite;
+      posterFile?: File | null;
+    }) => createOfficeHours(data, posterFile),
     onSuccess: () => {
       toast.success("Office Hours session created.");
       invalidate();
@@ -63,10 +69,12 @@ export function useOfficeHoursMutations() {
     mutationFn: ({
       id,
       data,
+      posterFile,
     }: {
       id: string;
       data: Partial<OfficeHoursWrite>;
-    }) => updateOfficeHours(id, data),
+      posterFile?: File | null;
+    }) => updateOfficeHours(id, data, posterFile),
     onSuccess: () => {
       toast.success("Office Hours session updated.");
       invalidate();

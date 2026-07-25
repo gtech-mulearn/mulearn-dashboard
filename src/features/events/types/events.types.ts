@@ -123,6 +123,8 @@ export interface MinimalIG {
   id: UUID;
   name: string;
   icon: string;
+  cover_image?: string | null;
+  icon_image?: string | null;
   code?: string;
   logo?: string; // Backward compatibility
   cluster?: IGCluster;

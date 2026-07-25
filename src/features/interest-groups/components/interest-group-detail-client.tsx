@@ -14,20 +14,17 @@ import {
   Clock,
   ExternalLink,
   FileText,
-  Pencil,
   Sparkles,
   Twitter,
   Users,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
-import { useUserInfo } from "@/features/auth";
-import { useInterestGroupDetail } from "@/features/interest-groups";
-import { InterestGroupFormDialog } from "@/features/manage-ig";
-import { hasIgLeadRole } from "@/lib/auth/roles";
+import { IGIcon, useInterestGroupDetail } from "@/features/interest-groups";
+import { ImpactProjectsSection } from "@/features/manage-ig";
 import { PersonCard } from "./person-card";
 
 export function InterestGroupDetailClient() {
@@ -37,10 +34,6 @@ export function InterestGroupDetailClient() {
 
   const { data, isLoading, error } = useInterestGroupDetail(id || "");
   const group = data?.response?.interestGroup;
-
-  const { data: userInfo } = useUserInfo();
-  const isIGLead = hasIgLeadRole(userInfo?.roles ?? []);
-  const [editOpen, setEditOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -118,25 +111,27 @@ export function InterestGroupDetailClient() {
 
       {/* ── Hero ── */}
       <div className="relative overflow-hidden rounded-[2rem] bg-linear-to-br from-primary/90 via-primary to-primary/80 p-6 sm:p-8 md:p-12 text-primary-foreground shadow-xl shadow-primary/10">
+        {group.cover_image && (
+          <Image
+            key={group.cover_image}
+            src={group.cover_image}
+            alt=""
+            fill
+            priority
+            className="object-cover opacity-30"
+          />
+        )}
         <div className="absolute -right-20 -top-20 h-64 w-64 sm:h-80 sm:w-80 md:h-96 md:w-96 rounded-full bg-card/10 blur-3xl" />
         <div className="absolute -left-20 -bottom-20 h-64 w-64 sm:h-80 sm:w-80 md:h-96 md:w-96 rounded-full bg-foreground/10 blur-3xl" />
-
-        {isIGLead && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="absolute right-4 top-4 z-20 backdrop-blur-md"
-            onClick={() => setEditOpen(true)}
-            aria-label="Edit interest group"
-          >
-            <Pencil className="h-3 w-3" />
-            Edit
-          </Button>
-        )}
-
         <div className="relative z-10 flex flex-col gap-6 md:gap-8 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-4 sm:space-y-6 max-w-3xl">
             <div className="flex flex-wrap items-center gap-3">
+              <IGIcon
+                key={group.id}
+                src={group.icon_image ?? group.icon}
+                size={44}
+                className="border-card/20 bg-card/10 text-primary-foreground backdrop-blur-md"
+              />
               {group.category && (
                 <div className="inline-flex items-center rounded-full bg-card/20 px-3 py-1 text-xs font-semibold uppercase tracking-wider backdrop-blur-md border border-card/10">
                   {group.category}
@@ -354,13 +349,9 @@ export function InterestGroupDetailClient() {
                 </h2>
               </div>
               <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 place-items-stretch">
-                {group.mentors.map((mentor) => (
+                {group.mentors.map((mentor, i) => (
                   <PersonCard
-                    key={
-                      mentor.muid ??
-                      mentor.full_name ??
-                      Math.random().toString()
-                    }
+                    key={mentor.muid ?? mentor.full_name ?? i}
                     {...mentor}
                     avatarBgClass="from-purple-500/20 to-purple-500/5"
                     accentClass="text-brand-purple"
@@ -390,11 +381,11 @@ export function InterestGroupDetailClient() {
         {/* ── Sidebar ── */}
         <div className="space-y-6 lg:col-span-4 min-w-0">
           <div className="space-y-6 lg:sticky lg:top-8">
-            {/* Quick Info / Meta */}
+            {/* Quick Links */}
             <div className="overflow-hidden rounded-3xl border border-border/50 bg-card shadow-sm">
               <div className="border-b border-border/50 bg-muted/30 px-4 sm:px-6 py-3 sm:py-4">
                 <h3 className="text-base sm:text-lg font-bold text-foreground">
-                  Quick Info
+                  Quick Links
                 </h3>
               </div>
               <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
@@ -410,22 +401,6 @@ export function InterestGroupDetailClient() {
                       </p>
                       <p className="mt-1 text-sm font-semibold text-foreground">
                         {group.office_hours}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {group.thinktank && (
-                  <div className="flex items-start gap-4">
-                    <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-blue/10 text-brand-blue">
-                      <span className="text-sm font-bold">#</span>
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                        Think Tank
-                      </p>
-                      <p className="mt-1 text-sm font-mono font-semibold text-foreground">
-                        {group.thinktank}
                       </p>
                     </div>
                   </div>
@@ -447,6 +422,28 @@ export function InterestGroupDetailClient() {
               </div>
             </div>
 
+            {group.thinktank && group.thinktank.length > 0 && (
+              <div className="overflow-hidden rounded-3xl border border-border/50 bg-card shadow-sm">
+                <div className="border-b border-border/50 bg-muted/30 px-4 sm:px-6 py-3 sm:py-4">
+                  <h3 className="text-base sm:text-lg font-bold text-foreground">
+                    Think Tanks
+                  </h3>
+                </div>
+                <div className="p-6">
+                  <div className="space-y-3">
+                    {group.thinktank.map((person, i) => (
+                      <PersonCard
+                        key={person.muid ?? person.full_name ?? i}
+                        {...person}
+                        avatarBgClass="from-brand-blue/20 to-brand-blue/5"
+                        accentClass="text-brand-blue"
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {group.leads && group.leads.length > 0 && (
               <div className="overflow-hidden rounded-3xl border border-border/50 bg-card shadow-sm">
                 <div className="border-b border-border/50 bg-muted/30 px-4 sm:px-6 py-3 sm:py-4">
@@ -456,13 +453,9 @@ export function InterestGroupDetailClient() {
                 </div>
                 <div className="p-6">
                   <div className="space-y-3">
-                    {group.leads.map((lead) => (
+                    {group.leads.map((lead, i) => (
                       <PersonCard
-                        key={
-                          lead.muid ??
-                          lead.full_name ??
-                          Math.random().toString()
-                        }
+                        key={lead.muid ?? lead.full_name ?? i}
                         {...lead}
                         avatarBgClass="from-purple-500/20 to-purple-500/5"
                         accentClass="text-brand-purple"
@@ -476,48 +469,15 @@ export function InterestGroupDetailClient() {
             {/* Support / Help Box */}
             <div className="rounded-3xl bg-linear-to-br from-muted/50 to-muted/10 p-4 sm:p-6 border border-border/50 text-center">
               <p className="text-sm font-medium text-muted-foreground">
-                Need help or have questions? Reach out to the leads or join the
-                think tank channel.
+                Need help or have questions? Reach out to the leads or think
+                tank members.
               </p>
             </div>
 
-            {/* Join Requests — coming soon */}
-            <div className="overflow-hidden rounded-3xl border border-border/50 bg-card shadow-sm">
-              <div className="border-b border-border/50 bg-muted/30 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
-                <h3 className="text-base sm:text-lg font-bold text-foreground">
-                  Join Requests
-                </h3>
-                <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
-                  Soon
-                </span>
-              </div>
-              <div className="flex flex-col items-center gap-3 p-6 text-center">
-                <div className="rounded-full bg-muted p-3">
-                  <Users className="h-5 w-5 text-muted-foreground" />
-                </div>
-                <p className="text-sm font-medium text-foreground">
-                  Member join requests
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Review and approve membership requests from your community.
-                  This feature is coming soon.
-                </p>
-              </div>
-            </div>
+            <ImpactProjectsSection igId={group.id} />
           </div>
         </div>
       </div>
-
-      {/* IG Lead Edit Dialog */}
-      {isIGLead && group && (
-        <InterestGroupFormDialog
-          isOpen={editOpen}
-          onClose={() => setEditOpen(false)}
-          // biome-ignore lint/suspicious/noExplicitAny: detail shape is a superset of the form type
-          initialData={group as any}
-          isIGLead
-        />
-      )}
     </div>
   );
 }

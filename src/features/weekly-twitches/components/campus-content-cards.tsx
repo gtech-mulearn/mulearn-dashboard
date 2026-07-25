@@ -12,8 +12,8 @@ import {
 } from "@/components/ui/select";
 import { useIsList, useSmtList } from "../hooks";
 import type { CampusContentItem, CampusContentType } from "../schemas";
+import { CampusContentDetailDialog } from "./campus-content-detail-dialog";
 import { MediaCard, MediaCardSkeleton } from "./media-card";
-import { CampusContentDetailSheet } from "./media-detail-sheet";
 
 const SKELETONS = Array.from({ length: 6 }, (_, i) => `skeleton-${i}`);
 
@@ -137,8 +137,8 @@ export function CampusContentCards({ contentType }: Props) {
         handleNextClick={() => setPage((p) => p + 1)}
       />
 
-      {/* Detail sheet */}
-      <CampusContentDetailSheet
+      {/* Detail dialog */}
+      <CampusContentDetailDialog
         item={sheetItem}
         contentType={contentType}
         onClose={() => setSheetItem(null)}

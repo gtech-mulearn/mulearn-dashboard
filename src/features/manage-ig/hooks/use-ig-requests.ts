@@ -55,7 +55,13 @@ export function useIGRequests() {
   });
 
   const submitRequestMutation = useMutation({
-    mutationFn: apiSubmitRequest,
+    mutationFn: ({
+      data,
+      images,
+    }: {
+      data: Parameters<typeof apiSubmitRequest>[0];
+      images?: Parameters<typeof apiSubmitRequest>[1];
+    }) => apiSubmitRequest(data, images),
     onSuccess: () => {
       toast.success("IG request submitted successfully");
       queryClient.invalidateQueries({ queryKey: ["ig-requests"] });
@@ -85,7 +91,10 @@ export function useIGRequests() {
       id: string,
       newStatus: "active" | "requested" | "cancelled" | "rejected",
     ) => updateStatusMutation.mutateAsync({ id, newStatus }),
-    submitRequest: submitRequestMutation.mutateAsync,
+    submitRequest: (
+      data: Parameters<typeof apiSubmitRequest>[0],
+      images?: Parameters<typeof apiSubmitRequest>[1],
+    ) => submitRequestMutation.mutateAsync({ data, images }),
     isSubmitting: submitRequestMutation.isPending,
     refresh: refetch,
   };

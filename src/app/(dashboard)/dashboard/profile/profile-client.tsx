@@ -281,15 +281,7 @@ export function ProfilePageClient() {
       </div>
 
       <div className="grid w-full max-w-full gap-4 sm:gap-6 lg:grid-cols-3">
-        <div className="w-full max-w-full overflow-x-hidden lg:order-2 lg:col-span-1">
-          <ProfileSidebar
-            profile={profile}
-            isOwnProfile={true}
-            onAccountSettings={() => setShowAccountSettings(true)}
-          />
-        </div>
-
-        <div className="w-full max-w-full space-y-4 overflow-x-hidden lg:order-1 lg:col-span-2">
+        <div className="w-full max-w-full space-y-4 overflow-x-hidden lg:col-span-2">
           <ProfileTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
           <div className="w-full max-w-full overflow-x-hidden">
@@ -331,6 +323,14 @@ export function ProfilePageClient() {
               />
             )}
           </div>
+        </div>
+
+        <div className="w-full max-w-full overflow-x-hidden lg:col-span-1">
+          <ProfileSidebar
+            profile={profile}
+            isOwnProfile={true}
+            onAccountSettings={() => setShowAccountSettings(true)}
+          />
         </div>
       </div>
 

@@ -193,6 +193,7 @@ const companyDetailsSchema = z.object({
   // Basic Info
   companyName: z
     .string()
+    .trim()
     .min(1, "Company name is required")
     .max(75, "Max 75 characters"),
   companyDescription: z.string().min(1, "Description is required"),

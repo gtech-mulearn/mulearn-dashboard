@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
 import { MarkdownEditor } from "@/components/ui/markdown-editor";
 import { MuidSearchInput } from "@/components/ui/muid-search-input";
@@ -22,6 +23,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  IG_COVER_IMAGE_ASPECT,
+  IG_ICON_IMAGE_ASPECT,
+  IG_IMAGE_MAX_MB,
+} from "../constants/ig-images.constants";
 import { useInterestGroupsAdmin } from "../hooks/use-manage-ig";
 import {
   type InterestGroup,
@@ -184,7 +190,6 @@ const DEFAULT_VALUES: InterestGroupCreate = {
   name: "",
   code: "",
   category: "coder",
-  icon: "",
   about: "",
   prerequisites: [],
   career_opportunities: [],
@@ -193,7 +198,7 @@ const DEFAULT_VALUES: InterestGroupCreate = {
   people_to_follow: [],
   leads: [],
   mentors: [],
-  thinktank: "",
+  thinktank: [],
   office_hours: "",
 };
 
@@ -207,6 +212,8 @@ export function InterestGroupFormDialog({
     createInterestGroup,
     updateInterestGroup,
     partialUpdateInterestGroup,
+    uploadCoverImage,
+    uploadIconImage,
   } = useInterestGroupsAdmin();
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -214,8 +221,11 @@ export function InterestGroupFormDialog({
   const [confirmCloseOpen, setConfirmCloseOpen] = useState(false);
   const [leadMuids, setLeadMuids] = useState<string[]>([]);
   const [mentorMuids, setMentorMuids] = useState<string[]>([]);
+  const [thinktankMuids, setThinktankMuids] = useState<string[]>([]);
   const [topBlogs, setTopBlogs] = useState<BlogEntry[]>([]);
   const [peopleToFollow, setPeopleToFollow] = useState<PersonEntry[]>([]);
+  const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
+  const [iconImageFile, setIconImageFile] = useState<File | null>(null);
 
   const {
     control,
@@ -232,12 +242,13 @@ export function InterestGroupFormDialog({
   useEffect(() => {
     if (!isOpen) return;
     setCurrentStep(1);
+    setCoverImageFile(null);
+    setIconImageFile(null);
     if (initialData) {
       reset({
         name: initialData.name,
         code: initialData.code,
         category: initialData.category as InterestGroupCreate["category"],
-        icon: initialData.icon ?? "",
         about: initialData.about ?? "",
         prerequisites: normalizeArrayField(initialData.prerequisites),
         career_opportunities: normalizeArrayField(
@@ -248,7 +259,7 @@ export function InterestGroupFormDialog({
         people_to_follow: [],
         leads: [],
         mentors: [],
-        thinktank: initialData.thinktank ?? "",
+        thinktank: [],
         office_hours: initialData.office_hours ?? "",
       });
       setTopBlogs(toTopBlogsArray(initialData.top_blogs));
@@ -277,10 +288,16 @@ export function InterestGroupFormDialog({
     };
     setLeadMuids(extract(initialData?.leads));
     setMentorMuids(extract(initialData?.mentors));
+    setThinktankMuids(extract(initialData?.thinktank));
   }, [initialData]);
 
   const requestClose = () => {
-    if (isDirty || leadMuids.length > 0 || mentorMuids.length > 0) {
+    if (
+      isDirty ||
+      leadMuids.length > 0 ||
+      mentorMuids.length > 0 ||
+      thinktankMuids.length > 0
+    ) {
       setConfirmCloseOpen(true);
       return;
     }
@@ -289,7 +306,7 @@ export function InterestGroupFormDialog({
 
   const validateStep = async (): Promise<boolean> => {
     if (currentStep === 1) {
-      return trigger(["name", "code", "category", "icon"]);
+      return trigger(["name", "code", "category"]);
     }
     return true;
   };
@@ -310,6 +327,10 @@ export function InterestGroupFormDialog({
         people_to_follow: peopleToFollow.map(({ _key: _, ...p }) => p),
         leads: leadMuids.map((m) => ({ muid: m })),
         mentors: mentorMuids.map((m) => ({ muid: m })),
+        thinktank:
+          thinktankMuids.length > 0
+            ? thinktankMuids.map((m) => ({ muid: m }))
+            : (initialData?.thinktank ?? []),
       };
 
       if (initialData) {
@@ -319,8 +340,23 @@ export function InterestGroupFormDialog({
         } else {
           await updateInterestGroup(initialData.id, payload);
         }
+        // PUT/PATCH never carry images — replace via the standalone endpoints.
+        // Silenced so the save only shows one "Interest Group updated" toast.
+        if (coverImageFile) {
+          await uploadCoverImage(initialData.id, coverImageFile, {
+            silent: true,
+          });
+        }
+        if (iconImageFile) {
+          await uploadIconImage(initialData.id, iconImageFile, {
+            silent: true,
+          });
+        }
       } else {
-        await createInterestGroup(payload);
+        await createInterestGroup(payload, {
+          coverImage: coverImageFile,
+          iconImage: iconImageFile,
+        });
       }
 
       setCurrentStep(1);
@@ -500,21 +536,33 @@ export function InterestGroupFormDialog({
                         </p>
                       ) : null}
                     </div>
+                  </div>
 
+                  <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-1">
                       <p className="text-sm font-medium text-foreground">
-                        Icon URL <span className="text-destructive">*</span>
+                        Cover image
                       </p>
-                      <Input
-                        className="rounded-xl border-border bg-background"
-                        placeholder="https://example.com/icon.png"
-                        {...register("icon")}
+                      <ImageUpload
+                        value={coverImageFile}
+                        onChange={setCoverImageFile}
+                        currentUrl={initialData?.cover_image}
+                        maxSizeMB={IG_IMAGE_MAX_MB}
+                        aspectRatio={IG_COVER_IMAGE_ASPECT}
                       />
-                      {errors.icon?.message ? (
-                        <p className="text-xs text-destructive">
-                          {errors.icon.message}
-                        </p>
-                      ) : null}
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-foreground">
+                        Icon image
+                      </p>
+                      <ImageUpload
+                        value={iconImageFile}
+                        onChange={setIconImageFile}
+                        currentUrl={initialData?.icon_image}
+                        maxSizeMB={IG_IMAGE_MAX_MB}
+                        aspectRatio={IG_ICON_IMAGE_ASPECT}
+                        cropShape="round"
+                      />
                     </div>
                   </div>
                 </section>
@@ -779,6 +827,16 @@ export function InterestGroupFormDialog({
                   </div>
 
                   <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-foreground">
+                        Think Tank
+                      </p>
+                      <MuidSearchInput
+                        value={thinktankMuids}
+                        onChange={setThinktankMuids}
+                        placeholder="Search users by muid…"
+                      />
+                    </div>
                     <div className="space-y-1">
                       <p className="text-sm font-medium text-foreground">
                         Office Hours
@@ -787,16 +845,6 @@ export function InterestGroupFormDialog({
                         className="rounded-xl border-border bg-background"
                         placeholder="e.g. Mon–Fri 6PM–8PM"
                         {...register("office_hours")}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium text-foreground">
-                        Thinktank URL
-                      </p>
-                      <Input
-                        className="rounded-xl border-border bg-background"
-                        placeholder="Link to thinktank"
-                        {...register("thinktank")}
                       />
                     </div>
                   </div>
@@ -821,7 +869,20 @@ export function InterestGroupFormDialog({
                           : "Not set",
                         true,
                       ],
-                      ["Icon URL", values.icon || "Not set", true],
+                      [
+                        "Cover image",
+                        coverImageFile?.name ||
+                          (initialData?.cover_image
+                            ? "Already set"
+                            : "Not set"),
+                        false,
+                      ],
+                      [
+                        "Icon image",
+                        iconImageFile?.name ||
+                          (initialData?.icon_image ? "Already set" : "Not set"),
+                        false,
+                      ],
                       [
                         "About",
                         values.about
@@ -880,8 +941,14 @@ export function InterestGroupFormDialog({
                           : "Not set",
                         false,
                       ],
+                      [
+                        "Think Tank",
+                        thinktankMuids.length > 0
+                          ? thinktankMuids.join(", ")
+                          : "Not set",
+                        false,
+                      ],
                       ["Office Hours", values.office_hours || "Not set", false],
-                      ["Thinktank URL", values.thinktank || "Not set", false],
                     ].map(([label, value, required]) => (
                       <div
                         key={label as string}

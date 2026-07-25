@@ -27,6 +27,9 @@ interface ExtendedTask extends Task {
   prerequisites?: string;
 }
 
+const DISCORD_GUILD_ID = "771670169691881483";
+const DEFAULT_DISCORD_CHANNEL_ID = "782353185552465951";
+
 interface TaskDetailPanelProps {
   task: Task | null;
   isOpen: boolean;
@@ -217,8 +220,11 @@ export function TaskDetailPanel({
                       );
                       return;
                     }
+                    const channelId =
+                      task.submission_channel?.discord_id ||
+                      DEFAULT_DISCORD_CHANNEL_ID;
                     window.open(
-                      "https://discord.com/channels/771670169691881483/782353185552465951",
+                      `https://discord.com/channels/${DISCORD_GUILD_ID}/${channelId}`,
                       "_blank",
                     );
                   }}

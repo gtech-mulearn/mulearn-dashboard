@@ -29,11 +29,15 @@ export function useJobApplicants(
     pageIndex?: number;
     perPage?: number;
   },
+  options?: {
+    enabled?: boolean;
+  },
 ) {
   return useQuery({
     queryKey: JOB_APPLICANTS_KEYS.list(jobId, params),
     queryFn: () => fetchJobApplicants(jobId, params),
     refetchOnWindowFocus: false,
+    enabled: options?.enabled ?? true,
   });
 }
 
