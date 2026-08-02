@@ -20,6 +20,7 @@ export const MentorApplicationSchema = z.object({
   preferred_ig_ids: z.array(z.string()).optional().default([]),
   org: z.string().nullable().optional(),
   company: z.string().nullable().optional(),
+  linkedin: z.string().nullable().optional(),
   verified_by: z.string().nullable().optional(),
   verified_at: z.string().nullable().optional(),
   verification_note: z.string().nullable().optional(),
@@ -60,6 +61,7 @@ function normaliseMentorStatus(raw: unknown): MentorStatusData {
       mentor_id: typeof obj.mentor_id === "string" ? obj.mentor_id : null,
       organization:
         typeof obj.organization === "string" ? obj.organization : null,
+      mentor_tier: typeof obj.mentor_tier === "string" ? obj.mentor_tier : null,
     };
   }
 
@@ -70,6 +72,7 @@ function normaliseMentorStatus(raw: unknown): MentorStatusData {
     rejection_reason: null,
     mentor_id: null,
     organization: null,
+    mentor_tier: null,
   };
 }
 
@@ -85,6 +88,7 @@ export type MentorStatusData = {
   // `GET /mentor/status/` response previously read via a separate `useMentorStatus`
   // hook; consolidated onto this canonical hook/key.
   organization?: string | null;
+  mentor_tier?: string | null;
 };
 
 // ─── GET/PATCH /profile/ response wrapper ────────────────────────────────────
@@ -113,6 +117,10 @@ export const OnboardingFormSchema = z.object({
   preferred_ig_ids: z
     .array(z.string())
     .min(1, "Select at least one Interest Group"),
+  // Optional — only supplied when submitting as a Company Mentor.
+  // The backend field name is `org` (organisation/company UUID).
+  // Omitted (or undefined) for IG Mentor submissions.
+  org: z.string().optional(),
 });
 export type OnboardingFormValues = z.infer<typeof OnboardingFormSchema>;
 
@@ -122,6 +130,10 @@ export type OnboardingFormValues = z.infer<typeof OnboardingFormSchema>;
 // Keeping it tied to OnboardingFormValues avoids drift between form and wire.
 export type MentorProfileWrite = Omit<OnboardingFormValues, "expertise"> & {
   expertise: string;
+  linkedin?: string;
+  // Forwarded as-is to POST/PATCH /register/ for Company Mentor applications.
+  // Backend field name is `org` (organisation UUID).
+  org?: string;
 };
 
 // ─── UI state derived from status ─────────────────────────────────────────────

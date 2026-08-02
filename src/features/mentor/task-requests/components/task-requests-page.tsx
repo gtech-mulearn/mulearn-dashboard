@@ -734,7 +734,13 @@ export function TaskRequestsPage() {
   const pendingCount = pendingResult?.data?.length ?? 0;
 
   const searchParams = useSearchParams();
-  const defaultTab = searchParams.get("tab") ?? "all";
+  const requestedTab = searchParams.get("tab");
+  const defaultTab =
+    requestedTab === "pending" ||
+    requestedTab === "approved" ||
+    requestedTab === "rejected"
+      ? requestedTab
+      : "all";
 
   return (
     <TooltipProvider delayDuration={200}>

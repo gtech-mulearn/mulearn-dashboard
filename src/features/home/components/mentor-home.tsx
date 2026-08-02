@@ -182,7 +182,13 @@ export function MentorHome() {
   // (Rejected applications already returned above with the rejection banner + reapply form.)
   if (!isVerified) {
     const companyName = application?.organization?.trim();
-    const mentorRole = companyName ? "Company Mentor" : "IG Mentor";
+    const isIgMentor = application?.mentor_tier === "IG_MENTOR";
+    const isCompanyMentor =
+      application?.mentor_tier === "COMPANY_MENTOR" ||
+      (!isIgMentor && companyName);
+
+    const mentorRole = isCompanyMentor ? "Company Mentor" : "IG Mentor";
+    const displayCompany = isCompanyMentor && companyName;
 
     return (
       <div className="mx-auto max-w-2xl py-8">
@@ -197,7 +203,7 @@ export function MentorHome() {
             <p>
               Applying as{" "}
               <span className="font-medium text-foreground">{mentorRole}</span>
-              {companyName && (
+              {displayCompany ? (
                 <>
                   {" "}
                   on behalf of{" "}
@@ -205,7 +211,7 @@ export function MentorHome() {
                     {companyName}
                   </span>
                 </>
-              )}
+              ) : null}
               .
             </p>
             <p>

@@ -11,7 +11,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, X } from "lucide-react";
+import { ExternalLink, Loader2, X } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { type Resolver, useForm } from "react-hook-form";
@@ -79,6 +79,12 @@ const MentorEditSchema = z.object({
     .array(z.string())
     .min(1, "You must mentor at least one Interest Group"),
   org: z.string().optional(),
+  // Union tries "" first so an empty field never triggers the url() validator.
+  // The previous .optional().or(z.literal("")) order ran url() on "" and failed,
+  // silently aborting the entire form submission.
+  linkedin: z
+    .union([z.literal(""), z.string().url("Please enter a valid URL")])
+    .optional(),
   profile_pic: z.instanceof(File).optional(),
 });
 
@@ -132,6 +138,7 @@ export function MentorEditProfileModal({
         : [],
       preferred_ig_ids: mentorProfile.preferred_ig_ids ?? [],
       org: mentorProfile.org ?? "",
+      linkedin: mentorProfile.linkedin ?? "",
       profile_pic: undefined,
     },
   });
@@ -150,6 +157,7 @@ export function MentorEditProfileModal({
           : [],
         preferred_ig_ids: mentorProfile.preferred_ig_ids ?? [],
         org: mentorProfile.org ?? "",
+        linkedin: mentorProfile.linkedin ?? "",
         profile_pic: undefined,
       });
       setPreviewUrl(null);
@@ -164,6 +172,7 @@ export function MentorEditProfileModal({
     mentorProfile.expertise,
     mentorProfile.preferred_ig_ids,
     mentorProfile.org,
+    mentorProfile.linkedin,
     form,
   ]);
 
@@ -214,12 +223,20 @@ export function MentorEditProfileModal({
       const isIgsChanged =
         JSON.stringify(values.preferred_ig_ids ?? []) !==
         JSON.stringify(mentorProfile.preferred_ig_ids ?? []);
+      const isLinkedinChanged =
+        values.linkedin !== (mentorProfile.linkedin ?? "");
 
-      if (isAboutChanged || isExpertiseChanged || isIgsChanged) {
+      if (
+        isAboutChanged ||
+        isExpertiseChanged ||
+        isIgsChanged ||
+        isLinkedinChanged
+      ) {
         const payload: Partial<MentorProfileWrite> = {};
         if (isAboutChanged) payload.about = values.about ?? "";
         if (isExpertiseChanged) payload.expertise = newExpertise;
         if (isIgsChanged) payload.preferred_ig_ids = values.preferred_ig_ids;
+        if (isLinkedinChanged) payload.linkedin = values.linkedin;
 
         await updateMentorProfileMutation.mutateAsync(payload);
       }
@@ -392,7 +409,15 @@ export function MentorEditProfileModal({
                       shouldDirty: true,
                     })
                   }
-                  placeholder="Select IGs you want to mentor in..."
+                  placeholder={
+                    mentorProfile.preferred_ig_ids &&
+                    mentorProfile.preferred_ig_ids.length > 0
+                      ? `Current: ${mentorProfile.preferred_ig_ids
+                          .map((id) => igList.find((g) => g.id === id)?.name)
+                          .filter(Boolean)
+                          .join(", ")}`
+                      : "Select IGs you want to mentor in..."
+                  }
                   maxSelections={5}
                 />
                 <p className="text-[0.8rem] text-muted-foreground">
@@ -400,28 +425,54 @@ export function MentorEditProfileModal({
                 </p>
               </div>
 
+              {/* LinkedIn */}
+              <FormField
+                control={form.control}
+                name="linkedin"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>LinkedIn Profile</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder={
+                          mentorProfile.linkedin
+                            ? `Current: ${mentorProfile.linkedin} ↗`
+                            : "https://linkedin.com/in/your-profile"
+                        }
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription className="text-xs">
+                      Changing your LinkedIn URL submits it for admin
+                      verification. Your current URL stays live until approved.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               {/* Affiliation */}
               <div className="space-y-2">
                 <div className="text-sm font-medium leading-none">
                   Company Affiliation
                 </div>
 
-                {/* Inline change form — always visible */}
-                <div className="space-y-4 pt-2">
+                {/* Inline change form — only shown/required when a new company is selected */}
+                <div className="space-y-3 pt-1">
                   {/* Company select */}
                   <div className="space-y-1">
-                    <label
-                      htmlFor="company-select"
-                      className="text-xs font-medium text-foreground"
-                    >
-                      New Company
-                    </label>
                     <Select
                       value={selectedCompanyId}
                       onValueChange={(val) => setSelectedCompanyId(val)}
                     >
                       <SelectTrigger id="company-select" className="w-full">
-                        <SelectValue placeholder="Select a company…" />
+                        <SelectValue
+                          placeholder={
+                            mentorProfile.company
+                              ? `Current: ${mentorProfile.company}`
+                              : "Select a new company…"
+                          }
+                        />
                       </SelectTrigger>
                       <SelectContent
                         position="popper"
@@ -436,23 +487,29 @@ export function MentorEditProfileModal({
                     </Select>
                   </div>
 
-                  {/* Reason textarea */}
-                  <div className="space-y-1">
-                    <label
-                      htmlFor="company-reason"
-                      className="text-xs font-medium text-foreground"
-                    >
-                      Reason <span className="text-destructive">*</span>
-                    </label>
-                    <Textarea
-                      id="company-reason"
-                      placeholder="Why are you changing your company affiliation?"
-                      rows={3}
-                      className="resize-none text-sm"
-                      value={changeReason}
-                      onChange={(e) => setChangeReason(e.target.value)}
-                    />
-                  </div>
+                  {/* Reason textarea — only required when a company is selected */}
+                  {selectedCompanyId && (
+                    <div className="space-y-1">
+                      <label
+                        htmlFor="company-reason"
+                        className="text-xs font-medium text-foreground"
+                      >
+                        Reason <span className="text-destructive">*</span>
+                      </label>
+                      <Textarea
+                        id="company-reason"
+                        placeholder="Why are you changing your company affiliation?"
+                        rows={3}
+                        className="resize-none text-sm"
+                        value={changeReason}
+                        onChange={(e) => setChangeReason(e.target.value)}
+                      />
+                      <p className="text-[0.8rem] text-muted-foreground">
+                        Company change requests require admin approval. Your
+                        current affiliation stays live until approved.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 

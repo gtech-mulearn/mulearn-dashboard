@@ -135,6 +135,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: BookOpen,
     section: "main",
     dynamicCheck: (roles) =>
+      roles.includes(ROLES.ADMIN) ||
       !roles.some((r) => r === ROLES.COMPANY || r === ROLES.MENTOR),
   },
   {
