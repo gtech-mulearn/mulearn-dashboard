@@ -1422,17 +1422,24 @@ export const ShortlistMutationResponseSchema = DjangoResponse(z.unknown());
 // ─── Talent Pool Insights ────────────────────────────────────
 
 export const TalentPoolInsightsSchema = z.object({
-  total_active_learners: z.number(),
-  available_for_hire: z.number(),
-  available_for_gigs: z.number(),
-  district_distribution: z
-    .array(z.object({ district: z.string(), count: z.number() }))
-    .default([]),
+  total_learners: z.number(),
   top_skills: z
-    .array(z.object({ skill: z.string(), learner_count: z.number() }))
+    .array(
+      z.object({
+        skill_id: z.string(),
+        skill_name: z.string(),
+        learner_count: z.number(),
+      }),
+    )
     .default([]),
-  recommended_roles: z
-    .array(z.object({ role: z.string(), talent_count: z.number() }))
+  top_colleges: z
+    .array(
+      z.object({
+        college_id: z.string(),
+        college_name: z.string(),
+        learner_count: z.number(),
+      }),
+    )
     .default([]),
 });
 

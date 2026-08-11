@@ -62,6 +62,7 @@ export {
   fetchPublicCompanyProfile,
   fetchPublicJobs,
   fetchShortlistedLearners,
+  downloadTalentPoolInsightsCSV,
   fetchTalentPoolAnalytics,
   fetchTalentPoolInsights,
   fetchTasksAnalytics,

@@ -9,10 +9,20 @@ import {
   User,
   Users,
   X,
+  BarChart3,
+  Download,
+  GraduationCap,
+  Star,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,7 +48,9 @@ import {
   useLearnerDiscovery,
   useRemoveLearnerFromShortlist,
   useShortlistedLearners,
+  useTalentPoolInsights,
 } from "@/features/company-jobs/hooks";
+import { downloadTalentPoolInsightsCSV } from "@/features/company-jobs/api";
 import type { LearnerDiscoveryParams } from "@/features/company-jobs/types";
 import { getInterestGroupsList } from "@/features/interest-groups/api/interest-groups.api";
 import { useDebounce } from "@/hooks/use-debounce";
@@ -455,6 +467,168 @@ function ShortlistedTab() {
   );
 }
 
+// ─── Insights Tab ─────────────────────────────────────────────────────────────
+
+function InsightsTab() {
+  const { data: insights, isLoading, isError } = useTalentPoolInsights();
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      await downloadTalentPoolInsightsCSV();
+    } catch (error) {
+      console.error("Export failed:", error);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Skeleton className="h-[200px] rounded-xl" />
+        <Skeleton className="h-[200px] rounded-xl" />
+      </div>
+    );
+  }
+
+  if (isError || !insights) {
+    return (
+      <Card className="border-border">
+        <CardContent className="flex min-h-[200px] flex-col items-center justify-center gap-3 py-12">
+          <div className="rounded-full bg-destructive/10 p-3">
+            <AlertTriangle className="h-6 w-6 text-destructive" />
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Failed to load insights. Please try again.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-semibold tracking-tight">
+            Talent Pool Overview
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            High-level metrics and top skills from the active learner pool.
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2"
+          onClick={handleExport}
+          disabled={isExporting}
+        >
+          {isExporting ? (
+            <Skeleton className="h-4 w-4 rounded-full animate-spin" />
+          ) : (
+            <Download className="h-4 w-4" />
+          )}
+          {isExporting ? "Exporting..." : "Export CSV"}
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Total Learners
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">
+              {insights.total_learners.toLocaleString()}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        {/* Top Skills */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Star className="h-4 w-4 text-primary" />
+              Top Skills
+            </CardTitle>
+            <CardDescription>
+              Most common skills across the pool
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {insights.top_skills.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No skills data.</p>
+              ) : (
+                insights.top_skills.map((skill) => (
+                  <div key={skill.skill_id} className="flex items-center">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">
+                        {skill.skill_name}
+                      </p>
+                    </div>
+                    <div className="ml-4 flex items-center gap-2 text-sm text-muted-foreground">
+                      <span className="font-semibold text-foreground">
+                        {skill.learner_count.toLocaleString()}
+                      </span>
+                      learners
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Top Colleges */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <GraduationCap className="h-4 w-4 text-primary" />
+              Top Colleges
+            </CardTitle>
+            <CardDescription>
+              Institutions with the most learners
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {insights.top_colleges.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No college data.
+                </p>
+              ) : (
+                insights.top_colleges.map((college) => (
+                  <div key={college.college_id} className="flex items-center">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">
+                        {college.college_name}
+                      </p>
+                    </div>
+                    <div className="ml-4 flex items-center gap-2 text-sm text-muted-foreground">
+                      <span className="font-semibold text-foreground">
+                        {college.learner_count.toLocaleString()}
+                      </span>
+                      learners
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export function TalentPoolPageClient() {
@@ -519,6 +693,7 @@ export function TalentPoolPageClient() {
               </span>
             )}
           </TabsTrigger>
+          <TabsTrigger value="insights">Insights</TabsTrigger>
         </TabsList>
 
         {/* ── Discover tab ── */}
@@ -668,6 +843,11 @@ export function TalentPoolPageClient() {
         {/* ── Shortlisted tab ── */}
         <TabsContent value="shortlisted" className="mt-0">
           <ShortlistedTab />
+        </TabsContent>
+
+        {/* ── Insights tab ── */}
+        <TabsContent value="insights" className="mt-0">
+          <InsightsTab />
         </TabsContent>
       </Tabs>
     </div>

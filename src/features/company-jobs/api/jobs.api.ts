@@ -828,12 +828,40 @@ export async function removeLearnerFromShortlist(
   );
 }
 
-export async function fetchTalentPoolInsights(): Promise<TalentPoolInsights> {
-  const res = await apiClient.get(
-    endpoints.company.talentPoolInsights,
-    TalentPoolInsightsResponseSchema,
-  );
+export async function fetchTalentPoolInsights(params?: {
+  district_id?: string;
+}): Promise<TalentPoolInsights> {
+  let url = endpoints.company.talentPoolInsights;
+  if (params?.district_id) {
+    url += `?district_id=${params.district_id}`;
+  }
+  const res = await apiClient.get(url, TalentPoolInsightsResponseSchema);
   return res.response;
+}
+
+export async function downloadTalentPoolInsightsCSV(params?: {
+  district_id?: string;
+}): Promise<void> {
+  const query = new URLSearchParams();
+  query.append("export", "csv");
+  if (params?.district_id) {
+    query.append("district_id", params.district_id);
+  }
+
+  const blob = (await apiClient.get(
+    `${endpoints.company.talentPoolInsights}?${query.toString()}`,
+    undefined,
+    { responseType: "blob" },
+  )) as unknown as Blob;
+
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "talent_pool_insights.csv";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
 }
 
 export async function fetchTaskTemplates(): Promise<TaskTemplate[]> {

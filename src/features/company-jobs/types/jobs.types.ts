@@ -631,12 +631,17 @@ export interface ShortlistedLearner {
 }
 
 export interface TalentPoolInsights {
-  total_active_learners: number;
-  available_for_hire: number;
-  available_for_gigs: number;
-  district_distribution: Array<{ district: string; count: number }>;
-  top_skills: Array<{ skill: string; learner_count: number }>;
-  recommended_roles: Array<{ role: string; talent_count: number }>;
+  total_learners: number;
+  top_skills: Array<{
+    skill_id: string;
+    skill_name: string;
+    learner_count: number;
+  }>;
+  top_colleges: Array<{
+    college_id: string;
+    college_name: string;
+    learner_count: number;
+  }>;
 }
 
 export interface TaskTemplate {
