@@ -623,15 +623,11 @@ export interface TasksAnalytics {
 }
 
 export interface ShortlistedLearner {
+  /** The learner's user ID — matches LearnerProfile.id for card comparison */
   id: string;
-  user_id: string;
-  learner_name: string;
-  muid: string;
-  email?: string | null;
+  full_name: string;
   karma: number;
-  level: number;
-  shortlisted_at: string;
-  note?: string | null;
+  shortlist_note?: string | null;
 }
 
 export interface TalentPoolInsights {

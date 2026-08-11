@@ -1398,25 +1398,26 @@ export const TasksAnalyticsResponseSchema =
   DjangoResponse(TasksAnalyticsSchema);
 
 // ─── Shortlisted Learners ────────────────────────────────────
+// Backend GET /company/mulearners/shortlist/ returns:
+//   { data: [{ id, full_name, karma, shortlist_note }] }
 
 export const ShortlistedLearnerSchema = z.object({
   id: z.string(),
-  user_id: z.string(),
-  learner_name: z.string(),
-  muid: z.string(),
-  email: z.string().nullable().optional(),
+  full_name: z.string(),
   karma: z.number(),
-  level: z.number(),
-  shortlisted_at: z.string(),
-  note: z.string().nullable().optional(),
+  shortlist_note: z.string().nullable().optional(),
 });
 
+// The DjangoResponse wrapper expects { response: <inner> }.
+// The inner shape here is { data: ShortlistedLearner[] }.
 export const ShortlistListResponseSchema = DjangoResponse(
-  z.array(ShortlistedLearnerSchema),
+  z.object({
+    data: z.array(ShortlistedLearnerSchema).default([]),
+  }),
 );
-export const ShortlistMutationResponseSchema = DjangoResponse(
-  ShortlistedLearnerSchema,
-);
+
+// POST/PATCH mutation just returns a generic success message.
+export const ShortlistMutationResponseSchema = DjangoResponse(z.unknown());
 
 // ─── Talent Pool Insights ────────────────────────────────────
 

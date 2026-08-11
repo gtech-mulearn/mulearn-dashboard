@@ -802,19 +802,20 @@ export async function fetchShortlistedLearners(): Promise<
     endpoints.company.shortlist,
     ShortlistListResponseSchema,
   );
-  return res.response ?? [];
+  // Backend returns { data: [...] } inside the DjangoResponse envelope.
+  // So res.response.data is the array we want.
+  return res.response?.data ?? [];
 }
 
 export async function addLearnerToShortlist(
   userId: string,
   note?: string,
-): Promise<ShortlistedLearner> {
-  const res = await apiClient.post(
+): Promise<void> {
+  await apiClient.post(
     endpoints.company.shortlistAdd,
     { user_id: userId, note },
-    ShortlistMutationResponseSchema,
+    GenericResponseSchema,
   );
-  return res.response;
 }
 
 export async function removeLearnerFromShortlist(

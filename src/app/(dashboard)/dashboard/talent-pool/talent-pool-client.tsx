@@ -31,9 +31,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { fetchAchievements } from "@/features/achievements";
 import { LearnerCard } from "@/features/company-jobs/components";
-import { useLearnerDiscovery } from "@/features/company-jobs/hooks";
+import {
+  useLearnerDiscovery,
+  useRemoveLearnerFromShortlist,
+  useShortlistedLearners,
+} from "@/features/company-jobs/hooks";
 import type { LearnerDiscoveryParams } from "@/features/company-jobs/types";
 import { getInterestGroupsList } from "@/features/interest-groups/api/interest-groups.api";
 import { useDebounce } from "@/hooks/use-debounce";
@@ -327,6 +332,129 @@ function FiltersDropdown({ filters, onChange }: FiltersDropdownProps) {
   );
 }
 
+// ─── Shortlisted Tab ──────────────────────────────────────────────────────────
+
+function ShortlistedTab() {
+  const {
+    data: shortlisted = [],
+    isLoading,
+    isError,
+  } = useShortlistedLearners();
+  const { mutateAsync: removeLearner, isPending: isRemoving } =
+    useRemoveLearnerFromShortlist();
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+        {["s1", "s2", "s3", "s4", "s5", "s6"].map((k) => (
+          <div
+            key={k}
+            className="rounded-2xl border border-border bg-card p-5 space-y-3"
+          >
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-10 w-10 rounded-xl" />
+              <div className="flex-1 space-y-1.5">
+                <Skeleton className="h-4 w-1/2 rounded" />
+                <Skeleton className="h-3 w-1/3 rounded" />
+              </div>
+            </div>
+            <Skeleton className="h-14 rounded-lg" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Card className="border-border">
+        <CardContent className="flex min-h-[200px] flex-col items-center justify-center gap-3 py-12">
+          <div className="rounded-full bg-destructive/10 p-3">
+            <AlertTriangle className="h-6 w-6 text-destructive" />
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Failed to load shortlisted learners. Please try again.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (shortlisted.length === 0) {
+    return (
+      <Card className="border-dashed border-border">
+        <CardContent className="flex min-h-[200px] flex-col items-center justify-center gap-3 py-12 text-center">
+          <div className="rounded-full bg-muted p-4">
+            <User className="h-8 w-8 text-muted-foreground" />
+          </div>
+          <div className="space-y-1">
+            <p className="font-medium text-foreground">
+              No shortlisted learners
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Shortlist learners from the Discover tab to see them here.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+      {shortlisted.map((learner) => {
+        const initials = learner.full_name
+          .split(" ")
+          .map((n) => n[0])
+          .slice(0, 2)
+          .join("")
+          .toUpperCase();
+
+        return (
+          <Card key={learner.id} className="flex flex-col p-3 py-4">
+            {/* Avatar + name + remove button */}
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-sm font-bold text-primary">
+                {initials}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-semibold text-foreground">
+                  {learner.full_name}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Karma: {learner.karma.toLocaleString()}
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                title="Remove from shortlist"
+                onClick={() => removeLearner(learner.id)}
+                disabled={isRemoving}
+              >
+                <X className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+
+            {/* Note */}
+            {learner.shortlist_note && (
+              <div className="mt-3 rounded-lg bg-muted/50 px-3 py-2">
+                <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground mb-1">
+                  Note
+                </p>
+                <p className="text-xs text-foreground/80 italic line-clamp-3">
+                  &ldquo;{learner.shortlist_note}&rdquo;
+                </p>
+              </div>
+            )}
+          </Card>
+        );
+      })}
+    </div>
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export function TalentPoolPageClient() {
@@ -356,6 +484,10 @@ export function TalentPoolPageClient() {
   const learners = data?.learners ?? [];
   const total = data?.pagination.count ?? 0;
 
+  // For the tab badge counter
+  const { data: shortlisted = [] } = useShortlistedLearners();
+  const shortlistCount = shortlisted.length;
+
   const clearFilters = () => {
     setSearch("");
     setFilters({});
@@ -376,144 +508,168 @@ export function TalentPoolPageClient() {
         </p>
       </div>
 
-      {/* Controls row */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full">
-        {/* Summary badge */}
-        {!isLoading && !isError && (
-          <div className="flex h-9 shrink-0 items-center gap-2 rounded-xl border border-border bg-card px-4 text-sm">
-            <Users className="h-4 w-4 text-primary" />
-            <span className="font-semibold text-foreground">
-              {total.toLocaleString()}
-            </span>
-            <span className="text-muted-foreground">learners found</span>
-          </div>
-        )}
-
-        {/* Search */}
-        <div className="relative w-full sm:w-[300px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-          <Input
-            id="talent-search"
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPageIndex(1);
-            }}
-            placeholder="Search by name or MUID…"
-            className="h-9 pl-9 pr-8 text-sm w-full"
-          />
-          {search && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => setSearch("")}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            >
-              <X className="h-3.5 w-3.5" />
-            </Button>
-          )}
-        </div>
-
-        {/* Filters */}
-        <div className="flex items-center gap-2">
-          <FiltersDropdown
-            filters={filters}
-            onChange={(f) => {
-              setFilters(f);
-              setPageIndex(1);
-            }}
-          />
-          {hasActive && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-9 gap-1.5 text-xs text-muted-foreground hover:text-foreground shrink-0"
-              onClick={clearFilters}
-            >
-              <X className="h-3.5 w-3.5" />
-              Clear all
-            </Button>
-          )}
-        </div>
-      </div>
-
-      {/* Grid */}
-      {isLoading ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-          {LEARNER_SKELETONS.map((s) => (
-            <LearnerCardSkeleton key={s} />
-          ))}
-        </div>
-      ) : isError ? (
-        <Card className="border-border">
-          <CardContent className="flex min-h-[200px] flex-col items-center justify-center gap-3 py-12">
-            <div className="rounded-full bg-destructive/10 p-3">
-              <AlertTriangle className="h-6 w-6 text-destructive" />
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Failed to load learners. Please try again.
-            </p>
-          </CardContent>
-        </Card>
-      ) : learners.length === 0 ? (
-        <Card className="border-dashed border-border">
-          <CardContent className="flex min-h-[200px] flex-col items-center justify-center gap-3 py-12 text-center">
-            <div className="rounded-full bg-muted p-4">
-              <User className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <div className="space-y-1">
-              <p className="font-medium text-foreground">No learners found</p>
-              <p className="text-sm text-muted-foreground">
-                {hasActive
-                  ? "Try adjusting your filters."
-                  : "No learners available yet."}
-              </p>
-            </div>
-            {hasActive && (
-              <Button variant="outline" size="sm" onClick={clearFilters}>
-                Clear filters
-              </Button>
+      <Tabs defaultValue="discover" className="w-full">
+        <TabsList className="mb-4">
+          <TabsTrigger value="discover">Discover</TabsTrigger>
+          <TabsTrigger value="shortlisted" className="gap-1.5">
+            Shortlisted
+            {shortlistCount > 0 && (
+              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                {shortlistCount}
+              </span>
             )}
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-          {learners.map((learner) => (
-            <LearnerCard key={learner.id} learner={learner} />
-          ))}
-        </div>
-      )}
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Pagination */}
-      {!isLoading &&
-        !isError &&
-        data?.pagination.totalPages &&
-        data.pagination.totalPages > 1 && (
-          <div className="flex justify-between items-center mt-6">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPageIndex((p) => Math.max(1, p - 1))}
-              disabled={pageIndex === 1}
-              className="h-8 text-xs"
-            >
-              Previous
-            </Button>
-            <span className="text-xs text-muted-foreground">
-              Page {pageIndex} of {data.pagination.totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPageIndex((p) => p + 1)}
-              disabled={!data.pagination.isNext}
-              className="h-8 text-xs"
-            >
-              Next
-            </Button>
+        {/* ── Discover tab ── */}
+        <TabsContent value="discover" className="mt-0 space-y-6">
+          {/* Controls row */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full">
+            {/* Summary badge */}
+            {!isLoading && !isError && (
+              <div className="flex h-9 shrink-0 items-center gap-2 rounded-xl border border-border bg-card px-4 text-sm">
+                <Users className="h-4 w-4 text-primary" />
+                <span className="font-semibold text-foreground">
+                  {total.toLocaleString()}
+                </span>
+                <span className="text-muted-foreground">learners found</span>
+              </div>
+            )}
+
+            {/* Search */}
+            <div className="relative w-full sm:w-[300px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+              <Input
+                id="talent-search"
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPageIndex(1);
+                }}
+                placeholder="Search by name or MUID…"
+                className="h-9 pl-9 pr-8 text-sm w-full"
+              />
+              {search && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setSearch("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </Button>
+              )}
+            </div>
+
+            {/* Filters */}
+            <div className="flex items-center gap-2">
+              <FiltersDropdown
+                filters={filters}
+                onChange={(f) => {
+                  setFilters(f);
+                  setPageIndex(1);
+                }}
+              />
+              {hasActive && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-9 gap-1.5 text-xs text-muted-foreground hover:text-foreground shrink-0"
+                  onClick={clearFilters}
+                >
+                  <X className="h-3.5 w-3.5" />
+                  Clear all
+                </Button>
+              )}
+            </div>
           </div>
-        )}
+
+          {/* Grid */}
+          {isLoading ? (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+              {LEARNER_SKELETONS.map((s) => (
+                <LearnerCardSkeleton key={s} />
+              ))}
+            </div>
+          ) : isError ? (
+            <Card className="border-border">
+              <CardContent className="flex min-h-[200px] flex-col items-center justify-center gap-3 py-12">
+                <div className="rounded-full bg-destructive/10 p-3">
+                  <AlertTriangle className="h-6 w-6 text-destructive" />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Failed to load learners. Please try again.
+                </p>
+              </CardContent>
+            </Card>
+          ) : learners.length === 0 ? (
+            <Card className="border-dashed border-border">
+              <CardContent className="flex min-h-[200px] flex-col items-center justify-center gap-3 py-12 text-center">
+                <div className="rounded-full bg-muted p-4">
+                  <User className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <div className="space-y-1">
+                  <p className="font-medium text-foreground">
+                    No learners found
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {hasActive
+                      ? "Try adjusting your filters."
+                      : "No learners available yet."}
+                  </p>
+                </div>
+                {hasActive && (
+                  <Button variant="outline" size="sm" onClick={clearFilters}>
+                    Clear filters
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+              {learners.map((learner) => (
+                <LearnerCard key={learner.id} learner={learner} />
+              ))}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {!isLoading &&
+            !isError &&
+            data?.pagination.totalPages &&
+            data.pagination.totalPages > 1 && (
+              <div className="flex justify-between items-center mt-6">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPageIndex((p) => Math.max(1, p - 1))}
+                  disabled={pageIndex === 1}
+                  className="h-8 text-xs"
+                >
+                  Previous
+                </Button>
+                <span className="text-xs text-muted-foreground">
+                  Page {pageIndex} of {data.pagination.totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPageIndex((p) => p + 1)}
+                  disabled={!data.pagination.isNext}
+                  className="h-8 text-xs"
+                >
+                  Next
+                </Button>
+              </div>
+            )}
+        </TabsContent>
+
+        {/* ── Shortlisted tab ── */}
+        <TabsContent value="shortlisted" className="mt-0">
+          <ShortlistedTab />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
