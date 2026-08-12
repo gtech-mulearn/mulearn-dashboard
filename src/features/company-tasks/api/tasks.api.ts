@@ -193,3 +193,25 @@ export async function deleteTaskType(payload: unknown): Promise<void> {
     GenericResponseSchema,
   );
 }
+
+export async function fetchTaskLevels(): Promise<
+  { id: string; name: string }[]
+> {
+  const data = await apiClient.get<unknown>(endpoints.adminTask.taskLevelList);
+  // Pull array out of envelope
+  let arr: Record<string, unknown>[] = [];
+  if (Array.isArray(data)) arr = data as Record<string, unknown>[];
+  else if (data && typeof data === "object") {
+    const obj = data as Record<string, unknown>;
+    for (const key of ["data", "results", "items", "response"]) {
+      if (Array.isArray(obj[key])) {
+        arr = obj[key] as Record<string, unknown>[];
+        break;
+      }
+    }
+  }
+  return arr.map((it) => ({
+    id: String(it.id),
+    name: String(it.name ?? `Level ${it.level_order}`).trim(),
+  }));
+}

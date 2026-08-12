@@ -72,8 +72,8 @@ export interface UpdateCompanyTaskPayload {
   karma?: number;
   usage_count?: number;
   description?: string;
-  type?: string;
-  level?: string;
+  type_id?: string;
+  level_id?: string;
   skill_ids?: string[];
   hashtag?: string;
 }

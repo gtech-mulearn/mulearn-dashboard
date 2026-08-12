@@ -11,6 +11,7 @@ import {
   fetchCompanyTasks,
   fetchPublicTaskList,
   fetchTaskTypes,
+  fetchTaskLevels,
   updateCompanyTask,
   updateTaskType,
 } from "../api/tasks.api";
@@ -26,6 +27,7 @@ export const COMPANY_TASKS_KEYS = {
   detail: (taskId: string) =>
     [...COMPANY_TASKS_KEYS.all, "detail", taskId] as const,
   types: () => [...COMPANY_TASKS_KEYS.all, "types"] as const,
+  levels: () => [...COMPANY_TASKS_KEYS.all, "levels"] as const,
   publicList: () => ["public-tasks-list"] as const,
 };
 
@@ -47,6 +49,14 @@ export function useTaskTypes() {
   return useQuery({
     queryKey: COMPANY_TASKS_KEYS.types(),
     queryFn: fetchTaskTypes,
+    staleTime: Infinity,
+  });
+}
+
+export function useTaskLevels() {
+  return useQuery({
+    queryKey: COMPANY_TASKS_KEYS.levels(),
+    queryFn: fetchTaskLevels,
     staleTime: Infinity,
   });
 }
